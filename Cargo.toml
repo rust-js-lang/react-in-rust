@@ -1,0 +1,19 @@
+# React's packages, each a crate whose modules are its files: a module's
+# Rust beside the JS rust-js writes from it, `src/SchedulerMinHeap.rs` to
+# `src/SchedulerMinHeap.js`, which React's build and tests read as they
+# read the rest. rust-js is a checkout beside this one, built from source.
+[workspace]
+resolver = "3"
+members = []
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace.dependencies]
+js = { package = "rust-js-builtins", path = "../rust-js/builtins" }
+webapi = { package = "rust-js-webapi", path = "../rust-js/webapi" }
+
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(rust_js)"] }
