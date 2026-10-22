@@ -3,5 +3,20 @@
 version = 4
 
 [[package]]
+name = "rust-js-builtins"
+version = "0.0.2"
+
+[[package]]
+name = "rust-js-webapi"
+version = "0.0.3"
+dependencies = [
+ "rust-js-builtins",
+]
+
+[[package]]
 name = "scheduler"
 version = "0.0.0"
+dependencies = [
+ "rust-js-builtins",
+ "rust-js-webapi",
+]

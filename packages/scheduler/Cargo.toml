@@ -6,7 +6,16 @@ publish.workspace = true
 
 # Its modules are its files, each beside the JS rust-js writes from it.
 [lib]
-path = "src/SchedulerMinHeap.rs"
+path = "src/forks/Scheduler.rs"
+
+[dependencies]
+js.workspace = true
+webapi.workspace = true
+
+[features]
+default = ["experimental"]
+# React's experimental release channel, `__EXPERIMENTAL__`.
+experimental = []
 
 [lints]
 workspace = true

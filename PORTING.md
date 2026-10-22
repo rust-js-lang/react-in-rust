@@ -43,3 +43,7 @@ upstream's was, so the build and tests need no compiler.
   (a rename, a helper, a cast, a lost comment) is a gap in rust-js, fixed
   there before the port goes on.
 - **React's tests pass** on the generated JS, as they did on the original.
+- **Fallbacks are ported too** (decided 2026-10-22): a polyfill, or a
+  branch for a host without `Object.is` or `performance.now`, is the
+  program's to express, whatever hosts rust-js targets. Where rust-js has
+  no way to write it, that's a gap in rust-js, fixed there.
