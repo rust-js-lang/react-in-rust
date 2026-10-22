@@ -3,6 +3,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+use shared::environment::__EXPERIMENTAL__;
+
 #[cfg_attr(rust_js, rust_js::name = "enableProfiling")]
 pub const ENABLE_PROFILING: bool = false;
 #[cfg_attr(rust_js, rust_js::name = "frameYieldMs")]
@@ -17,5 +19,7 @@ pub const LOW_PRIORITY_TIMEOUT: f64 = 10000.0;
 #[cfg_attr(rust_js, rust_js::name = "enableRequestPaint")]
 pub const ENABLE_REQUEST_PAINT: bool = true;
 
-#[cfg_attr(rust_js, rust_js::name = "enableAlwaysYieldScheduler")]
-pub const ENABLE_ALWAYS_YIELD_SCHEDULER: bool = cfg!(feature = "experimental");
+thread_local! {
+    #[cfg_attr(rust_js, rust_js::name = "enableAlwaysYieldScheduler")]
+    pub static ENABLE_ALWAYS_YIELD_SCHEDULER: bool = __EXPERIMENTAL__;
+}

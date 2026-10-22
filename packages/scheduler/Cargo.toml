@@ -9,13 +9,10 @@ publish.workspace = true
 path = "src/forks/Scheduler.rs"
 
 [dependencies]
+shared.workspace = true
 js.workspace = true
 webapi.workspace = true
 
-[features]
-default = ["experimental"]
-# React's experimental release channel, `__EXPERIMENTAL__`.
-experimental = []
 
 [lints]
 workspace = true

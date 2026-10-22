@@ -47,6 +47,7 @@ if (
 // Math.pow(2, 30) - 1
 // 0b111111111111111111111111111111
 const MAX_SIGNED_31_BIT_INT = 1073741823;
+
 // Tasks are stored on a min heap
 const taskQueue = [];
 const timerQueue = [];
@@ -398,6 +399,7 @@ const localSetImmediate =
   typeof setImmediate !== 'undefined' ? setImmediate : undefined; // IE and Node.js + jsdom
 
 let taskTimeoutId;
+
 let schedulePerformWorkUntilDeadline;
 if (localSetImmediate) {
   // Node.js and old IE.

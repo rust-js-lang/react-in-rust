@@ -157,7 +157,7 @@ fn work_loop(initial_time: f64) -> bool {
     advance_timers(current_time);
     CURRENT_TASK.set(TASK_QUEUE.with_borrow(|task_queue| peek(task_queue).cloned()));
     while let Some(current_task) = CURRENT_TASK.with_borrow(Clone::clone) {
-        if !ENABLE_ALWAYS_YIELD_SCHEDULER
+        if !ENABLE_ALWAYS_YIELD_SCHEDULER.with(|&always| always)
             && current_task.expiration_time > current_time
             && should_yield_to_host()
         {
@@ -187,7 +187,7 @@ fn work_loop(initial_time: f64) -> bool {
             TASK_QUEUE.with_borrow_mut(pop);
         }
         CURRENT_TASK.set(TASK_QUEUE.with_borrow(|task_queue| peek(task_queue).cloned()));
-        if ENABLE_ALWAYS_YIELD_SCHEDULER
+        if ENABLE_ALWAYS_YIELD_SCHEDULER.with(|&always| always)
             && CURRENT_TASK
                 .with_borrow(|t| t.as_ref().is_none_or(|t| t.expiration_time > current_time))
         {
@@ -351,7 +351,10 @@ pub fn unstable_get_current_priority_level() -> PriorityLevel {
 }
 
 pub fn should_yield_to_host() -> bool {
-    if !ENABLE_ALWAYS_YIELD_SCHEDULER && ENABLE_REQUEST_PAINT && NEEDS_PAINT.get() {
+    if !ENABLE_ALWAYS_YIELD_SCHEDULER.with(|&always| always)
+        && ENABLE_REQUEST_PAINT
+        && NEEDS_PAINT.get()
+    {
         // Yield now.
         return true;
     }

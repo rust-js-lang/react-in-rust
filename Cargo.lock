@@ -19,6 +19,7 @@ version = "0.0.0"
 dependencies = [
  "rust-js-builtins",
  "rust-js-webapi",
+ "shared",
 ]
 
 [[package]]
