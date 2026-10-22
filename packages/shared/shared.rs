@@ -15,6 +15,8 @@ pub mod is_array;
 pub mod noop;
 #[path = "objectIs.rs"]
 pub mod object_is;
+#[path = "ReactFeatureFlags.rs"]
+pub mod react_feature_flags;
 #[path = "ReactSymbols.rs"]
 pub mod react_symbols;
 #[path = "ReactVersion.rs"]
