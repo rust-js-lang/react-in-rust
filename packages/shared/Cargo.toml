@@ -1,0 +1,17 @@
+[package]
+name = "shared"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# Its modules are its files, each beside the JS rust-js writes from it; its
+# root declares them and writes no JS of its own.
+[lib]
+path = "shared.rs"
+
+[dependencies]
+js.workspace = true
+webapi.workspace = true
+
+[lints]
+workspace = true
