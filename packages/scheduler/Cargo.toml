@@ -1,0 +1,12 @@
+[package]
+name = "scheduler"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# Its modules are its files, each beside the JS rust-js writes from it.
+[lib]
+path = "src/SchedulerMinHeap.rs"
+
+[lints]
+workspace = true
