@@ -1,5 +1,7 @@
 //! React's shared modules, each its file's.
 
+#[path = "assign.rs"]
+pub mod assign;
 #[path = "getPrototypeOf.rs"]
 pub mod get_prototype_of;
 #[path = "hasOwnProperty.rs"]
