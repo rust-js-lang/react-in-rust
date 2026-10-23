@@ -2,6 +2,8 @@
 
 #[path = "assign.rs"]
 pub mod assign;
+#[path = "CheckStringCoercion.rs"]
+pub mod check_string_coercion;
 pub mod environment;
 #[path = "ExecutionEnvironment.rs"]
 pub mod execution_environment;
