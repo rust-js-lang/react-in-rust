@@ -4,6 +4,8 @@
 pub mod assign;
 #[path = "CheckStringCoercion.rs"]
 pub mod check_string_coercion;
+#[path = "ConsolePatchingDev.rs"]
+pub mod console_patching_dev;
 #[path = "DefaultPrepareStackTrace.rs"]
 pub mod default_prepare_stack_trace;
 #[path = "DefaultPrepareStackTraceV8.rs"]
