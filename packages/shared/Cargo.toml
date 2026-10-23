@@ -11,6 +11,7 @@ path = "shared.rs"
 
 [dependencies]
 js.workspace = true
+node.workspace = true
 webapi.workspace = true
 
 [lints]

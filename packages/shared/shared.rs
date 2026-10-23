@@ -39,5 +39,7 @@ pub mod react_shared_internals;
 pub mod react_symbols;
 #[path = "ReactVersion.rs"]
 pub mod react_version;
+#[path = "reportGlobalError.rs"]
+pub mod report_global_error;
 #[path = "shallowEqual.rs"]
 pub mod shallow_equal;
