@@ -50,11 +50,11 @@ fn get_context_name(r#type: &Unknown) -> String {
 
 /// A lazy component's `_init`, which makes what it loads of its `_payload`,
 /// or throws.
-struct LazyInit(PhantomData<JsObject>);
+pub(crate) struct LazyInit(PhantomData<JsObject>);
 
 impl LazyInit {
     #[cfg_attr(rust_js, rust_js::link_name = "this()")]
-    fn call(
+    pub(crate) fn call(
         &self,
         payload: Option<&Unknown>,
     ) -> Result<Option<&'static Unknown>, &'static JsError> {

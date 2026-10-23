@@ -10,8 +10,8 @@ type Is = fn(&Option<&'static Unknown>, &Option<&'static Unknown>) -> bool;
 /// inlined Object.is polyfill to avoid requiring consumers ship their own
 /// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
 fn is(x: &Option<&'static Unknown>, y: &Option<&'static Unknown>) -> bool {
-    match (x.map(js::classify), y.map(js::classify)) {
-        (Some(Kind::Number(x)), Some(Kind::Number(y))) => {
+    match (js::classify(*x), js::classify(*y)) {
+        (Kind::Number(x), Kind::Number(y)) => {
             (x == y && (x != 0.0 || 1.0 / x == 1.0 / y)) || (x.is_nan() && y.is_nan())
         }
         _ => x == y,

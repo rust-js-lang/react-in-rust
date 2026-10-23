@@ -15,8 +15,8 @@ thread_local! {
         |error| {
             if js::is_defined(window) && js::is_defined(error_event::new) {
                 // Browser Polyfill
-                let message = match error.and_then(|error| js::get(error, "message")).map(js::classify) {
-                    Some(Kind::String(message)) => message.to_string(),
+                let message = match js::classify(error.and_then(|error| js::get(error, "message"))) {
+                    Kind::String(message) => message.to_string(),
                     _ => js::string(error),
                 };
                 let event = error_event::new(

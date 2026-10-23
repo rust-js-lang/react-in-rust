@@ -35,6 +35,8 @@ pub mod react_dom_shared_internals;
 pub mod react_feature_flags;
 #[path = "ReactFlightPropertyAccess.rs"]
 pub mod react_flight_property_access;
+#[path = "ReactIODescription.rs"]
+pub mod react_io_description;
 #[path = "ReactInstanceMap.rs"]
 pub mod react_instance_map;
 #[path = "ReactOwnerStackReset.rs"]
@@ -43,6 +45,8 @@ pub mod react_owner_stack_reset;
 pub mod react_owner_stack_frames;
 #[path = "ReactRecoverable.rs"]
 pub mod react_recoverable;
+#[path = "ReactSerializationErrors.rs"]
+pub mod react_serialization_errors;
 #[path = "ReactSharedInternals.rs"]
 pub mod react_shared_internals;
 #[path = "ReactSymbols.rs"]

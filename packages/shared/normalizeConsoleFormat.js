@@ -35,7 +35,6 @@ export default function normalizeConsoleFormat(formatString, args, firstArg) {
             normalizedString += formatString.slice(last, i) + '%';
             last = i;
           }
-          break;
       }
       i++;
     }
