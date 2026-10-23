@@ -13,6 +13,8 @@ pub mod has_own_property;
 pub mod is_array;
 #[path = "noop.rs"]
 pub mod noop;
+#[path = "normalizeConsoleFormat.rs"]
+pub mod normalize_console_format;
 #[path = "objectIs.rs"]
 pub mod object_is;
 #[path = "ReactFeatureFlags.rs"]
