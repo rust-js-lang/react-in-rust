@@ -5,10 +5,9 @@
 
 // This is forked in server builds where the default stack frame may be source mapped.
 
-use js::JsError;
-use node::CallSite;
+use node::js_error::PrepareStackTrace;
 
 js::export_default! {
     #[cfg_attr(rust_js, rust_js::name = "DefaultPrepareStackTrace")]
-    pub const DEFAULT_PREPARE_STACK_TRACE: Option<&'static dyn Fn(&JsError, &[&CallSite]) -> String> = None;
+    pub const DEFAULT_PREPARE_STACK_TRACE: Option<&'static PrepareStackTrace<String>> = None;
 }
