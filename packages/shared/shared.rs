@@ -11,6 +11,8 @@ pub mod default_prepare_stack_trace_v8;
 pub mod environment;
 #[path = "ExecutionEnvironment.rs"]
 pub mod execution_environment;
+#[path = "formatProdErrorMessage.rs"]
+pub mod format_prod_error_message;
 #[path = "getComponentNameFromType.rs"]
 pub mod get_component_name_from_type;
 #[path = "getPrototypeOf.rs"]
