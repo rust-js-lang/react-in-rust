@@ -3,39 +3,39 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use js::{Symbol, Unknown};
+use js::{Symbol, SymbolFor, Unknown};
 
 // ATTENTION
 // When adding new symbols to this file,
 // Please consider also adding to 'react-devtools-shared/src/backend/ReactSymbols'
 
+// The Symbol used to tag the ReactElement-like types.
+pub const REACT_LEGACY_ELEMENT_TYPE: SymbolFor = SymbolFor("react.element");
+pub const REACT_ELEMENT_TYPE: SymbolFor = SymbolFor("react.transitional.element");
+
+pub const REACT_PORTAL_TYPE: SymbolFor = SymbolFor("react.portal");
+pub const REACT_FRAGMENT_TYPE: SymbolFor = SymbolFor("react.fragment");
+pub const REACT_STRICT_MODE_TYPE: SymbolFor = SymbolFor("react.strict_mode");
+pub const REACT_PROFILER_TYPE: SymbolFor = SymbolFor("react.profiler");
+pub const REACT_CONSUMER_TYPE: SymbolFor = SymbolFor("react.consumer");
+pub const REACT_CONTEXT_TYPE: SymbolFor = SymbolFor("react.context");
+pub const REACT_FORWARD_REF_TYPE: SymbolFor = SymbolFor("react.forward_ref");
+pub const REACT_SUSPENSE_TYPE: SymbolFor = SymbolFor("react.suspense");
+pub const REACT_SUSPENSE_LIST_TYPE: SymbolFor = SymbolFor("react.suspense_list");
+pub const REACT_MEMO_TYPE: SymbolFor = SymbolFor("react.memo");
+pub const REACT_LAZY_TYPE: SymbolFor = SymbolFor("react.lazy");
+pub const REACT_SCOPE_TYPE: SymbolFor = SymbolFor("react.scope");
+pub const REACT_ACTIVITY_TYPE: SymbolFor = SymbolFor("react.activity");
+pub const REACT_LEGACY_HIDDEN_TYPE: SymbolFor = SymbolFor("react.legacy_hidden");
+pub const REACT_TRACING_MARKER_TYPE: SymbolFor = SymbolFor("react.tracing_marker");
+
+pub const REACT_MEMO_CACHE_SENTINEL: SymbolFor = SymbolFor("react.memo_cache_sentinel");
+
+pub const REACT_VIEW_TRANSITION_TYPE: SymbolFor = SymbolFor("react.view_transition");
+
+pub const REACT_RECOVERABLE_TYPE: SymbolFor = SymbolFor("react.recoverable");
+
 thread_local! {
-    // The Symbol used to tag the ReactElement-like types.
-    pub static REACT_LEGACY_ELEMENT_TYPE: &'static Symbol = js::symbol::r#for("react.element");
-    pub static REACT_ELEMENT_TYPE: &'static Symbol = js::symbol::r#for("react.transitional.element");
-
-    pub static REACT_PORTAL_TYPE: &'static Symbol = js::symbol::r#for("react.portal");
-    pub static REACT_FRAGMENT_TYPE: &'static Symbol = js::symbol::r#for("react.fragment");
-    pub static REACT_STRICT_MODE_TYPE: &'static Symbol = js::symbol::r#for("react.strict_mode");
-    pub static REACT_PROFILER_TYPE: &'static Symbol = js::symbol::r#for("react.profiler");
-    pub static REACT_CONSUMER_TYPE: &'static Symbol = js::symbol::r#for("react.consumer");
-    pub static REACT_CONTEXT_TYPE: &'static Symbol = js::symbol::r#for("react.context");
-    pub static REACT_FORWARD_REF_TYPE: &'static Symbol = js::symbol::r#for("react.forward_ref");
-    pub static REACT_SUSPENSE_TYPE: &'static Symbol = js::symbol::r#for("react.suspense");
-    pub static REACT_SUSPENSE_LIST_TYPE: &'static Symbol = js::symbol::r#for("react.suspense_list");
-    pub static REACT_MEMO_TYPE: &'static Symbol = js::symbol::r#for("react.memo");
-    pub static REACT_LAZY_TYPE: &'static Symbol = js::symbol::r#for("react.lazy");
-    pub static REACT_SCOPE_TYPE: &'static Symbol = js::symbol::r#for("react.scope");
-    pub static REACT_ACTIVITY_TYPE: &'static Symbol = js::symbol::r#for("react.activity");
-    pub static REACT_LEGACY_HIDDEN_TYPE: &'static Symbol = js::symbol::r#for("react.legacy_hidden");
-    pub static REACT_TRACING_MARKER_TYPE: &'static Symbol = js::symbol::r#for("react.tracing_marker");
-
-    pub static REACT_MEMO_CACHE_SENTINEL: &'static Symbol = js::symbol::r#for("react.memo_cache_sentinel");
-
-    pub static REACT_VIEW_TRANSITION_TYPE: &'static Symbol = js::symbol::r#for("react.view_transition");
-
-    pub static REACT_RECOVERABLE_TYPE: &'static Symbol = js::symbol::r#for("react.recoverable");
-
     static MAYBE_ITERATOR_SYMBOL: &'static Symbol = js::symbol::iterator;
 }
 const FAUX_ITERATOR_SYMBOL: &str = "@@iterator";
@@ -59,9 +59,9 @@ pub fn get_iterator_fn(maybe_iterable: Option<&'static Unknown>) -> Option<&'sta
 
 thread_local! {
     pub static ASYNC_ITERATOR: &'static Symbol = js::symbol::async_iterator;
-
-    pub static REACT_OPTIMISTIC_KEY: &'static Symbol = js::symbol::r#for("react.optimistic_key");
 }
+
+pub const REACT_OPTIMISTIC_KEY: SymbolFor = SymbolFor("react.optimistic_key");
 
 // This is actually a symbol but Flow doesn't support comparison of symbols to refine.
 // We use a boolean since in our code we often expect string (key) or number (index),
