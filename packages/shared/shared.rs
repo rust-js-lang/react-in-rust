@@ -5,6 +5,8 @@ pub mod assign;
 pub mod environment;
 #[path = "ExecutionEnvironment.rs"]
 pub mod execution_environment;
+#[path = "getComponentNameFromType.rs"]
+pub mod get_component_name_from_type;
 #[path = "getPrototypeOf.rs"]
 pub mod get_prototype_of;
 #[path = "hasOwnProperty.rs"]
