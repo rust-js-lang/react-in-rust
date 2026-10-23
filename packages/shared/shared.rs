@@ -4,6 +4,10 @@
 pub mod assign;
 #[path = "CheckStringCoercion.rs"]
 pub mod check_string_coercion;
+#[path = "DefaultPrepareStackTrace.rs"]
+pub mod default_prepare_stack_trace;
+#[path = "DefaultPrepareStackTraceV8.rs"]
+pub mod default_prepare_stack_trace_v8;
 pub mod environment;
 #[path = "ExecutionEnvironment.rs"]
 pub mod execution_environment;
@@ -31,6 +35,8 @@ pub mod react_flight_property_access;
 pub mod react_instance_map;
 #[path = "ReactOwnerStackReset.rs"]
 pub mod react_owner_stack_reset;
+#[path = "ReactOwnerStackFrames.rs"]
+pub mod react_owner_stack_frames;
 #[path = "ReactRecoverable.rs"]
 pub mod react_recoverable;
 #[path = "ReactSharedInternals.rs"]
