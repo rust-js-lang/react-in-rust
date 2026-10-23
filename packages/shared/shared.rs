@@ -19,8 +19,12 @@ pub mod noop;
 pub mod normalize_console_format;
 #[path = "objectIs.rs"]
 pub mod object_is;
+#[path = "ReactDOMSharedInternals.rs"]
+pub mod react_dom_shared_internals;
 #[path = "ReactFeatureFlags.rs"]
 pub mod react_feature_flags;
+#[path = "ReactFlightPropertyAccess.rs"]
+pub mod react_flight_property_access;
 #[path = "ReactInstanceMap.rs"]
 pub mod react_instance_map;
 #[path = "ReactOwnerStackReset.rs"]
