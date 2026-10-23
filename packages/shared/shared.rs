@@ -21,8 +21,12 @@ pub mod object_is;
 pub mod react_feature_flags;
 #[path = "ReactInstanceMap.rs"]
 pub mod react_instance_map;
+#[path = "ReactOwnerStackReset.rs"]
+pub mod react_owner_stack_reset;
 #[path = "ReactRecoverable.rs"]
 pub mod react_recoverable;
+#[path = "ReactSharedInternals.rs"]
+pub mod react_shared_internals;
 #[path = "ReactSymbols.rs"]
 pub mod react_symbols;
 #[path = "ReactVersion.rs"]
