@@ -19,6 +19,10 @@ pub mod normalize_console_format;
 pub mod object_is;
 #[path = "ReactFeatureFlags.rs"]
 pub mod react_feature_flags;
+#[path = "ReactInstanceMap.rs"]
+pub mod react_instance_map;
+#[path = "ReactRecoverable.rs"]
+pub mod react_recoverable;
 #[path = "ReactSymbols.rs"]
 pub mod react_symbols;
 #[path = "ReactVersion.rs"]
