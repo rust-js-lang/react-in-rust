@@ -8,7 +8,25 @@ use std::marker::PhantomData;
 /// The state React shares with its renderers, the `react` package's own.
 pub struct SharedStateClient(PhantomData<js::JsObject>);
 
+/// The reconciler's hooks dispatcher, `ReactInternalTypes`' `Dispatcher`,
+/// which shared only holds and puts back.
+pub struct Dispatcher(PhantomData<js::JsObject>);
+
 impl SharedStateClient {
+    /// The current hooks dispatcher, `None` outside a render.
+    #[cfg_attr(rust_js, rust_js::link_name = "get H")]
+    pub fn h(&self) -> Option<&'static Dispatcher> {
+        unreachable!()
+    }
+
+    /// The hooks dispatcher from now on, `None` `null`.
+    #[cfg_attr(rust_js, rust_js::link_name = "set H")]
+    #[cfg_attr(rust_js, rust_js::nullable(dispatcher))]
+    pub fn set_h(&self, dispatcher: Option<&Dispatcher>) {
+        let _ = dispatcher;
+        unreachable!()
+    }
+
     /// How many owner stacks were made since the limit was last reset.
     #[cfg_attr(rust_js, rust_js::link_name = "set recentlyCreatedOwnerStacks")]
     pub fn set_recently_created_owner_stacks(&self, count: f64) {
