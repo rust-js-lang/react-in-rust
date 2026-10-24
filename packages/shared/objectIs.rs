@@ -14,7 +14,7 @@ fn is(x: &Option<&'static Unknown>, y: &Option<&'static Unknown>) -> bool {
         (Kind::Number(x), Kind::Number(y)) => {
             (x == y && (x != 0.0 || 1.0 / x == 1.0 / y)) || (x.is_nan() && y.is_nan())
         }
-        _ => x == y,
+        _ => js::strict_equals(*x, *y),
     }
 }
 
