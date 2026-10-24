@@ -17,13 +17,7 @@ const OBJECT_WIDTH_LIMIT = 100;
 function getArrayKind(array) {
   let kind = 'Empty';
   for (const value of array.slice(0, OBJECT_WIDTH_LIMIT)) {
-    bb12: {
-      if (typeof value === 'string') {
-        if (value.length > 50) {
-          return 'Complex';
-        }
-        break bb12;
-      }
+    if (typeof value !== 'string') {
       if (typeof value === 'function') {
         return 'Complex';
       }
@@ -36,9 +30,12 @@ function getArrayKind(array) {
           kind = 'Entries';
           continue;
         }
-      } else if (typeof value !== 'object' || value === null) {
-        break bb12;
+        return 'Complex';
       }
+      if (typeof value === 'object' && value !== null) {
+        return 'Complex';
+      }
+    } else if (value.length > 50) {
       return 'Complex';
     }
     if (kind !== 'Empty' && kind !== 'Primitive') {
@@ -170,120 +167,108 @@ export function addValueToProperties(
               ? `${objectName}(${length})`
               : objectName;
         } else {
-          bb390: {
-            if (objectName === 'Array' && Array.isArray(value)) {
-              const didTruncate = value.length > OBJECT_WIDTH_LIMIT;
-              const kind = getArrayKind(value);
-              if (kind === 'Primitive' || kind === 'Empty') {
-                desc = $unwrap(
-                  didTruncate
-                    ? JSON.stringify(
-                        [...$slice(value, 0, OBJECT_WIDTH_LIMIT), '…'],
-                        null,
-                        0
-                      )
-                    : JSON.stringify(value, null, 0)
-                );
-                break desc;
-              }
-              if (kind === 'Entries') {
-                properties.push([
-                  prefix + '\xA0\xA0'.repeat(indent) + propertyName,
-                  '',
-                ]);
-                for (const entry of value.slice(0, OBJECT_WIDTH_LIMIT)) {
-                  if (Array.isArray(entry) && entry.length === 2) {
-                    const [name, value] = entry;
-                    if (typeof name === 'string') {
-                      addValueToProperties(
-                        name,
-                        value,
-                        properties,
-                        (indent + 1) >>> 0,
-                        prefix
-                      );
-                    }
-                  }
-                }
-                if (didTruncate) {
-                  addValueToProperties(
-                    String(OBJECT_WIDTH_LIMIT),
-                    '…',
-                    properties,
-                    (indent + 1) >>> 0,
-                    prefix
-                  );
-                }
-                break bb390;
-              }
+          if (objectName === 'Array' && Array.isArray(value)) {
+            const didTruncate = value.length > OBJECT_WIDTH_LIMIT;
+            const kind = getArrayKind(value);
+            if (kind === 'Primitive' || kind === 'Empty') {
+              desc = $unwrap(
+                didTruncate
+                  ? JSON.stringify(
+                      [...$slice(value, 0, OBJECT_WIDTH_LIMIT), '…'],
+                      null,
+                      0
+                    )
+                  : JSON.stringify(value, null, 0)
+              );
+              break desc;
             }
-            if (objectName === 'Promise') {
-              const status = value.status;
-              bb272: {
-                if (typeof status === 'string') {
-                  if (status === 'fulfilled') {
-                    // Print the inner value
-                    const idx = properties.length;
-                    addValueToProperties(
-                      propertyName,
-                      value.value,
-                      properties,
-                      indent,
-                      prefix
-                    );
-                    if (properties.length > idx) {
-                      // Wrap the value or type in Promise descriptor.
-                      const insertedEntry = properties[idx];
-                      insertedEntry[1] =
-                        'Promise<' + (insertedEntry[1] || 'Object') + '>';
-                    } else {
-                      break bb272;
-                    }
-                  } else if (status === 'rejected') {
-                    // Print the inner error
-                    const idx = properties.length;
-                    addValueToProperties(
-                      propertyName,
-                      value.reason,
-                      properties,
-                      indent,
-                      prefix
-                    );
-                    if (properties.length > idx) {
-                      // Wrap the value or type in Promise descriptor.
-                      const insertedEntry = properties[idx];
-                      insertedEntry[1] =
-                        'Rejected Promise<' + insertedEntry[1] + '>';
-                    } else {
-                      break bb272;
-                    }
-                  } else {
-                    break bb272;
-                  }
-                  break bb390;
-                }
-              }
-              properties.push([
-                '\xA0\xA0'.repeat(indent) + propertyName,
-                'Promise',
-              ]);
-            } else {
-              if (objectName === 'Object') {
-                const proto = Object.getPrototypeOf(value);
-                if (proto != null) {
-                  const constructor = proto.constructor;
-                  if (typeof constructor === 'function') {
-                    objectName = constructor.name;
-                  }
-                }
-              }
+            if (kind === 'Entries') {
               properties.push([
                 prefix + '\xA0\xA0'.repeat(indent) + propertyName,
-                objectName !== 'Object' ? objectName : indent < 3 ? '' : '…',
+                '',
               ]);
-              if (indent < 3) {
-                addObjectToProperties(value, properties, indent + 1, prefix);
+              for (const entry of value.slice(0, OBJECT_WIDTH_LIMIT)) {
+                if (Array.isArray(entry) && entry.length === 2) {
+                  const [name, value] = entry;
+                  if (typeof name === 'string') {
+                    addValueToProperties(
+                      name,
+                      value,
+                      properties,
+                      (indent + 1) >>> 0,
+                      prefix
+                    );
+                  }
+                }
               }
+              if (didTruncate) {
+                addValueToProperties(
+                  String(OBJECT_WIDTH_LIMIT),
+                  '…',
+                  properties,
+                  (indent + 1) >>> 0,
+                  prefix
+                );
+              }
+              return;
+            }
+          }
+          if (objectName === 'Promise') {
+            const status = value.status;
+            if (status === 'fulfilled') {
+              // Print the inner value
+              const idx = properties.length;
+              addValueToProperties(
+                propertyName,
+                value.value,
+                properties,
+                indent,
+                prefix
+              );
+              if (properties.length > idx) {
+                // Wrap the value or type in Promise descriptor.
+                const insertedEntry = properties[idx];
+                insertedEntry[1] =
+                  'Promise<' + (insertedEntry[1] || 'Object') + '>';
+                return;
+              }
+            } else if (status === 'rejected') {
+              // Print the inner error
+              const idx = properties.length;
+              addValueToProperties(
+                propertyName,
+                value.reason,
+                properties,
+                indent,
+                prefix
+              );
+              if (properties.length > idx) {
+                // Wrap the value or type in Promise descriptor.
+                const insertedEntry = properties[idx];
+                insertedEntry[1] = 'Rejected Promise<' + insertedEntry[1] + '>';
+                return;
+              }
+            }
+            properties.push([
+              '\xA0\xA0'.repeat(indent) + propertyName,
+              'Promise',
+            ]);
+          } else {
+            if (objectName === 'Object') {
+              const proto = Object.getPrototypeOf(value);
+              if (proto != null) {
+                const constructor = proto.constructor;
+                if (typeof constructor === 'function') {
+                  objectName = constructor.name;
+                }
+              }
+            }
+            properties.push([
+              prefix + '\xA0\xA0'.repeat(indent) + propertyName,
+              objectName !== 'Object' ? objectName : indent < 3 ? '' : '…',
+            ]);
+            if (indent < 3) {
+              addObjectToProperties(value, properties, indent + 1, prefix);
             }
           }
           return;
