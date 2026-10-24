@@ -2,6 +2,8 @@
 
 #[path = "assign.rs"]
 pub mod assign;
+#[path = "binaryToComparableString.rs"]
+pub mod binary_to_comparable_string;
 #[path = "CheckStringCoercion.rs"]
 pub mod check_string_coercion;
 #[path = "ConsolePatchingDev.rs"]
@@ -11,6 +13,8 @@ pub mod default_prepare_stack_trace;
 #[path = "DefaultPrepareStackTraceV8.rs"]
 pub mod default_prepare_stack_trace_v8;
 pub mod environment;
+#[path = "enqueueTask.rs"]
+pub mod enqueue_task;
 #[path = "ExecutionEnvironment.rs"]
 pub mod execution_environment;
 #[path = "formatProdErrorMessage.rs"]
@@ -47,6 +51,8 @@ pub mod react_io_description;
 pub mod react_owner_stack_frames;
 #[path = "ReactOwnerStackReset.rs"]
 pub mod react_owner_stack_reset;
+#[path = "ReactPerformanceTrackProperties.rs"]
+pub mod react_performance_track_properties;
 #[path = "ReactRecoverable.rs"]
 pub mod react_recoverable;
 #[path = "ReactSerializationErrors.rs"]

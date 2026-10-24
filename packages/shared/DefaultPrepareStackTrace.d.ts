@@ -7,7 +7,7 @@
 
 // This is forked in server builds where the default stack frame may be source mapped.
 
-export const DefaultPrepareStackTrace:
+declare const DefaultPrepareStackTrace:
   | ((value: any, value2: any[]) => string)
   | null
   | undefined;
