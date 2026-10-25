@@ -1,5 +1,7 @@
 //! React's isomorphic package, `react`: its modules, each its file's.
 
+#[path = "src/BadMapPolyfill.rs"]
+pub mod bad_map_polyfill;
 #[path = "src/ReactAct.rs"]
 pub mod react_act;
 #[path = "src/ReactBaseClasses.rs"]
