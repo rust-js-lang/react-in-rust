@@ -10,7 +10,7 @@ thread_local! {
 }
 
 js::export_default! {
-    pub(crate) fn is_array(a: Option<&Unknown>) -> bool {
+    pub fn is_array(a: Option<&Unknown>) -> bool {
         IS_ARRAY_IMPL.with(|is_array_impl| is_array_impl(a))
     }
 }

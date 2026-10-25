@@ -12,10 +12,44 @@ pub struct SharedStateClient(PhantomData<js::JsObject>);
 /// which shared only holds and puts back.
 pub struct Dispatcher(PhantomData<js::JsObject>);
 
+/// The renderer's cache dispatcher, `ReactInternalTypes`' `AsyncDispatcher`.
+pub struct AsyncDispatcher(PhantomData<js::JsObject>);
+
+impl AsyncDispatcher {
+    /// What `resource_type` made for the current cache, made once of it.
+    #[cfg_attr(rust_js, rust_js::link_name = "getCacheForType")]
+    pub fn get_cache_for_type<T>(&self, resource_type: fn() -> T) -> T {
+        let _ = resource_type;
+        unreachable!()
+    }
+
+    /// The signal aborted when the current cache is done with, `None`
+    /// where it has none.
+    #[cfg_attr(rust_js, rust_js::link_name = "cacheSignal")]
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub fn cache_signal(&self) -> Option<&'static webapi::AbortSignal> {
+        unreachable!()
+    }
+
+    /// The component rendering now, a Fiber or a Server Component's
+    /// `ReactComponentInfo`, `None` where none is (DEV only).
+    #[cfg_attr(rust_js, rust_js::link_name = "getOwner")]
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub fn get_owner(&self) -> Option<&'static js::Unknown> {
+        unreachable!()
+    }
+}
+
 impl SharedStateClient {
     /// The current hooks dispatcher, `None` outside a render.
     #[cfg_attr(rust_js, rust_js::link_name = "get H")]
     pub fn h(&self) -> Option<&'static Dispatcher> {
+        unreachable!()
+    }
+
+    /// The current cache dispatcher, `None` outside a render.
+    #[cfg_attr(rust_js, rust_js::link_name = "get A")]
+    pub fn a(&self) -> Option<&'static AsyncDispatcher> {
         unreachable!()
     }
 
@@ -27,7 +61,35 @@ impl SharedStateClient {
         unreachable!()
     }
 
+    /// The renderer's stack of what it's rendering, `None` where none is
+    /// injected.
+    #[cfg_attr(rust_js, rust_js::link_name = "get getCurrentStack")]
+    pub fn get_current_stack(&self) -> Option<&'static dyn Fn() -> String> {
+        unreachable!()
+    }
+
+    /// How many async Transitions are still running, `0` outside an async
+    /// `startTransition`.
+    #[cfg_attr(rust_js, rust_js::link_name = "get asyncTransitions")]
+    pub fn async_transitions(&self) -> f64 {
+        unreachable!()
+    }
+
+    /// How many async Transitions are still running from now on.
+    #[cfg_attr(rust_js, rust_js::link_name = "set asyncTransitions")]
+    pub fn set_async_transitions(&self, count: f64) {
+        let _ = count;
+        unreachable!()
+    }
+
     /// How many owner stacks were made since the limit was last reset.
+    #[cfg_attr(rust_js, rust_js::link_name = "get recentlyCreatedOwnerStacks")]
+    pub fn recently_created_owner_stacks(&self) -> f64 {
+        unreachable!()
+    }
+
+    /// How many owner stacks were made since the limit was last reset, from
+    /// now on.
     #[cfg_attr(rust_js, rust_js::link_name = "set recentlyCreatedOwnerStacks")]
     pub fn set_recently_created_owner_stacks(&self, count: f64) {
         let _ = count;

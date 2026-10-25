@@ -7,7 +7,7 @@ use js::{Kind, Unknown};
 use webapi::{ErrorEventInit, console, error_event, window};
 
 thread_local! {
-    static REPORT_GLOBAL_ERROR: fn(Option<&'static Unknown>) = if js::is_defined(webapi::global::report_error::<Option<&Unknown>>) {
+    pub static REPORT_GLOBAL_ERROR: fn(Option<&'static Unknown>) = if js::is_defined(webapi::global::report_error::<Option<&Unknown>>) {
         // In modern browsers, reportError will dispatch an error event,
         // emulating an uncaught JavaScript error.
         webapi::global::report_error

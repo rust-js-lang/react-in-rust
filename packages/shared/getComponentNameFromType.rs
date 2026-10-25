@@ -68,7 +68,7 @@ const REACT_CLIENT_REFERENCE: SymbolFor = SymbolFor("react.client.reference");
 // Note that the reconciler package should generally prefer to use getComponentNameFromFiber() instead.
 js::export_default! {
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub(crate) fn get_component_name_from_type(r#type: Option<&Unknown>) -> Option<String> {
+    pub fn get_component_name_from_type(r#type: Option<&Unknown>) -> Option<String> {
         let Some(r#type) = r#type else {
             // Host root, text node or just invalid type.
             return None;

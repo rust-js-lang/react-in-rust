@@ -6,7 +6,7 @@
 use js::object::HasOwnProperty;
 
 thread_local! {
-    pub(crate) static HAS_OWN_PROPERTY: &'static HasOwnProperty = js::object::has_own_property;
+    pub static HAS_OWN_PROPERTY: &'static HasOwnProperty = js::object::has_own_property;
 }
 
 js::export_default!(HAS_OWN_PROPERTY);

@@ -47,7 +47,7 @@ export const REACT_RECOVERABLE_TYPE: symbol;
 
 export function getIteratorFn(
   maybeIterable?: unknown | null | undefined,
-): unknown | null | undefined;
+): unknown | null;
 
 export const ASYNC_ITERATOR: symbol;
 

@@ -3,6 +3,16 @@
 version = 4
 
 [[package]]
+name = "react-isomorphic"
+version = "0.0.0"
+dependencies = [
+ "rust-js-builtins",
+ "rust-js-node",
+ "rust-js-webapi",
+ "shared",
+]
+
+[[package]]
 name = "rust-js-builtins"
 version = "0.0.2"
 

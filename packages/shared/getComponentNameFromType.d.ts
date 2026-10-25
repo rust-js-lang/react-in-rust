@@ -7,4 +7,4 @@
 
 export default function getComponentNameFromType(
   type?: unknown | null | undefined,
-): string | null | undefined;
+): string | null;

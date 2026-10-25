@@ -1,0 +1,20 @@
+[package]
+name = "react-isomorphic"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# React's isomorphic package, `react`, whose name rust-js's own binding of
+# it has. Its modules are its files, each beside the JS rust-js writes from
+# it; its root declares them and writes no JS of its own.
+[lib]
+path = "react.rs"
+
+[dependencies]
+js.workspace = true
+node.workspace = true
+shared.workspace = true
+webapi.workspace = true
+
+[lints]
+workspace = true

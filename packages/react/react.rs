@@ -1,0 +1,36 @@
+//! React's isomorphic package, `react`: its modules, each its file's.
+
+#[path = "src/ReactBaseClasses.rs"]
+pub mod react_base_classes;
+#[path = "src/ReactCacheClient.rs"]
+pub mod react_cache_client;
+#[path = "src/ReactCacheImpl.rs"]
+pub mod react_cache_impl;
+#[path = "src/ReactChildren.rs"]
+pub mod react_children;
+#[path = "src/ReactCompilerRuntime.rs"]
+pub mod react_compiler_runtime;
+#[path = "src/ReactContext.rs"]
+pub mod react_context;
+#[path = "src/ReactCreateRef.rs"]
+pub mod react_create_ref;
+#[path = "src/ReactForwardRef.rs"]
+pub mod react_forward_ref;
+#[path = "src/ReactHooks.rs"]
+pub mod react_hooks;
+#[path = "src/jsx/ReactJSXElement.rs"]
+pub mod react_jsx_element;
+#[path = "src/ReactLazy.rs"]
+pub mod react_lazy;
+#[path = "src/ReactMemo.rs"]
+pub mod react_memo;
+#[path = "src/ReactNoopUpdateQueue.rs"]
+pub mod react_noop_update_queue;
+#[path = "src/ReactOwnerStack.rs"]
+pub mod react_owner_stack;
+#[path = "src/ReactSharedInternalsClient.rs"]
+pub mod react_shared_internals_client;
+#[path = "src/ReactStartTransition.rs"]
+pub mod react_start_transition;
+#[path = "src/ReactTransitionType.rs"]
+pub mod react_transition_type;
