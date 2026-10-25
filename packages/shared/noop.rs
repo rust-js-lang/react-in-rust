@@ -4,5 +4,5 @@
 // LICENSE file in the root directory of this source tree.
 
 js::export_default! {
-    fn noop() {}
+    pub fn noop() {}
 }

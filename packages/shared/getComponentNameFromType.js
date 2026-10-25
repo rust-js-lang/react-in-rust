@@ -88,7 +88,7 @@ export default function getComponentNameFromType(type) {
   if (typeof type === 'object') {
     if (__DEV__ && typeof type.tag === 'number') {
       console.error(
-        'Received an unexpected object in getComponentNameFromType(). This is likely a bug in React. Please file an issue.'
+        'Received an unexpected object in getComponentNameFromType(). This is likely a bug in React. Please file an issue.',
       );
     }
     switch (type.$$typeof) {

@@ -30,7 +30,7 @@ export const REACT_LEGACY_HIDDEN_TYPE = Symbol.for('react.legacy_hidden');
 export const REACT_TRACING_MARKER_TYPE = Symbol.for('react.tracing_marker');
 
 export const REACT_MEMO_CACHE_SENTINEL = Symbol.for(
-  'react.memo_cache_sentinel'
+  'react.memo_cache_sentinel',
 );
 
 export const REACT_VIEW_TRANSITION_TYPE = Symbol.for('react.view_transition');

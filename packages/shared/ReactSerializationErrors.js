@@ -67,7 +67,7 @@ export function isSimpleObject(object) {
     if (!descriptor) {
       return false;
     }
-    if (!(descriptor.enumerable ?? false)) {
+    if (!descriptor.enumerable) {
       if ((name === 'key' || name === 'ref') && descriptor.get) {
         // React adds key and ref getters to props objects to issue warnings.
         // Those getters will not be transferred to the client, but that's ok,
@@ -102,7 +102,7 @@ export function describeValueForErrorMessage(value) {
   switch (typeof value) {
     case 'string':
       return JSON.stringify(
-        value.length <= 10 ? value : value.slice(0, 10) + '...'
+        value.length <= 10 ? value : value.slice(0, 10) + '...',
       );
     case 'object': {
       if (isArray(value)) {

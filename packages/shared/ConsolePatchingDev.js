@@ -57,21 +57,46 @@ export function reenableLogs() {
   if (__DEV__) {
     disabledDepth--;
     if (disabledDepth === 0) {
-      const props = {configurable: true, enumerable: true, writable: true};
+      const props = {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+      };
       Object.defineProperties(console, {
-        log: {...props, value: prevLog},
-        info: {...props, value: prevInfo},
-        warn: {...props, value: prevWarn},
-        error: {...props, value: prevError},
-        group: {...props, value: prevGroup},
-        groupCollapsed: {...props, value: prevGroupCollapsed},
-        groupEnd: {...props, value: prevGroupEnd},
+        log: {
+          ...props,
+          value: prevLog,
+        },
+        info: {
+          ...props,
+          value: prevInfo,
+        },
+        warn: {
+          ...props,
+          value: prevWarn,
+        },
+        error: {
+          ...props,
+          value: prevError,
+        },
+        group: {
+          ...props,
+          value: prevGroup,
+        },
+        groupCollapsed: {
+          ...props,
+          value: prevGroupCollapsed,
+        },
+        groupEnd: {
+          ...props,
+          value: prevGroupEnd,
+        },
       });
     }
     if (disabledDepth < 0) {
       console.error(
         'disabledDepth fell below zero. ' +
-          'This is a bug in React. Please file an issue.'
+          'This is a bug in React. Please file an issue.',
       );
     }
   }

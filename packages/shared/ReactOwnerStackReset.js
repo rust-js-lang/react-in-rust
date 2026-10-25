@@ -32,7 +32,7 @@ export function resetOwnerStackLimit() {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
     throw new Error(
-      'resetOwnerStackLimit should never be called in production mode. This is a bug in React.'
+      'resetOwnerStackLimit should never be called in production mode. This is a bug in React.',
     );
   }
 }

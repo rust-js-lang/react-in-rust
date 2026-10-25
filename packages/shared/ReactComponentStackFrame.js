@@ -198,7 +198,7 @@ export function describeNativeComponentFrame(fn, construct) {
   try {
     const namePropDescriptor = Object.getOwnPropertyDescriptor(
       DetermineComponentFrameRoot,
-      'name'
+      'name',
     );
     // Before ES6, the `name` property was not configurable.
     if (namePropDescriptor && namePropDescriptor.configurable) {
@@ -209,13 +209,15 @@ export function describeNativeComponentFrame(fn, construct) {
         // is set to `false`.
         // $FlowFixMe[cannot-write]
         'name',
-        {value: 'DetermineComponentFrameRoot'}
+        {
+          value: 'DetermineComponentFrameRoot',
+        },
       );
     }
 
     const [sampleStack, controlStack] = DetermineComponentFrameRoot(
       fn,
-      construct
+      construct,
     );
     if (sampleStack != null && controlStack != null) {
       // This extracts the first frame from the sample that isn't also in the control.

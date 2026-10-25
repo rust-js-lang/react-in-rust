@@ -103,10 +103,9 @@ pub fn add_value_to_properties(
     indent: usize,
     prefix: &str,
 ) {
-    let desc = if let Some(value) = value
-        && let Kind::Object(_) | Kind::Array(_) = js::classify(Some(value))
-    {
-        'desc: {
+    let desc = match js::classify(value) {
+        Kind::Null => "null".to_string(),
+        Kind::Object(_) | Kind::Array(_) if let Some(value) = value => 'desc: {
             if matches!(
                 SymbolFor::from_value(read_react_element_typeof(value)),
                 Some(REACT_ELEMENT_TYPE)
@@ -304,33 +303,28 @@ pub fn add_value_to_properties(
             }
             return;
         }
-    } else {
-        match js::classify(value) {
-            Kind::Null => "null".to_string(),
-            Kind::Function(_) => match js::classify(value.and_then(|value| js::get(value, "name")))
-            {
-                Kind::String(function_name) if !function_name.is_empty() => {
-                    function_name.to_string() + "() {}"
-                }
-                // e.g. proxied functions or classes with a static property "name" that's not a string
-                _ => "() => {}".to_string(),
-            },
-            Kind::String(value) => {
-                if value == OMITTED_PROP_ERROR {
-                    "\u{2026}".to_string() // ellipsis
-                } else {
-                    js::json::stringify(&if value.encode_utf16().count() >= 1024 {
-                        js::string::slice(value, 0.0, Some(1023.0)) + "\u{2026}" // ellipsis
-                    } else {
-                        value.to_string()
-                    })
-                }
+        Kind::Function(_) => match js::classify(value.and_then(|value| js::get(value, "name"))) {
+            Kind::String(function_name) if !function_name.is_empty() => {
+                function_name.to_string() + "() {}"
             }
-            Kind::Undefined => "undefined".to_string(),
-            Kind::Bool(value) => if value { "true" } else { "false" }.to_string(),
-            // eslint-disable-next-line react-internal/safe-string-coercion
-            _ => js::string(value),
+            // e.g. proxied functions or classes with a static property "name" that's not a string
+            _ => "() => {}".to_string(),
+        },
+        Kind::String(value) => {
+            if value == OMITTED_PROP_ERROR {
+                "\u{2026}".to_string() // ellipsis
+            } else {
+                js::json::stringify(&if value.encode_utf16().count() >= 1024 {
+                    js::string::slice(value, 0.0, Some(1023.0)) + "\u{2026}" // ellipsis
+                } else {
+                    value.to_string()
+                })
+            }
         }
+        Kind::Undefined => "undefined".to_string(),
+        Kind::Bool(value) => if value { "true" } else { "false" }.to_string(),
+        // eslint-disable-next-line react-internal/safe-string-coercion
+        _ => js::string(value),
     };
     properties.push((
         prefix.to_string() + &"\u{a0}\u{a0}".repeat(indent) + property_name,

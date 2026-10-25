@@ -9,7 +9,7 @@ import {OMITTED_PROP_ERROR} from './ReactFlightPropertyAccess.js';
 import {REACT_ELEMENT_TYPE} from './ReactSymbols.js';
 import getComponentNameFromType from './getComponentNameFromType.js';
 import hasOwnProperty from './hasOwnProperty.js';
-import {$slice, $unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/runtime';
 
 // Showing wider objects in the devtools is not useful.
 const OBJECT_WIDTH_LIMIT = 100;
@@ -87,23 +87,31 @@ export function addValueToProperties(
   value,
   properties,
   indent,
-  prefix
+  prefix,
 ) {
   let desc;
-  if (value != null && typeof value === 'object') {
-    if (readReactElementTypeof(value) === REACT_ELEMENT_TYPE) {
-      // JSX
-      const typeName = getComponentNameFromType(value.type) || '…';
-      const {key, props} = value;
-      const propsKeys = Object.keys(props);
-      const propsLength = propsKeys.length;
-      if (key == null && propsLength === 0) {
-        desc = '<' + typeName + ' />';
+  switch (typeof value) {
+    case 'object':
+      if (value === null) {
+        desc = 'null';
       } else {
-        if (
-          indent >= 3 &&
-          (propsLength !== 1 || propsKeys[0] !== 'children' || key != null)
-        ) {
+        if (readReactElementTypeof(value) === REACT_ELEMENT_TYPE) {
+          // JSX
+          const typeName = getComponentNameFromType(value.type) || '…';
+          const {key, props} = value;
+          const propsKeys = Object.keys(props);
+          const propsLength = propsKeys.length;
+          if (key == null && propsLength === 0) {
+            desc = '<' + typeName + ' />';
+            break;
+          }
+          if (
+            indent < 3 ||
+            (propsLength === 1 && propsKeys[0] === 'children' && key == null)
+          ) {
+            desc = '<' + typeName + ' … />';
+            break;
+          }
           properties.push([
             prefix + '\xA0\xA0'.repeat(indent) + propertyName,
             '<' + typeName,
@@ -114,7 +122,7 @@ export function addValueToProperties(
               key,
               properties,
               (indent + 1) >>> 0,
-              prefix
+              prefix,
             );
           }
           let hasChildren = false;
@@ -138,7 +146,7 @@ export function addValueToProperties(
                 props[propKey],
                 properties,
                 (indent + 1) >>> 0,
-                prefix
+                prefix,
               );
             }
 
@@ -149,13 +157,9 @@ export function addValueToProperties(
           properties.push(['', hasChildren ? '>…</' + typeName + '>' : '/>']);
           return;
         }
-        desc = '<' + typeName + ' … />';
-      }
-    } else {
-      // $FlowFixMe[method-unbinding]
-      const objectToString = Object.prototype.toString.call(value);
-      let objectName = objectToString.slice(8, objectToString.length - 1);
-      desc: {
+        // $FlowFixMe[method-unbinding]
+        const objectToString = Object.prototype.toString.call(value);
+        let objectName = objectToString.slice(8, objectToString.length - 1);
         if (ArrayBuffer.isView(value)) {
           // Typed arrays can hold millions of elements. Showing the type and
           // length is more useful than enumerating every index (which is also
@@ -166,147 +170,142 @@ export function addValueToProperties(
             typeof length === 'number'
               ? `${objectName}(${length})`
               : objectName;
-        } else {
-          if (objectName === 'Array' && Array.isArray(value)) {
-            const didTruncate = value.length > OBJECT_WIDTH_LIMIT;
-            const kind = getArrayKind(value);
-            if (kind === 'Primitive' || kind === 'Empty') {
-              desc = $unwrap(
-                didTruncate
-                  ? JSON.stringify(
-                      [...$slice(value, 0, OBJECT_WIDTH_LIMIT), '…'],
-                      null,
-                      0
-                    )
-                  : JSON.stringify(value, null, 0)
-              );
-              break desc;
-            }
-            if (kind === 'Entries') {
-              properties.push([
-                prefix + '\xA0\xA0'.repeat(indent) + propertyName,
-                '',
-              ]);
-              for (const entry of value.slice(0, OBJECT_WIDTH_LIMIT)) {
-                if (Array.isArray(entry) && entry.length === 2) {
-                  const [name, value] = entry;
-                  if (typeof name === 'string') {
-                    addValueToProperties(
-                      name,
-                      value,
-                      properties,
-                      (indent + 1) >>> 0,
-                      prefix
-                    );
-                  }
+          break;
+        }
+        if (objectName === 'Array' && Array.isArray(value)) {
+          const didTruncate = value.length > OBJECT_WIDTH_LIMIT;
+          const kind = getArrayKind(value);
+          if (kind === 'Primitive' || kind === 'Empty') {
+            desc = $unwrap(
+              didTruncate
+                ? JSON.stringify(
+                    [...value.slice(0, OBJECT_WIDTH_LIMIT), '…'],
+                    null,
+                    0,
+                  )
+                : JSON.stringify(value, null, 0),
+            );
+            break;
+          }
+          if (kind === 'Entries') {
+            properties.push([
+              prefix + '\xA0\xA0'.repeat(indent) + propertyName,
+              '',
+            ]);
+            for (const entry of value.slice(0, OBJECT_WIDTH_LIMIT)) {
+              if (Array.isArray(entry) && entry.length === 2) {
+                const [name, value] = entry;
+                if (typeof name === 'string') {
+                  addValueToProperties(
+                    name,
+                    value,
+                    properties,
+                    (indent + 1) >>> 0,
+                    prefix,
+                  );
                 }
               }
-              if (didTruncate) {
-                addValueToProperties(
-                  String(OBJECT_WIDTH_LIMIT),
-                  '…',
-                  properties,
-                  (indent + 1) >>> 0,
-                  prefix
-                );
-              }
+            }
+            if (didTruncate) {
+              addValueToProperties(
+                String(OBJECT_WIDTH_LIMIT),
+                '…',
+                properties,
+                (indent + 1) >>> 0,
+                prefix,
+              );
+            }
+            return;
+          }
+        }
+        if (objectName === 'Promise') {
+          const status = value.status;
+          if (status === 'fulfilled') {
+            // Print the inner value
+            const idx = properties.length;
+            addValueToProperties(
+              propertyName,
+              value.value,
+              properties,
+              indent,
+              prefix,
+            );
+            if (properties.length > idx) {
+              // Wrap the value or type in Promise descriptor.
+              const insertedEntry = properties[idx];
+              insertedEntry[1] =
+                'Promise<' + (insertedEntry[1] || 'Object') + '>';
+              return;
+            }
+          } else if (status === 'rejected') {
+            // Print the inner error
+            const idx = properties.length;
+            addValueToProperties(
+              propertyName,
+              value.reason,
+              properties,
+              indent,
+              prefix,
+            );
+            if (properties.length > idx) {
+              // Wrap the value or type in Promise descriptor.
+              const insertedEntry = properties[idx];
+              insertedEntry[1] = 'Rejected Promise<' + insertedEntry[1] + '>';
               return;
             }
           }
-          if (objectName === 'Promise') {
-            const status = value.status;
-            if (status === 'fulfilled') {
-              // Print the inner value
-              const idx = properties.length;
-              addValueToProperties(
-                propertyName,
-                value.value,
-                properties,
-                indent,
-                prefix
-              );
-              if (properties.length > idx) {
-                // Wrap the value or type in Promise descriptor.
-                const insertedEntry = properties[idx];
-                insertedEntry[1] =
-                  'Promise<' + (insertedEntry[1] || 'Object') + '>';
-                return;
+          properties.push([
+            '\xA0\xA0'.repeat(indent) + propertyName,
+            'Promise',
+          ]);
+        } else {
+          if (objectName === 'Object') {
+            const proto = Object.getPrototypeOf(value);
+            if (proto != null) {
+              const constructor = proto.constructor;
+              if (typeof constructor === 'function') {
+                objectName = constructor.name;
               }
-            } else if (status === 'rejected') {
-              // Print the inner error
-              const idx = properties.length;
-              addValueToProperties(
-                propertyName,
-                value.reason,
-                properties,
-                indent,
-                prefix
-              );
-              if (properties.length > idx) {
-                // Wrap the value or type in Promise descriptor.
-                const insertedEntry = properties[idx];
-                insertedEntry[1] = 'Rejected Promise<' + insertedEntry[1] + '>';
-                return;
-              }
-            }
-            properties.push([
-              '\xA0\xA0'.repeat(indent) + propertyName,
-              'Promise',
-            ]);
-          } else {
-            if (objectName === 'Object') {
-              const proto = Object.getPrototypeOf(value);
-              if (proto != null) {
-                const constructor = proto.constructor;
-                if (typeof constructor === 'function') {
-                  objectName = constructor.name;
-                }
-              }
-            }
-            properties.push([
-              prefix + '\xA0\xA0'.repeat(indent) + propertyName,
-              objectName !== 'Object' ? objectName : indent < 3 ? '' : '…',
-            ]);
-            if (indent < 3) {
-              addObjectToProperties(value, properties, indent + 1, prefix);
             }
           }
-          return;
+          properties.push([
+            prefix + '\xA0\xA0'.repeat(indent) + propertyName,
+            objectName !== 'Object' ? objectName : indent < 3 ? '' : '…',
+          ]);
+          if (indent < 3) {
+            addObjectToProperties(value, properties, indent + 1, prefix);
+          }
         }
+        return;
       }
-    }
-  } else if (value === null) {
-    desc = 'null';
-  } else {
-    switch (typeof value) {
-      case 'function': {
-        const functionName = value?.name;
-        if (typeof functionName === 'string' && functionName) {
-          desc = functionName + '() {}';
-        } else {
-          // e.g. proxied functions or classes with a static property "name" that's not a string
-          desc = '() => {}';
-        }
-        break;
+      break;
+    case 'function': {
+      const functionName = value?.name;
+      if (typeof functionName === 'string' && functionName) {
+        desc = functionName + '() {}';
+      } else {
+        // e.g. proxied functions or classes with a static property "name" that's not a string
+        desc = '() => {}';
       }
-      case 'string':
-        desc =
-          value === OMITTED_PROP_ERROR
-            ? '…' // ellipsis
-            : JSON.stringify(
-                value.length >= 1024 ? value.slice(0, 1023) + '…' : value // ellipsis
-              );
-        break;
-      case 'undefined':
-        desc = 'undefined';
-        break;
-      case 'boolean':
-        desc = value ? 'true' : 'false';
-        break;
-      default:
-        // eslint-disable-next-line react-internal/safe-string-coercion
-        desc = String(value);
+      break;
     }
+    case 'string':
+      desc =
+        value === OMITTED_PROP_ERROR
+          ? '…' // ellipsis
+          : JSON.stringify(
+              value.length >= 1024 ? value.slice(0, 1023) + '…' : value, // ellipsis
+            );
+      break;
+    case 'undefined':
+      desc = 'undefined';
+      break;
+    case 'boolean':
+      desc = value ? 'true' : 'false';
+      break;
+    default:
+      // eslint-disable-next-line react-internal/safe-string-coercion
+      desc = String(value);
   }
   properties.push([prefix + '\xA0\xA0'.repeat(indent) + propertyName, desc]);
 }
@@ -408,7 +407,7 @@ export function addObjectDiffToProperties(prev, next, properties, indent) {
                 prevValue,
                 nextValue,
                 properties,
-                indent + 1
+                indent + 1,
               );
               if (!nestedEqual) {
                 isDeeplyEqual = false;

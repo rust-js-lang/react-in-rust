@@ -9,7 +9,7 @@
 // in a Map to see if the bytes are the same.
 export default function binaryToComparableString(view) {
   return String.fromCharCode(
-    ...new Uint8Array(view.buffer, view.byteOffset, view.byteLength)
+    ...new Uint8Array(view.buffer, view.byteOffset, view.byteLength),
   );
 }
 //# sourceMappingURL=binaryToComparableString.js.map

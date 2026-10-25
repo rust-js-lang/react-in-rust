@@ -65,7 +65,7 @@ export function checkAttributeStringCoercion(value, attributeName) {
       'The provided `%s` attribute is an unsupported type %s.' +
         ' This value must be coerced to a string before using it here.',
       attributeName,
-      typeName(value)
+      typeName(value),
     );
     return testStringCoercion(value); // throw (to help callers find troubleshooting comments)
   }
@@ -76,7 +76,7 @@ export function checkKeyStringCoercion(value) {
     console.error(
       'The provided key is an unsupported type %s.' +
         ' This value must be coerced to a string before using it here.',
-      typeName(value)
+      typeName(value),
     );
     return testStringCoercion(value); // throw (to help callers find troubleshooting comments)
   }
@@ -88,7 +88,7 @@ export function checkPropStringCoercion(value, propName) {
       'The provided `%s` prop is an unsupported type %s.' +
         ' This value must be coerced to a string before using it here.',
       propName,
-      typeName(value)
+      typeName(value),
     );
     return testStringCoercion(value); // throw (to help callers find troubleshooting comments)
   }
@@ -100,7 +100,7 @@ export function checkOptionStringCoercion(value, propName) {
       'The provided `%s` option is an unsupported type %s.' +
         ' This value must be coerced to a string before using it here.',
       propName,
-      typeName(value)
+      typeName(value),
     );
     return testStringCoercion(value); // throw (to help callers find troubleshooting comments)
   }
@@ -112,7 +112,7 @@ export function checkCSSPropertyStringCoercion(value, propName) {
       'The provided `%s` CSS property is an unsupported type %s.' +
         ' This value must be coerced to a string before using it here.',
       propName,
-      typeName(value)
+      typeName(value),
     );
     return testStringCoercion(value); // throw (to help callers find troubleshooting comments)
   }
@@ -123,7 +123,7 @@ export function checkHtmlStringCoercion(value) {
     console.error(
       'The provided HTML markup uses a value of unsupported type %s.' +
         ' This value must be coerced to a string before using it here.',
-      typeName(value)
+      typeName(value),
     );
     return testStringCoercion(value); // throw (to help callers find troubleshooting comments)
   }
@@ -135,7 +135,7 @@ export function checkFormFieldValueStringCoercion(value) {
       'Form field values (value, checked, defaultValue, or defaultChecked props)' +
         ' must be strings, not %s.' +
         ' This value must be coerced to a string before using it here.',
-      typeName(value)
+      typeName(value),
     );
     return testStringCoercion(value); // throw (to help callers find troubleshooting comments)
   }

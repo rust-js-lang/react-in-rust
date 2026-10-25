@@ -23,27 +23,26 @@ thread_local! {
 pub fn describe_built_in_component_frame(name: &str) -> String {
     if PREFIX.with_borrow(Option::is_none) {
         // Extract the VM specific prefix used by each line.
-        if let Err(x) = catch_unwind(|| panic!("")) {
-            let stack = x
-                .downcast_ref::<&'static JsError>()
-                .and_then(|x| x.stack())
-                .unwrap_or_default();
-            let r#match = js::reg_exp::new(r"\n( *(at )?)", "").exec(&js::string::trim(&stack));
-            PREFIX.set(Some(r#match.and_then(|m| m.get(1)).unwrap_or_default()));
-            SUFFIX.set(
-                if stack.contains("\n    at") {
-                    // V8
-                    " (<anonymous>)"
-                } else if stack.contains('@') {
-                    // JSC/Spidermonkey
-                    "@unknown:0:0"
-                } else {
-                    // Other
-                    ""
-                }
-                .to_string(),
-            );
-        }
+        let Err(x) = catch_unwind(|| panic!(""));
+        let stack = x
+            .downcast_ref::<&'static JsError>()
+            .and_then(|x| x.stack())
+            .unwrap_or_default();
+        let r#match = js::reg_exp::new(r"\n( *(at )?)", "").exec(&js::string::trim(&stack));
+        PREFIX.set(Some(r#match.and_then(|m| m.get(1)).unwrap_or_default()));
+        SUFFIX.set(
+            if stack.contains("\n    at") {
+                // V8
+                " (<anonymous>)"
+            } else if stack.contains('@') {
+                // JSC/Spidermonkey
+                "@unknown:0:0"
+            } else {
+                // Other
+                ""
+            }
+            .to_string(),
+        );
     }
     // We use the prefix to ensure our stacks line up with native stack frames.
     let prefix = PREFIX.with_borrow(|prefix| prefix.clone().unwrap_or_default());
@@ -196,9 +195,8 @@ fn determine_component_frame_root(
                 js::new(js::unknown(r#fn), ());
             }
         } else {
-            if let Err(x) = catch_unwind(|| panic!("")) {
-                control = x.downcast_ref::<&'static JsError>().copied();
-            }
+            let Err(x) = catch_unwind(|| panic!(""));
+            control = x.downcast_ref::<&'static JsError>().copied();
             // TODO(luna): This will currently only throw if the function component
             // tries to access React/ReactDOM/props. We should probably make this throw
             // in simple components too
