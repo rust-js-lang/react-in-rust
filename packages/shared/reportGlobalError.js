@@ -13,13 +13,13 @@ const reportGlobalError =
     : error => {
         if (
           typeof window !== 'undefined' &&
-          typeof ErrorEvent !== 'undefined'
+          typeof window.ErrorEvent !== 'undefined'
         ) {
           // Browser Polyfill
           const message$1 = error?.message;
           const message =
             typeof message$1 === 'string' ? message$1 : String(error);
-          const event = new ErrorEvent('error', {
+          const event = new window.ErrorEvent('error', {
             bubbles: true,
             cancelable: true,
             message,

@@ -4,7 +4,7 @@
 // LICENSE file in the root directory of this source tree.
 
 use js::{Kind, Unknown};
-use webapi::{ErrorEventInit, console, error_event, window};
+use webapi::{ErrorEventInit, Window, console, window};
 
 thread_local! {
     pub static REPORT_GLOBAL_ERROR: fn(Option<&'static Unknown>) = if js::is_defined(webapi::global::report_error::<Option<&Unknown>>) {
@@ -13,13 +13,13 @@ thread_local! {
         webapi::global::report_error
     } else {
         |error| {
-            if js::is_defined(window) && js::is_defined(error_event::new) {
+            if js::is_defined(Window::new_error_event) {
                 // Browser Polyfill
                 let message = match js::classify(error.and_then(|error| js::get(error, "message"))) {
                     Kind::String(message) => message.to_string(),
                     _ => js::string(error),
                 };
-                let event = error_event::new(
+                let event = window.new_error_event(
                     "error",
                     Some(ErrorEventInit {
                         bubbles: Some(true),
