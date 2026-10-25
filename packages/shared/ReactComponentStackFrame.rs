@@ -373,7 +373,7 @@ pub fn describe_native_component_frame(
                                 // Return the line we found.
                                 return frame;
                             }
-                            if !(s >= 1 && c >= 0) {
+                            if s < 1 || c < 0 {
                                 break;
                             }
                         }
