@@ -1058,8 +1058,8 @@ pub fn clone_element(
                 // Undefined `ref` is ignored by cloneElement. We treat it the same as
                 // if the property were missing. This is mostly for
                 // backwards compatibility.
-                && !(prop_name == "ref"
-                    && js::strict_equals(js::get(config, "ref"), None::<&Unknown>))
+                && (prop_name != "ref"
+                    || !js::strict_equals(js::get(config, "ref"), None::<&Unknown>))
             {
                 js::set(props, &prop_name, js::get(config, &prop_name));
             }

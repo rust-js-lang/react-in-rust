@@ -190,8 +190,8 @@ function ReactElement(type, key, props, owner, debugStack, debugTask) {
     //
     // `ref` will be removed from the element completely in a future release.
     element = {
-      $$typeof: REACT_ELEMENT_TYPE,
       // This tag allows us to uniquely identify this as a React Element
+      $$typeof: REACT_ELEMENT_TYPE,
 
       // Built-in properties that belong on the element
       type,
@@ -230,8 +230,8 @@ function ReactElement(type, key, props, owner, debugStack, debugTask) {
   } else {
     // In prod, `ref` is a regular property and _owner doesn't exist.
     element = {
-      $$typeof: REACT_ELEMENT_TYPE,
       // This tag allows us to uniquely identify this as a React Element
+      $$typeof: REACT_ELEMENT_TYPE,
 
       // Built-in properties that belong on the element
       type,
