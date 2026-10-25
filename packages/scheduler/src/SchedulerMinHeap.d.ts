@@ -7,6 +7,6 @@
 
 export function push<T>(heap: T[], node: T): void;
 
-export function peek<T>(heap: T[]): T | null | undefined;
+export function peek<T>(heap: T[]): T | null;
 
-export function pop<T>(heap: T[]): T | null | undefined;
+export function pop<T>(heap: T[]): T | null;

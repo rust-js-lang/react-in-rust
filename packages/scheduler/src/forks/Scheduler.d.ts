@@ -35,7 +35,7 @@ export interface Options {
   delay?: number | undefined;
 }
 
-export function getCurrentTime(): number;
+declare function getCurrentTime(): number;
 
 export function unstable_runWithPriority<T>(
   priorityLevel: PriorityLevel,
@@ -44,19 +44,19 @@ export function unstable_runWithPriority<T>(
 
 export function unstable_next<T>(eventHandler: () => T): T;
 
-export function unstable_wrapCallback<A, T>(callback: (a: A) => () => T): any;
+export function unstable_wrapCallback<A, T>(callback: (a: A) => T): (a: A) => T;
 
 export function unstable_scheduleCallback(
   priorityLevel: PriorityLevel,
   callback: Callback,
   options?: Options | null | undefined,
-): any;
+): Task;
 
 export function unstable_cancelCallback(task: Task): void;
 
 export function unstable_getCurrentPriorityLevel(): PriorityLevel;
 
-export function shouldYieldToHost(): boolean;
+declare function shouldYieldToHost(): boolean;
 
 export function unstable_requestPaint(): void;
 

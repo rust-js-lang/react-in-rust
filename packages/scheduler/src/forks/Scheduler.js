@@ -56,7 +56,7 @@ const timerQueue = [];
 let taskIdCounter = 1;
 
 let currentTask;
-let currentPriorityLevel = 3;
+let currentPriorityLevel = NormalPriority;
 
 // This is set while performing work, to prevent re-entrance.
 let isPerformingWork = false;
@@ -130,6 +130,8 @@ function workLoop(initialTime) {
   let currentTime = initialTime;
   advanceTimers(currentTime);
   currentTask = peek(taskQueue);
+  // This currentTask hasn't expired, and we've reached the deadline.
+  // This currentTask hasn't expired we yield to the browser task.
   while (true) {
     const currentTask$1 = currentTask;
     if (
@@ -182,17 +184,20 @@ function workLoop(initialTime) {
 }
 
 export function unstable_runWithPriority(priorityLevel, eventHandler) {
-  priorityLevel =
-    priorityLevel === ImmediatePriority ||
-    priorityLevel === UserBlockingPriority ||
-    priorityLevel === NormalPriority ||
-    priorityLevel === LowPriority ||
-    priorityLevel === IdlePriority
-      ? priorityLevel
-      : NormalPriority;
+  switch (priorityLevel) {
+    case ImmediatePriority:
+    case UserBlockingPriority:
+    case NormalPriority:
+    case LowPriority:
+    case IdlePriority:
+      break;
+    default:
+      priorityLevel = NormalPriority;
+  }
 
   const restore = currentPriorityLevel;
   currentPriorityLevel = priorityLevel;
+
   try {
     return eventHandler();
   } finally {
@@ -203,20 +208,21 @@ export function unstable_runWithPriority(priorityLevel, eventHandler) {
 export function unstable_next(eventHandler) {
   const current = currentPriorityLevel;
   let priorityLevel;
-  if (
-    current === ImmediatePriority ||
-    current === UserBlockingPriority ||
-    current === NormalPriority
-  ) {
-    // Shift down to normal priority
-    priorityLevel = NormalPriority;
-  } else {
-    // Anything lower than normal priority should remain at the current level.
-    priorityLevel = current;
+  switch (current) {
+    case ImmediatePriority:
+    case UserBlockingPriority:
+    case NormalPriority:
+      // Shift down to normal priority
+      priorityLevel = NormalPriority;
+      break;
+    default:
+      // Anything lower than normal priority should remain at the current level.
+      priorityLevel = current;
   }
 
   const restore = currentPriorityLevel;
   currentPriorityLevel = priorityLevel;
+
   try {
     return eventHandler();
   } finally {
@@ -230,6 +236,7 @@ export function unstable_wrapCallback(callback) {
     // This is a fork of runWithPriority, inlined for performance.
     const restore = currentPriorityLevel;
     currentPriorityLevel = parentPriorityLevel;
+
     try {
       return callback(argument);
     } finally {
@@ -248,22 +255,28 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
   } else {
     startTime = currentTime + delay;
   }
+
   let timeout;
-  if (priorityLevel === ImmediatePriority) {
-    // Times out immediately
-    timeout = -1;
-  } else if (priorityLevel === UserBlockingPriority) {
-    // Eventually times out
-    timeout = userBlockingPriorityTimeout;
-  } else if (priorityLevel === IdlePriority) {
-    // Never times out
-    timeout = MAX_SIGNED_31_BIT_INT;
-  } else if (priorityLevel === LowPriority) {
-    // Eventually times out
-    timeout = lowPriorityTimeout;
-  } else {
-    // Eventually times out
-    timeout = normalPriorityTimeout;
+  switch (priorityLevel) {
+    case ImmediatePriority:
+      // Times out immediately
+      timeout = -1;
+      break;
+    case UserBlockingPriority:
+      // Eventually times out
+      timeout = userBlockingPriorityTimeout;
+      break;
+    case IdlePriority:
+      // Never times out
+      timeout = MAX_SIGNED_31_BIT_INT;
+      break;
+    case LowPriority:
+      // Eventually times out
+      timeout = lowPriorityTimeout;
+      break;
+    default:
+      // Eventually times out
+      timeout = normalPriorityTimeout;
   }
 
   const expirationTime = startTime + timeout;
@@ -319,7 +332,7 @@ export function unstable_getCurrentPriorityLevel() {
   return currentPriorityLevel;
 }
 
-export function shouldYieldToHost() {
+function shouldYieldToHost() {
   if (!enableAlwaysYieldScheduler && enableRequestPaint && needsPaint) {
     // Yield now.
     return true;
@@ -341,13 +354,13 @@ let isMessageLoopRunning = false;
 // thread, like user events. By default, it yields multiple times per frame.
 // It does not attempt to align with frame boundaries, since most tasks don't
 // need to be frame aligned; for those that do, use requestAnimationFrame.
-let frameInterval = 5;
+let frameInterval = frameYieldMs;
 let startTime = -1;
 
 export function unstable_forceFrameRate(fps) {
   if (!(0 <= fps && fps <= 125)) {
     console.error(
-      'forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported'
+      'forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported',
     );
     return;
   }
@@ -421,12 +434,8 @@ if (localSetImmediate) {
   // We prefer MessageChannel because of the 4ms setTimeout clamping.
   const channel = new MessageChannel();
   const port = channel.port2;
-  channel.port1.onmessage = () => {
-    performWorkUntilDeadline();
-  };
-  schedulePerformWorkUntilDeadline = () => {
-    port.postMessage(undefined);
-  };
+  channel.port1.onmessage = () => performWorkUntilDeadline();
+  schedulePerformWorkUntilDeadline = () => port.postMessage(undefined);
 } else {
   // We should only fallback here in non-browser environments.
   schedulePerformWorkUntilDeadline = () => {
@@ -463,6 +472,5 @@ export const unstable_Profiling = undefined;
 export {
   getCurrentTime as unstable_now,
   shouldYieldToHost as unstable_shouldYield,
-  getCurrentTime,
 };
 //# sourceMappingURL=Scheduler.js.map
