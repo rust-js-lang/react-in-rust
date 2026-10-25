@@ -104,7 +104,7 @@ if (__DEV__) {
   };
   const defineDeprecationWarning = (methodName, info) => {
     Object.defineProperty(Component.prototype, methodName, {
-      get: () => {
+      get() {
         console.warn(
           '%s(...) is deprecated in plain JavaScript React classes. %s',
           info[0],

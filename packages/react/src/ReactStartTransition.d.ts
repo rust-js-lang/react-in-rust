@@ -25,7 +25,7 @@ export interface Transition {
   gesture?: GestureProvider | null | undefined;
   name?: string | null | undefined;
   startTime?: number | undefined;
-  _updatedFibers?: any;
+  _updatedFibers?: Set<any> | undefined;
 }
 
 export function startTransition(

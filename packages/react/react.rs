@@ -1,13 +1,19 @@
 //! React's isomorphic package, `react`: its modules, each its file's.
 
+#[path = "src/ReactAct.rs"]
+pub mod react_act;
 #[path = "src/ReactBaseClasses.rs"]
 pub mod react_base_classes;
 #[path = "src/ReactCacheClient.rs"]
 pub mod react_cache_client;
 #[path = "src/ReactCacheImpl.rs"]
 pub mod react_cache_impl;
+#[path = "src/ReactCacheServer.rs"]
+pub mod react_cache_server;
 #[path = "src/ReactChildren.rs"]
 pub mod react_children;
+#[path = "src/ReactClient.rs"]
+pub mod react_client;
 #[path = "src/ReactCompilerRuntime.rs"]
 pub mod react_compiler_runtime;
 #[path = "src/ReactContext.rs"]
@@ -18,8 +24,12 @@ pub mod react_create_ref;
 pub mod react_forward_ref;
 #[path = "src/ReactHooks.rs"]
 pub mod react_hooks;
+#[path = "src/jsx/ReactJSX.rs"]
+pub mod react_jsx;
 #[path = "src/jsx/ReactJSXElement.rs"]
 pub mod react_jsx_element;
+#[path = "src/jsx/ReactJSXServer.rs"]
+pub mod react_jsx_server;
 #[path = "src/ReactLazy.rs"]
 pub mod react_lazy;
 #[path = "src/ReactMemo.rs"]
@@ -28,9 +38,23 @@ pub mod react_memo;
 pub mod react_noop_update_queue;
 #[path = "src/ReactOwnerStack.rs"]
 pub mod react_owner_stack;
+#[path = "src/ReactServer.rs"]
+pub mod react_server;
+#[path = "src/ReactServer.experimental.rs"]
+pub mod react_server_experimental;
+#[path = "src/ReactServer.experimental.development.rs"]
+pub mod react_server_experimental_development;
+#[path = "src/ReactServer.fb.rs"]
+pub mod react_server_fb;
 #[path = "src/ReactSharedInternalsClient.rs"]
 pub mod react_shared_internals_client;
+#[path = "src/ReactSharedInternalsServer.rs"]
+pub mod react_shared_internals_server;
 #[path = "src/ReactStartTransition.rs"]
 pub mod react_start_transition;
+#[path = "src/ReactTaint.rs"]
+pub mod react_taint;
+#[path = "src/ReactTaintRegistry.rs"]
+pub mod react_taint_registry;
 #[path = "src/ReactTransitionType.rs"]
 pub mod react_transition_type;

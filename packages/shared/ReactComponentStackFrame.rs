@@ -83,7 +83,7 @@ thread_local! {
             Some(if js::is_defined(js::weak_map::new::<JsObject, String>) {
                 js::weak_map::new()
             } else {
-                js::map::new()
+                js::map::new(None)
             })
         } else {
             None

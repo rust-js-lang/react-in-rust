@@ -24,10 +24,9 @@ function noopCache(fn) {
   // returns a new reference, extra properties like `displayName` are not
   // preserved, the length of the new function is 0, etc. That way apps can't
   // accidentally depend on those details.
-  return (...args) => {
+  return (...args) =>
     // $FlowFixMe[incompatible-type]: We don't want to use rest arguments since we transpile the code.
-    return fn.apply(null, args);
-  };
+    fn.apply(null, args);
 }
 
 export const cache = disableClientCache ? noopCache : cacheImpl;

@@ -125,8 +125,8 @@ pub struct LazyComponent {
 
 fn lazy_initializer(payload: &Rc<Payload>) -> Option<&'static Unknown> {
     if payload.status.get() == Status::Uninitialized {
-        let mut resolve_debug_value: Option<&'static dyn Fn(Option<&'static Unknown>)> = None;
-        let mut reject_debug_value: Option<&'static dyn Fn(Option<&Unknown>)> = None;
+        let mut resolve_debug_value = None;
+        let mut reject_debug_value = None;
         if __DEV__ && let Some(io_info) = payload.io_info.get() {
             // Mark when we first kicked off the lazy request.
             // $FlowFixMe[cannot-write]

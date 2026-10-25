@@ -59,12 +59,8 @@ export function startTransition(scope, options) {
         // Keep track of the number of async transitions still running so we can warn.
         ReactSharedInternals.asyncTransitions++;
         returnValue.then(
-          () => {
-            releaseAsyncTransition();
-          },
-          () => {
-            releaseAsyncTransition();
-          },
+          () => releaseAsyncTransition(),
+          () => releaseAsyncTransition(),
         );
       }
       returnValue.then(() => {

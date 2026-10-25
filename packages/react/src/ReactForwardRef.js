@@ -50,7 +50,7 @@ export function forwardRef(render) {
       enumerable: false,
       configurable: true,
       get: () => ownName,
-      set: name => {
+      set(name) {
         ownName = name;
 
         // The inner component shouldn't inherit this display name in most cases,

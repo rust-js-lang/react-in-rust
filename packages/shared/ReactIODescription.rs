@@ -39,9 +39,7 @@ pub fn get_io_description(value: Option<&Unknown>) -> String {
                 if let Kind::String(src) = js::classify(js::get(value, "src")) {
                     return src.to_string();
                 }
-                if let Kind::String(current_src) =
-                    js::classify(js::get(value, "currentSrc"))
-                {
+                if let Kind::String(current_src) = js::classify(js::get(value, "currentSrc")) {
                     return current_src.to_string();
                 }
                 if let Kind::String(command) = js::classify(js::get(value, "command")) {
@@ -60,7 +58,8 @@ pub fn get_io_description(value: Option<&Unknown>) -> String {
                     return url.to_string();
                 }
                 if let Some(id) = js::get(value, "id")
-                    && let Kind::String(_) | Kind::Number(_) | Kind::BigInt(_) = js::classify(Some(id))
+                    && let Kind::String(_) | Kind::Number(_) | Kind::BigInt(_) =
+                        js::classify(Some(id))
                 {
                     return js::string(Some(id));
                 }

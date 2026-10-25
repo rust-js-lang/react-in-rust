@@ -51,7 +51,7 @@ const ReactNoopUpdateQueue = {
   // @param {?function} callback Called after component is updated.
   // @param {?string} callerName name of the calling function in the public API.
   // @internal
-  enqueueForceUpdate: (publicInstance, callback, callerName) => {
+  enqueueForceUpdate(publicInstance, callback, callerName) {
     warnNoop(publicInstance, 'forceUpdate');
   },
 
@@ -66,12 +66,7 @@ const ReactNoopUpdateQueue = {
   // @param {?function} callback Called after component is updated.
   // @param {?string} callerName name of the calling function in the public API.
   // @internal
-  enqueueReplaceState: (
-    publicInstance,
-    completeState,
-    callback,
-    callerName,
-  ) => {
+  enqueueReplaceState(publicInstance, completeState, callback, callerName) {
     warnNoop(publicInstance, 'replaceState');
   },
 
@@ -85,7 +80,7 @@ const ReactNoopUpdateQueue = {
   // @param {?function} callback Called after component is updated.
   // @param {?string} Name of the calling function in the public API.
   // @internal
-  enqueueSetState: (publicInstance, partialState, callback, callerName) => {
+  enqueueSetState(publicInstance, partialState, callback, callerName) {
     warnNoop(publicInstance, 'setState');
   },
 };

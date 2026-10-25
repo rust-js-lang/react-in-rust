@@ -37,6 +37,7 @@ const babelOptions = {
   plugins: [
     // For Node environment only. For builds, Rollup takes care of ESM.
     require.resolve('@babel/plugin-transform-modules-commonjs'),
+    require.resolve('@babel/plugin-transform-export-namespace-from'),
 
     pathToTransformInfiniteLoops,
     pathToTransformTestGatePragma,

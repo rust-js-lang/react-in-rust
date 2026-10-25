@@ -12,9 +12,9 @@ pub mod console_patching_dev;
 pub mod default_prepare_stack_trace;
 #[path = "DefaultPrepareStackTraceV8.rs"]
 pub mod default_prepare_stack_trace_v8;
-pub mod environment;
 #[path = "enqueueTask.rs"]
 pub mod enqueue_task;
+pub mod environment;
 #[path = "ExecutionEnvironment.rs"]
 pub mod execution_environment;
 #[path = "formatProdErrorMessage.rs"]

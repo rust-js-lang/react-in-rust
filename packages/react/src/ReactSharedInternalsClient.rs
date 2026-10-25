@@ -73,7 +73,7 @@ pub struct RendererTask(pub &'static dyn Fn(bool) -> Option<RendererTask>);
 
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "ReactSharedInternals")]
-    pub(crate) static REACT_SHARED_INTERNALS: SharedStateClient = SharedStateClient {
+    pub static REACT_SHARED_INTERNALS: SharedStateClient = SharedStateClient {
         h: Cell::new(None),
         a: Cell::new(None),
         t: Cell::new(None),

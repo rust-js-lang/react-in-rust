@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$dispose} from '@rust-js/runtime';
+
 let didWarnAboutMessageChannel = false;
 let enqueueTaskImpl;
 
@@ -25,27 +27,51 @@ export default function enqueueTask(task) {
       // we can't use regular timers because they may still be faked
       // so we try MessageChannel+postMessage instead
       enqueueTaskImpl = callback => {
+        let callback$live = true;
         if (__DEV__ && !didWarnAboutMessageChannel) {
           didWarnAboutMessageChannel = true;
           if (typeof MessageChannel === 'undefined') {
-            console.error(
-              'This browser does not have a MessageChannel implementation, ' +
-                'so enqueuing tasks via await act(async () => ...) will fail. ' +
-                'Please file an issue at https://github.com/react/react/issues ' +
-                'if you encounter this warning.',
-            );
+            try {
+              console.error(
+                'This browser does not have a MessageChannel implementation, ' +
+                  'so enqueuing tasks via await act(async () => ...) will fail. ' +
+                  'Please file an issue at https://github.com/react/react/issues ' +
+                  'if you encounter this warning.',
+              );
+            } catch (error) {
+              $dispose(callback);
+              throw error;
+            }
           }
         }
-        const channel = new MessageChannel();
-        channel.port1.onmessage = () => {
+        let channel;
+        try {
+          channel = new MessageChannel();
+        } catch (error) {
+          $dispose(callback);
+          throw error;
+        }
+        let messagePort;
+        try {
+          messagePort = channel.port1;
+          callback$live = false;
+        } catch (error) {
+          if (callback$live) {
+            $dispose(callback);
+          }
+          throw error;
+        }
+        messagePort.onmessage = () => {
           callback();
         };
         channel.port2.postMessage(undefined);
       };
     }
   }
-  if (enqueueTaskImpl) {
-    enqueueTaskImpl(task);
+  if (enqueueTaskImpl == null) {
+    $dispose(task);
+    throw new Error('called `Option::unwrap()` on a `None` value');
   }
+  enqueueTaskImpl(task);
 }
 //# sourceMappingURL=enqueueTask.js.map

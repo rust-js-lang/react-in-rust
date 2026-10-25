@@ -11,7 +11,7 @@ use webapi::console;
 
 use crate::environment::__DEV__;
 
-type EnqueueTask = fn(&'static dyn Fn());
+type EnqueueTask = fn(Box<dyn Fn()>);
 
 thread_local! {
     static DID_WARN_ABOUT_MESSAGE_CHANNEL: Cell<bool> = const { Cell::new(false) };
@@ -19,7 +19,7 @@ thread_local! {
 }
 
 js::export_default! {
-    fn enqueue_task(task: &'static dyn Fn()) {
+    pub fn enqueue_task(task: Box<dyn Fn()>) {
         if ENQUEUE_TASK_IMPL.get().is_none()
             && let Err(_err) = catch_unwind(|| {
                 // read require off the module object to get around the bundlers.
@@ -64,8 +64,6 @@ js::export_default! {
                 channel.port2().post_message((), None);
             }));
         }
-        if let Some(enqueue_task_impl) = ENQUEUE_TASK_IMPL.get() {
-            enqueue_task_impl(task);
-        }
+        ENQUEUE_TASK_IMPL.get().unwrap()(task)
     }
 }

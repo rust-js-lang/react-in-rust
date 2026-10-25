@@ -11,5 +11,5 @@
 // at runtime. We should instead inject the version number as part of the build
 // process, and use the ReactVersions.js module as the single source of truth.
 js::export_default! {
-    const REACT_VERSION: &str = "19.3.0";
+    pub const REACT_VERSION: &str = "19.3.0";
 }

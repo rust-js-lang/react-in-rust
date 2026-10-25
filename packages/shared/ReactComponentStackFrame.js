@@ -83,7 +83,7 @@ function DetermineComponentFrameRoot(fn, construct) {
       }
       // $FlowFixMe[prop-missing]
       Object.defineProperty(Fake.prototype, 'props', {
-        set: () => {
+        set() {
           // We use a throwing setter instead of frozen or non-writable props
           // because that won't throw in a non-strict mode function.
           throw new Error();
@@ -112,7 +112,7 @@ function DetermineComponentFrameRoot(fn, construct) {
         const prevProps = Object.getOwnPropertyDescriptor(prototype, 'props');
         Object.defineProperty(prototype, 'props', {
           configurable: true,
-          set: () => {
+          set() {
             throw new Error();
           },
         });
