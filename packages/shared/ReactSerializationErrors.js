@@ -155,7 +155,8 @@ function describeElementType(type) {
         return describeElementType(type.type);
       case REACT_LAZY_TYPE: {
         const lazyComponent = type;
-        const {_payload: payload, _init: init} = lazyComponent;
+        const payload = lazyComponent._payload;
+        const init = lazyComponent._init;
         // Lazy may contain any component type so we recursively resolve it.
         try {
           return describeElementType(init(payload));

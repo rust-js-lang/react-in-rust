@@ -109,7 +109,8 @@ export default function getComponentNameFromType(type) {
       }
       case REACT_LAZY_TYPE: {
         const lazyComponent = type;
-        const {_payload: payload, _init: init} = lazyComponent;
+        const payload = lazyComponent._payload;
+        const init = lazyComponent._init;
         let resolved;
         try {
           resolved = init(payload);

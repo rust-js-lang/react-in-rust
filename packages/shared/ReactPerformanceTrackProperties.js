@@ -98,7 +98,8 @@ export function addValueToProperties(
         if (readReactElementTypeof(value) === REACT_ELEMENT_TYPE) {
           // JSX
           const typeName = getComponentNameFromType(value.type) || '…';
-          const {key, props} = value;
+          const key = value.key;
+          const props = value.props;
           const propsKeys = Object.keys(props);
           const propsLength = propsKeys.length;
           if (key == null && propsLength === 0) {

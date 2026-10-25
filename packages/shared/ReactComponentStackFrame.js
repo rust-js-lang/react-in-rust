@@ -116,6 +116,7 @@ function DetermineComponentFrameRoot(fn, construct) {
             throw new Error();
           },
         });
+
         try {
           new fn();
         } finally {
@@ -238,6 +239,9 @@ export function describeNativeComponentFrame(fn, construct) {
       ) {
         c++;
       }
+      // We couldn't find our intentionally injected common root frame, attempt
+      // to find another common root frame by search from the bottom of the
+      // control stack...
       if (s === sampleLines.length || c === controlLines.length) {
         s = sampleLines.length - 1;
         c = controlLines.length - 1;
@@ -251,15 +255,15 @@ export function describeNativeComponentFrame(fn, construct) {
           c--;
         }
       }
-      // In V8, the first line is describing the message but other VMs don't.
-      // If we're about to return the first line, and the control is also on the same
-      // line, that's a pretty good indicator that our sample threw at same line as
-      // the control. I.e. before we entered the sample frame. So we ignore this result.
-      // This can happen if you passed a class to function component, or non-function.
       while (s >= 1 && c >= 0) {
         // Next we find the first one that isn't the same which should be the
         // frame that called our sample function and the control.
         if (sampleLines[s] !== controlLines[c]) {
+          // In V8, the first line is describing the message but other VMs don't.
+          // If we're about to return the first line, and the control is also on the same
+          // line, that's a pretty good indicator that our sample threw at same line as
+          // the control. I.e. before we entered the sample frame. So we ignore this result.
+          // This can happen if you passed a class to function component, or non-function.
           if (s !== 1 || c !== 1) {
             while (true) {
               s--;
