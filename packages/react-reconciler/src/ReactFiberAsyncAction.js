@@ -204,14 +204,12 @@ export function startIsomorphicDefaultIndicatorIfNeeded() {
   if (!needsIsomorphicIndicator) {
     return;
   }
-  const isomorphicDefaultTransitionIndicator$1 =
-    isomorphicDefaultTransitionIndicator;
   if (
-    typeof isomorphicDefaultTransitionIndicator$1 === 'function' &&
+    typeof isomorphicDefaultTransitionIndicator === 'function' &&
     !pendingIsomorphicIndicator
   ) {
     try {
-      const cleanup = isomorphicDefaultTransitionIndicator$1();
+      const cleanup = isomorphicDefaultTransitionIndicator();
       pendingIsomorphicIndicator = cleanup ?? noop;
     } catch (x) {
       pendingIsomorphicIndicator = noop;

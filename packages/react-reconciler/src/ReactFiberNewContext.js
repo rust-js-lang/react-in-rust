@@ -69,17 +69,16 @@ export function pushProvider(providerFiber, context, nextValue) {
     if (__DEV__) {
       push(rendererCursorDEV, context._currentRenderer, providerFiber);
 
-      const rendererSigil$1 = rendererSigil;
       if (
         context._currentRenderer != null &&
-        context._currentRenderer !== rendererSigil$1
+        context._currentRenderer !== rendererSigil
       ) {
         console.error(
           'Detected multiple renderers concurrently rendering the ' +
             'same context provider. This is currently unsupported.',
         );
       }
-      context._currentRenderer = rendererSigil$1;
+      context._currentRenderer = rendererSigil;
     }
   } else {
     const currentValue2 = context._currentValue2;
@@ -89,17 +88,16 @@ export function pushProvider(providerFiber, context, nextValue) {
     if (__DEV__) {
       push(renderer2CursorDEV, context._currentRenderer2, providerFiber);
 
-      const rendererSigil$1 = rendererSigil;
       if (
         context._currentRenderer2 != null &&
-        context._currentRenderer2 !== rendererSigil$1
+        context._currentRenderer2 !== rendererSigil
       ) {
         console.error(
           'Detected multiple renderers concurrently rendering the ' +
             'same context provider. This is currently unsupported.',
         );
       }
-      context._currentRenderer2 = rendererSigil$1;
+      context._currentRenderer2 = rendererSigil;
     }
   }
 }

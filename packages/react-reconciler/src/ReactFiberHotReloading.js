@@ -243,11 +243,10 @@ function scheduleFibersWithFamiliesRecursively(
           }
         }
       }
-      const failedBoundaries$1 = failedBoundaries;
       if (
-        failedBoundaries$1 &&
-        (failedBoundaries$1.has(fiber) ||
-          (alternate != null && failedBoundaries$1.has(alternate)))
+        failedBoundaries &&
+        (failedBoundaries.has(fiber) ||
+          (alternate != null && failedBoundaries.has(alternate)))
       ) {
         needsRemount = true;
       }
