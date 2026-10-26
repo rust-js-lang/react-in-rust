@@ -6,7 +6,7 @@
 use std::cell::Cell;
 use std::panic;
 
-use js::{Dict, JsError, Kind, PropertyDescriptor, SymbolFor, Unknown, object};
+use js::{Dict, Error, Kind, PropertyDescriptor, SymbolFor, Unknown, object};
 use node::js_error;
 use shared::assign::assign;
 use shared::check_string_coercion::check_key_string_coercion;
@@ -119,15 +119,15 @@ const OWNER_STACK_TRACE_LIMIT: f64 = 10.0;
 
 struct FakeCallStack {
     #[cfg_attr(rust_js, rust_js::name = "react_stack_bottom_frame")]
-    react_stack_bottom_frame: fn(fn() -> &'static JsError) -> &'static JsError,
+    react_stack_bottom_frame: fn(fn() -> &'static Error) -> &'static Error,
 }
 
 #[inline(never)]
 #[cfg_attr(rust_js, rust_js::name = "UnknownOwner")]
-fn unknown_owner() -> &'static JsError {
+fn unknown_owner() -> &'static Error {
     #[inline(never)]
-    fn react_stack_top_frame() -> &'static JsError {
-        js::js_error::new("react-stack-top-frame")
+    fn react_stack_top_frame() -> &'static Error {
+        js::error::new("react-stack-top-frame")
     }
     react_stack_top_frame()
 }
@@ -140,7 +140,7 @@ thread_local! {
     static SPECIAL_PROP_KEY_WARNING_SHOWN: Cell<bool> = const { Cell::new(false) };
     static DID_WARN_ABOUT_ELEMENT_REF: &'static Dict<bool> = js::dict::new();
     static DID_WARN_ABOUT_OLD_JSX_RUNTIME: Cell<bool> = const { Cell::new(false) };
-    static UNKNOWN_OWNER_DEBUG_STACK: Cell<Option<&'static JsError>> = const { Cell::new(None) };
+    static UNKNOWN_OWNER_DEBUG_STACK: Cell<Option<&'static Error>> = const { Cell::new(None) };
     static UNKNOWN_OWNER_DEBUG_TASK: Cell<Option<&'static ConsoleTask>> = const { Cell::new(None) };
 }
 
@@ -260,7 +260,7 @@ fn react_element(
     key: Option<ReactKey>,
     props: &'static Unknown,
     owner: Option<&'static Unknown>,
-    debug_stack: Option<&'static JsError>,
+    debug_stack: Option<&'static Error>,
     debug_task: Option<&'static ConsoleTask>,
 ) -> ReactElement {
     // Ignore whatever was passed as the ref argument and treat `props.ref` as
@@ -519,7 +519,7 @@ pub fn jsx_prod_signature_running_in_dev_with_dynamic_children(
             if track_actual_owner {
                 let previous_stack_trace_limit = js_error::stack_trace_limit();
                 js_error::set_stack_trace_limit(OWNER_STACK_TRACE_LIMIT);
-                debug_stack_dev = Some(js::js_error::new("react-stack-top-frame"));
+                debug_stack_dev = Some(js::error::new("react-stack-top-frame"));
                 js_error::set_stack_trace_limit(previous_stack_trace_limit);
             } else {
                 debug_stack_dev = UNKNOWN_OWNER_DEBUG_STACK.get();
@@ -565,7 +565,7 @@ pub fn jsx_prod_signature_running_in_dev_with_static_children(
             if track_actual_owner {
                 let previous_stack_trace_limit = js_error::stack_trace_limit();
                 js_error::set_stack_trace_limit(OWNER_STACK_TRACE_LIMIT);
-                debug_stack_dev = Some(js::js_error::new("react-stack-top-frame"));
+                debug_stack_dev = Some(js::error::new("react-stack-top-frame"));
                 js_error::set_stack_trace_limit(previous_stack_trace_limit);
             } else {
                 debug_stack_dev = UNKNOWN_OWNER_DEBUG_STACK.get();
@@ -617,7 +617,7 @@ pub fn jsx_dev(
         if track_actual_owner {
             let previous_stack_trace_limit = js_error::stack_trace_limit();
             js_error::set_stack_trace_limit(OWNER_STACK_TRACE_LIMIT);
-            debug_stack_dev = Some(js::js_error::new("react-stack-top-frame"));
+            debug_stack_dev = Some(js::error::new("react-stack-top-frame"));
             js_error::set_stack_trace_limit(previous_stack_trace_limit);
         } else {
             debug_stack_dev = UNKNOWN_OWNER_DEBUG_STACK.get();
@@ -647,7 +647,7 @@ fn jsx_dev_impl(
     config: &'static Unknown,
     maybe_key: Option<&'static Unknown>,
     is_static_children: bool,
-    debug_stack: Option<&'static JsError>,
+    debug_stack: Option<&'static Error>,
     debug_task: Option<&'static ConsoleTask>,
 ) -> Option<ReactElement> {
     if __DEV__ {
@@ -939,7 +939,7 @@ pub fn create_element(
         if track_actual_owner {
             let previous_stack_trace_limit = js_error::stack_trace_limit();
             js_error::set_stack_trace_limit(OWNER_STACK_TRACE_LIMIT);
-            debug_stack_dev = Some(js::js_error::new("react-stack-top-frame"));
+            debug_stack_dev = Some(js::error::new("react-stack-top-frame"));
             js_error::set_stack_trace_limit(previous_stack_trace_limit);
         } else {
             debug_stack_dev = UNKNOWN_OWNER_DEBUG_STACK.get();
