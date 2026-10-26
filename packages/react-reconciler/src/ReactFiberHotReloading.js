@@ -67,9 +67,10 @@ export function isCompatibleFamilyForHotReloading(fiber, element) {
     // If we got here, we know types aren't === equal.
     let needsCompareFamilies = false;
 
-    const nextType$1 =
-      typeof nextType === 'object' && nextType !== null ? nextType : undefined;
-    const typeofNextType = nextType$1?.$$typeof;
+    const typeofNextType =
+      typeof nextType === 'object' && nextType !== null
+        ? nextType.$$typeof
+        : undefined;
 
     switch (fiber.tag) {
       case ClassComponent:
@@ -234,8 +235,7 @@ function scheduleFibersWithFamiliesRecursively(
           outerCandidateType.$$typeof === REACT_LAZY_TYPE
         ) {
           const payload = outerCandidateType._payload;
-          if (payload._status === 1) {
-            /* Resolved; see ReactLazy */
+          if (payload._status === 1 /* Resolved; see ReactLazy */) {
             const middleFamily = resolve(payload._result.default);
             if (middleFamily != null && staleFamilies.has(middleFamily)) {
               needsRemount = true;

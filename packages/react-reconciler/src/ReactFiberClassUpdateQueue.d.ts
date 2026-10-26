@@ -96,7 +96,7 @@ export type Callbacks = unknown[];
 export interface Update {
   lane: Lane;
   tag: UpdateTag;
-  payload: unknown | null | undefined;
+  payload?: unknown | null | undefined;
   callback?: unknown | null | undefined;
   next?: Update | null | undefined;
 }

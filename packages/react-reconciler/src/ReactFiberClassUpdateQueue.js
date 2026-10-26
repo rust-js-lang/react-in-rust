@@ -159,10 +159,9 @@ export function cloneUpdateQueue(current, workInProgress) {
   const queue = workInProgress.updateQueue;
   const currentQueue = current.updateQueue;
   if (queue === currentQueue) {
-    const {baseState: value, firstBaseUpdate: value$1} = currentQueue;
     const clone = {
-      baseState: value,
-      firstBaseUpdate: value$1 ?? null,
+      baseState: currentQueue.baseState,
+      firstBaseUpdate: currentQueue.firstBaseUpdate ?? null,
       lastBaseUpdate: currentQueue.lastBaseUpdate,
       shared: currentQueue.shared,
       callbacks: null,
@@ -176,6 +175,7 @@ export function createUpdate(lane) {
     lane,
 
     tag: UpdateState,
+    payload: null,
     callback: null,
 
     next: null,
@@ -282,10 +282,10 @@ export function enqueueCapturedUpdate(workInProgress, capturedUpdate) {
         // Loop through the updates and clone them.
         let update = firstBaseUpdate;
         while (true) {
-          const {lane: value, tag: value$1} = update;
           const clone = {
-            lane: value,
-            tag: value$1,
+            lane: update.lane,
+
+            tag: update.tag,
             payload: update.payload,
             // When this update is rebased, we should not fire its
             // callback again.
@@ -296,29 +296,27 @@ export function enqueueCapturedUpdate(workInProgress, capturedUpdate) {
           if (newLast == null) {
             newFirst = clone;
           } else {
-            const last = newLast;
-            last.next = clone;
+            newLast.next = clone;
           }
           newLast = clone;
           const next = update.next;
-          if (next != null) {
-            update = next;
-          } else {
-            if (newLast == null) {
-              newFirst = capturedUpdate;
-            } else {
-              const last = newLast;
-              last.next = capturedUpdate;
-            }
-            newLast = capturedUpdate;
+          if (next == null) {
             break;
           }
+          update = next;
+        }
+
+        // Append the captured update the end of the cloned list.
+        if (newLast == null) {
+          newFirst = capturedUpdate;
+        } else {
+          newLast.next = capturedUpdate;
         }
       } else {
         // There are no base updates.
         newFirst = capturedUpdate;
-        newLast = capturedUpdate;
       }
+      newLast = capturedUpdate;
       const queue$1 = {
         baseState: currentQueue.baseState,
         firstBaseUpdate: newFirst ?? null,
@@ -469,11 +467,11 @@ export function processUpdateQueue(
     // and last so that it's non-circular.
     const firstPendingUpdate = pendingQueue.next;
     pendingQueue.next = null;
+    // Append pending updates to base queue
     if (lastBaseUpdate == null) {
       firstBaseUpdate = firstPendingUpdate;
     } else {
-      const lastBaseUpdate$1 = lastBaseUpdate;
-      lastBaseUpdate$1.next = firstPendingUpdate;
+      lastBaseUpdate.next = firstPendingUpdate;
     }
     lastBaseUpdate = pendingQueue;
 
@@ -535,23 +533,21 @@ export function processUpdateQueue(
         // Priority is insufficient. Skip this update. If this is the first
         // skipped update, the previous update/state is the new base
         // update/state.
-
-        const {tag: value, payload: value$1} = update;
         const clone = {
           lane: updateLane,
-          tag: value,
-          payload: value$1,
+
+          tag: update.tag,
+          payload: update.payload ?? null,
           callback: update.callback,
 
           next: null,
         };
-        const last = newLastBaseUpdate;
-        if (last == null) {
+        if (newLastBaseUpdate == null) {
           newFirstBaseUpdate = clone;
           newLastBaseUpdate = clone;
           newBaseState = newState;
         } else {
-          last.next = clone;
+          newLastBaseUpdate.next = clone;
           newLastBaseUpdate = clone;
         }
         // Update the remaining priority in the queue.
@@ -566,8 +562,7 @@ export function processUpdateQueue(
           didReadFromEntangledAsyncAction = true;
         }
 
-        const last = newLastBaseUpdate;
-        if (last != null) {
+        if (newLastBaseUpdate != null) {
           const clone = {
             // This update is going to be committed so we never want uncommit
             // it. Using NoLane works because 0 is a subset of all bitmasks, so
@@ -583,7 +578,7 @@ export function processUpdateQueue(
 
             next: null,
           };
-          last.next = clone;
+          newLastBaseUpdate.next = clone;
           newLastBaseUpdate = clone;
         }
 
@@ -616,48 +611,48 @@ export function processUpdateQueue(
       } else {
         pendingQueue = queue.shared.pending;
         if (pendingQueue == null) {
-          if (newLastBaseUpdate == null) {
-            newBaseState = newState;
-          }
-
-          queue.baseState = newBaseState;
-          queue.firstBaseUpdate = newFirstBaseUpdate ?? null;
-          queue.lastBaseUpdate = newLastBaseUpdate ?? null;
-
-          if (firstBaseUpdate == null) {
-            // `queue.lanes` is used for entangling transitions. We can set it back to
-            // zero once the queue is empty.
-            queue.shared.lanes = NoLanes;
-          }
-
-          // Set the remaining expiration time to be whatever is remaining in the queue.
-          // This should be fine because the only two other things that contribute to
-          // expiration time are props and context. We're already in the middle of the
-          // begin phase by the time we start processing the queue, so we've already
-          // dealt with the props. Context in components that specify
-          // shouldComponentUpdate is tricky; but we'll have to account for
-          // that regardless.
-          markSkippedUpdateLanes(newLanes);
-          workInProgress.lanes = newLanes;
-          workInProgress.memoizedState = newState;
           break;
         }
-        const lastPendingUpdate = pendingQueue;
         // An update was scheduled from inside a reducer. Add the new
         // pending updates to the end of the list and keep processing.
         // Intentionally unsound. Pending updates form a circular list, but we
         // unravel them when transferring them to the base queue.
-        const old = lastPendingUpdate.next;
-        lastPendingUpdate.next = null;
+        const old = pendingQueue.next;
+        pendingQueue.next = null;
         const firstPendingUpdate = $unwrap(
           old,
           'a pending update in a circular list',
         );
         update = firstPendingUpdate;
-        queue.lastBaseUpdate = lastPendingUpdate;
+        queue.lastBaseUpdate = pendingQueue;
         queue.shared.pending = null;
       }
     }
+
+    if (newLastBaseUpdate == null) {
+      newBaseState = newState;
+    }
+
+    queue.baseState = newBaseState;
+    queue.firstBaseUpdate = newFirstBaseUpdate ?? null;
+    queue.lastBaseUpdate = newLastBaseUpdate ?? null;
+
+    if (firstBaseUpdate == null) {
+      // `queue.lanes` is used for entangling transitions. We can set it back to
+      // zero once the queue is empty.
+      queue.shared.lanes = NoLanes;
+    }
+
+    // Set the remaining expiration time to be whatever is remaining in the queue.
+    // This should be fine because the only two other things that contribute to
+    // expiration time are props and context. We're already in the middle of the
+    // begin phase by the time we start processing the queue, so we've already
+    // dealt with the props. Context in components that specify
+    // shouldComponentUpdate is tricky; but we'll have to account for
+    // that regardless.
+    markSkippedUpdateLanes(newLanes);
+    workInProgress.lanes = newLanes;
+    workInProgress.memoizedState = newState;
   }
 
   if (__DEV__) {

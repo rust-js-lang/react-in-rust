@@ -176,6 +176,7 @@ pub struct Update {
     pub lane: Cell<Lane>,
 
     pub tag: Cell<UpdateTag>,
+    #[cfg_attr(rust_js, rust_js::nullable)]
     pub payload: Cell<Option<&'static Unknown>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub callback: Cell<Option<&'static Unknown>>,

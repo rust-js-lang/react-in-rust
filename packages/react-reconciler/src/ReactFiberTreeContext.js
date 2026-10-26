@@ -58,10 +58,10 @@
 // log2(32) = 5 bits. That means we can lop bits off the end 5 at a time without
 // affecting the final result.
 
-import { Forked, NoFlags } from "./ReactFiberFlags.js";
-import { getIsHydrating } from "./ReactFiberHydrationContext.js";
-import { clz32 } from "./clz32.js";
-import { $pad, $unwrap } from "@rust-js/runtime";
+import {Forked, NoFlags} from './ReactFiberFlags.js';
+import {getIsHydrating} from './ReactFiberHydrationContext.js';
+import {clz32} from './clz32.js';
+import {$pad, $unwrap} from '@rust-js/runtime';
 
 // TODO: Use the unified fiber stack module instead of this local one?
 // Intentionally not using it yet to derisk the initial implementation, because
@@ -74,7 +74,7 @@ let treeForkCount = 0;
 const idStack = [];
 let treeContextProvider = null;
 let treeContextId = 1;
-let treeContextOverflow = "";
+let treeContextOverflow = '';
 
 export function isForkedChild(workInProgress) {
   warnIfNotHydrating();
@@ -149,7 +149,7 @@ export function pushTreeId(workInProgress, totalChildren, index) {
     //
     // First calculate how many bits in the base id represent a complete
     // sequence of characters.
-    const numberOfOverflowBits = (baseLength - ((baseLength % 5) | 0)) | 0;
+    const numberOfOverflowBits = (baseLength - (baseLength % 5)) | 0;
 
     // Then create a bitmask that selects only those bits.
     const newOverflowBits = ((1 << numberOfOverflowBits) - 1) | 0;
@@ -160,8 +160,8 @@ export function pushTreeId(workInProgress, totalChildren, index) {
     const newOverflow = $pad(
       (baseId & newOverflowBits).toString(32),
       ((numberOfOverflowBits / 5) | 0) >>> 0,
-      ">",
-      "0",
+      '>',
+      '0',
     );
 
     // Now we can remove those bits from the base id.
@@ -221,14 +221,17 @@ export function popTreeContext(workInProgress) {
   while (workInProgress === treeForkProvider) {
     const [forkCount, forkProvider] = $unwrap(
       forkStack.pop(),
-      "a fork pushed by the work-in-progress",
+      'a fork pushed by the work-in-progress',
     );
     treeForkProvider = forkProvider ?? null;
     treeForkCount = forkCount;
   }
 
   while (workInProgress === treeContextProvider) {
-    const [id, overflow, provider] = $unwrap(idStack.pop(), "an id pushed by the work-in-progress");
+    const [id, overflow, provider] = $unwrap(
+      idStack.pop(),
+      'an id pushed by the work-in-progress',
+    );
     treeContextProvider = provider ?? null;
     treeContextOverflow = overflow;
     treeContextId = id;
@@ -256,7 +259,10 @@ export function restoreSuspendedTreeContext(workInProgress, suspendedContext) {
 
 function warnIfNotHydrating() {
   if (__DEV__ && !getIsHydrating()) {
-    console.error("Expected to be hydrating. This is a bug in React. Please file " + "an issue.");
+    console.error(
+      'Expected to be hydrating. This is a bug in React. Please file ' +
+        'an issue.',
+    );
   }
 }
 //# sourceMappingURL=ReactFiberTreeContext.js.map

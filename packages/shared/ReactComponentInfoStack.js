@@ -27,13 +27,12 @@ export function getOwnerStackByComponentInfoInDev(componentInfo) {
     let owner = componentInfo;
 
     while (owner) {
-      const current = owner;
-      const ownerStack = current.debugStack;
+      const ownerStack = owner.debugStack;
       if (!ownerStack) {
         break;
       }
       // Server Component
-      owner = current.owner;
+      owner = owner.owner;
       if (owner) {
         // TODO: Should we stash this somewhere for caching purposes?
         info += '\n' + formatOwnerStack(ownerStack);

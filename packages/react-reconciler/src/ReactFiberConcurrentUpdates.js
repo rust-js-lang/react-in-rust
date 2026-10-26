@@ -126,7 +126,7 @@ export function unsafe_markUpdateLaneFromFiberToRoot(sourceFiber, lane) {
   // happens to rely on this.
   const root = getRootForUpdatedFiber(sourceFiber);
   markUpdateLaneFromFiberToRoot(sourceFiber, null, lane);
-  return root ?? null;
+  return root;
 }
 
 function markUpdateLaneFromFiberToRoot(sourceFiber, update, lane) {
@@ -141,14 +141,13 @@ function markUpdateLaneFromFiberToRoot(sourceFiber, update, lane) {
   let parent = sourceFiber.return;
   let node = sourceFiber;
   while (parent != null) {
-    const parentFiber = parent;
-    parentFiber.childLanes = mergeLanes(parentFiber.childLanes, lane);
-    alternate = parentFiber.alternate;
+    parent.childLanes = mergeLanes(parent.childLanes, lane);
+    alternate = parent.alternate;
     if (alternate != null) {
       alternate.childLanes = mergeLanes(alternate.childLanes, lane);
     }
 
-    if (parentFiber.tag === OffscreenComponent) {
+    if (parent.tag === OffscreenComponent) {
       // Check if this offscreen boundary is currently hidden.
       //
       // The instance may be null if the Offscreen parent was unmounted. Usually
@@ -166,15 +165,16 @@ function markUpdateLaneFromFiberToRoot(sourceFiber, update, lane) {
       // This case is always accompanied by a warning, but we still need to
       // account for it. (There may be other cases that we haven't discovered,
       // too.)
+      const offscreenInstance = parent.stateNode;
       if (
-        parentFiber.stateNode &&
-        !(parentFiber.stateNode._visibility & OffscreenVisible)
+        offscreenInstance &&
+        !(offscreenInstance._visibility & OffscreenVisible)
       ) {
         isHidden = true;
       }
     }
 
-    node = parentFiber;
+    node = parent;
     parent = node.return;
   }
 
@@ -207,9 +207,8 @@ function getRootForUpdatedFiber(sourceFiber) {
   let node = sourceFiber;
   let parent = node.return;
   while (parent != null) {
-    const parentFiber = parent;
     detectUpdateOnUnmountedFiber(sourceFiber, node);
-    node = parentFiber;
+    node = parent;
     parent = node.return;
   }
   return node.tag === HostRoot ? node.stateNode : null;
