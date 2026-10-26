@@ -93,6 +93,7 @@ use crate::react_fiber_async_action::{peek_entangled_action_lane, peek_entangled
 use crate::react_fiber_concurrent_updates::{
     enqueue_concurrent_class_update, unsafe_mark_update_lane_from_fiber_to_root,
 };
+use crate::react_fiber_dev_tools_hook::set_is_strict_mode_for_devtools;
 use crate::react_fiber_flags::{CALLBACK, DID_CAPTURE, SHOULD_CAPTURE, VISIBILITY};
 use crate::react_fiber_lane::{
     Lane, Lanes, NO_LANE, NO_LANES, OFFSCREEN_LANE, intersect_lanes, is_subset_of_lanes,
@@ -128,14 +129,6 @@ fn get_work_in_progress_root_render_lanes() -> Lanes {
     unreachable!()
 }
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberDevToolsHook.js#setIsStrictModeForDevtools"
-)]
-fn set_is_strict_mode_for_devtools(new_is_strict_mode: bool) {
-    unreachable!()
-}
-
 pub type UpdateTag = u8;
 
 /// The callbacks an update queue calls when it commits: what each update's
@@ -146,7 +139,6 @@ pub struct Update {
     pub lane: Cell<Lane>,
 
     pub tag: Cell<UpdateTag>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub payload: Cell<Option<&'static Unknown>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub callback: Cell<Option<&'static Unknown>>,
@@ -242,7 +234,7 @@ pub fn create_update(lane: Lane) -> Rc<Update> {
         lane: Cell::new(lane),
 
         tag: Cell::new(UPDATE_STATE),
-        payload: Cell::new(None),
+        payload: Cell::new(js::null()),
         callback: Cell::new(None),
 
         next: RefCell::new(None),

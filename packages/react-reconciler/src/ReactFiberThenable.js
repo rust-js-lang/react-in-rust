@@ -386,10 +386,10 @@ function areSameKeyPath(a, b) {
     return true;
   }
   if (a.tag === b.tag && a.type === b.type) {
-    const value = $borrow($fieldCell(a, 'key', true), true);
+    const value = $borrow($fieldCell(a, 'key'), true);
     let borrow;
     try {
-      borrow = $borrow($fieldCell(b, 'key', true), true);
+      borrow = $borrow($fieldCell(b, 'key'), true);
     } catch (error) {
       $unborrow(value);
       throw error;

@@ -69,7 +69,6 @@ pub struct TracingMarkerInstance {
     pub pending_boundaries: Cell<Option<&'static PendingBoundaries>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub aborts: RefCell<Option<Vec<TransitionAbort>>>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub name: Option<String>,
 }
 
@@ -274,7 +273,7 @@ pub fn push_root_marker_instance(work_in_progress: &Rc<Fiber>) {
                         transitions: Cell::new(Some(js::set::new(Some(&[*transition])))),
                         pending_boundaries: Cell::new(None),
                         aborts: RefCell::new(None),
-                        name: None,
+                        name: js::null(),
                     });
                     root.incomplete_transitions.set(transition, marker_instance);
                 }

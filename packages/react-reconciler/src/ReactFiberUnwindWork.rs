@@ -14,6 +14,7 @@ use crate::react_fiber_cache_component::{CacheComponentState, pop_cache_provider
 use crate::react_fiber_flags::{DID_CAPTURE, NO_FLAGS, SHOULD_CAPTURE, UPDATE};
 use crate::react_fiber_hidden_context::pop_hidden_context;
 use crate::react_fiber_host_context::{pop_host_container, pop_host_context};
+use crate::react_fiber_hydration_context::reset_hydration_state;
 use crate::react_fiber_lane::Lanes;
 use crate::react_fiber_legacy_context::{
     is_context_provider as is_legacy_context_provider, pop_context as pop_legacy_context,
@@ -34,14 +35,6 @@ use crate::react_work_tags::{
     HOST_HOISTABLE, HOST_PORTAL, HOST_ROOT, HOST_SINGLETON, LEGACY_HIDDEN_COMPONENT,
     OFFSCREEN_COMPONENT, SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT, TRACING_MARKER_COMPONENT,
 };
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberHydrationContext.js#resetHydrationState"
-)]
-fn reset_hydration_state() {
-    unreachable!()
-}
 
 #[cfg_attr(rust_js, rust_js::nullable)]
 pub fn unwind_work(

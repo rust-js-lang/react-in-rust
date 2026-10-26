@@ -32,7 +32,7 @@ pub struct ReactStrictModeWarnings {
 
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "ReactStrictModeWarnings")]
-    static REACT_STRICT_MODE_WARNINGS: ReactStrictModeWarnings = ReactStrictModeWarnings {
+    pub static REACT_STRICT_MODE_WARNINGS: ReactStrictModeWarnings = ReactStrictModeWarnings {
         record_unsafe_lifecycle_warnings: Cell::new(|_fiber, _instance| {}),
         flush_pending_unsafe_lifecycle_warnings: Cell::new(|| {}),
         record_legacy_context_warning: Cell::new(|_fiber, _instance| {}),
@@ -88,7 +88,7 @@ fn set_to_sorted_string(set: &HashSet<String>) -> String {
     for value in set {
         array.push(value);
     }
-    array.sort();
+    array.sort_by(|a, b| a.encode_utf16().cmp(b.encode_utf16()));
     array.join(", ")
 }
 
@@ -158,80 +158,98 @@ js::on_load! {
                 // We do an initial pass to gather component names
                 let mut component_will_mount_unique_names = HashSet::new();
                 if PENDING_COMPONENT_WILL_MOUNT_WARNINGS.with_borrow(|pending| !pending.is_empty()) {
-                    for fiber in PENDING_COMPONENT_WILL_MOUNT_WARNINGS.take() {
-                        component_will_mount_unique_names.insert(
-                            get_component_name_from_fiber(&fiber)
-                                .filter(|name| !name.is_empty())
-                                .unwrap_or_else(|| "Component".to_string()),
-                        );
-                        DID_WARN_ABOUT_UNSAFE_LIFECYCLES
-                            .with(|did_warn| did_warn.add(&fiber.r#type.get()));
-                    }
+                    PENDING_COMPONENT_WILL_MOUNT_WARNINGS.with_borrow(|pending| {
+                        for fiber in pending {
+                                component_will_mount_unique_names.insert(
+                                    get_component_name_from_fiber(fiber)
+                                        .filter(|name| !name.is_empty())
+                                        .unwrap_or_else(|| "Component".to_string()),
+                                );
+                                DID_WARN_ABOUT_UNSAFE_LIFECYCLES
+                                    .with(|did_warn| did_warn.add(&fiber.r#type.get()));
+                        }
+                    });
+                    PENDING_COMPONENT_WILL_MOUNT_WARNINGS.set(Vec::new());
                 }
 
                 let mut unsafe_component_will_mount_unique_names = HashSet::new();
                 if PENDING_UNSAFE_COMPONENT_WILL_MOUNT_WARNINGS.with_borrow(|pending| !pending.is_empty()) {
-                    for fiber in PENDING_UNSAFE_COMPONENT_WILL_MOUNT_WARNINGS.take() {
-                        unsafe_component_will_mount_unique_names.insert(
-                            get_component_name_from_fiber(&fiber)
-                                .filter(|name| !name.is_empty())
-                                .unwrap_or_else(|| "Component".to_string()),
-                        );
-                        DID_WARN_ABOUT_UNSAFE_LIFECYCLES
-                            .with(|did_warn| did_warn.add(&fiber.r#type.get()));
-                    }
+                    PENDING_UNSAFE_COMPONENT_WILL_MOUNT_WARNINGS.with_borrow(|pending| {
+                        for fiber in pending {
+                                unsafe_component_will_mount_unique_names.insert(
+                                    get_component_name_from_fiber(fiber)
+                                        .filter(|name| !name.is_empty())
+                                        .unwrap_or_else(|| "Component".to_string()),
+                                );
+                                DID_WARN_ABOUT_UNSAFE_LIFECYCLES
+                                    .with(|did_warn| did_warn.add(&fiber.r#type.get()));
+                        }
+                    });
+                    PENDING_UNSAFE_COMPONENT_WILL_MOUNT_WARNINGS.set(Vec::new());
                 }
 
                 let mut component_will_receive_props_unique_names = HashSet::new();
                 if PENDING_COMPONENT_WILL_RECEIVE_PROPS_WARNINGS.with_borrow(|pending| !pending.is_empty()) {
-                    for fiber in PENDING_COMPONENT_WILL_RECEIVE_PROPS_WARNINGS.take() {
-                        component_will_receive_props_unique_names.insert(
-                            get_component_name_from_fiber(&fiber)
-                                .filter(|name| !name.is_empty())
-                                .unwrap_or_else(|| "Component".to_string()),
-                        );
-                        DID_WARN_ABOUT_UNSAFE_LIFECYCLES
-                            .with(|did_warn| did_warn.add(&fiber.r#type.get()));
-                    }
+                    PENDING_COMPONENT_WILL_RECEIVE_PROPS_WARNINGS.with_borrow(|pending| {
+                        for fiber in pending {
+                                component_will_receive_props_unique_names.insert(
+                                    get_component_name_from_fiber(fiber)
+                                        .filter(|name| !name.is_empty())
+                                        .unwrap_or_else(|| "Component".to_string()),
+                                );
+                                DID_WARN_ABOUT_UNSAFE_LIFECYCLES
+                                    .with(|did_warn| did_warn.add(&fiber.r#type.get()));
+                        }
+                    });
+                    PENDING_COMPONENT_WILL_RECEIVE_PROPS_WARNINGS.set(Vec::new());
                 }
 
                 let mut unsafe_component_will_receive_props_unique_names = HashSet::new();
                 if PENDING_UNSAFE_COMPONENT_WILL_RECEIVE_PROPS_WARNINGS.with_borrow(|pending| !pending.is_empty()) {
-                    for fiber in PENDING_UNSAFE_COMPONENT_WILL_RECEIVE_PROPS_WARNINGS.take() {
-                        unsafe_component_will_receive_props_unique_names.insert(
-                            get_component_name_from_fiber(&fiber)
-                                .filter(|name| !name.is_empty())
-                                .unwrap_or_else(|| "Component".to_string()),
-                        );
-                        DID_WARN_ABOUT_UNSAFE_LIFECYCLES
-                            .with(|did_warn| did_warn.add(&fiber.r#type.get()));
-                    }
+                    PENDING_UNSAFE_COMPONENT_WILL_RECEIVE_PROPS_WARNINGS.with_borrow(|pending| {
+                        for fiber in pending {
+                                unsafe_component_will_receive_props_unique_names.insert(
+                                    get_component_name_from_fiber(fiber)
+                                        .filter(|name| !name.is_empty())
+                                        .unwrap_or_else(|| "Component".to_string()),
+                                );
+                                DID_WARN_ABOUT_UNSAFE_LIFECYCLES
+                                    .with(|did_warn| did_warn.add(&fiber.r#type.get()));
+                        }
+                    });
+                    PENDING_UNSAFE_COMPONENT_WILL_RECEIVE_PROPS_WARNINGS.set(Vec::new());
                 }
 
                 let mut component_will_update_unique_names = HashSet::new();
                 if PENDING_COMPONENT_WILL_UPDATE_WARNINGS.with_borrow(|pending| !pending.is_empty()) {
-                    for fiber in PENDING_COMPONENT_WILL_UPDATE_WARNINGS.take() {
-                        component_will_update_unique_names.insert(
-                            get_component_name_from_fiber(&fiber)
-                                .filter(|name| !name.is_empty())
-                                .unwrap_or_else(|| "Component".to_string()),
-                        );
-                        DID_WARN_ABOUT_UNSAFE_LIFECYCLES
-                            .with(|did_warn| did_warn.add(&fiber.r#type.get()));
-                    }
+                    PENDING_COMPONENT_WILL_UPDATE_WARNINGS.with_borrow(|pending| {
+                        for fiber in pending {
+                                component_will_update_unique_names.insert(
+                                    get_component_name_from_fiber(fiber)
+                                        .filter(|name| !name.is_empty())
+                                        .unwrap_or_else(|| "Component".to_string()),
+                                );
+                                DID_WARN_ABOUT_UNSAFE_LIFECYCLES
+                                    .with(|did_warn| did_warn.add(&fiber.r#type.get()));
+                        }
+                    });
+                    PENDING_COMPONENT_WILL_UPDATE_WARNINGS.set(Vec::new());
                 }
 
                 let mut unsafe_component_will_update_unique_names = HashSet::new();
                 if PENDING_UNSAFE_COMPONENT_WILL_UPDATE_WARNINGS.with_borrow(|pending| !pending.is_empty()) {
-                    for fiber in PENDING_UNSAFE_COMPONENT_WILL_UPDATE_WARNINGS.take() {
-                        unsafe_component_will_update_unique_names.insert(
-                            get_component_name_from_fiber(&fiber)
-                                .filter(|name| !name.is_empty())
-                                .unwrap_or_else(|| "Component".to_string()),
-                        );
-                        DID_WARN_ABOUT_UNSAFE_LIFECYCLES
-                            .with(|did_warn| did_warn.add(&fiber.r#type.get()));
-                    }
+                    PENDING_UNSAFE_COMPONENT_WILL_UPDATE_WARNINGS.with_borrow(|pending| {
+                        for fiber in pending {
+                                unsafe_component_will_update_unique_names.insert(
+                                    get_component_name_from_fiber(fiber)
+                                        .filter(|name| !name.is_empty())
+                                        .unwrap_or_else(|| "Component".to_string()),
+                                );
+                                DID_WARN_ABOUT_UNSAFE_LIFECYCLES
+                                    .with(|did_warn| did_warn.add(&fiber.r#type.get()));
+                        }
+                    });
+                    PENDING_UNSAFE_COMPONENT_WILL_UPDATE_WARNINGS.set(Vec::new());
                 }
 
                 // Finally, we flush all the warnings
@@ -372,9 +390,7 @@ js::on_load! {
             });
 
             react_strict_mode_warnings.flush_legacy_context_warning.set(|| {
-                let pending_legacy_context_warning =
-                    PENDING_LEGACY_CONTEXT_WARNING.with_borrow(Clone::clone);
-                {
+                PENDING_LEGACY_CONTEXT_WARNING.with_borrow(|pending_legacy_context_warning| {
                     for fiber_array in pending_legacy_context_warning.values() {
                         if fiber_array.is_empty() {
                             continue;
@@ -415,7 +431,7 @@ js::on_load! {
                             (),
                         );
                     }
-                }
+                });
             });
 
             react_strict_mode_warnings.discard_pending_warnings.set(|| {

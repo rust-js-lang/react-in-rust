@@ -114,7 +114,7 @@ function createFiber(tag, pendingProps, key, mode) {
   const fiber = {
     // Instance
     tag,
-    key: key ?? null,
+    key,
     elementType: null,
     type: null,
     stateNode: null,
@@ -174,11 +174,7 @@ function createFiber(tag, pendingProps, key, mode) {
     fiber._debugTask = null;
     fiber._debugNeedsRemount = false;
     fiber._debugHookTypes = null;
-    if (
-      !hasBadMapPolyfill &&
-      typeof Object !== 'undefined' &&
-      typeof Object.preventExtensions !== 'undefined'
-    ) {
+    if (!hasBadMapPolyfill && typeof Object.preventExtensions === 'function') {
       Object.preventExtensions(fiber);
     }
   }
@@ -212,7 +208,7 @@ export function createWorkInProgress(current, pendingProps) {
     // node that we're free to reuse. This is lazily created to avoid allocating
     // extra objects for things that are never updated. It also allow us to
     // reclaim the extra memory if needed.
-    const borrow = $borrow($fieldCell(current, 'key', true), true);
+    const borrow = $borrow($fieldCell(current, 'key'), true);
     const key = borrow.value;
     $unborrow(borrow);
     workInProgress = createFiber(current.tag, pendingProps, key, current.mode);
@@ -224,10 +220,10 @@ export function createWorkInProgress(current, pendingProps) {
       // DEV-only fields
 
       workInProgress._debugOwner = current._debugOwner;
-      workInProgress._debugStack = current._debugStack ?? null;
-      workInProgress._debugTask = current._debugTask ?? null;
+      workInProgress._debugStack = current._debugStack;
+      workInProgress._debugTask = current._debugTask;
       const debugHookTypes = current._debugHookTypes;
-      workInProgress._debugHookTypes = debugHookTypes ?? null;
+      workInProgress._debugHookTypes = debugHookTypes;
     }
 
     workInProgress.alternate = current;
@@ -248,10 +244,10 @@ export function createWorkInProgress(current, pendingProps) {
     if (enableOptimisticKey) {
       // For optimistic keys, the Fibers can have different keys if one is optimistic
       // and the other one is filled in.
-      const value = $borrow($fieldCell(current, 'key', true), true);
+      const value = $borrow($fieldCell(current, 'key'), true);
       const key = value.value;
       $unborrow(value);
-      $cellReplace($borrowMut($fieldCell(alternate, 'key', true)), key);
+      $cellReplace($borrowMut($fieldCell(alternate, 'key')), key);
     }
 
     if (enableProfilerTimer) {
@@ -286,8 +282,7 @@ export function createWorkInProgress(current, pendingProps) {
         ? {
             lanes: currentDependencies.lanes,
             firstContext: currentDependencies.firstContext,
-            _debugThenableState:
-              currentDependencies._debugThenableState ?? null,
+            _debugThenableState: currentDependencies._debugThenableState,
           }
         : {
             lanes: currentDependencies.lanes,
@@ -380,10 +375,10 @@ export function resetWorkInProgress(workInProgress, renderLanes) {
     if (enableOptimisticKey) {
       // For optimistic keys, the Fibers can have different keys if one is optimistic
       // and the other one is filled in.
-      const borrow = $borrow($fieldCell(current, 'key', true), true);
+      const borrow = $borrow($fieldCell(current, 'key'), true);
       const key = borrow.value;
       $unborrow(borrow);
-      $cellReplace($borrowMut($fieldCell(workInProgress, 'key', true)), key);
+      $cellReplace($borrowMut($fieldCell(workInProgress, 'key')), key);
     }
 
     // Clone the dependencies object. This is mutated during the render phase, so
@@ -395,8 +390,7 @@ export function resetWorkInProgress(workInProgress, renderLanes) {
           ? {
               lanes: currentDependencies.lanes,
               firstContext: currentDependencies.firstContext,
-              _debugThenableState:
-                currentDependencies._debugThenableState ?? null,
+              _debugThenableState: currentDependencies._debugThenableState,
             }
           : {
               lanes: currentDependencies.lanes,
@@ -679,8 +673,8 @@ export function createFiberFromElement(element, mode, lanes) {
   );
   if (__DEV__) {
     fiber._debugOwner = element._owner;
-    fiber._debugStack = element._debugStack ?? null;
-    fiber._debugTask = element._debugTask ?? null;
+    fiber._debugStack = element._debugStack;
+    fiber._debugTask = element._debugTask;
   }
   return fiber;
 }
@@ -787,7 +781,7 @@ export function createFiberFromTracingMarker(pendingProps, mode, lanes, key) {
     transitions: null,
     pendingBoundaries: null,
     aborts: null,
-    name: pendingProps.name ?? null,
+    name: pendingProps.name,
   };
   fiber.stateNode = tracingMarkerInstance;
   return fiber;

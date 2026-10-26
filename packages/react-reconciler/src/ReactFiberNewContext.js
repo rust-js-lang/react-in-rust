@@ -197,7 +197,7 @@ function propagateContextChanges(
       nextFiber = fiber.child;
 
       let dep = list.firstContext;
-      find_changed_dep: while (dep != null) {
+      findChangedDep: while (dep != null) {
         // Assigning these to constants to help Flow
         const consumer = fiber;
 
@@ -233,7 +233,7 @@ function propagateContextChanges(
               // siblings, though
               nextFiber = undefined;
             }
-            break find_changed_dep;
+            break findChangedDep;
           }
         }
         dep = dep.next;
@@ -554,10 +554,16 @@ function readContextForConsumer(consumer, context) {
 
     // This is the first dependency for this component. Create a new list.
     lastContextDependency = contextItem;
-    consumer.dependencies = {
-      lanes: NoLanes,
-      firstContext: contextItem,
-    };
+    consumer.dependencies = __DEV__
+      ? {
+          lanes: NoLanes,
+          firstContext: contextItem,
+          _debugThenableState: null,
+        }
+      : {
+          lanes: NoLanes,
+          firstContext: contextItem,
+        };
     consumer.flags |= NeedsPropagation;
   } else {
     // Append a new context item.

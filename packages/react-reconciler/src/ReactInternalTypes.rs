@@ -86,7 +86,6 @@ pub struct Dependencies {
     pub first_context: RefCell<Option<Rc<ContextDependency<Option<&'static Unknown>>>>>,
     // DEV-only: ReactFiberThenable's `ThenableState`.
     #[cfg_attr(rust_js, rust_js::name = "_debugThenableState")]
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_thenable_state: Cell<Option<&'static Unknown>>,
 }
 
@@ -100,7 +99,9 @@ pub struct MemoCache {
 #[derive(Clone, Copy)]
 #[cfg_attr(rust_js, rust_js::untagged)]
 pub enum Ref {
-    Callback(&'static dyn Fn(Option<&'static Unknown>)),
+    // What it gives is the cleanup it's called with `null` in place of, if
+    // it's a function.
+    Callback(&'static dyn Fn(Option<&'static Unknown>) -> Option<&'static Unknown>),
     // shared/ReactTypes' `RefObject`.
     #[cfg_attr(rust_js, rust_js::otherwise)]
     Object(&'static Unknown),
@@ -123,7 +124,6 @@ pub struct Fiber {
     pub tag: Cell<WorkTag>,
 
     // Unique identifier of this child.
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub key: RefCell<Option<ReactKey>>,
 
     // The value of element.type which is used to preserve the identity during
@@ -161,8 +161,7 @@ pub struct Fiber {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub r#ref: Cell<Option<Ref>>,
 
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub ref_cleanup: Cell<Option<&'static dyn Fn()>>,
+    pub ref_cleanup: Cell<Option<&'static Unknown>>,
 
     // Input is the data coming into process this fiber. Arguments. Props.
     pub pending_props: Cell<Option<&'static Unknown>>, // This type will be more specific once we overload the tag.
@@ -231,17 +230,14 @@ pub struct Fiber {
     #[cfg_attr(rust_js, rust_js::name = "_debugOwner")]
     pub debug_owner: Cell<Option<&'static Unknown>>,
     #[cfg_attr(rust_js, rust_js::name = "_debugStack")]
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_stack: Cell<Option<&'static JsError>>,
     #[cfg_attr(rust_js, rust_js::name = "_debugTask")]
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_task: Cell<Option<&'static ConsoleTask>>,
     #[cfg_attr(rust_js, rust_js::name = "_debugNeedsRemount")]
     pub debug_needs_remount: Cell<Option<bool>>,
 
     // Used to verify that the order of hooks does not change between renders.
     #[cfg_attr(rust_js, rust_js::name = "_debugHookTypes")]
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_hook_types: RefCell<Option<Rc<RefCell<Vec<HookType>>>>>,
 }
 

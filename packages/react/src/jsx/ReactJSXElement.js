@@ -278,7 +278,7 @@ function ReactElement(type, key, props, owner, debugStack, debugTask) {
       writable: true,
       value: debugTask,
     });
-    if (typeof Object !== 'undefined' && typeof Object.freeze !== 'undefined') {
+    if (typeof Object.freeze !== 'undefined') {
       Object.freeze(element.props);
       Object.freeze(element);
     }
@@ -513,10 +513,7 @@ function jsxDEVImpl(
             validateChildKeys(child);
           }
 
-          if (
-            typeof Object !== 'undefined' &&
-            typeof Object.freeze !== 'undefined'
-          ) {
+          if (typeof Object.freeze !== 'undefined') {
             Object.freeze(children);
           }
         } else {
@@ -707,11 +704,7 @@ export function createElement(type, config, ...children) {
     props.children = children[0];
   } else if (childrenLength > 1) {
     const childArray = children.slice();
-    if (
-      __DEV__ &&
-      typeof Object !== 'undefined' &&
-      typeof Object.freeze !== 'undefined'
-    ) {
+    if (__DEV__ && typeof Object.freeze !== 'undefined') {
       Object.freeze(childArray);
     }
     props.children = childArray;

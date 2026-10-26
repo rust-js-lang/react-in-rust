@@ -139,7 +139,6 @@ js::on_load! {
     }
 }
 
-#[cfg_attr(rust_js, rust_js::nullable(key))]
 fn create_fiber(
     tag: WorkTag,
     pending_props: Option<&'static Unknown>,
@@ -161,7 +160,7 @@ fn create_fiber(
         index: Cell::new(0),
 
         r#ref: Cell::new(None),
-        ref_cleanup: Cell::new(None),
+        ref_cleanup: Cell::new(js::null()),
 
         pending_props: Cell::new(pending_props),
         memoized_props: Cell::new(js::null()),
@@ -217,12 +216,12 @@ fn create_fiber(
         // This isn't directly used but is handy for debugging internals:
         fiber.debug_info.set(js::null());
         fiber.debug_owner.set(js::null());
-        fiber.debug_stack.set(None);
-        fiber.debug_task.set(None);
+        fiber.debug_stack.set(js::null());
+        fiber.debug_task.set(js::null());
         fiber.debug_needs_remount.set(Some(false));
-        fiber.debug_hook_types.replace(None);
+        fiber.debug_hook_types.replace(js::null());
         if HAS_BAD_MAP_POLYFILL.get() != Some(true)
-            && js::is_defined(js::object::prevent_extensions::<Fiber>)
+            && js::is_function(js::object::prevent_extensions::<Fiber>)
         {
             js::object::prevent_extensions(&*fiber);
         }
@@ -535,7 +534,7 @@ pub fn create_host_root_fiber(tag: RootTag, is_strict_mode: bool) -> Rc<Fiber> {
         mode |= PROFILE_MODE;
     }
 
-    create_fiber(HOST_ROOT, js::null(), None, mode)
+    create_fiber(HOST_ROOT, js::null(), js::null(), mode)
 }
 
 // TODO: Get rid of this helper. Only createFiberFromElement should exist.
@@ -978,15 +977,15 @@ pub fn create_fiber_from_tracing_marker(
     fiber
 }
 
-pub fn create_fiber_from_text(content: &'static str, mode: TypeOfMode, lanes: Lanes) -> Rc<Fiber> {
-    let fiber = create_fiber(HOST_TEXT, Some(js::unknown(content)), None, mode);
+pub fn create_fiber_from_text(content: String, mode: TypeOfMode, lanes: Lanes) -> Rc<Fiber> {
+    let fiber = create_fiber(HOST_TEXT, Some(js::unknown_of(content)), js::null(), mode);
     fiber.lanes.set(lanes);
     fiber
 }
 
 // ReactFiberConfig's `SuspenseInstance | ActivityInstance`.
 pub fn create_fiber_from_dehydrated_fragment(dehydrated_node: &'static Unknown) -> Rc<Fiber> {
-    let fiber = create_fiber(DEHYDRATED_FRAGMENT, js::null(), None, NO_MODE);
+    let fiber = create_fiber(DEHYDRATED_FRAGMENT, js::null(), js::null(), NO_MODE);
     fiber.state_node.set(Some(dehydrated_node));
     fiber
 }
@@ -1012,7 +1011,7 @@ pub fn create_fiber_from_throw(
     mode: TypeOfMode,
     lanes: Lanes,
 ) -> Rc<Fiber> {
-    let fiber = create_fiber(THROW, error, None, mode);
+    let fiber = create_fiber(THROW, error, js::null(), mode);
     fiber.lanes.set(lanes);
     fiber
 }

@@ -18,6 +18,8 @@ pub type PriorityLevel = u8;
 /// A task the scheduler was given, which `cancelCallback` cancels.
 pub struct Task(PhantomData<JsObject>);
 
+unsafe impl js::Defined for Task {}
+
 /// What `scheduleCallback` is given: how long to wait first.
 pub struct SchedulerOptions {
     pub delay: f64,

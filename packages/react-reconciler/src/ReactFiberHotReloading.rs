@@ -201,7 +201,7 @@ pub fn mark_failed_error_boundary_for_hot_reloading(fiber: &Fiber) {
             // Hot reloading is disabled.
             return;
         }
-        if !js::is_defined(js::weak_set::new::<Fiber>) {
+        if !js::is_function(js::weak_set::new::<Fiber>) {
             return;
         }
         FAILED_BOUNDARIES.with_borrow_mut(|failed_boundaries| {

@@ -24,8 +24,7 @@ export function getViewTransitionName(props, instance) {
   // We assume we always call this in the commit phase.
   const root = getCommittingRoot();
   const identifierPrefix = root.identifierPrefix;
-  const globalClientId = globalClientIdCounter;
-  globalClientIdCounter = globalClientId + 1;
+  const globalClientId = globalClientIdCounter++;
   const name =
     '_' + identifierPrefix + 't_' + globalClientId.toString(32) + '_';
   instance.autoName = name;
@@ -50,7 +49,11 @@ function getClassNameByType(classByType) {
           // type that also matches.
           return 'none';
         }
-        className = className == null ? match : className + (' ' + match);
+        if (className == null) {
+          className = match;
+        } else {
+          className += ' ' + match;
+        }
       }
     }
   }

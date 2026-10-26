@@ -78,6 +78,19 @@ impl SharedStateClient {
         unreachable!()
     }
 
+    /// Whether a legacy `act` is batching its updates (DEV only).
+    #[cfg_attr(rust_js, rust_js::link_name = "get isBatchingLegacy")]
+    pub fn is_batching_legacy(&self) -> bool {
+        unreachable!()
+    }
+
+    /// Records that a legacy root scheduled an update inside `act` (DEV only).
+    #[cfg_attr(rust_js, rust_js::link_name = "set didScheduleLegacyUpdate")]
+    pub fn set_did_schedule_legacy_update(&self, did_schedule_legacy_update: bool) {
+        let _ = did_schedule_legacy_update;
+        unreachable!()
+    }
+
     /// What an `act` scope's renderers do next, `None` outside an `act` (DEV
     /// only): the `react` package's `ActQueue`.
     #[cfg_attr(rust_js, rust_js::link_name = "get actQueue")]

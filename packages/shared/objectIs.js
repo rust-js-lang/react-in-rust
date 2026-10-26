@@ -19,10 +19,7 @@ function is(x, y) {
   return x === y;
 }
 
-const objectIs =
-  typeof Object !== 'undefined' && typeof Object.is !== 'undefined'
-    ? Object.is
-    : is;
+const objectIs = typeof Object.is !== 'undefined' ? Object.is : is;
 
 export default objectIs;
 //# sourceMappingURL=objectIs.js.map

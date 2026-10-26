@@ -6,6 +6,8 @@ pub mod clz32;
 pub mod get_component_name_from_fiber;
 #[path = "src/ReactCapturedValue.rs"]
 pub mod react_captured_value;
+#[path = "src/ReactChildFiber.rs"]
+pub mod react_child_fiber;
 #[path = "src/ReactCurrentFiber.rs"]
 pub mod react_current_fiber;
 #[path = "src/ReactEventPriorities.rs"]
@@ -24,8 +26,12 @@ pub mod react_fiber_async_dispatcher;
 pub mod react_fiber_cache_component;
 #[path = "src/ReactFiberCallUserSpace.rs"]
 pub mod react_fiber_call_user_space;
+#[path = "src/ReactFiberClassComponent.rs"]
+pub mod react_fiber_class_component;
 #[path = "src/ReactFiberClassUpdateQueue.rs"]
 pub mod react_fiber_class_update_queue;
+#[path = "src/ReactFiberCommitEffects.rs"]
+pub mod react_fiber_commit_effects;
 #[path = "src/ReactFiberComponentStack.rs"]
 pub mod react_fiber_component_stack;
 #[path = "src/ReactFiberConcurrentUpdates.rs"]
@@ -44,6 +50,8 @@ pub mod react_fiber_hidden_context;
 pub mod react_fiber_host_context;
 #[path = "src/ReactFiberHotReloading.rs"]
 pub mod react_fiber_hot_reloading;
+#[path = "src/ReactFiberHydrationContext.rs"]
+pub mod react_fiber_hydration_context;
 #[path = "src/ReactFiberHydrationDiffs.rs"]
 pub mod react_fiber_hydration_diffs;
 #[path = "src/ReactFiberLane.rs"]
@@ -58,6 +66,10 @@ pub mod react_fiber_new_context;
 pub mod react_fiber_offscreen_component;
 #[path = "src/ReactFiberRoot.rs"]
 pub mod react_fiber_root;
+#[path = "src/ReactFiberRootScheduler.rs"]
+pub mod react_fiber_root_scheduler;
+#[path = "src/ReactFiberScope.rs"]
+pub mod react_fiber_scope;
 #[path = "src/ReactFiberShellHydration.rs"]
 pub mod react_fiber_shell_hydration;
 #[path = "src/ReactFiberStack.rs"]
@@ -76,6 +88,8 @@ pub mod react_fiber_transition;
 pub mod react_fiber_transition_types;
 #[path = "src/ReactFiberTreeContext.rs"]
 pub mod react_fiber_tree_context;
+#[path = "src/ReactFiberTreeReflection.rs"]
+pub mod react_fiber_tree_reflection;
 #[path = "src/ReactFiberUnwindWork.rs"]
 pub mod react_fiber_unwind_work;
 #[path = "src/ReactFiberViewTransitionComponent.rs"]

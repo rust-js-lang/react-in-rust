@@ -8,11 +8,11 @@
 import {current as currentOwner} from './ReactCurrentFiber.js';
 import {CacheContext} from './ReactFiberCacheComponent.js';
 import {readContext} from './ReactFiberNewContext.js';
-import {$someGet, $someValue, $unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/runtime';
 
 function getCacheForType(resourceType) {
   const cache = $unwrap(readContext(CacheContext));
-  let cacheForType = $someValue($someGet(cache.data, resourceType));
+  let cacheForType = cache.data.get(resourceType);
   if (cacheForType === undefined) {
     cacheForType = resourceType();
     cache.data.set(resourceType, cacheForType);

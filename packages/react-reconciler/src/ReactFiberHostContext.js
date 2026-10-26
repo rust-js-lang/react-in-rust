@@ -63,7 +63,7 @@ export function pushHostContainer(fiber, nextRootInstance) {
   // we'd have a different number of entries on the stack depending on
   // whether getRootHostContext() throws somewhere in renderer code or not.
   // So we push an empty value first. This lets us safely unwind on errors.
-  push(contextStackCursor, undefined, fiber);
+  push(contextStackCursor, null, fiber);
   const nextRootContext = getRootHostContext(nextRootInstance);
   // Now that we know this function doesn't throw, replace it.
   pop(contextStackCursor, fiber);

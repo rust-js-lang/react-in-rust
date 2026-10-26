@@ -12,7 +12,7 @@ js::export_default! {
     /// Performs equality by iterating through keys on an object and returning false
     /// when any key has values which are not strictly equal between the arguments.
     /// Returns true when the values of all keys are strictly equal.
-    fn shallow_equal(obj_a: Option<&'static Unknown>, obj_b: Option<&'static Unknown>) -> bool {
+    pub fn shallow_equal(obj_a: Option<&'static Unknown>, obj_b: Option<&'static Unknown>) -> bool {
         let is = IS.with(|is| *is);
         if is(&obj_a, &obj_b) {
             return true;

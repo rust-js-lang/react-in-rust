@@ -24,21 +24,28 @@ import {
   SuspenseComponent,
   SuspenseListComponent,
 } from './ReactWorkTags.js';
+import {$borrow, $index, $iter, $next, $unborrow} from '@rust-js/runtime';
 
 const maxRowLength = 120;
 const idealDepth = 15;
 
 function findNotableNode(node, indent) {
-  if (
-    node.serverProps === undefined &&
-    node.serverTail.length === 0 &&
-    node.children.length === 1 &&
-    node.distanceFromLeaf > 3 &&
-    node.distanceFromLeaf > ((idealDepth - indent) | 0)
-  ) {
-    // This is not an interesting node for contextual purposes so we can skip it.
-    const child = node.children[0];
-    return findNotableNode(child, indent);
+  if (node.serverProps === undefined) {
+    const borrow = $borrow(node.serverTail, true);
+    if (borrow.length === 0) {
+      $unborrow(borrow);
+      if (
+        node.children.length === 1 &&
+        node.distanceFromLeaf > 3 &&
+        node.distanceFromLeaf > ((idealDepth - indent) | 0)
+      ) {
+        // This is not an interesting node for contextual purposes so we can skip it.
+        const child = $index(node.children, 0);
+        return findNotableNode(child, indent);
+      }
+    } else {
+      $unborrow(borrow);
+    }
   }
   return node;
 }
@@ -60,7 +67,7 @@ function describeFiberType(fiber) {
     case HostHoistable:
     case HostSingleton:
     case HostComponent:
-      return fiber.type ?? null;
+      return fiber.type;
     case LazyComponent:
       return 'Lazy';
     case ActivityComponent:
@@ -72,15 +79,15 @@ function describeFiberType(fiber) {
     case FunctionComponent:
     case SimpleMemoComponent: {
       const fn = fiber.type;
-      return fn.displayName || fn.name || null;
+      return fn.displayName || fn.name || undefined;
     }
     case ForwardRef: {
       const render = fiber.type.render;
-      return render.displayName || render.name || null;
+      return render.displayName || render.name || undefined;
     }
     case ClassComponent: {
       const ctr = fiber.type;
-      return ctr.displayName || ctr.name || null;
+      return ctr.displayName || ctr.name || undefined;
     }
     default:
       // Skip
@@ -487,7 +494,7 @@ function describeNode(node, indent) {
   const skipToNode = findNotableNode(node, indent);
   if (
     skipToNode !== node &&
-    (node.children.length !== 1 || node.children[0] !== skipToNode)
+    (node.children.length !== 1 || $index(node.children, 0) !== skipToNode)
   ) {
     return (
       indentation(indent) + '...\n' + describeNode(skipToNode, (indent + 1) | 0)
@@ -496,8 +503,8 @@ function describeNode(node, indent) {
 
   // Prefix with any server components for context
   let parentContent = '';
-  if (node.fiber._debugInfo != null) {
-    const debugInfo = node.fiber._debugInfo;
+  const debugInfo = node.fiber._debugInfo;
+  if (debugInfo != null) {
     for (const info of debugInfo) {
       const serverComponentName = info.name;
       if (typeof serverComponentName === 'string') {
@@ -523,14 +530,15 @@ function describeNode(node, indent) {
     const type = describeFiberType(node.fiber);
     if (type != null) {
       // Element Node
-      if (node.serverProps === undefined) {
+      const serverProps = node.serverProps;
+      if (serverProps === undefined) {
         // Just a reference node for context.
         selfContent = describeCollapsedElement(type, clientProps, indent);
         indent = (indent + 1) | 0;
-      } else if (node.serverProps === null) {
+      } else if (serverProps === null) {
         selfContent = describeExpandedElement(type, clientProps, added(indent));
         indent = (indent + 1) | 0;
-      } else if (typeof node.serverProps === 'string') {
+      } else if (typeof serverProps === 'string') {
         if (__DEV__) {
           console.error(
             'Should not have matched a non HostText fiber to a Text node. This is a bug in React.',
@@ -540,7 +548,7 @@ function describeNode(node, indent) {
         selfContent = describeElementDiff(
           type,
           clientProps,
-          node.serverProps,
+          serverProps,
           indent,
         );
         indent = (indent + 1) | 0;
@@ -553,11 +561,11 @@ function describeNode(node, indent) {
   let childFiber = node.fiber.child;
   let diffIdx = 0;
   while (childFiber != null && diffIdx < node.children.length) {
-    const childNode = node.children[diffIdx];
+    const childNode = $index(node.children, diffIdx);
     if (childNode.fiber === childFiber) {
       // This was a match in the diff.
       childContent += describeNode(childNode, indent);
-      diffIdx++;
+      diffIdx = (diffIdx + 1) >>> 0;
     } else {
       // This is an unrelated previous sibling.
       childContent += describeSiblingFiber(childFiber, indent);
@@ -573,28 +581,34 @@ function describeNode(node, indent) {
   }
 
   // Deleted tail nodes
-  const serverTail = node.serverTail;
+  const serverTail = $borrow(node.serverTail, true);
   if (node.serverProps === null) {
     indent = (indent - 1) | 0;
   }
-  for (const tailNode of serverTail) {
-    if (typeof tailNode === 'string') {
-      // Removed text node
-      childContent +=
-        removed(indent) +
-        describeTextNode(tailNode, maxRowLength - indent * 2) +
-        '\n';
-    } else {
-      // Removed element
-      childContent += describeExpandedElement(
-        tailNode.type,
-        tailNode.props,
-        removed(indent),
-      );
+  try {
+    const iter = $iter(serverTail);
+    let tailNode;
+    while ((tailNode = $next(iter)) != null) {
+      if (typeof tailNode === 'string') {
+        // Removed text node
+        childContent +=
+          removed(indent) +
+          describeTextNode(tailNode, maxRowLength - indent * 2) +
+          '\n';
+      } else {
+        // Removed element
+        childContent += describeExpandedElement(
+          tailNode.type,
+          tailNode.props,
+          removed(indent),
+        );
+      }
     }
-  }
 
-  return parentContent + selfContent + childContent;
+    return parentContent + selfContent + childContent;
+  } finally {
+    $unborrow(serverTail);
+  }
 }
 
 export function describeDiff(rootNode) {

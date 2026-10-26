@@ -59,6 +59,7 @@ pub fn pop<T>(cursor: &StackCursor<T>, fiber: &Fiber) {
     INDEX.set(INDEX.get() - 1);
 }
 
+#[cfg_attr(rust_js, rust_js::nullable(value))]
 pub fn push<T: 'static>(cursor: &StackCursor<T>, value: T, fiber: &Rc<Fiber>) {
     INDEX.set(INDEX.get() + 1);
     let index = INDEX.get() as usize;

@@ -64,15 +64,8 @@ use webapi::console;
 
 use crate::clz32::CLZ32;
 use crate::react_fiber_flags::{FORKED, NO_FLAGS};
+use crate::react_fiber_hydration_context::get_is_hydrating;
 use crate::react_internal_types::Fiber;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberHydrationContext.js#getIsHydrating"
-)]
-fn get_is_hydrating() -> bool {
-    unreachable!()
-}
 
 pub struct TreeContext {
     pub id: i32,

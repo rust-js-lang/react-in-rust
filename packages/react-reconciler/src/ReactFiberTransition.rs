@@ -23,6 +23,7 @@ use crate::react_fiber_cache_component::{
     CACHE_CONTEXT, Cache, SpawnedCachePool, create_cache, retain_cache,
 };
 use crate::react_fiber_lane::{Lanes, NO_LANE};
+use crate::react_fiber_root_scheduler::FIRST_SCHEDULED_ROOT;
 use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
 use crate::react_fiber_transition_types::{
     ENTANGLED_TRANSITION_TYPES, entangle_async_transition_types, queue_transition_types,
@@ -33,9 +34,6 @@ use crate::react_profiler_timer::start_async_transition_timer;
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFiberConfig.js#isPrimaryRenderer"]
     safe static IS_PRIMARY_RENDERER: bool;
-    #[link_name = "./src/ReactFiberRootScheduler.js#firstScheduledRoot"]
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    safe static FIRST_SCHEDULED_ROOT: Option<Rc<FiberRoot>>;
 }
 
 #[cfg_attr(
@@ -143,7 +141,7 @@ fn on_start_transition_finish_for_reconciler(
             let entangled_transition_types = entangled_transition_types.borrow().clone();
             // If we scheduled work on any new roots, we need to add any entangled async
             // transition types to those roots too.
-            let mut root = FIRST_SCHEDULED_ROOT.clone();
+            let mut root = FIRST_SCHEDULED_ROOT.with_borrow(Clone::clone);
             while let Some(scheduled_root) = root {
                 queue_transition_types(&scheduled_root, &entangled_transition_types);
                 root = scheduled_root.next.borrow().clone();
@@ -155,7 +153,7 @@ fn on_start_transition_finish_for_reconciler(
             // Within this Transition we should've now scheduled any roots we have updates
             // to work on. If there are no updates on a root, then the Transition type won't
             // be applied to that root.
-            let mut root = FIRST_SCHEDULED_ROOT.clone();
+            let mut root = FIRST_SCHEDULED_ROOT.with_borrow(Clone::clone);
             while let Some(scheduled_root) = root {
                 queue_transition_types(&scheduled_root, &transition_types);
                 root = scheduled_root.next.borrow().clone();
@@ -213,7 +211,7 @@ js::on_load! {
                 // same provider, but it doesn't update in this callback, then we still update
                 // its options and retain it until this cancellation releases. The idea being
                 // that it's conceptually started globally.
-                let mut root = FIRST_SCHEDULED_ROOT.clone();
+                let mut root = FIRST_SCHEDULED_ROOT.with_borrow(Clone::clone);
                 while let Some(scheduled_root) = root {
                     let transition_types = transition.types.borrow().clone();
                     let scheduled_gesture =

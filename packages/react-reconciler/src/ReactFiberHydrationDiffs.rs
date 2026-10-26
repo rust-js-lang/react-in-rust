@@ -3,6 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+use std::cell::{Cell, RefCell};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::rc::Rc;
 
@@ -55,10 +56,10 @@ pub enum ServerTailNode {
 
 pub struct HydrationDiffNode {
     pub fiber: Rc<Fiber>,
-    pub children: Vec<HydrationDiffNode>,
-    pub server_props: ServerProps<'static>, // null means no matching server node
-    pub server_tail: Vec<ServerTailNode>,
-    pub distance_from_leaf: i32,
+    pub children: RefCell<Vec<Rc<HydrationDiffNode>>>,
+    pub server_props: Cell<ServerProps<'static>>, // null means no matching server node
+    pub server_tail: RefCell<Vec<ServerTailNode>>,
+    pub distance_from_leaf: Cell<i32>,
 }
 
 #[cfg_attr(rust_js, rust_js::name = "maxRowLength")]
@@ -66,18 +67,18 @@ const MAX_ROW_LENGTH: f64 = 120.0;
 #[cfg_attr(rust_js, rust_js::name = "idealDepth")]
 const IDEAL_DEPTH: i32 = 15;
 
-fn find_notable_node(node: &HydrationDiffNode, indent: i32) -> &HydrationDiffNode {
-    if matches!(node.server_props, ServerProps::Unknown)
-        && node.server_tail.is_empty()
-        && node.children.len() == 1
-        && node.distance_from_leaf > 3
-        && node.distance_from_leaf > IDEAL_DEPTH - indent
+fn find_notable_node(node: &Rc<HydrationDiffNode>, indent: i32) -> Rc<HydrationDiffNode> {
+    if matches!(node.server_props.get(), ServerProps::Unknown)
+        && node.server_tail.borrow().is_empty()
+        && node.children.borrow().len() == 1
+        && node.distance_from_leaf.get() > 3
+        && node.distance_from_leaf.get() > IDEAL_DEPTH - indent
     {
         // This is not an interesting node for contextual purposes so we can skip it.
-        let child = &node.children[0];
-        return find_notable_node(child, indent);
+        let child = Rc::clone(&node.children.borrow()[0]);
+        return find_notable_node(&child, indent);
     }
-    node
+    Rc::clone(node)
 }
 
 fn indentation(indent: i32) -> String {
@@ -92,7 +93,6 @@ fn removed(indent: i32) -> String {
     "- ".to_owned() + &"  ".repeat(indent as usize)
 }
 
-#[cfg_attr(rust_js, rust_js::nullable)]
 fn describe_fiber_type(fiber: &Fiber) -> Option<String> {
     match fiber.tag.get() {
         HOST_HOISTABLE | HOST_SINGLETON | HOST_COMPONENT => unsafe { js::cast(fiber.r#type.get()) },
@@ -135,7 +135,7 @@ fn describe_fiber_type(fiber: &Fiber) -> Option<String> {
         }
         _ => {
             // Skip
-            None
+            js::null()
         }
     }
 }
@@ -589,12 +589,13 @@ fn describe_sibling_fiber(fiber: &Fiber, indent: i32) -> String {
     indentation(indent) + "<" + &r#type + ">" + "\n"
 }
 
-fn describe_node(node: &HydrationDiffNode, mut indent: i32) -> String {
+fn describe_node(node: &Rc<HydrationDiffNode>, mut indent: i32) -> String {
     let skip_to_node = find_notable_node(node, indent);
-    if !std::ptr::eq(skip_to_node, node)
-        && (node.children.len() != 1 || !std::ptr::eq(&node.children[0], skip_to_node))
+    if !Rc::ptr_eq(&skip_to_node, node)
+        && (node.children.borrow().len() != 1
+            || !Rc::ptr_eq(&node.children.borrow()[0], &skip_to_node))
     {
-        return indentation(indent) + "...\n" + &describe_node(skip_to_node, indent + 1);
+        return indentation(indent) + "...\n" + &describe_node(&skip_to_node, indent + 1);
     }
 
     // Prefix with any server components for context
@@ -619,12 +620,15 @@ fn describe_node(node: &HydrationDiffNode, mut indent: i32) -> String {
 
     if node.fiber.tag.get() == HOST_TEXT {
         // Text Node
-        self_content =
-            describe_text_diff(unsafe { js::cast(client_props) }, node.server_props, indent);
+        self_content = describe_text_diff(
+            unsafe { js::cast(client_props) },
+            node.server_props.get(),
+            indent,
+        );
         indent += 1;
     } else if let Some(r#type) = describe_fiber_type(&node.fiber) {
         // Element Node
-        match node.server_props {
+        match node.server_props.get() {
             ServerProps::Unknown => {
                 // Just a reference node for context.
                 self_content =
@@ -663,12 +667,12 @@ fn describe_node(node: &HydrationDiffNode, mut indent: i32) -> String {
     let mut child_fiber = node.fiber.child.borrow().clone();
     let mut diff_idx = 0;
     while let Some(current) = child_fiber.clone()
-        && diff_idx < node.children.len()
+        && diff_idx < node.children.borrow().len()
     {
-        let child_node = &node.children[diff_idx];
+        let child_node = Rc::clone(&node.children.borrow()[diff_idx]);
         if Rc::ptr_eq(&child_node.fiber, &current) {
             // This was a match in the diff.
-            child_content += &describe_node(child_node, indent);
+            child_content += &describe_node(&child_node, indent);
             diff_idx += 1;
         } else {
             // This is an unrelated previous sibling.
@@ -677,7 +681,7 @@ fn describe_node(node: &HydrationDiffNode, mut indent: i32) -> String {
         child_fiber = current.sibling.borrow().clone();
     }
 
-    if child_fiber.is_some() && !node.children.is_empty() {
+    if child_fiber.is_some() && !node.children.borrow().is_empty() {
         // If we had any further siblings after the last mismatch, we can't be sure if it's
         // actually a valid match since it might not have found a match. So we exclude next
         // siblings to avoid confusion.
@@ -685,11 +689,11 @@ fn describe_node(node: &HydrationDiffNode, mut indent: i32) -> String {
     }
 
     // Deleted tail nodes
-    let server_tail = &node.server_tail;
-    if matches!(node.server_props, ServerProps::Unmatched) {
+    let server_tail = node.server_tail.borrow();
+    if matches!(node.server_props.get(), ServerProps::Unmatched) {
         indent -= 1;
     }
-    for tail_node in server_tail {
+    for tail_node in server_tail.iter() {
         match tail_node {
             ServerTailNode::Text(tail_node) => {
                 // Removed text node
@@ -711,7 +715,7 @@ fn describe_node(node: &HydrationDiffNode, mut indent: i32) -> String {
     parent_content + &self_content + &child_content
 }
 
-pub fn describe_diff(root_node: &HydrationDiffNode) -> String {
+pub fn describe_diff(root_node: &Rc<HydrationDiffNode>) -> String {
     catch_unwind(AssertUnwindSafe(|| {
         "\n\n".to_owned() + &describe_node(root_node, 0)
     }))

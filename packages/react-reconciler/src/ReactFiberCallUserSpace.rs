@@ -66,6 +66,8 @@ const CALL_COMPONENT: CallComponentFrame = CallComponentFrame {
 /// its lifecycles.
 pub struct ClassInstance(PhantomData<JsObject>);
 
+unsafe impl js::Defined for ClassInstance {}
+
 /// What `componentDidCatch` is given with the error: where it was thrown.
 pub struct DidCatchInfo {
     pub component_stack: String,
@@ -101,6 +103,80 @@ impl ClassInstance {
 
     #[cfg_attr(rust_js, rust_js::link_name = "componentWillUnmount")]
     pub fn component_will_unmount(&self) {
+        unreachable!()
+    }
+
+    #[cfg_attr(rust_js, rust_js::link_name = "componentWillMount")]
+    pub fn component_will_mount(&self) {
+        unreachable!()
+    }
+
+    #[cfg_attr(rust_js, rust_js::link_name = "UNSAFE_componentWillMount")]
+    pub fn unsafe_component_will_mount(&self) {
+        unreachable!()
+    }
+
+    #[cfg_attr(rust_js, rust_js::link_name = "componentWillReceiveProps")]
+    pub fn component_will_receive_props(
+        &self,
+        new_props: Option<&'static Unknown>,
+        next_context: Option<&'static Unknown>,
+    ) {
+        let _ = (new_props, next_context);
+        unreachable!()
+    }
+
+    #[cfg_attr(rust_js, rust_js::link_name = "UNSAFE_componentWillReceiveProps")]
+    pub fn unsafe_component_will_receive_props(
+        &self,
+        new_props: Option<&'static Unknown>,
+        next_context: Option<&'static Unknown>,
+    ) {
+        let _ = (new_props, next_context);
+        unreachable!()
+    }
+
+    // Whether to rerender: what's returned, which JS may make any value.
+    #[cfg_attr(rust_js, rust_js::link_name = "shouldComponentUpdate")]
+    pub fn should_component_update(
+        &self,
+        new_props: Option<&'static Unknown>,
+        new_state: Option<&'static Unknown>,
+        next_context: Option<&'static Unknown>,
+    ) -> Option<&'static Unknown> {
+        let _ = (new_props, new_state, next_context);
+        unreachable!()
+    }
+
+    #[cfg_attr(rust_js, rust_js::link_name = "componentWillUpdate")]
+    pub fn component_will_update(
+        &self,
+        new_props: Option<&'static Unknown>,
+        new_state: Option<&'static Unknown>,
+        next_context: Option<&'static Unknown>,
+    ) {
+        let _ = (new_props, new_state, next_context);
+        unreachable!()
+    }
+
+    #[cfg_attr(rust_js, rust_js::link_name = "getSnapshotBeforeUpdate")]
+    pub fn get_snapshot_before_update(
+        &self,
+        prev_props: &'static Unknown,
+        prev_state: Option<&'static Unknown>,
+    ) -> Option<&'static Unknown> {
+        let _ = (prev_props, prev_state);
+        unreachable!()
+    }
+
+    #[cfg_attr(rust_js, rust_js::link_name = "UNSAFE_componentWillUpdate")]
+    pub fn unsafe_component_will_update(
+        &self,
+        new_props: Option<&'static Unknown>,
+        new_state: Option<&'static Unknown>,
+        next_context: Option<&'static Unknown>,
+    ) {
+        let _ = (new_props, new_state, next_context);
         unreachable!()
     }
 }

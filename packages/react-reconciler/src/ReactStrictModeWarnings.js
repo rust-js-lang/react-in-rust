@@ -8,7 +8,14 @@
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {NoMode, StrictLegacyMode} from './ReactTypeOfMode.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
-import {$add, $cmp, $orInsertWith, $take} from '@rust-js/runtime';
+import {
+  $add,
+  $assign,
+  $borrowMut,
+  $orInsertWith,
+  $withBorrow,
+  $withBorrowMut,
+} from '@rust-js/runtime';
 
 const ReactStrictModeWarnings = {
   recordUnsafeLifecycleWarnings(fiber, instance) {},
@@ -18,17 +25,17 @@ const ReactStrictModeWarnings = {
   discardPendingWarnings() {},
 };
 
-let pendingComponentWillMountWarnings = [];
-let pendingUNSAFE_ComponentWillMountWarnings = [];
-let pendingComponentWillReceivePropsWarnings = [];
-let pendingUNSAFE_ComponentWillReceivePropsWarnings = [];
-let pendingComponentWillUpdateWarnings = [];
-let pendingUNSAFE_ComponentWillUpdateWarnings = [];
+const pendingComponentWillMountWarnings = [];
+const pendingUNSAFE_ComponentWillMountWarnings = [];
+const pendingComponentWillReceivePropsWarnings = [];
+const pendingUNSAFE_ComponentWillReceivePropsWarnings = [];
+const pendingComponentWillUpdateWarnings = [];
+const pendingUNSAFE_ComponentWillUpdateWarnings = [];
 
 // Tracks components we have already warned about.
 const didWarnAboutUnsafeLifecycles = new Set();
 
-let pendingLegacyContextWarning = new Map();
+const pendingLegacyContextWarning = new Map();
 
 // Tracks components we have already warned about.
 const didWarnAboutLegacyContext = new Set();
@@ -52,7 +59,7 @@ function setToSortedString(set) {
   for (const value of set) {
     array.push(value);
   }
-  array.sort($cmp);
+  array.sort();
   return array.join(', ');
 }
 
@@ -68,14 +75,26 @@ if (__DEV__) {
       // Don't warn about react-lifecycles-compat polyfilled components.
       instance.componentWillMount.__suppressDeprecationWarning !== true
     ) {
-      pendingComponentWillMountWarnings.push(fiber);
+      $withBorrowMut(
+        pendingComponentWillMountWarnings,
+        pending => {
+          pending.push(fiber);
+        },
+        true,
+      );
     }
 
     if (
       (fiber.mode & StrictLegacyMode) !== NoMode &&
       typeof instance.UNSAFE_componentWillMount === 'function'
     ) {
-      pendingUNSAFE_ComponentWillMountWarnings.push(fiber);
+      $withBorrowMut(
+        pendingUNSAFE_ComponentWillMountWarnings,
+        pending => {
+          pending.push(fiber);
+        },
+        true,
+      );
     }
 
     if (
@@ -83,14 +102,26 @@ if (__DEV__) {
       // Don't warn about react-lifecycles-compat polyfilled components.
       instance.componentWillReceiveProps.__suppressDeprecationWarning !== true
     ) {
-      pendingComponentWillReceivePropsWarnings.push(fiber);
+      $withBorrowMut(
+        pendingComponentWillReceivePropsWarnings,
+        pending => {
+          pending.push(fiber);
+        },
+        true,
+      );
     }
 
     if (
       (fiber.mode & StrictLegacyMode) !== NoMode &&
       typeof instance.UNSAFE_componentWillReceiveProps === 'function'
     ) {
-      pendingUNSAFE_ComponentWillReceivePropsWarnings.push(fiber);
+      $withBorrowMut(
+        pendingUNSAFE_ComponentWillReceivePropsWarnings,
+        pending => {
+          pending.push(fiber);
+        },
+        true,
+      );
     }
 
     if (
@@ -98,95 +129,173 @@ if (__DEV__) {
       // Don't warn about react-lifecycles-compat polyfilled components.
       instance.componentWillUpdate.__suppressDeprecationWarning !== true
     ) {
-      pendingComponentWillUpdateWarnings.push(fiber);
+      $withBorrowMut(
+        pendingComponentWillUpdateWarnings,
+        pending => {
+          pending.push(fiber);
+        },
+        true,
+      );
     }
 
     if (
       (fiber.mode & StrictLegacyMode) !== NoMode &&
       typeof instance.UNSAFE_componentWillUpdate === 'function'
     ) {
-      pendingUNSAFE_ComponentWillUpdateWarnings.push(fiber);
+      $withBorrowMut(
+        pendingUNSAFE_ComponentWillUpdateWarnings,
+        pending => {
+          pending.push(fiber);
+        },
+        true,
+      );
     }
   };
 
   ReactStrictModeWarnings.flushPendingUnsafeLifecycleWarnings = () => {
     // We do an initial pass to gather component names
     const componentWillMountUniqueNames = new Set();
-    if (pendingComponentWillMountWarnings.length !== 0) {
-      for (const fiber$1 of $take(pendingComponentWillMountWarnings, [])) {
-        $add(
-          componentWillMountUniqueNames,
-          getComponentNameFromFiber(fiber$1) || 'Component',
-        );
-        didWarnAboutUnsafeLifecycles.add(fiber$1.type);
-      }
+    if (
+      $withBorrow(
+        pendingComponentWillMountWarnings,
+        pending => pending.length !== 0,
+        true,
+      )
+    ) {
+      $withBorrow(
+        pendingComponentWillMountWarnings,
+        pending => {
+          for (const fiber$1 of pending) {
+            $add(
+              componentWillMountUniqueNames,
+              getComponentNameFromFiber(fiber$1) || 'Component',
+            );
+            didWarnAboutUnsafeLifecycles.add(fiber$1.type);
+          }
+        },
+        true,
+      );
+      $assign($borrowMut(pendingComponentWillMountWarnings), []);
     }
 
     const unsafeComponentWillMountUniqueNames = new Set();
-    if (pendingUNSAFE_ComponentWillMountWarnings.length !== 0) {
-      for (const fiber$2 of $take(
+    if (
+      $withBorrow(
         pendingUNSAFE_ComponentWillMountWarnings,
-        [],
-      )) {
-        $add(
-          unsafeComponentWillMountUniqueNames,
-          getComponentNameFromFiber(fiber$2) || 'Component',
-        );
-        didWarnAboutUnsafeLifecycles.add(fiber$2.type);
-      }
+        pending => pending.length !== 0,
+        true,
+      )
+    ) {
+      $withBorrow(
+        pendingUNSAFE_ComponentWillMountWarnings,
+        pending => {
+          for (const fiber$2 of pending) {
+            $add(
+              unsafeComponentWillMountUniqueNames,
+              getComponentNameFromFiber(fiber$2) || 'Component',
+            );
+            didWarnAboutUnsafeLifecycles.add(fiber$2.type);
+          }
+        },
+        true,
+      );
+      $assign($borrowMut(pendingUNSAFE_ComponentWillMountWarnings), []);
     }
 
     const componentWillReceivePropsUniqueNames = new Set();
-    if (pendingComponentWillReceivePropsWarnings.length !== 0) {
-      for (const fiber$3 of $take(
+    if (
+      $withBorrow(
         pendingComponentWillReceivePropsWarnings,
-        [],
-      )) {
-        $add(
-          componentWillReceivePropsUniqueNames,
-          getComponentNameFromFiber(fiber$3) || 'Component',
-        );
-        didWarnAboutUnsafeLifecycles.add(fiber$3.type);
-      }
+        pending => pending.length !== 0,
+        true,
+      )
+    ) {
+      $withBorrow(
+        pendingComponentWillReceivePropsWarnings,
+        pending => {
+          for (const fiber$3 of pending) {
+            $add(
+              componentWillReceivePropsUniqueNames,
+              getComponentNameFromFiber(fiber$3) || 'Component',
+            );
+            didWarnAboutUnsafeLifecycles.add(fiber$3.type);
+          }
+        },
+        true,
+      );
+      $assign($borrowMut(pendingComponentWillReceivePropsWarnings), []);
     }
 
     const unsafeComponentWillReceivePropsUniqueNames = new Set();
-    if (pendingUNSAFE_ComponentWillReceivePropsWarnings.length !== 0) {
-      for (const fiber$4 of $take(
+    if (
+      $withBorrow(
         pendingUNSAFE_ComponentWillReceivePropsWarnings,
-        [],
-      )) {
-        $add(
-          unsafeComponentWillReceivePropsUniqueNames,
-          getComponentNameFromFiber(fiber$4) || 'Component',
-        );
-        didWarnAboutUnsafeLifecycles.add(fiber$4.type);
-      }
+        pending => pending.length !== 0,
+        true,
+      )
+    ) {
+      $withBorrow(
+        pendingUNSAFE_ComponentWillReceivePropsWarnings,
+        pending => {
+          for (const fiber$4 of pending) {
+            $add(
+              unsafeComponentWillReceivePropsUniqueNames,
+              getComponentNameFromFiber(fiber$4) || 'Component',
+            );
+            didWarnAboutUnsafeLifecycles.add(fiber$4.type);
+          }
+        },
+        true,
+      );
+      $assign($borrowMut(pendingUNSAFE_ComponentWillReceivePropsWarnings), []);
     }
 
     const componentWillUpdateUniqueNames = new Set();
-    if (pendingComponentWillUpdateWarnings.length !== 0) {
-      for (const fiber$5 of $take(pendingComponentWillUpdateWarnings, [])) {
-        $add(
-          componentWillUpdateUniqueNames,
-          getComponentNameFromFiber(fiber$5) || 'Component',
-        );
-        didWarnAboutUnsafeLifecycles.add(fiber$5.type);
-      }
+    if (
+      $withBorrow(
+        pendingComponentWillUpdateWarnings,
+        pending => pending.length !== 0,
+        true,
+      )
+    ) {
+      $withBorrow(
+        pendingComponentWillUpdateWarnings,
+        pending => {
+          for (const fiber$5 of pending) {
+            $add(
+              componentWillUpdateUniqueNames,
+              getComponentNameFromFiber(fiber$5) || 'Component',
+            );
+            didWarnAboutUnsafeLifecycles.add(fiber$5.type);
+          }
+        },
+        true,
+      );
+      $assign($borrowMut(pendingComponentWillUpdateWarnings), []);
     }
 
     const unsafeComponentWillUpdateUniqueNames = new Set();
-    if (pendingUNSAFE_ComponentWillUpdateWarnings.length !== 0) {
-      for (const fiber$6 of $take(
+    if (
+      $withBorrow(
         pendingUNSAFE_ComponentWillUpdateWarnings,
-        [],
-      )) {
-        $add(
-          unsafeComponentWillUpdateUniqueNames,
-          getComponentNameFromFiber(fiber$6) || 'Component',
-        );
-        didWarnAboutUnsafeLifecycles.add(fiber$6.type);
-      }
+        pending => pending.length !== 0,
+        true,
+      )
+    ) {
+      $withBorrow(
+        pendingUNSAFE_ComponentWillUpdateWarnings,
+        pending => {
+          for (const fiber$6 of pending) {
+            $add(
+              unsafeComponentWillUpdateUniqueNames,
+              getComponentNameFromFiber(fiber$6) || 'Component',
+            );
+            didWarnAboutUnsafeLifecycles.add(fiber$6.type);
+          }
+        },
+        true,
+      );
+      $assign($borrowMut(pendingUNSAFE_ComponentWillUpdateWarnings), []);
     }
 
     // Finally, we flush all the warnings
@@ -304,8 +413,16 @@ if (__DEV__) {
           fiber.type.childContextTypes != null ||
           (instance != null && typeof instance.getChildContext === 'function')
         ) {
-          $orInsertWith(pendingLegacyContextWarning, strictRoot, () => []).push(
-            fiber,
+          $withBorrowMut(
+            pendingLegacyContextWarning,
+            pendingLegacyContextWarning$1 => {
+              $orInsertWith(
+                pendingLegacyContextWarning$1,
+                strictRoot,
+                () => [],
+              ).push(fiber);
+            },
+            true,
           );
         }
       }
@@ -313,49 +430,52 @@ if (__DEV__) {
   };
 
   ReactStrictModeWarnings.flushLegacyContextWarning = () => {
-    const pendingLegacyContextWarning$2 = new Map(
-      Array.from(pendingLegacyContextWarning).map(([key, value]) => [
-        key,
-        value.slice(),
-      ]),
+    $withBorrow(
+      pendingLegacyContextWarning,
+      pendingLegacyContextWarning$2 => {
+        for (const fiberArray of Array.from(
+          pendingLegacyContextWarning$2.values(),
+        )) {
+          if (fiberArray.length === 0) {
+            continue;
+          }
+          const firstFiber = fiberArray[0];
+
+          const uniqueNames = new Set();
+          for (const fiber$8 of fiberArray) {
+            $add(
+              uniqueNames,
+              getComponentNameFromFiber(fiber$8) || 'Component',
+            );
+            didWarnAboutLegacyContext.add(fiber$8.type);
+          }
+
+          const sortedNames$6 = setToSortedString(uniqueNames);
+
+          runWithFiberInDEV(firstFiber, () => {
+            console.error(
+              'Legacy context API has been detected within a strict-mode tree.' +
+                '\n\nThe old API will be supported in all 16.x releases, but applications ' +
+                'using it should migrate to the new version.' +
+                '\n\nPlease update the following components: %s' +
+                '\n\nLearn more about this warning here: https://react.dev/link/legacy-context',
+              sortedNames$6,
+            );
+          });
+        }
+      },
+      true,
     );
-    for (const fiberArray of Array.from(
-      pendingLegacyContextWarning$2.values(),
-    )) {
-      if (fiberArray.length === 0) {
-        continue;
-      }
-      const firstFiber = fiberArray[0];
-
-      const uniqueNames = new Set();
-      for (const fiber$8 of fiberArray) {
-        $add(uniqueNames, getComponentNameFromFiber(fiber$8) || 'Component');
-        didWarnAboutLegacyContext.add(fiber$8.type);
-      }
-
-      const sortedNames$6 = setToSortedString(uniqueNames);
-
-      runWithFiberInDEV(firstFiber, () => {
-        console.error(
-          'Legacy context API has been detected within a strict-mode tree.' +
-            '\n\nThe old API will be supported in all 16.x releases, but applications ' +
-            'using it should migrate to the new version.' +
-            '\n\nPlease update the following components: %s' +
-            '\n\nLearn more about this warning here: https://react.dev/link/legacy-context',
-          sortedNames$6,
-        );
-      });
-    }
   };
 
   ReactStrictModeWarnings.discardPendingWarnings = () => {
-    pendingComponentWillMountWarnings = [];
-    pendingUNSAFE_ComponentWillMountWarnings = [];
-    pendingComponentWillReceivePropsWarnings = [];
-    pendingUNSAFE_ComponentWillReceivePropsWarnings = [];
-    pendingComponentWillUpdateWarnings = [];
-    pendingUNSAFE_ComponentWillUpdateWarnings = [];
-    pendingLegacyContextWarning = new Map();
+    $assign($borrowMut(pendingComponentWillMountWarnings), []);
+    $assign($borrowMut(pendingUNSAFE_ComponentWillMountWarnings), []);
+    $assign($borrowMut(pendingComponentWillReceivePropsWarnings), []);
+    $assign($borrowMut(pendingUNSAFE_ComponentWillReceivePropsWarnings), []);
+    $assign($borrowMut(pendingComponentWillUpdateWarnings), []);
+    $assign($borrowMut(pendingUNSAFE_ComponentWillUpdateWarnings), []);
+    $assign($borrowMut(pendingLegacyContextWarning), new Map());
   };
 }
 

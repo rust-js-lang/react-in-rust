@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {Lane} from './ReactFiberLane.js';
+import type {TreeContext} from './ReactFiberTreeContext.js';
 import type {Fiber} from './ReactInternalTypes.js';
 
 // A null SuspenseState represents an unsuspended normal Suspense boundary.
@@ -21,8 +22,7 @@ export interface SuspenseState {
   // to check things like isSuspenseInstancePending.
   // ReactFiberConfig's `SuspenseInstance`.
   dehydrated?: unknown | null | undefined;
-  // ReactFiberTreeContext's `TreeContext`.
-  treeContext?: unknown | null | undefined;
+  treeContext?: TreeContext | null | undefined;
   // Represents the lane we should attempt to hydrate a dehydrated boundary at.
   // OffscreenLane is the default for dehydrated boundaries.
   // NoLane is the default for normal boundaries, which turns into "normal" pri.

@@ -18,25 +18,9 @@ use shared::react_feature_flags::{
 use shared::report_global_error::REPORT_GLOBAL_ERROR;
 
 use crate::react_fiber_lane::{Lane, NO_LANE};
+use crate::react_fiber_root_scheduler::{ensure_schedule_is_scheduled, request_transition_lane};
 use crate::react_fiber_transition_types::clear_entangled_async_transition_types;
 use crate::react_profiler_timer::{clear_async_transition_timer, has_scheduled_transition_work};
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberRootScheduler.js#requestTransitionLane"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(transition))]
-fn request_transition_lane(transition: Option<&Transition>) -> Lane {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberRootScheduler.js#ensureScheduleIsScheduled"
-)]
-fn ensure_schedule_is_scheduled() {
-    unreachable!()
-}
 
 /// What a thenable's `then` is given, called once it settles.
 type Listener = &'static dyn Fn(Option<&'static Unknown>);
@@ -329,9 +313,9 @@ pub fn has_ongoing_isomorphic_indicator() -> bool {
     PENDING_ISOMORPHIC_INDICATOR.get().is_some()
 }
 
-pub fn retain_isomorphic_indicator() -> fn() {
+pub fn retain_isomorphic_indicator() -> &'static dyn Fn() {
     PENDING_ENTANGLED_ROOTS.set(PENDING_ENTANGLED_ROOTS.get() + 1);
-    release_isomorphic_indicator
+    &release_isomorphic_indicator
 }
 
 pub fn mark_isomorphic_indicator_handled() {

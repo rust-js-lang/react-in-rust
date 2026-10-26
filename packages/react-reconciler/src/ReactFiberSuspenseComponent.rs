@@ -10,6 +10,7 @@ use js::{Set, Unknown};
 
 use crate::react_fiber_flags::{DID_CAPTURE, NO_FLAGS};
 use crate::react_fiber_lane::Lane;
+use crate::react_fiber_tree_context::TreeContext;
 use crate::react_internal_types::Fiber;
 use crate::react_work_tags::{SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT};
 
@@ -44,9 +45,8 @@ pub struct SuspenseState {
     // ReactFiberConfig's `SuspenseInstance`.
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub dehydrated: Option<&'static Unknown>,
-    // ReactFiberTreeContext's `TreeContext`.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub tree_context: Option<&'static Unknown>,
+    pub tree_context: Option<TreeContext>,
     // Represents the lane we should attempt to hydrate a dehydrated boundary at.
     // OffscreenLane is the default for dehydrated boundaries.
     // NoLane is the default for normal boundaries, which turns into "normal" pri.
@@ -56,6 +56,8 @@ pub struct SuspenseState {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub hydration_errors: RefCell<Option<Vec<&'static Unknown>>>,
 }
+
+unsafe impl js::Defined for SuspenseState {}
 
 /// shared/ReactTypes' `SuspenseListTailMode`.
 #[derive(Clone, Copy, PartialEq, Eq)]

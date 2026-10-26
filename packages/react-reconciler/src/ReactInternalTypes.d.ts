@@ -62,7 +62,7 @@ export interface Dependencies {
     | null
     | undefined;
   // DEV-only: ReactFiberThenable's `ThenableState`.
-  _debugThenableState?: unknown | null | undefined;
+  _debugThenableState: unknown | null | undefined;
 }
 
 export interface MemoCache {
@@ -74,7 +74,9 @@ export interface MemoCache {
  * What a fiber's `ref` is: a function called with the instance, or an
  * object whose `current` is set to it.
  */
-export type Ref = ((value: unknown | null | undefined) => void) | unknown;
+export type Ref =
+  | ((value: unknown | null | undefined) => unknown | null | undefined)
+  | unknown;
 
 // A Fiber is work on a Component that needs to be done or was done. There can
 // be more than one per component.
@@ -92,7 +94,7 @@ export interface Fiber {
   // Tag identifying the type of fiber.
   tag: WorkTag;
   // Unique identifier of this child.
-  key?: ReactKey | null | undefined;
+  key: ReactKey | null | undefined;
   // The value of element.type which is used to preserve the identity during
   // reconciliation of this child.
   elementType: unknown | null | undefined;
@@ -118,7 +120,7 @@ export interface Fiber {
   // The ref last used to attach this node.
   // I'll avoid adding an owner field for prod and model that as functions.
   ref?: Ref | null | undefined;
-  refCleanup?: (() => void) | null | undefined;
+  refCleanup: unknown | null | undefined;
   // Input is the data coming into process this fiber. Arguments. Props.
   pendingProps: unknown | null | undefined;
   memoizedProps: unknown | null | undefined;
@@ -168,8 +170,8 @@ export interface Fiber {
   // __DEV__ only
   _debugInfo: unknown | null | undefined;
   _debugOwner: unknown | null | undefined;
-  _debugStack?: any | null | undefined;
-  _debugTask?:
+  _debugStack: any | null | undefined;
+  _debugTask:
     | {
         run<T>(f: () => T): T;
       }
@@ -177,7 +179,7 @@ export interface Fiber {
     | undefined;
   _debugNeedsRemount: boolean | null | undefined;
   // Used to verify that the order of hooks does not change between renders.
-  _debugHookTypes?: HookType[] | null | undefined;
+  _debugHookTypes: HookType[] | null | undefined;
 }
 
 /** What an uncaught or a recoverable error is reported with. */

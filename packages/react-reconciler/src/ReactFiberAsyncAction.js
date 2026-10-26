@@ -177,7 +177,7 @@ export function peekEntangledActionLane() {
 }
 
 export function peekEntangledActionThenable() {
-  return currentEntangledActionThenable ?? null;
+  return currentEntangledActionThenable;
 }
 
 export function registerDefaultIndicator(onDefaultTransitionIndicator) {

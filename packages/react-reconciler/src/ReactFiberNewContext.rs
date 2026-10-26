@@ -616,10 +616,18 @@ fn read_context_for_consumer<T: Clone + 'static>(
 
             // This is the first dependency for this component. Create a new list.
             LAST_CONTEXT_DEPENDENCY.set(Some(Rc::clone(&context_item)));
-            consumer.dependencies.replace(Some(Rc::new(Dependencies {
-                lanes: Cell::new(NO_LANES),
-                first_context: RefCell::new(Some(context_item)),
-                debug_thenable_state: Cell::new(None),
+            consumer.dependencies.replace(Some(Rc::new(if __DEV__ {
+                Dependencies {
+                    lanes: Cell::new(NO_LANES),
+                    first_context: RefCell::new(Some(context_item)),
+                    debug_thenable_state: Cell::new(js::null()),
+                }
+            } else {
+                Dependencies {
+                    lanes: Cell::new(NO_LANES),
+                    first_context: RefCell::new(Some(context_item)),
+                    debug_thenable_state: Cell::new(None),
+                }
             })));
             consumer.flags.set(consumer.flags.get() | NEEDS_PROPAGATION);
         }

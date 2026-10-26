@@ -132,7 +132,7 @@ export function markFailedErrorBoundaryForHotReloading(fiber) {
       // Hot reloading is disabled.
       return;
     }
-    if (typeof WeakSet === 'undefined') {
+    if (typeof WeakSet !== 'function') {
       return;
     }
     failedBoundaries ??= new WeakSet();
