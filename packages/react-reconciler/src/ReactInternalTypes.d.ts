@@ -117,7 +117,7 @@ export interface Fiber {
   // A queue of state updates and callbacks.
   updateQueue?: unknown | null | undefined;
   // The state used to create the output
-  memoizedState?: unknown | null | undefined;
+  memoizedState: unknown | null | undefined;
   // Dependencies (contexts, events) for this fiber, if it has any
   dependencies?: Dependencies | null | undefined;
   // Bitfield that describes properties about the fiber and its subtree. E.g.

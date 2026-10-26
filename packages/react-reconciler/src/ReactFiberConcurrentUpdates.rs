@@ -8,6 +8,7 @@ use std::rc::Rc;
 
 use shared::environment::__DEV__;
 
+use crate::react_fiber_class_update_queue::{SharedQueue as ClassQueue, Update as ClassUpdate};
 use crate::react_fiber_flags::{HYDRATING, NO_FLAGS, PLACEMENT};
 use crate::react_fiber_lane::{Lane, Lanes, NO_LANE, NO_LANES, mark_hidden_update, merge_lanes};
 use crate::react_fiber_offscreen_component::{OFFSCREEN_VISIBLE, OffscreenInstance};
@@ -167,11 +168,20 @@ pub fn enqueue_concurrent_hook_update_and_eagerly_bailout(
 #[cfg_attr(rust_js, rust_js::nullable)]
 pub fn enqueue_concurrent_class_update(
     fiber: &Rc<Fiber>,
-    queue: &Rc<ConcurrentQueue>,
-    update: &Rc<ConcurrentUpdate>,
+    queue: &Rc<ClassQueue>,
+    update: &Rc<ClassUpdate>,
     lane: Lane,
 ) -> Option<Rc<FiberRoot>> {
-    enqueue_update(fiber, Some(queue), Some(update), lane);
+    let concurrent_queue: Rc<ConcurrentQueue> =
+        unsafe { js::cast(Some(js::unknown_of(Rc::clone(queue)))) };
+    let concurrent_update: Rc<ConcurrentUpdate> =
+        unsafe { js::cast(Some(js::unknown_of(Rc::clone(update)))) };
+    enqueue_update(
+        fiber,
+        Some(&concurrent_queue),
+        Some(&concurrent_update),
+        lane,
+    );
     get_root_for_updated_fiber(fiber)
 }
 

@@ -12,6 +12,8 @@ pub mod react_current_fiber;
 pub mod react_event_priorities;
 #[path = "src/ReactFiberActivityComponent.rs"]
 pub mod react_fiber_activity_component;
+#[path = "src/ReactFiberClassUpdateQueue.rs"]
+pub mod react_fiber_class_update_queue;
 #[path = "src/ReactFiberConcurrentUpdates.rs"]
 pub mod react_fiber_concurrent_updates;
 #[path = "src/ReactFiberErrorLogger.rs"]
@@ -34,6 +36,8 @@ pub mod react_fiber_stack;
 pub mod react_fiber_suspense_component;
 #[path = "src/ReactFiberTransitionTypes.rs"]
 pub mod react_fiber_transition_types;
+#[path = "src/ReactFiberTreeContext.rs"]
+pub mod react_fiber_tree_context;
 #[path = "src/ReactHookEffectTags.rs"]
 pub mod react_hook_effect_tags;
 #[path = "src/ReactInternalTypes.rs"]

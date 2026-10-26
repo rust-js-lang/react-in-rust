@@ -174,7 +174,6 @@ pub struct Fiber {
     pub update_queue: Cell<Option<&'static Unknown>>,
 
     // The state used to create the output
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub memoized_state: Cell<Option<&'static Unknown>>,
 
     // Dependencies (contexts, events) for this fiber, if it has any

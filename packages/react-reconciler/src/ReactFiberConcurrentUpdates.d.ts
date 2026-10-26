@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {SharedQueue, Update} from './ReactFiberClassUpdateQueue.js';
 import type {Lane, Lanes} from './ReactFiberLane.js';
 import type {Fiber, FiberRoot} from './ReactInternalTypes.js';
 
@@ -36,8 +37,8 @@ export function enqueueConcurrentHookUpdateAndEagerlyBailout(
 
 export function enqueueConcurrentClassUpdate(
   fiber: Fiber,
-  queue: ConcurrentQueue,
-  update: ConcurrentUpdate,
+  queue: SharedQueue,
+  update: Update,
   lane: Lane,
 ): FiberRoot | null;
 

@@ -105,7 +105,9 @@ export function enqueueConcurrentHookUpdateAndEagerlyBailout(
 }
 
 export function enqueueConcurrentClassUpdate(fiber, queue, update, lane) {
-  enqueueUpdate(fiber, queue, update, lane);
+  const concurrentQueue = queue;
+  const concurrentUpdate = update;
+  enqueueUpdate(fiber, concurrentQueue, concurrentUpdate, lane);
   return getRootForUpdatedFiber(fiber);
 }
 
