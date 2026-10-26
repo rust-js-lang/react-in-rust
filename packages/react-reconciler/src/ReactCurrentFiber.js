@@ -27,13 +27,14 @@ export function getCurrentFiberOwnerNameInDevOrNull() {
 
 function getCurrentFiberStackInDev() {
   if (__DEV__) {
-    if (current != null) {
-      // Safe because if current fiber exists, we are reconciling,
-      // and it is guaranteed to be the work-in-progress version.
-      // TODO: The above comment is not actually true. We might be
-      // in a commit phase or preemptive set state callback.
-      return getOwnerStackByFiberInDev(current);
+    if (current == null) {
+      return '';
     }
+    // Safe because if current fiber exists, we are reconciling,
+    // and it is guaranteed to be the work-in-progress version.
+    // TODO: The above comment is not actually true. We might be
+    // in a commit phase or preemptive set state callback.
+    return getOwnerStackByFiberInDev(current);
   }
   return '';
 }

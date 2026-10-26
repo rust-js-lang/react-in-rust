@@ -438,7 +438,7 @@ fn perform_work_until_deadline() {
     }
 }
 
-type SetTimeout = fn(Box<dyn FnOnce()>, f64) -> &'static js::TimeoutId;
+type SetTimeout = fn(Box<dyn FnOnce()>, Option<f64>) -> &'static js::TimeoutId;
 type ClearTimeout = fn(Option<&js::TimeoutId>);
 type SetImmediate = fn(Box<dyn FnOnce()>) -> &'static js::Immediate;
 
@@ -478,7 +478,7 @@ thread_local! {
         // We should only fallback here in non-browser environments.
         Box::new(|| {
             if let Some(local_set_timeout) = LOCAL_SET_TIMEOUT.with(|f| *f) {
-                local_set_timeout(Box::new(perform_work_until_deadline), 0.0);
+                local_set_timeout(Box::new(perform_work_until_deadline), Some(0.0));
             }
         })
     };
@@ -497,7 +497,7 @@ fn request_host_timeout(callback: fn(f64), ms: f64) {
     if let Some(local_set_timeout) = LOCAL_SET_TIMEOUT.with(|f| *f) {
         TASK_TIMEOUT_ID.set(Some(local_set_timeout(
             Box::new(move || callback(get_current_time())),
-            ms,
+            Some(ms),
         )));
     }
 }

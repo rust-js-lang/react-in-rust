@@ -170,7 +170,7 @@ pub fn log_uncaught_error(root: &FiberRoot, error_info: &CapturedValue<Option<&'
         // If console.error is overridden, or logCapturedError() shows a dialog that throws,
         // we want to report this error outside of the normal stack as a last resort.
         // https://github.com/react/react/issues/13188
-        js::set_timeout(Box::new(move || resume_unwind(e)), 0.0);
+        js::set_timeout(Box::new(move || resume_unwind(e)), None);
     }
 }
 
@@ -207,6 +207,6 @@ pub fn log_caught_error(
         // If console.error is overridden, or logCapturedError() shows a dialog that throws,
         // we want to report this error outside of the normal stack as a last resort.
         // https://github.com/react/react/issues/13188
-        js::set_timeout(Box::new(move || resume_unwind(e)), 0.0);
+        js::set_timeout(Box::new(move || resume_unwind(e)), None);
     }
 }

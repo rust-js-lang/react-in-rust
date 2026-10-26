@@ -24,17 +24,20 @@ export function defaultOnUncaughtError(error, errorInfo) {
   // So we add those into a separate console.warn.
   reportGlobalError(error);
   if (__DEV__) {
-    const componentName$1 = componentName || undefined;
-    const componentNameMessage =
-      componentName$1 != null
-        ? `An error occurred in the <${componentName$1}> component.`
-        : 'An error occurred in one of your React components.';
+    const componentNameMessage = componentName
+      ? `An error occurred in the <${componentName}> component.`
+      : 'An error occurred in one of your React components.';
 
     const errorBoundaryMessage =
       'Consider adding an error boundary to your tree to customize error handling behavior.\n' +
       'Visit https://react.dev/link/error-boundaries to learn more about error boundaries.';
-    // We let our console.error wrapper add the component stack to the end.
-    console.warn('%s\n\n%s\n', componentNameMessage, errorBoundaryMessage);
+
+    console.warn(
+      '%s\n\n%s\n',
+      componentNameMessage,
+      errorBoundaryMessage,
+      // We let our console.error wrapper add the component stack to the end.
+    );
   }
 }
 
@@ -44,11 +47,9 @@ export function defaultOnCaughtError(error, errorInfo) {
 
   // Caught by error boundary
   if (__DEV__) {
-    const componentName$1 = componentName || undefined;
-    const componentNameMessage =
-      componentName$1 != null
-        ? `The above error occurred in the <${componentName$1}> component.`
-        : 'The above error occurred in one of your React components.';
+    const componentNameMessage = componentName
+      ? `The above error occurred in the <${componentName}> component.`
+      : 'The above error occurred in one of your React components.';
 
     // In development, we provide our own message which includes the component stack
     // in addition to the error.
@@ -71,12 +72,12 @@ export function defaultOnCaughtError(error, errorInfo) {
         environmentName,
       )();
     } else {
-      // We let our DevTools or console.createTask add the component stack to the end.
       console.error(
         '%o\n\n%s\n\n%s\n',
         error,
         componentNameMessage,
         recreateMessage,
+        // We let our DevTools or console.createTask add the component stack to the end.
       );
     }
   } else {
@@ -95,9 +96,9 @@ export function logUncaughtError(root, errorInfo) {
   try {
     if (__DEV__) {
       componentName =
-        (errorInfo.source != null
+        errorInfo.source != null
           ? getComponentNameFromFiber(errorInfo.source)
-          : undefined) ?? null;
+          : null;
       errorBoundaryName = null;
     }
     const error = errorInfo.value;
@@ -118,7 +119,7 @@ export function logUncaughtError(root, errorInfo) {
     // https://github.com/react/react/issues/13188
     setTimeout(() => {
       throw e;
-    }, 0);
+    });
   }
 }
 
@@ -126,9 +127,9 @@ export function logCaughtError(root, boundary, errorInfo) {
   try {
     if (__DEV__) {
       componentName =
-        (errorInfo.source != null
+        errorInfo.source != null
           ? getComponentNameFromFiber(errorInfo.source)
-          : undefined) ?? null;
+          : null;
       errorBoundaryName = getComponentNameFromFiber(boundary);
     }
     const error = errorInfo.value;
@@ -147,7 +148,7 @@ export function logCaughtError(root, boundary, errorInfo) {
     // https://github.com/react/react/issues/13188
     setTimeout(() => {
       throw e;
-    }, 0);
+    });
   }
 }
 //# sourceMappingURL=ReactFiberErrorLogger.js.map
