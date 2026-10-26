@@ -32,28 +32,15 @@ export interface DidCatchInfo {
   componentStack: string;
 }
 
-export const callComponentInDEV:
-  | ((
-      value: (
-        value: unknown | null | undefined,
-        value2: unknown | null | undefined,
-      ) => unknown | null | undefined,
-      value2: unknown | null | undefined,
-      value3: unknown | null | undefined,
-    ) => unknown | null | undefined)
-  | null;
+export const callComponentInDEV: CallComponent | null;
 
 export type CallRender = (value: any) => unknown | null | undefined;
 
-export const callRenderInDEV:
-  | ((value: any) => unknown | null | undefined)
-  | null;
+export const callRenderInDEV: CallRender | null;
 
 export type CallComponentDidMount = (fiber: Fiber, value: any) => void;
 
-export const callComponentDidMountInDEV:
-  | ((fiber: Fiber, value: any) => void)
-  | null;
+export const callComponentDidMountInDEV: CallComponentDidMount | null;
 
 export type CallComponentDidUpdate = (
   fiber: Fiber,
@@ -63,24 +50,14 @@ export type CallComponentDidUpdate = (
   value4: unknown,
 ) => void;
 
-export const callComponentDidUpdateInDEV:
-  | ((
-      fiber: Fiber,
-      value: any,
-      value2: unknown,
-      value3: unknown,
-      value4: unknown,
-    ) => void)
-  | null;
+export const callComponentDidUpdateInDEV: CallComponentDidUpdate | null;
 
 export type CallComponentDidCatch = (
   value: any,
   value2: CapturedValue<unknown | null | undefined>,
 ) => void;
 
-export const callComponentDidCatchInDEV:
-  | ((value: any, value2: CapturedValue<unknown | null | undefined>) => void)
-  | null;
+export const callComponentDidCatchInDEV: CallComponentDidCatch | null;
 
 export type CallComponentWillUnmount = (
   fiber: Fiber,
@@ -88,9 +65,7 @@ export type CallComponentWillUnmount = (
   value2: any,
 ) => void;
 
-export const callComponentWillUnmountInDEV:
-  | ((fiber: Fiber, value: Fiber | null | undefined, value2: any) => void)
-  | null;
+export const callComponentWillUnmountInDEV: CallComponentWillUnmount | null;
 
 /** What an effect's `create` gives: its destroy function, or nothing. */
 export type Destroy = unknown | null | undefined;
@@ -99,9 +74,7 @@ export type Destroy = unknown | null | undefined;
 // `inst`, whose `destroy` is what `create` gave.
 export type CallCreate = (value: unknown) => unknown | null | undefined;
 
-export const callCreateInDEV:
-  | ((value: unknown) => unknown | null | undefined)
-  | null;
+export const callCreateInDEV: CallCreate | null;
 
 export type CallDestroy = (
   fiber: Fiber,
@@ -109,18 +82,10 @@ export type CallDestroy = (
   value2: () => void,
 ) => void;
 
-export const callDestroyInDEV:
-  | ((
-      fiber: Fiber,
-      value: Fiber | null | undefined,
-      value2: () => void,
-    ) => void)
-  | null;
+export const callDestroyInDEV: CallDestroy | null;
 
 export type CallLazyInit = (
   component: LazyComponent,
 ) => unknown | null | undefined;
 
-export const callLazyInitInDEV:
-  | ((component: LazyComponent) => unknown | null | undefined)
-  | null;
+export const callLazyInitInDEV: CallLazyInit | null;

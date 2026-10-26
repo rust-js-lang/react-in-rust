@@ -8,119 +8,26 @@
 import * as scheduler from 'scheduler';
 import {REACT_CONTEXT_TYPE} from '../../shared/ReactSymbols.js';
 import {popProvider, pushProvider} from './ReactFiberNewContext.js';
-import {
-  $borrow,
-  $borrowMut,
-  $dispose,
-  $dropping,
-  $rcClone,
-  $rcDrop,
-  $unborrow,
-} from '@rust-js/runtime';
 
 function AbortControllerShim() {
-  const listeners = {value: [], strong: 1, weak: 0};
-  let listeners$live = true;
-  let listeners$1;
-  try {
-    listeners$1 = $rcClone(listeners);
-  } catch (error) {
-    $rcDrop(listeners, value => {
-      for (const item of value) {
-        $rcDrop(item, $dispose);
-      }
-    });
-    throw error;
-  }
+  const listeners = [];
   const signal = {
-    value: {
-      aborted: false,
-      addEventListener: $dropping(
-        (type, listener) => {
-          let borrowMut;
-          try {
-            borrowMut = $borrowMut(listeners$1.value, true);
-          } catch (error) {
-            $rcDrop(listener, $dispose);
-            throw error;
-          }
-          try {
-            borrowMut.push(listener);
-          } finally {
-            $unborrow(borrowMut);
-          }
-        },
-        () => {
-          $rcDrop(listeners$1, value => {
-            for (const item of value) {
-              $rcDrop(item, $dispose);
-            }
-          });
-        },
-      ),
+    aborted: false,
+    addEventListener(type, listener) {
+      listeners.push(listener);
     },
-    strong: 1,
-    weak: 0,
   };
-
-  let signal$live = true;
-  let abortSignalShim;
-  try {
-    abortSignalShim = $rcClone(signal);
-    signal$live = false;
-    listeners$live = false;
-  } catch (error) {
-    if (signal$live) {
-      $rcDrop(signal, value => {
-        $dispose(value.addEventListener);
-      });
+  this.signal = signal;
+  this.abort = () => {
+    signal.aborted = true;
+    // As forEach does: the listeners there when it starts, each
+    // called with no borrow held, so one may add another.
+    const count = listeners.length;
+    for (let index = 0; index < count; index++) {
+      const listener = listeners[index];
+      listener();
     }
-    if (listeners$live) {
-      $rcDrop(listeners, value => {
-        for (const item of value) {
-          $rcDrop(item, $dispose);
-        }
-      });
-    }
-    throw error;
-  }
-  this.signal = abortSignalShim;
-  this.abort = $dropping(
-    () => {
-      signal.value.aborted = true;
-      // As forEach does: the listeners there when it starts, each
-      // called with no borrow held, so one may add another.
-      const borrow = $borrow(listeners.value, true);
-      const count = borrow.length;
-      $unborrow(borrow);
-      for (let index = 0; index < count; index++) {
-        const value = $borrow(listeners.value, true);
-        let listener;
-        try {
-          listener = $rcClone(value[index]);
-        } catch (error) {
-          $unborrow(value);
-          throw error;
-        }
-        try {
-          $unborrow(value);
-          listener.value();
-        } finally {
-          $rcDrop(listener, $dispose);
-        }
-      }
-    },
-    () => {
-      $rcDrop(signal, value => {
-        $dispose(value.addEventListener);
-      });
-      $rcDrop(listeners, value => {
-        for (const item of value) {
-          $rcDrop(item, $dispose);
-        }
-      });
-    },
-  );
+  };
 }
 
 // In environments without AbortController (e.g. tests)

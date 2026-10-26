@@ -52,7 +52,7 @@ export let blockingUpdateTask: {
   run<T>(f: () => T): T;
 } | null;
 
-export let blockingUpdateType: number;
+export let blockingUpdateType: UpdateType;
 
 export let blockingUpdateMethodName: string | null;
 
@@ -74,7 +74,7 @@ export let gestureUpdateTask: {
   run<T>(f: () => T): T;
 } | null;
 
-export let gestureUpdateType: number;
+export let gestureUpdateType: UpdateType;
 
 export let gestureUpdateMethodName: string | null;
 
@@ -94,7 +94,7 @@ export let transitionStartTime: number;
 
 export let transitionUpdateTime: number;
 
-export let transitionUpdateType: number;
+export let transitionUpdateType: UpdateType;
 
 export let transitionUpdateTask: {
   run<T>(f: () => T): T;
@@ -116,13 +116,13 @@ export let retryClampTime: number;
 
 export let idleClampTime: number;
 
-export let animatingLanes: number;
+export let animatingLanes: Lanes;
 
 export let animatingTask: {
   run<T>(f: () => T): T;
 } | null;
 
-export let yieldReason: number;
+export let yieldReason: SuspendedReason;
 
 export let yieldStartTime: number;
 

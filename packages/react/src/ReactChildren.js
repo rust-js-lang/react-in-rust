@@ -97,14 +97,7 @@ function resolveThenable(thenable) {
         // some custom userspace implementation. We treat it as "pending".
         // Attach a dummy listener, to ensure that any lazy initialization can
         // happen. Flight lazily parses JSON when the value is actually awaited.
-        thenable.then(
-          () => {
-            noop();
-          },
-          () => {
-            noop();
-          },
-        );
+        thenable.then(noop, noop);
       } else {
         // This is an uncached thenable that we haven't seen before.
 

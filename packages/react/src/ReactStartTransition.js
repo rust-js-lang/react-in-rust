@@ -61,9 +61,7 @@ export function startTransition(scope, options) {
         ReactSharedInternals.asyncTransitions++;
         returnValue.then(releaseAsyncTransition, releaseAsyncTransition);
       }
-      returnValue.then(() => {
-        noop();
-      }, reportGlobalError);
+      returnValue.then(noop, reportGlobalError);
     }
   } catch (error) {
     reportGlobalError(error);

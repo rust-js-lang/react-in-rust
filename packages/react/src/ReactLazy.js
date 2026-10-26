@@ -86,14 +86,7 @@ function lazyInitializer(payload) {
               ioInfo.end = performance.now();
               // Hide unhandled rejections.
               // $FlowFixMe[incompatible-use]
-              $unwrap(ioInfo.value).then(
-                () => {
-                  noop();
-                },
-                () => {
-                  noop();
-                },
-              );
+              $unwrap(ioInfo.value).then(noop, noop);
               $unwrap(rejectDebugValue)(error);
               // $FlowFixMe[incompatible-use]
               // $FlowFixMe[prop-missing]

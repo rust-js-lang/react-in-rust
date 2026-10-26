@@ -28,7 +28,6 @@ import {
   createLaneMap,
 } from './ReactFiberLane.js';
 import {ConcurrentRoot, LegacyRoot} from './ReactRootTags.js';
-import {$roomFor} from '@rust-js/runtime';
 
 export function createFiberRoot(
   // ReactFiberConfig's `Container`.
@@ -55,9 +54,6 @@ export function createFiberRoot(
   // Cyclic construction. This cheats the type system right now because
   // stateNode is any.
   const uninitializedFiber = createHostRootFiber(tag, isStrictMode);
-
-  const value = createLaneMap(NoTimestamp);
-  $roomFor(TotalLanes, 12);
   const root = {
     tag: disableLegacyMode ? ConcurrentRoot : tag,
     containerInfo,
@@ -71,7 +67,7 @@ export function createFiberRoot(
     next: null,
     callbackNode: null,
     callbackPriority: NoLane,
-    expirationTimes: value,
+    expirationTimes: createLaneMap(NoTimestamp),
 
     pendingLanes: NoLanes,
     suspendedLanes: NoLanes,
@@ -84,6 +80,7 @@ export function createFiberRoot(
 
     entangledLanes: NoLanes,
     entanglements: createLaneMap(NoLanes),
+
     hiddenUpdates: Array.from({length: TotalLanes}, () => null),
 
     identifierPrefix,

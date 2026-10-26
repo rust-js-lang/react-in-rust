@@ -82,14 +82,14 @@ export function processTransitionCallbacks(
               case 'marker':
                 filteredAborts.push({
                   type: 'marker',
-                  name: abort.name ?? null,
+                  name: abort.name,
                   endTime,
                 });
                 break;
               case 'suspense':
                 filteredAborts.push({
                   type: 'suspense',
-                  name: abort.name ?? null,
+                  name: abort.name,
                   endTime,
                 });
             }

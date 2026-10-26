@@ -39,7 +39,7 @@ import {
   markTransitionStarted,
 } from './ReactFiberWorkLoop.js';
 import {startAsyncTransitionTimer} from './ReactProfilerTimer.js';
-import {$dispose, $dropping, $unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/runtime';
 
 export const NoTransition = null;
 
@@ -121,49 +121,24 @@ function onStartTransitionFinishForReconciler(transition, returnValue) {
 ReactSharedInternals.S = onStartTransitionFinishForReconciler;
 
 function chainGestureCancellation(root, scheduledGesture, prevCancel) {
-  return $dropping(
-    () => {
-      cancelScheduledGesture(root, scheduledGesture);
-      if (prevCancel != null) {
-        prevCancel();
-      }
-    },
-    () => {
-      if (prevCancel != null) {
-        $dispose(prevCancel);
-      }
-    },
-  );
+  return () => {
+    cancelScheduledGesture(root, scheduledGesture);
+    if (prevCancel != null) {
+      prevCancel();
+    }
+  };
 }
 
 if (enableGestureTransition) {
   const prevOnStartGestureTransitionFinish = ReactSharedInternals.G;
   ReactSharedInternals.G = (transition, provider, options) => {
-    let cancel$0$live = true;
     let cancel;
     if (prevOnStartGestureTransitionFinish) {
-      let tmp;
-      try {
-        tmp = prevOnStartGestureTransitionFinish(transition, provider, options);
-      } catch (error) {
-        // Nothing was scheduled but it could've been scheduled by another renderer.
-        if (cancel != null) {
-          $dispose(cancel);
-        }
-        throw error;
-      }
-      try {
-        if (cancel != null) {
-          $dispose(cancel);
-        }
-      } catch (error$1) {
-        cancel = tmp;
-        if (cancel != null) {
-          $dispose(cancel);
-        }
-        throw error$1;
-      }
-      cancel = tmp;
+      cancel = prevOnStartGestureTransitionFinish(
+        transition,
+        provider,
+        options,
+      );
     }
     // For every root that has work scheduled, check if there's a ScheduledGesture
     // matching this provider and if so, increase its ref count so its retained by
@@ -176,42 +151,23 @@ if (enableGestureTransition) {
     let root = firstScheduledRoot;
     while (root != null) {
       const transitionTypes = transition.types;
-      let scheduledGesture;
-      try {
-        scheduledGesture = startScheduledGesture(
-          root,
-          provider,
-          options,
-          transitionTypes,
-        );
-      } catch (error$2) {
-        if (cancel != null) {
-          if (cancel$0$live) {
-            $dispose(cancel);
-          }
-        }
-        throw error$2;
-      }
+      const scheduledGesture = startScheduledGesture(
+        root,
+        provider,
+        options,
+        transitionTypes,
+      );
       if (scheduledGesture != null) {
-        cancel$0$live = false;
-        const value = chainGestureCancellation(root, scheduledGesture, cancel);
-        cancel$0$live = true;
-        cancel = value;
+        cancel = chainGestureCancellation(root, scheduledGesture, cancel);
       }
       root = root.next;
     }
     if (cancel != null) {
-      cancel$0$live = false;
-      const cancel$1 = cancel;
-      return cancel$1;
+      return cancel;
     }
-    const result$1 = () => {};
-    if (cancel != null) {
-      if (cancel$0$live) {
-        $dispose(cancel);
-      }
-    }
-    return result$1;
+    return () => {
+      // Nothing was scheduled but it could've been scheduled by another renderer.
+    };
   };
 }
 
@@ -342,9 +298,10 @@ export function getSuspendedCache() {
   if (cacheFromPool == null) {
     return null;
   }
-  // We must also save the parent, so that when we resume we can detect
-  // a refresh.
+
   return {
+    // We must also save the parent, so that when we resume we can detect
+    // a refresh.
     parent: $unwrap(
       isPrimaryRenderer
         ? CacheContext._currentValue
@@ -359,9 +316,10 @@ export function getOffscreenDeferredCache() {
   if (cacheFromPool == null) {
     return null;
   }
-  // We must also store the parent, so that when we resume we can detect
-  // a refresh.
+
   return {
+    // We must also store the parent, so that when we resume we can detect
+    // a refresh.
     parent: $unwrap(
       isPrimaryRenderer
         ? CacheContext._currentValue
