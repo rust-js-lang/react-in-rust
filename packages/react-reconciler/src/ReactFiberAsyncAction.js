@@ -78,10 +78,7 @@ export function entangleAsyncAction(transition, thenable) {
     }
   }
   currentEntangledPendingCount = (currentEntangledPendingCount + 1) | 0;
-  thenable.then(
-    () => pingEngtangledActionScope(),
-    () => pingEngtangledActionScope(),
-  );
+  thenable.then(pingEngtangledActionScope, pingEngtangledActionScope);
   return thenable;
 }
 
