@@ -16,6 +16,7 @@ export interface ReactContext<T> {
   _threadCount: number;
   Provider: ReactContext<T> | null;
   Consumer?: ReactConsumerType<T> | null | undefined;
+  // DEV only
   _currentRenderer?: unknown | null | undefined;
   _currentRenderer2?: unknown | null | undefined;
 }

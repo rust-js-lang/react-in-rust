@@ -18,7 +18,9 @@ export interface ReactElement {
   key?: ReactKey | null | undefined;
   ref?: unknown | null | undefined;
   props: unknown;
+  // __DEV__ or for string refs
   _owner?: unknown | null | undefined;
+  // __DEV__
   _store:
     | {
         [key: string]: number;
@@ -39,6 +41,18 @@ export function jsxProd(
   maybeKey?: unknown | null | undefined,
 ): ReactElement;
 
+// While `jsxDEV` should never be called when running in production, we do
+// support `jsx` and `jsxs` when running in development. This supports the case
+// where a third-party dependency ships code that was compiled for production;
+// we want to still provide warnings in development.
+//
+// So these functions are the _dev_ implementations of the _production_
+// API signatures.
+//
+// Since these functions are dev-only, it's ok to add an indirection here. They
+// only exist to provide different versions of `isStaticChildren`. (We shouldn't
+// use this pattern for the prod versions, though, because it will add an call
+// frame.)
 export function jsxProdSignatureRunningInDevWithDynamicChildren(
   type: unknown | null | undefined,
   config: unknown,

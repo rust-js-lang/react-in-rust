@@ -21,10 +21,15 @@ export interface GestureTransitionOptions {
 }
 
 export interface Transition {
+  // enableViewTransition
   types?: string[] | null | undefined;
+  // enableGestureTransition
   gesture?: GestureProvider | null | undefined;
+  // enableTransitionTracing only
   name?: string | null | undefined;
+  // enableTransitionTracing only
   startTime?: number | undefined;
+  // DEV-only
   _updatedFibers?: Set<any> | undefined;
 }
 

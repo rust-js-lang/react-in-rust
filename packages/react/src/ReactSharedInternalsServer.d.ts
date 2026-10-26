@@ -12,13 +12,20 @@ import type {
 } from './ReactTaintRegistry.js';
 
 export interface SharedStateServer {
+  // ReactCurrentDispatcher for Hooks
   H?: any | null | undefined;
+  // ReactCurrentCache for Cache
   A?: any | null | undefined;
+  // enableTaint
   TaintRegistryObjects: WeakMap<object, string> | null | undefined;
   TaintRegistryValues: Map<EntryValue, TaintEntry> | null | undefined;
   TaintRegistryByteLengths: Set<number> | null | undefined;
   TaintRegistryPendingRequests: Set<RequestCleanupQueue> | null | undefined;
+  // DEV-only
+
+  // ReactDebugCurrentFrame
   getCurrentStack?: (() => string) | null | undefined;
+  // ReactOwnerStackReset
   recentlyCreatedOwnerStacks: number | null | undefined;
 }
 

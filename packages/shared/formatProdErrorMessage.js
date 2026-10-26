@@ -15,6 +15,7 @@ export default function formatProdErrorMessage(code, ...args) {
     url += i === 0 ? '?args[]=' : '&args[]=';
     url += encodeURIComponent(String(arg));
   }
+
   return (
     `Minified React error #${code}; visit ${url} for the full message or ` +
     'use the non-minified dev environment for full errors and additional ' +

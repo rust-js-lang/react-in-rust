@@ -6,8 +6,11 @@
 // LICENSE file in the root directory of this source tree.
 
 export interface SharedStateClient {
+  // ReactCurrentDispatcher for Hooks
   H?: any | null | undefined;
+  // ReactCurrentCache for Cache
   A?: unknown | null | undefined;
+  // ReactCurrentBatchConfig for Transitions
   T?: unknown | null | undefined;
   S?:
     | ((value: unknown, value2: unknown | null | undefined) => void)
@@ -21,13 +24,24 @@ export interface SharedStateClient {
       ) => () => void)
     | null
     | undefined;
+  // DEV-only
+
+  // ReactCurrentActQueue
   actQueue?: RendererTask[] | null | undefined;
+  // When zero this means we're outside an async startTransition.
   asyncTransitions: number | null | undefined;
+  // Used to reproduce behavior of `batchedUpdates` in legacy mode.
   isBatchingLegacy: boolean | null | undefined;
   didScheduleLegacyUpdate: boolean | null | undefined;
+  // Tracks whether something called `use` during the current batch of work.
+  // Determines whether we should yield to microtasks to unwrap already resolved
+  // promises without suspending.
   didUsePromise: boolean | null | undefined;
+  // Track first uncaught error within this act
   thrownErrors: (unknown | null | undefined)[] | null | undefined;
+  // ReactDebugCurrentFrame
   getCurrentStack?: (() => string) | null | undefined;
+  // ReactOwnerStackReset
   recentlyCreatedOwnerStacks: number | null | undefined;
 }
 

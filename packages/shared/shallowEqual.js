@@ -41,6 +41,7 @@ export default function shallowEqual(objA, objB) {
       return false;
     }
   }
+
   return true;
 }
 //# sourceMappingURL=shallowEqual.js.map

@@ -5,9 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+// GAP: `shared/ReactTypes`' `ReactComponentInfo`, which isn't ported: the
+// fields this module reads, as a Rust struct is the JS object of its fields.
 export interface ReactComponentInfo {
   name: string;
   owner?: ReactComponentInfo | undefined;
+  // Stashed Data for the Specific Execution Environment. Not part of the transport protocol
   debugStack?: any;
 }
 

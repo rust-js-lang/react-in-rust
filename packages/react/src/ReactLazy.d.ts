@@ -36,6 +36,7 @@ export interface ReactAsyncInfo {
 export interface Payload {
   _status: Status;
   _result: unknown | null | undefined;
+  // DEV-only
   _ioInfo?: ReactIOInfo | undefined;
 }
 
@@ -43,6 +44,7 @@ export interface LazyComponent {
   $$typeof: symbol;
   _payload: Payload;
   _init: (payload: Payload) => unknown | null | undefined;
+  // __DEV__
   _debugInfo: ReactAsyncInfo[] | null | undefined;
 }
 

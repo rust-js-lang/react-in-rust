@@ -10,4 +10,5 @@ export interface RefObject {
   current?: unknown | null | undefined;
 }
 
+// an immutable object with a single mutable value
 export function createRef(): RefObject;

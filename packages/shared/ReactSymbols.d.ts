@@ -5,6 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+// ATTENTION
+// When adding new symbols to this file,
+// Please consider also adding to 'react-devtools-shared/src/backend/ReactSymbols'
+
+// The Symbol used to tag the ReactElement-like types.
 export const REACT_LEGACY_ELEMENT_TYPE: symbol;
 
 export const REACT_ELEMENT_TYPE: symbol;

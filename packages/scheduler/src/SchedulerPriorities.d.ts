@@ -7,6 +7,7 @@
 
 export type PriorityLevel = number;
 
+// TODO: Use symbols?
 export const NoPriority: PriorityLevel;
 
 export const ImmediatePriority: PriorityLevel;

@@ -5,18 +5,71 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+// -----------------------------------------------------------------------------
+// Land or remove (zero effort)
+//
+// Flags that can likely be deleted or landed without consequences
+// -----------------------------------------------------------------------------
+
+// None
+
+// -----------------------------------------------------------------------------
+// Killswitch
+//
+// Flags that exist solely to turn off a change in case it causes a regression
+// when it rolls out to prod. We should remove these as soon as possible.
+// -----------------------------------------------------------------------------
+
+// None
+
+// -----------------------------------------------------------------------------
+// Land or remove (moderate effort)
+//
+// Flags that can be probably deleted or landed, but might require extra effort
+// like migrating internal callers or performance testing.
+// -----------------------------------------------------------------------------
+
+// Need to remove didTimeout argument from Scheduler before landing
 export const disableSchedulerTimeoutInWorkLoop: boolean;
 
+// -----------------------------------------------------------------------------
+// Slated for removal in the future (significant effort)
+//
+// These are experiments that didn't work out, and never shipped, but we can't
+// delete from the codebase until we migrate internal callers.
+// -----------------------------------------------------------------------------
+
+// Add a callback property to suspense to notify which promises are currently
+// in the update queue. This allows reporting and tracing of what is causing
+// the user to see a loading state.
+//
+// Also allows hydration callbacks to fire when a dehydrated boundary gets
+// hydrated or deleted.
+//
+// This will eventually be replaced by the Transition Tracing proposal.
 export const enableSuspenseCallback: boolean;
 
+// Experimental Scope support.
 export const enableScopeAPI: boolean;
 
+// Experimental Create Event Handle API.
 export const enableCreateEventHandleAPI: boolean;
 
+// Support legacy Primer support on internal FB www
 export const enableLegacyFBSupport: boolean;
 
+// -----------------------------------------------------------------------------
+// Ongoing experiments
+//
+// These are features that we're either actively exploring or are reasonably
+// likely to include in an upcoming release.
+// -----------------------------------------------------------------------------
+
+// Yield to the browser event loop and not just the scheduler event loop before passive effects.
+// Fix gated tests that fail with this flag enabled before turning it back on.
 export const enableYieldingBeforePassive: boolean;
 
+// Experiment to intentionally yield less to block high framerate animations.
 export const enableThrottledScheduling: boolean;
 
 export const enableLegacyCache: boolean;
@@ -60,12 +113,15 @@ export const enableObjectFiber: boolean;
 
 export const enableTransitionTracing: boolean;
 
+// FB-only usage. The new API has different semantics.
 export const enableLegacyHidden: boolean;
 
+// Enables unstable_avoidThisFallback feature in Fiber
 export const enableSuspenseAvoidThisFallback: boolean;
 
 export const enableCPUSuspense: boolean;
 
+// Test this at Meta before enabling.
 export const enableNoCloningMemoCache: boolean;
 
 export const enableFizzExternalRuntime: boolean;
@@ -108,6 +164,18 @@ export const enableConditionalUseWarning: boolean;
 
 export const enableInternalInstanceMap: boolean;
 
+// -----------------------------------------------------------------------------
+// Ready for next major.
+//
+// Alias __NEXT_MAJOR__ to __EXPERIMENTAL__ for easier skimming.
+// -----------------------------------------------------------------------------
+
+// TODO: Anything that's set to `true` in this section should either be cleaned
+// up (if it's on everywhere, including Meta and RN builds) or moved to a
+// different section of this file.
+
+// const __NEXT_MAJOR__ = __EXPERIMENTAL__;
+
 /**
  *
  * * Removes legacy style context defined using static `contextTypes` and consumed with static `childContextTypes`.
@@ -122,24 +190,56 @@ export const disableLegacyContext: boolean;
  */
 export const disableLegacyContextForFunctionComponents: boolean;
 
+// Enable the moveBefore() alternative to insertBefore(). This preserves states of moves.
 export const enableMoveBefore: boolean;
 
+// Disabled caching behavior of `react/cache` in client runtimes.
 export const disableClientCache: boolean;
 
+// Warn on any usage of ReactTestRenderer
 export const enableReactTestRendererWarning: boolean;
 
+// Disables legacy mode
+// This allows us to land breaking changes to remove legacy mode APIs in experimental builds
+// before removing them in stable in the next Major
 export const disableLegacyMode: boolean;
 
+// -----------------------------------------------------------------------------
+// Chopping Block
+//
+// Planned feature deprecations and breaking changes. Sorted roughly in order of
+// when we plan to enable them.
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// React DOM Chopping Block
+//
+// Similar to main Chopping Block but only flags related to React DOM. These are
+// grouped because we will likely batch all of them into a single major release.
+// -----------------------------------------------------------------------------
+
+// Disable support for comment nodes as React DOM containers. Already disabled
+// in open source, but www codebase still relies on it. Need to remove.
 export const disableCommentsAsDOMContainers: boolean;
 
+// Prevent the value and checked attributes from syncing with their related
+// DOM properties
 export const disableInputAttributeSyncing: boolean;
 
+// Disables children for <textarea> elements
 export const disableTextareaChildren: boolean;
 
 export const enableProfilerTimer: boolean;
 
+// Adds performance.measure() marks using Chrome extensions to allow formatted
+// Component rendering tracks to show up in the Performance tab.
+// This flag will be used for both Server Component and Client Component tracks.
+// All calls should also be gated on enableProfilerTimer.
 export const enableComponentPerformanceTrack: boolean;
 
+// Enables annotating of React performance track events with `performanceIssue`
+// metadata, to more prominently highlight performance issues to users
+// (initially, an experimental feature in React Native).
 export const enablePerformanceIssueReporting: boolean;
 
 export const enableSchedulingProfiler: boolean;
@@ -152,6 +252,9 @@ export const enableUpdaterTracking: boolean;
 
 export const ownerStackLimit: number;
 
+// -----------------------------------------------------------------------------
+// eslint-plugin-react-hooks
+// -----------------------------------------------------------------------------
 export const eprh_enableUseKeyedStateCompilerLint: boolean;
 
 export const eprh_enableVerboseNoSetStateInEffectCompilerLint: boolean;

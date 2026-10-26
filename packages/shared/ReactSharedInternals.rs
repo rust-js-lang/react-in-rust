@@ -3,6 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+use std::cell::RefCell;
 use std::marker::PhantomData;
 
 /// The state React shares with its renderers, the `react` package's own.
@@ -65,6 +66,30 @@ impl SharedStateClient {
     /// injected.
     #[cfg_attr(rust_js, rust_js::link_name = "get getCurrentStack")]
     pub fn get_current_stack(&self) -> Option<&'static dyn Fn() -> String> {
+        unreachable!()
+    }
+
+    /// The renderer's stack of what it's rendering from now on, `None`
+    /// `null`.
+    #[cfg_attr(rust_js, rust_js::link_name = "set getCurrentStack")]
+    #[cfg_attr(rust_js, rust_js::nullable(get_current_stack))]
+    pub fn set_get_current_stack(&self, get_current_stack: Option<fn() -> String>) {
+        let _ = get_current_stack;
+        unreachable!()
+    }
+
+    /// What an `act` scope's renderers do next, `None` outside an `act` (DEV
+    /// only): the `react` package's `ActQueue`.
+    #[cfg_attr(rust_js, rust_js::link_name = "get actQueue")]
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub fn act_queue(&self) -> Option<&'static js::Unknown> {
+        unreachable!()
+    }
+
+    /// The errors thrown and not caught inside the current `act` (DEV only),
+    /// which it rethrows into the test.
+    #[cfg_attr(rust_js, rust_js::link_name = "get thrownErrors")]
+    pub fn thrown_errors(&self) -> &'static RefCell<Vec<Option<&'static js::Unknown>>> {
         unreachable!()
     }
 
