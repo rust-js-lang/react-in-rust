@@ -16,6 +16,7 @@ dependencies = [
 name = "react-reconciler"
 version = "0.0.0"
 dependencies = [
+ "react-isomorphic",
  "rust-js-builtins",
  "rust-js-webapi",
  "shared",

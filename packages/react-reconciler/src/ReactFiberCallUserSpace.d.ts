@@ -95,9 +95,6 @@ export type CallDestroy = (
 
 export const callDestroyInDEV: CallDestroy | null | undefined;
 
-// react/src/ReactLazy's `LazyComponent`, which the reconciler can't name
-// until it depends on react: its `_payload`, and its `_init`, which
-// resolves it.
-export type CallLazyInit = (value: unknown) => unknown | null | undefined;
+export type CallLazyInit = (value: any) => unknown | null | undefined;
 
 export const callLazyInitInDEV: CallLazyInit | null | undefined;

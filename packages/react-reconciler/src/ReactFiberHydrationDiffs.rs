@@ -152,7 +152,9 @@ fn describe_text_node(content: &str, max_length: f64) -> String {
             if max_length < 8.0 {
                 return "{\"...\"}".to_string();
             }
-            return "{".to_owned() + &string::slice(&encoded, 0.0, Some(max_length - 7.0)) + "...\"}";
+            return "{".to_owned()
+                + &string::slice(&encoded, 0.0, Some(max_length - 7.0))
+                + "...\"}";
         }
         "{".to_owned() + &encoded + "}"
     } else {
@@ -176,7 +178,8 @@ fn describe_text_diff(client_text: &str, server_props: ServerProps<'_>, indent: 
             let mut server_text = server_text.to_string();
             let mut client_text = client_text.to_string();
             let mut first_diff = 0;
-            while first_diff < string::length(&server_text) && first_diff < string::length(&client_text)
+            while first_diff < string::length(&server_text)
+                && first_diff < string::length(&client_text)
             {
                 if string::char_code_at(&server_text, first_diff)
                     != string::char_code_at(&client_text, first_diff)
@@ -259,7 +262,11 @@ fn describe_value(value: Option<&Unknown>, mut max_length: f64) -> String {
                     );
                     max_length -= f64::from(string::length(&prop_value));
                     if max_length < 0.0 {
-                        properties += if properties.is_empty() { "..." } else { ", ..." };
+                        properties += if properties.is_empty() {
+                            "..."
+                        } else {
+                            ", ..."
+                        };
                         break;
                     }
                     properties += &((if properties.is_empty() { "" } else { "," }).to_owned()
@@ -268,7 +275,9 @@ fn describe_value(value: Option<&Unknown>, mut max_length: f64) -> String {
                         + &prop_value);
                 }
                 return "{".to_owned() + &properties + "}";
-            } else if ENABLE_SRC_OBJECT.with(|&enabled| enabled) && (name == "Blob" || name == "File") {
+            } else if ENABLE_SRC_OBJECT.with(|&enabled| enabled)
+                && (name == "Blob" || name == "File")
+            {
                 return name + ":" + &js::concat_text(js::get(value, "type")).unwrap();
             }
             name
@@ -339,9 +348,8 @@ fn describe_expanded_element(r#type: &str, props: &Unknown, row_prefix: &str) ->
     // This function tries to fit the props into a single line for non-essential elements.
     // We also ignore children because we're not going deeper.
 
-    let mut remaining_row_length = MAX_ROW_LENGTH
-        - f64::from(string::length(row_prefix))
-        - f64::from(string::length(r#type));
+    let mut remaining_row_length =
+        MAX_ROW_LENGTH - f64::from(string::length(row_prefix)) - f64::from(string::length(r#type));
 
     // We add the properties to a set so we can choose later whether we'll put it on one
     // line or multiple lines.
@@ -392,17 +400,17 @@ fn describe_properties_diff(
     indent: i32,
 ) -> String {
     let mut properties = String::new();
-    let remaining_server_properties =
-        assign(js::unknown(js::dict::new::<Option<&Unknown>>()), (server_object,));
+    let remaining_server_properties = assign(
+        js::unknown(js::dict::new::<Option<&Unknown>>()),
+        (server_object,),
+    );
     for prop_name in js::keys_in(client_object) {
         if !object::has_own_property.call(client_object, prop_name.as_str()) {
             continue;
         }
         js::delete(remaining_server_properties, prop_name.as_str());
-        let max_length = MAX_ROW_LENGTH
-            - f64::from(indent) * 2.0
-            - f64::from(string::length(&prop_name))
-            - 2.0;
+        let max_length =
+            MAX_ROW_LENGTH - f64::from(indent) * 2.0 - f64::from(string::length(&prop_name)) - 2.0;
         let client_value = js::get(client_object, prop_name.as_str());
         let client_prop_value = describe_value(client_value, max_length);
         if object::has_own_property.call(server_object, prop_name.as_str()) {
@@ -418,10 +426,8 @@ fn describe_properties_diff(
         if !object::has_own_property.call(remaining_server_properties, prop_name.as_str()) {
             continue;
         }
-        let max_length = MAX_ROW_LENGTH
-            - f64::from(indent) * 2.0
-            - f64::from(string::length(&prop_name))
-            - 2.0;
+        let max_length =
+            MAX_ROW_LENGTH - f64::from(indent) * 2.0 - f64::from(string::length(&prop_name)) - 2.0;
         let server_value = js::get(remaining_server_properties, prop_name.as_str());
         let server_prop_value = describe_value(server_value, max_length);
         properties += &(removed(indent) + &prop_name + ": " + &server_prop_value + "\n");
@@ -599,8 +605,7 @@ fn describe_node(node: &HydrationDiffNode, mut indent: i32) -> String {
         for info in debug_info {
             let server_component_name = js::get(*info, "name");
             if let Kind::String(server_component_name) = js::classify(server_component_name) {
-                parent_content +=
-                    &(indentation(indent) + "<" + server_component_name + ">" + "\n");
+                parent_content += &(indentation(indent) + "<" + server_component_name + ">" + "\n");
                 indent += 1;
             }
         }
@@ -695,8 +700,11 @@ fn describe_node(node: &HydrationDiffNode, mut indent: i32) -> String {
             }
             ServerTailNode::Element(tail_node) => {
                 // Removed element
-                child_content +=
-                    &describe_expanded_element(&tail_node.r#type, tail_node.props, &removed(indent));
+                child_content += &describe_expanded_element(
+                    &tail_node.r#type,
+                    tail_node.props,
+                    &removed(indent),
+                );
             }
         }
     }
@@ -705,6 +713,8 @@ fn describe_node(node: &HydrationDiffNode, mut indent: i32) -> String {
 }
 
 pub fn describe_diff(root_node: &HydrationDiffNode) -> String {
-    catch_unwind(AssertUnwindSafe(|| "\n\n".to_owned() + &describe_node(root_node, 0)))
-        .unwrap_or_default()
+    catch_unwind(AssertUnwindSafe(|| {
+        "\n\n".to_owned() + &describe_node(root_node, 0)
+    }))
+    .unwrap_or_default()
 }

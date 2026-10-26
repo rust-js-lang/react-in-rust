@@ -99,8 +99,8 @@ pub fn get_masked_context(
         EMPTY_CONTEXT_OBJECT.with(|empty_context_object| *empty_context_object)
     } else {
         let r#type = work_in_progress.r#type.get();
-        let Some(context_types) =
-            js::get(r#type, "contextTypes").filter(|context_types| js::truthy(Some(*context_types)))
+        let Some(context_types) = js::get(r#type, "contextTypes")
+            .filter(|context_types| js::truthy(Some(*context_types)))
         else {
             return EMPTY_CONTEXT_OBJECT.with(|empty_context_object| *empty_context_object);
         };
@@ -115,7 +115,12 @@ pub fn get_masked_context(
                 unmasked_context,
             )
         {
-            return unsafe { js::cast(js::get(instance, "__reactInternalMemoizedMaskedChildContext")) };
+            return unsafe {
+                js::cast(js::get(
+                    instance,
+                    "__reactInternalMemoizedMaskedChildContext",
+                ))
+            };
         }
 
         let context: &'static Context = js::dict::new();
@@ -262,16 +267,18 @@ pub fn push_context_provider(work_in_progress: &Rc<Fiber>) -> bool {
         } else {
             instance
         };
-        let memoized_merged_child_context: &'static Context = if js::truthy(memoized_merged_child_context) {
-            unsafe { js::cast(memoized_merged_child_context) }
-        } else {
-            EMPTY_CONTEXT_OBJECT.with(|empty_context_object| *empty_context_object)
-        };
+        let memoized_merged_child_context: &'static Context =
+            if js::truthy(memoized_merged_child_context) {
+                unsafe { js::cast(memoized_merged_child_context) }
+            } else {
+                EMPTY_CONTEXT_OBJECT.with(|empty_context_object| *empty_context_object)
+            };
 
         // Remember the parent context so we can merge with it later.
         // Inherit the parent's did-perform-work value to avoid inadvertently blocking updates.
         PREVIOUS_CONTEXT.set(CONTEXT_STACK_CURSOR.with(|cursor| *cursor.current.borrow()));
-        CONTEXT_STACK_CURSOR.with(|cursor| push(cursor, memoized_merged_child_context, work_in_progress));
+        CONTEXT_STACK_CURSOR
+            .with(|cursor| push(cursor, memoized_merged_child_context, work_in_progress));
         DID_PERFORM_WORK_STACK_CURSOR.with(|cursor| {
             let did_perform_work = *cursor.current.borrow();
             push(cursor, did_perform_work, work_in_progress);
@@ -281,7 +288,11 @@ pub fn push_context_provider(work_in_progress: &Rc<Fiber>) -> bool {
     }
 }
 
-pub fn invalidate_context_provider(work_in_progress: &Rc<Fiber>, r#type: &Unknown, did_change: bool) {
+pub fn invalidate_context_provider(
+    work_in_progress: &Rc<Fiber>,
+    r#type: &Unknown,
+    did_change: bool,
+) {
     if DISABLE_LEGACY_CONTEXT {
     } else {
         let instance = work_in_progress.state_node.get();
@@ -297,7 +308,8 @@ pub fn invalidate_context_provider(work_in_progress: &Rc<Fiber>, r#type: &Unknow
             // Merge parent and own context.
             // Skip this if we're not updating due to sCU.
             // This avoids unnecessarily recomputing memoized values.
-            let merged_context = process_child_context(work_in_progress, r#type, PREVIOUS_CONTEXT.get());
+            let merged_context =
+                process_child_context(work_in_progress, r#type, PREVIOUS_CONTEXT.get());
             js::set(
                 instance,
                 "__reactInternalMemoizedMergedChildContext",

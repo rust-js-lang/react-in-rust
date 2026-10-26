@@ -12,6 +12,7 @@ path = "reconciler.rs"
 
 [dependencies]
 js.workspace = true
+react-isomorphic = { path = "../react" }
 shared.workspace = true
 webapi.workspace = true
 

@@ -21,7 +21,10 @@ use crate::react_fiber_lane::{
 };
 use crate::react_internal_types::Fiber;
 
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#resolveEventType")]
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#resolveEventType"
+)]
 #[cfg_attr(rust_js, rust_js::nullable)]
 fn resolve_event_type() -> Option<String> {
     unreachable!()
@@ -35,7 +38,10 @@ fn resolve_event_time_stamp() -> f64 {
     unreachable!()
 }
 
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberWorkLoop.js#isAlreadyRendering")]
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberWorkLoop.js#isAlreadyRendering"
+)]
 fn is_already_rendering() -> bool {
     unreachable!()
 }
@@ -248,7 +254,11 @@ pub fn start_host_action_timer(fiber: &Fiber) {
     // transition lane for the action update. Using the debug task from the host fiber.
     if BLOCKING_UPDATE_TIME.get() < 0.0 {
         BLOCKING_UPDATE_TIME.set(now());
-        BLOCKING_UPDATE_TASK.set(if __DEV__ { fiber.debug_task.get() } else { None });
+        BLOCKING_UPDATE_TASK.set(if __DEV__ {
+            fiber.debug_task.get()
+        } else {
+            None
+        });
         if is_already_rendering() {
             BLOCKING_UPDATE_TYPE.set(SPAWNED_UPDATE);
         }
@@ -269,7 +279,11 @@ pub fn start_host_action_timer(fiber: &Fiber) {
     }
     if TRANSITION_UPDATE_TIME.get() < 0.0 {
         TRANSITION_UPDATE_TIME.set(now());
-        TRANSITION_UPDATE_TASK.set(if __DEV__ { fiber.debug_task.get() } else { None });
+        TRANSITION_UPDATE_TASK.set(if __DEV__ {
+            fiber.debug_task.get()
+        } else {
+            None
+        });
         if TRANSITION_START_TIME.get() < 0.0 {
             let new_event_time = resolve_event_time_stamp();
             let new_event_type = resolve_event_type();

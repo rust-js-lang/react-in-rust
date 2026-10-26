@@ -8,6 +8,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::rc::Rc;
 
 use js::{JsError, JsObject, Unknown};
+use react_isomorphic::react_lazy::LazyComponent;
 use shared::environment::__DEV__;
 
 use crate::react_captured_value::CapturedValue;
@@ -40,7 +41,8 @@ impl Drop for RestoreIsRendering {
 
 /// A function component: called with its props and a second argument, the
 /// ref of a `forwardRef`'s render, or the legacy context.
-pub type Component = dyn Fn(Option<&'static Unknown>, Option<&'static Unknown>) -> Option<&'static Unknown>;
+pub type Component =
+    dyn Fn(Option<&'static Unknown>, Option<&'static Unknown>) -> Option<&'static Unknown>;
 
 pub type CallComponent =
     fn(&Component, Option<&'static Unknown>, Option<&'static Unknown>) -> Option<&'static Unknown>;
@@ -320,10 +322,7 @@ thread_local! {
     };
 }
 
-// react/src/ReactLazy's `LazyComponent`, which the reconciler can't name
-// until it depends on react: its `_payload`, and its `_init`, which
-// resolves it.
-pub type CallLazyInit = fn(&'static Unknown) -> Option<&'static Unknown>;
+pub type CallLazyInit = fn(&LazyComponent) -> Option<&'static Unknown>;
 
 struct CallLazyInitFrame {
     #[cfg_attr(rust_js, rust_js::name = "react_stack_bottom_frame")]
@@ -333,9 +332,8 @@ struct CallLazyInitFrame {
 #[cfg_attr(rust_js, rust_js::name = "callLazyInit")]
 const CALL_LAZY_INIT: CallLazyInitFrame = CallLazyInitFrame {
     react_stack_bottom_frame: |lazy| {
-        let payload = js::get(lazy, "_payload");
-        let init: &dyn Fn(Option<&'static Unknown>) -> Option<&'static Unknown> =
-            unsafe { js::cast(js::get(lazy, "_init")) };
+        let payload = &lazy.payload;
+        let init = lazy.init;
         init(payload)
     },
 };
