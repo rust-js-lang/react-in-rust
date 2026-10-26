@@ -1,0 +1,449 @@
+// Copyright (c) Meta Platforms, Inc. and affiliates.
+//
+// This source code is licensed under the MIT license found in the
+// LICENSE file in the root directory of this source tree.
+
+use std::cell::{Cell, RefCell};
+use std::collections::HashSet;
+use std::hash::{Hash, Hasher};
+use std::rc::Rc;
+
+use js::{JsError, JsObject, Map, Set, Unknown, WeakMap};
+use webapi::ConsoleTask;
+
+pub use shared::react_shared_internals::{AsyncDispatcher, Dispatcher};
+
+use crate::react_fiber_flags::Flags;
+use crate::react_fiber_lane::{Lane, LaneMap, Lanes};
+use crate::react_root_tags::RootTag;
+use crate::react_type_of_mode::TypeOfMode;
+use crate::react_work_tags::WorkTag;
+
+// Unwind Circular: moved from ReactFiberHooks.old
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum HookType {
+    #[cfg_attr(rust_js, rust_js::name = "useState")]
+    UseState,
+    #[cfg_attr(rust_js, rust_js::name = "useReducer")]
+    UseReducer,
+    #[cfg_attr(rust_js, rust_js::name = "useContext")]
+    UseContext,
+    #[cfg_attr(rust_js, rust_js::name = "useRef")]
+    UseRef,
+    #[cfg_attr(rust_js, rust_js::name = "useEffect")]
+    UseEffect,
+    #[cfg_attr(rust_js, rust_js::name = "useEffectEvent")]
+    UseEffectEvent,
+    #[cfg_attr(rust_js, rust_js::name = "useInsertionEffect")]
+    UseInsertionEffect,
+    #[cfg_attr(rust_js, rust_js::name = "useLayoutEffect")]
+    UseLayoutEffect,
+    #[cfg_attr(rust_js, rust_js::name = "useCallback")]
+    UseCallback,
+    #[cfg_attr(rust_js, rust_js::name = "useMemo")]
+    UseMemo,
+    #[cfg_attr(rust_js, rust_js::name = "useImperativeHandle")]
+    UseImperativeHandle,
+    #[cfg_attr(rust_js, rust_js::name = "useDebugValue")]
+    UseDebugValue,
+    #[cfg_attr(rust_js, rust_js::name = "useDeferredValue")]
+    UseDeferredValue,
+    #[cfg_attr(rust_js, rust_js::name = "useTransition")]
+    UseTransition,
+    #[cfg_attr(rust_js, rust_js::name = "useSyncExternalStore")]
+    UseSyncExternalStore,
+    #[cfg_attr(rust_js, rust_js::name = "useId")]
+    UseId,
+    #[cfg_attr(rust_js, rust_js::name = "useCacheRefresh")]
+    UseCacheRefresh,
+    #[cfg_attr(rust_js, rust_js::name = "useOptimistic")]
+    UseOptimistic,
+    #[cfg_attr(rust_js, rust_js::name = "useFormState")]
+    UseFormState,
+    #[cfg_attr(rust_js, rust_js::name = "useActionState")]
+    UseActionState,
+}
+
+/// ReactFiberConcurrentUpdates' `ConcurrentUpdate`: an update in a queue's
+/// circular list, here until that module is ported.
+pub struct ConcurrentUpdate {
+    pub next: RefCell<Rc<ConcurrentUpdate>>,
+    pub lane: Cell<Lane>,
+}
+
+/// A context a fiber read, and the value it read of it.
+pub struct ContextDependency<T: 'static> {
+    // shared/ReactTypes' `ReactContext<T>`.
+    pub context: &'static Unknown,
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub next: RefCell<Option<Rc<ContextDependency<Option<&'static Unknown>>>>>,
+    pub memoized_value: Cell<T>,
+}
+
+/// What a fiber depends on: the contexts it read, and the lanes they
+/// changed in.
+pub struct Dependencies {
+    pub lanes: Cell<Lanes>,
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub first_context: RefCell<Option<Rc<ContextDependency<Option<&'static Unknown>>>>>,
+    // DEV-only: ReactFiberThenable's `ThenableState`.
+    #[cfg_attr(rust_js, rust_js::name = "_debugThenableState")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub debug_thenable_state: Cell<Option<&'static Unknown>>,
+}
+
+pub struct MemoCache {
+    pub data: RefCell<Vec<Vec<Option<&'static Unknown>>>>,
+    pub index: Cell<usize>,
+}
+
+/// What a fiber's `ref` is: a function called with the instance, or an
+/// object whose `current` is set to it.
+#[derive(Clone, Copy)]
+#[cfg_attr(rust_js, rust_js::untagged)]
+pub enum Ref {
+    Callback(&'static dyn Fn(Option<&'static Unknown>)),
+    // shared/ReactTypes' `RefObject`.
+    #[cfg_attr(rust_js, rust_js::otherwise)]
+    Object(&'static Unknown),
+}
+
+// A Fiber is work on a Component that needs to be done or was done. There can
+// be more than one per component.
+pub struct Fiber {
+    // These first fields are conceptually members of an Instance. This used to
+    // be split into a separate type and intersected with the other Fiber fields,
+    // but until Flow fixes its intersection bugs, we've merged them into a
+    // single type.
+
+    // An Instance is shared between all versions of a component. We can easily
+    // break this out into a separate object to avoid copying so much to the
+    // alternate versions of the tree. We put this on a single object for now to
+    // minimize the number of objects created during the initial render.
+
+    // Tag identifying the type of fiber.
+    pub tag: Cell<WorkTag>,
+
+    // Unique identifier of this child.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub key: RefCell<Option<String>>,
+
+    // The value of element.type which is used to preserve the identity during
+    // reconciliation of this child.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub element_type: Cell<Option<&'static Unknown>>,
+
+    // The resolved function/class/ associated with this fiber.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub r#type: Cell<Option<&'static Unknown>>,
+
+    // The local state associated with this fiber.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub state_node: Cell<Option<&'static Unknown>>,
+
+    // Conceptual aliases
+    // parent : Instance -> return The parent happens to be the same as the
+    // return fiber since we've merged the fiber and instance.
+
+    // Remaining fields belong to Fiber
+
+    // The Fiber to return to after finishing processing this one.
+    // This is effectively the parent, but there can be multiple parents (two)
+    // so this is only the parent of the thing we're currently processing.
+    // It is conceptually the same as the return address of a stack frame.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub r#return: RefCell<Option<Rc<Fiber>>>,
+
+    // Singly Linked List Tree Structure.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub child: RefCell<Option<Rc<Fiber>>>,
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub sibling: RefCell<Option<Rc<Fiber>>>,
+    pub index: Cell<usize>,
+
+    // The ref last used to attach this node.
+    // I'll avoid adding an owner field for prod and model that as functions.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub r#ref: Cell<Option<Ref>>,
+
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub ref_cleanup: Cell<Option<&'static dyn Fn()>>,
+
+    // Input is the data coming into process this fiber. Arguments. Props.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub pending_props: Cell<Option<&'static Unknown>>, // This type will be more specific once we overload the tag.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub memoized_props: Cell<Option<&'static Unknown>>, // The props used to create the output.
+
+    // A queue of state updates and callbacks.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub update_queue: Cell<Option<&'static Unknown>>,
+
+    // The state used to create the output
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub memoized_state: Cell<Option<&'static Unknown>>,
+
+    // Dependencies (contexts, events) for this fiber, if it has any
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub dependencies: RefCell<Option<Rc<Dependencies>>>,
+
+    // Bitfield that describes properties about the fiber and its subtree. E.g.
+    // the ConcurrentMode flag indicates whether the subtree should be async-by-
+    // default. When a fiber is created, it inherits the mode of its
+    // parent. Additional flags can be set at creation time, but after that the
+    // value should remain unchanged throughout the fiber's lifetime, particularly
+    // before its child fibers are created.
+    pub mode: Cell<TypeOfMode>,
+
+    // Effect
+    pub flags: Cell<Flags>,
+    pub subtree_flags: Cell<Flags>,
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub deletions: RefCell<Option<Vec<Rc<Fiber>>>>,
+
+    pub lanes: Cell<Lanes>,
+    pub child_lanes: Cell<Lanes>,
+
+    // This is a pooled version of a Fiber. Every fiber that gets updated will
+    // eventually have a pair. There are cases when we can clean up pairs to save
+    // memory if we need to.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub alternate: RefCell<Option<Rc<Fiber>>>,
+
+    // Time spent rendering this Fiber and its descendants for the current update.
+    // This tells us how well the tree makes use of sCU for memoization.
+    // It is reset to 0 each time we render and only updated when we don't bailout.
+    // This field is only set when the enableProfilerTimer flag is enabled.
+    pub actual_duration: Cell<Option<f64>>,
+
+    // If the Fiber is currently active in the "render" phase,
+    // This marks the time at which the work began.
+    // This field is only set when the enableProfilerTimer flag is enabled.
+    pub actual_start_time: Cell<Option<f64>>,
+
+    // Duration of the most recent render time for this Fiber.
+    // This value is not updated when we bailout for memoization purposes.
+    // This field is only set when the enableProfilerTimer flag is enabled.
+    pub self_base_duration: Cell<Option<f64>>,
+
+    // Sum of base times for all descendants of this Fiber.
+    // This value bubbles up during the "complete" phase.
+    // This field is only set when the enableProfilerTimer flag is enabled.
+    pub tree_base_duration: Cell<Option<f64>>,
+
+    // Conceptual aliases
+    // workInProgress : Fiber ->  alternate The alternate used for reuse happens
+    // to be the same as work in progress.
+    // __DEV__ only
+    #[cfg_attr(rust_js, rust_js::name = "_debugInfo")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub debug_info: Cell<Option<&'static Unknown>>,
+    #[cfg_attr(rust_js, rust_js::name = "_debugOwner")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub debug_owner: Cell<Option<&'static Unknown>>,
+    #[cfg_attr(rust_js, rust_js::name = "_debugStack")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub debug_stack: Cell<Option<&'static JsError>>,
+    #[cfg_attr(rust_js, rust_js::name = "_debugTask")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub debug_task: Cell<Option<&'static ConsoleTask>>,
+    #[cfg_attr(rust_js, rust_js::name = "_debugNeedsRemount")]
+    pub debug_needs_remount: Cell<Option<bool>>,
+
+    // Used to verify that the order of hooks does not change between renders.
+    #[cfg_attr(rust_js, rust_js::name = "_debugHookTypes")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub debug_hook_types: RefCell<Option<Vec<HookType>>>,
+}
+
+// A fiber is itself: two are equal only where they're one, as a JS `Set`
+// of them holds each.
+impl PartialEq for Fiber {
+    fn eq(&self, other: &Self) -> bool {
+        std::ptr::eq(self, other)
+    }
+}
+
+impl Eq for Fiber {}
+
+impl Hash for Fiber {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        std::ptr::hash(self, state);
+    }
+}
+
+/// What an uncaught or a recoverable error is reported with.
+pub struct ErrorInfo {
+    pub component_stack: Option<String>,
+}
+
+/// What a caught error is reported with.
+pub struct CaughtErrorInfo {
+    pub component_stack: Option<String>,
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub error_boundary: Option<&'static Unknown>,
+}
+
+pub struct SuspenseHydrationCallbacks {
+    // ReactFiberConfig's `SuspenseInstance | ActivityInstance`.
+    pub on_hydrated: Option<&'static dyn Fn(&'static Unknown)>,
+    pub on_deleted: Option<&'static dyn Fn(&'static Unknown)>,
+}
+
+/// A suspense boundary a transition's tracing waits for.
+pub struct TransitionTracingPending {
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub name: Option<String>,
+}
+
+/// What a transition's tracing deleted.
+pub struct TransitionTracingDeletion {
+    pub r#type: String,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub name: Option<String>,
+    pub end_time: f64,
+}
+
+pub type OnTransitionStart = dyn Fn(&str, f64);
+pub type OnTransitionProgress = dyn Fn(&str, f64, f64, &[TransitionTracingPending]);
+pub type OnTransitionIncomplete = dyn Fn(&str, f64, &[TransitionTracingDeletion]);
+pub type OnTransitionComplete = dyn Fn(&str, f64, f64);
+pub type OnMarkerProgress = dyn Fn(&str, &str, f64, f64, &[TransitionTracingPending]);
+pub type OnMarkerIncomplete = dyn Fn(&str, &str, f64, &[TransitionTracingDeletion]);
+pub type OnMarkerComplete = dyn Fn(&str, &str, f64, f64);
+
+pub struct TransitionTracingCallbacks {
+    pub on_transition_start: Option<&'static OnTransitionStart>,
+    pub on_transition_progress: Option<&'static OnTransitionProgress>,
+    pub on_transition_incomplete: Option<&'static OnTransitionIncomplete>,
+    pub on_transition_complete: Option<&'static OnTransitionComplete>,
+    pub on_marker_progress: Option<&'static OnMarkerProgress>,
+    pub on_marker_incomplete: Option<&'static OnMarkerIncomplete>,
+    pub on_marker_complete: Option<&'static OnMarkerComplete>,
+}
+
+// Exported FiberRoot type includes all properties,
+// To avoid requiring potentially error-prone :any casts throughout the project.
+// The types are defined separately within this file to ensure they stay in sync.
+pub struct FiberRoot {
+    // The type of root (legacy, batched, concurrent, etc.)
+    pub tag: RootTag,
+
+    // Any additional information from the host associated with this root.
+    // ReactFiberConfig's `Container`.
+    pub container_info: &'static Unknown,
+    // Used only by persistent updates.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub pending_children: Cell<Option<&'static Unknown>>,
+    // The currently active root fiber. This is the mutable root of the tree.
+    pub current: RefCell<Rc<Fiber>>,
+
+    // A `WeakMap` where the host has one, a `Map` where it hasn't.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub ping_cache: Cell<Option<&'static WeakMap<JsObject, &'static Set<Unknown>>>>,
+
+    // Timeout handle returned by setTimeout. Used to cancel a pending timeout, if
+    // it's superseded by a new one.
+    // ReactFiberConfig's `TimeoutHandle | NoTimeout`.
+    pub timeout_handle: Cell<&'static Unknown>,
+    // When a root has a pending commit scheduled, calling this function will
+    // cancel it.
+    // TODO: Can this be consolidated with timeoutHandle?
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub cancel_pending_commit: Cell<Option<&'static dyn Fn()>>,
+    // Top context object, used by renderSubtreeIntoContainer
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub context: Cell<Option<&'static JsObject>>,
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub pending_context: Cell<Option<&'static JsObject>>,
+
+    // Used to create a linked list that represent all the roots that have
+    // pending work scheduled on them.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub next: RefCell<Option<Rc<FiberRoot>>>,
+
+    // Node returned by Scheduler.scheduleCallback. Represents the next rendering
+    // task that the root will work on.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub callback_node: Cell<Option<&'static Unknown>>,
+    pub callback_priority: Cell<Lane>,
+    pub expiration_times: RefCell<LaneMap<f64>>,
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub hidden_updates: RefCell<LaneMap<Option<Vec<Rc<ConcurrentUpdate>>>>>,
+
+    pub pending_lanes: Cell<Lanes>,
+    pub suspended_lanes: Cell<Lanes>,
+    pub pinged_lanes: Cell<Lanes>,
+    pub warm_lanes: Cell<Lanes>,
+    pub expired_lanes: Cell<Lanes>,
+    pub indicator_lanes: Cell<Lanes>, // enableDefaultTransitionIndicator only
+    pub error_recovery_disabled_lanes: Cell<Lanes>,
+    pub shell_suspend_counter: Cell<u32>,
+
+    pub entangled_lanes: Cell<Lanes>,
+    pub entanglements: RefCell<LaneMap<Lanes>>,
+
+    // ReactFiberCacheComponent's `Cache`.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub pooled_cache: Cell<Option<&'static Unknown>>,
+    pub pooled_cache_lanes: Cell<Lanes>,
+
+    // TODO: In Fizz, id generation is specific to each server config. Maybe we
+    // should do this in Fiber, too? Deferring this decision for now because
+    // there's no other place to store the prefix except for an internal field on
+    // the public createRoot object, which the fiber tree does not currently have
+    // a reference to.
+    pub identifier_prefix: String,
+
+    pub on_uncaught_error: &'static dyn Fn(Option<&'static Unknown>, &ErrorInfo),
+    pub on_caught_error: &'static dyn Fn(Option<&'static Unknown>, &CaughtErrorInfo),
+    pub on_recoverable_error: &'static dyn Fn(Option<&'static Unknown>, &ErrorInfo),
+
+    // enableDefaultTransitionIndicator only
+    pub on_default_transition_indicator: &'static dyn Fn() -> Option<&'static dyn Fn()>,
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub pending_indicator: Cell<Option<&'static dyn Fn()>>,
+
+    // shared/ReactTypes' `ReactFormState<any, any>`.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub form_state: Option<&'static Unknown>,
+
+    // enableViewTransition only
+    // react/src/ReactTransitionType's `TransitionTypes`.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub transition_types: RefCell<Option<Rc<RefCell<Vec<String>>>>>, // TODO: Make this a LaneMap.
+    // enableGestureTransition only
+    // ReactFiberGestureScheduler's `ScheduledGesture`.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub pending_gestures: Cell<Option<&'static Unknown>>,
+    // ReactFiberConfig's `Instance`.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub gesture_clone: Cell<Option<&'static Unknown>>,
+
+    // The follow fields are only used by enableSuspenseCallback for hydration.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub hydration_callbacks: Option<&'static SuspenseHydrationCallbacks>,
+
+    // The following attributes are only used by DevTools and are only present in DEV builds.
+    // They enable DevTools Profiler UI to show which Fiber(s) scheduled a given commit.
+    pub memoized_updaters: RefCell<HashSet<Rc<Fiber>>>,
+    pub pending_updaters_lane_map: RefCell<LaneMap<HashSet<Rc<Fiber>>>>,
+
+    // The following fields are only used in transition tracing in Profile builds
+    // react/src/ReactStartTransition's `Transition`s.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub transition_callbacks: Option<&'static TransitionTracingCallbacks>,
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub transition_lanes: RefCell<LaneMap<Option<&'static Set<Unknown>>>>,
+    // Transitions on the root can be represented as a bunch of tracing markers.
+    // Each entangled group of transitions can be treated as a tracing marker.
+    // It will have a set of pending suspense boundaries. These transitions
+    // are considered complete when the pending suspense boundaries set is
+    // empty. We can represent this as a Map of transitions to suspense
+    // boundary sets
+    // ReactFiberTracingMarkerComponent's `TracingMarkerInstance`s.
+    pub incomplete_transitions: &'static Map<Unknown, &'static Unknown>,
+
+    pub effect_duration: Cell<f64>,
+    pub passive_effect_duration: Cell<f64>,
+}

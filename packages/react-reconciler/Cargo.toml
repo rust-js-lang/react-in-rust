@@ -1,0 +1,19 @@
+[package]
+name = "react-reconciler"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# React's reconciler, `react-reconciler`. Its modules are its files, each
+# beside the JS rust-js writes from it; its root declares them and writes
+# no JS of its own.
+[lib]
+path = "reconciler.rs"
+
+[dependencies]
+js.workspace = true
+shared.workspace = true
+webapi.workspace = true
+
+[lints]
+workspace = true
