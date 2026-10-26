@@ -7,7 +7,7 @@ use std::cell::{Cell, OnceCell, RefCell};
 use std::marker::PhantomData;
 use std::rc::Rc;
 
-use js::{JsError, JsObject, Kind, Promise, SymbolFor, Unknown};
+use js::{Error, JsObject, Kind, Promise, SymbolFor, Unknown};
 use shared::environment::__DEV__;
 use shared::noop::noop;
 use shared::react_symbols::REACT_LAZY_TYPE;
@@ -87,7 +87,7 @@ pub struct ReactIOInfo {
     pub value: Cell<Option<Promise<Option<&'static Unknown>>>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub owner: Option<&'static Unknown>,
-    pub debug_stack: &'static JsError,
+    pub debug_stack: &'static Error,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub debug_task: Option<&'static ConsoleTask>,
 }
@@ -294,7 +294,7 @@ pub fn lazy(ctor: &'static dyn Fn() -> &'static Thenable) -> LazyComponent {
             end: Cell::new(-1.0),
             value: Cell::new(None),
             owner,
-            debug_stack: js::js_error::new("react-stack-top-frame"),
+            debug_stack: js::error::new("react-stack-top-frame"),
             // eslint-disable-next-line react-internal/no-production-logging
             debug_task: console::create_task().map(|create_task| create_task("lazy()")),
         });

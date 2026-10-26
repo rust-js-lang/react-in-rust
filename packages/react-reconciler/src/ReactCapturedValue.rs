@@ -60,7 +60,7 @@ pub fn create_captured_value_at_fiber(
 
 #[cfg_attr(rust_js, rust_js::nullable(stack))]
 pub fn create_captured_value_from_error(
-    value: &'static JsError,
+    value: &'static js::Error,
     stack: Option<String>,
 ) -> Rc<CapturedValue<Option<&'static Unknown>>> {
     let captured = Rc::new(CapturedValue {

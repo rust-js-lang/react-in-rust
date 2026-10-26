@@ -14,7 +14,7 @@ export interface ReactIOInfo {
   end: number;
   value?: any | null | undefined;
   owner?: unknown | null | undefined;
-  debugStack: any;
+  debugStack: Error;
   debugTask?:
     | {
         run<T>(f: () => T): T;
