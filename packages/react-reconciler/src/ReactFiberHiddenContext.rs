@@ -3,31 +3,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::react_fiber_lane::{Lanes, NO_LANES, merge_lanes};
+use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
 use crate::react_internal_types::Fiber;
-
-/// ReactFiberStack's `StackCursor`, here until that module is ported.
-pub struct StackCursor<T> {
-    pub current: RefCell<T>,
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberStack.js#createCursor")]
-fn create_cursor<T>(default_value: T) -> StackCursor<T> {
-    unreachable!()
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberStack.js#push")]
-fn push<T>(cursor: &StackCursor<T>, value: T, fiber: &Rc<Fiber>) {
-    unreachable!()
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberStack.js#pop")]
-fn pop<T>(cursor: &StackCursor<T>, fiber: &Fiber) {
-    unreachable!()
-}
 
 #[cfg_attr(
     rust_js,

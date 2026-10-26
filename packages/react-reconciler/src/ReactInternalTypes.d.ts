@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ConcurrentUpdate} from './ReactFiberConcurrentUpdates.js';
 import type {Flags} from './ReactFiberFlags.js';
 import type {Lane, LaneMap, Lanes} from './ReactFiberLane.js';
 import type {RootTag} from './ReactRootTags.js';
@@ -33,15 +34,6 @@ export type HookType =
   | 'useOptimistic'
   | 'useFormState'
   | 'useActionState';
-
-/**
- * ReactFiberConcurrentUpdates' `ConcurrentUpdate`: an update in a queue's
- * circular list, here until that module is ported.
- */
-export interface ConcurrentUpdate {
-  next: ConcurrentUpdate;
-  lane: Lane;
-}
 
 /** A context a fiber read, and the value it read of it. */
 export interface ContextDependency<T> {

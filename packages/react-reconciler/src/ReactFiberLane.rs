@@ -17,7 +17,8 @@ use shared::react_feature_flags::{
 use webapi::console;
 
 use crate::clz32::CLZ32;
-use crate::react_internal_types::{ConcurrentUpdate, Fiber, FiberRoot};
+use crate::react_fiber_concurrent_updates::ConcurrentUpdate;
+use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_root_tags::LEGACY_ROOT;
 
 // TODO: Ideally these types would be opaque but that doesn't work well with

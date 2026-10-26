@@ -6,12 +6,8 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {Lanes} from './ReactFiberLane.js';
+import type {StackCursor} from './ReactFiberStack.js';
 import type {Fiber} from './ReactInternalTypes.js';
-
-/** ReactFiberStack's `StackCursor`, here until that module is ported. */
-export interface StackCursor<T> {
-  current: T;
-}
 
 // TODO: Remove `renderLanes` context in favor of hidden context
 export interface HiddenContext {

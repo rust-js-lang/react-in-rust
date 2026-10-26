@@ -11,16 +11,23 @@ import {
   getEntangledRenderLanes,
   setEntangledRenderLanes,
 } from './ReactFiberWorkLoop.js';
+import {$local} from '@rust-js/runtime';
 
 // TODO: This isn't being used yet, but it's intended to replace the
 // InvisibleParentContext that is currently managed by SuspenseContext.
-export const currentTreeHiddenStackCursor = createCursor(undefined);
-export const prevEntangledRenderLanesCursor = createCursor(NoLanes);
+export const currentTreeHiddenStackCursor = $local(() =>
+  createCursor(undefined),
+);
+export const prevEntangledRenderLanesCursor = $local(() =>
+  createCursor(NoLanes),
+);
 
 export function pushHiddenContext(fiber, context) {
   const prevEntangledRenderLanes = getEntangledRenderLanes();
-  push(prevEntangledRenderLanesCursor, prevEntangledRenderLanes, fiber);
-  push(currentTreeHiddenStackCursor, context, fiber);
+  const cursor$1 = prevEntangledRenderLanesCursor();
+  push(cursor$1, prevEntangledRenderLanes, fiber);
+  const cursor = currentTreeHiddenStackCursor();
+  push(cursor, context, fiber);
 
   // When rendering a subtree that's currently hidden, we must include all
   // lanes that would have rendered if the hidden subtree hadn't been deferred.
@@ -35,20 +42,24 @@ export function reuseHiddenContextOnStack(fiber) {
   // This subtree is not currently hidden, so we don't need to add any lanes
   // to the render lanes. But we still need to push something to avoid a
   // context mismatch. Reuse the existing context on the stack.
-  push(prevEntangledRenderLanesCursor, getEntangledRenderLanes(), fiber);
-  const current = currentTreeHiddenStackCursor.current;
-  push(currentTreeHiddenStackCursor, current, fiber);
+  const cursor = prevEntangledRenderLanesCursor();
+  push(cursor, getEntangledRenderLanes(), fiber);
+  const cursor$1 = currentTreeHiddenStackCursor();
+  const current = cursor$1.current;
+  push(cursor$1, current, fiber);
 }
 
 export function popHiddenContext(fiber) {
   // Restore the previous render lanes from the stack
-  setEntangledRenderLanes(prevEntangledRenderLanesCursor.current);
+  setEntangledRenderLanes(prevEntangledRenderLanesCursor().current);
 
-  pop(currentTreeHiddenStackCursor, fiber);
-  pop(prevEntangledRenderLanesCursor, fiber);
+  const cursor$1 = currentTreeHiddenStackCursor();
+  pop(cursor$1, fiber);
+  const cursor = prevEntangledRenderLanesCursor();
+  pop(cursor, fiber);
 }
 
 export function isCurrentTreeHidden() {
-  return currentTreeHiddenStackCursor.current != null;
+  return currentTreeHiddenStackCursor().current != null;
 }
 //# sourceMappingURL=ReactFiberHiddenContext.js.map

@@ -5,7 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ConcurrentUpdate, Fiber, FiberRoot} from './ReactInternalTypes.js';
+import type {ConcurrentUpdate} from './ReactFiberConcurrentUpdates.js';
+import type {Fiber, FiberRoot} from './ReactInternalTypes.js';
 
 // TODO: Ideally these types would be opaque but that doesn't work well with
 // our reconciler fork infra, since these leak into non-reconciler packages.

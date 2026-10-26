@@ -13,6 +13,7 @@ use webapi::ConsoleTask;
 
 pub use shared::react_shared_internals::{AsyncDispatcher, Dispatcher};
 
+use crate::react_fiber_concurrent_updates::ConcurrentUpdate;
 use crate::react_fiber_flags::Flags;
 use crate::react_fiber_lane::{Lane, LaneMap, Lanes};
 use crate::react_root_tags::RootTag;
@@ -62,13 +63,6 @@ pub enum HookType {
     UseFormState,
     #[cfg_attr(rust_js, rust_js::name = "useActionState")]
     UseActionState,
-}
-
-/// ReactFiberConcurrentUpdates' `ConcurrentUpdate`: an update in a queue's
-/// circular list, here until that module is ported.
-pub struct ConcurrentUpdate {
-    pub next: RefCell<Rc<ConcurrentUpdate>>,
-    pub lane: Cell<Lane>,
 }
 
 /// A context a fiber read, and the value it read of it.

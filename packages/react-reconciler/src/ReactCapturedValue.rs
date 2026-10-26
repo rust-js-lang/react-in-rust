@@ -5,7 +5,7 @@
 
 use std::rc::Rc;
 
-use js::{JsError, Unknown, WeakKey, WeakMap};
+use js::{Unknown, WeakKey, WeakMap};
 
 use crate::react_internal_types::Fiber;
 
