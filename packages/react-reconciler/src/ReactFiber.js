@@ -450,148 +450,84 @@ export function createFiberFromTypeAndProps(
     if (shouldConstruct(resolvedType)) {
       fiberTag = ClassComponent;
     }
+  } else if (typeof resolvedType === 'string') {
+    if (supportsResources && supportsSingletons) {
+      const hostContext = getHostContext();
+      fiberTag = isHostHoistableType(type, pendingProps, hostContext)
+        ? HostHoistable
+        : isHostSingletonType(type)
+          ? HostSingleton
+          : HostComponent;
+    } else if (supportsResources) {
+      const hostContext = getHostContext();
+      fiberTag = isHostHoistableType(type, pendingProps, hostContext)
+        ? HostHoistable
+        : HostComponent;
+    } else if (supportsSingletons) {
+      fiberTag = isHostSingletonType(type) ? HostSingleton : HostComponent;
+    } else {
+      fiberTag = HostComponent;
+    }
   } else {
-    bb301: {
-      if (typeof resolvedType === 'string') {
-        if (supportsResources && supportsSingletons) {
-          const hostContext = getHostContext();
-          fiberTag = isHostHoistableType(type, pendingProps, hostContext)
-            ? HostHoistable
-            : isHostSingletonType(type)
-              ? HostSingleton
-              : HostComponent;
-        } else if (supportsResources) {
-          const hostContext = getHostContext();
-          fiberTag = isHostHoistableType(type, pendingProps, hostContext)
-            ? HostHoistable
-            : HostComponent;
-        } else if (supportsSingletons) {
-          fiberTag = isHostSingletonType(type) ? HostSingleton : HostComponent;
-        } else {
-          fiberTag = HostComponent;
+    getTag: switch (resolvedType) {
+      case REACT_ACTIVITY_TYPE:
+        return createFiberFromActivity(pendingProps, mode, lanes, key);
+      case REACT_FRAGMENT_TYPE:
+        return createFiberFromFragment(pendingProps.children, mode, lanes, key);
+      case REACT_STRICT_MODE_TYPE:
+        fiberTag = Mode;
+        mode |= StrictLegacyMode;
+        if (disableLegacyMode || (mode & ConcurrentMode) !== NoMode) {
+          // Strict effects should never run on legacy roots
+          mode |= StrictEffectsMode;
         }
-      } else {
-        bb53: {
-          if (resolvedType === REACT_ACTIVITY_TYPE) {
-            return createFiberFromActivity(pendingProps, mode, lanes, key);
-          }
-          if (resolvedType === REACT_FRAGMENT_TYPE) {
-            return createFiberFromFragment(
-              pendingProps.children,
-              mode,
-              lanes,
-              key,
-            );
-          }
-          if (resolvedType === REACT_STRICT_MODE_TYPE) {
-            fiberTag = Mode;
-            mode |= StrictLegacyMode;
-            if (disableLegacyMode || (mode & ConcurrentMode) !== NoMode) {
-              // Strict effects should never run on legacy roots
-              mode |= StrictEffectsMode;
-            }
-            break bb301;
-          }
-          if (resolvedType === REACT_PROFILER_TYPE) {
-            return createFiberFromProfiler(pendingProps, mode, lanes, key);
-          }
-          if (resolvedType === REACT_SUSPENSE_TYPE) {
-            return createFiberFromSuspense(pendingProps, mode, lanes, key);
-          }
-          if (resolvedType === REACT_SUSPENSE_LIST_TYPE) {
-            return createFiberFromSuspenseList(pendingProps, mode, lanes, key);
-          }
-          bb136: {
-            bb127: {
-              if (resolvedType === REACT_LEGACY_HIDDEN_TYPE) {
-                if (enableLegacyHidden) {
-                  return createFiberFromLegacyHidden(
-                    pendingProps,
-                    mode,
-                    lanes,
-                    key,
-                  );
-                }
-                if (!enableViewTransition) {
-                  if (enableScopeAPI) {
-                    break bb127;
-                  }
-                  if (enableTransitionTracing) {
-                    break bb136;
-                  }
-                  break bb53;
-                }
-              } else {
-                // falls through
-                if (resolvedType === REACT_VIEW_TRANSITION_TYPE) {
-                  if (!enableViewTransition) {
-                    if (enableScopeAPI) {
-                      break bb127;
-                    }
-                    if (enableTransitionTracing) {
-                      break bb136;
-                    }
-                    break bb53;
-                  }
-                } else {
-                  // falls through
-                  if (resolvedType === REACT_SCOPE_TYPE) {
-                    if (enableScopeAPI) {
-                      break bb127;
-                    }
-                    if (enableTransitionTracing) {
-                      break bb136;
-                    }
-                    break bb53;
-                  } else {
-                    // falls through
-                    if (resolvedType === REACT_TRACING_MARKER_TYPE) {
-                      if (enableTransitionTracing) {
-                        break bb136;
-                      }
-                      break bb53;
-                    } else {
-                      break bb53;
-                    }
-                  }
-                }
-              }
-              return createFiberFromViewTransition(
-                pendingProps,
-                mode,
-                lanes,
-                key,
-              );
-            }
-            return createFiberFromScope(type, pendingProps, mode, lanes, key);
-          }
+        break;
+      case REACT_PROFILER_TYPE:
+        return createFiberFromProfiler(pendingProps, mode, lanes, key);
+      case REACT_SUSPENSE_TYPE:
+        return createFiberFromSuspense(pendingProps, mode, lanes, key);
+      case REACT_SUSPENSE_LIST_TYPE:
+        return createFiberFromSuspenseList(pendingProps, mode, lanes, key);
+      case REACT_LEGACY_HIDDEN_TYPE:
+        if (enableLegacyHidden) {
+          return createFiberFromLegacyHidden(pendingProps, mode, lanes, key);
+        }
+      // falls through
+      case REACT_VIEW_TRANSITION_TYPE:
+        if (enableViewTransition) {
+          return createFiberFromViewTransition(pendingProps, mode, lanes, key);
+        }
+      // falls through
+      case REACT_SCOPE_TYPE:
+        if (enableScopeAPI) {
+          return createFiberFromScope(type, pendingProps, mode, lanes, key);
+        }
+      // falls through
+      case REACT_TRACING_MARKER_TYPE:
+        if (enableTransitionTracing) {
           return createFiberFromTracingMarker(pendingProps, mode, lanes, key);
         }
+      // Fall through
+      default: {
         if (typeof resolvedType === 'object' && resolvedType != null) {
           // Fall through
-          const $$typeof = resolvedType.$$typeof;
-          bb154: {
-            switch ($$typeof) {
-              case REACT_CONTEXT_TYPE:
-                fiberTag = ContextProvider;
-                break;
-              case REACT_CONSUMER_TYPE:
-                fiberTag = ContextConsumer;
-                break;
-              case REACT_FORWARD_REF_TYPE:
-                fiberTag = ForwardRef;
-                break;
-              case REACT_MEMO_TYPE:
-                fiberTag = MemoComponent;
-                break;
-              case REACT_LAZY_TYPE:
-                fiberTag = LazyComponent;
-                resolvedType = null;
-                break;
-              default:
-                break bb154;
-            }
-            break bb301;
+          switch (resolvedType.$$typeof) {
+            case REACT_CONTEXT_TYPE:
+              fiberTag = ContextProvider;
+              break getTag;
+            case REACT_CONSUMER_TYPE:
+              fiberTag = ContextConsumer;
+              break getTag;
+            case REACT_FORWARD_REF_TYPE:
+              fiberTag = ForwardRef;
+              break getTag;
+            case REACT_MEMO_TYPE:
+              fiberTag = MemoComponent;
+              break getTag;
+            case REACT_LAZY_TYPE:
+              fiberTag = LazyComponent;
+              resolvedType = null;
+              break getTag;
           }
         }
         let info = '';

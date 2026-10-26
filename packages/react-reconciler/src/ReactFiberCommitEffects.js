@@ -776,33 +776,36 @@ function commitAttachRef(finishedWork) {
   const ref = finishedWork.ref;
   if (ref != null) {
     let instanceToUse;
-    if (
-      finishedWork.tag === HostHoistable ||
-      finishedWork.tag === HostSingleton ||
-      finishedWork.tag === HostComponent
-    ) {
-      instanceToUse = getPublicInstance(finishedWork.stateNode);
-    } else if (finishedWork.tag !== ViewTransitionComponent) {
-      switch (finishedWork.tag) {
-        case Fragment: {
-          // ReactFiberConfig's `FragmentInstanceType`.
+    switch (finishedWork.tag) {
+      case HostHoistable:
+      case HostSingleton:
+      case HostComponent:
+        instanceToUse = getPublicInstance(finishedWork.stateNode);
+        break;
+      case ViewTransitionComponent:
+        if (enableViewTransition) {
           const instance = finishedWork.stateNode;
-          if (instance == null) {
-            finishedWork.stateNode = createFragmentInstance(finishedWork);
+          const props = finishedWork.memoizedProps;
+          const name = getViewTransitionName(props, instance);
+          if (instance.ref == null || instance.ref.name !== name) {
+            instance.ref = createViewTransitionInstance(name);
           }
+          instanceToUse = instance.ref;
+        } else {
+          instanceToUse = finishedWork.stateNode;
         }
+        break;
+      case Fragment: {
+        // ReactFiberConfig's `FragmentInstanceType`.
+        const instance = finishedWork.stateNode;
+        if (instance == null) {
+          finishedWork.stateNode = createFragmentInstance(finishedWork);
+        }
+        instanceToUse = finishedWork.stateNode;
+        break;
       }
-      instanceToUse = finishedWork.stateNode;
-    } else if (enableViewTransition) {
-      const instance = finishedWork.stateNode;
-      const props = finishedWork.memoizedProps;
-      const name = getViewTransitionName(props, instance);
-      if (instance.ref == null || instance.ref.name !== name) {
-        instance.ref = createViewTransitionInstance(name);
-      }
-      instanceToUse = instance.ref;
-    } else {
-      instanceToUse = finishedWork.stateNode;
+      default:
+        instanceToUse = finishedWork.stateNode;
     }
     if (typeof ref === 'function') {
       if (shouldProfile(finishedWork)) {
