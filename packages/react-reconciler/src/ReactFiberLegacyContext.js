@@ -9,7 +9,6 @@ import {disableLegacyContext} from '../../shared/ReactFeatureFlags.js';
 import {createCursor, pop, push} from './ReactFiberStack.js';
 import {ClassComponent, HostRoot} from './ReactWorkTags.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
-import {$local} from '@rust-js/runtime';
 
 let warnedAboutMissingGetChildContext;
 if (__DEV__) {
@@ -23,9 +22,9 @@ if (__DEV__) {
 }
 
 // A cursor to the current merged context object on the stack.
-const contextStackCursor = $local(() => createCursor(emptyContextObject));
+const contextStackCursor = createCursor(emptyContextObject);
 // A cursor to a boolean indicating whether the context has changed.
-const didPerformWorkStackCursor = $local(() => createCursor(false));
+const didPerformWorkStackCursor = createCursor(false);
 // Keep track of the previous context object that was on the stack.
 // We use this to get access to the parent context after we have already
 // pushed the next context provider, and now need to merge their contexts.
@@ -46,7 +45,7 @@ export function getUnmaskedContext(
     // previous (parent) context instead for a context provider.
     return previousContext;
   }
-  return contextStackCursor().current;
+  return contextStackCursor.current;
 }
 
 export function cacheContext(workInProgress, unmaskedContext, maskedContext) {
@@ -93,7 +92,7 @@ export function getMaskedContext(workInProgress, unmaskedContext) {
 }
 
 export function hasContextChanged() {
-  return disableLegacyContext ? false : didPerformWorkStackCursor().current;
+  return disableLegacyContext ? false : didPerformWorkStackCursor.current;
 }
 
 export function isContextProvider(type) {
@@ -106,35 +105,29 @@ export function isContextProvider(type) {
 
 export function popContext(fiber) {
   if (!disableLegacyContext) {
-    const cursor$1 = didPerformWorkStackCursor();
-    pop(cursor$1, fiber);
-    const cursor = contextStackCursor();
-    pop(cursor, fiber);
+    pop(didPerformWorkStackCursor, fiber);
+    pop(contextStackCursor, fiber);
   }
 }
 
 export function popTopLevelContextObject(fiber) {
   if (!disableLegacyContext) {
-    const cursor$1 = didPerformWorkStackCursor();
-    pop(cursor$1, fiber);
-    const cursor = contextStackCursor();
-    pop(cursor, fiber);
+    pop(didPerformWorkStackCursor, fiber);
+    pop(contextStackCursor, fiber);
   }
 }
 
 export function pushTopLevelContextObject(fiber, context, didChange) {
   if (!disableLegacyContext) {
-    if (contextStackCursor().current !== emptyContextObject) {
+    if (contextStackCursor.current !== emptyContextObject) {
       throw new Error(
         'Unexpected context found on stack. ' +
           'This error is likely caused by a bug in React. Please file an issue.',
       );
     }
 
-    const cursor$1 = contextStackCursor();
-    push(cursor$1, context, fiber);
-    const cursor = didPerformWorkStackCursor();
-    push(cursor, didChange, fiber);
+    push(contextStackCursor, context, fiber);
+    push(didPerformWorkStackCursor, didChange, fiber);
   }
 }
 
@@ -198,12 +191,10 @@ export function pushContextProvider(workInProgress) {
 
   // Remember the parent context so we can merge with it later.
   // Inherit the parent's did-perform-work value to avoid inadvertently blocking updates.
-  previousContext = contextStackCursor().current;
-  const cursor$1 = contextStackCursor();
-  push(cursor$1, memoizedMergedChildContext, workInProgress);
-  const cursor = didPerformWorkStackCursor();
-  const didPerformWork = cursor.current;
-  push(cursor, didPerformWork, workInProgress);
+  previousContext = contextStackCursor.current;
+  push(contextStackCursor, memoizedMergedChildContext, workInProgress);
+  const didPerformWork = didPerformWorkStackCursor.current;
+  push(didPerformWorkStackCursor, didPerformWork, workInProgress);
 
   return true;
 }
@@ -232,20 +223,14 @@ export function invalidateContextProvider(workInProgress, type, didChange) {
 
       // Replace the old (or empty) context with the new one.
       // It is important to unwind the context in the reverse order.
-      const cursor = didPerformWorkStackCursor();
-      pop(cursor, workInProgress);
-      const cursor$1 = contextStackCursor();
-      pop(cursor$1, workInProgress);
+      pop(didPerformWorkStackCursor, workInProgress);
+      pop(contextStackCursor, workInProgress);
       // Now push the new context and mark that it has changed.
-      const cursor$2 = contextStackCursor();
-      push(cursor$2, mergedContext, workInProgress);
-      const cursor$3 = didPerformWorkStackCursor();
-      push(cursor$3, didChange, workInProgress);
+      push(contextStackCursor, mergedContext, workInProgress);
+      push(didPerformWorkStackCursor, didChange, workInProgress);
     } else {
-      const cursor$1 = didPerformWorkStackCursor();
-      pop(cursor$1, workInProgress);
-      const cursor = didPerformWorkStackCursor();
-      push(cursor, didChange, workInProgress);
+      pop(didPerformWorkStackCursor, workInProgress);
+      push(didPerformWorkStackCursor, didChange, workInProgress);
     }
   }
 }

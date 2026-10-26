@@ -36,6 +36,7 @@ pub struct HiddenContext {
 thread_local! {
     // TODO: This isn't being used yet, but it's intended to replace the
     // InvisibleParentContext that is currently managed by SuspenseContext.
+    #[cfg_attr(rust_js, rust_js::nullable)]
     pub static CURRENT_TREE_HIDDEN_STACK_CURSOR: StackCursor<Option<Rc<HiddenContext>>> =
         create_cursor(None);
     pub static PREV_ENTANGLED_RENDER_LANES_CURSOR: StackCursor<Lanes> = create_cursor(NO_LANES);
