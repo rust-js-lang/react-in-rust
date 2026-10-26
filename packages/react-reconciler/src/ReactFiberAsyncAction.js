@@ -105,9 +105,9 @@ function pingEngtangledActionScope() {
     if (pendingEntangledRoots === 0) {
       stopIsomorphicDefaultIndicator();
     }
-    const old = currentEntangledListeners;
+    const listeners = currentEntangledListeners;
     currentEntangledListeners = null;
-    if (old != null) {
+    if (listeners != null) {
       // All the actions have finished. Close the entangled async action scope
       // and notify all the listeners.
       const fulfilledThenable = currentEntangledActionThenable;
@@ -118,8 +118,8 @@ function pingEngtangledActionScope() {
       currentEntangledActionThenable = null;
       needsIsomorphicIndicator = false;
       let i = 0;
-      while (i < old.length) {
-        const listener = old[i];
+      while (i < listeners.length) {
+        const listener = listeners[i];
         listener(undefined);
         i++;
       }
@@ -207,12 +207,14 @@ export function startIsomorphicDefaultIndicatorIfNeeded() {
   if (!needsIsomorphicIndicator) {
     return;
   }
+  const isomorphicDefaultTransitionIndicator$1 =
+    isomorphicDefaultTransitionIndicator;
   if (
-    typeof isomorphicDefaultTransitionIndicator === 'function' &&
+    typeof isomorphicDefaultTransitionIndicator$1 === 'function' &&
     !pendingIsomorphicIndicator
   ) {
     try {
-      const cleanup = isomorphicDefaultTransitionIndicator();
+      const cleanup = isomorphicDefaultTransitionIndicator$1();
       pendingIsomorphicIndicator = cleanup ?? noop;
     } catch (x) {
       pendingIsomorphicIndicator = noop;

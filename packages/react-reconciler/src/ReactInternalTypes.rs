@@ -294,6 +294,16 @@ pub struct TransitionTracingDeletion {
     pub end_time: f64,
 }
 
+/// What a root reports an uncaught or a recoverable error with.
+pub type OnError = dyn Fn(Option<&'static Unknown>, &ErrorInfo);
+
+/// What a root reports an error an error boundary caught with.
+pub type OnCaughtError = dyn Fn(Option<&'static Unknown>, &CaughtErrorInfo);
+
+/// What a root shows a default Transition's indicator with, which gives
+/// what hides it, if anything.
+pub type OnDefaultTransitionIndicator = dyn Fn() -> Option<&'static dyn Fn()>;
+
 pub type OnTransitionStart = dyn Fn(&str, f64);
 pub type OnTransitionProgress = dyn Fn(&str, f64, f64, &[SuspenseInfo]);
 pub type OnTransitionIncomplete = dyn Fn(&str, f64, &[TransitionTracingDeletion]);
@@ -384,13 +394,13 @@ pub struct FiberRoot {
     // a reference to.
     pub identifier_prefix: String,
 
-    pub on_uncaught_error: &'static dyn Fn(Option<&'static Unknown>, &ErrorInfo),
-    pub on_caught_error: &'static dyn Fn(Option<&'static Unknown>, &CaughtErrorInfo),
-    pub on_recoverable_error: &'static dyn Fn(Option<&'static Unknown>, &ErrorInfo),
+    pub on_uncaught_error: &'static OnError,
+    pub on_caught_error: &'static OnCaughtError,
+    pub on_recoverable_error: &'static OnError,
 
     // enableDefaultTransitionIndicator only
-    pub on_default_transition_indicator: &'static dyn Fn() -> Option<&'static dyn Fn()>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub on_default_transition_indicator: Cell<Option<&'static OnDefaultTransitionIndicator>>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub pending_indicator: Cell<Option<&'static dyn Fn()>>,
 
     // shared/ReactTypes' `ReactFormState<any, any>`.
@@ -399,19 +409,19 @@ pub struct FiberRoot {
 
     // enableViewTransition only
     // react/src/ReactTransitionType's `TransitionTypes`.
-    #[cfg_attr(rust_js, rust_js::nullable)]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub transition_types: RefCell<Option<Rc<RefCell<Vec<String>>>>>, // TODO: Make this a LaneMap.
     // enableGestureTransition only
     // ReactFiberGestureScheduler's `ScheduledGesture`.
-    #[cfg_attr(rust_js, rust_js::nullable)]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub pending_gestures: Cell<Option<&'static Unknown>>,
     // ReactFiberConfig's `Instance`.
-    #[cfg_attr(rust_js, rust_js::nullable)]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub gesture_clone: Cell<Option<&'static Unknown>>,
 
     // The follow fields are only used by enableSuspenseCallback for hydration.
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub hydration_callbacks: Option<&'static SuspenseHydrationCallbacks>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub hydration_callbacks: Cell<Option<&'static SuspenseHydrationCallbacks>>,
 
     // The following attributes are only used by DevTools and are only present in DEV builds.
     // They enable DevTools Profiler UI to show which Fiber(s) scheduled a given commit.
@@ -420,8 +430,8 @@ pub struct FiberRoot {
 
     // The following fields are only used in transition tracing in Profile builds
     // react/src/ReactStartTransition's `Transition`s.
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub transition_callbacks: Option<&'static TransitionTracingCallbacks>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub transition_callbacks: Cell<Option<&'static TransitionTracingCallbacks>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub transition_lanes: RefCell<LaneMap<Option<&'static Set<Unknown>>>>,
     // Transitions on the root can be represented as a bunch of tracing markers.
@@ -432,6 +442,12 @@ pub struct FiberRoot {
     // boundary sets
     pub incomplete_transitions: &'static Map<Transition, Rc<TracingMarkerInstance>>,
 
-    pub effect_duration: Cell<f64>,
-    pub passive_effect_duration: Cell<f64>,
+    pub effect_duration: Cell<Option<f64>>,
+    pub passive_effect_duration: Cell<Option<f64>>,
+
+    // __DEV__ only
+    #[cfg_attr(rust_js, rust_js::name = "_debugRootType")]
+    pub debug_root_type: Cell<Option<&'static str>>,
 }
+
+unsafe impl js::Defined for FiberRoot {}

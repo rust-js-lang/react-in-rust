@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ReactContext} from '../../react/src/ReactContext.js';
 import type {Lanes} from './ReactFiberLane.js';
 import type {Dependencies, Fiber} from './ReactInternalTypes.js';
 
@@ -16,11 +17,14 @@ export function exitDisallowedContextReadInDEV(): void;
 
 export function pushProvider<T>(
   providerFiber: Fiber,
-  context: any,
+  context: ReactContext<T>,
   nextValue: T,
 ): void;
 
-export function popProvider<T>(context: any, providerFiber: Fiber): void;
+export function popProvider<T>(
+  context: ReactContext<T>,
+  providerFiber: Fiber,
+): void;
 
 export function scheduleContextWorkOnParentPath(
   parent: Fiber | null | undefined,
@@ -30,7 +34,7 @@ export function scheduleContextWorkOnParentPath(
 
 export function propagateContextChange<T>(
   workInProgress: Fiber,
-  context: any,
+  context: ReactContext<T>,
   renderLanes: Lanes,
 ): void;
 
@@ -59,10 +63,10 @@ export function prepareToReadContext(
   renderLanes: Lanes,
 ): void;
 
-export function readContext<T>(context: any): T;
+export function readContext<T>(context: ReactContext<T>): T;
 
 export function readContextDuringReconciliation<T>(
   consumer: Fiber,
-  context: any,
+  context: ReactContext<T>,
   renderLanes: Lanes,
 ): T;

@@ -11,8 +11,9 @@ use shared::environment::__DEV__;
 use shared::react_feature_flags::ENABLE_GESTURE_TRANSITION;
 use shared::react_shared_internals::Dispatcher;
 
-type OnStartTransitionFinish = dyn Fn(&Unknown, Option<&Unknown>);
-type OnStartGestureTransitionFinish = dyn Fn(&Unknown, &Unknown, Option<&Unknown>) -> Box<dyn Fn()>;
+use crate::react_start_transition::{
+    OnStartGestureTransitionFinish, OnStartTransitionFinish, Transition,
+};
 
 pub struct SharedStateClient {
     // ReactCurrentDispatcher for Hooks
@@ -26,7 +27,7 @@ pub struct SharedStateClient {
     // ReactCurrentBatchConfig for Transitions
     #[cfg_attr(rust_js, rust_js::name = "T")]
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub t: Cell<Option<&'static Unknown>>,
+    pub t: Cell<Option<&'static Transition>>,
     #[cfg_attr(rust_js, rust_js::name = "S")]
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub s: Cell<Option<&'static OnStartTransitionFinish>>,

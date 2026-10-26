@@ -13,6 +13,7 @@ use shared::object_is::OBJECT_IS;
 use webapi::console;
 
 use crate::react_fiber_flags::{DID_PROPAGATE_CONTEXT, NEEDS_PROPAGATION, NO_FLAGS};
+use crate::react_fiber_host_context::get_host_transition_provider;
 use crate::react_fiber_lane::{Lanes, NO_LANES, is_subset_of_lanes, merge_lanes};
 use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
 use crate::react_fiber_suspense_component::SuspenseState;
@@ -25,15 +26,6 @@ unsafe extern "Rust" {
     // ReactFiberConfig's `ReactContext<TransitionStatus>`.
     #[link_name = "./src/ReactFiberConfig.js#HostTransitionContext"]
     safe static HOST_TRANSITION_CONTEXT: ReactContext<Option<&'static Unknown>>;
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberHostContext.js#getHostTransitionProvider"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn get_host_transition_provider() -> Option<Rc<Fiber>> {
-    unreachable!()
 }
 
 thread_local! {

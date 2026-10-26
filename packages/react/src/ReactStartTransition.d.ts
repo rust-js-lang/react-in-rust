@@ -33,6 +33,22 @@ export interface Transition {
   _updatedFibers?: Set<any> | undefined;
 }
 
+/** What the renderer does as a Transition's scope returns. */
+export type OnStartTransitionFinish = (
+  transition: Transition,
+  value: unknown | null | undefined,
+) => void;
+
+/**
+ * What the renderer does as a gesture Transition's scope returns, which
+ * gives what cancels the gesture.
+ */
+export type OnStartGestureTransitionFinish = (
+  transition: Transition,
+  value: unknown,
+  value2: GestureTransitionOptions | null | undefined,
+) => () => void;
+
 export function startTransition(
   scope: () => unknown | null | undefined,
   options?: StartTransitionOptions | null | undefined,

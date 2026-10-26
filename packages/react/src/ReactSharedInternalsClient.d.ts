@@ -5,22 +5,27 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {
+  GestureTransitionOptions,
+  Transition,
+} from './ReactStartTransition.js';
+
 export interface SharedStateClient {
   // ReactCurrentDispatcher for Hooks
   H?: any | null | undefined;
   // ReactCurrentCache for Cache
   A?: unknown | null | undefined;
   // ReactCurrentBatchConfig for Transitions
-  T?: unknown | null | undefined;
+  T?: Transition | null | undefined;
   S?:
-    | ((value: unknown, value2: unknown | null | undefined) => void)
+    | ((transition: Transition, value: unknown | null | undefined) => void)
     | null
     | undefined;
   G?:
     | ((
+        transition: Transition,
         value: unknown,
-        value2: unknown,
-        value3: unknown | null | undefined,
+        value2: GestureTransitionOptions | null | undefined,
       ) => () => void)
     | null
     | undefined;

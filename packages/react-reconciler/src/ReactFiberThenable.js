@@ -74,15 +74,19 @@ let lastSuspendedStack = null;
 let didIssueUseWarning = false;
 
 export function hasPotentialUseWarnings() {
-  return !!enableConditionalUseWarning && lastSuspendedFiber != null;
+  return enableConditionalUseWarning && lastSuspendedFiber != null;
 }
 
 export function clearUseWarnings() {
   lastSuspendedFiber = null;
 }
 
-export function trackUsedThenable(thenableState, thenable, index, fiber) {
-  // DEV-only
+export function trackUsedThenable(
+  thenableState,
+  thenable,
+  index,
+  fiber, // DEV-only
+) {
   if (__DEV__ && ReactSharedInternals.actQueue != null) {
     ReactSharedInternals.didUsePromise = true;
   }
@@ -147,12 +151,12 @@ export function trackUsedThenable(thenableState, thenable, index, fiber) {
     // earlier and this could even be a cached Promise. Could be misleading.
     const startTime = performance.now();
     const displayName = thenable.displayName;
-    // We don't know the requesting owner nor stack.
     const ioInfo = {
       name: typeof displayName === 'string' ? displayName : 'Promise',
       start: startTime,
       end: startTime,
       value: thenable,
+      // We don't know the requesting owner nor stack.
     };
     // We can infer the await owner/stack lazily from where this promise ends up
     // used. It can be used in more than one place so we can't assign it here.
@@ -163,7 +167,7 @@ export function trackUsedThenable(thenableState, thenable, index, fiber) {
     ];
     // Track when we resolved the Promise as the approximate end time.
     const status = thenable.status;
-    if (!(status === 'fulfilled' || status === 'rejected')) {
+    if (status !== 'fulfilled' && status !== 'rejected') {
       const trackEndTime = () => {
         ioInfo.end = performance.now();
       };
@@ -302,9 +306,7 @@ export function trackUsedThenable(thenableState, thenable, index, fiber) {
           );
         }
       }
-      return (exception => {
-        throw exception;
-      })(SuspenseException);
+      throw SuspenseException;
   }
 }
 
@@ -348,9 +350,9 @@ export function getSuspendedThenable() {
   // throws an opaque value instead of the thenable itself so that it can't be
   // caught in userspace. Then the work loop accesses the actual thenable using
   // this function.
-  const old = suspendedThenable;
+  const thenable = suspendedThenable;
   suspendedThenable = null;
-  if (!old) {
+  if (!thenable) {
     throw new Error(
       'Expected a suspended thenable. This is a bug in React. Please file ' +
         'an issue.',
@@ -359,7 +361,7 @@ export function getSuspendedThenable() {
   if (__DEV__) {
     needsToResetSuspendedThenableDEV = false;
   }
-  return old;
+  return thenable;
 }
 
 export function checkIfUseWrappedInTryCatch() {

@@ -5,13 +5,14 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {Transition} from '../../react/src/ReactStartTransition.js';
 import type {Cache, SpawnedCachePool} from './ReactFiberCacheComponent.js';
 import type {Lanes} from './ReactFiberLane.js';
 import type {Fiber, FiberRoot} from './ReactInternalTypes.js';
 
-export const NoTransition: any | null;
+export const NoTransition: Transition | null;
 
-export function requestCurrentTransition(): any | null;
+export function requestCurrentTransition(): Transition | null;
 
 export function requestCacheFromPool(renderLanes: Lanes): Cache;
 
@@ -30,7 +31,7 @@ export function popRootTransition(
 export function pushTransition(
   offscreenWorkInProgress: Fiber,
   prevCachePool?: SpawnedCachePool | null | undefined,
-  newTransitions?: any[] | null | undefined,
+  newTransitions?: Transition[] | null | undefined,
 ): void;
 
 export function popTransition(
@@ -38,7 +39,7 @@ export function popTransition(
   current?: Fiber | null | undefined,
 ): void;
 
-export function getPendingTransitions(): any[] | null;
+export function getPendingTransitions(): Transition[] | null;
 
 export function getSuspendedCache(): SpawnedCachePool | null;
 

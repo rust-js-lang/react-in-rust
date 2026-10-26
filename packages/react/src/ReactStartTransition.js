@@ -13,6 +13,7 @@ import {
 import ReactSharedInternals from '../../shared/ReactSharedInternals.js';
 import noop from '../../shared/noop.js';
 import reportGlobalError from '../../shared/reportGlobalError.js';
+import {$catchUnwind, $dispose} from '@rust-js/runtime';
 
 function releaseAsyncTransition() {
   if (__DEV__) {
@@ -127,27 +128,52 @@ export function startGestureTransition(provider, scope, options) {
   ReactSharedInternals.T = currentTransition;
 
   try {
-    const returnValue = scope();
-    if (
-      __DEV__ &&
-      typeof returnValue === 'object' &&
-      // $FlowFixMe[invalid-compare]
-      returnValue != null &&
-      typeof returnValue.then === 'function'
-    ) {
-      console.error(
-        'Cannot use an async function in startGestureTransition. It must be able to start immediately.',
-      );
+    const value = $catchUnwind(() => {
+      const returnValue = scope();
+      if (
+        __DEV__ &&
+        typeof returnValue === 'object' &&
+        // $FlowFixMe[invalid-compare]
+        returnValue != null &&
+        typeof returnValue.then === 'function'
+      ) {
+        console.error(
+          'Cannot use an async function in startGestureTransition. It must be able to start immediately.',
+        );
+      }
+      const onStartGestureTransitionFinish = ReactSharedInternals.G;
+      return onStartGestureTransitionFinish
+        ? onStartGestureTransitionFinish(currentTransition, provider, options)
+        : undefined;
+    });
+    let value$0$0$live = true;
+    if (value.TAG === 'Ok') {
+      if (value._0 != null) {
+        value$0$0$live = false;
+        const finish = value._0;
+        return finish;
+      }
+    } else {
+      const error = value._0;
+      try {
+        reportGlobalError(error.error);
+      } catch (error) {
+        if (value.TAG === 'Ok') {
+          if (value._0 != null) {
+            $dispose(value._0);
+          }
+        }
+        throw error;
+      }
     }
-    const onStartGestureTransitionFinish = ReactSharedInternals.G;
-    const finish = onStartGestureTransitionFinish
-      ? onStartGestureTransitionFinish(currentTransition, provider, options)
-      : undefined;
-    if (finish) {
-      return finish;
+    if (value.TAG === 'Ok') {
+      if (value._0 != null) {
+        if (value$0$0$live) {
+          $dispose(value._0);
+        }
+      }
     }
-  } catch (error) {
-    reportGlobalError(error);
+    value$0$0$live = false;
   } finally {
     ReactSharedInternals.T = prevTransition;
   }

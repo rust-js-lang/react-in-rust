@@ -5,9 +5,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {Transition} from '../../react/src/ReactStartTransition.js';
 import type {Lane} from './ReactFiberLane.js';
 
-export function entangleAsyncAction(transition: any, thenable: any): any;
+export function entangleAsyncAction(transition: Transition, thenable: any): any;
 
 export function chainThenableValue<T>(thenable: any, result: T): any;
 

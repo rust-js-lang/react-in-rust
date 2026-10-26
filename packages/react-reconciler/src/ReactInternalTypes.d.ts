@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ReactContext} from '../../react/src/ReactContext.js';
+import type {Transition} from '../../react/src/ReactStartTransition.js';
 import type {Cache} from './ReactFiberCacheComponent.js';
 import type {ConcurrentUpdate} from './ReactFiberConcurrentUpdates.js';
 import type {Flags} from './ReactFiberFlags.js';
@@ -42,7 +44,7 @@ export type HookType =
 
 /** A context a fiber read, and the value it read of it. */
 export interface ContextDependency<T> {
-  context: any;
+  context: ReactContext<T>;
   next?: ContextDependency<unknown | null | undefined> | null | undefined;
   memoizedValue: T;
 }
@@ -200,6 +202,27 @@ export interface TransitionTracingDeletion {
   endTime: number;
 }
 
+/** What a root reports an uncaught or a recoverable error with. */
+export type OnError = (
+  value: unknown | null | undefined,
+  info: ErrorInfo,
+) => void;
+
+/** What a root reports an error an error boundary caught with. */
+export type OnCaughtError = (
+  value: unknown | null | undefined,
+  info: CaughtErrorInfo,
+) => void;
+
+/**
+ * What a root shows a default Transition's indicator with, which gives
+ * what hides it, if anything.
+ */
+export type OnDefaultTransitionIndicator = () =>
+  | (() => void)
+  | null
+  | undefined;
+
 export type OnTransitionStart = (value: string, value2: number) => void;
 
 export type OnTransitionProgress = (
@@ -306,17 +329,11 @@ export interface FiberRoot {
   // the public createRoot object, which the fiber tree does not currently have
   // a reference to.
   identifierPrefix: string;
-  onUncaughtError: (value: unknown | null | undefined, info: ErrorInfo) => void;
-  onCaughtError: (
-    value: unknown | null | undefined,
-    info: CaughtErrorInfo,
-  ) => void;
-  onRecoverableError: (
-    value: unknown | null | undefined,
-    info: ErrorInfo,
-  ) => void;
+  onUncaughtError: OnError;
+  onCaughtError: OnCaughtError;
+  onRecoverableError: OnError;
   // enableDefaultTransitionIndicator only
-  onDefaultTransitionIndicator: () => (() => void) | null | undefined;
+  onDefaultTransitionIndicator: OnDefaultTransitionIndicator | null | undefined;
   pendingIndicator?: (() => void) | null | undefined;
   // shared/ReactTypes' `ReactFormState<any, any>`.
   formState?: unknown | null | undefined;
@@ -344,7 +361,9 @@ export interface FiberRoot {
   // are considered complete when the pending suspense boundaries set is
   // empty. We can represent this as a Map of transitions to suspense
   // boundary sets
-  incompleteTransitions: Map<any, TracingMarkerInstance>;
-  effectDuration: number;
-  passiveEffectDuration: number;
+  incompleteTransitions: Map<Transition, TracingMarkerInstance>;
+  effectDuration: number | null | undefined;
+  passiveEffectDuration: number | null | undefined;
+  // __DEV__ only
+  _debugRootType: string | null | undefined;
 }

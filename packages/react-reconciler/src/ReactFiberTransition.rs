@@ -9,13 +9,14 @@ use std::rc::Rc;
 use js::Unknown;
 use react_isomorphic::react_lazy::Thenable;
 use react_isomorphic::react_start_transition::{
-    GestureProvider, GestureTransitionOptions, Transition, t,
+    GestureProvider, GestureTransitionOptions, OnStartTransitionFinish, Transition, g, s, set_g,
+    set_s, t,
 };
 use react_isomorphic::react_transition_type::TransitionTypes;
 use shared::react_feature_flags::{
     ENABLE_GESTURE_TRANSITION, ENABLE_TRANSITION_TRACING, ENABLE_VIEW_TRANSITION,
 };
-use shared::react_shared_internals::{REACT_SHARED_INTERNALS, SharedStateClient};
+use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 
 use crate::react_fiber_async_action::{entangle_async_action, peek_entangled_action_lane};
 use crate::react_fiber_cache_component::{
@@ -83,43 +84,6 @@ fn start_scheduled_gesture(
     rust_js::link_name = "./src/ReactFiberGestureScheduler.js#cancelScheduledGesture"
 )]
 fn cancel_scheduled_gesture(root: &FiberRoot, gesture: &Unknown) {
-    unreachable!()
-}
-
-/// What the renderer does as a Transition's scope returns.
-type OnStartTransitionFinish = dyn Fn(&Transition, Option<&'static Unknown>);
-
-/// What the renderer does as a gesture Transition's scope returns, which
-/// gives what cancels the gesture.
-type OnStartGestureTransitionFinish =
-    dyn Fn(&Transition, &GestureProvider, Option<&GestureTransitionOptions>) -> Box<dyn Fn()>;
-
-/// `ReactSharedInternals.S`.
-#[cfg_attr(rust_js, rust_js::link_name = "get S")]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn s(this: &SharedStateClient) -> Option<&'static OnStartTransitionFinish> {
-    unreachable!()
-}
-
-/// `ReactSharedInternals.S = on_start_transition_finish`.
-#[cfg_attr(rust_js, rust_js::link_name = "set S")]
-fn set_s(this: &SharedStateClient, on_start_transition_finish: &'static OnStartTransitionFinish) {
-    unreachable!()
-}
-
-/// `ReactSharedInternals.G`.
-#[cfg_attr(rust_js, rust_js::link_name = "get G")]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn g(this: &SharedStateClient) -> Option<&'static OnStartGestureTransitionFinish> {
-    unreachable!()
-}
-
-/// `ReactSharedInternals.G = on_start_gesture_transition_finish`.
-#[cfg_attr(rust_js, rust_js::link_name = "set G")]
-fn set_g(
-    this: &SharedStateClient,
-    on_start_gesture_transition_finish: Box<OnStartGestureTransitionFinish>,
-) {
     unreachable!()
 }
 

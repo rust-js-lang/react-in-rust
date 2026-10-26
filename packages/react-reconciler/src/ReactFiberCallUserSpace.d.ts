@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {LazyComponent} from '../../react/src/ReactLazy.js';
 import type {CapturedValue} from './ReactCapturedValue.js';
 import type {Fiber} from './ReactInternalTypes.js';
 
@@ -116,8 +117,10 @@ export const callDestroyInDEV:
     ) => void)
   | null;
 
-export type CallLazyInit = (value: any) => unknown | null | undefined;
+export type CallLazyInit = (
+  component: LazyComponent,
+) => unknown | null | undefined;
 
 export const callLazyInitInDEV:
-  | ((value: any) => unknown | null | undefined)
+  | ((component: LazyComponent) => unknown | null | undefined)
   | null;

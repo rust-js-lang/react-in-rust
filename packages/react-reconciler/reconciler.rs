@@ -30,6 +30,8 @@ pub mod react_fiber_error_logger;
 pub mod react_fiber_flags;
 #[path = "src/ReactFiberHiddenContext.rs"]
 pub mod react_fiber_hidden_context;
+#[path = "src/ReactFiberHostContext.rs"]
+pub mod react_fiber_host_context;
 #[path = "src/ReactFiberHotReloading.rs"]
 pub mod react_fiber_hot_reloading;
 #[path = "src/ReactFiberHydrationDiffs.rs"]
@@ -44,10 +46,14 @@ pub mod react_fiber_mutation_tracking;
 pub mod react_fiber_new_context;
 #[path = "src/ReactFiberOffscreenComponent.rs"]
 pub mod react_fiber_offscreen_component;
+#[path = "src/ReactFiberRoot.rs"]
+pub mod react_fiber_root;
 #[path = "src/ReactFiberStack.rs"]
 pub mod react_fiber_stack;
 #[path = "src/ReactFiberSuspenseComponent.rs"]
 pub mod react_fiber_suspense_component;
+#[path = "src/ReactFiberSuspenseContext.rs"]
+pub mod react_fiber_suspense_context;
 #[path = "src/ReactFiberThenable.rs"]
 pub mod react_fiber_thenable;
 #[path = "src/ReactFiberTracingMarkerComponent.rs"]

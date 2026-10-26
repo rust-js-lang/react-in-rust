@@ -70,12 +70,13 @@ pub struct Transition {
     pub updated_fibers: Option<RefCell<HashSet<&'static Fiber>>>,
 }
 
-/// `ReactSharedInternalsClient`'s `onStartTransitionFinish`.
-type OnStartTransitionFinish = dyn Fn(&Transition, Option<&'static Unknown>);
+/// What the renderer does as a Transition's scope returns.
+pub type OnStartTransitionFinish = dyn Fn(&Transition, Option<&'static Unknown>);
 
-/// `ReactSharedInternalsClient`'s `onStartGestureTransitionFinish`.
-type OnStartGestureTransitionFinish =
-    dyn Fn(&Transition, &GestureProvider, Option<&GestureTransitionOptions>) -> &'static dyn Fn();
+/// What the renderer does as a gesture Transition's scope returns, which
+/// gives what cancels the gesture.
+pub type OnStartGestureTransitionFinish =
+    dyn Fn(&Transition, &GestureProvider, Option<&GestureTransitionOptions>) -> Box<dyn Fn()>;
 
 /// `ReactSharedInternals.T`, the current Transition.
 #[cfg_attr(rust_js, rust_js::link_name = "get T")]
@@ -96,16 +97,38 @@ pub fn set_t(this: &SharedStateClient, transition: Option<&Transition>) {
 /// `ReactSharedInternals.S`, what the renderer does as a Transition's scope
 /// returns.
 #[cfg_attr(rust_js, rust_js::link_name = "get S")]
-fn s(this: &SharedStateClient) -> Option<&'static OnStartTransitionFinish> {
+#[cfg_attr(rust_js, rust_js::nullable)]
+pub fn s(this: &SharedStateClient) -> Option<&'static OnStartTransitionFinish> {
     let _ = this;
+    unreachable!()
+}
+
+/// `ReactSharedInternals.S = on_start_transition_finish`.
+#[cfg_attr(rust_js, rust_js::link_name = "set S")]
+pub fn set_s(
+    this: &SharedStateClient,
+    on_start_transition_finish: &'static OnStartTransitionFinish,
+) {
+    let _ = (this, on_start_transition_finish);
     unreachable!()
 }
 
 /// `ReactSharedInternals.G`, what the renderer does as a gesture
 /// Transition's scope returns.
 #[cfg_attr(rust_js, rust_js::link_name = "get G")]
-fn g(this: &SharedStateClient) -> Option<&'static OnStartGestureTransitionFinish> {
+#[cfg_attr(rust_js, rust_js::nullable)]
+pub fn g(this: &SharedStateClient) -> Option<&'static OnStartGestureTransitionFinish> {
     let _ = this;
+    unreachable!()
+}
+
+/// `ReactSharedInternals.G = on_start_gesture_transition_finish`.
+#[cfg_attr(rust_js, rust_js::link_name = "set G")]
+pub fn set_g(
+    this: &SharedStateClient,
+    on_start_gesture_transition_finish: Box<OnStartGestureTransitionFinish>,
+) {
+    let _ = (this, on_start_gesture_transition_finish);
     unreachable!()
 }
 
@@ -237,7 +260,7 @@ pub fn start_gesture_transition(
     provider: Option<&'static GestureProvider>,
     scope: impl FnOnce() -> Option<&'static Unknown>,
     options: Option<&GestureTransitionOptions>,
-) -> &'static dyn Fn() {
+) -> Box<dyn Fn()> {
     if !ENABLE_GESTURE_TRANSITION.with(|&enabled| enabled) {
         // eslint-disable-next-line react-internal/prod-error-codes
         panic!(
@@ -301,7 +324,7 @@ pub fn start_gesture_transition(
             );
         }),
     }
-    &noop
+    Box::new(noop)
 }
 
 fn warn_about_transition_subscriptions(

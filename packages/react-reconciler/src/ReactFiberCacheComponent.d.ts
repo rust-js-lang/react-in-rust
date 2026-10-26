@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ReactContext} from '../../react/src/ReactContext.js';
 import type {Fiber} from './ReactInternalTypes.js';
 
 export interface Cache {
@@ -23,7 +24,7 @@ export interface SpawnedCachePool {
   pool: Cache;
 }
 
-export const CacheContext: any;
+export const CacheContext: ReactContext<Cache | null | undefined>;
 
 // Creates a new empty Cache instance with a ref-count of 0. The caller is responsible
 // for retaining the cache once it is in use (retainCache), and releasing the cache

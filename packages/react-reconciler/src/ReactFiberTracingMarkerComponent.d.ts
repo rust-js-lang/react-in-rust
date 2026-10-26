@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {Transition} from '../../react/src/ReactStartTransition.js';
 import type {OffscreenInstance} from './ReactFiberOffscreenComponent.js';
 import type {Fiber, TransitionTracingCallbacks} from './ReactInternalTypes.js';
 
@@ -18,28 +19,28 @@ export interface SuspenseInfo {
  */
 export interface MarkerProgress {
   pendingBoundaries?: PendingBoundaries | null | undefined;
-  transitions?: Set<any> | null | undefined;
+  transitions?: Set<Transition> | null | undefined;
 }
 
 /** Why a tracing marker didn't complete, and its transitions. */
 export interface MarkerIncomplete {
   aborts: TransitionAbort[];
-  transitions: Set<any>;
+  transitions: Set<Transition>;
 }
 
 export interface PendingTransitionCallbacks {
-  transitionStart?: any[] | null | undefined;
-  transitionProgress?: Map<any, PendingBoundaries> | null | undefined;
-  transitionComplete?: any[] | null | undefined;
+  transitionStart?: Transition[] | null | undefined;
+  transitionProgress?: Map<Transition, PendingBoundaries> | null | undefined;
+  transitionComplete?: Transition[] | null | undefined;
   markerProgress?: Map<string, MarkerProgress> | null | undefined;
   markerIncomplete?: Map<string, MarkerIncomplete> | null | undefined;
-  markerComplete?: Map<string, Set<any>> | null | undefined;
+  markerComplete?: Map<string, Set<Transition>> | null | undefined;
 }
 
 // TODO: Is there a way to not include the tag or name here?
 export interface TracingMarkerInstance {
   tag?: TracingMarkerTag | undefined;
-  transitions?: Set<any> | null | undefined;
+  transitions?: Set<Transition> | null | undefined;
   pendingBoundaries?: Map<OffscreenInstance, SuspenseInfo> | null | undefined;
   aborts?: TransitionAbort[] | null | undefined;
   name?: string | null | undefined;
