@@ -158,7 +158,7 @@ function elementRefGetterWithDeprecationWarning(this$) {
     // An undefined `element.ref` is coerced to `null` for
     // backwards compatibility.
     const refProp = this$.props.ref;
-    return refProp !== undefined ? (refProp ?? null) : null;
+    return refProp !== undefined ? refProp : null;
   }
   return null;
 }
