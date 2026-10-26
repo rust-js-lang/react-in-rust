@@ -12,6 +12,8 @@ pub mod react_current_fiber;
 pub mod react_event_priorities;
 #[path = "src/ReactFiberActivityComponent.rs"]
 pub mod react_fiber_activity_component;
+#[path = "src/ReactFiberAsyncAction.rs"]
+pub mod react_fiber_async_action;
 #[path = "src/ReactFiberCacheComponent.rs"]
 pub mod react_fiber_cache_component;
 #[path = "src/ReactFiberCallUserSpace.rs"]
@@ -36,6 +38,8 @@ pub mod react_fiber_lane;
 pub mod react_fiber_legacy_context;
 #[path = "src/ReactFiberMutationTracking.rs"]
 pub mod react_fiber_mutation_tracking;
+#[path = "src/ReactFiberNewContext.rs"]
+pub mod react_fiber_new_context;
 #[path = "src/ReactFiberOffscreenComponent.rs"]
 pub mod react_fiber_offscreen_component;
 #[path = "src/ReactFiberStack.rs"]
@@ -44,6 +48,8 @@ pub mod react_fiber_stack;
 pub mod react_fiber_suspense_component;
 #[path = "src/ReactFiberThenable.rs"]
 pub mod react_fiber_thenable;
+#[path = "src/ReactFiberTransition.rs"]
+pub mod react_fiber_transition;
 #[path = "src/ReactFiberTransitionTypes.rs"]
 pub mod react_fiber_transition_types;
 #[path = "src/ReactFiberTreeContext.rs"]

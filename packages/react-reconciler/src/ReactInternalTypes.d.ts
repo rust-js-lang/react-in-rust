@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {Cache} from './ReactFiberCacheComponent.js';
 import type {ConcurrentUpdate} from './ReactFiberConcurrentUpdates.js';
 import type {Flags} from './ReactFiberFlags.js';
 import type {Lane, LaneMap, Lanes} from './ReactFiberLane.js';
@@ -299,8 +300,7 @@ export interface FiberRoot {
   shellSuspendCounter: number;
   entangledLanes: Lanes;
   entanglements: LaneMap<Lanes>;
-  // ReactFiberCacheComponent's `Cache`.
-  pooledCache?: unknown | null | undefined;
+  pooledCache?: Cache | null | undefined;
   pooledCacheLanes: Lanes;
   // TODO: In Fizz, id generation is specific to each server config. Maybe we
   // should do this in Fiber, too? Deferring this decision for now because

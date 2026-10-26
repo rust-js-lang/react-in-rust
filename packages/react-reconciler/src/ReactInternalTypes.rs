@@ -13,6 +13,7 @@ use webapi::ConsoleTask;
 
 pub use shared::react_shared_internals::{AsyncDispatcher, Dispatcher};
 
+use crate::react_fiber_cache_component::Cache;
 use crate::react_fiber_concurrent_updates::ConcurrentUpdate;
 use crate::react_fiber_flags::Flags;
 use crate::react_fiber_lane::{Lane, LaneMap, Lanes};
@@ -376,9 +377,8 @@ pub struct FiberRoot {
     pub entangled_lanes: Cell<Lanes>,
     pub entanglements: RefCell<LaneMap<Lanes>>,
 
-    // ReactFiberCacheComponent's `Cache`.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub pooled_cache: Cell<Option<&'static Unknown>>,
+    pub pooled_cache: RefCell<Option<Rc<Cache>>>,
     pub pooled_cache_lanes: Cell<Lanes>,
 
     // TODO: In Fizz, id generation is specific to each server config. Maybe we
