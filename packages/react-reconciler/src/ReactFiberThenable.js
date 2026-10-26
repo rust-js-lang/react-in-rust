@@ -161,9 +161,9 @@ export function trackUsedThenable(
     // Track when we resolved the Promise as the approximate end time.
     const status = thenable.status;
     if (status !== 'fulfilled' && status !== 'rejected') {
-      const trackEndTime = () => {
+      function trackEndTime() {
         ioInfo.end = performance.now();
-      };
+      }
       thenable.then(trackEndTime, trackEndTime);
     }
   }

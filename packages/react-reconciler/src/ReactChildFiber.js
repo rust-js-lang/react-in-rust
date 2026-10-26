@@ -756,12 +756,12 @@ function createChildReconciler(shouldTrackSideEffects) {
   }
 
   function updateSlot(returnFiber, oldFiber, newChild, lanes) {
-    const then = oldFiber => {
-      // Update the fiber if the keys match, otherwise return null.
+    // Update the fiber if the keys match, otherwise return null.
+    function then(oldFiber) {
       const borrow = $borrow($fieldCell(oldFiber, 'key'), true);
       $unborrow(borrow);
       return borrow.value;
-    };
+    }
     const key = oldFiber != null ? then(oldFiber) : undefined;
 
     if (
@@ -918,12 +918,12 @@ function createChildReconciler(shouldTrackSideEffects) {
       switch (newChild.$$typeof) {
         case REACT_ELEMENT_TYPE: {
           const element = newChild;
-          const fallback = () => {
+          function fallback() {
             // If the existing child was an optimistic key, we may still match on the index.
             if (enableOptimisticKey) {
               return existingChildren.get(-newIdx - 1);
             }
-          };
+          }
           const matchedFiber =
             (element.key == null
               ? existingChildren.get(newIdx)
@@ -939,12 +939,12 @@ function createChildReconciler(shouldTrackSideEffects) {
           return updated;
         }
         case REACT_PORTAL_TYPE: {
-          const fallback = () => {
+          function fallback() {
             // If the existing child was an optimistic key, we may still match on the index.
             if (enableOptimisticKey) {
               return existingChildren.get(-newIdx - 1);
             }
-          };
+          }
           const matchedFiber =
             (newChild.key == null
               ? existingChildren.get(newIdx)

@@ -507,8 +507,6 @@ export function tryToClaimNextHydratableFormMarkerInstance(fiber) {
   // rendering. We don't bother to check if we're in a concurrent root because
   // useActionState is a new API, so backwards compat is not an issue.
   throwOnHydrationMismatch(fiber, false);
-  let result;
-  return result;
 }
 
 // ReactFiberConfig's `HostContext`.

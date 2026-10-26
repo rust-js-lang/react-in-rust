@@ -183,7 +183,7 @@ function createFiber(tag, pendingProps, key, mode) {
 
 function shouldConstruct(component) {
   const prototype = component.prototype;
-  return !!prototype && !!prototype.isReactComponent;
+  return !!(prototype && prototype.isReactComponent);
 }
 
 export function isSimpleFunctionComponent(type) {

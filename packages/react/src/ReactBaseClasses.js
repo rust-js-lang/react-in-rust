@@ -102,7 +102,7 @@ if (__DEV__) {
         'https://github.com/react/react/issues/3236).',
     ],
   };
-  const defineDeprecationWarning = (methodName, info) => {
+  function defineDeprecationWarning(methodName, info) {
     Object.defineProperty(Component.prototype, methodName, {
       get() {
         console.warn(
@@ -112,7 +112,7 @@ if (__DEV__) {
         );
       },
     });
-  };
+  }
   for (const fnName in deprecatedApis) {
     if (Object.prototype.hasOwnProperty.call(deprecatedApis, fnName)) {
       defineDeprecationWarning(fnName, deprecatedApis[fnName]);

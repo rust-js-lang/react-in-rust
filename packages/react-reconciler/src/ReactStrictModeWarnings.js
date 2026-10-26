@@ -9,7 +9,6 @@ import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {NoMode, StrictLegacyMode} from './ReactTypeOfMode.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {
-  $add,
   $assign,
   $borrowMut,
   $orInsertWith,
@@ -165,12 +164,11 @@ if (__DEV__) {
       $withBorrow(
         pendingComponentWillMountWarnings,
         pending => {
-          for (const fiber$1 of pending) {
-            $add(
-              componentWillMountUniqueNames,
-              getComponentNameFromFiber(fiber$1) || 'Component',
+          for (const fiber of pending) {
+            componentWillMountUniqueNames.add(
+              getComponentNameFromFiber(fiber) || 'Component',
             );
-            didWarnAboutUnsafeLifecycles.add(fiber$1.type);
+            didWarnAboutUnsafeLifecycles.add(fiber.type);
           }
         },
         true,
@@ -189,12 +187,11 @@ if (__DEV__) {
       $withBorrow(
         pendingUNSAFE_ComponentWillMountWarnings,
         pending => {
-          for (const fiber$2 of pending) {
-            $add(
-              unsafeComponentWillMountUniqueNames,
-              getComponentNameFromFiber(fiber$2) || 'Component',
+          for (const fiber of pending) {
+            unsafeComponentWillMountUniqueNames.add(
+              getComponentNameFromFiber(fiber) || 'Component',
             );
-            didWarnAboutUnsafeLifecycles.add(fiber$2.type);
+            didWarnAboutUnsafeLifecycles.add(fiber.type);
           }
         },
         true,
@@ -213,12 +210,11 @@ if (__DEV__) {
       $withBorrow(
         pendingComponentWillReceivePropsWarnings,
         pending => {
-          for (const fiber$3 of pending) {
-            $add(
-              componentWillReceivePropsUniqueNames,
-              getComponentNameFromFiber(fiber$3) || 'Component',
+          for (const fiber of pending) {
+            componentWillReceivePropsUniqueNames.add(
+              getComponentNameFromFiber(fiber) || 'Component',
             );
-            didWarnAboutUnsafeLifecycles.add(fiber$3.type);
+            didWarnAboutUnsafeLifecycles.add(fiber.type);
           }
         },
         true,
@@ -237,12 +233,11 @@ if (__DEV__) {
       $withBorrow(
         pendingUNSAFE_ComponentWillReceivePropsWarnings,
         pending => {
-          for (const fiber$4 of pending) {
-            $add(
-              unsafeComponentWillReceivePropsUniqueNames,
-              getComponentNameFromFiber(fiber$4) || 'Component',
+          for (const fiber of pending) {
+            unsafeComponentWillReceivePropsUniqueNames.add(
+              getComponentNameFromFiber(fiber) || 'Component',
             );
-            didWarnAboutUnsafeLifecycles.add(fiber$4.type);
+            didWarnAboutUnsafeLifecycles.add(fiber.type);
           }
         },
         true,
@@ -261,12 +256,11 @@ if (__DEV__) {
       $withBorrow(
         pendingComponentWillUpdateWarnings,
         pending => {
-          for (const fiber$5 of pending) {
-            $add(
-              componentWillUpdateUniqueNames,
-              getComponentNameFromFiber(fiber$5) || 'Component',
+          for (const fiber of pending) {
+            componentWillUpdateUniqueNames.add(
+              getComponentNameFromFiber(fiber) || 'Component',
             );
-            didWarnAboutUnsafeLifecycles.add(fiber$5.type);
+            didWarnAboutUnsafeLifecycles.add(fiber.type);
           }
         },
         true,
@@ -285,12 +279,11 @@ if (__DEV__) {
       $withBorrow(
         pendingUNSAFE_ComponentWillUpdateWarnings,
         pending => {
-          for (const fiber$6 of pending) {
-            $add(
-              unsafeComponentWillUpdateUniqueNames,
-              getComponentNameFromFiber(fiber$6) || 'Component',
+          for (const fiber of pending) {
+            unsafeComponentWillUpdateUniqueNames.add(
+              getComponentNameFromFiber(fiber) || 'Component',
             );
-            didWarnAboutUnsafeLifecycles.add(fiber$6.type);
+            didWarnAboutUnsafeLifecycles.add(fiber.type);
           }
         },
         true,
@@ -314,7 +307,7 @@ if (__DEV__) {
     }
 
     if (unsafeComponentWillReceivePropsUniqueNames.size !== 0) {
-      const sortedNames$1 = setToSortedString(
+      const sortedNames = setToSortedString(
         unsafeComponentWillReceivePropsUniqueNames,
       );
       console.error(
@@ -326,12 +319,12 @@ if (__DEV__) {
           'refactor your code to use memoization techniques or move it to ' +
           'static getDerivedStateFromProps. Learn more at: https://react.dev/link/derived-state\n' +
           '\nPlease update the following components: %s',
-        sortedNames$1,
+        sortedNames,
       );
     }
 
     if (unsafeComponentWillUpdateUniqueNames.size !== 0) {
-      const sortedNames$2 = setToSortedString(
+      const sortedNames = setToSortedString(
         unsafeComponentWillUpdateUniqueNames,
       );
       console.error(
@@ -340,12 +333,12 @@ if (__DEV__) {
           'See https://react.dev/link/unsafe-component-lifecycles for details.\n\n' +
           '* Move data fetching code or side effects to componentDidUpdate.\n' +
           '\nPlease update the following components: %s',
-        sortedNames$2,
+        sortedNames,
       );
     }
 
     if (componentWillMountUniqueNames.size !== 0) {
-      const sortedNames$3 = setToSortedString(componentWillMountUniqueNames);
+      const sortedNames = setToSortedString(componentWillMountUniqueNames);
 
       console.warn(
         'componentWillMount has been renamed, and is not recommended for use. ' +
@@ -356,12 +349,12 @@ if (__DEV__) {
           'To rename all deprecated lifecycles to their new names, you can run ' +
           '`npx react-codemod rename-unsafe-lifecycles` in your project source folder.\n' +
           '\nPlease update the following components: %s',
-        sortedNames$3,
+        sortedNames,
       );
     }
 
     if (componentWillReceivePropsUniqueNames.size !== 0) {
-      const sortedNames$4 = setToSortedString(
+      const sortedNames = setToSortedString(
         componentWillReceivePropsUniqueNames,
       );
 
@@ -377,12 +370,12 @@ if (__DEV__) {
           'To rename all deprecated lifecycles to their new names, you can run ' +
           '`npx react-codemod rename-unsafe-lifecycles` in your project source folder.\n' +
           '\nPlease update the following components: %s',
-        sortedNames$4,
+        sortedNames,
       );
     }
 
     if (componentWillUpdateUniqueNames.size !== 0) {
-      const sortedNames$5 = setToSortedString(componentWillUpdateUniqueNames);
+      const sortedNames = setToSortedString(componentWillUpdateUniqueNames);
 
       console.warn(
         'componentWillUpdate has been renamed, and is not recommended for use. ' +
@@ -393,7 +386,7 @@ if (__DEV__) {
           'To rename all deprecated lifecycles to their new names, you can run ' +
           '`npx react-codemod rename-unsafe-lifecycles` in your project source folder.\n' +
           '\nPlease update the following components: %s',
-        sortedNames$5,
+        sortedNames,
       );
     }
   };
@@ -415,9 +408,9 @@ if (__DEV__) {
         ) {
           $withBorrowMut(
             pendingLegacyContextWarning,
-            pendingLegacyContextWarning$1 => {
+            pendingLegacyContextWarning => {
               $orInsertWith(
-                pendingLegacyContextWarning$1,
+                pendingLegacyContextWarning,
                 strictRoot,
                 () => [],
               ).push(fiber);
@@ -432,9 +425,9 @@ if (__DEV__) {
   ReactStrictModeWarnings.flushLegacyContextWarning = () => {
     $withBorrow(
       pendingLegacyContextWarning,
-      pendingLegacyContextWarning$2 => {
+      pendingLegacyContextWarning => {
         for (const fiberArray of Array.from(
-          pendingLegacyContextWarning$2.values(),
+          pendingLegacyContextWarning.values(),
         )) {
           if (fiberArray.length === 0) {
             continue;
@@ -442,15 +435,12 @@ if (__DEV__) {
           const firstFiber = fiberArray[0];
 
           const uniqueNames = new Set();
-          for (const fiber$8 of fiberArray) {
-            $add(
-              uniqueNames,
-              getComponentNameFromFiber(fiber$8) || 'Component',
-            );
-            didWarnAboutLegacyContext.add(fiber$8.type);
+          for (const fiber of fiberArray) {
+            uniqueNames.add(getComponentNameFromFiber(fiber) || 'Component');
+            didWarnAboutLegacyContext.add(fiber.type);
           }
 
-          const sortedNames$6 = setToSortedString(uniqueNames);
+          const sortedNames = setToSortedString(uniqueNames);
 
           runWithFiberInDEV(firstFiber, () => {
             console.error(
@@ -459,7 +449,7 @@ if (__DEV__) {
                 'using it should migrate to the new version.' +
                 '\n\nPlease update the following components: %s' +
                 '\n\nLearn more about this warning here: https://react.dev/link/legacy-context',
-              sortedNames$6,
+              sortedNames,
             );
           });
         }

@@ -122,7 +122,7 @@ function hasValidKey(config) {
 
 function defineKeyPropWarningGetter(props, displayName) {
   if (__DEV__) {
-    const warnAboutAccessingKey = () => {
+    function warnAboutAccessingKey() {
       if (!specialPropKeyWarningShown) {
         specialPropKeyWarningShown = true;
         console.error(
@@ -133,7 +133,7 @@ function defineKeyPropWarningGetter(props, displayName) {
           displayName,
         );
       }
-    };
+    }
     warnAboutAccessingKey.isReactWarning = true;
     Object.defineProperty(props, 'key', {
       get: warnAboutAccessingKey,
