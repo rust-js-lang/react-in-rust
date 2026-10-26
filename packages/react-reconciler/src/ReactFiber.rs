@@ -150,9 +150,9 @@ fn create_fiber(
         // Instance
         tag: Cell::new(tag),
         key: RefCell::new(key),
-        element_type: Cell::new(js::NULL),
-        r#type: Cell::new(js::NULL),
-        state_node: Cell::new(js::NULL),
+        element_type: Cell::new(js::null()),
+        r#type: Cell::new(js::null()),
+        state_node: Cell::new(js::null()),
 
         // Fiber
         r#return: RefCell::new(None),
@@ -164,9 +164,9 @@ fn create_fiber(
         ref_cleanup: Cell::new(None),
 
         pending_props: Cell::new(pending_props),
-        memoized_props: Cell::new(js::NULL),
-        update_queue: Cell::new(js::NULL),
-        memoized_state: Cell::new(js::NULL),
+        memoized_props: Cell::new(js::null()),
+        update_queue: Cell::new(js::null()),
+        memoized_state: Cell::new(js::null()),
         dependencies: RefCell::new(None),
 
         mode: Cell::new(mode),
@@ -215,8 +215,8 @@ fn create_fiber(
 
     if __DEV__ {
         // This isn't directly used but is handy for debugging internals:
-        fiber.debug_info.set(js::NULL);
-        fiber.debug_owner.set(js::NULL);
+        fiber.debug_info.set(js::null());
+        fiber.debug_owner.set(js::null());
         fiber.debug_stack.set(None);
         fiber.debug_task.set(None);
         fiber.debug_needs_remount.set(Some(false));
@@ -430,13 +430,13 @@ pub fn reset_work_in_progress(work_in_progress: &Rc<Fiber>, render_lanes: Lanes)
 
             work_in_progress.child.replace(None);
             work_in_progress.subtree_flags.set(NO_FLAGS);
-            work_in_progress.memoized_props.set(js::NULL);
-            work_in_progress.memoized_state.set(js::NULL);
-            work_in_progress.update_queue.set(js::NULL);
+            work_in_progress.memoized_props.set(js::null());
+            work_in_progress.memoized_state.set(js::null());
+            work_in_progress.update_queue.set(js::null());
 
             work_in_progress.dependencies.replace(None);
 
-            work_in_progress.state_node.set(js::NULL);
+            work_in_progress.state_node.set(js::null());
 
             if ENABLE_PROFILER_TIMER.with(|&enabled| enabled) {
                 // Note: We don't reset the actualTime counts. It's useful to accumulate
@@ -535,7 +535,7 @@ pub fn create_host_root_fiber(tag: RootTag, is_strict_mode: bool) -> Rc<Fiber> {
         mode |= PROFILE_MODE;
     }
 
-    create_fiber(HOST_ROOT, js::NULL, None, mode)
+    create_fiber(HOST_ROOT, js::null(), None, mode)
 }
 
 // TODO: Get rid of this helper. Only createFiberFromElement should exist.
@@ -676,7 +676,7 @@ pub fn create_fiber_from_type_and_props(
                             }
                             Some(REACT_LAZY_TYPE) => {
                                 fiber_tag = LAZY_COMPONENT;
-                                resolved_type = js::NULL;
+                                resolved_type = js::null();
                                 break 'get_tag;
                             }
                             _ => {}
@@ -748,7 +748,7 @@ pub fn create_fiber_from_type_and_props(
                         type_string, info
                     ))
                     .as_unknown();
-                    resolved_type = js::NULL;
+                    resolved_type = js::null();
                 }
             }
         }
@@ -771,7 +771,7 @@ pub fn create_fiber_from_element(
     mode: TypeOfMode,
     lanes: Lanes,
 ) -> Rc<Fiber> {
-    let mut owner = js::NULL;
+    let mut owner = js::null();
     if __DEV__ {
         owner = element.owner;
     }
@@ -986,7 +986,7 @@ pub fn create_fiber_from_text(content: &'static str, mode: TypeOfMode, lanes: La
 
 // ReactFiberConfig's `SuspenseInstance | ActivityInstance`.
 pub fn create_fiber_from_dehydrated_fragment(dehydrated_node: &'static Unknown) -> Rc<Fiber> {
-    let fiber = create_fiber(DEHYDRATED_FRAGMENT, js::NULL, None, NO_MODE);
+    let fiber = create_fiber(DEHYDRATED_FRAGMENT, js::null(), None, NO_MODE);
     fiber.state_node.set(Some(dehydrated_node));
     fiber
 }

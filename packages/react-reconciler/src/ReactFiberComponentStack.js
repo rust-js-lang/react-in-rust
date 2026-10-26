@@ -61,7 +61,6 @@ function describeFiber(fiber, childFiber) {
         return describeBuiltInComponentFrame('ViewTransition');
       }
     // Fallthrough
-    // Fallthrough
     default:
       return '';
   }

@@ -457,7 +457,7 @@ export function createFiberFromTypeAndProps(
       fiberTag = ClassComponent;
     }
   } else {
-    bb299: {
+    bb301: {
       if (typeof resolvedType === 'string') {
         if (supportsResources && supportsSingletons) {
           const hostContext = getHostContext();
@@ -496,7 +496,7 @@ export function createFiberFromTypeAndProps(
               // Strict effects should never run on legacy roots
               mode |= StrictEffectsMode;
             }
-            break bb299;
+            break bb301;
           }
           if (resolvedType === REACT_PROFILER_TYPE) {
             return createFiberFromProfiler(pendingProps, mode, lanes, key);
@@ -597,7 +597,7 @@ export function createFiberFromTypeAndProps(
               default:
                 break bb154;
             }
-            break bb299;
+            break bb301;
           }
         }
         let info = '';
@@ -626,9 +626,7 @@ export function createFiberFromTypeAndProps(
             typeString = typeof type;
           }
 
-          const ownerName = owner
-            ? getComponentNameFromOwner(owner)
-            : undefined;
+          const ownerName = owner ? getComponentNameFromOwner(owner) : null;
           if (ownerName) {
             info += '\n\nCheck the render method of `' + ownerName + '`.';
           }

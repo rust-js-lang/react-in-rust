@@ -11,7 +11,7 @@ import noop from '../../shared/noop.js';
 import {callLazyInitInDEV} from './ReactFiberCallUserSpace.js';
 import {getWorkInProgressRoot} from './ReactFiberWorkLoop.js';
 import {HostRoot} from './ReactWorkTags.js';
-import {$borrow, $eq, $fieldCell, $unborrow, $unwrap} from '@rust-js/runtime';
+import {$borrow, $fieldCell, $unborrow, $unwrap} from '@rust-js/runtime';
 
 // An error that is thrown (e.g. by `use`) to trigger Suspense. If we
 // detect this is caught by userspace, we'll log a warning in development.
@@ -394,15 +394,7 @@ function areSameKeyPath(a, b) {
       $unborrow(value);
       throw error;
     }
-    let tmp;
-    try {
-      tmp = !$eq(value.value, borrow.value);
-    } catch (error) {
-      $unborrow(borrow);
-      $unborrow(value);
-      throw error;
-    }
-    if (tmp) {
+    if ((value.value ?? null) !== (borrow.value ?? null)) {
       try {
         $unborrow(borrow);
       } finally {

@@ -555,7 +555,7 @@ pub fn prepare_to_read_context(work_in_progress: &Rc<Fiber>, _render_lanes: Lane
     }
 }
 
-pub fn read_context<T: Copy + 'static>(context: &Rc<ReactContext<T>>) -> T {
+pub fn read_context<T: Clone + 'static>(context: &Rc<ReactContext<T>>) -> T {
     // This warning would fire if you read context inside a Hook like useMemo.
     // Unlike the class check below, it's not enforced in production for perf.
     if __DEV__ && IS_DISALLOWED_CONTEXT_READ_IN_DEV.get() {
@@ -572,7 +572,7 @@ pub fn read_context<T: Copy + 'static>(context: &Rc<ReactContext<T>>) -> T {
     )
 }
 
-pub fn read_context_during_reconciliation<T: Copy + 'static>(
+pub fn read_context_during_reconciliation<T: Clone + 'static>(
     consumer: &Rc<Fiber>,
     context: &Rc<ReactContext<T>>,
     render_lanes: Lanes,
@@ -583,19 +583,19 @@ pub fn read_context_during_reconciliation<T: Copy + 'static>(
     read_context_for_consumer(Some(consumer), context)
 }
 
-fn read_context_for_consumer<T: Copy + 'static>(
+fn read_context_for_consumer<T: Clone + 'static>(
     consumer: Option<&Rc<Fiber>>,
     context: &Rc<ReactContext<T>>,
 ) -> T {
     let value = if IS_PRIMARY_RENDERER {
-        *context.current_value.borrow()
+        context.current_value.borrow().clone()
     } else {
-        *context.current_value2.borrow()
+        context.current_value2.borrow().clone()
     };
 
     let context_item = Rc::new(ContextDependency {
         context: unsafe { js::cast(js::any_of(Rc::clone(context))) },
-        memoized_value: Cell::new(js::any_of(value)),
+        memoized_value: Cell::new(js::any_of(value.clone())),
         next: RefCell::new(None),
     });
 
