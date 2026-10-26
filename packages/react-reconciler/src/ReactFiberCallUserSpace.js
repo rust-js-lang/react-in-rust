@@ -8,19 +8,14 @@
 import {isRendering, setIsRendering} from './ReactCurrentFiber.js';
 import {captureCommitPhaseError} from './ReactFiberWorkLoop.js';
 
-function restoreIsRenderingDrop_drop(restoreIsRendering) {
-  setIsRendering(restoreIsRendering[0]);
-}
-
 const callComponent = {
   react_stack_bottom_frame(component, props, secondArg) {
     const wasRendering = isRendering;
     setIsRendering(true);
-    const _restore = [wasRendering];
     try {
       return component(props, secondArg);
     } finally {
-      restoreIsRenderingDrop_drop(_restore);
+      setIsRendering(wasRendering);
     }
   },
 };
@@ -34,11 +29,10 @@ const callRender = {
   react_stack_bottom_frame(instance) {
     const wasRendering = isRendering;
     setIsRendering(true);
-    const _restore = [wasRendering];
     try {
       return instance.render();
     } finally {
-      restoreIsRenderingDrop_drop(_restore);
+      setIsRendering(wasRendering);
     }
   },
 };

@@ -176,7 +176,6 @@ function describeValue(value, maxLength) {
       if (name === 'Object') {
         let properties = '';
         maxLength -= 2;
-        let propName;
         for (let propName in value) {
           if (!Object.prototype.hasOwnProperty.call(value, propName)) {
             continue;
@@ -234,21 +233,22 @@ function describeCollapsedElement(type, props, indent) {
   let maxLength = maxRowLength - indent * 2 - type.length - 2;
 
   let content = '';
-  // Ignored.
+
   for (const propName in props) {
-    if (
-      Object.prototype.hasOwnProperty.call(props, propName) &&
-      propName !== 'children'
-    ) {
-      const propValue = describePropValue(props[propName], 15);
-      maxLength -= propName.length + propValue.length + 2;
-      if (maxLength < 0) {
-        content += ' ...';
-        break;
-      }
-      content += ' ' + propName + '=' + propValue;
+    if (!Object.prototype.hasOwnProperty.call(props, propName)) {
       continue;
     }
+    if (propName === 'children') {
+      // Ignored.
+      continue;
+    }
+    const propValue = describePropValue(props[propName], 15);
+    maxLength -= propName.length + propValue.length + 2;
+    if (maxLength < 0) {
+      content += ' ...';
+      break;
+    }
+    content += ' ' + propName + '=' + propValue;
   }
 
   return indentation(indent) + '<' + type + content + '>\n';
@@ -264,12 +264,13 @@ function describeExpandedElement(type, props, rowPrefix) {
   // line or multiple lines.
 
   const properties = [];
-  // Ignored.
+
   for (const propName in props) {
     if (!Object.prototype.hasOwnProperty.call(props, propName)) {
       continue;
     }
     if (propName === 'children') {
+      // Ignored.
       continue;
     }
     const maxLength = maxRowLength - rowPrefix.length - propName.length - 1;
@@ -356,13 +357,12 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
   if (serverPropNames.size === 1 && serverPropNames.has('children')) {
     content += describeExpandedElement(type, clientProps, indentation(indent));
   } else {
-    // Handled below.
-    // Only do the diff if the object has a lot of keys or was shortened.
     for (const propName in clientProps) {
       if (!Object.prototype.hasOwnProperty.call(clientProps, propName)) {
         continue;
       }
       if (propName === 'children') {
+        // Handled below.
         continue;
       }
       const maxLength =
@@ -385,6 +385,7 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
           serverValue !== null &&
           objectName(clientObject) === 'Object' &&
           objectName(serverValue) === 'Object' &&
+          // Only do the diff if the object has a lot of keys or was shortened.
           (Object.keys(clientObject).length > 2 ||
             Object.keys(serverValue).length > 2 ||
             clientPropValue.includes('...') ||
@@ -418,9 +419,10 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
           '\n';
       }
     }
-    // Handled below.
+
     for (const propName of Array.from(serverPropNames.values())) {
       if (propName === 'children') {
+        // Handled below.
         continue;
       }
       const maxLength =

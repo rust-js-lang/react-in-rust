@@ -20,6 +20,8 @@ pub mod react_fiber_cache_component;
 pub mod react_fiber_call_user_space;
 #[path = "src/ReactFiberClassUpdateQueue.rs"]
 pub mod react_fiber_class_update_queue;
+#[path = "src/ReactFiberComponentStack.rs"]
+pub mod react_fiber_component_stack;
 #[path = "src/ReactFiberConcurrentUpdates.rs"]
 pub mod react_fiber_concurrent_updates;
 #[path = "src/ReactFiberErrorLogger.rs"]

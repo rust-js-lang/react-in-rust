@@ -656,6 +656,11 @@ export function createElement(type, config, ...children) {
       __DEV__ &&
       !didWarnAboutOldJsxRuntime &&
       '__self' in config &&
+      // Do not assume this is the result of an oudated JSX transform if key
+      // is present, because the modern JSX transform sometimes outputs
+      // createElement to preserve precedence between a static key and a
+      // spread key. To avoid false positive warnings, we never warn if
+      // there's a key.
       !('key' in config)
     ) {
       didWarnAboutOldJsxRuntime = true;
@@ -817,9 +822,6 @@ export function cloneElement(element, config, ...children) {
     }
 
     // Remaining properties override existing props
-    // Undefined `ref` is ignored by cloneElement. We treat it the same as
-    // if the property were missing. This is mostly for
-    // backwards compatibility.
     for (const propName in config) {
       if (
         hasOwnProperty.call(config, propName) &&
@@ -833,6 +835,9 @@ export function cloneElement(element, config, ...children) {
         // them from the internal Fiber field.
         propName !== '__self' &&
         propName !== '__source' &&
+        // Undefined `ref` is ignored by cloneElement. We treat it the same as
+        // if the property were missing. This is mostly for
+        // backwards compatibility.
         (propName !== 'ref' || config.ref !== undefined)
       ) {
         props[propName] = config[propName];
