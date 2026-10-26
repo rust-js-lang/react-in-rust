@@ -41,7 +41,7 @@ import {
 import {startAsyncTransitionTimer} from './ReactProfilerTimer.js';
 import {$dispose, $dropping, $unwrap} from '@rust-js/runtime';
 
-export const NoTransition = undefined;
+export const NoTransition = null;
 
 // Attach this reconciler instance's onStartTransitionFinish implementation to
 // the shared internals object. This is used by the isomorphic implementation of
@@ -342,23 +342,14 @@ export function getSuspendedCache() {
   if (cacheFromPool == null) {
     return null;
   }
-
   // We must also save the parent, so that when we resume we can detect
   // a refresh.
-  const parent = (cacheContext => {
-    if (isPrimaryRenderer) {
-      const parent = cacheContext._currentValue;
-      cacheContext._currentValue = undefined;
-      cacheContext._currentValue = parent;
-      return parent;
-    }
-    const parent = cacheContext._currentValue2;
-    cacheContext._currentValue2 = undefined;
-    cacheContext._currentValue2 = parent;
-    return parent;
-  })(CacheContext);
   return {
-    parent: $unwrap(parent),
+    parent: $unwrap(
+      isPrimaryRenderer
+        ? CacheContext._currentValue
+        : CacheContext._currentValue2,
+    ),
     pool: cacheFromPool,
   };
 }
@@ -368,23 +359,14 @@ export function getOffscreenDeferredCache() {
   if (cacheFromPool == null) {
     return null;
   }
-
   // We must also store the parent, so that when we resume we can detect
   // a refresh.
-  const parent = (cacheContext => {
-    if (isPrimaryRenderer) {
-      const parent = cacheContext._currentValue;
-      cacheContext._currentValue = undefined;
-      cacheContext._currentValue = parent;
-      return parent;
-    }
-    const parent = cacheContext._currentValue2;
-    cacheContext._currentValue2 = undefined;
-    cacheContext._currentValue2 = parent;
-    return parent;
-  })(CacheContext);
   return {
-    parent: $unwrap(parent),
+    parent: $unwrap(
+      isPrimaryRenderer
+        ? CacheContext._currentValue
+        : CacheContext._currentValue2,
+    ),
     pool: cacheFromPool,
   };
 }

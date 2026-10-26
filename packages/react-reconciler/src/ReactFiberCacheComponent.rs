@@ -12,23 +12,8 @@ use shared::environment::__DEV__;
 use shared::react_symbols::REACT_CONTEXT_TYPE;
 use webapi::{AbortController, console};
 
+use crate::react_fiber_new_context::{pop_provider, push_provider};
 use crate::react_internal_types::Fiber;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberNewContext.js#pushProvider"
-)]
-fn push_provider<T>(provider_fiber: &Fiber, context: &ReactContext<T>, next_value: T) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberNewContext.js#popProvider"
-)]
-fn pop_provider<T>(context: &ReactContext<T>, provider_fiber: &Fiber) {
-    unreachable!()
-}
 
 // Intentionally not named imports because Rollup would
 // use dynamic dispatch for CommonJS interop named imports.
@@ -123,8 +108,8 @@ thread_local! {
         consumer: Cell::new(None),
         provider: Cell::new(Weak::new()),
         // We'll initialize these at the root.
-        current_value: Cell::new(None),
-        current_value2: Cell::new(None),
+        current_value: RefCell::new(None),
+        current_value2: RefCell::new(None),
         thread_count: Cell::new(0.0),
         current_renderer: Cell::new(None),
         current_renderer2: Cell::new(None),
@@ -185,7 +170,7 @@ pub fn release_cache(cache: &Rc<Cache>) {
     }
 }
 
-pub fn push_cache_provider(work_in_progress: &Fiber, cache: Rc<Cache>) {
+pub fn push_cache_provider(work_in_progress: &Rc<Fiber>, cache: Rc<Cache>) {
     CACHE_CONTEXT.with(|cache_context| push_provider(work_in_progress, cache_context, Some(cache)));
 }
 

@@ -24,7 +24,6 @@ import {
   SuspenseComponent,
   SuspenseListComponent,
 } from './ReactWorkTags.js';
-import {$index, $ptr, $ptrEq, $ptrTo} from '@rust-js/runtime';
 
 const maxRowLength = 120;
 const idealDepth = 15;
@@ -45,15 +44,15 @@ function findNotableNode(node, indent) {
 }
 
 function indentation(indent) {
-  return '  ' + '  '.repeat(indent >>> 0);
+  return '  ' + '  '.repeat(indent);
 }
 
 function added(indent) {
-  return '+ ' + '  '.repeat(indent >>> 0);
+  return '+ ' + '  '.repeat(indent);
 }
 
 function removed(indent) {
-  return '- ' + '  '.repeat(indent >>> 0);
+  return '- ' + '  '.repeat(indent);
 }
 
 function describeFiberType(fiber) {
@@ -125,7 +124,7 @@ function describeTextDiff(clientText, serverProps, indent) {
     if (serverText.charCodeAt(firstDiff) !== clientText.charCodeAt(firstDiff)) {
       break;
     }
-    firstDiff = (firstDiff + 1) >>> 0;
+    firstDiff++;
   }
   if (firstDiff > maxLength - 8 && firstDiff > 10) {
     // The first difference between the two strings would be cut off, so cut off in
@@ -177,7 +176,7 @@ function describeValue(value, maxLength) {
         let properties = '';
         maxLength -= 2;
         for (let propName in value) {
-          if (!Object.prototype.hasOwnProperty.call(value, propName)) {
+          if (!value.hasOwnProperty(propName)) {
             continue;
           }
           const jsonPropName = JSON.stringify(propName);
@@ -235,7 +234,7 @@ function describeCollapsedElement(type, props, indent) {
   let content = '';
 
   for (const propName in props) {
-    if (!Object.prototype.hasOwnProperty.call(props, propName)) {
+    if (!props.hasOwnProperty(propName)) {
       continue;
     }
     if (propName === 'children') {
@@ -266,7 +265,7 @@ function describeExpandedElement(type, props, rowPrefix) {
   const properties = [];
 
   for (const propName in props) {
-    if (!Object.prototype.hasOwnProperty.call(props, propName)) {
+    if (!props.hasOwnProperty(propName)) {
       continue;
     }
     if (propName === 'children') {
@@ -303,14 +302,14 @@ function describePropertiesDiff(clientObject, serverObject, indent) {
   let properties = '';
   const remainingServerProperties = assign({}, serverObject);
   for (const propName in clientObject) {
-    if (!Object.prototype.hasOwnProperty.call(clientObject, propName)) {
+    if (!clientObject.hasOwnProperty(propName)) {
       continue;
     }
     delete remainingServerProperties[propName];
     const maxLength = maxRowLength - indent * 2 - propName.length - 2;
     const clientValue = clientObject[propName];
     const clientPropValue = describeValue(clientValue, maxLength);
-    if (Object.prototype.hasOwnProperty.call(serverObject, propName)) {
+    if (serverObject.hasOwnProperty(propName)) {
       const serverValue = serverObject[propName];
       const serverPropValue = describeValue(serverValue, maxLength);
       properties += added(indent) + propName + ': ' + clientPropValue + '\n';
@@ -320,9 +319,7 @@ function describePropertiesDiff(clientObject, serverObject, indent) {
     }
   }
   for (const propName in remainingServerProperties) {
-    if (
-      !Object.prototype.hasOwnProperty.call(remainingServerProperties, propName)
-    ) {
+    if (!remainingServerProperties.hasOwnProperty(propName)) {
       continue;
     }
     const maxLength = maxRowLength - indent * 2 - propName.length - 2;
@@ -348,7 +345,7 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
   const serverPropNames = new Map();
 
   for (const propName in serverProps) {
-    if (!Object.prototype.hasOwnProperty.call(serverProps, propName)) {
+    if (!serverProps.hasOwnProperty(propName)) {
       continue;
     }
     serverPropNames.set(propName.toLowerCase(), propName);
@@ -358,7 +355,7 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
     content += describeExpandedElement(type, clientProps, indentation(indent));
   } else {
     for (const propName in clientProps) {
-      if (!Object.prototype.hasOwnProperty.call(clientProps, propName)) {
+      if (!clientProps.hasOwnProperty(propName)) {
         continue;
       }
       if (propName === 'children') {
@@ -392,17 +389,12 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
             serverPropValue.includes('...'))
         ) {
           // We're comparing two plain objects. We can diff the nested objects instead.
-          content +=
+          const value =
             indentation((indent + 1) | 0) +
             propName +
             '={{\n' +
-            describePropertiesDiff(
-              clientObject,
-              serverValue,
-              (indent + 2) | 0,
-            ) +
-            indentation((indent + 1) | 0) +
-            '}}\n';
+            describePropertiesDiff(clientObject, serverValue, (indent + 2) | 0);
+          content += value + indentation((indent + 1) | 0) + '}}\n';
         } else {
           content +=
             added((indent + 1) | 0) + propName + '=' + clientPropValue + '\n';
@@ -411,19 +403,16 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
         }
       } else {
         // Considered equal.
+        const value = indentation((indent + 1) | 0) + propName + '=';
         content +=
-          indentation((indent + 1) | 0) +
-          propName +
-          '=' +
-          describePropValue(clientProps[propName], maxLength) +
-          '\n';
+          value + describePropValue(clientProps[propName], maxLength) + '\n';
       }
     }
 
-    for (const propName of Array.from(serverPropNames.values())) {
+    serverPropNames.forEach(propName => {
       if (propName === 'children') {
         // Handled below.
-        continue;
+        return;
       }
       const maxLength =
         maxRowLength - ((indent + 1) | 0) * 2 - propName.length - 1;
@@ -433,14 +422,12 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
         '=' +
         describePropValue(serverProps[propName], maxLength) +
         '\n';
-    }
+    });
 
-    if (!content) {
-      // No properties
-      content = indentation(indent) + '<' + type + '>\n';
-    } else {
-      // Had properties
-      content =
+    content = !content
+      ? // No properties
+        indentation(indent) + '<' + type + '>\n'
+      : // Had properties
         indentation(indent) +
         '<' +
         type +
@@ -448,7 +435,6 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
         content +
         indentation(indent) +
         '>\n';
-    }
   }
 
   const serverChildren = serverProps.children;
@@ -501,8 +487,7 @@ function describeNode(node, indent) {
   const skipToNode = findNotableNode(node, indent);
   if (
     skipToNode !== node &&
-    (node.children.length !== 1 ||
-      !$ptrEq($ptr(node.children, 0), $ptrTo(skipToNode), 44))
+    (node.children.length !== 1 || node.children[0] !== skipToNode)
   ) {
     return (
       indentation(indent) + '...\n' + describeNode(skipToNode, (indent + 1) | 0)
@@ -568,7 +553,7 @@ function describeNode(node, indent) {
   let childFiber = node.fiber.child;
   let diffIdx = 0;
   while (childFiber != null && diffIdx < node.children.length) {
-    const childNode = $index(node.children, diffIdx);
+    const childNode = node.children[diffIdx];
     if (childNode.fiber === childFiber) {
       // This was a match in the diff.
       childContent += describeNode(childNode, indent);

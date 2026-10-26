@@ -9,6 +9,10 @@ import type {Cache} from './ReactFiberCacheComponent.js';
 import type {ConcurrentUpdate} from './ReactFiberConcurrentUpdates.js';
 import type {Flags} from './ReactFiberFlags.js';
 import type {Lane, LaneMap, Lanes} from './ReactFiberLane.js';
+import type {
+  SuspenseInfo,
+  TracingMarkerInstance,
+} from './ReactFiberTracingMarkerComponent.js';
 import type {RootTag} from './ReactRootTags.js';
 import type {TypeOfMode} from './ReactTypeOfMode.js';
 import type {WorkTag} from './ReactWorkTags.js';
@@ -38,8 +42,7 @@ export type HookType =
 
 /** A context a fiber read, and the value it read of it. */
 export interface ContextDependency<T> {
-  // shared/ReactTypes' `ReactContext<T>`.
-  context: unknown;
+  context: any;
   next?: ContextDependency<unknown | null | undefined> | null | undefined;
   memoizedValue: T;
 }
@@ -190,11 +193,6 @@ export interface SuspenseHydrationCallbacks {
   onDeleted?: ((value: unknown) => void) | undefined;
 }
 
-/** A suspense boundary a transition's tracing waits for. */
-export interface TransitionTracingPending {
-  name?: string | null | undefined;
-}
-
 /** What a transition's tracing deleted. */
 export interface TransitionTracingDeletion {
   type: string;
@@ -208,7 +206,7 @@ export type OnTransitionProgress = (
   value: string,
   value2: number,
   value3: number,
-  value4: TransitionTracingPending[],
+  value4: SuspenseInfo[],
 ) => void;
 
 export type OnTransitionIncomplete = (
@@ -228,7 +226,7 @@ export type OnMarkerProgress = (
   value2: string,
   value3: number,
   value4: number,
-  value5: TransitionTracingPending[],
+  value5: SuspenseInfo[],
 ) => void;
 
 export type OnMarkerIncomplete = (
@@ -346,8 +344,7 @@ export interface FiberRoot {
   // are considered complete when the pending suspense boundaries set is
   // empty. We can represent this as a Map of transitions to suspense
   // boundary sets
-  // ReactFiberTracingMarkerComponent's `TracingMarkerInstance`s.
-  incompleteTransitions: Map<unknown, unknown>;
+  incompleteTransitions: Map<any, TracingMarkerInstance>;
   effectDuration: number;
   passiveEffectDuration: number;
 }

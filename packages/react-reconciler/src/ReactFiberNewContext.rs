@@ -9,6 +9,7 @@ use std::rc::Rc;
 use js::Unknown;
 use react_isomorphic::react_context::ReactContext;
 use shared::environment::__DEV__;
+use shared::object_is::OBJECT_IS;
 use webapi::console;
 
 use crate::react_fiber_flags::{DID_PROPAGATE_CONTEXT, NEEDS_PROPAGATION, NO_FLAGS};
@@ -24,11 +25,6 @@ unsafe extern "Rust" {
     // ReactFiberConfig's `ReactContext<TransitionStatus>`.
     #[link_name = "./src/ReactFiberConfig.js#HostTransitionContext"]
     safe static HOST_TRANSITION_CONTEXT: ReactContext<Option<&'static Unknown>>;
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "shared/objectIs#default")]
-fn is(x: Option<&Unknown>, y: Option<&Unknown>) -> bool {
-    unreachable!()
 }
 
 #[cfg_attr(
@@ -142,18 +138,14 @@ pub fn pop_provider<T>(context: &ReactContext<T>, provider_fiber: &Fiber) {
     let current_value = VALUE_CURSOR.with(|cursor| *cursor.current.borrow());
 
     if IS_PRIMARY_RENDERER {
-        context
-            .current_value
-            .set(unsafe { js::cast(current_value) });
+        *context.current_value.borrow_mut() = unsafe { js::cast(current_value) };
         if __DEV__ {
             let current_renderer = RENDERER_CURSOR_DEV.with(|cursor| *cursor.current.borrow());
             RENDERER_CURSOR_DEV.with(|cursor| pop(cursor, provider_fiber));
             context.current_renderer.set(current_renderer);
         }
     } else {
-        context
-            .current_value2
-            .set(unsafe { js::cast(current_value) });
+        *context.current_value2.borrow_mut() = unsafe { js::cast(current_value) };
         if __DEV__ {
             let current_renderer2 = RENDERER2_CURSOR_DEV.with(|cursor| *cursor.current.borrow());
             RENDERER2_CURSOR_DEV.with(|cursor| pop(cursor, provider_fiber));
@@ -252,7 +244,7 @@ fn propagate_context_changes<T>(
                 let consumer = &current;
                 for context in contexts {
                     // Check if the context matches.
-                    if js::strict_equals(dependency.context, *context) {
+                    if js::strict_equals(&*dependency.context, *context) {
                         // Match! Schedule an update on this fiber.
 
                         // In the lazy implementation, don't mark a dirty flag on the
@@ -466,8 +458,12 @@ fn propagate_parent_context_changes(
 
                 let old_value = js::get(old_props, "value");
 
-                if !is(new_value, old_value) {
-                    contexts.get_or_insert_with(Vec::new).push(context);
+                if !OBJECT_IS.with(|is| is(&new_value, &old_value)) {
+                    if let Some(contexts) = &mut contexts {
+                        contexts.push(context);
+                    } else {
+                        contexts = Some(vec![context]);
+                    }
                 }
             }
         } else if Some(&fiber) == get_host_transition_provider().as_ref() {
@@ -487,9 +483,11 @@ fn propagate_parent_context_changes(
             // This uses regular equality instead of Object.is because we assume that
             // host transition state doesn't include NaN as a valid type.
             if !js::strict_equals(old_state, new_state) {
-                contexts
-                    .get_or_insert_with(Vec::new)
-                    .push(&HOST_TRANSITION_CONTEXT);
+                if let Some(contexts) = &mut contexts {
+                    contexts.push(&HOST_TRANSITION_CONTEXT);
+                } else {
+                    contexts = Some(vec![&HOST_TRANSITION_CONTEXT]);
+                }
             }
         }
         parent = fiber.r#return.borrow().clone();
@@ -539,15 +537,14 @@ pub fn check_if_context_changed(current_dependencies: &Dependencies) -> bool {
     // that's a much hotter path, so I think this is an appropriate trade off.
     let mut dependency = current_dependencies.first_context.borrow().clone();
     while let Some(current) = dependency {
-        let context: &ReactContext<Option<&'static Unknown>> =
-            unsafe { js::cast(Some(current.context)) };
+        let context = &current.context;
         let new_value = if IS_PRIMARY_RENDERER {
-            context.current_value.get()
+            *context.current_value.borrow()
         } else {
-            context.current_value2.get()
+            *context.current_value2.borrow()
         };
         let old_value = current.memoized_value.get();
-        if !is(new_value, old_value) {
+        if !OBJECT_IS.with(|is| is(&new_value, &old_value)) {
             return true;
         }
         dependency = current.next.borrow().clone();
@@ -599,9 +596,9 @@ fn read_context_for_consumer<T: Copy + 'static>(
     context: &Rc<ReactContext<T>>,
 ) -> T {
     let value = if IS_PRIMARY_RENDERER {
-        context.current_value.get()
+        *context.current_value.borrow()
     } else {
-        context.current_value2.get()
+        *context.current_value2.borrow()
     };
 
     let context_item = Rc::new(ContextDependency {

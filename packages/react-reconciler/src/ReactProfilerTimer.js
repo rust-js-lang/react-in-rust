@@ -466,7 +466,7 @@ export function pushComponentEffectErrors() {
   }
   const old = componentEffectErrors;
   componentEffectErrors = null;
-  return old ?? null;
+  return old;
 }
 
 export function popComponentEffectErrors(prevErrors) {

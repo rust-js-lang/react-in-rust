@@ -13,7 +13,6 @@ import {
   $borrowMut,
   $dispose,
   $dropping,
-  $index,
   $rcClone,
   $rcDrop,
   $unborrow,
@@ -98,7 +97,7 @@ function AbortControllerShim() {
         const value = $borrow(listeners.value, true);
         let listener;
         try {
-          listener = $rcClone($index(value, index));
+          listener = $rcClone(value[index]);
         } catch (error) {
           $unborrow(value);
           throw error;

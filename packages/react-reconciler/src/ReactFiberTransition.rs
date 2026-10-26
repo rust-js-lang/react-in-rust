@@ -124,6 +124,7 @@ fn set_g(
 }
 
 #[cfg_attr(rust_js, rust_js::name = "NoTransition")]
+#[cfg_attr(rust_js, rust_js::nullable)]
 pub const NO_TRANSITION: Option<&Transition> = None;
 
 // Attach this reconciler instance's onStartTransitionFinish implementation to
@@ -419,21 +420,18 @@ pub fn get_suspended_cache() -> Option<SpawnedCachePool> {
     // we receive more data.
     let cache_from_pool = peek_cache_from_pool()?;
 
-    // We must also save the parent, so that when we resume we can detect
-    // a refresh.
-    let parent = CACHE_CONTEXT.with(|cache_context| {
-        if IS_PRIMARY_RENDERER {
-            let parent = cache_context.current_value.take();
-            cache_context.current_value.set(parent.clone());
-            parent
-        } else {
-            let parent = cache_context.current_value2.take();
-            cache_context.current_value2.set(parent.clone());
-            parent
-        }
-    });
     Some(SpawnedCachePool {
-        parent: parent.unwrap(),
+        // We must also save the parent, so that when we resume we can detect
+        // a refresh.
+        parent: CACHE_CONTEXT
+            .with(|cache_context| {
+                if IS_PRIMARY_RENDERER {
+                    cache_context.current_value.borrow().clone()
+                } else {
+                    cache_context.current_value2.borrow().clone()
+                }
+            })
+            .unwrap(),
         pool: cache_from_pool,
     })
 }
@@ -442,21 +440,18 @@ pub fn get_suspended_cache() -> Option<SpawnedCachePool> {
 pub fn get_offscreen_deferred_cache() -> Option<SpawnedCachePool> {
     let cache_from_pool = peek_cache_from_pool()?;
 
-    // We must also store the parent, so that when we resume we can detect
-    // a refresh.
-    let parent = CACHE_CONTEXT.with(|cache_context| {
-        if IS_PRIMARY_RENDERER {
-            let parent = cache_context.current_value.take();
-            cache_context.current_value.set(parent.clone());
-            parent
-        } else {
-            let parent = cache_context.current_value2.take();
-            cache_context.current_value2.set(parent.clone());
-            parent
-        }
-    });
     Some(SpawnedCachePool {
-        parent: parent.unwrap(),
+        // We must also store the parent, so that when we resume we can detect
+        // a refresh.
+        parent: CACHE_CONTEXT
+            .with(|cache_context| {
+                if IS_PRIMARY_RENDERER {
+                    cache_context.current_value.borrow().clone()
+                } else {
+                    cache_context.current_value2.borrow().clone()
+                }
+            })
+            .unwrap(),
         pool: cache_from_pool,
     })
 }

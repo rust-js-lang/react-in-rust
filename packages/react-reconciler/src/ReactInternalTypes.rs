@@ -9,6 +9,8 @@ use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 
 use js::{JsError, JsObject, Map, Set, Unknown, WeakMap};
+use react_isomorphic::react_context::ReactContext;
+use react_isomorphic::react_start_transition::Transition;
 use webapi::ConsoleTask;
 
 pub use shared::react_shared_internals::{AsyncDispatcher, Dispatcher};
@@ -17,6 +19,7 @@ use crate::react_fiber_cache_component::Cache;
 use crate::react_fiber_concurrent_updates::ConcurrentUpdate;
 use crate::react_fiber_flags::Flags;
 use crate::react_fiber_lane::{Lane, LaneMap, Lanes};
+use crate::react_fiber_tracing_marker_component::{SuspenseInfo, TracingMarkerInstance};
 use crate::react_root_tags::RootTag;
 use crate::react_type_of_mode::TypeOfMode;
 use crate::react_work_tags::WorkTag;
@@ -68,8 +71,7 @@ pub enum HookType {
 
 /// A context a fiber read, and the value it read of it.
 pub struct ContextDependency<T: 'static> {
-    // shared/ReactTypes' `ReactContext<T>`.
-    pub context: &'static Unknown,
+    pub context: Rc<ReactContext<T>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub next: RefCell<Option<Rc<ContextDependency<Option<&'static Unknown>>>>>,
     pub memoized_value: Cell<T>,
@@ -284,12 +286,6 @@ pub struct SuspenseHydrationCallbacks {
     pub on_deleted: Option<&'static dyn Fn(&'static Unknown)>,
 }
 
-/// A suspense boundary a transition's tracing waits for.
-pub struct TransitionTracingPending {
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub name: Option<String>,
-}
-
 /// What a transition's tracing deleted.
 pub struct TransitionTracingDeletion {
     pub r#type: String,
@@ -299,10 +295,10 @@ pub struct TransitionTracingDeletion {
 }
 
 pub type OnTransitionStart = dyn Fn(&str, f64);
-pub type OnTransitionProgress = dyn Fn(&str, f64, f64, &[TransitionTracingPending]);
+pub type OnTransitionProgress = dyn Fn(&str, f64, f64, &[SuspenseInfo]);
 pub type OnTransitionIncomplete = dyn Fn(&str, f64, &[TransitionTracingDeletion]);
 pub type OnTransitionComplete = dyn Fn(&str, f64, f64);
-pub type OnMarkerProgress = dyn Fn(&str, &str, f64, f64, &[TransitionTracingPending]);
+pub type OnMarkerProgress = dyn Fn(&str, &str, f64, f64, &[SuspenseInfo]);
 pub type OnMarkerIncomplete = dyn Fn(&str, &str, f64, &[TransitionTracingDeletion]);
 pub type OnMarkerComplete = dyn Fn(&str, &str, f64, f64);
 
@@ -434,8 +430,7 @@ pub struct FiberRoot {
     // are considered complete when the pending suspense boundaries set is
     // empty. We can represent this as a Map of transitions to suspense
     // boundary sets
-    // ReactFiberTracingMarkerComponent's `TracingMarkerInstance`s.
-    pub incomplete_transitions: &'static Map<Unknown, &'static Unknown>,
+    pub incomplete_transitions: &'static Map<Transition, Rc<TracingMarkerInstance>>,
 
     pub effect_duration: Cell<f64>,
     pub passive_effect_duration: Cell<f64>,

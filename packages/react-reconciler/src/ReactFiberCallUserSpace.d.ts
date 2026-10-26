@@ -31,18 +31,28 @@ export interface DidCatchInfo {
   componentStack: string;
 }
 
-export const callComponentInDEV: CallComponent | null | undefined;
+export const callComponentInDEV:
+  | ((
+      value: (
+        value: unknown | null | undefined,
+        value2: unknown | null | undefined,
+      ) => unknown | null | undefined,
+      value2: unknown | null | undefined,
+      value3: unknown | null | undefined,
+    ) => unknown | null | undefined)
+  | null;
 
 export type CallRender = (value: any) => unknown | null | undefined;
 
-export const callRenderInDEV: CallRender | null | undefined;
+export const callRenderInDEV:
+  | ((value: any) => unknown | null | undefined)
+  | null;
 
 export type CallComponentDidMount = (fiber: Fiber, value: any) => void;
 
 export const callComponentDidMountInDEV:
-  | CallComponentDidMount
-  | null
-  | undefined;
+  | ((fiber: Fiber, value: any) => void)
+  | null;
 
 export type CallComponentDidUpdate = (
   fiber: Fiber,
@@ -53,9 +63,14 @@ export type CallComponentDidUpdate = (
 ) => void;
 
 export const callComponentDidUpdateInDEV:
-  | CallComponentDidUpdate
-  | null
-  | undefined;
+  | ((
+      fiber: Fiber,
+      value: any,
+      value2: unknown,
+      value3: unknown,
+      value4: unknown,
+    ) => void)
+  | null;
 
 export type CallComponentDidCatch = (
   value: any,
@@ -63,9 +78,8 @@ export type CallComponentDidCatch = (
 ) => void;
 
 export const callComponentDidCatchInDEV:
-  | CallComponentDidCatch
-  | null
-  | undefined;
+  | ((value: any, value2: CapturedValue<unknown | null | undefined>) => void)
+  | null;
 
 export type CallComponentWillUnmount = (
   fiber: Fiber,
@@ -74,9 +88,8 @@ export type CallComponentWillUnmount = (
 ) => void;
 
 export const callComponentWillUnmountInDEV:
-  | CallComponentWillUnmount
-  | null
-  | undefined;
+  | ((fiber: Fiber, value: Fiber | null | undefined, value2: any) => void)
+  | null;
 
 /** What an effect's `create` gives: its destroy function, or nothing. */
 export type Destroy = unknown | null | undefined;
@@ -85,7 +98,9 @@ export type Destroy = unknown | null | undefined;
 // `inst`, whose `destroy` is what `create` gave.
 export type CallCreate = (value: unknown) => unknown | null | undefined;
 
-export const callCreateInDEV: CallCreate | null | undefined;
+export const callCreateInDEV:
+  | ((value: unknown) => unknown | null | undefined)
+  | null;
 
 export type CallDestroy = (
   fiber: Fiber,
@@ -93,8 +108,16 @@ export type CallDestroy = (
   value2: () => void,
 ) => void;
 
-export const callDestroyInDEV: CallDestroy | null | undefined;
+export const callDestroyInDEV:
+  | ((
+      fiber: Fiber,
+      value: Fiber | null | undefined,
+      value2: () => void,
+    ) => void)
+  | null;
 
 export type CallLazyInit = (value: any) => unknown | null | undefined;
 
-export const callLazyInitInDEV: CallLazyInit | null | undefined;
+export const callLazyInitInDEV:
+  | ((value: any) => unknown | null | undefined)
+  | null;

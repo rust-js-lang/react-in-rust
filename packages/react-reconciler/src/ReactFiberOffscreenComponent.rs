@@ -4,11 +4,13 @@
 // LICENSE file in the root directory of this source tree.
 
 use std::cell::{Cell, RefCell};
+use std::rc::Rc;
 
 use js::{JsObject, Set, Unknown, WeakSet};
 
 use crate::react_fiber_lane::Lanes;
 use crate::react_fiber_suspense_component::RetryQueue;
+use crate::react_fiber_tracing_marker_component::TracingMarkerInstance;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum OffscreenMode {
@@ -56,9 +58,8 @@ pub struct OffscreenQueue {
     // react/src/ReactStartTransition's `Transition`s.
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub transitions: RefCell<Option<Vec<&'static Unknown>>>,
-    // ReactFiberTracingMarkerComponent's `TracingMarkerInstance`s.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub marker_instances: RefCell<Option<Vec<&'static Unknown>>>,
+    pub marker_instances: RefCell<Option<Rc<Vec<Rc<TracingMarkerInstance>>>>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub retry_queue: Cell<Option<&'static RetryQueue>>,
 }
@@ -73,10 +74,9 @@ pub const OFFSCREEN_PASSIVE_EFFECTS_CONNECTED: OffscreenVisibility = /*     */ 0
 pub struct OffscreenInstance {
     #[cfg_attr(rust_js, rust_js::name = "_visibility")]
     pub visibility: Cell<OffscreenVisibility>,
-    // ReactFiberTracingMarkerComponent's `TracingMarkerInstance`s.
     #[cfg_attr(rust_js, rust_js::name = "_pendingMarkers")]
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub pending_markers: Cell<Option<&'static Set<Unknown>>>,
+    pub pending_markers: Cell<Option<&'static Set<TracingMarkerInstance>>>,
     // react/src/ReactStartTransition's `Transition`s.
     #[cfg_attr(rust_js, rust_js::name = "_transitions")]
     #[cfg_attr(rust_js, rust_js::nullable)]

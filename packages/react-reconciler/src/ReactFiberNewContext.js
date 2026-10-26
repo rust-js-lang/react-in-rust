@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import is from 'shared/objectIs';
+import objectIs from '../../shared/objectIs.js';
 import {HostTransitionContext, isPrimaryRenderer} from './ReactFiberConfig.js';
 import {
   DidPropagateContext,
@@ -403,9 +403,12 @@ function propagateParentContextChanges(
 
         const oldValue = oldProps.value;
 
-        if (!is(newValue, oldValue)) {
-          contexts ??= [];
-          contexts.push(context);
+        if (!objectIs(newValue, oldValue)) {
+          if (contexts) {
+            contexts.push(context);
+          } else {
+            contexts = [context];
+          }
         }
       }
     } else if (parent === getHostTransitionProvider()) {
@@ -426,8 +429,11 @@ function propagateParentContextChanges(
       // This uses regular equality instead of Object.is because we assume that
       // host transition state doesn't include NaN as a valid type.
       if (oldState !== newState) {
-        contexts ??= [];
-        contexts.push(HostTransitionContext);
+        if (contexts) {
+          contexts.push(HostTransitionContext);
+        } else {
+          contexts = [HostTransitionContext];
+        }
       }
     }
     parent = parent.return;
@@ -480,7 +486,7 @@ export function checkIfContextChanged(currentDependencies) {
       ? context._currentValue
       : context._currentValue2;
     const oldValue = dependency.memoizedValue;
-    if (!is(newValue, oldValue)) {
+    if (!objectIs(newValue, oldValue)) {
       return true;
     }
     dependency = dependency.next;

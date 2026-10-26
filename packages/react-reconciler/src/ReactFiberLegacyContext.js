@@ -61,8 +61,8 @@ export function getMaskedContext(workInProgress, unmaskedContext) {
     return emptyContextObject;
   }
   const type = workInProgress.type;
-  const contextTypes = type.contextTypes || undefined;
-  if (contextTypes == null) {
+  const contextTypes = type.contextTypes;
+  if (!contextTypes) {
     return emptyContextObject;
   }
 

@@ -23,7 +23,7 @@ const callComponent = {
 export const callComponentInDEV = __DEV__
   ? // We use this technique to trick minifiers to preserve the function name.
     callComponent.react_stack_bottom_frame
-  : undefined;
+  : null;
 
 const callRender = {
   react_stack_bottom_frame(instance) {
@@ -39,8 +39,8 @@ const callRender = {
 
 export const callRenderInDEV = __DEV__
   ? // We use this technique to trick minifiers to preserve the function name.
-    callRender.react_stack_bottom_frame
-  : undefined;
+    callRender.react_stack_bottom_frame.bind(callRender)
+  : null;
 
 const callComponentDidMount = {
   react_stack_bottom_frame(finishedWork, instance) {
@@ -55,8 +55,8 @@ const callComponentDidMount = {
 
 export const callComponentDidMountInDEV = __DEV__
   ? // We use this technique to trick minifiers to preserve the function name.
-    callComponentDidMount.react_stack_bottom_frame
-  : undefined;
+    callComponentDidMount.react_stack_bottom_frame.bind(callComponentDidMount)
+  : null;
 
 const callComponentDidUpdate = {
   react_stack_bottom_frame(
@@ -77,8 +77,8 @@ const callComponentDidUpdate = {
 
 export const callComponentDidUpdateInDEV = __DEV__
   ? // We use this technique to trick minifiers to preserve the function name.
-    callComponentDidUpdate.react_stack_bottom_frame
-  : undefined;
+    callComponentDidUpdate.react_stack_bottom_frame.bind(callComponentDidUpdate)
+  : null;
 
 const callComponentDidCatch = {
   react_stack_bottom_frame(instance, errorInfo) {
@@ -92,8 +92,8 @@ const callComponentDidCatch = {
 
 export const callComponentDidCatchInDEV = __DEV__
   ? // We use this technique to trick minifiers to preserve the function name.
-    callComponentDidCatch.react_stack_bottom_frame
-  : undefined;
+    callComponentDidCatch.react_stack_bottom_frame.bind(callComponentDidCatch)
+  : null;
 
 const callComponentWillUnmount = {
   react_stack_bottom_frame(current, nearestMountedAncestor, instance) {
@@ -107,8 +107,10 @@ const callComponentWillUnmount = {
 
 export const callComponentWillUnmountInDEV = __DEV__
   ? // We use this technique to trick minifiers to preserve the function name.
-    callComponentWillUnmount.react_stack_bottom_frame
-  : undefined;
+    callComponentWillUnmount.react_stack_bottom_frame.bind(
+      callComponentWillUnmount,
+    )
+  : null;
 
 const callCreate = {
   react_stack_bottom_frame(effect) {
@@ -121,8 +123,8 @@ const callCreate = {
 
 export const callCreateInDEV = __DEV__
   ? // We use this technique to trick minifiers to preserve the function name.
-    callCreate.react_stack_bottom_frame
-  : undefined;
+    callCreate.react_stack_bottom_frame.bind(callCreate)
+  : null;
 
 const callDestroy = {
   react_stack_bottom_frame(current, nearestMountedAncestor, destroy) {
@@ -137,7 +139,7 @@ const callDestroy = {
 export const callDestroyInDEV = __DEV__
   ? // We use this technique to trick minifiers to preserve the function name.
     callDestroy.react_stack_bottom_frame
-  : undefined;
+  : null;
 
 const callLazyInit = {
   react_stack_bottom_frame(lazy) {
@@ -149,6 +151,6 @@ const callLazyInit = {
 
 export const callLazyInitInDEV = __DEV__
   ? // We use this technique to trick minifiers to preserve the function name.
-    callLazyInit.react_stack_bottom_frame
-  : undefined;
+    callLazyInit.react_stack_bottom_frame.bind(callLazyInit)
+  : null;
 //# sourceMappingURL=ReactFiberCallUserSpace.js.map

@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {Lanes} from './ReactFiberLane.js';
+import type {TracingMarkerInstance} from './ReactFiberTracingMarkerComponent.js';
 
 export type OffscreenMode =
   | 'hidden'
@@ -44,8 +45,7 @@ export interface OffscreenState {
 export interface OffscreenQueue {
   // react/src/ReactStartTransition's `Transition`s.
   transitions?: unknown[] | null | undefined;
-  // ReactFiberTracingMarkerComponent's `TracingMarkerInstance`s.
-  markerInstances?: unknown[] | null | undefined;
+  markerInstances?: TracingMarkerInstance[] | null | undefined;
   retryQueue?: Set<unknown> | null | undefined;
 }
 
@@ -57,8 +57,7 @@ export const OffscreenPassiveEffectsConnected: OffscreenVisibility;
 
 export interface OffscreenInstance {
   _visibility: OffscreenVisibility;
-  // ReactFiberTracingMarkerComponent's `TracingMarkerInstance`s.
-  _pendingMarkers?: Set<unknown> | null | undefined;
+  _pendingMarkers?: Set<TracingMarkerInstance> | null | undefined;
   // react/src/ReactStartTransition's `Transition`s.
   _transitions?: Set<unknown> | null | undefined;
   // shared/ReactTypes' `Wakeable`s: a `WeakSet` where the host has one, a

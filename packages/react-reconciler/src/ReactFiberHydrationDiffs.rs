@@ -3,11 +3,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use std::collections::HashMap;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::rc::Rc;
 
-use js::{Kind, RegExp, SymbolFor, Unknown, json, object, string};
+use js::{Kind, Map, RegExp, SymbolFor, Unknown, json, object, string};
 use shared::assign::assign;
 use shared::environment::__DEV__;
 use shared::get_component_name_from_type::get_component_name_from_type;
@@ -248,7 +247,7 @@ fn describe_value(value: Option<&Unknown>, mut max_length: f64) -> String {
                 let mut properties = String::new();
                 max_length -= 2.0;
                 for mut prop_name in js::keys_in(value) {
-                    if !object::has_own_property.call(value, prop_name.as_str()) {
+                    if !value.has_own_property(prop_name.as_str()) {
                         continue;
                     }
                     let json_prop_name = json::stringify(&prop_name);
@@ -324,7 +323,7 @@ fn describe_collapsed_element(r#type: &str, props: &Unknown, indent: i32) -> Str
     let mut content = String::new();
 
     for prop_name in js::keys_in(props) {
-        if !object::has_own_property.call(props, prop_name.as_str()) {
+        if !props.has_own_property(prop_name.as_str()) {
             continue;
         }
         if prop_name == "children" {
@@ -357,7 +356,7 @@ fn describe_expanded_element(r#type: &str, props: &Unknown, row_prefix: &str) ->
     let mut properties = Vec::new();
 
     for prop_name in js::keys_in(props) {
-        if !object::has_own_property.call(props, prop_name.as_str()) {
+        if !props.has_own_property(prop_name.as_str()) {
             continue;
         }
         if prop_name == "children" {
@@ -405,7 +404,7 @@ fn describe_properties_diff(
         (server_object,),
     );
     for prop_name in js::keys_in(client_object) {
-        if !object::has_own_property.call(client_object, prop_name.as_str()) {
+        if !client_object.has_own_property(prop_name.as_str()) {
             continue;
         }
         js::delete(remaining_server_properties, prop_name.as_str());
@@ -413,7 +412,7 @@ fn describe_properties_diff(
             MAX_ROW_LENGTH - f64::from(indent) * 2.0 - f64::from(string::length(&prop_name)) - 2.0;
         let client_value = js::get(client_object, prop_name.as_str());
         let client_prop_value = describe_value(client_value, max_length);
-        if object::has_own_property.call(server_object, prop_name.as_str()) {
+        if server_object.has_own_property(prop_name.as_str()) {
             let server_value = js::get(server_object, prop_name.as_str());
             let server_prop_value = describe_value(server_value, max_length);
             properties += &(added(indent) + &prop_name + ": " + &client_prop_value + "\n");
@@ -423,7 +422,7 @@ fn describe_properties_diff(
         }
     }
     for prop_name in js::keys_in(remaining_server_properties) {
-        if !object::has_own_property.call(remaining_server_properties, prop_name.as_str()) {
+        if !remaining_server_properties.has_own_property(prop_name.as_str()) {
             continue;
         }
         let max_length =
@@ -451,20 +450,20 @@ fn describe_element_diff(
     let mut content = String::new();
 
     // Maps any previously unmatched lower case server prop name to its full prop name
-    let mut server_prop_names: HashMap<String, String> = HashMap::new();
+    let server_prop_names: &Map<str, String> = js::map::new(None);
 
     for prop_name in js::keys_in(server_props) {
-        if !object::has_own_property.call(server_props, prop_name.as_str()) {
+        if !server_props.has_own_property(prop_name.as_str()) {
             continue;
         }
-        server_prop_names.insert(prop_name.to_lowercase(), prop_name);
+        server_prop_names.set(&prop_name.to_lowercase(), prop_name);
     }
 
-    if server_prop_names.len() == 1 && server_prop_names.contains_key("children") {
+    if server_prop_names.size() == 1 && server_prop_names.has("children") {
         content += &describe_expanded_element(r#type, client_props, &indentation(indent));
     } else {
         for prop_name in js::keys_in(client_props) {
-            if !object::has_own_property.call(client_props, prop_name.as_str()) {
+            if !client_props.has_own_property(prop_name.as_str()) {
                 continue;
             }
             if prop_name == "children" {
@@ -475,9 +474,9 @@ fn describe_element_diff(
                 - f64::from(indent + 1) * 2.0
                 - f64::from(string::length(&prop_name))
                 - 1.0;
-            let server_prop_name = server_prop_names.get(&prop_name.to_lowercase()).cloned();
+            let server_prop_name = server_prop_names.get(&prop_name.to_lowercase());
             if let Some(server_prop_name) = server_prop_name {
-                server_prop_names.remove(&prop_name.to_lowercase());
+                server_prop_names.delete(&prop_name.to_lowercase());
                 // There's a diff here.
                 let client_value = js::get(client_props, prop_name.as_str());
                 let server_value = js::get(server_props, server_prop_name.as_str());
@@ -515,21 +514,21 @@ fn describe_element_diff(
             }
         }
 
-        for prop_name in server_prop_names.values() {
+        server_prop_names.for_each(|prop_name, _| {
             if prop_name == "children" {
                 // Handled below.
-                continue;
+                return;
             }
             let max_length = MAX_ROW_LENGTH
                 - f64::from(indent + 1) * 2.0
-                - f64::from(string::length(prop_name))
+                - f64::from(string::length(&prop_name))
                 - 1.0;
             content += &(removed(indent + 1)
-                + prop_name
+                + &prop_name
                 + "="
                 + &describe_prop_value(js::get(server_props, prop_name.as_str()), max_length)
                 + "\n");
-        }
+        });
 
         if content.is_empty() {
             // No properties

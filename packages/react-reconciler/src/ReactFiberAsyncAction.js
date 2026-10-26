@@ -22,7 +22,6 @@ import {
   clearAsyncTransitionTimer,
   hasScheduledTransitionWork,
 } from './ReactProfilerTimer.js';
-import {$borrow, $borrowMut, $index, $unborrow} from '@rust-js/runtime';
 
 // If there are multiple, concurrent async actions, they are entangled. All
 // transition updates that occur while the async action is still in progress
@@ -67,12 +66,7 @@ export function entangleAsyncAction(transition, thenable) {
     const entangledThenable = {
       status: 'pending',
       then(resolve) {
-        const borrowMut = $borrowMut(entangledListeners, true);
-        try {
-          borrowMut.push(resolve);
-        } finally {
-          $unborrow(borrowMut);
-        }
+        entangledListeners.push(resolve);
       },
     };
     currentEntangledActionThenable = entangledThenable;
@@ -124,23 +118,10 @@ function pingEngtangledActionScope() {
       currentEntangledActionThenable = null;
       needsIsomorphicIndicator = false;
       let i = 0;
-      while (true) {
-        const borrow = $borrow(old, true);
-        if (i < borrow.length) {
-          $unborrow(borrow);
-          const value = $borrow(old, true);
-          let listener;
-          try {
-            listener = $index(value, i);
-          } finally {
-            $unborrow(value);
-          }
-          listener(undefined);
-          i = (i + 1) >>> 0;
-        } else {
-          $unborrow(borrow);
-          return;
-        }
+      while (i < old.length) {
+        const listener = old[i];
+        listener(undefined);
+        i++;
       }
     }
   }
@@ -159,12 +140,7 @@ export function chainThenableValue(thenable, result) {
     value: null,
     reason: null,
     then(resolve) {
-      const borrowMut = $borrowMut(listeners, true);
-      try {
-        borrowMut.push(resolve);
-      } finally {
-        $unborrow(borrowMut);
-      }
+      listeners.push(resolve);
     },
   };
   thenable.then(
@@ -173,23 +149,10 @@ export function chainThenableValue(thenable, result) {
       fulfilledThenable.status = 'fulfilled';
       fulfilledThenable.value = result;
       let i = 0;
-      while (true) {
-        const borrow = $borrow(listeners, true);
-        if (i < borrow.length) {
-          $unborrow(borrow);
-          const value = $borrow(listeners, true);
-          let listener;
-          try {
-            listener = $index(value, i);
-          } finally {
-            $unborrow(value);
-          }
-          listener(result);
-          i = (i + 1) >>> 0;
-        } else {
-          $unborrow(borrow);
-          return;
-        }
+      while (i < listeners.length) {
+        const listener = listeners[i];
+        listener(result);
+        i++;
       }
     },
     error => {
@@ -197,28 +160,15 @@ export function chainThenableValue(thenable, result) {
       rejectedThenable.status = 'rejected';
       rejectedThenable.reason = error;
       let i = 0;
-      while (true) {
-        const borrow = $borrow(listeners, true);
-        if (i < borrow.length) {
-          $unborrow(borrow);
-          const value = $borrow(listeners, true);
-          let listener;
-          try {
-            listener = $index(value, i);
-          } finally {
-            $unborrow(value);
-          }
-          // This is a perf hack where we call the `onFulfill` ping function
-          // instead of `onReject`, because we know that React is the only
-          // consumer of these promises, and it passes the same listener to both.
-          // We also know that it will read the error directly off the
-          // `.reason` field.
-          listener(undefined);
-          i = (i + 1) >>> 0;
-        } else {
-          $unborrow(borrow);
-          return;
-        }
+      while (i < listeners.length) {
+        const listener = listeners[i];
+        // This is a perf hack where we call the `onFulfill` ping function
+        // instead of `onReject`, because we know that React is the only
+        // consumer of these promises, and it passes the same listener to both.
+        // We also know that it will read the error directly off the
+        // `.reason` field.
+        listener(undefined);
+        i++;
       }
     },
   );

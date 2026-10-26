@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::rc::{Rc, Weak};
 
 use js::{SymbolFor, Unknown};
@@ -16,9 +16,9 @@ pub struct ReactContext<T: 'static> {
     #[cfg_attr(rust_js, rust_js::name = "$$typeof")]
     pub r#typeof: SymbolFor<'static>,
     #[cfg_attr(rust_js, rust_js::name = "_currentValue")]
-    pub current_value: Cell<T>,
+    pub current_value: RefCell<T>,
     #[cfg_attr(rust_js, rust_js::name = "_currentValue2")]
-    pub current_value2: Cell<T>,
+    pub current_value2: RefCell<T>,
     #[cfg_attr(rust_js, rust_js::name = "_threadCount")]
     pub thread_count: Cell<f64>,
     #[cfg_attr(rust_js, rust_js::name = "Provider")]
@@ -57,8 +57,8 @@ where
         // there to be two concurrent renderers at most: React Native (primary) and
         // Fabric (secondary); React DOM (primary) and React ART (secondary).
         // Secondary renderers store their context values on separate fields.
-        current_value: Cell::new(default_value),
-        current_value2: Cell::new(default_value),
+        current_value: RefCell::new(default_value),
+        current_value2: RefCell::new(default_value),
         // Used to track how many concurrent renderers this context currently
         // supports within in a single renderer. Such as parallel server rendering.
         thread_count: Cell::new(0.0),

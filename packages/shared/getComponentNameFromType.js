@@ -101,8 +101,8 @@ export default function getComponentNameFromType(type) {
       case REACT_FORWARD_REF_TYPE:
         return getWrappedName(type, type.render, 'ForwardRef');
       case REACT_MEMO_TYPE: {
-        const outerName = type.displayName || undefined;
-        if (outerName != null) {
+        const outerName = type.displayName;
+        if (outerName) {
           return outerName;
         }
         return getComponentNameFromType(type.type) || 'Memo';

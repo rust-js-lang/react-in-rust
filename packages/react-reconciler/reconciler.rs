@@ -50,6 +50,8 @@ pub mod react_fiber_stack;
 pub mod react_fiber_suspense_component;
 #[path = "src/ReactFiberThenable.rs"]
 pub mod react_fiber_thenable;
+#[path = "src/ReactFiberTracingMarkerComponent.rs"]
+pub mod react_fiber_tracing_marker_component;
 #[path = "src/ReactFiberTransition.rs"]
 pub mod react_fiber_transition;
 #[path = "src/ReactFiberTransitionTypes.rs"]

@@ -89,6 +89,7 @@ use shared::environment::__DEV__;
 use webapi::console;
 
 use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+use crate::react_fiber_async_action::{peek_entangled_action_lane, peek_entangled_action_thenable};
 use crate::react_fiber_concurrent_updates::{
     enqueue_concurrent_class_update, unsafe_mark_update_lane_from_fiber_to_root,
 };
@@ -97,24 +98,11 @@ use crate::react_fiber_lane::{
     Lane, Lanes, NO_LANE, NO_LANES, OFFSCREEN_LANE, intersect_lanes, is_subset_of_lanes,
     is_transition_lane, mark_root_entangled, merge_lanes, remove_lanes,
 };
+use crate::react_fiber_new_context::{
+    enter_disallowed_context_read_in_dev, exit_disallowed_context_read_in_dev,
+};
 use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_type_of_mode::{NO_MODE, STRICT_LEGACY_MODE};
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberNewContext.js#enterDisallowedContextReadInDEV"
-)]
-fn enter_disallowed_context_read_in_dev() {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberNewContext.js#exitDisallowedContextReadInDEV"
-)]
-fn exit_disallowed_context_read_in_dev() {
-    unreachable!()
-}
 
 #[cfg_attr(
     rust_js,
@@ -145,24 +133,6 @@ fn get_work_in_progress_root_render_lanes() -> Lanes {
     rust_js::link_name = "./src/ReactFiberDevToolsHook.js#setIsStrictModeForDevtools"
 )]
 fn set_is_strict_mode_for_devtools(new_is_strict_mode: bool) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberAsyncAction.js#peekEntangledActionLane"
-)]
-fn peek_entangled_action_lane() -> Lane {
-    unreachable!()
-}
-
-// shared/ReactTypes' `Thenable<void>`.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberAsyncAction.js#peekEntangledActionThenable"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn peek_entangled_action_thenable() -> Option<&'static Unknown> {
     unreachable!()
 }
 
@@ -571,7 +541,7 @@ pub fn suspend_if_update_read_from_entangled_async_action() {
             // TODO: Instead of the throwing the thenable directly, throw a
             // special object like `use` does so we can detect if it's captured
             // by userspace.
-            js::throw(Some(entangled_action_thenable));
+            js::throw(Some(js::unknown(entangled_action_thenable)));
         }
     }
 }

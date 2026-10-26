@@ -19,7 +19,7 @@ fn is(x: &Option<&'static Unknown>, y: &Option<&'static Unknown>) -> bool {
 }
 
 thread_local! {
-    pub(crate) static OBJECT_IS: Is = if js::is_defined(js::object::is::<Option<&'static Unknown>, Option<&'static Unknown>>) {
+    pub static OBJECT_IS: Is = if js::is_defined(js::object::is::<Option<&'static Unknown>, Option<&'static Unknown>>) {
         js::object::is
     } else {
         is

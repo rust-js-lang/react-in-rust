@@ -9,7 +9,7 @@ import type {Cache, SpawnedCachePool} from './ReactFiberCacheComponent.js';
 import type {Lanes} from './ReactFiberLane.js';
 import type {Fiber, FiberRoot} from './ReactInternalTypes.js';
 
-export const NoTransition: any | null | undefined;
+export const NoTransition: any | null;
 
 export function requestCurrentTransition(): any | null;
 

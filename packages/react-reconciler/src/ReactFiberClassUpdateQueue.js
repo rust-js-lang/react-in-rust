@@ -120,7 +120,7 @@ import {
 } from './ReactFiberWorkLoop.js';
 import {NoMode, StrictLegacyMode} from './ReactTypeOfMode.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
-import {$index, $unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/runtime';
 
 export const UpdateState = 0;
 export const ReplaceState = 1;
@@ -161,7 +161,7 @@ export function cloneUpdateQueue(current, workInProgress) {
   if (queue === currentQueue) {
     const clone = {
       baseState: currentQueue.baseState,
-      firstBaseUpdate: currentQueue.firstBaseUpdate ?? null,
+      firstBaseUpdate: currentQueue.firstBaseUpdate,
       lastBaseUpdate: currentQueue.lastBaseUpdate,
       shared: currentQueue.shared,
       callbacks: null,
@@ -429,7 +429,7 @@ export function suspendIfUpdateReadFromEntangledAsyncAction() {
   // suspends if the memo boundary produces a new value.
   if (didReadFromEntangledAsyncAction) {
     const entangledActionThenable = peekEntangledActionThenable();
-    if (entangledActionThenable != null) {
+    if (entangledActionThenable) {
       // TODO: Instead of the throwing the thenable directly, throw a
       // special object like `use` does so we can detect if it's captured
       // by userspace.
@@ -537,7 +537,7 @@ export function processUpdateQueue(
           lane: updateLane,
 
           tag: update.tag,
-          payload: update.payload ?? null,
+          payload: update.payload,
           callback: update.callback,
 
           next: null,
@@ -705,9 +705,9 @@ export function commitHiddenCallbacks(updateQueue, context) {
     updateQueue.shared.hiddenCallbacks = null;
     let i = 0;
     while (i < hiddenCallbacks.length) {
-      const callback = $index(hiddenCallbacks, i);
+      const callback = hiddenCallbacks[i];
       callCallback(callback, context);
-      i = (i + 1) >>> 0;
+      i++;
     }
   }
 }
@@ -718,9 +718,9 @@ export function commitCallbacks(updateQueue, context) {
     updateQueue.callbacks = null;
     let i = 0;
     while (i < callbacks.length) {
-      const callback = $index(callbacks, i);
+      const callback = callbacks[i];
       callCallback(callback, context);
-      i = (i + 1) >>> 0;
+      i++;
     }
   }
 }
