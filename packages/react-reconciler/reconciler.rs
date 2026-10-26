@@ -12,6 +12,8 @@ pub mod react_current_fiber;
 pub mod react_event_priorities;
 #[path = "src/ReactFiberActivityComponent.rs"]
 pub mod react_fiber_activity_component;
+#[path = "src/ReactFiberCallUserSpace.rs"]
+pub mod react_fiber_call_user_space;
 #[path = "src/ReactFiberClassUpdateQueue.rs"]
 pub mod react_fiber_class_update_queue;
 #[path = "src/ReactFiberConcurrentUpdates.rs"]
@@ -24,8 +26,12 @@ pub mod react_fiber_flags;
 pub mod react_fiber_hidden_context;
 #[path = "src/ReactFiberHotReloading.rs"]
 pub mod react_fiber_hot_reloading;
+#[path = "src/ReactFiberHydrationDiffs.rs"]
+pub mod react_fiber_hydration_diffs;
 #[path = "src/ReactFiberLane.rs"]
 pub mod react_fiber_lane;
+#[path = "src/ReactFiberLegacyContext.rs"]
+pub mod react_fiber_legacy_context;
 #[path = "src/ReactFiberMutationTracking.rs"]
 pub mod react_fiber_mutation_tracking;
 #[path = "src/ReactFiberOffscreenComponent.rs"]
@@ -46,6 +52,8 @@ pub mod react_internal_types;
 pub mod react_portal;
 #[path = "src/ReactPostPaintCallback.rs"]
 pub mod react_post_paint_callback;
+#[path = "src/ReactProfilerTimer.rs"]
+pub mod react_profiler_timer;
 #[path = "src/ReactRootTags.rs"]
 pub mod react_root_tags;
 #[path = "src/ReactTypeOfMode.rs"]
