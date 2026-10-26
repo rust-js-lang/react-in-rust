@@ -4,18 +4,10 @@
 // LICENSE file in the root directory of this source tree.
 
 use js::{SymbolFor, Unknown};
+use react_isomorphic::react_jsx_element::ReactKey;
 use shared::check_string_coercion::check_key_string_coercion;
 use shared::environment::__DEV__;
 use shared::react_symbols::{REACT_OPTIMISTIC_KEY, REACT_PORTAL_TYPE};
-
-/// shared/ReactTypes' `ReactKey`: an element's key, text, or the
-/// optimistic key a renderer gives it later.
-#[cfg_attr(rust_js, rust_js::untagged)]
-#[derive(Clone)]
-pub enum ReactKey {
-    Text(String),
-    Optimistic(SymbolFor<'static>),
-}
 
 /// shared/ReactTypes' `ReactPortal`.
 pub struct ReactPortal {

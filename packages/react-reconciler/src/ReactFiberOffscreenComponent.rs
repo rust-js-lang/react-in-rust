@@ -29,6 +29,8 @@ pub struct LegacyHiddenProps {
     pub children: Option<&'static Unknown>,
 }
 
+unsafe impl js::Defined for LegacyHiddenProps {}
+
 pub struct OffscreenProps {
     // TODO: Pick an API before exposing the Offscreen type. I've chosen an enum
     // for now, since we might have multiple variants. For example, hiding the
@@ -41,6 +43,8 @@ pub struct OffscreenProps {
     // shared/ReactTypes' `ReactNodeList`.
     pub children: Option<&'static Unknown>,
 }
+
+unsafe impl js::Defined for OffscreenProps {}
 
 // We use the existence of the state object as an indicator that the component
 // is hidden.

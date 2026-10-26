@@ -24,7 +24,7 @@ use webapi::{ConsoleTask, console};
 /// `shared/ReactTypes`' `ReactKey`: an element's key, text, or the
 /// optimistic key a renderer gives it later.
 #[cfg_attr(rust_js, rust_js::untagged)]
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum ReactKey {
     Text(String),
     Optimistic(SymbolFor<'static>),

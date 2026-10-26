@@ -5,11 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-/**
- * shared/ReactTypes' `ReactKey`: an element's key, text, or the
- * optimistic key a renderer gives it later.
- */
-export type ReactKey = string | symbol;
+type ReactKey = string | symbol;
 
 /** shared/ReactTypes' `ReactPortal`. */
 export interface ReactPortal {

@@ -198,7 +198,7 @@ pub fn log_caught_error(
                 error_boundary: if boundary.tag.get() == CLASS_COMPONENT {
                     boundary.state_node.get() // This should always be the case as long as we only have class boundaries
                 } else {
-                    None
+                    js::NULL
                 },
             },
         );

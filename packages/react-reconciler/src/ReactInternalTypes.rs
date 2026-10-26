@@ -10,6 +10,7 @@ use std::rc::Rc;
 
 use js::{JsError, JsObject, Map, Set, Unknown, WeakMap};
 use react_isomorphic::react_context::ReactContext;
+use react_isomorphic::react_jsx_element::ReactKey;
 use react_isomorphic::react_start_transition::Transition;
 use webapi::ConsoleTask;
 
@@ -123,19 +124,16 @@ pub struct Fiber {
 
     // Unique identifier of this child.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub key: RefCell<Option<String>>,
+    pub key: RefCell<Option<ReactKey>>,
 
     // The value of element.type which is used to preserve the identity during
     // reconciliation of this child.
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub element_type: Cell<Option<&'static Unknown>>,
 
     // The resolved function/class/ associated with this fiber.
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub r#type: Cell<Option<&'static Unknown>>,
 
     // The local state associated with this fiber.
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub state_node: Cell<Option<&'static Unknown>>,
 
     // Conceptual aliases
@@ -167,13 +165,10 @@ pub struct Fiber {
     pub ref_cleanup: Cell<Option<&'static dyn Fn()>>,
 
     // Input is the data coming into process this fiber. Arguments. Props.
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub pending_props: Cell<Option<&'static Unknown>>, // This type will be more specific once we overload the tag.
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub memoized_props: Cell<Option<&'static Unknown>>, // The props used to create the output.
 
     // A queue of state updates and callbacks.
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub update_queue: Cell<Option<&'static Unknown>>,
 
     // The state used to create the output
@@ -232,10 +227,8 @@ pub struct Fiber {
     // to be the same as work in progress.
     // __DEV__ only
     #[cfg_attr(rust_js, rust_js::name = "_debugInfo")]
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_info: Cell<Option<&'static Unknown>>,
     #[cfg_attr(rust_js, rust_js::name = "_debugOwner")]
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_owner: Cell<Option<&'static Unknown>>,
     #[cfg_attr(rust_js, rust_js::name = "_debugStack")]
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
@@ -249,7 +242,7 @@ pub struct Fiber {
     // Used to verify that the order of hooks does not change between renders.
     #[cfg_attr(rust_js, rust_js::name = "_debugHookTypes")]
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub debug_hook_types: RefCell<Option<Vec<HookType>>>,
+    pub debug_hook_types: RefCell<Option<Rc<RefCell<Vec<HookType>>>>>,
 }
 
 // A fiber is itself: two are equal only where they're one, as a JS `Set`
@@ -276,7 +269,6 @@ pub struct ErrorInfo {
 /// What a caught error is reported with.
 pub struct CaughtErrorInfo {
     pub component_stack: Option<String>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub error_boundary: Option<&'static Unknown>,
 }
 

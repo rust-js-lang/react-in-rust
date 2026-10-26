@@ -15,12 +15,13 @@ use shared::react_feature_flags::{
     ENABLE_TRANSITION_TRACING, ENABLE_UPDATER_TRACKING, ENABLE_VIEW_TRANSITION,
 };
 
+use crate::react_fiber::create_host_root_fiber;
 use crate::react_fiber_cache_component::{Cache, create_cache, retain_cache};
 use crate::react_fiber_class_update_queue::initialize_update_queue;
 use crate::react_fiber_lane::{NO_LANE, NO_LANES, NO_TIMESTAMP, TOTAL_LANES, create_lane_map};
 use crate::react_internal_types::{
-    Fiber, FiberRoot, OnCaughtError, OnDefaultTransitionIndicator, OnError,
-    SuspenseHydrationCallbacks, TransitionTracingCallbacks,
+    FiberRoot, OnCaughtError, OnDefaultTransitionIndicator, OnError, SuspenseHydrationCallbacks,
+    TransitionTracingCallbacks,
 };
 use crate::react_root_tags::{CONCURRENT_ROOT, LEGACY_ROOT, RootTag};
 
@@ -28,14 +29,6 @@ unsafe extern "Rust" {
     // ReactFiberConfig's `TimeoutHandle | NoTimeout`.
     #[link_name = "./src/ReactFiberConfig.js#noTimeout"]
     safe static NO_TIMEOUT: &'static Unknown;
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiber.js#createHostRootFiber"
-)]
-fn create_host_root_fiber(tag: RootTag, is_strict_mode: bool) -> Rc<Fiber> {
-    unreachable!()
 }
 
 pub struct RootState {

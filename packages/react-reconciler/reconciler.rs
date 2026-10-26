@@ -10,6 +10,8 @@ pub mod react_captured_value;
 pub mod react_current_fiber;
 #[path = "src/ReactEventPriorities.rs"]
 pub mod react_event_priorities;
+#[path = "src/ReactFiber.rs"]
+pub mod react_fiber;
 #[path = "src/ReactFiberActivityComponent.rs"]
 pub mod react_fiber_activity_component;
 #[path = "src/ReactFiberAsyncAction.rs"]

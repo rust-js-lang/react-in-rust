@@ -11,7 +11,7 @@ import noop from '../../shared/noop.js';
 import {callLazyInitInDEV} from './ReactFiberCallUserSpace.js';
 import {getWorkInProgressRoot} from './ReactFiberWorkLoop.js';
 import {HostRoot} from './ReactWorkTags.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$borrow, $eq, $fieldCell, $unborrow, $unwrap} from '@rust-js/runtime';
 
 // An error that is thrown (e.g. by `use`) to trigger Suspense. If we
 // detect this is caught by userspace, we'll log a warning in development.
@@ -399,24 +399,50 @@ function areSameKeyPath(a, b) {
   if (a === b) {
     return true;
   }
-  if (
-    a.tag !== b.tag ||
-    a.type !== b.type ||
-    a.key != b.key ||
-    a.index !== b.index
-  ) {
-    return false;
+  if (a.tag === b.tag && a.type === b.type) {
+    const value = $borrow($fieldCell(a, 'key', true), true);
+    let borrow;
+    try {
+      borrow = $borrow($fieldCell(b, 'key', true), true);
+    } catch (error) {
+      $unborrow(value);
+      throw error;
+    }
+    let tmp;
+    try {
+      tmp = !$eq(value.value, borrow.value);
+    } catch (error) {
+      $unborrow(borrow);
+      $unborrow(value);
+      throw error;
+    }
+    if (tmp) {
+      try {
+        $unborrow(borrow);
+      } finally {
+        $unborrow(value);
+      }
+    } else {
+      try {
+        $unborrow(borrow);
+      } finally {
+        $unborrow(value);
+      }
+      if (a.index === b.index) {
+        if (a.tag === HostRoot && a.stateNode !== b.stateNode) {
+          // These are both roots but they're different roots so they're not in the same tree.
+          return false;
+        }
+        const aReturn = a.return;
+        if (aReturn == null || b.return == null) {
+          return false;
+        }
+        const bReturn = b.return;
+        return areSameKeyPath(aReturn, bReturn);
+      }
+    }
   }
-  if (a.tag === HostRoot && a.stateNode !== b.stateNode) {
-    // These are both roots but they're different roots so they're not in the same tree.
-    return false;
-  }
-  const aReturn = a.return;
-  if (aReturn == null || b.return == null) {
-    return false;
-  }
-  const bReturn = b.return;
-  return areSameKeyPath(aReturn, bReturn);
+  return false;
 }
 
 export function checkIfUseWasUsedBefore(unsuspendedFiber, thenableState) {

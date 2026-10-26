@@ -60,7 +60,7 @@ function describeFiberType(fiber) {
     case HostHoistable:
     case HostSingleton:
     case HostComponent:
-      return fiber.type;
+      return fiber.type ?? null;
     case LazyComponent:
       return 'Lazy';
     case ActivityComponent:

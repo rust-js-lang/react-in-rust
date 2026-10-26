@@ -19,6 +19,8 @@ import type {RootTag} from './ReactRootTags.js';
 import type {TypeOfMode} from './ReactTypeOfMode.js';
 import type {WorkTag} from './ReactWorkTags.js';
 
+type ReactKey = string | symbol;
+
 // Unwind Circular: moved from ReactFiberHooks.old
 export type HookType =
   | 'useState'
@@ -90,14 +92,14 @@ export interface Fiber {
   // Tag identifying the type of fiber.
   tag: WorkTag;
   // Unique identifier of this child.
-  key?: string | null | undefined;
+  key?: ReactKey | null | undefined;
   // The value of element.type which is used to preserve the identity during
   // reconciliation of this child.
-  elementType?: unknown | null | undefined;
+  elementType: unknown | null | undefined;
   // The resolved function/class/ associated with this fiber.
-  type?: unknown | null | undefined;
+  type: unknown | null | undefined;
   // The local state associated with this fiber.
-  stateNode?: unknown | null | undefined;
+  stateNode: unknown | null | undefined;
   // Conceptual aliases
   // parent : Instance -> return The parent happens to be the same as the
   // return fiber since we've merged the fiber and instance.
@@ -118,10 +120,10 @@ export interface Fiber {
   ref?: Ref | null | undefined;
   refCleanup?: (() => void) | null | undefined;
   // Input is the data coming into process this fiber. Arguments. Props.
-  pendingProps?: unknown | null | undefined;
-  memoizedProps?: unknown | null | undefined;
+  pendingProps: unknown | null | undefined;
+  memoizedProps: unknown | null | undefined;
   // A queue of state updates and callbacks.
-  updateQueue?: unknown | null | undefined;
+  updateQueue: unknown | null | undefined;
   // The state used to create the output
   memoizedState: unknown | null | undefined;
   // Dependencies (contexts, events) for this fiber, if it has any
@@ -164,8 +166,8 @@ export interface Fiber {
   // workInProgress : Fiber ->  alternate The alternate used for reuse happens
   // to be the same as work in progress.
   // __DEV__ only
-  _debugInfo?: unknown | null | undefined;
-  _debugOwner?: unknown | null | undefined;
+  _debugInfo: unknown | null | undefined;
+  _debugOwner: unknown | null | undefined;
   _debugStack?: any | null | undefined;
   _debugTask?:
     | {
@@ -186,7 +188,7 @@ export interface ErrorInfo {
 /** What a caught error is reported with. */
 export interface CaughtErrorInfo {
   componentStack?: string | undefined;
-  errorBoundary?: unknown | null | undefined;
+  errorBoundary?: unknown;
 }
 
 export interface SuspenseHydrationCallbacks {

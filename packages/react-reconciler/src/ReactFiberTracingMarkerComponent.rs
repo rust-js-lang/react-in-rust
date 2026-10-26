@@ -73,6 +73,8 @@ pub struct TracingMarkerInstance {
     pub name: Option<String>,
 }
 
+unsafe impl js::Defined for TracingMarkerInstance {}
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum TransitionAbortReason {
     #[cfg_attr(rust_js, rust_js::name = "error")]
