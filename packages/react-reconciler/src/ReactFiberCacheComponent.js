@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import * as scheduler from 'scheduler';
+import * as Scheduler from 'scheduler';
 import {REACT_CONTEXT_TYPE} from '../../shared/ReactSymbols.js';
 import {popProvider, pushProvider} from './ReactFiberNewContext.js';
 
@@ -82,8 +82,8 @@ export function releaseCache(cache) {
     );
   }
   if (cache.refCount === 0) {
-    scheduler.unstable_scheduleCallback(
-      scheduler.unstable_NormalPriority,
+    Scheduler.unstable_scheduleCallback(
+      Scheduler.unstable_NormalPriority,
       () => {
         cache.controller.abort();
       },

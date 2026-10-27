@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import * as scheduler from 'scheduler';
+import * as Scheduler from 'scheduler';
 import {
   enableComponentPerformanceTrack,
   enableProfilerCommitHooks,
@@ -28,7 +28,7 @@ function noTask(name) {
   return null;
 }
 
-const now = scheduler.unstable_now;
+const now = Scheduler.unstable_now;
 
 // eslint-disable-next-line react-internal/no-production-logging
 const createTask$1 = __DEV__ ? console.createTask : undefined;

@@ -10,25 +10,25 @@
 // because Rollup would use dynamic dispatch for CommonJS interop named imports.
 // When we switch to ESM, we can delete this module.
 
-import * as scheduler from 'scheduler';
+import * as Scheduler from 'scheduler';
 
-export const scheduleCallback = scheduler.unstable_scheduleCallback;
-export const cancelCallback = scheduler.unstable_cancelCallback;
-export const shouldYield = scheduler.unstable_shouldYield;
-export const requestPaint = scheduler.unstable_requestPaint;
-export const now = scheduler.unstable_now;
+export const scheduleCallback = Scheduler.unstable_scheduleCallback;
+export const cancelCallback = Scheduler.unstable_cancelCallback;
+export const shouldYield = Scheduler.unstable_shouldYield;
+export const requestPaint = Scheduler.unstable_requestPaint;
+export const now = Scheduler.unstable_now;
 export const getCurrentPriorityLevel =
-  scheduler.unstable_getCurrentPriorityLevel;
+  Scheduler.unstable_getCurrentPriorityLevel;
 
-export const ImmediatePriority = scheduler.unstable_ImmediatePriority;
-export const UserBlockingPriority = scheduler.unstable_UserBlockingPriority;
-export const NormalPriority = scheduler.unstable_NormalPriority;
-export const LowPriority = scheduler.unstable_LowPriority;
-export const IdlePriority = scheduler.unstable_IdlePriority;
+export const ImmediatePriority = Scheduler.unstable_ImmediatePriority;
+export const UserBlockingPriority = Scheduler.unstable_UserBlockingPriority;
+export const NormalPriority = Scheduler.unstable_NormalPriority;
+export const LowPriority = Scheduler.unstable_LowPriority;
+export const IdlePriority = Scheduler.unstable_IdlePriority;
 
 // this doesn't actually exist on the scheduler, but it *does*
 // on scheduler/unstable_mock, which we'll need for internal testing
-export const log = scheduler.log;
+export const log = Scheduler.log;
 export const unstable_setDisableYieldValue =
-  scheduler.unstable_setDisableYieldValue;
+  Scheduler.unstable_setDisableYieldValue;
 //# sourceMappingURL=Scheduler.js.map
