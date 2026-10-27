@@ -22,9 +22,7 @@ export function isLegacyActEnvironment(fiber) {
 
     const jestIsDefined = typeof jest !== 'undefined';
     return (
-      !!warnsIfNotActing &&
-      jestIsDefined &&
-      isReactActEnvironmentGlobal !== false
+      warnsIfNotActing && jestIsDefined && isReactActEnvironmentGlobal !== false
     );
   }
   return false;

@@ -91,7 +91,7 @@ export function getParentFragmentInstances(fiber) {
     }
     parent = parent.return;
   }
-  return parentFragmentInstances ?? null;
+  return parentFragmentInstances;
 }
 
 // HostPortal / HostHoistable are host parents for placement, but not for
@@ -103,7 +103,7 @@ function isFragmentInstanceHostBoundary(fiber) {
   return (
     fiber.tag === HostComponent ||
     fiber.tag === HostRoot ||
-    (!!supportsSingletons && fiber.tag === HostSingleton)
+    (supportsSingletons && fiber.tag === HostSingleton)
   );
 }
 

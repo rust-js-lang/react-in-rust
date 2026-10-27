@@ -283,8 +283,8 @@ function isHostParent(fiber) {
   return (
     fiber.tag === HostComponent ||
     fiber.tag === HostRoot ||
-    (!!supportsResources && fiber.tag === HostHoistable) ||
-    (!!supportsSingletons &&
+    (supportsResources && fiber.tag === HostHoistable) ||
+    (supportsSingletons &&
       fiber.tag === HostSingleton &&
       isSingletonScope(fiber.type)) ||
     fiber.tag === HostPortal
