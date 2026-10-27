@@ -316,44 +316,43 @@ function getHostSibling(fiber) {
     const returnFiber = node.return;
     sibling.return = returnFiber;
     node = sibling;
-    // If we don't have a child, try the siblings instead.
-    while (true) {
+    while (
+      node.tag !== HostComponent &&
+      node.tag !== HostText &&
+      node.tag !== DehydratedFragment
+    ) {
+      // If this is a host singleton we go deeper if it's not a special
+      // singleton scope. If it is a singleton scope we skip over it because
+      // you only insert against this scope when you are already inside of it
       if (
-        node.tag !== HostComponent &&
-        node.tag !== HostText &&
-        node.tag !== DehydratedFragment
+        supportsSingletons &&
+        node.tag === HostSingleton &&
+        isSingletonScope(node.type)
       ) {
-        // If this is a host singleton we go deeper if it's not a special
-        // singleton scope. If it is a singleton scope we skip over it because
-        // you only insert against this scope when you are already inside of it
-        if (
-          !supportsSingletons ||
-          node.tag !== HostSingleton ||
-          !isSingletonScope(node.type)
-        ) {
-          // If it is not host node and, we might have a host node inside it.
-          // Try to search down until we find one.
-          if ((node.flags & Placement) === NoFlags) {
-            // If we don't have a child, try the siblings instead.
-            // We also skip portals because they are not part of this host tree.
-            const child = node.child;
-            if (child != null && node.tag !== HostPortal) {
-              child.return = node;
-              node = child;
-              continue;
-            }
-          }
-        }
         continue siblings;
       }
-      // Check if this host node is stable or about to be placed.
-      if ((node.flags & Placement) === NoFlags) {
-        break;
+
+      // If it is not host node and, we might have a host node inside it.
+      // Try to search down until we find one.
+      if ((node.flags & Placement) !== NoFlags) {
+        // If we don't have a child, try the siblings instead.
+        continue siblings;
+      }
+      // If we don't have a child, try the siblings instead.
+      // We also skip portals because they are not part of this host tree.
+      const child = node.child;
+      if (child != null && node.tag !== HostPortal) {
+        child.return = node;
+        node = child;
+        continue;
       }
       continue siblings;
     }
-    // Found it!
-    return node.stateNode ?? null;
+    // Check if this host node is stable or about to be placed.
+    if ((node.flags & Placement) === NoFlags) {
+      // Found it!
+      return node.stateNode ?? null;
+    }
   }
 }
 
@@ -376,8 +375,7 @@ function insertOrAppendPlacementNodeIntoContainer(
     commitNewChildToFragmentInstances(node, parentFragmentInstances);
     trackHostMutation();
     return;
-  }
-  if (tag === HostPortal) {
+  } else if (tag === HostPortal) {
     // If the insertion itself is a portal, then we don't want to traverse
     // down its children. Instead, we'll get insertions from each child in
     // the portal directly.
@@ -437,8 +435,7 @@ function insertOrAppendPlacementNode(
     commitNewChildToFragmentInstances(node, parentFragmentInstances);
     trackHostMutation();
     return;
-  }
-  if (tag === HostPortal) {
+  } else if (tag === HostPortal) {
     // If the insertion itself is a portal, then we don't want to traverse
     // down its children. Instead, we'll get insertions from each child in
     // the portal directly.
@@ -575,8 +572,7 @@ function commitImmutablePlacementNodeToFragmentInstances(
     // not attributed to the fragment instances above it.
     commitNewChildToFragmentInstances(finishedWork, parentFragmentInstances);
     return;
-  }
-  if (finishedWork.tag === HostPortal) {
+  } else if (finishedWork.tag === HostPortal) {
     // If the insertion itself is a portal, then we don't want to traverse
     // down its children. Instead, we'll get insertions from each child in
     // the portal directly.

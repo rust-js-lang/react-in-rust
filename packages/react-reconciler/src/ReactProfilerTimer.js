@@ -473,7 +473,7 @@ export function popComponentEffectErrors(prevErrors) {
   if (!enableProfilerTimer || !enableProfilerCommitHooks) {
     return;
   }
-  componentEffectErrors = prevErrors ?? null;
+  componentEffectErrors = prevErrors;
 }
 
 export function pushComponentEffectDidSpawnUpdate() {

@@ -37,9 +37,7 @@ export type ScheduleRoot = (
   value: unknown | null | undefined,
 ) => void;
 
-export function setRefreshHandler(
-  handler?: RefreshHandler | null | undefined,
-): void;
+export function setRefreshHandler(handler: RefreshHandler | null): void;
 
 export function resolveTypeForHotReloading(
   type?: unknown | null | undefined,

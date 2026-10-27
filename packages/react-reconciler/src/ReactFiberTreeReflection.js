@@ -536,19 +536,19 @@ let searchTarget = null;
 let searchBoundary = null;
 
 function pushSearchTarget(target) {
-  searchTarget = target ?? null;
+  searchTarget = target;
 }
 
 function popSearchTarget() {
-  return searchTarget ?? null;
+  return searchTarget;
 }
 
 function pushSearchBoundary(value) {
-  searchBoundary = value ?? null;
+  searchBoundary = value;
 }
 
 function popSearchBoundary() {
-  return searchBoundary ?? null;
+  return searchBoundary;
 }
 
 export function getNextSiblingInstanceOrTextInstanceFiber(fiber) {

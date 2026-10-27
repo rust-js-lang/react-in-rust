@@ -8,19 +8,13 @@
 import * as scheduler from 'scheduler';
 import {REACT_CONTEXT_TYPE} from '../../shared/ReactSymbols.js';
 import {popProvider, pushProvider} from './ReactFiberNewContext.js';
-import {$borrow, $borrowMut, $unborrow} from '@rust-js/runtime';
 
 function AbortControllerShim() {
   const listeners = [];
   const signal = {
     aborted: false,
     addEventListener(type, listener) {
-      const borrowMut = $borrowMut(listeners, true);
-      try {
-        borrowMut.push(listener);
-      } finally {
-        $unborrow(borrowMut);
-      }
+      listeners.push(listener);
     },
   };
   this.signal = signal;
@@ -28,13 +22,9 @@ function AbortControllerShim() {
     signal.aborted = true;
     // As forEach does: the listeners there when it starts, each
     // called with no borrow held, so one may add another.
-    const borrow = $borrow(listeners, true);
-    const count = borrow.length;
-    $unborrow(borrow);
+    const count = listeners.length;
     for (let index = 0; index < count; index++) {
-      const value = $borrow(listeners, true);
-      const listener = value[index];
-      $unborrow(value);
+      const listener = listeners[index];
       listener();
     }
   };

@@ -15,7 +15,7 @@ export function commitHookLayoutEffects(
 
 export function commitHookLayoutUnmountEffects(
   finishedWork: Fiber,
-  nearestMountedAncestor: Fiber | null | undefined,
+  nearestMountedAncestor: Fiber | null,
   hookFlags: HookFlags,
 ): void;
 
@@ -27,7 +27,7 @@ export function commitHookEffectListMount(
 export function commitHookEffectListUnmount(
   flags: HookFlags,
   finishedWork: Fiber,
-  nearestMountedAncestor?: Fiber | null | undefined,
+  nearestMountedAncestor: Fiber | null,
 ): void;
 
 export function commitHookPassiveMountEffects(
@@ -37,13 +37,13 @@ export function commitHookPassiveMountEffects(
 
 export function commitHookPassiveUnmountEffects(
   finishedWork: Fiber,
-  nearestMountedAncestor: Fiber | null | undefined,
+  nearestMountedAncestor: Fiber | null,
   hookFlags: HookFlags,
 ): void;
 
 export function commitClassLayoutLifecycles(
   finishedWork: Fiber,
-  current?: Fiber | null | undefined,
+  current: Fiber | null,
 ): void;
 
 export function commitClassDidMount(finishedWork: Fiber): void;
@@ -59,31 +59,31 @@ export function commitClassSnapshot(finishedWork: Fiber, current: Fiber): void;
 // Capture errors so they don't interrupt unmounting.
 export function safelyCallComponentWillUnmount(
   current: Fiber,
-  nearestMountedAncestor: Fiber | null | undefined,
+  nearestMountedAncestor: Fiber | null,
   instance: any,
 ): void;
 
 // Capture errors so they don't interrupt mounting.
 export function safelyAttachRef(
   current: Fiber,
-  nearestMountedAncestor?: Fiber | null | undefined,
+  nearestMountedAncestor: Fiber | null,
 ): void;
 
 export function safelyDetachRef(
   current: Fiber,
-  nearestMountedAncestor?: Fiber | null | undefined,
+  nearestMountedAncestor: Fiber | null,
 ): void;
 
 export function commitProfilerUpdate(
   finishedWork: Fiber,
-  current: Fiber | null | undefined,
+  current: Fiber | null,
   commitStartTime: number,
   effectDuration: number,
 ): void;
 
 export function commitProfilerPostCommit(
   finishedWork: Fiber,
-  current: Fiber | null | undefined,
+  current: Fiber | null,
   commitStartTime: number,
   passiveEffectDuration: number,
 ): void;

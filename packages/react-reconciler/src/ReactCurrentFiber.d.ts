@@ -14,7 +14,7 @@ export let isRendering: boolean;
 export function getCurrentFiberOwnerNameInDevOrNull(): string | null;
 
 export function runWithFiberInDEV<A0, A1, A2, A3, A4, T>(
-  fiber: Fiber | null | undefined,
+  fiber: Fiber | null,
   callback: (a0: A0, a1: A1, a2: A2, a3: A3, a4: A4) => T,
   arg0: A0,
   arg1: A1,
@@ -25,7 +25,7 @@ export function runWithFiberInDEV<A0, A1, A2, A3, A4, T>(
 
 export function resetCurrentFiber(): void;
 
-export function setCurrentFiber(fiber?: Fiber | null | undefined): void;
+export function setCurrentFiber(fiber: Fiber | null): void;
 
 export function setIsRendering(rendering: boolean): void;
 

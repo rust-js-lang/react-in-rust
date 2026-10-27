@@ -46,7 +46,7 @@ export function trackUsedThenable(
   thenableState: ThenableState,
   thenable: any,
   index: number,
-  fiber?: Fiber | null | undefined,
+  fiber: Fiber | null,
 ): unknown | null | undefined;
 
 export function suspendCommit(): never;
@@ -65,5 +65,5 @@ export function checkIfUseWrappedInAsyncCatch(
 
 export function checkIfUseWasUsedBefore(
   unsuspendedFiber: Fiber,
-  thenableState?: ThenableState | null | undefined,
+  thenableState: ThenableState | null,
 ): void;

@@ -1105,7 +1105,7 @@ function createChildReconciler(shouldTrackSideEffects) {
 
     let knownKeys;
 
-    let resultingFirstChild;
+    let resultingFirstChild = null;
     let previousNewFiber;
 
     let oldFiber = currentFirstChild;
@@ -1180,7 +1180,7 @@ function createChildReconciler(shouldTrackSideEffects) {
           const numberOfForks = newIdx;
           pushTreeFork(returnFiber, numberOfForks);
         }
-        return resultingFirstChild ?? null;
+        return resultingFirstChild;
       }
 
       if (oldFiber != null) {
@@ -1219,7 +1219,7 @@ function createChildReconciler(shouldTrackSideEffects) {
         const numberOfForks = newIdx;
         pushTreeFork(returnFiber, numberOfForks);
       }
-      return resultingFirstChild ?? null;
+      return resultingFirstChild;
     }
 
     // Add all children to a key map for quick lookups.
@@ -1296,7 +1296,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       const numberOfForks = newIdx;
       pushTreeFork(returnFiber, numberOfForks);
     }
-    return resultingFirstChild ?? null;
+    return resultingFirstChild;
   }
 
   function reconcileChildrenIteratable(
@@ -1433,7 +1433,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       throw new Error('An iterable object provided no iterator.');
     }
 
-    let resultingFirstChild;
+    let resultingFirstChild = null;
     let previousNewFiber;
 
     let oldFiber = currentFirstChild;
@@ -1508,7 +1508,7 @@ function createChildReconciler(shouldTrackSideEffects) {
           const numberOfForks = newIdx;
           pushTreeFork(returnFiber, numberOfForks | 0);
         }
-        return resultingFirstChild ?? null;
+        return resultingFirstChild;
       }
 
       if (oldFiber != null) {
@@ -1548,7 +1548,7 @@ function createChildReconciler(shouldTrackSideEffects) {
         const numberOfForks = newIdx;
         pushTreeFork(returnFiber, numberOfForks | 0);
       }
-      return resultingFirstChild ?? null;
+      return resultingFirstChild;
     }
 
     // Add all children to a key map for quick lookups.
@@ -1626,7 +1626,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       const numberOfForks = newIdx;
       pushTreeFork(returnFiber, numberOfForks | 0);
     }
-    return resultingFirstChild ?? null;
+    return resultingFirstChild;
   }
 
   function reconcileSingleTextNode(
@@ -2135,31 +2135,24 @@ export function cloneChildFibers(current, workInProgress) {
   }
 
   const child = workInProgress.child;
-  if (child != null) {
-    let currentChild = child;
-
-    let newChild = createWorkInProgress(
-      currentChild,
-      currentChild.pendingProps,
-    );
-    workInProgress.child = newChild;
-
-    newChild.return = workInProgress;
-    let sibling;
-    while ((sibling = currentChild.sibling) != null) {
-      currentChild = sibling;
-      const next = createWorkInProgress(
-        currentChild,
-        currentChild.pendingProps,
-      );
-      newChild.sibling = next;
-      newChild = next;
-      newChild.return = workInProgress;
-    }
-    newChild.sibling = null;
-  } else {
+  if (child == null) {
     return;
   }
+  let currentChild = child;
+
+  let newChild = createWorkInProgress(currentChild, currentChild.pendingProps);
+  workInProgress.child = newChild;
+
+  newChild.return = workInProgress;
+  let sibling;
+  while ((sibling = currentChild.sibling) != null) {
+    currentChild = sibling;
+    const next = createWorkInProgress(currentChild, currentChild.pendingProps);
+    newChild.sibling = next;
+    newChild = next;
+    newChild.return = workInProgress;
+  }
+  newChild.sibling = null;
 }
 
 // Reset a workInProgress child set to prepare it for a second pass.

@@ -91,8 +91,7 @@ function buildHydrationDiffNode(fiber, distanceFromLeaf) {
       throw new Error(
         'Saw multiple hydration diff roots in a pass. This is a bug in React.',
       );
-    }
-    if (diffRoot.distanceFromLeaf > distanceFromLeaf) {
+    } else if (diffRoot.distanceFromLeaf > distanceFromLeaf) {
       diffRoot.distanceFromLeaf = distanceFromLeaf;
     }
     return diffRoot;
@@ -853,7 +852,7 @@ export function upgradeHydrationErrorsToRecoverable() {
     queueRecoverableErrors(queuedErrors);
     hydrationErrors = null;
   }
-  return queuedErrors ?? null;
+  return queuedErrors;
 }
 
 export function getIsHydrating() {

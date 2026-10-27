@@ -19,9 +19,7 @@ export function flushSyncWorkOnAllRoots(): void;
 
 export function flushSyncWorkOnLegacyRootsOnly(): void;
 
-export function requestTransitionLane(
-  transition?: Transition | null | undefined,
-): Lane;
+export function requestTransitionLane(transition: Transition | null): Lane;
 
 export function didCurrentEventScheduleTransition(): boolean;
 

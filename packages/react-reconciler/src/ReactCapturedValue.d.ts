@@ -20,5 +20,5 @@ export function createCapturedValueAtFiber(
 
 export function createCapturedValueFromError(
   value: Error,
-  stack?: string | null | undefined,
+  stack: string | null,
 ): CapturedValue<unknown | null | undefined>;

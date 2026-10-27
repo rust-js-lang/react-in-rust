@@ -9,7 +9,7 @@ import type {Fiber} from './ReactInternalTypes.js';
 
 export function commitNewChildToFragmentInstances(
   fiber: Fiber,
-  parentFragmentInstances?: unknown[] | null | undefined,
+  parentFragmentInstances: unknown[] | null,
 ): void;
 
 export function commitFragmentInstanceInsertionEffects(fiber: Fiber): void;

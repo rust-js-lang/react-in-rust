@@ -27,11 +27,12 @@ export function formatOwnerStack(error) {
   if (idx !== -1) {
     // Cut off everything after the bottom frame since it'll be internals.
     stack = stack.slice(0, idx);
-    return stack;
+  } else {
+    // We didn't find any internal callsite out to user space.
+    // This means that this was called outside an owner or the owner is fully internal.
+    // To keep things light we exclude the entire trace in this case.
+    return '';
   }
-  // We didn't find any internal callsite out to user space.
-  // This means that this was called outside an owner or the owner is fully internal.
-  // To keep things light we exclude the entire trace in this case.
-  return '';
+  return stack;
 }
 //# sourceMappingURL=ReactOwnerStackFrames.js.map

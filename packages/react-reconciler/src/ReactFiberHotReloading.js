@@ -32,7 +32,7 @@ let failedBoundaries = null;
 
 export function setRefreshHandler(handler) {
   if (__DEV__) {
-    resolveFamily = handler ?? null;
+    resolveFamily = handler;
   }
 }
 

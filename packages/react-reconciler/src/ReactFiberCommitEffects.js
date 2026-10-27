@@ -372,9 +372,7 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
         }
       }
       recordEffectDuration(finishedWork);
-      return;
-    }
-    if (__DEV__) {
+    } else if (__DEV__) {
       runWithFiberInDEV(
         finishedWork,
         (finishedWork, instance) => {
@@ -383,56 +381,85 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
         finishedWork,
         instance,
       );
-      return;
+    } else {
+      try {
+        instance.componentDidMount();
+      } catch (error) {
+        const returnFiber = finishedWork.return;
+        captureCommitPhaseError(finishedWork, returnFiber, error);
+      }
     }
-    try {
-      instance.componentDidMount();
-      return;
-    } catch (error) {
-      const returnFiber = finishedWork.return;
-      captureCommitPhaseError(finishedWork, returnFiber, error);
-      return;
+  } else {
+    const prevProps = resolveClassComponentProps(
+      finishedWork.type,
+      current.memoizedProps,
+    );
+    const prevState = current.memoizedState;
+    // We could update instance props and state here,
+    // but instead we rely on them being set during last render.
+    // TODO: revisit this when we implement resuming.
+    if (
+      __DEV__ &&
+      !finishedWork.type.defaultProps &&
+      !('ref' in finishedWork.memoizedProps) &&
+      !didWarnAboutReassigningProps
+    ) {
+      if (instance.props !== finishedWork.memoizedProps) {
+        console.error(
+          'Expected %s props to match memoized props before ' +
+            'componentDidUpdate. ' +
+            'This might either be because of a bug in React, or because ' +
+            'a component reassigns its own `this.props`. ' +
+            'Please file an issue.',
+          getComponentNameFromFiber(finishedWork) || 'instance',
+        );
+      }
+      if (instance.state !== finishedWork.memoizedState) {
+        console.error(
+          'Expected %s state to match memoized state before ' +
+            'componentDidUpdate. ' +
+            'This might either be because of a bug in React, or because ' +
+            'a component reassigns its own `this.state`. ' +
+            'Please file an issue.',
+          getComponentNameFromFiber(finishedWork) || 'instance',
+        );
+      }
     }
-  }
-  const prevProps = resolveClassComponentProps(
-    finishedWork.type,
-    current.memoizedProps,
-  );
-  const prevState = current.memoizedState;
-  // We could update instance props and state here,
-  // but instead we rely on them being set during last render.
-  // TODO: revisit this when we implement resuming.
-  if (
-    __DEV__ &&
-    !finishedWork.type.defaultProps &&
-    !('ref' in finishedWork.memoizedProps) &&
-    !didWarnAboutReassigningProps
-  ) {
-    if (instance.props !== finishedWork.memoizedProps) {
-      console.error(
-        'Expected %s props to match memoized props before ' +
-          'componentDidUpdate. ' +
-          'This might either be because of a bug in React, or because ' +
-          'a component reassigns its own `this.props`. ' +
-          'Please file an issue.',
-        getComponentNameFromFiber(finishedWork) || 'instance',
-      );
-    }
-    if (instance.state !== finishedWork.memoizedState) {
-      console.error(
-        'Expected %s state to match memoized state before ' +
-          'componentDidUpdate. ' +
-          'This might either be because of a bug in React, or because ' +
-          'a component reassigns its own `this.state`. ' +
-          'Please file an issue.',
-        getComponentNameFromFiber(finishedWork) || 'instance',
-      );
-    }
-  }
 
-  if (shouldProfile(finishedWork)) {
-    startEffectTimer();
-    if (__DEV__) {
+    if (shouldProfile(finishedWork)) {
+      startEffectTimer();
+      if (__DEV__) {
+        runWithFiberInDEV(
+          finishedWork,
+          (finishedWork, instance, prevProps, prevState, snapshot) => {
+            $unwrap(callComponentDidUpdateInDEV)(
+              finishedWork,
+              instance,
+              prevProps,
+              prevState,
+              snapshot,
+            );
+          },
+          finishedWork,
+          instance,
+          prevProps,
+          prevState,
+          instance.__reactInternalSnapshotBeforeUpdate,
+        );
+      } else {
+        try {
+          instance.componentDidUpdate(
+            prevProps,
+            prevState,
+            instance.__reactInternalSnapshotBeforeUpdate,
+          );
+        } catch (error) {
+          const returnFiber = finishedWork.return;
+          captureCommitPhaseError(finishedWork, returnFiber, error);
+        }
+      }
+      recordEffectDuration(finishedWork);
+    } else if (__DEV__) {
       runWithFiberInDEV(
         finishedWork,
         (finishedWork, instance, prevProps, prevState, snapshot) => {
@@ -461,36 +488,6 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
         const returnFiber = finishedWork.return;
         captureCommitPhaseError(finishedWork, returnFiber, error);
       }
-    }
-    recordEffectDuration(finishedWork);
-  } else if (__DEV__) {
-    runWithFiberInDEV(
-      finishedWork,
-      (finishedWork, instance, prevProps, prevState, snapshot) => {
-        $unwrap(callComponentDidUpdateInDEV)(
-          finishedWork,
-          instance,
-          prevProps,
-          prevState,
-          snapshot,
-        );
-      },
-      finishedWork,
-      instance,
-      prevProps,
-      prevState,
-      instance.__reactInternalSnapshotBeforeUpdate,
-    );
-  } else {
-    try {
-      instance.componentDidUpdate(
-        prevProps,
-        prevState,
-        instance.__reactInternalSnapshotBeforeUpdate,
-      );
-    } catch (error) {
-      const returnFiber = finishedWork.return;
-      captureCommitPhaseError(finishedWork, returnFiber, error);
     }
   }
 }
@@ -745,7 +742,7 @@ export function safelyCallComponentWillUnmount(
       try {
         instance.componentWillUnmount();
       } catch (error) {
-        captureCommitPhaseError(current, nearestMountedAncestor ?? null, error);
+        captureCommitPhaseError(current, nearestMountedAncestor, error);
       }
     }
     recordEffectDuration(current);
@@ -767,7 +764,7 @@ export function safelyCallComponentWillUnmount(
     try {
       instance.componentWillUnmount();
     } catch (error) {
-      captureCommitPhaseError(current, nearestMountedAncestor ?? null, error);
+      captureCommitPhaseError(current, nearestMountedAncestor, error);
     }
   }
 }
@@ -815,27 +812,27 @@ function commitAttachRef(finishedWork) {
         } finally {
           recordEffectDuration(finishedWork);
         }
-        return;
+      } else {
+        finishedWork.refCleanup = ref(instanceToUse);
       }
-      finishedWork.refCleanup = ref(instanceToUse);
-      return;
-    }
-    if (__DEV__) {
-      // TODO: We should move these warnings to happen during the render
-      // phase (markRef).
-      if (typeof ref === 'string') {
-        console.error('String refs are no longer supported.');
-      } else if (!ref.hasOwnProperty('current')) {
-        console.error(
-          'Unexpected ref object provided for %s. ' +
-            'Use either a ref-setter function or React.createRef().',
-          getComponentNameFromFiber(finishedWork),
-        );
+    } else {
+      if (__DEV__) {
+        // TODO: We should move these warnings to happen during the render
+        // phase (markRef).
+        if (typeof ref === 'string') {
+          console.error('String refs are no longer supported.');
+        } else if (!ref.hasOwnProperty('current')) {
+          console.error(
+            'Unexpected ref object provided for %s. ' +
+              'Use either a ref-setter function or React.createRef().',
+            getComponentNameFromFiber(finishedWork),
+          );
+        }
       }
-    }
 
-    // $FlowFixMe[incompatible-use] unable to narrow type to the non-function case
-    ref.current = instanceToUse;
+      // $FlowFixMe[incompatible-use] unable to narrow type to the non-function case
+      ref.current = instanceToUse;
+    }
   }
 }
 
@@ -848,7 +845,7 @@ export function safelyAttachRef(current, nearestMountedAncestor) {
       commitAttachRef(current);
     }
   } catch (error) {
-    captureCommitPhaseError(current, nearestMountedAncestor ?? null, error);
+    captureCommitPhaseError(current, nearestMountedAncestor, error);
   }
 }
 
@@ -879,7 +876,7 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
           refCleanup();
         }
       } catch (error) {
-        captureCommitPhaseError(current, nearestMountedAncestor ?? null, error);
+        captureCommitPhaseError(current, nearestMountedAncestor, error);
       } finally {
         // `refCleanup` has been called. Nullify all references to it to prevent double invocation.
         current.refCleanup = null;
@@ -907,7 +904,7 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
           ref(null);
         }
       } catch (error) {
-        captureCommitPhaseError(current, nearestMountedAncestor ?? null, error);
+        captureCommitPhaseError(current, nearestMountedAncestor, error);
       }
     } else {
       // $FlowFixMe[incompatible-use] unable to narrow type to RefObject
@@ -931,7 +928,7 @@ function safelyCallDestroy(current, nearestMountedAncestor, destroy) {
     try {
       destroy();
     } catch (error) {
-      captureCommitPhaseError(current, nearestMountedAncestor ?? null, error);
+      captureCommitPhaseError(current, nearestMountedAncestor, error);
     }
   }
 }

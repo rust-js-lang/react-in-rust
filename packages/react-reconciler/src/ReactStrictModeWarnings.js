@@ -40,7 +40,7 @@ const pendingLegacyContextWarning = new Map();
 const didWarnAboutLegacyContext = new Set();
 
 function findStrictRoot(fiber) {
-  let maybeStrictRoot;
+  let maybeStrictRoot = null;
 
   let node = fiber;
   while (node != null) {
@@ -50,7 +50,7 @@ function findStrictRoot(fiber) {
     node = node.return;
   }
 
-  return maybeStrictRoot ?? null;
+  return maybeStrictRoot;
 }
 
 function setToSortedString(set) {

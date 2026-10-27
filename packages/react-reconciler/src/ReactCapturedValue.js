@@ -36,7 +36,7 @@ export function createCapturedValueFromError(value, stack) {
   const captured = {
     value,
     source: null,
-    stack: stack ?? null,
+    stack,
   };
   if (captured.stack != null) {
     CapturedStacks.set(value, captured);

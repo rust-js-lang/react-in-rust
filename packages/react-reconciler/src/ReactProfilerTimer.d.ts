@@ -131,7 +131,7 @@ export function startYieldTimer(reason: SuspendedReason): void;
 export function startUpdateTimerByLane(
   lane: Lane,
   method: string,
-  fiber?: Fiber | null | undefined,
+  fiber: Fiber | null,
 ): void;
 
 export function startHostActionTimer(fiber: Fiber): void;
@@ -188,7 +188,7 @@ export function pushComponentEffectErrors():
   | null;
 
 export function popComponentEffectErrors(
-  prevErrors?: CapturedValue<unknown | null | undefined>[] | null | undefined,
+  prevErrors: CapturedValue<unknown | null | undefined>[] | null,
 ): void;
 
 export function pushComponentEffectDidSpawnUpdate(): boolean;
