@@ -425,25 +425,25 @@ function areSameKeyPath(a, b) {
 
 export function checkIfUseWasUsedBefore(unsuspendedFiber, thenableState) {
   if (__DEV__ && enableConditionalUseWarning) {
-    const lastSuspendedFiber$1 = lastSuspendedFiber;
     if (
-      lastSuspendedFiber$1 != null &&
-      areSameKeyPath(lastSuspendedFiber$1, unsuspendedFiber)
+      lastSuspendedFiber != null &&
+      areSameKeyPath(lastSuspendedFiber, unsuspendedFiber)
     ) {
       if (thenableState) {
         // It's still using use() ever after resolving. We could warn for different number of them but for
         // now we treat this as ok and clear the state.
-        lastSuspendedStack = lastSuspendedFiber = null;
+        lastSuspendedFiber = null;
+        lastSuspendedStack = null;
       } else {
         // The last suspended Fiber using use() is no longer using use() in the same position.
         // That's suspicious. Likely it was unblocked by conditionally using use() which is incorrect.
-        const lastSuspendedStack$1 = lastSuspendedStack;
-        if (lastSuspendedStack$1 && !didIssueUseWarning) {
+        if (lastSuspendedStack && !didIssueUseWarning) {
           didIssueUseWarning = true;
           // We pass the error object instead of custom message so that the browser displays the error natively.
-          console.error(lastSuspendedStack$1);
+          console.error(lastSuspendedStack);
         }
-        lastSuspendedStack = lastSuspendedFiber = null;
+        lastSuspendedFiber = null;
+        lastSuspendedStack = null;
       }
     }
   }

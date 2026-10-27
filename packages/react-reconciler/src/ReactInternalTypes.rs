@@ -83,7 +83,7 @@ unsafe impl js::Defined for HookType {}
 
 impl HookType {
     /// The hook's name, as React's warnings print it.
-    pub fn name(self) -> &'static str {
+    pub(crate) fn name(self) -> &'static str {
         match self {
             HookType::UseState => "useState",
             HookType::UseReducer => "useReducer",

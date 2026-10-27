@@ -9,6 +9,7 @@ use std::rc::Rc;
 use js::Unknown;
 use react_isomorphic::react_context::ReactContext;
 use shared::environment::__DEV__;
+#[cfg_attr(rust_js, rust_js::name = "is")]
 use shared::object_is::OBJECT_IS;
 use webapi::console;
 

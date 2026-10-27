@@ -76,6 +76,8 @@ pub mod react_fiber_mutation_tracking;
 pub mod react_fiber_new_context;
 #[path = "src/ReactFiberOffscreenComponent.rs"]
 pub mod react_fiber_offscreen_component;
+#[path = "src/ReactFiberPerformanceTrack.rs"]
+pub mod react_fiber_performance_track;
 #[path = "src/ReactFiberRoot.rs"]
 pub mod react_fiber_root;
 #[path = "src/ReactFiberRootScheduler.rs"]
@@ -122,6 +124,8 @@ pub mod react_reconciler_constants;
 pub mod react_root_tags;
 #[path = "src/ReactStrictModeWarnings.rs"]
 pub mod react_strict_mode_warnings;
+#[path = "src/ReactTestSelectors.rs"]
+pub mod react_test_selectors;
 #[path = "src/ReactTypeOfMode.rs"]
 pub mod react_type_of_mode;
 #[path = "src/ReactWorkTags.rs"]

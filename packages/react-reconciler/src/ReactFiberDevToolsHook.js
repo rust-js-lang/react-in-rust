@@ -17,10 +17,10 @@ import {
 } from './ReactEventPriorities.js';
 import {DidCapture} from './ReactFiberFlags.js';
 import {
-  IdlePriority as IDLE_SCHEDULER_PRIORITY,
-  ImmediatePriority as IMMEDIATE_SCHEDULER_PRIORITY,
-  NormalPriority as NORMAL_SCHEDULER_PRIORITY,
-  UserBlockingPriority as USER_BLOCKING_SCHEDULER_PRIORITY,
+  IdlePriority as IdleSchedulerPriority,
+  ImmediatePriority as ImmediateSchedulerPriority,
+  NormalPriority as NormalSchedulerPriority,
+  UserBlockingPriority as UserBlockingSchedulerPriority,
   log,
   unstable_setDisableYieldValue,
 } from './Scheduler.js';
@@ -108,14 +108,14 @@ export function onCommitRoot(root, eventPriority) {
     if (enableProfilerTimer) {
       schedulerPriority =
         eventPriority === DiscreteEventPriority
-          ? IMMEDIATE_SCHEDULER_PRIORITY
+          ? ImmediateSchedulerPriority
           : eventPriority === ContinuousEventPriority
-            ? USER_BLOCKING_SCHEDULER_PRIORITY
+            ? UserBlockingSchedulerPriority
             : eventPriority === DefaultEventPriority
-              ? NORMAL_SCHEDULER_PRIORITY
+              ? NormalSchedulerPriority
               : eventPriority === IdleEventPriority
-                ? IDLE_SCHEDULER_PRIORITY
-                : NORMAL_SCHEDULER_PRIORITY;
+                ? IdleSchedulerPriority
+                : NormalSchedulerPriority;
     } else {
       schedulerPriority = undefined;
     }

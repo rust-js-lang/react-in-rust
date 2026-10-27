@@ -11,7 +11,6 @@ import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {
   $assign,
   $borrowMut,
-  $orInsertWith,
   $withBorrow,
   $withBorrowMut,
 } from '@rust-js/runtime';
@@ -42,12 +41,10 @@ const didWarnAboutLegacyContext = new Set();
 function findStrictRoot(fiber) {
   let maybeStrictRoot = null;
 
-  let node = fiber;
-  while (node != null) {
+  for (let node = fiber; node != null; node = node.return) {
     if ((node.mode & StrictLegacyMode) !== NoMode) {
       maybeStrictRoot = node;
     }
-    node = node.return;
   }
 
   return maybeStrictRoot;
@@ -414,9 +411,10 @@ if (__DEV__) {
       $withBorrowMut(
         pendingLegacyContextWarning,
         pendingLegacyContextWarning => {
-          $orInsertWith(pendingLegacyContextWarning, strictRoot, () => []).push(
-            fiber,
-          );
+          if (!pendingLegacyContextWarning.has(strictRoot)) {
+            pendingLegacyContextWarning.set(strictRoot, []);
+          }
+          pendingLegacyContextWarning.get(strictRoot).push(fiber);
         },
         true,
       );

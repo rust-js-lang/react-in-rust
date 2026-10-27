@@ -177,7 +177,8 @@ export function unwindWork(current, workInProgress, renderLanes) {
           // Cut off any remaining tail work and don't commit the rendering one.
           // This assumes that we have already confirmed that none of these are
           // already mounted.
-          renderState.tail = renderState.rendering = null;
+          renderState.rendering = null;
+          renderState.tail = null;
         }
         // Schedule the commit phase to attach retry listeners.
         workInProgress.flags |= Update;

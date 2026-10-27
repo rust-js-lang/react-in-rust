@@ -34,10 +34,15 @@ use crate::react_fiber_dev_tools_hook::{
 };
 use crate::react_fiber_flags::NO_FLAGS;
 use crate::react_fiber_view_transition_component::{ViewTransitionProps, get_view_transition_name};
-use crate::react_hook_effect_tags::{
-    HookFlags, INSERTION as HOOK_INSERTION, LAYOUT as HOOK_LAYOUT, NO_FLAGS as NO_HOOK_EFFECT,
-    PASSIVE as HOOK_PASSIVE,
-};
+use crate::react_hook_effect_tags::HookFlags;
+#[cfg_attr(rust_js, rust_js::name = "HookInsertion")]
+use crate::react_hook_effect_tags::INSERTION as HOOK_INSERTION;
+#[cfg_attr(rust_js, rust_js::name = "HookLayout")]
+use crate::react_hook_effect_tags::LAYOUT as HOOK_LAYOUT;
+#[cfg_attr(rust_js, rust_js::name = "NoHookEffect")]
+use crate::react_hook_effect_tags::NO_FLAGS as NO_HOOK_EFFECT;
+#[cfg_attr(rust_js, rust_js::name = "HookPassive")]
+use crate::react_hook_effect_tags::PASSIVE as HOOK_PASSIVE;
 use crate::react_internal_types::{Fiber, Ref};
 use crate::react_profiler_timer::{
     is_current_update_nested, record_effect_duration, start_effect_timer,

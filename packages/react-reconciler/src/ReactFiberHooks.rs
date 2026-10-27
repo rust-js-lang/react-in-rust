@@ -1165,7 +1165,6 @@ fn mount_work_in_progress_hook() -> Rc<Hook> {
         None => {
             // This is the first hook in the list
             let rendering_fiber = CURRENTLY_RENDERING_FIBER.with_borrow(Clone::clone).unwrap();
-            WORK_IN_PROGRESS_HOOK.set(Some(Rc::clone(&hook)));
             rendering_fiber
                 .memoized_state
                 .set(Some(js::unknown_of(Rc::clone(&hook))));
@@ -1173,9 +1172,9 @@ fn mount_work_in_progress_hook() -> Rc<Hook> {
         Some(work_in_progress_hook) => {
             // Append to the end of the list
             work_in_progress_hook.next.replace(Some(Rc::clone(&hook)));
-            WORK_IN_PROGRESS_HOOK.set(Some(Rc::clone(&hook)));
         }
     }
+    WORK_IN_PROGRESS_HOOK.set(Some(Rc::clone(&hook)));
     hook
 }
 
@@ -1241,7 +1240,6 @@ fn update_work_in_progress_hook() -> Rc<Hook> {
         match WORK_IN_PROGRESS_HOOK.with_borrow(Clone::clone) {
             None => {
                 // This is the first hook in the list.
-                WORK_IN_PROGRESS_HOOK.set(Some(Rc::clone(&new_hook)));
                 rendering_fiber
                     .memoized_state
                     .set(Some(js::unknown_of(Rc::clone(&new_hook))));
@@ -1251,9 +1249,9 @@ fn update_work_in_progress_hook() -> Rc<Hook> {
                 work_in_progress_hook
                     .next
                     .replace(Some(Rc::clone(&new_hook)));
-                WORK_IN_PROGRESS_HOOK.set(Some(Rc::clone(&new_hook)));
             }
         }
+        WORK_IN_PROGRESS_HOOK.set(Some(Rc::clone(&new_hook)));
         new_hook
     }
 }
@@ -1538,8 +1536,8 @@ fn mount_reducer(
     } else {
         initial_state = initial_arg;
     }
-    hook.base_state.set(initial_state);
     hook.memoized_state.set(initial_state);
+    hook.base_state.set(initial_state);
     let queue = Rc::new(UpdateQueue {
         pending: RefCell::new(None),
         lanes: Cell::new(NO_LANES),
@@ -1610,8 +1608,8 @@ fn update_reducer_impl(
                 "This is a bug in React."
             ),));
         }
-        base_queue = Some(Rc::clone(&pending_queue));
-        current.base_queue.replace(Some(pending_queue));
+        current.base_queue.replace(Some(Rc::clone(&pending_queue)));
+        base_queue = Some(pending_queue);
         queue.pending.replace(None);
     }
 
@@ -1704,8 +1702,8 @@ fn update_reducer_impl(
                     });
                     match &new_base_queue_last {
                         None => {
-                            new_base_queue_last = Some(Rc::clone(&clone));
-                            new_base_queue_first = Some(clone);
+                            new_base_queue_first = Some(Rc::clone(&clone));
+                            new_base_queue_last = Some(clone);
                             new_base_state = new_state;
                         }
                         Some(last) => {
@@ -1761,7 +1759,6 @@ fn update_reducer_impl(
                             // The transition that this optimistic update is associated with
                             // has finished. Pretend the update doesn't exist by skipping
                             // over it.
-                            let next = update.next.borrow().clone();
 
                             // Check if this update is part of a pending async action. If so,
                             // we'll need to suspend until the action has finished, so that it's
@@ -1769,6 +1766,7 @@ fn update_reducer_impl(
                             if revert_lane == peek_entangled_action_lane() {
                                 did_read_from_entangled_async_action = true;
                             }
+                            let next = update.next.borrow().clone();
                             match next {
                                 Some(next) if !Rc::ptr_eq(&next, &first) => update = next,
                                 _ => break,
@@ -1793,8 +1791,8 @@ fn update_reducer_impl(
                             });
                             match &new_base_queue_last {
                                 None => {
-                                    new_base_queue_last = Some(Rc::clone(&clone));
-                                    new_base_queue_first = Some(clone);
+                                    new_base_queue_first = Some(Rc::clone(&clone));
+                                    new_base_queue_last = Some(clone);
                                     new_base_state = new_state;
                                 }
                                 Some(last) => {
@@ -2267,8 +2265,8 @@ fn mount_state_impl(initial_state: Option<&'static Unknown>) -> Rc<Hook> {
             initial_state_initializer();
         }
     }
-    hook.base_state.set(initial_state);
     hook.memoized_state.set(initial_state);
+    hook.base_state.set(initial_state);
     let queue = Rc::new(UpdateQueue {
         pending: RefCell::new(None),
         lanes: Cell::new(NO_LANES),
@@ -2308,8 +2306,8 @@ fn mount_optimistic(
     _reducer: Option<&'static Unknown>,
 ) -> StateAndDispatch {
     let hook = mount_work_in_progress_hook();
-    hook.base_state.set(passthrough);
     hook.memoized_state.set(passthrough);
+    hook.base_state.set(passthrough);
     let queue = Rc::new(UpdateQueue {
         pending: RefCell::new(None),
         lanes: Cell::new(NO_LANES),
@@ -2505,8 +2503,8 @@ fn dispatch_action_state(
         None => {
             // There are no pending actions; this is the first one. We can run
             // it immediately.
-            action_queue.pending.replace(Some(Rc::clone(&action_node)));
             action_node.next.replace(Some(Rc::clone(&action_node)));
+            action_queue.pending.replace(Some(Rc::clone(&action_node)));
             run_action_state_action(action_queue, &action_node);
         }
         Some(last) => {
@@ -2676,7 +2674,9 @@ fn handle_action_return_value(
             {
                 let action_queue = Rc::clone(action_queue);
                 let node = Rc::clone(node);
-                move |next_state| on_action_success(&action_queue, &node, next_state)
+                move |next_state| {
+                    on_action_success(&action_queue, &node, next_state);
+                }
             },
             {
                 let action_queue = Rc::clone(action_queue);
@@ -2800,8 +2800,8 @@ fn mount_action_state(
     // State hook. The state is stored in a thenable which is then unwrapped by
     // the `use` algorithm during render.
     let state_hook = mount_work_in_progress_hook();
-    state_hook.base_state.set(initial_state);
     state_hook.memoized_state.set(initial_state);
+    state_hook.base_state.set(initial_state);
     // TODO: Typing this "correctly" results in recursion limit errors
     // const stateQueue: UpdateQueue<S | Awaited<S>, S | Awaited<S>> = {
     let state_queue = Rc::new(UpdateQueue {

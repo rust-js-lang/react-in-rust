@@ -131,7 +131,8 @@ export function findCurrentFiberUsingSlowPath(fiber) {
         // over this extra fragment fiber and proceed to the next parent.
         const nextParent = parentA.return;
         if (nextParent != null) {
-          a = b = nextParent;
+          a = nextParent;
+          b = nextParent;
           continue;
         }
       } else {
@@ -139,8 +140,11 @@ export function findCurrentFiberUsingSlowPath(fiber) {
         // assume that the child is current. This happens when we bailout on low
         // priority: the bailed out fiber's child reuses the current child.
         if (parentA.child == parentB.child) {
-          let child = parentA.child;
-          while (child != null) {
+          for (
+            let child = parentA.child;
+            child != null;
+            child = child.sibling
+          ) {
             if (child === a) {
               // We've determined that A is the current branch.
               assertIsMounted(parentA);
@@ -151,7 +155,6 @@ export function findCurrentFiberUsingSlowPath(fiber) {
               assertIsMounted(parentA);
               return alternate;
             }
-            child = child.sibling;
           }
 
           // We should never have an alternate for any mounting node. So the only
@@ -260,13 +263,11 @@ function findCurrentHostFiberImpl(node) {
     return node;
   }
 
-  let child = node.child;
-  while (child != null) {
+  for (let child = node.child; child != null; child = child.sibling) {
     const match = findCurrentHostFiberImpl(child);
     if (match != null) {
       return match;
     }
-    child = child.sibling;
   }
 
   return null;
@@ -291,15 +292,13 @@ function findCurrentHostFiberWithNoPortalsImpl(node) {
     return node;
   }
 
-  let child = node.child;
-  while (child != null) {
+  for (let child = node.child; child != null; child = child.sibling) {
     if (child.tag !== HostPortal) {
       const match = findCurrentHostFiberWithNoPortalsImpl(child);
       if (match != null) {
         return match;
       }
     }
-    child = child.sibling;
   }
 
   return null;
@@ -390,8 +389,7 @@ function traverseVisibleInstancesAndTextInstances(
 }
 
 export function getFragmentParentInstanceOrContainerFiber(fiber) {
-  let parent = fiber.return;
-  while (parent != null) {
+  for (let parent = fiber.return; parent != null; parent = parent.return) {
     if (
       parent.tag === HostRoot ||
       parent.tag === HostComponent ||
@@ -399,7 +397,6 @@ export function getFragmentParentInstanceOrContainerFiber(fiber) {
     ) {
       return parent;
     }
-    parent = parent.return;
   }
 
   return null;
@@ -407,20 +404,17 @@ export function getFragmentParentInstanceOrContainerFiber(fiber) {
 
 // ReactFiberConfig's `Container`.
 export function getFragmentRootContainerInfo(fiber) {
-  let parent = fiber.return;
-  while (parent != null) {
+  for (let parent = fiber.return; parent != null; parent = parent.return) {
     if (parent.tag === HostRoot) {
       return parent.stateNode.containerInfo;
     }
-    parent = parent.return;
   }
   return null;
 }
 
 export function fiberIsPortaledIntoHost(fiber) {
   let foundPortalParent = false;
-  let parent = fiber.return;
-  while (parent != null) {
+  for (let parent = fiber.return; parent != null; parent = parent.return) {
     if (parent.tag === HostPortal) {
       foundPortalParent = true;
     }
@@ -431,15 +425,13 @@ export function fiberIsPortaledIntoHost(fiber) {
     ) {
       break;
     }
-    parent = parent.return;
   }
   return foundPortalParent;
 }
 
 // ReactFiberConfig's `Container`: a portal's `containerInfo`.
 export function getFragmentPortalContainerInfo(fiber) {
-  let parent = fiber.return;
-  while (parent != null) {
+  for (let parent = fiber.return; parent != null; parent = parent.return) {
     if (parent.tag === HostPortal) {
       return parent.stateNode.containerInfo ?? null;
     }
@@ -450,7 +442,6 @@ export function getFragmentPortalContainerInfo(fiber) {
     ) {
       break;
     }
-    parent = parent.return;
   }
   return null;
 }
@@ -564,15 +555,13 @@ function findNextSibling(child) {
 }
 
 export function isFiberContainedByFragment(fiber, fragmentFiber) {
-  let current = fiber;
-  while (current != null) {
+  for (let current = fiber; current != null; current = current.return) {
     if (
       current.tag === Fragment &&
       (current === fragmentFiber || current.alternate === fragmentFiber)
     ) {
       return true;
     }
-    current = current.return;
   }
   return false;
 }
@@ -693,16 +682,12 @@ export function getLowestCommonAncestor(instA, instB, getParent) {
   let nodeA = instA;
   let nodeB = instB;
   let depthA = 0;
-  let tempA = nodeA;
-  while (tempA != null) {
+  for (let tempA = nodeA; tempA != null; tempA = getParent(tempA)) {
     depthA = (depthA + 1) | 0;
-    tempA = getParent(tempA);
   }
   let depthB = 0;
-  let tempB = nodeB;
-  while (tempB != null) {
+  for (let tempB = nodeB; tempB != null; tempB = getParent(tempB)) {
     depthB = (depthB + 1) | 0;
-    tempB = getParent(tempB);
   }
 
   // If A is deeper, crawl up.

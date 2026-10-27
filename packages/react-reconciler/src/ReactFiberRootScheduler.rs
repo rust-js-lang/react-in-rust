@@ -38,13 +38,19 @@ use crate::react_fiber_lane::{
 use crate::react_internal_types::FiberRoot;
 use crate::react_profiler_timer::{reset_nested_update_flag, sync_nested_update_flag};
 use crate::react_root_tags::LEGACY_ROOT;
-use crate::scheduler::{
-    CANCEL_CALLBACK as SCHEDULER_CANCEL_CALLBACK, IDLE_PRIORITY as IDLE_SCHEDULER_PRIORITY,
-    IMMEDIATE_PRIORITY as IMMEDIATE_SCHEDULER_PRIORITY,
-    NORMAL_PRIORITY as NORMAL_SCHEDULER_PRIORITY, NOW as now, PriorityLevel,
-    SCHEDULE_CALLBACK as SCHEDULER_SCHEDULE_CALLBACK, SchedulerCallback,
-    USER_BLOCKING_PRIORITY as USER_BLOCKING_SCHEDULER_PRIORITY,
-};
+#[cfg_attr(rust_js, rust_js::name = "Scheduler_cancelCallback")]
+use crate::scheduler::CANCEL_CALLBACK as SCHEDULER_CANCEL_CALLBACK;
+#[cfg_attr(rust_js, rust_js::name = "IdleSchedulerPriority")]
+use crate::scheduler::IDLE_PRIORITY as IDLE_SCHEDULER_PRIORITY;
+#[cfg_attr(rust_js, rust_js::name = "ImmediateSchedulerPriority")]
+use crate::scheduler::IMMEDIATE_PRIORITY as IMMEDIATE_SCHEDULER_PRIORITY;
+#[cfg_attr(rust_js, rust_js::name = "NormalSchedulerPriority")]
+use crate::scheduler::NORMAL_PRIORITY as NORMAL_SCHEDULER_PRIORITY;
+#[cfg_attr(rust_js, rust_js::name = "Scheduler_scheduleCallback")]
+use crate::scheduler::SCHEDULE_CALLBACK as SCHEDULER_SCHEDULE_CALLBACK;
+#[cfg_attr(rust_js, rust_js::name = "UserBlockingSchedulerPriority")]
+use crate::scheduler::USER_BLOCKING_PRIORITY as USER_BLOCKING_SCHEDULER_PRIORITY;
+use crate::scheduler::{NOW as now, PriorityLevel, SchedulerCallback};
 
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFiberWorkLoop.js#CommitContext"]
@@ -211,8 +217,8 @@ pub fn ensure_root_is_scheduled(root: &Rc<FiberRoot>) {
         let last_scheduled_root = LAST_SCHEDULED_ROOT.with_borrow(Clone::clone);
         match last_scheduled_root {
             None => {
-                LAST_SCHEDULED_ROOT.set(Some(Rc::clone(root)));
                 FIRST_SCHEDULED_ROOT.set(Some(Rc::clone(root)));
+                LAST_SCHEDULED_ROOT.set(Some(Rc::clone(root)));
             }
             Some(last_scheduled_root) => {
                 last_scheduled_root.next.replace(Some(Rc::clone(root)));

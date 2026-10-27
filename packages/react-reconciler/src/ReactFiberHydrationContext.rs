@@ -978,8 +978,7 @@ fn skip_past_dehydrated_suspense_instance(fiber: &Fiber) -> Option<&'static Unkn
 }
 
 fn pop_to_next_host_parent(fiber: &Fiber) {
-    let return_fiber = fiber.r#return.borrow().clone();
-    HYDRATION_PARENT_FIBER.set(return_fiber);
+    HYDRATION_PARENT_FIBER.set(fiber.r#return.borrow().clone());
     while let Some(hydration_parent_fiber) = HYDRATION_PARENT_FIBER.with_borrow(Clone::clone) {
         match hydration_parent_fiber.tag.get() {
             HOST_COMPONENT | ACTIVITY_COMPONENT | SUSPENSE_COMPONENT => {
@@ -990,10 +989,7 @@ fn pop_to_next_host_parent(fiber: &Fiber) {
                 ROOT_OR_SINGLETON_CONTEXT.set(true);
                 return;
             }
-            _ => {
-                let return_fiber = hydration_parent_fiber.r#return.borrow().clone();
-                HYDRATION_PARENT_FIBER.set(return_fiber);
-            }
+            _ => HYDRATION_PARENT_FIBER.set(hydration_parent_fiber.r#return.borrow().clone()),
         }
     }
 }

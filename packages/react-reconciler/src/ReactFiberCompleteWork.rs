@@ -1146,8 +1146,8 @@ fn complete_dehydrated_activity_boundary(
             reset_hydration_state();
             if (work_in_progress.flags.get() & DID_CAPTURE) == NO_FLAGS {
                 // This boundary did not suspend so it's now hydrated and unsuspended.
-                work_in_progress.memoized_state.set(js::null());
                 next_state = js::null();
+                work_in_progress.memoized_state.set(js::null());
             }
             // If nothing suspended, we need to schedule an effect to mark this boundary
             // as having hydrated so events know that they're free to be invoked.
@@ -1240,8 +1240,8 @@ fn complete_dehydrated_suspense_boundary(
             reset_hydration_state();
             if (work_in_progress.flags.get() & DID_CAPTURE) == NO_FLAGS {
                 // This boundary did not suspend so it's now hydrated and unsuspended.
-                work_in_progress.memoized_state.set(js::null());
                 next_state = js::null();
+                work_in_progress.memoized_state.set(js::null());
             }
             // If nothing suspended, we need to schedule an effect to mark this boundary
             // as having hydrated so events know that they're free to be invoked.

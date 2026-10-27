@@ -146,7 +146,7 @@ impl SharedStateClient {
 
 unsafe extern "Rust" {
     #[cfg_attr(rust_js, rust_js::name = "ReactSharedInternals")]
-    #[link_name = "react#*.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE"]
+    #[link_name = "react#* as React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE"]
     pub safe static REACT_SHARED_INTERNALS: &'static SharedStateClient;
 }
 

@@ -196,12 +196,10 @@ let ignorePreviousDependencies = false;
 function mountHookTypesDev() {
   if (__DEV__) {
     const hookName = $unwrap(currentHookNameInDev);
-
-    const hookTypesDev$1 = hookTypesDev;
-    if (hookTypesDev$1 == null) {
+    if (hookTypesDev == null) {
       hookTypesDev = [hookName];
     } else {
-      hookTypesDev$1.push(hookName);
+      hookTypesDev.push(hookName);
     }
   }
 }
@@ -375,13 +373,11 @@ function areHookInputsEqual(
     );
   }
   // $FlowFixMe[incompatible-use] found when upgrading Flow
-  let i = 0;
-  while (i < prevDeps.length && i < nextDeps.length) {
+  for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
     // $FlowFixMe[incompatible-use] found when upgrading Flow
     if (!is($index(nextDeps, i), $index(prevDeps, i))) {
       return false;
     }
-    i++;
   }
   return true;
 }
@@ -407,7 +403,8 @@ export function renderWithHooks(
     warnIfAsyncClientComponent(component);
   }
 
-  workInProgress.updateQueue = workInProgress.memoizedState = null;
+  workInProgress.memoizedState = null;
+  workInProgress.updateQueue = null;
   workInProgress.lanes = NoLanes;
 
   // The following should have already been reset
@@ -517,18 +514,17 @@ function finishRenderingHooks(current, workInProgress, component) {
   if (__DEV__) {
     workInProgress._debugHookTypes = hookTypesDev;
     // Stash the thenable state for use by DevTools.
-    const thenableState$1 = thenableState;
     const dependencies = workInProgress.dependencies;
     if (dependencies != null) {
-      dependencies._debugThenableState = thenableState$1;
-    } else if (thenableState$1 != null) {
+      dependencies._debugThenableState = thenableState;
+    } else if (thenableState != null) {
       workInProgress.dependencies = {
         lanes: NoLanes,
         firstContext: null,
-        _debugThenableState: thenableState$1,
+        _debugThenableState: thenableState,
       };
     }
-    checkIfUseWasUsedBefore(workInProgress, thenableState$1);
+    checkIfUseWasUsedBefore(workInProgress, thenableState);
   }
 
   // We can assume the previous dispatcher is always this one, since we set it
@@ -546,7 +542,8 @@ function finishRenderingHooks(current, workInProgress, component) {
   workInProgressHook = null;
 
   if (__DEV__) {
-    hookTypesDev = currentHookNameInDev = null;
+    currentHookNameInDev = null;
+    hookTypesDev = null;
     hookTypesUpdateIndexDev = -1;
 
     // Confirm that a static flag was not added or removed since the last
@@ -697,7 +694,8 @@ function renderWithHooksAgain(workInProgress, component, props, secondArg) {
     }
 
     // Start over from the beginning of the list
-    workInProgressHook = currentHook = null;
+    currentHook = null;
+    workInProgressHook = null;
 
     const updateQueue = workInProgress.updateQueue;
     if (updateQueue) {
@@ -811,13 +809,15 @@ export function resetHooksOnUnwind(workInProgress) {
     // Only reset the updates from the queue if it has a clone. If it does
     // not have a clone, that means it wasn't processed, and the updates were
     // scheduled before we entered the render phase.
-    let hook = workInProgress.memoizedState;
-    while (hook != null) {
+    for (
+      let hook = workInProgress.memoizedState;
+      hook != null;
+      hook = hook.next
+    ) {
       const queue = hook.queue;
       if (queue) {
         queue.pending = null;
       }
-      hook = hook.next;
     }
     didScheduleRenderPhaseUpdate = false;
   }
@@ -836,7 +836,8 @@ export function resetHooksOnUnwind(workInProgress) {
   }
 
   didScheduleRenderPhaseUpdateDuringThisPass = false;
-  thenableIndexCounter = localIdCounter = 0;
+  localIdCounter = 0;
+  thenableIndexCounter = 0;
   thenableState = null;
 }
 
@@ -850,16 +851,15 @@ function mountWorkInProgressHook() {
 
     next: null,
   };
-
-  const workInProgressHook$1 = workInProgressHook;
-  if (workInProgressHook$1 == null) {
+  if (workInProgressHook == null) {
     // This is the first hook in the list
     const renderingFiber = $unwrap(currentlyRenderingFiber);
-    renderingFiber.memoizedState = workInProgressHook = hook;
+    renderingFiber.memoizedState = hook;
   } else {
     // Append to the end of the list
-    workInProgressHook = workInProgressHook$1.next = hook;
+    workInProgressHook.next = hook;
   }
+  workInProgressHook = hook;
   return hook;
 }
 
@@ -869,19 +869,17 @@ function updateWorkInProgressHook() {
   // clone, or a work-in-progress hook from a previous render pass that we can
   // use as a base.
   const renderingFiber = $unwrap(currentlyRenderingFiber);
-  const currentHook$1 = currentHook;
   let nextCurrentHook;
-  if (currentHook$1 == null) {
+  if (currentHook == null) {
     const current = renderingFiber.alternate;
     nextCurrentHook = current?.memoizedState;
   } else {
-    nextCurrentHook = currentHook$1.next;
+    nextCurrentHook = currentHook.next;
   }
-  const workInProgressHook$1 = workInProgressHook;
   const nextWorkInProgressHook =
-    workInProgressHook$1 == null
+    workInProgressHook == null
       ? renderingFiber.memoizedState
-      : workInProgressHook$1.next;
+      : workInProgressHook.next;
 
   if (nextWorkInProgressHook != null) {
     // There's already a work-in-progress. Reuse it.
@@ -917,15 +915,14 @@ function updateWorkInProgressHook() {
 
     next: null,
   };
-
-  const workInProgressHook$2 = workInProgressHook;
-  if (workInProgressHook$2 == null) {
+  if (workInProgressHook == null) {
     // This is the first hook in the list.
-    renderingFiber.memoizedState = workInProgressHook = newHook;
+    renderingFiber.memoizedState = newHook;
   } else {
     // Append to the end of the list.
-    workInProgressHook = workInProgressHook$2.next = newHook;
+    workInProgressHook.next = newHook;
   }
+  workInProgressHook = newHook;
   return newHook;
 }
 
@@ -1104,8 +1101,7 @@ function useMemoCache(size) {
 
   const index = memoCache.index;
   let data = memoCache.data[index];
-  const data$1 = data;
-  if (data$1 == null || (__DEV__ && ignorePreviousDependencies)) {
+  if (data == null || (__DEV__ && ignorePreviousDependencies)) {
     $roomFor(size, 4);
     const newData = new Array(size).fill(REACT_MEMO_CACHE_SENTINEL);
     const memoCacheData = memoCache.data;
@@ -1116,7 +1112,7 @@ function useMemoCache(size) {
     }
     data = newData;
   } else {
-    const length = data$1.length;
+    const length = data.length;
     if (length !== size) {
       // TODO: consider warning or throwing here
       if (__DEV__) {
@@ -1157,7 +1153,8 @@ function mountReducer(reducer, initialArg, init) {
   } else {
     initialState = initialArg;
   }
-  hook.memoizedState = hook.baseState = initialState;
+  hook.memoizedState = initialState;
+  hook.baseState = initialState;
   const queue = {
     pending: null,
     lanes: NoLanes,
@@ -1216,7 +1213,8 @@ function updateReducerImpl(hook, current, reducer) {
           'This is a bug in React.',
       );
     }
-    current$1.baseQueue = baseQueue = pendingQueue;
+    current$1.baseQueue = pendingQueue;
+    baseQueue = pendingQueue;
     queue.pending = null;
   }
 
@@ -1297,10 +1295,12 @@ function updateReducerImpl(hook, current, reducer) {
           next: null,
         };
         if (newBaseQueueLast == null) {
-          newBaseQueueFirst = newBaseQueueLast = clone;
+          newBaseQueueFirst = clone;
+          newBaseQueueLast = clone;
           newBaseState = newState;
         } else {
-          newBaseQueueLast = newBaseQueueLast.next = clone;
+          newBaseQueueLast.next = clone;
+          newBaseQueueLast = clone;
         }
         // Update the remaining priority in the queue.
         // TODO: Don't need to accumulate this. Instead, we can remove
@@ -1329,7 +1329,8 @@ function updateReducerImpl(hook, current, reducer) {
               eagerState: update.eagerState,
               next: null,
             };
-            newBaseQueueLast = newBaseQueueLast.next = clone;
+            newBaseQueueLast.next = clone;
+            newBaseQueueLast = clone;
           }
 
           // Check if this update is part of a pending async action. If so,
@@ -1347,7 +1348,6 @@ function updateReducerImpl(hook, current, reducer) {
             // The transition that this optimistic update is associated with
             // has finished. Pretend the update doesn't exist by skipping
             // over it.
-            const next = update.next;
 
             // Check if this update is part of a pending async action. If so,
             // we'll need to suspend until the action has finished, so that it's
@@ -1355,6 +1355,7 @@ function updateReducerImpl(hook, current, reducer) {
             if (revertLane === peekEntangledActionLane()) {
               didReadFromEntangledAsyncAction = true;
             }
+            const next = update.next;
             if (next != null && next !== first) {
               update = next;
               continue;
@@ -1378,10 +1379,12 @@ function updateReducerImpl(hook, current, reducer) {
               next: null,
             };
             if (newBaseQueueLast == null) {
-              newBaseQueueFirst = newBaseQueueLast = clone;
+              newBaseQueueFirst = clone;
+              newBaseQueueLast = clone;
               newBaseState = newState;
             } else {
-              newBaseQueueLast = newBaseQueueLast.next = clone;
+              newBaseQueueLast.next = clone;
+              newBaseQueueLast = clone;
             }
             // Update the remaining priority in the queue.
             // TODO: Don't need to accumulate this. Instead, we can remove
@@ -1781,7 +1784,8 @@ function mountStateImpl(initialState) {
       }
     }
   }
-  hook.memoizedState = hook.baseState = initialState;
+  hook.memoizedState = initialState;
+  hook.baseState = initialState;
   const queue = {
     pending: null,
     lanes: NoLanes,
@@ -1815,7 +1819,8 @@ function rerenderState(initialState) {
 
 function mountOptimistic(passthrough, reducer) {
   const hook = mountWorkInProgressHook();
-  hook.memoizedState = hook.baseState = passthrough;
+  hook.memoizedState = passthrough;
+  hook.baseState = passthrough;
   const queue = {
     pending: null,
     lanes: NoLanes,
@@ -1939,13 +1944,15 @@ function dispatchActionState(
   if (last == null) {
     // There are no pending actions; this is the first one. We can run
     // it immediately.
-    actionNode.next = actionQueue.pending = actionNode;
+    actionNode.next = actionNode;
+    actionQueue.pending = actionNode;
     runActionStateAction(actionQueue, actionNode);
   } else {
     // There's already an action running. Add to the queue.
     const first = last.next;
     actionNode.next = first;
-    actionQueue.pending = last.next = actionNode;
+    last.next = actionNode;
+    actionQueue.pending = actionNode;
   }
 }
 
@@ -2054,8 +2061,10 @@ function handleActionReturnValue(actionQueue, node, returnValue) {
     // Attach a listener to read the return state of the action. As soon as
     // this resolves, we can run the next action in the sequence.
     returnValue.then(
-      nextState => onActionSuccess(actionQueue, node, nextState),
-      error => onActionError(actionQueue, node, error),
+      nextState => {
+        onActionSuccess(actionQueue, node, nextState);
+      },
+      onActionError.bind(null, actionQueue, node),
     );
 
     if (__DEV__ && !node.isTransition) {
@@ -2125,13 +2134,11 @@ function onActionError(actionQueue, actionNode, error) {
 function notifyActionListeners(actionNode) {
   // Notify React that the action has finished.
   const listeners = actionNode.listeners;
-  let i = 0;
-  while (i < listeners.length) {
+  for (let i = 0; i < listeners.length; i++) {
     // This is always a React internal listener, so we don't need to worry
     // about it throwing.
     const listener = listeners[i];
     listener();
-    i++;
   }
 }
 
@@ -2160,7 +2167,8 @@ function mountActionState(action, initialStateProp, permalink) {
   // State hook. The state is stored in a thenable which is then unwrapped by
   // the `use` algorithm during render.
   const stateHook = mountWorkInProgressHook();
-  stateHook.memoizedState = stateHook.baseState = initialState;
+  stateHook.memoizedState = initialState;
+  stateHook.baseState = initialState;
   // TODO: Typing this "correctly" results in recursion limit errors
   // const stateQueue: UpdateQueue<S | Awaited<S>, S | Awaited<S>> = {
   const stateQueue = {
@@ -3074,8 +3082,7 @@ function mountTransition() {
   // The `start` method never changes.
   const renderingFiber = $unwrap(currentlyRenderingFiber);
   const queue = stateHook.queue;
-  const start = (callback, options) =>
-    startTransition(renderingFiber, queue, true, false, callback, options);
+  const start = startTransition.bind(null, renderingFiber, queue, true, false);
   const hook = mountWorkInProgressHook();
   hook.memoizedState = start;
   return [false, start];
@@ -3171,8 +3178,11 @@ function refreshCache(fiber, seedKey, seedValue) {
   // TODO: Does Cache work in legacy mode? Should decide and write a test.
   // TODO: Consider warning if the refresh is at discrete priority, or if we
   // otherwise suspect that it wasn't batched properly.
-  let provider = fiber.return;
-  while (provider != null) {
+  for (
+    let provider = fiber.return;
+    provider != null;
+    provider = provider.return
+  ) {
     switch (provider.tag) {
       case CacheComponent:
       case HostRoot: {
@@ -3209,7 +3219,6 @@ function refreshCache(fiber, seedKey, seedValue) {
         return;
       }
     }
-    provider = provider.return;
   }
 }
 
@@ -3459,8 +3468,8 @@ function enqueueRenderPhaseUpdate(queue, update) {
   // This is a render phase update. Stash it in a lazily-created map of
   // queue -> linked list of updates. After this render pass, we'll restart
   // and apply the stashed updates on top of the work-in-progress hook.
-  didScheduleRenderPhaseUpdateDuringThisPass =
-    didScheduleRenderPhaseUpdate = true;
+  didScheduleRenderPhaseUpdate = true;
+  didScheduleRenderPhaseUpdateDuringThisPass = true;
   const pending = queue.pending;
   if (pending == null) {
     // This is the first update. Create a circular list.

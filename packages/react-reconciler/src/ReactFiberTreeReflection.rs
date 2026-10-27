@@ -157,8 +157,8 @@ pub fn find_current_fiber_using_slow_path(fiber: &Rc<Fiber>) -> Option<Rc<Fiber>
             // over this extra fragment fiber and proceed to the next parent.
             let next_parent = parent_a.r#return.borrow().clone();
             if let Some(next_parent) = next_parent {
-                b = Rc::clone(&next_parent);
-                a = next_parent;
+                a = Rc::clone(&next_parent);
+                b = next_parent;
                 continue;
             }
             // If there's no parent, we're at the root.

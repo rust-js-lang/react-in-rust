@@ -488,10 +488,9 @@ export function tryToClaimNextHydratableFormMarkerInstance(fiber) {
   if (!isHydrating) {
     return false;
   }
-  const nextHydratableInstance$1 = nextHydratableInstance;
-  if (nextHydratableInstance$1 != null) {
+  if (nextHydratableInstance != null) {
     const markerInstance = canHydrateFormStateMarker(
-      nextHydratableInstance$1,
+      nextHydratableInstance,
       rootOrSingletonContext,
     );
     if (markerInstance != null) {
@@ -668,14 +667,9 @@ function skipPastDehydratedSuspenseInstance(fiber) {
 }
 
 function popToNextHostParent(fiber) {
-  const returnFiber = fiber.return;
-  hydrationParentFiber = returnFiber;
-  while (true) {
-    const hydrationParentFiber$1 = hydrationParentFiber;
-    if (hydrationParentFiber$1 == null) {
-      return;
-    }
-    switch (hydrationParentFiber$1.tag) {
+  hydrationParentFiber = fiber.return;
+  while (hydrationParentFiber != null) {
+    switch (hydrationParentFiber.tag) {
       case HostComponent:
       case ActivityComponent:
       case SuspenseComponent:
@@ -685,10 +679,8 @@ function popToNextHostParent(fiber) {
       case HostRoot:
         rootOrSingletonContext = true;
         return;
-      default: {
-        const returnFiber = hydrationParentFiber$1.return;
-        hydrationParentFiber = returnFiber;
-      }
+      default:
+        hydrationParentFiber = hydrationParentFiber.return;
     }
   }
 }
@@ -800,7 +792,8 @@ export function resetHydrationState() {
     return;
   }
 
-  nextHydratableInstance = hydrationParentFiber = null;
+  hydrationParentFiber = null;
+  nextHydratableInstance = null;
   isHydrating = false;
   didSuspendOrErrorDEV = false;
 }

@@ -270,7 +270,8 @@ export function trackSuspendedTime(lanes, renderEndTime) {
 export function clearBlockingTimers() {
   blockingUpdateTime = -1.1;
   blockingUpdateType = 0;
-  blockingUpdateComponentName = blockingUpdateMethodName = null;
+  blockingUpdateMethodName = null;
+  blockingUpdateComponentName = null;
   blockingSuspendedTime = -1.1;
   blockingEventRepeatTime = blockingEventTime;
   blockingEventTime = -1.1;
@@ -306,7 +307,8 @@ export function clearAsyncTransitionTimer() {
 }
 
 export function clearTransitionTimers() {
-  transitionUpdateTime = transitionStartTime = -1.1;
+  transitionStartTime = -1.1;
+  transitionUpdateTime = -1.1;
   transitionUpdateType = 0;
   transitionSuspendedTime = -1.1;
   transitionEventRepeatTime = transitionEventTime;
@@ -414,7 +416,8 @@ export function resetComponentEffectTimers() {
   if (!enableProfilerTimer || !enableProfilerCommitHooks) {
     return;
   }
-  componentEffectEndTime = componentEffectStartTime = -1.1;
+  componentEffectStartTime = -1.1;
+  componentEffectEndTime = -1.1;
 }
 
 export function pushComponentEffectStart() {
@@ -522,7 +525,8 @@ export function markNestedUpdateScheduled() {
 
 export function resetNestedUpdateFlag() {
   if (enableProfilerNestedUpdatePhase) {
-    nestedUpdateScheduled = currentUpdateIsNested = false;
+    currentUpdateIsNested = false;
+    nestedUpdateScheduled = false;
   }
 }
 
@@ -653,8 +657,7 @@ export function transferActualDuration(fiber) {
   // Transfer time spent rendering these children so we don't lose it
   // after we rerender. This is used as a helper in special cases
   // where we should count the work of multiple passes.
-  let child = fiber.child;
-  while (child != null) {
+  for (let child = fiber.child; child != null; child = child.sibling) {
     const actualDuration = fiber.actualDuration;
     if (actualDuration != null) {
       const childDuration = child.actualDuration;
@@ -662,7 +665,6 @@ export function transferActualDuration(fiber) {
         fiber.actualDuration = actualDuration + childDuration;
       }
     }
-    child = child.sibling;
   }
 }
 
@@ -677,8 +679,6 @@ export function stopAnimating(lanes) {
 }
 
 export function trackAnimatingTask(task) {
-  if (!animatingTask) {
-    animatingTask = task;
-  }
+  animatingTask ??= task;
 }
 //# sourceMappingURL=ReactProfilerTimer.js.map

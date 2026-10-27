@@ -114,11 +114,9 @@ function pingEngtangledActionScope() {
       currentEntangledLane = NoLane;
       currentEntangledActionThenable = null;
       needsIsomorphicIndicator = false;
-      let i = 0;
-      while (i < listeners.length) {
+      for (let i = 0; i < listeners.length; i++) {
         const listener = listeners[i];
         listener(undefined);
-        i++;
       }
     }
   }
@@ -145,19 +143,16 @@ export function chainThenableValue(thenable, result) {
       const fulfilledThenable = thenableWithOverride;
       fulfilledThenable.status = 'fulfilled';
       fulfilledThenable.value = result;
-      let i = 0;
-      while (i < listeners.length) {
+      for (let i = 0; i < listeners.length; i++) {
         const listener = listeners[i];
         listener(result);
-        i++;
       }
     },
     error => {
       const rejectedThenable = thenableWithOverride;
       rejectedThenable.status = 'rejected';
       rejectedThenable.reason = error;
-      let i = 0;
-      while (i < listeners.length) {
+      for (let i = 0; i < listeners.length; i++) {
         const listener = listeners[i];
         // This is a perf hack where we call the `onFulfill` ping function
         // instead of `onReject`, because we know that React is the only
@@ -165,7 +160,6 @@ export function chainThenableValue(thenable, result) {
         // We also know that it will read the error directly off the
         // `.reason` field.
         listener(undefined);
-        i++;
       }
     },
   );

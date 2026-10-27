@@ -482,10 +482,12 @@ function describeSiblingFiber(fiber, indent) {
   // Skip this type of fiber. We currently treat this as a fragment
   // so it's just part of the parent's children.
   let flatContent = '';
-  let childFiber = fiber.child;
-  while (childFiber != null) {
+  for (
+    let childFiber = fiber.child;
+    childFiber != null;
+    childFiber = childFiber.sibling
+  ) {
     flatContent += describeSiblingFiber(childFiber, indent);
-    childFiber = childFiber.sibling;
   }
   return flatContent;
 }

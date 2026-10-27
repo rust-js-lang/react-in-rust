@@ -66,7 +66,7 @@ export function addObjectToProperties(object, properties, indent, prefix) {
       addValueToProperties(key, value, properties, indent, prefix);
       if (addedProperties >= OBJECT_WIDTH_LIMIT) {
         properties.push([
-          `${prefix}${'\xA0\xA0'.repeat(indent)}Only ${OBJECT_WIDTH_LIMIT} properties are shown. React will not log more properties of this object.`,
+          `${prefix}${'\xa0\xa0'.repeat(indent)}Only ${OBJECT_WIDTH_LIMIT} properties are shown. React will not log more properties of this object.`,
           '',
         ]);
         break;
@@ -114,7 +114,7 @@ export function addValueToProperties(
             break;
           }
           properties.push([
-            prefix + '\xA0\xA0'.repeat(indent) + propertyName,
+            prefix + '\xa0\xa0'.repeat(indent) + propertyName,
             '<' + typeName,
           ]);
           if (key !== null) {
@@ -190,7 +190,7 @@ export function addValueToProperties(
           }
           if (kind === 'Entries') {
             properties.push([
-              prefix + '\xA0\xA0'.repeat(indent) + propertyName,
+              prefix + '\xa0\xa0'.repeat(indent) + propertyName,
               '',
             ]);
             for (const entry of value.slice(0, OBJECT_WIDTH_LIMIT)) {
@@ -256,7 +256,7 @@ export function addValueToProperties(
             }
           }
           properties.push([
-            '\xA0\xA0'.repeat(indent) + propertyName,
+            '\xa0\xa0'.repeat(indent) + propertyName,
             'Promise',
           ]);
         } else {
@@ -270,7 +270,7 @@ export function addValueToProperties(
             }
           }
           properties.push([
-            prefix + '\xA0\xA0'.repeat(indent) + propertyName,
+            prefix + '\xa0\xa0'.repeat(indent) + propertyName,
             objectName !== 'Object' ? objectName : indent < 3 ? '' : '…',
           ]);
           if (indent < 3) {
@@ -308,12 +308,12 @@ export function addValueToProperties(
       // eslint-disable-next-line react-internal/safe-string-coercion
       desc = String(value);
   }
-  properties.push([prefix + '\xA0\xA0'.repeat(indent) + propertyName, desc]);
+  properties.push([prefix + '\xa0\xa0'.repeat(indent) + propertyName, desc]);
 }
 
-const REMOVED = '-\xA0';
-const ADDED = '+\xA0';
-const UNCHANGED = '\u2007\xA0';
+const REMOVED = '-\xa0';
+const ADDED = '+\xa0';
+const UNCHANGED = '\u2007\xa0';
 
 export function addObjectDiffToProperties(prev, next, properties, indent) {
   // Note: We diff even non-owned properties here but things that are shared end up just the same.
@@ -332,7 +332,7 @@ export function addObjectDiffToProperties(prev, next, properties, indent) {
     }
 
     if (!(key in next)) {
-      properties.push([REMOVED + '\xA0\xA0'.repeat(indent) + key, '…']);
+      properties.push([REMOVED + '\xa0\xa0'.repeat(indent) + key, '…']);
       isDeeplyEqual = false;
     }
     prevPropertiesChecked++;
@@ -357,7 +357,7 @@ export function addObjectDiffToProperties(prev, next, properties, indent) {
           // Omit any change inside the top level children prop since it's expected to change
           // with any change to children of the component and their props will be logged
           // elsewhere but still mark it as a cause of render.
-          const line = '\xA0\xA0'.repeat(indent) + key;
+          const line = '\xa0\xa0'.repeat(indent) + key;
           properties.push([REMOVED + line, '…'], [ADDED + line, '…']);
           isDeeplyEqual = false;
           continue;
@@ -383,7 +383,7 @@ export function addObjectDiffToProperties(prev, next, properties, indent) {
               // If the only thing that has changed is the props of a nested element, then
               // we omit the props because it is likely to be represented as a diff elsewhere.
               const typeName = getComponentNameFromType(nextValue.type) || '…';
-              const line = '\xA0\xA0'.repeat(indent) + key;
+              const line = '\xa0\xa0'.repeat(indent) + key;
               const desc = '<' + typeName + ' … />';
               properties.push([REMOVED + line, desc], [ADDED + line, desc]);
               isDeeplyEqual = false;
@@ -400,7 +400,7 @@ export function addObjectDiffToProperties(prev, next, properties, indent) {
             ) {
               // Diff nested object
               properties.push([
-                UNCHANGED + '\xA0\xA0'.repeat(indent) + key,
+                UNCHANGED + '\xa0\xa0'.repeat(indent) + key,
                 nextKind === '[object Array]' ? 'Array' : '',
               ]);
               const prevLength = properties.length;
@@ -437,7 +437,7 @@ export function addObjectDiffToProperties(prev, next, properties, indent) {
               ? '() => {}'
               : nextValue.name + '() {}';
             properties.push([
-              UNCHANGED + '\xA0\xA0'.repeat(indent) + key,
+              UNCHANGED + '\xa0\xa0'.repeat(indent) + key,
               desc +
                 ' Referentially unequal function closure. Consider memoization.',
             ]);
@@ -451,7 +451,7 @@ export function addObjectDiffToProperties(prev, next, properties, indent) {
         isDeeplyEqual = false;
       }
     } else {
-      properties.push([ADDED + '\xA0\xA0'.repeat(indent) + key, '…']);
+      properties.push([ADDED + '\xa0\xa0'.repeat(indent) + key, '…']);
       isDeeplyEqual = false;
     }
 

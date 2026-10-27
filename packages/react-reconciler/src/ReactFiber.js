@@ -162,7 +162,8 @@ function createFiber(tag, pendingProps, key, mode) {
     // https://bugs.chromium.org/p/v8/issues/detail?id=8538
     fiber.actualDuration = -0;
     fiber.actualStartTime = -1.1;
-    fiber.treeBaseDuration = fiber.selfBaseDuration = -0;
+    fiber.selfBaseDuration = -0;
+    fiber.treeBaseDuration = -0;
   }
 
   if (__DEV__) {
@@ -217,11 +218,10 @@ export function createWorkInProgress(current, pendingProps) {
     if (__DEV__) {
       // DEV-only fields
 
-      workInProgress._debugOwner = current._debugOwner ?? null;
-      workInProgress._debugStack = current._debugStack ?? null;
-      workInProgress._debugTask = current._debugTask ?? null;
-      const debugHookTypes = current._debugHookTypes;
-      workInProgress._debugHookTypes = debugHookTypes ?? null;
+      workInProgress._debugOwner = current._debugOwner;
+      workInProgress._debugStack = current._debugStack;
+      workInProgress._debugTask = current._debugTask;
+      workInProgress._debugHookTypes = current._debugHookTypes ?? null;
     }
 
     workInProgress.alternate = current;
@@ -233,7 +233,10 @@ export function createWorkInProgress(current, pendingProps) {
 
     // We already have an alternate.
     // Reset the effect tag.
-    workInProgress.subtreeFlags = workInProgress.flags = NoFlags;
+    workInProgress.flags = NoFlags;
+
+    // The effects are no longer valid.
+    workInProgress.subtreeFlags = NoFlags;
     workInProgress.deletions = null;
 
     if (enableOptimisticKey) {
@@ -275,8 +278,7 @@ export function createWorkInProgress(current, pendingProps) {
         ? {
             lanes: currentDependencies.lanes,
             firstContext: currentDependencies.firstContext,
-            _debugThenableState:
-              currentDependencies._debugThenableState ?? null,
+            _debugThenableState: currentDependencies._debugThenableState,
           }
         : {
             lanes: currentDependencies.lanes,
@@ -291,13 +293,13 @@ export function createWorkInProgress(current, pendingProps) {
   workInProgress.refCleanup = current.refCleanup;
 
   if (enableProfilerTimer) {
-    workInProgress.selfBaseDuration = current.selfBaseDuration ?? null;
-    workInProgress.treeBaseDuration = current.treeBaseDuration ?? null;
+    workInProgress.selfBaseDuration = current.selfBaseDuration;
+    workInProgress.treeBaseDuration = current.treeBaseDuration;
   }
 
   if (__DEV__) {
-    workInProgress._debugInfo = current._debugInfo ?? null;
-    workInProgress._debugNeedsRemount = current._debugNeedsRemount ?? null;
+    workInProgress._debugInfo = current._debugInfo;
+    workInProgress._debugNeedsRemount = current._debugNeedsRemount;
     switch (workInProgress.tag) {
       case FunctionComponent:
       case SimpleMemoComponent:
@@ -346,7 +348,8 @@ export function resetWorkInProgress(workInProgress, renderLanes) {
     if (enableProfilerTimer) {
       // Note: We don't reset the actualTime counts. It's useful to accumulate
       // actual time across multiple render passes.
-      workInProgress.treeBaseDuration = workInProgress.selfBaseDuration = 0;
+      workInProgress.selfBaseDuration = 0;
+      workInProgress.treeBaseDuration = 0;
     }
   } else {
     // Reset to the cloned values that createWorkInProgress would've.
@@ -381,8 +384,7 @@ export function resetWorkInProgress(workInProgress, renderLanes) {
           ? {
               lanes: currentDependencies.lanes,
               firstContext: currentDependencies.firstContext,
-              _debugThenableState:
-                currentDependencies._debugThenableState ?? null,
+              _debugThenableState: currentDependencies._debugThenableState,
             }
           : {
               lanes: currentDependencies.lanes,
@@ -393,8 +395,8 @@ export function resetWorkInProgress(workInProgress, renderLanes) {
     if (enableProfilerTimer) {
       // Note: We don't reset the actualTime counts. It's useful to accumulate
       // actual time across multiple render passes.
-      workInProgress.selfBaseDuration = current.selfBaseDuration ?? null;
-      workInProgress.treeBaseDuration = current.treeBaseDuration ?? null;
+      workInProgress.selfBaseDuration = current.selfBaseDuration;
+      workInProgress.treeBaseDuration = current.treeBaseDuration;
     }
   }
 
@@ -601,7 +603,7 @@ export function createFiberFromElement(element, mode, lanes) {
     lanes,
   );
   if (__DEV__) {
-    fiber._debugOwner = element._owner ?? null;
+    fiber._debugOwner = element._owner;
     fiber._debugStack = element._debugStack ?? null;
     fiber._debugTask = element._debugTask ?? null;
   }
@@ -618,7 +620,8 @@ export function createFiberFromFragment(elements, mode, lanes, key) {
 // shared/ReactTypes' `ReactScope`.
 function createFiberFromScope(scope, pendingProps, mode, lanes, key) {
   const fiber = createFiber(ScopeComponent, pendingProps, key, mode);
-  fiber.elementType = fiber.type = scope;
+  fiber.type = scope;
+  fiber.elementType = scope;
   fiber.lanes = lanes;
   return fiber;
 }

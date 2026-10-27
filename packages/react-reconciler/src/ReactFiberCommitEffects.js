@@ -48,10 +48,10 @@ import {
   setIsRunningInsertionEffect,
 } from './ReactFiberWorkLoop.js';
 import {
-  Insertion as HOOK_INSERTION,
-  Layout as HOOK_LAYOUT,
-  NoFlags as NO_HOOK_EFFECT,
-  Passive as HOOK_PASSIVE,
+  Insertion as HookInsertion,
+  Layout as HookLayout,
+  NoFlags as NoHookEffect,
+  Passive as HookPassive,
 } from './ReactHookEffectTags.js';
 import {
   isCurrentUpdateNested,
@@ -131,9 +131,9 @@ export function commitHookEffectListMount(flags, finishedWork) {
       while (true) {
         if ((effect.tag & flags) === flags) {
           if (enableSchedulingProfiler) {
-            if ((flags & HOOK_PASSIVE) !== NO_HOOK_EFFECT) {
+            if ((flags & HookPassive) !== NoHookEffect) {
               markComponentPassiveEffectMountStarted(finishedWork);
-            } else if ((flags & HOOK_LAYOUT) !== NO_HOOK_EFFECT) {
+            } else if ((flags & HookLayout) !== NoHookEffect) {
               markComponentLayoutEffectMountStarted(finishedWork);
             }
           }
@@ -141,7 +141,7 @@ export function commitHookEffectListMount(flags, finishedWork) {
           // Mount
           let destroy;
           if (__DEV__) {
-            if ((flags & HOOK_INSERTION) !== NO_HOOK_EFFECT) {
+            if ((flags & HookInsertion) !== NoHookEffect) {
               setIsRunningInsertionEffect(true);
             }
             destroy = runWithFiberInDEV(
@@ -149,7 +149,7 @@ export function commitHookEffectListMount(flags, finishedWork) {
               effect => $unwrap(callCreateInDEV)(effect),
               effect,
             );
-            if ((flags & HOOK_INSERTION) !== NO_HOOK_EFFECT) {
+            if ((flags & HookInsertion) !== NoHookEffect) {
               setIsRunningInsertionEffect(false);
             }
           } else {
@@ -160,9 +160,9 @@ export function commitHookEffectListMount(flags, finishedWork) {
           }
 
           if (enableSchedulingProfiler) {
-            if ((flags & HOOK_PASSIVE) !== NO_HOOK_EFFECT) {
+            if ((flags & HookPassive) !== NoHookEffect) {
               markComponentPassiveEffectMountStopped();
-            } else if ((flags & HOOK_LAYOUT) !== NO_HOOK_EFFECT) {
+            } else if ((flags & HookLayout) !== NoHookEffect) {
               markComponentLayoutEffectMountStopped();
             }
           }
@@ -173,9 +173,9 @@ export function commitHookEffectListMount(flags, finishedWork) {
             typeof destroy !== 'function'
           ) {
             const hookName =
-              (effect.tag & HOOK_LAYOUT) !== NoFlags
+              (effect.tag & HookLayout) !== NoFlags
                 ? 'useLayoutEffect'
-                : (effect.tag & HOOK_INSERTION) !== NoFlags
+                : (effect.tag & HookInsertion) !== NoFlags
                   ? 'useInsertionEffect'
                   : 'useEffect';
             let addendum;
@@ -250,25 +250,25 @@ export function commitHookEffectListUnmount(
           if (destroy !== undefined) {
             inst.destroy = undefined;
             if (enableSchedulingProfiler) {
-              if ((flags & HOOK_PASSIVE) !== NO_HOOK_EFFECT) {
+              if ((flags & HookPassive) !== NoHookEffect) {
                 markComponentPassiveEffectUnmountStarted(finishedWork);
-              } else if ((flags & HOOK_LAYOUT) !== NO_HOOK_EFFECT) {
+              } else if ((flags & HookLayout) !== NoHookEffect) {
                 markComponentLayoutEffectUnmountStarted(finishedWork);
               }
             }
 
-            if (__DEV__ && (flags & HOOK_INSERTION) !== NO_HOOK_EFFECT) {
+            if (__DEV__ && (flags & HookInsertion) !== NoHookEffect) {
               setIsRunningInsertionEffect(true);
             }
             safelyCallDestroy(finishedWork, nearestMountedAncestor, destroy);
-            if (__DEV__ && (flags & HOOK_INSERTION) !== NO_HOOK_EFFECT) {
+            if (__DEV__ && (flags & HookInsertion) !== NoHookEffect) {
               setIsRunningInsertionEffect(false);
             }
 
             if (enableSchedulingProfiler) {
-              if ((flags & HOOK_PASSIVE) !== NO_HOOK_EFFECT) {
+              if ((flags & HookPassive) !== NoHookEffect) {
                 markComponentPassiveEffectUnmountStopped();
-              } else if ((flags & HOOK_LAYOUT) !== NO_HOOK_EFFECT) {
+              } else if ((flags & HookLayout) !== NoHookEffect) {
                 markComponentLayoutEffectUnmountStopped();
               }
             }

@@ -19,18 +19,18 @@ import {
   warnAboutUpdateOnNotYetMountedFiberInDEV,
 } from './ReactFiberWorkLoop.js';
 import {HostRoot, OffscreenComponent} from './ReactWorkTags.js';
-import {$take} from '@rust-js/runtime';
 
 // If a render is in progress, and we receive an update from a concurrent event,
 // we wait until the current render is over (either finished or interrupted)
 // before adding it to the fiber/hook queue. Push to this array so we can
 // access the queue, fiber, update, et al later.
-const concurrentQueues = [];
+let concurrentQueues = [];
 
 let concurrentlyUpdatedLanes = NoLanes;
 
 export function finishQueueingConcurrentUpdates() {
-  const queued = $take(concurrentQueues, []);
+  const queued = concurrentQueues;
+  concurrentQueues = [];
 
   concurrentlyUpdatedLanes = NoLanes;
 

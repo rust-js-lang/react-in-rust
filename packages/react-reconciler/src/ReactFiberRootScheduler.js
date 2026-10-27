@@ -74,13 +74,13 @@ import {
 } from './ReactProfilerTimer.js';
 import {LegacyRoot} from './ReactRootTags.js';
 import {
-  IdlePriority as IDLE_SCHEDULER_PRIORITY,
-  ImmediatePriority as IMMEDIATE_SCHEDULER_PRIORITY,
-  NormalPriority as NORMAL_SCHEDULER_PRIORITY,
-  UserBlockingPriority as USER_BLOCKING_SCHEDULER_PRIORITY,
-  cancelCallback as SCHEDULER_CANCEL_CALLBACK,
+  IdlePriority as IdleSchedulerPriority,
+  ImmediatePriority as ImmediateSchedulerPriority,
+  NormalPriority as NormalSchedulerPriority,
+  UserBlockingPriority as UserBlockingSchedulerPriority,
+  cancelCallback as Scheduler_cancelCallback,
   now,
-  scheduleCallback as SCHEDULER_SCHEDULE_CALLBACK,
+  scheduleCallback as Scheduler_scheduleCallback,
 } from './Scheduler.js';
 import {$unwrap} from '@rust-js/runtime';
 
@@ -116,12 +116,12 @@ export function ensureRootIsScheduled(root) {
   if (lastScheduledRoot === root || root.next != null) {
     // Fast path. This root is already scheduled.
   } else {
-    const lastScheduledRoot$1 = lastScheduledRoot;
-    if (lastScheduledRoot$1 == null) {
-      firstScheduledRoot = lastScheduledRoot = root;
+    if (lastScheduledRoot == null) {
+      firstScheduledRoot = root;
     } else {
-      lastScheduledRoot = lastScheduledRoot$1.next = root;
+      lastScheduledRoot.next = root;
     }
+    lastScheduledRoot = root;
   }
 
   // Any time a root received an update, we set this to true until the next time
@@ -188,8 +188,7 @@ function flushSyncWorkAcrossRoots_impl(syncTransitionLanes, onlyLegacy) {
   isFlushingWork = true;
   while (true) {
     let didPerformSomeWork = false;
-    let root = firstScheduledRoot;
-    while (root != null) {
+    for (let root = firstScheduledRoot; root != null; root = root.next) {
       if (onlyLegacy && (disableLegacyMode || root.tag !== LegacyRoot)) {
         // Skip non-legacy roots.
       } else if (syncTransitionLanes !== NoLanes) {
@@ -221,7 +220,6 @@ function flushSyncWorkAcrossRoots_impl(syncTransitionLanes, onlyLegacy) {
           }
         }
       }
-      root = root.next;
     }
     if (!didPerformSomeWork) {
       isFlushingWork = false;
@@ -465,17 +463,18 @@ function scheduleTaskForRootDuringMicrotask(root, currentTime) {
   const value = lanesToEventPriority(nextLanes);
   let schedulerPriorityLevel;
   if (value === DiscreteEventPriority || value === ContinuousEventPriority) {
-    schedulerPriorityLevel = USER_BLOCKING_SCHEDULER_PRIORITY;
+    schedulerPriorityLevel = UserBlockingSchedulerPriority;
   } else if (value === DefaultEventPriority) {
-    schedulerPriorityLevel = NORMAL_SCHEDULER_PRIORITY;
+    schedulerPriorityLevel = NormalSchedulerPriority;
   } else if (value === IdleEventPriority) {
-    schedulerPriorityLevel = IDLE_SCHEDULER_PRIORITY;
+    schedulerPriorityLevel = IdleSchedulerPriority;
   } else {
-    schedulerPriorityLevel = NORMAL_SCHEDULER_PRIORITY;
+    schedulerPriorityLevel = NormalSchedulerPriority;
   }
 
-  const newCallbackNode = scheduleCallback(schedulerPriorityLevel, didTimeout =>
-    performWorkOnRootViaSchedulerTask(root, didTimeout),
+  const newCallbackNode = scheduleCallback(
+    schedulerPriorityLevel,
+    performWorkOnRootViaSchedulerTask.bind(null, root),
   );
 
   root.callbackPriority = newCallbackPriority;
@@ -569,7 +568,7 @@ function performWorkOnRootViaSchedulerTask(root, didTimeout) {
   if (root.callbackNode != null && root.callbackNode === originalCallbackNode) {
     // The task node scheduled for this root is the same one that's
     // currently executed. Need to return a continuation.
-    return didTimeout => performWorkOnRootViaSchedulerTask(root, didTimeout);
+    return performWorkOnRootViaSchedulerTask.bind(null, root);
   }
   return null;
 }
@@ -603,7 +602,7 @@ function scheduleCallback(priorityLevel, callback) {
       return fakeActCallbackNode;
     }
   }
-  return SCHEDULER_SCHEDULE_CALLBACK(priorityLevel, callback, undefined);
+  return Scheduler_scheduleCallback(priorityLevel, callback, undefined);
 }
 
 function cancelCallback(callbackNode) {
@@ -611,7 +610,7 @@ function cancelCallback(callbackNode) {
     // Special `act` case: check if this is the fake callback node used by
     // the `act` implementation.
   } else if (callbackNode != null) {
-    SCHEDULER_CANCEL_CALLBACK(callbackNode);
+    Scheduler_cancelCallback(callbackNode);
   }
 }
 
@@ -647,8 +646,8 @@ function scheduleImmediateRootScheduleTask() {
         // wrong semantically but it prevents an infinite loop. The bug is
         // Safari's, not ours, so we just do our best to not crash even though
         // the behavior isn't completely correct.
-        SCHEDULER_SCHEDULE_CALLBACK(
-          IMMEDIATE_SCHEDULER_PRIORITY,
+        Scheduler_scheduleCallback(
+          ImmediateSchedulerPriority,
           () => {
             processRootScheduleInImmediateTask();
           },
@@ -660,8 +659,8 @@ function scheduleImmediateRootScheduleTask() {
     });
   } else {
     // If microtasks are not supported, use Scheduler.
-    SCHEDULER_SCHEDULE_CALLBACK(
-      IMMEDIATE_SCHEDULER_PRIORITY,
+    Scheduler_scheduleCallback(
+      ImmediateSchedulerPriority,
       () => {
         processRootScheduleInImmediateTask();
       },

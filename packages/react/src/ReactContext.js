@@ -37,7 +37,8 @@ export function createContext(defaultValue) {
     _context: context,
   };
   if (__DEV__) {
-    context._currentRenderer2 = context._currentRenderer = null;
+    context._currentRenderer = null;
+    context._currentRenderer2 = null;
   }
 
   return context;

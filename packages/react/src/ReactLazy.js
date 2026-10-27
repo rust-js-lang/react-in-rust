@@ -24,7 +24,8 @@ function lazyInitializer(payload) {
         // Mark when we first kicked off the lazy request.
         // $FlowFixMe[cannot-write]
         const now = performance.now();
-        ioInfo.start = ioInfo.end = now;
+        ioInfo.start = now;
+        ioInfo.end = now;
         // Stash a Promise for introspection of the value later.
         // $FlowFixMe[cannot-write]
         ioInfo.value = new Promise((resolve, reject) => {
@@ -157,7 +158,6 @@ export function lazy(ctor) {
     // We use these fields to store the result.
     _status: Uninitialized,
     _result: ctor,
-    _ioInfo: undefined,
   };
 
   const lazyType = {

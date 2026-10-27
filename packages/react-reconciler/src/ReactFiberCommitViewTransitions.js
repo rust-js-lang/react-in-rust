@@ -264,8 +264,7 @@ function commitAppearingPairViewTransitions(placement) {
     // This has no named view transitions in its subtree.
     return;
   }
-  let child = placement.child;
-  while (child != null) {
+  for (let child = placement.child; child != null; child = child.sibling) {
     if (child.tag === OffscreenComponent && child.memoizedState != null) {
       // This tree was already hidden so we skip it.
     } else {
@@ -314,13 +313,11 @@ function commitAppearingPairViewTransitions(placement) {
         }
       }
     }
-    child = child.sibling;
   }
 }
 
 export function commitParentEnterViewTransitions(parent, gesture) {
-  let child = parent.child;
-  while (child != null) {
+  for (let child = parent.child; child != null; child = child.sibling) {
     if (child.tag === OffscreenComponent && child.memoizedState != null) {
       // Skip hidden subtrees.
     } else if (child.tag === ViewTransitionComponent) {
@@ -371,13 +368,11 @@ export function commitParentEnterViewTransitions(parent, gesture) {
     } else if ((child.subtreeFlags & ViewTransitionStaticParent) !== NoFlags) {
       commitParentEnterViewTransitions(child, gesture);
     }
-    child = child.sibling;
   }
 }
 
 export function commitParentExitViewTransitions(parent, gesture) {
-  let child = parent.child;
-  while (child != null) {
+  for (let child = parent.child; child != null; child = child.sibling) {
     if (child.tag === OffscreenComponent && child.memoizedState != null) {
       // Skip hidden subtrees.
     } else if (child.tag === ViewTransitionComponent) {
@@ -428,13 +423,11 @@ export function commitParentExitViewTransitions(parent, gesture) {
     } else if ((child.subtreeFlags & ViewTransitionStaticParent) !== NoFlags) {
       commitParentExitViewTransitions(child, gesture);
     }
-    child = child.sibling;
   }
 }
 
 function restoreParentEnterOrExitViewTransitions(parent) {
-  let child = parent.child;
-  while (child != null) {
+  for (let child = parent.child; child != null; child = child.sibling) {
     if (child.tag === OffscreenComponent && child.memoizedState != null) {
       // Skip hidden subtrees.
     } else if (child.tag === ViewTransitionComponent) {
@@ -456,7 +449,6 @@ function restoreParentEnterOrExitViewTransitions(parent) {
     } else if ((child.subtreeFlags & ViewTransitionStaticParent) !== NoFlags) {
       restoreParentEnterOrExitViewTransitions(child);
     }
-    child = child.sibling;
   }
 }
 
@@ -502,10 +494,8 @@ export function commitEnterViewTransitions(placement, gesture) {
       commitAppearingPairViewTransitions(placement);
     }
   } else if ((placement.subtreeFlags & ViewTransitionStatic) !== NoFlags) {
-    let child = placement.child;
-    while (child != null) {
+    for (let child = placement.child; child != null; child = child.sibling) {
       commitEnterViewTransitions(child, gesture);
-      child = child.sibling;
     }
   } else {
     commitAppearingPairViewTransitions(placement);
@@ -521,8 +511,7 @@ function commitDeletedPairViewTransitions(deletion) {
     // This has no named view transitions in its subtree.
     return;
   }
-  let child = deletion.child;
-  while (child != null) {
+  for (let child = deletion.child; child != null; child = child.sibling) {
     if (child.tag === OffscreenComponent && child.memoizedState != null) {
       // This tree was already hidden so we skip it.
     } else {
@@ -578,7 +567,6 @@ function commitDeletedPairViewTransitions(deletion) {
       }
       commitDeletedPairViewTransitions(child);
     }
-    child = child.sibling;
   }
 }
 
@@ -631,10 +619,8 @@ export function commitExitViewTransitions(deletion) {
       commitDeletedPairViewTransitions(deletion);
     }
   } else if ((deletion.subtreeFlags & ViewTransitionStatic) !== NoFlags) {
-    let child = deletion.child;
-    while (child != null) {
+    for (let child = deletion.child; child != null; child = child.sibling) {
       commitExitViewTransitions(child);
-      child = child.sibling;
     }
   } else if (appearingViewTransitions != null) {
     commitDeletedPairViewTransitions(deletion);
@@ -687,8 +673,7 @@ export function commitBeforeUpdateViewTransition(current, finishedWork) {
 }
 
 export function commitNestedViewTransitions(changedParent) {
-  let child = changedParent.child;
-  while (child != null) {
+  for (let child = changedParent.child; child != null; child = child.sibling) {
     if (child.tag === ViewTransitionComponent) {
       // In this case the outer ViewTransition component wins but if there
       // was an update through this component then the inner one wins.
@@ -715,7 +700,6 @@ export function commitNestedViewTransitions(changedParent) {
     } else if ((child.subtreeFlags & ViewTransitionStatic) !== NoFlags) {
       commitNestedViewTransitions(child);
     }
-    child = child.sibling;
   }
 }
 
@@ -724,8 +708,7 @@ function restorePairedViewTransitions(parent) {
     // This has no named view transitions in its subtree.
     return;
   }
-  let child = parent.child;
-  while (child != null) {
+  for (let child = parent.child; child != null; child = child.sibling) {
     if (child.tag === OffscreenComponent && child.memoizedState != null) {
       // This tree was already hidden so we skip it.
     } else {
@@ -742,7 +725,6 @@ function restorePairedViewTransitions(parent) {
       }
       restorePairedViewTransitions(child);
     }
-    child = child.sibling;
   }
 }
 
@@ -757,10 +739,8 @@ export function restoreEnterOrExitViewTransitions(fiber) {
     }
     restorePairedViewTransitions(fiber);
   } else if ((fiber.subtreeFlags & ViewTransitionStatic) !== NoFlags) {
-    let child = fiber.child;
-    while (child != null) {
+    for (let child = fiber.child; child != null; child = child.sibling) {
       restoreEnterOrExitViewTransitions(child);
-      child = child.sibling;
     }
   } else {
     restorePairedViewTransitions(fiber);
@@ -782,15 +762,13 @@ export function restoreUpdateViewTransitionForGesture(current, finishedWork) {
 }
 
 export function restoreNestedViewTransitions(changedParent) {
-  let child = changedParent.child;
-  while (child != null) {
+  for (let child = changedParent.child; child != null; child = child.sibling) {
     if (child.tag === ViewTransitionComponent) {
       const grandchild = child.child;
       restoreViewTransitionOnHostInstances(grandchild, false);
     } else if ((child.subtreeFlags & ViewTransitionStatic) !== NoFlags) {
       restoreNestedViewTransitions(child);
     }
-    child = child.sibling;
   }
 }
 
@@ -1035,8 +1013,7 @@ export function measureUpdateViewTransition(current, finishedWork, gesture) {
 }
 
 export function measureNestedViewTransitions(changedParent, gesture) {
-  let child = changedParent.child;
-  while (child != null) {
+  for (let child = changedParent.child; child != null; child = child.sibling) {
     if (child.tag === ViewTransitionComponent) {
       const props = child.memoizedProps;
       const state = child.stateNode;
@@ -1071,7 +1048,6 @@ export function measureNestedViewTransitions(changedParent, gesture) {
     } else if ((child.subtreeFlags & ViewTransitionStatic) !== NoFlags) {
       measureNestedViewTransitions(child, gesture);
     }
-    child = child.sibling;
   }
 }
 //# sourceMappingURL=ReactFiberCommitViewTransitions.js.map

@@ -292,10 +292,11 @@ export function enqueueCapturedUpdate(workInProgress, capturedUpdate) {
             next: null,
           };
           if (newLast == null) {
-            newFirst = newLast = clone;
+            newFirst = clone;
           } else {
-            newLast = newLast.next = clone;
+            newLast.next = clone;
           }
+          newLast = clone;
           const next = update.next;
           if (next == null) {
             break;
@@ -305,14 +306,15 @@ export function enqueueCapturedUpdate(workInProgress, capturedUpdate) {
 
         // Append the captured update the end of the cloned list.
         if (newLast == null) {
-          newFirst = newLast = capturedUpdate;
+          newFirst = capturedUpdate;
         } else {
-          newLast = newLast.next = capturedUpdate;
+          newLast.next = capturedUpdate;
         }
       } else {
         // There are no base updates.
-        newFirst = newLast = capturedUpdate;
+        newFirst = capturedUpdate;
       }
+      newLast = capturedUpdate;
       const queue$1 = {
         baseState: currentQueue.baseState,
         firstBaseUpdate: newFirst ?? null,
@@ -541,10 +543,12 @@ export function processUpdateQueue(
           next: null,
         };
         if (newLastBaseUpdate == null) {
-          newFirstBaseUpdate = newLastBaseUpdate = clone;
+          newFirstBaseUpdate = clone;
+          newLastBaseUpdate = clone;
           newBaseState = newState;
         } else {
-          newLastBaseUpdate = newLastBaseUpdate.next = clone;
+          newLastBaseUpdate.next = clone;
+          newLastBaseUpdate = clone;
         }
         // Update the remaining priority in the queue.
         newLanes = mergeLanes(newLanes, updateLane);
@@ -574,7 +578,8 @@ export function processUpdateQueue(
 
             next: null,
           };
-          newLastBaseUpdate = newLastBaseUpdate.next = clone;
+          newLastBaseUpdate.next = clone;
+          newLastBaseUpdate = clone;
         }
 
         // Process this update.
@@ -697,11 +702,9 @@ export function commitHiddenCallbacks(updateQueue, context) {
   const hiddenCallbacks = updateQueue.shared.hiddenCallbacks;
   if (hiddenCallbacks != null) {
     updateQueue.shared.hiddenCallbacks = null;
-    let i = 0;
-    while (i < hiddenCallbacks.length) {
+    for (let i = 0; i < hiddenCallbacks.length; i++) {
       const callback = hiddenCallbacks[i];
       callCallback(callback, context);
-      i++;
     }
   }
 }
@@ -710,11 +713,9 @@ export function commitCallbacks(updateQueue, context) {
   const callbacks = updateQueue.callbacks;
   if (callbacks != null) {
     updateQueue.callbacks = null;
-    let i = 0;
-    while (i < callbacks.length) {
+    for (let i = 0; i < callbacks.length; i++) {
       const callback = callbacks[i];
       callCallback(callback, context);
-      i++;
     }
   }
 }

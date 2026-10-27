@@ -21,11 +21,9 @@ let TypedArrayConstructor;
 
 TaintRegistryObjects = ReactSharedInternals.TaintRegistryObjects;
 TaintRegistryValues = ReactSharedInternals.TaintRegistryValues;
-const taintRegistryByteLengths = ReactSharedInternals.TaintRegistryByteLengths;
-TaintRegistryByteLengths = taintRegistryByteLengths;
-const taintRegistryPendingRequests =
+TaintRegistryByteLengths = ReactSharedInternals.TaintRegistryByteLengths;
+TaintRegistryPendingRequests =
   ReactSharedInternals.TaintRegistryPendingRequests;
-TaintRegistryPendingRequests = taintRegistryPendingRequests;
 
 TypedArrayConstructor = getPrototypeOf(Uint32Array.prototype).constructor;
 

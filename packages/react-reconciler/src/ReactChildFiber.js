@@ -124,7 +124,8 @@ const ownerHasSymbolTypeWarning = {};
 let warnForMissingKey = (returnFiber, workInProgress, child) => {};
 
 if (__DEV__) {
-  didWarnAboutGenerators = didWarnAboutMaps = false;
+  didWarnAboutMaps = false;
+  didWarnAboutGenerators = false;
 
   /*
    * Warn if there's no key explicitly set on dynamic arrays of children or
@@ -406,10 +407,12 @@ function createChildReconciler(shouldTrackSideEffects) {
 
     // TODO: For the shouldClone case, this could be micro-optimized a bit by
     // assuming that after the first child we've already added everything.
-    let childToDelete = currentFirstChild;
-    while (childToDelete != null) {
+    for (
+      let childToDelete = currentFirstChild;
+      childToDelete != null;
+      childToDelete = childToDelete.sibling
+    ) {
       deleteChild(shouldTrackSideEffects, returnFiber, childToDelete);
-      childToDelete = childToDelete.sibling;
     }
     return null;
   }
@@ -420,8 +423,11 @@ function createChildReconciler(shouldTrackSideEffects) {
     // instead.
     const existingChildren = new Map();
 
-    let existingChild = currentFirstChild;
-    while (existingChild != null) {
+    for (
+      let existingChild = currentFirstChild;
+      existingChild != null;
+      existingChild = existingChild.sibling
+    ) {
       const borrow = $borrow($fieldCell(existingChild, 'key'), true);
       const key = borrow.value;
       $unborrow(borrow);
@@ -439,7 +445,6 @@ function createChildReconciler(shouldTrackSideEffects) {
       } else {
         existingChildren.set(key, existingChild);
       }
-      existingChild = existingChild.sibling;
     }
     return existingChildren;
   }
@@ -502,7 +507,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       if (__DEV__) {
         // We treat the parent as the owner for stack purposes.
         created._debugOwner = returnFiber;
-        created._debugTask = returnFiber._debugTask ?? null;
+        created._debugTask = returnFiber._debugTask;
         created._debugInfo = currentDebugInfo;
       }
       return created;
@@ -549,7 +554,7 @@ function createChildReconciler(shouldTrackSideEffects) {
         coerceRef(existing, element);
         existing.return = returnFiber;
         if (__DEV__) {
-          existing._debugOwner = element._owner ?? null;
+          existing._debugOwner = element._owner;
           existing._debugInfo = currentDebugInfo;
         }
         return existing;
@@ -609,7 +614,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       if (__DEV__) {
         // We treat the parent as the owner for stack purposes.
         created._debugOwner = returnFiber;
-        created._debugTask = returnFiber._debugTask ?? null;
+        created._debugTask = returnFiber._debugTask;
         created._debugInfo = currentDebugInfo;
       }
       return created;
@@ -646,7 +651,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       if (__DEV__) {
         // We treat the parent as the owner for stack purposes.
         created._debugOwner = returnFiber;
-        created._debugTask = returnFiber._debugTask ?? null;
+        created._debugTask = returnFiber._debugTask;
         created._debugInfo = currentDebugInfo;
       }
       return created;
@@ -707,7 +712,7 @@ function createChildReconciler(shouldTrackSideEffects) {
         if (__DEV__) {
           // We treat the parent as the owner for stack purposes.
           created._debugOwner = returnFiber;
-          created._debugTask = returnFiber._debugTask ?? null;
+          created._debugTask = returnFiber._debugTask;
           // Make sure to not push again when handling the Fragment child.
           const prevDebugInfo = pushDebugInfo(newChild._debugInfo);
           created._debugInfo = currentDebugInfo;
@@ -1658,7 +1663,7 @@ function createChildReconciler(shouldTrackSideEffects) {
     if (__DEV__) {
       // We treat the parent as the owner for stack purposes.
       created._debugOwner = returnFiber;
-      created._debugTask = returnFiber._debugTask ?? null;
+      created._debugTask = returnFiber._debugTask;
       created._debugInfo = currentDebugInfo;
     }
     return created;
@@ -1703,7 +1708,7 @@ function createChildReconciler(shouldTrackSideEffects) {
             coerceRef(existing, element);
             existing.return = returnFiber;
             if (__DEV__) {
-              existing._debugOwner = element._owner ?? null;
+              existing._debugOwner = element._owner;
               existing._debugInfo = currentDebugInfo;
             }
             validateFragmentProps(element, existing, returnFiber);
@@ -1732,7 +1737,7 @@ function createChildReconciler(shouldTrackSideEffects) {
           coerceRef(existing, element);
           existing.return = returnFiber;
           if (__DEV__) {
-            existing._debugOwner = element._owner ?? null;
+            existing._debugOwner = element._owner;
             existing._debugInfo = currentDebugInfo;
           }
           return existing;
@@ -1759,7 +1764,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       if (__DEV__) {
         // We treat the parent as the owner for stack purposes.
         created._debugOwner = returnFiber;
-        created._debugTask = returnFiber._debugTask ?? null;
+        created._debugTask = returnFiber._debugTask;
         created._debugInfo = currentDebugInfo;
       }
       validateFragmentProps(element, created, returnFiber);
@@ -2092,8 +2097,8 @@ function createChildReconciler(shouldTrackSideEffects) {
           // component/task.
           // In newer Chrome, Error constructor does capture the Task which is what
           // is logged by reportError. In that case this debugTask isn't used.
-          throwFiber._debugOwner = returnFiber._debugOwner ?? null;
-          throwFiber._debugTask = returnFiber._debugTask ?? null;
+          throwFiber._debugOwner = returnFiber._debugOwner;
+          throwFiber._debugTask = returnFiber._debugTask;
           if (debugInfo != null) {
             const iter = $iter(debugInfo.toReversed());
             while (true) {
@@ -2147,7 +2152,8 @@ export function cloneChildFibers(current, workInProgress) {
   while ((sibling = currentChild.sibling) != null) {
     currentChild = sibling;
     const next = createWorkInProgress(currentChild, currentChild.pendingProps);
-    newChild = newChild.sibling = next;
+    newChild.sibling = next;
+    newChild = next;
     newChild.return = workInProgress;
   }
   newChild.sibling = null;
@@ -2155,10 +2161,8 @@ export function cloneChildFibers(current, workInProgress) {
 
 // Reset a workInProgress child set to prepare it for a second pass.
 export function resetChildFibers(workInProgress, lanes) {
-  let child = workInProgress.child;
-  while (child != null) {
+  for (let child = workInProgress.child; child != null; child = child.sibling) {
     resetWorkInProgress(child, lanes);
-    child = child.sibling;
   }
 }
 

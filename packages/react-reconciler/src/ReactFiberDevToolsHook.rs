@@ -18,11 +18,15 @@ use crate::react_event_priorities::{
 use crate::react_fiber_flags::DID_CAPTURE;
 use crate::react_fiber_lane::{Lane, Lanes};
 use crate::react_internal_types::{Fiber, FiberRoot};
-use crate::scheduler::{
-    IDLE_PRIORITY as IDLE_SCHEDULER_PRIORITY, IMMEDIATE_PRIORITY as IMMEDIATE_SCHEDULER_PRIORITY,
-    LOG, NORMAL_PRIORITY as NORMAL_SCHEDULER_PRIORITY, PriorityLevel,
-    UNSTABLE_SET_DISABLE_YIELD_VALUE, USER_BLOCKING_PRIORITY as USER_BLOCKING_SCHEDULER_PRIORITY,
-};
+#[cfg_attr(rust_js, rust_js::name = "IdleSchedulerPriority")]
+use crate::scheduler::IDLE_PRIORITY as IDLE_SCHEDULER_PRIORITY;
+#[cfg_attr(rust_js, rust_js::name = "ImmediateSchedulerPriority")]
+use crate::scheduler::IMMEDIATE_PRIORITY as IMMEDIATE_SCHEDULER_PRIORITY;
+#[cfg_attr(rust_js, rust_js::name = "NormalSchedulerPriority")]
+use crate::scheduler::NORMAL_PRIORITY as NORMAL_SCHEDULER_PRIORITY;
+#[cfg_attr(rust_js, rust_js::name = "UserBlockingSchedulerPriority")]
+use crate::scheduler::USER_BLOCKING_PRIORITY as USER_BLOCKING_SCHEDULER_PRIORITY;
+use crate::scheduler::{LOG, PriorityLevel, UNSTABLE_SET_DISABLE_YIELD_VALUE};
 
 /// React DevTools' global hook, as the reconciler reads it: what DevTools,
 /// or Fast Refresh's runtime, installs before React loads.

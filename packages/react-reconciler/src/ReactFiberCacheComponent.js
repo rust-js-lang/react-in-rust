@@ -49,7 +49,8 @@ export const CacheContext = {
 };
 
 if (__DEV__) {
-  CacheContext._currentRenderer2 = CacheContext._currentRenderer = null;
+  CacheContext._currentRenderer = null;
+  CacheContext._currentRenderer2 = null;
 }
 
 // Creates a new empty Cache instance with a ref-count of 0. The caller is responsible

@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import objectIs from '../../shared/objectIs.js';
+import is from '../../shared/objectIs.js';
 import {HostTransitionContext, isPrimaryRenderer} from './ReactFiberConfig.js';
 import {
   DidPropagateContext,
@@ -41,7 +41,8 @@ let isDisallowedContextReadInDEV = false;
 export function resetContextDependencies() {
   // This is called right before React yields execution, to ensure `readContext`
   // cannot be called outside the render phase.
-  lastContextDependency = currentlyRenderingFiber = null;
+  currentlyRenderingFiber = null;
+  lastContextDependency = null;
   if (__DEV__) {
     isDisallowedContextReadInDEV = false;
   }
@@ -402,7 +403,7 @@ function propagateParentContextChanges(
 
         const oldValue = oldProps.value;
 
-        if (!objectIs(newValue, oldValue)) {
+        if (!is(newValue, oldValue)) {
           if (contexts) {
             contexts.push(context);
           } else {
@@ -478,17 +479,19 @@ export function checkIfContextChanged(currentDependencies) {
   // relatively uncommon path, except at the root of a changed subtree.
   // Alternatively, we could move these comparisons into `readContext`, but
   // that's a much hotter path, so I think this is an appropriate trade off.
-  let dependency = currentDependencies.firstContext;
-  while (dependency != null) {
+  for (
+    let dependency = currentDependencies.firstContext;
+    dependency != null;
+    dependency = dependency.next
+  ) {
     const context = dependency.context;
     const newValue = isPrimaryRenderer
       ? context._currentValue
       : context._currentValue2;
     const oldValue = dependency.memoizedValue;
-    if (!objectIs(newValue, oldValue)) {
+    if (!is(newValue, oldValue)) {
       return true;
     }
-    dependency = dependency.next;
   }
   return false;
 }
@@ -539,9 +542,7 @@ function readContextForConsumer(consumer, context) {
     memoizedValue: value,
     next: null,
   };
-
-  const lastContextDependency$1 = lastContextDependency;
-  if (lastContextDependency$1 == null) {
+  if (lastContextDependency == null) {
     if (consumer == null) {
       throw new Error(
         'Context can only be read while React is rendering. ' +
@@ -566,7 +567,8 @@ function readContextForConsumer(consumer, context) {
     consumer.flags |= NeedsPropagation;
   } else {
     // Append a new context item.
-    lastContextDependency = lastContextDependency$1.next = contextItem;
+    lastContextDependency.next = contextItem;
+    lastContextDependency = contextItem;
   }
   return value;
 }

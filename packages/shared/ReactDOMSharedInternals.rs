@@ -10,7 +10,7 @@ pub struct ReactDOMInternals(PhantomData<js::JsObject>);
 
 unsafe extern "Rust" {
     #[cfg_attr(rust_js, rust_js::name = "ReactDOMSharedInternals")]
-    #[link_name = "react-dom#*.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE"]
+    #[link_name = "react-dom#* as ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE"]
     pub safe static REACT_DOM_SHARED_INTERNALS: &'static ReactDOMInternals;
 }
 

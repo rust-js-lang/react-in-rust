@@ -196,8 +196,7 @@ function doesRequireClone(current, completedWork) {
 
   // TODO: If we move the `doesRequireClone` call after `bubbleProperties`
   // then we only have to check the `completedWork.subtreeFlags`.
-  let child = completedWork.child;
-  while (child != null) {
+  for (let child = completedWork.child; child != null; child = child.sibling) {
     const checkedFlags = Cloned | Visibility | Placement | ChildDeletion;
     if (
       (child.flags & checkedFlags) !== NoFlags ||
@@ -205,7 +204,6 @@ function doesRequireClone(current, completedWork) {
     ) {
       return true;
     }
-    child = child.sibling;
   }
   return false;
 }
@@ -726,12 +724,10 @@ function cutOffTailIfNeeded(renderState, hasRenderedATailFallback) {
 }
 
 function isOnlyNewMounts(tail) {
-  let fiber = tail;
-  while (fiber != null) {
+  for (let fiber = tail; fiber != null; fiber = fiber.sibling) {
     if (fiber.alternate != null) {
       return false;
     }
-    fiber = fiber.sibling;
   }
   return true;
 }
@@ -752,8 +748,11 @@ function bubbleProperties(completedWork) {
       let actualDuration = $unwrap(completedWork.actualDuration);
       let treeBaseDuration = $unwrap(completedWork.selfBaseDuration);
 
-      let child = completedWork.child;
-      while (child != null) {
+      for (
+        let child = completedWork.child;
+        child != null;
+        child = child.sibling
+      ) {
         newChildLanes = mergeLanes(
           newChildLanes,
           mergeLanes(child.lanes, child.childLanes),
@@ -774,14 +773,16 @@ function bubbleProperties(completedWork) {
 
         // $FlowFixMe[unsafe-addition] addition with possible null/undefined value
         treeBaseDuration += $unwrap(child.treeBaseDuration);
-        child = child.sibling;
       }
 
       completedWork.actualDuration = actualDuration;
       completedWork.treeBaseDuration = treeBaseDuration;
     } else {
-      let child = completedWork.child;
-      while (child != null) {
+      for (
+        let child = completedWork.child;
+        child != null;
+        child = child.sibling
+      ) {
         newChildLanes = mergeLanes(
           newChildLanes,
           mergeLanes(child.lanes, child.childLanes),
@@ -794,8 +795,6 @@ function bubbleProperties(completedWork) {
         // smell because it assumes the commit phase is never concurrent with
         // the render phase. Will address during refactor to alternate model.
         child.return = completedWork;
-
-        child = child.sibling;
       }
     }
   } else {
@@ -805,8 +804,11 @@ function bubbleProperties(completedWork) {
       // profiler durations.
       let treeBaseDuration = $unwrap(completedWork.selfBaseDuration);
 
-      let child = completedWork.child;
-      while (child != null) {
+      for (
+        let child = completedWork.child;
+        child != null;
+        child = child.sibling
+      ) {
         newChildLanes = mergeLanes(
           newChildLanes,
           mergeLanes(child.lanes, child.childLanes),
@@ -821,13 +823,15 @@ function bubbleProperties(completedWork) {
 
         // $FlowFixMe[unsafe-addition] addition with possible null/undefined value
         treeBaseDuration += $unwrap(child.treeBaseDuration);
-        child = child.sibling;
       }
 
       completedWork.treeBaseDuration = treeBaseDuration;
     } else {
-      let child = completedWork.child;
-      while (child != null) {
+      for (
+        let child = completedWork.child;
+        child != null;
+        child = child.sibling
+      ) {
         newChildLanes = mergeLanes(
           newChildLanes,
           mergeLanes(child.lanes, child.childLanes),
@@ -844,8 +848,6 @@ function bubbleProperties(completedWork) {
         // smell because it assumes the commit phase is never concurrent with
         // the render phase. Will address during refactor to alternate model.
         child.return = completedWork;
-
-        child = child.sibling;
       }
     }
   }
@@ -880,7 +882,7 @@ function completeDehydratedActivityBoundary(
         enableProfilerTimer &&
         (workInProgress.mode & ProfileMode) !== NoMode
       ) {
-        const isTimedOutSuspense = nextState;
+        const isTimedOutSuspense = nextState != null;
         if (isTimedOutSuspense) {
           // Don't count time spent in a timed out Suspense subtree as part of the base duration.
           const primaryChildFragment = workInProgress.child;
@@ -900,7 +902,8 @@ function completeDehydratedActivityBoundary(
     resetHydrationState();
     if ((workInProgress.flags & DidCapture) === NoFlags) {
       // This boundary did not suspend so it's now hydrated and unsuspended.
-      nextState = workInProgress.memoizedState = null;
+      nextState = null;
+      workInProgress.memoizedState = null;
     }
     // If nothing suspended, we need to schedule an effect to mark this boundary
     // as having hydrated so events know that they're free to be invoked.
@@ -910,7 +913,7 @@ function completeDehydratedActivityBoundary(
     workInProgress.flags |= Update;
     bubbleProperties(workInProgress);
     if (enableProfilerTimer && (workInProgress.mode & ProfileMode) !== NoMode) {
-      const isTimedOutSuspense = nextState;
+      const isTimedOutSuspense = nextState != null;
       if (isTimedOutSuspense) {
         // Don't count time spent in a timed out Suspense subtree as part of the base duration.
         const primaryChildFragment = workInProgress.child;
@@ -961,7 +964,7 @@ function completeDehydratedSuspenseBoundary(
         enableProfilerTimer &&
         (workInProgress.mode & ProfileMode) !== NoMode
       ) {
-        const isTimedOutSuspense = nextState;
+        const isTimedOutSuspense = nextState != null;
         if (isTimedOutSuspense) {
           // Don't count time spent in a timed out Suspense subtree as part of the base duration.
           const primaryChildFragment = workInProgress.child;
@@ -981,7 +984,8 @@ function completeDehydratedSuspenseBoundary(
     resetHydrationState();
     if ((workInProgress.flags & DidCapture) === NoFlags) {
       // This boundary did not suspend so it's now hydrated and unsuspended.
-      nextState = workInProgress.memoizedState = null;
+      nextState = null;
+      workInProgress.memoizedState = null;
     }
     // If nothing suspended, we need to schedule an effect to mark this boundary
     // as having hydrated so events know that they're free to be invoked.
@@ -991,7 +995,7 @@ function completeDehydratedSuspenseBoundary(
     workInProgress.flags |= Update;
     bubbleProperties(workInProgress);
     if (enableProfilerTimer && (workInProgress.mode & ProfileMode) !== NoMode) {
-      const isTimedOutSuspense = nextState;
+      const isTimedOutSuspense = nextState != null;
       if (isTimedOutSuspense) {
         // Don't count time spent in a timed out Suspense subtree as part of the base duration.
         const primaryChildFragment = workInProgress.child;
@@ -1659,8 +1663,11 @@ export function completeWork(current, workInProgress, renderLanes) {
             renderHasNotSuspendedYet() &&
             (current == null || (current.flags & DidCapture) === NoFlags);
           if (!cannotBeSuspended) {
-            let row = workInProgress.child;
-            while (row != null) {
+            for (
+              let row = workInProgress.child;
+              row != null;
+              row = row.sibling
+            ) {
               const suspended = findFirstSuspended(row);
               if (suspended != null) {
                 workInProgress.flags |= DidCapture;
@@ -1705,7 +1712,6 @@ export function completeWork(current, workInProgress, renderLanes) {
                 // Don't bubble properties in this case.
                 return workInProgress.child;
               }
-              row = row.sibling;
             }
           }
 
