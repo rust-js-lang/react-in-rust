@@ -281,8 +281,7 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
 
   const expirationTime = startTime + timeout;
 
-  const id = taskIdCounter;
-  taskIdCounter = id + 1;
+  const id = taskIdCounter++;
   const newTask = {
     id,
     callback,
