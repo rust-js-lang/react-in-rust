@@ -481,7 +481,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       return oldIndex;
     }
     // This is an insertion.
-    newFiber.flags = newFiber.flags | Placement | PlacementDEV;
+    newFiber.flags |= Placement | PlacementDEV;
     return lastPlacedIndex;
   }
 
@@ -489,7 +489,7 @@ function createChildReconciler(shouldTrackSideEffects) {
     // This is simpler for the single child case. We only need to do a
     // placement for inserting new children.
     if (shouldTrackSideEffects && newFiber.alternate == null) {
-      newFiber.flags = newFiber.flags | Placement | PlacementDEV;
+      newFiber.flags |= Placement | PlacementDEV;
     }
     return newFiber;
   }

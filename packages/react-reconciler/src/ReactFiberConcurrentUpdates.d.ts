@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {SharedQueue, Update} from './ReactFiberClassUpdateQueue.js';
+import type {Update, UpdateQueue} from './ReactFiberHooks.js';
 import type {Lane, Lanes} from './ReactFiberLane.js';
 import type {Fiber, FiberRoot} from './ReactInternalTypes.js';
 
@@ -24,15 +25,15 @@ export function getConcurrentlyUpdatedLanes(): Lanes;
 
 export function enqueueConcurrentHookUpdate(
   fiber: Fiber,
-  queue: ConcurrentQueue,
-  update: ConcurrentUpdate,
+  queue: UpdateQueue,
+  update: Update,
   lane: Lane,
 ): FiberRoot | null;
 
 export function enqueueConcurrentHookUpdateAndEagerlyBailout(
   fiber: Fiber,
-  queue: ConcurrentQueue,
-  update: ConcurrentUpdate,
+  queue: UpdateQueue,
+  update: Update,
 ): void;
 
 export function enqueueConcurrentClassUpdate(

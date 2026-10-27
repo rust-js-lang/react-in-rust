@@ -152,7 +152,8 @@ export function commitHookEffectListMount(flags, finishedWork) {
               setIsRunningInsertionEffect(false);
             }
           } else {
-            const {create, inst} = effect;
+            const create = effect.create;
+            const inst = effect.inst;
             destroy = create();
             inst.destroy = destroy;
           }
@@ -581,8 +582,7 @@ export function commitClassHiddenCallbacks(finishedWork) {
       if (__DEV__) {
         runWithFiberInDEV(
           finishedWork,
-          (updateQueue, instance) =>
-            commitHiddenCallbacks(updateQueue, instance),
+          commitHiddenCallbacks,
           updateQueue,
           instance,
         );
@@ -615,12 +615,7 @@ export function commitRootCallbacks(finishedWork) {
     }
     try {
       if (__DEV__) {
-        runWithFiberInDEV(
-          finishedWork,
-          (updateQueue, instance) => commitCallbacks(updateQueue, instance),
-          updateQueue,
-          instance,
-        );
+        runWithFiberInDEV(finishedWork, commitCallbacks, updateQueue, instance);
       } else {
         commitCallbacks(updateQueue, instance);
       }
@@ -680,8 +675,7 @@ export function commitClassSnapshot(finishedWork, current) {
     if (__DEV__) {
       snapshot = runWithFiberInDEV(
         finishedWork,
-        (instance, resolvedPrevProps, prevState) =>
-          callGetSnapshotBeforeUpdates(instance, resolvedPrevProps, prevState),
+        callGetSnapshotBeforeUpdates,
         instance,
         resolvedPrevProps,
         prevState,
@@ -850,7 +844,8 @@ export function safelyAttachRef(current, nearestMountedAncestor) {
 }
 
 export function safelyDetachRef(current, nearestMountedAncestor) {
-  const {ref, refCleanup} = current;
+  const ref = current.ref;
+  const refCleanup = current.refCleanup;
 
   if (ref != null) {
     if (typeof refCleanup === 'function') {

@@ -260,7 +260,7 @@ pub fn describe_native_component_frame(
             previous_dispatcher = REACT_SHARED_INTERNALS.h();
             // Set the dispatcher in DEV because this might be call in the render function
             // for warnings.
-            REACT_SHARED_INTERNALS.set_h(None);
+            REACT_SHARED_INTERNALS.set_h::<Dispatcher>(None);
             disable_logs();
         }
         let _restore = Restore {

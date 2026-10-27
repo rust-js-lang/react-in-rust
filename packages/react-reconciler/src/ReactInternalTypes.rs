@@ -10,16 +10,23 @@ use std::rc::Rc;
 
 use js::{JsError, JsObject, Map, Set, Unknown, WeakMap};
 use react_isomorphic::react_context::ReactContext;
+use react_isomorphic::react_create_ref::RefObject;
 use react_isomorphic::react_jsx_element::ReactKey;
 use react_isomorphic::react_start_transition::Transition;
+use shared::react_shared_internals::HooksDispatcher;
 use webapi::ConsoleTask;
 
-pub use shared::react_shared_internals::{AsyncDispatcher, Dispatcher};
+pub use shared::react_shared_internals::AsyncDispatcher;
 
 use crate::react_fiber_cache_component::Cache;
 use crate::react_fiber_concurrent_updates::ConcurrentUpdate;
 use crate::react_fiber_flags::Flags;
 use crate::react_fiber_gesture_scheduler::ScheduledGesture;
+use crate::react_fiber_hooks::{
+    Action, ActionStateAndDispatch, CacheRefresh, Create, DebugValueFormatter, Deps, EventFunction,
+    EventFunctionImpl, GetSnapshot, MemoCreate, Reducer, StartTransition, StateAndDispatch,
+    Subscribe,
+};
 use crate::react_fiber_lane::{Lane, LaneMap, Lanes};
 use crate::react_fiber_tracing_marker_component::{SuspenseInfo, TracingMarkerInstance};
 use crate::react_root_tags::RootTag;
@@ -71,6 +78,9 @@ pub enum HookType {
     UseActionState,
 }
 
+// Safety: a JS string, the hook's name.
+unsafe impl js::Defined for HookType {}
+
 /// A context a fiber read, and the value it read of it.
 pub struct ContextDependency<T: 'static> {
     pub context: Rc<ReactContext<T>>,
@@ -90,8 +100,11 @@ pub struct Dependencies {
     pub debug_thenable_state: Cell<Option<&'static Unknown>>,
 }
 
+/// One of a memo cache's arrays, which a compiled component reads and writes.
+pub type MemoCacheArray = Rc<RefCell<Vec<Option<&'static Unknown>>>>;
+
 pub struct MemoCache {
-    pub data: RefCell<Vec<Vec<Option<&'static Unknown>>>>,
+    pub data: Rc<RefCell<Vec<MemoCacheArray>>>,
     pub index: Cell<usize>,
 }
 
@@ -439,3 +452,51 @@ pub struct FiberRoot {
 }
 
 unsafe impl js::Defined for FiberRoot {}
+
+pub struct Dispatcher {
+    pub r#use: fn(Option<&'static Unknown>) -> Option<&'static Unknown>,
+    pub read_context: fn(&Rc<ReactContext<Option<&'static Unknown>>>) -> Option<&'static Unknown>,
+    pub use_state: fn(Option<&'static Unknown>) -> StateAndDispatch,
+    pub use_reducer: fn(
+        &'static Reducer,
+        Option<&'static Unknown>,
+        Option<&'static Unknown>,
+    ) -> StateAndDispatch,
+    pub use_context: fn(&Rc<ReactContext<Option<&'static Unknown>>>) -> Option<&'static Unknown>,
+    pub use_ref: fn(Option<&'static Unknown>) -> Rc<RefObject>,
+    pub use_effect: fn(Rc<Create>, Option<Deps>),
+    pub use_effect_event: fn(&'static EventFunctionImpl) -> Rc<EventFunction>,
+    pub use_insertion_effect: fn(Rc<Create>, Option<Deps>),
+    pub use_layout_effect: fn(Rc<Create>, Option<Deps>),
+    pub use_callback: fn(Option<&'static Unknown>, Option<Deps>) -> Option<&'static Unknown>,
+    pub use_memo: fn(&'static MemoCreate, Option<Deps>) -> Option<&'static Unknown>,
+    // The ref: an object whose `current` is set, a function called with the
+    // handle, or nothing; and what creates the handle.
+    pub use_imperative_handle: fn(Option<&'static Unknown>, Option<&'static Unknown>, Option<Deps>),
+    pub use_debug_value: fn(Option<&'static Unknown>, Option<&'static DebugValueFormatter>),
+    pub use_deferred_value:
+        fn(Option<&'static Unknown>, Option<&'static Unknown>) -> Option<&'static Unknown>,
+    pub use_transition: fn() -> (bool, Rc<StartTransition>),
+    pub use_sync_external_store: fn(
+        &'static Subscribe,
+        &'static GetSnapshot,
+        // A function, or undefined where none was given.
+        Option<&'static Unknown>,
+    ) -> Option<&'static Unknown>,
+    pub use_id: fn() -> String,
+    pub use_cache_refresh: fn() -> Rc<CacheRefresh>,
+    pub use_memo_cache: fn(usize) -> MemoCacheArray,
+    // ReactFiberConfig's `TransitionStatus`.
+    pub use_host_transition_status: fn() -> Option<&'static Unknown>,
+    // The passthrough, and the reducer, if it's a function.
+    pub use_optimistic: fn(Option<&'static Unknown>, Option<&'static Unknown>) -> StateAndDispatch,
+    pub use_form_state:
+        fn(&'static Action, Option<&'static Unknown>, Option<String>) -> ActionStateAndDispatch,
+    pub use_action_state:
+        fn(&'static Action, Option<&'static Unknown>, Option<String>) -> ActionStateAndDispatch,
+}
+
+// Safety: a JS object, `ReactSharedInternals.H`.
+unsafe impl js::Defined for Dispatcher {}
+
+impl HooksDispatcher for Dispatcher {}

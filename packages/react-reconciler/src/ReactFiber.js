@@ -597,7 +597,8 @@ export function createFiberFromElement(element, mode, lanes) {
   if (__DEV__) {
     owner = element._owner;
   }
-  const {type, key} = element;
+  const type = element.type;
+  const key = element.key;
   const pendingProps = element.props;
   const fiber = createFiberFromTypeAndProps(
     type,

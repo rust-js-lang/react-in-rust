@@ -114,7 +114,8 @@ export const callComponentWillUnmountInDEV = __DEV__
 
 const callCreate = {
   react_stack_bottom_frame(effect) {
-    const {create, inst} = effect;
+    const create = effect.create;
+    const inst = effect.inst;
     const destroy = create();
     inst.destroy = destroy;
     return destroy;

@@ -54,6 +54,8 @@ pub mod react_fiber_fragment_instance;
 pub mod react_fiber_gesture_scheduler;
 #[path = "src/ReactFiberHiddenContext.rs"]
 pub mod react_fiber_hidden_context;
+#[path = "src/ReactFiberHooks.rs"]
+pub mod react_fiber_hooks;
 #[path = "src/ReactFiberHostContext.rs"]
 pub mod react_fiber_host_context;
 #[path = "src/ReactFiberHotReloading.rs"]

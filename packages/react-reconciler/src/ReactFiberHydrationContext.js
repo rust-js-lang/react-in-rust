@@ -462,7 +462,7 @@ export function tryToClaimNextHydratableTextInstance(fiber) {
 export function claimNextHydratableActivityInstance(fiber) {
   const nextInstance = nextHydratableInstance;
   const activityInstance =
-    nextInstance != null ? tryHydrateActivity(fiber, nextInstance) : undefined;
+    nextInstance != null ? tryHydrateActivity(fiber, nextInstance) : null;
   if (activityInstance == null) {
     warnNonHydratedInstance(fiber, nextInstance);
     throwOnHydrationMismatch(fiber, false);
@@ -474,7 +474,7 @@ export function claimNextHydratableActivityInstance(fiber) {
 export function claimNextHydratableSuspenseInstance(fiber) {
   const nextInstance = nextHydratableInstance;
   const suspenseInstance =
-    nextInstance != null ? tryHydrateSuspense(fiber, nextInstance) : undefined;
+    nextInstance != null ? tryHydrateSuspense(fiber, nextInstance) : null;
   if (suspenseInstance == null) {
     warnNonHydratedInstance(fiber, nextInstance);
     throwOnHydrationMismatch(fiber, false);

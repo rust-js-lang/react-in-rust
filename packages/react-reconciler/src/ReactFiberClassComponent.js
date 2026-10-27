@@ -688,15 +688,11 @@ export function constructClassInstance(workInProgress, ctor, props) {
               'https://react.dev/link/unsafe-component-lifecycles',
             componentName,
             newApiName,
-            (foundWillMountName != null
-              ? `\n  ${foundWillMountName}`
-              : undefined) ?? '',
-            (foundWillReceivePropsName != null
+            foundWillMountName != null ? `\n  ${foundWillMountName}` : '',
+            foundWillReceivePropsName != null
               ? `\n  ${foundWillReceivePropsName}`
-              : undefined) ?? '',
-            (foundWillUpdateName != null
-              ? `\n  ${foundWillUpdateName}`
-              : undefined) ?? '',
+              : '',
+            foundWillUpdateName != null ? `\n  ${foundWillUpdateName}` : '',
           );
         }
       }
@@ -850,7 +846,7 @@ export function mountClassInstance(
   }
 
   if (typeof instance.componentDidMount === 'function') {
-    workInProgress.flags = workInProgress.flags | Update | LayoutStatic;
+    workInProgress.flags |= Update | LayoutStatic;
   }
   if (__DEV__ && (workInProgress.mode & StrictEffectsMode) !== NoMode) {
     workInProgress.flags |= MountLayoutDev;
@@ -931,7 +927,7 @@ export function resumeMountClassInstance(
     // If an update was already in progress, we should schedule an Update
     // effect even though we're bailing out, so that cWU/cDU are called.
     if (typeof instance.componentDidMount === 'function') {
-      workInProgress.flags = workInProgress.flags | Update | LayoutStatic;
+      workInProgress.flags |= Update | LayoutStatic;
     }
     if (__DEV__ && (workInProgress.mode & StrictEffectsMode) !== NoMode) {
       workInProgress.flags |= MountLayoutDev;
@@ -977,7 +973,7 @@ export function resumeMountClassInstance(
       }
     }
     if (typeof instance.componentDidMount === 'function') {
-      workInProgress.flags = workInProgress.flags | Update | LayoutStatic;
+      workInProgress.flags |= Update | LayoutStatic;
     }
     if (__DEV__ && (workInProgress.mode & StrictEffectsMode) !== NoMode) {
       workInProgress.flags |= MountLayoutDev;
@@ -986,7 +982,7 @@ export function resumeMountClassInstance(
     // If an update was already in progress, we should schedule an Update
     // effect even though we're bailing out, so that cWU/cDU are called.
     if (typeof instance.componentDidMount === 'function') {
-      workInProgress.flags = workInProgress.flags | Update | LayoutStatic;
+      workInProgress.flags |= Update | LayoutStatic;
     }
     if (__DEV__ && (workInProgress.mode & StrictEffectsMode) !== NoMode) {
       workInProgress.flags |= MountLayoutDev;

@@ -36,7 +36,10 @@ pub type ScheduleCallback =
 /// SchedulerMock's `log`: what a test logs, any value.
 pub type Log = dyn Fn(Option<&'static Unknown>);
 
-#[cfg_attr(rust_js, rust_js::link_name = "scheduler#* as Scheduler.unstable_scheduleCallback")]
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "scheduler#* as Scheduler.unstable_scheduleCallback"
+)]
 fn unstable_schedule_callback(
     priority_level: PriorityLevel,
     callback: SchedulerCallback,
@@ -45,17 +48,26 @@ fn unstable_schedule_callback(
     unreachable!()
 }
 
-#[cfg_attr(rust_js, rust_js::link_name = "scheduler#* as Scheduler.unstable_cancelCallback")]
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "scheduler#* as Scheduler.unstable_cancelCallback"
+)]
 fn unstable_cancel_callback(task: &Task) {
     unreachable!()
 }
 
-#[cfg_attr(rust_js, rust_js::link_name = "scheduler#* as Scheduler.unstable_shouldYield")]
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "scheduler#* as Scheduler.unstable_shouldYield"
+)]
 fn unstable_should_yield() -> bool {
     unreachable!()
 }
 
-#[cfg_attr(rust_js, rust_js::link_name = "scheduler#* as Scheduler.unstable_requestPaint")]
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "scheduler#* as Scheduler.unstable_requestPaint"
+)]
 fn unstable_request_paint() {
     unreachable!()
 }

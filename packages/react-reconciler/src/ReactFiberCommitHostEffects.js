@@ -599,11 +599,7 @@ function commitImmutablePlacementNodeToFragmentInstances(
 export function commitHostPlacement(finishedWork) {
   try {
     if (__DEV__) {
-      runWithFiberInDEV(
-        finishedWork,
-        finishedWork => commitPlacement(finishedWork),
-        finishedWork,
-      );
+      runWithFiberInDEV(finishedWork, commitPlacement, finishedWork);
     } else {
       commitPlacement(finishedWork);
     }
@@ -664,7 +660,8 @@ export function commitHostRemoveChild(
 }
 
 export function commitHostRootContainerChildren(root, finishedWork) {
-  const {containerInfo, pendingChildren} = root;
+  const containerInfo = root.containerInfo;
+  const pendingChildren = root.pendingChildren;
   try {
     if (__DEV__) {
       runWithFiberInDEV(

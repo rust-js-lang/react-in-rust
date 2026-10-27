@@ -70,7 +70,8 @@ export function getComponentNameFromOwner(owner) {
 }
 
 export default function getComponentNameFromFiber(fiber) {
-  const {tag, type} = fiber;
+  const tag = fiber.tag;
+  const type = fiber.type;
   switch (tag) {
     case ActivityComponent:
       return 'Activity';

@@ -76,7 +76,9 @@ function enqueueUpdate(fiber, queue, update, lane) {
 }
 
 export function enqueueConcurrentHookUpdate(fiber, queue, update, lane) {
-  enqueueUpdate(fiber, queue, update, lane);
+  const concurrentQueue = queue;
+  const concurrentUpdate = update;
+  enqueueUpdate(fiber, concurrentQueue, concurrentUpdate, lane);
   return getRootForUpdatedFiber(fiber);
 }
 
@@ -89,7 +91,9 @@ export function enqueueConcurrentHookUpdateAndEagerlyBailout(
   // only reason we queue it is in case there's a subsequent higher priority
   // update that causes it to be rebased.
   const lane = NoLane;
-  enqueueUpdate(fiber, queue, update, lane);
+  const concurrentQueue = queue;
+  const concurrentUpdate = update;
+  enqueueUpdate(fiber, concurrentQueue, concurrentUpdate, lane);
 
   // Usually we can rely on the upcoming render phase to process the concurrent
   // queue. However, since this is a bail out, we're not scheduling any work

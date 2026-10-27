@@ -238,7 +238,9 @@ export function getNextLanes(root, wipLanes, rootHasPendingCommit) {
 
   let nextLanes = NoLanes;
 
-  const {suspendedLanes, pingedLanes, warmLanes} = root;
+  const suspendedLanes = root.suspendedLanes;
+  const pingedLanes = root.pingedLanes;
+  const warmLanes = root.warmLanes;
 
   // finishedLanes represents a completed tree that is ready to commit.
   //
@@ -357,7 +359,8 @@ export function getNextLanesToFlushSync(root, extraLanesToForceSync) {
     return NoLanes;
   }
 
-  const {suspendedLanes, pingedLanes} = root;
+  const suspendedLanes = root.suspendedLanes;
+  const pingedLanes = root.pingedLanes;
 
   // Remove lanes that are suspended (but not pinged)
   const unblockedLanes = pendingLanes & ~(suspendedLanes & ~pingedLanes);
@@ -383,7 +386,9 @@ export function getNextLanesToFlushSync(root, extraLanesToForceSync) {
 }
 
 export function checkIfRootIsPrerendering(root, renderLanes) {
-  const {pendingLanes, suspendedLanes, pingedLanes} = root;
+  const pendingLanes = root.pendingLanes;
+  const suspendedLanes = root.suspendedLanes;
+  const pingedLanes = root.pingedLanes;
   // Remove lanes that are suspended (but not pinged)
   const unblockedLanes = pendingLanes & ~(suspendedLanes & ~pingedLanes);
 
@@ -511,7 +516,10 @@ export function markStarvedLanesAsExpired(root, currentTime) {
   // the earliest expiration time on the root. Then use that to quickly bail out
   // of this function.
 
-  const {pendingLanes, suspendedLanes, pingedLanes, expirationTimes} = root;
+  const pendingLanes = root.pendingLanes;
+  const suspendedLanes = root.suspendedLanes;
+  const pingedLanes = root.pingedLanes;
+  const expirationTimes = root.expirationTimes;
 
   // Iterate through the pending lanes and check if we've reached their
   // expiration time. If so, we'll assume the update is being starved and mark
@@ -880,7 +888,9 @@ export function markRootFinished(
   root.errorRecoveryDisabledLanes &= remainingLanes;
   root.shellSuspendCounter = 0;
 
-  const {entanglements, expirationTimes, hiddenUpdates} = root;
+  const entanglements = root.entanglements;
+  const expirationTimes = root.expirationTimes;
+  const hiddenUpdates = root.hiddenUpdates;
 
   // Clear the lanes that no longer have pending work
   let lanes = noLongerPendingLanes;
@@ -1118,7 +1128,8 @@ export function movePendingFibersToMemoized(root, lanes) {
   if (!isDevToolsPresent) {
     return;
   }
-  const {pendingUpdatersLaneMap, memoizedUpdaters} = root;
+  const pendingUpdatersLaneMap = root.pendingUpdatersLaneMap;
+  const memoizedUpdaters = root.memoizedUpdaters;
   while (lanes > 0) {
     const index = laneToIndex(lanes);
     const lane = 1 << index;

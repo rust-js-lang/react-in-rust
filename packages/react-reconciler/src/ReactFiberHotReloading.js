@@ -179,7 +179,12 @@ function scheduleFibersWithFamiliesRecursively(
 ) {
   if (__DEV__) {
     while (true) {
-      const {alternate, child, sibling, tag, type, elementType} = fiber;
+      const alternate = fiber.alternate;
+      const child = fiber.child;
+      const sibling = fiber.sibling;
+      const tag = fiber.tag;
+      const type = fiber.type;
+      const elementType = fiber.elementType;
 
       let candidateType;
       // Wrapper fibers (memo, forwardRef) resolve their family through the

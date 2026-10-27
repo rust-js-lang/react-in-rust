@@ -110,7 +110,8 @@ export function cancelScheduledGesture(root, gesture) {
     // end state before reverting back (or applying a new Transition).
     // Otherwise we just revert back and don't commit.
     const finalOffset = getCurrentGestureOffset(gesture.provider);
-    const {rangeStart, rangeEnd} = gesture;
+    const rangeStart = gesture.rangeStart;
+    const rangeEnd = gesture.rangeEnd;
     const shouldCommit =
       rangeStart < rangeEnd
         ? finalOffset > rangeStart + (rangeEnd - rangeStart) / 2

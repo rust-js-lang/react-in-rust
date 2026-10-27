@@ -13,6 +13,15 @@ pub struct SharedStateClient(PhantomData<js::JsObject>);
 /// which shared only holds and puts back.
 pub struct Dispatcher(PhantomData<js::JsObject>);
 
+/// What `ReactSharedInternals.H` is set to: the reconciler's dispatcher, or
+/// one read back from it.
+pub trait HooksDispatcher {}
+
+impl HooksDispatcher for Dispatcher {}
+
+// Safety: a JS object, the reconciler's.
+unsafe impl js::Defined for Dispatcher {}
+
 /// The renderer's cache dispatcher, `ReactInternalTypes`' `AsyncDispatcher`.
 pub struct AsyncDispatcher(PhantomData<js::JsObject>);
 
@@ -57,7 +66,7 @@ impl SharedStateClient {
     /// The hooks dispatcher from now on, `None` `null`.
     #[cfg_attr(rust_js, rust_js::link_name = "set H")]
     #[cfg_attr(rust_js, rust_js::nullable(dispatcher))]
-    pub fn set_h(&self, dispatcher: Option<&Dispatcher>) {
+    pub fn set_h<D: HooksDispatcher>(&self, dispatcher: Option<&D>) {
         let _ = dispatcher;
         unreachable!()
     }

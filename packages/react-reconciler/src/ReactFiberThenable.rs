@@ -36,6 +36,9 @@ pub struct ThenableState {
     thenables: RefCell<Vec<&'static Thenable>>,
 }
 
+// Safety: a JS object, which DevTools reads off a fiber's dependencies.
+unsafe impl js::Defined for ThenableState {}
+
 thread_local! {
     // An error that is thrown (e.g. by `use`) to trigger Suspense. If we
     // detect this is caught by userspace, we'll log a warning in development.

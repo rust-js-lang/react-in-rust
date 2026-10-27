@@ -10,6 +10,7 @@ use shared::environment::__DEV__;
 
 use crate::react_fiber_class_update_queue::{SharedQueue as ClassQueue, Update as ClassUpdate};
 use crate::react_fiber_flags::{HYDRATING, NO_FLAGS, PLACEMENT};
+use crate::react_fiber_hooks::{Update as HookUpdate, UpdateQueue as HookQueue};
 use crate::react_fiber_lane::{Lane, Lanes, NO_LANE, NO_LANES, mark_hidden_update, merge_lanes};
 use crate::react_fiber_offscreen_component::{OFFSCREEN_VISIBLE, OffscreenInstance};
 use crate::react_internal_types::{Fiber, FiberRoot};
@@ -133,24 +134,42 @@ fn enqueue_update(
 #[cfg_attr(rust_js, rust_js::nullable)]
 pub fn enqueue_concurrent_hook_update(
     fiber: &Rc<Fiber>,
-    queue: &Rc<ConcurrentQueue>,
-    update: &Rc<ConcurrentUpdate>,
+    queue: &Rc<HookQueue>,
+    update: &Rc<HookUpdate>,
     lane: Lane,
 ) -> Option<Rc<FiberRoot>> {
-    enqueue_update(fiber, Some(queue), Some(update), lane);
+    let concurrent_queue: Rc<ConcurrentQueue> =
+        unsafe { js::cast(Some(js::unknown_of(Rc::clone(queue)))) };
+    let concurrent_update: Rc<ConcurrentUpdate> =
+        unsafe { js::cast(Some(js::unknown_of(Rc::clone(update)))) };
+    enqueue_update(
+        fiber,
+        Some(&concurrent_queue),
+        Some(&concurrent_update),
+        lane,
+    );
     get_root_for_updated_fiber(fiber)
 }
 
 pub fn enqueue_concurrent_hook_update_and_eagerly_bailout(
     fiber: &Rc<Fiber>,
-    queue: &Rc<ConcurrentQueue>,
-    update: &Rc<ConcurrentUpdate>,
+    queue: &Rc<HookQueue>,
+    update: &Rc<HookUpdate>,
 ) {
     // This function is used to queue an update that doesn't need a rerender. The
     // only reason we queue it is in case there's a subsequent higher priority
     // update that causes it to be rebased.
     let lane = NO_LANE;
-    enqueue_update(fiber, Some(queue), Some(update), lane);
+    let concurrent_queue: Rc<ConcurrentQueue> =
+        unsafe { js::cast(Some(js::unknown_of(Rc::clone(queue)))) };
+    let concurrent_update: Rc<ConcurrentUpdate> =
+        unsafe { js::cast(Some(js::unknown_of(Rc::clone(update)))) };
+    enqueue_update(
+        fiber,
+        Some(&concurrent_queue),
+        Some(&concurrent_update),
+        lane,
+    );
 
     // Usually we can rely on the upcoming render phase to process the concurrent
     // queue. However, since this is a bail out, we're not scheduling any work
