@@ -214,7 +214,7 @@ thread_local! {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub static CALL_RENDER_IN_DEV: Option<CallRender> = if __DEV__ {
         // We use this technique to trick minifiers to preserve the function name.
-        Some(function::bind(CALL_RENDER.react_stack_bottom_frame, Some(&CALL_RENDER)))
+        Some(function::bind(CALL_RENDER.react_stack_bottom_frame, Some(&CALL_RENDER), ()))
     } else {
         None
     };
@@ -244,7 +244,7 @@ thread_local! {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub static CALL_COMPONENT_DID_MOUNT_IN_DEV: Option<CallComponentDidMount> = if __DEV__ {
         // We use this technique to trick minifiers to preserve the function name.
-        Some(function::bind(CALL_COMPONENT_DID_MOUNT.react_stack_bottom_frame, Some(&CALL_COMPONENT_DID_MOUNT)))
+        Some(function::bind(CALL_COMPONENT_DID_MOUNT.react_stack_bottom_frame, Some(&CALL_COMPONENT_DID_MOUNT), ()))
     } else {
         None
     };
@@ -276,7 +276,7 @@ thread_local! {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub static CALL_COMPONENT_DID_UPDATE_IN_DEV: Option<CallComponentDidUpdate> = if __DEV__ {
         // We use this technique to trick minifiers to preserve the function name.
-        Some(function::bind(CALL_COMPONENT_DID_UPDATE.react_stack_bottom_frame, Some(&CALL_COMPONENT_DID_UPDATE)))
+        Some(function::bind(CALL_COMPONENT_DID_UPDATE.react_stack_bottom_frame, Some(&CALL_COMPONENT_DID_UPDATE), ()))
     } else {
         None
     };
@@ -308,7 +308,7 @@ thread_local! {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub static CALL_COMPONENT_DID_CATCH_IN_DEV: Option<CallComponentDidCatch> = if __DEV__ {
         // We use this technique to trick minifiers to preserve the function name.
-        Some(function::bind(CALL_COMPONENT_DID_CATCH.react_stack_bottom_frame, Some(&CALL_COMPONENT_DID_CATCH)))
+        Some(function::bind(CALL_COMPONENT_DID_CATCH.react_stack_bottom_frame, Some(&CALL_COMPONENT_DID_CATCH), ()))
     } else {
         None
     };
@@ -337,7 +337,7 @@ thread_local! {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub static CALL_COMPONENT_WILL_UNMOUNT_IN_DEV: Option<CallComponentWillUnmount> = if __DEV__ {
         // We use this technique to trick minifiers to preserve the function name.
-        Some(function::bind(CALL_COMPONENT_WILL_UNMOUNT.react_stack_bottom_frame, Some(&CALL_COMPONENT_WILL_UNMOUNT)))
+        Some(function::bind(CALL_COMPONENT_WILL_UNMOUNT.react_stack_bottom_frame, Some(&CALL_COMPONENT_WILL_UNMOUNT), ()))
     } else {
         None
     };
@@ -371,7 +371,7 @@ thread_local! {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub static CALL_CREATE_IN_DEV: Option<CallCreate> = if __DEV__ {
         // We use this technique to trick minifiers to preserve the function name.
-        Some(function::bind(CALL_CREATE.react_stack_bottom_frame, Some(&CALL_CREATE)))
+        Some(function::bind(CALL_CREATE.react_stack_bottom_frame, Some(&CALL_CREATE), ()))
     } else {
         None
     };
@@ -427,7 +427,7 @@ thread_local! {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub static CALL_LAZY_INIT_IN_DEV: Option<CallLazyInit> = if __DEV__ {
         // We use this technique to trick minifiers to preserve the function name.
-        Some(function::bind(CALL_LAZY_INIT.react_stack_bottom_frame, Some(&CALL_LAZY_INIT)))
+        Some(function::bind(CALL_LAZY_INIT.react_stack_bottom_frame, Some(&CALL_LAZY_INIT), ()))
     } else {
         None
     };

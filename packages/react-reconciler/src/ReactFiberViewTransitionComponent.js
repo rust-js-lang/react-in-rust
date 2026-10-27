@@ -16,9 +16,8 @@ export function getViewTransitionName(props, instance) {
   if (props.name != null && props.name !== 'auto') {
     return props.name;
   }
-  const autoName = instance.autoName;
-  if (autoName != null) {
-    return autoName;
+  if (instance.autoName != null) {
+    return instance.autoName;
   }
 
   // We assume we always call this in the commit phase.

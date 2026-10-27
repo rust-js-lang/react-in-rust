@@ -559,7 +559,7 @@ export function getNextSiblingInstanceOrTextInstanceFiber(fiber) {
   return sibling;
 }
 
-function findNextSibling(child, _, _$1, _$2) {
+function findNextSibling(child) {
   pushSearchTarget(child);
   return true;
 }
@@ -617,7 +617,7 @@ export function isFiberPreceding(fiber, otherFiber) {
   return target != null;
 }
 
-function isFiberPrecedingCheck(child, target, boundary, _) {
+function isFiberPrecedingCheck(child, target, boundary) {
   if (child === boundary) {
     return true;
   }
@@ -650,7 +650,7 @@ export function isFiberFollowing(fiber, otherFiber) {
   return target != null;
 }
 
-function isFiberFollowingCheck(child, target, boundary, _) {
+function isFiberFollowingCheck(child, target, boundary) {
   if (child === boundary) {
     pushSearchBoundary(child);
     return false;
