@@ -29,12 +29,16 @@ pub struct SharedStateServer {
 
     // enableTaint
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryObjects")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub taint_registry_objects: Cell<Option<&'static WeakMap<Reference, String>>>,
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryValues")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub taint_registry_values: Cell<Option<&'static Map<EntryValue, Rc<TaintEntry>>>>,
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryByteLengths")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub taint_registry_byte_lengths: RefCell<Option<Rc<RefCell<HashSet<u32>>>>>,
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryPendingRequests")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub taint_registry_pending_requests:
         RefCell<Option<Rc<RefCell<HashSet<&'static RequestCleanupQueue>>>>>,
 
@@ -45,6 +49,7 @@ pub struct SharedStateServer {
     pub get_current_stack: Cell<Option<fn() -> String>>,
 
     // ReactOwnerStackReset
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub recently_created_owner_stacks: Cell<Option<f64>>,
 }
 

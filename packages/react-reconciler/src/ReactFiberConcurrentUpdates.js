@@ -41,8 +41,7 @@ export function finishQueueingConcurrentUpdates() {
         // This is the first update. Create a circular list.
         update.next = update;
       } else {
-        const next = pending.next;
-        update.next = next;
+        update.next = pending.next;
         pending.next = update;
       }
       queue.pending = update;

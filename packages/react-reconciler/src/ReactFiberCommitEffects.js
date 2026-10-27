@@ -72,7 +72,8 @@ import {$unwrap} from '@rust-js/runtime';
 
 function shouldProfile(current) {
   return (
-    !!(enableProfilerTimer && enableProfilerCommitHooks) &&
+    enableProfilerTimer &&
+    enableProfilerCommitHooks &&
     (current.mode & ProfileMode) !== NoMode
   );
 }
@@ -171,14 +172,12 @@ export function commitHookEffectListMount(flags, finishedWork) {
             destroy !== undefined &&
             typeof destroy !== 'function'
           ) {
-            let hookName;
-            if ((effect.tag & HOOK_LAYOUT) !== NoFlags) {
-              hookName = 'useLayoutEffect';
-            } else if ((effect.tag & HOOK_INSERTION) !== NoFlags) {
-              hookName = 'useInsertionEffect';
-            } else {
-              hookName = 'useEffect';
-            }
+            const hookName =
+              (effect.tag & HOOK_LAYOUT) !== NoFlags
+                ? 'useLayoutEffect'
+                : (effect.tag & HOOK_INSERTION) !== NoFlags
+                  ? 'useInsertionEffect'
+                  : 'useEffect';
             let addendum;
             if (destroy === null) {
               addendum =

@@ -17,16 +17,16 @@ export interface SharedStateServer {
   // ReactCurrentCache for Cache
   A?: any | null | undefined;
   // enableTaint
-  TaintRegistryObjects: WeakMap<object, string> | null | undefined;
-  TaintRegistryValues: Map<EntryValue, TaintEntry> | null | undefined;
-  TaintRegistryByteLengths: Set<number> | null | undefined;
-  TaintRegistryPendingRequests: Set<RequestCleanupQueue> | null | undefined;
+  TaintRegistryObjects?: WeakMap<object, string> | null | undefined;
+  TaintRegistryValues?: Map<EntryValue, TaintEntry> | null | undefined;
+  TaintRegistryByteLengths?: Set<number> | null | undefined;
+  TaintRegistryPendingRequests?: Set<RequestCleanupQueue> | null | undefined;
   // DEV-only
 
   // ReactDebugCurrentFrame
   getCurrentStack?: (() => string) | null | undefined;
   // ReactOwnerStackReset
-  recentlyCreatedOwnerStacks: number | null | undefined;
+  recentlyCreatedOwnerStacks?: number | null | undefined;
 }
 
 declare const ReactSharedInternals: SharedStateServer;

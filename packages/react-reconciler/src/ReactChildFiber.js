@@ -124,8 +124,7 @@ const ownerHasSymbolTypeWarning = {};
 let warnForMissingKey = (returnFiber, workInProgress, child) => {};
 
 if (__DEV__) {
-  didWarnAboutMaps = false;
-  didWarnAboutGenerators = false;
+  didWarnAboutGenerators = didWarnAboutMaps = false;
 
   /*
    * Warn if there's no key explicitly set on dynamic arrays of children or
@@ -503,7 +502,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       if (__DEV__) {
         // We treat the parent as the owner for stack purposes.
         created._debugOwner = returnFiber;
-        created._debugTask = returnFiber._debugTask;
+        created._debugTask = returnFiber._debugTask ?? null;
         created._debugInfo = currentDebugInfo;
       }
       return created;
@@ -550,7 +549,7 @@ function createChildReconciler(shouldTrackSideEffects) {
         coerceRef(existing, element);
         existing.return = returnFiber;
         if (__DEV__) {
-          existing._debugOwner = element._owner;
+          existing._debugOwner = element._owner ?? null;
           existing._debugInfo = currentDebugInfo;
         }
         return existing;
@@ -610,7 +609,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       if (__DEV__) {
         // We treat the parent as the owner for stack purposes.
         created._debugOwner = returnFiber;
-        created._debugTask = returnFiber._debugTask;
+        created._debugTask = returnFiber._debugTask ?? null;
         created._debugInfo = currentDebugInfo;
       }
       return created;
@@ -647,7 +646,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       if (__DEV__) {
         // We treat the parent as the owner for stack purposes.
         created._debugOwner = returnFiber;
-        created._debugTask = returnFiber._debugTask;
+        created._debugTask = returnFiber._debugTask ?? null;
         created._debugInfo = currentDebugInfo;
       }
       return created;
@@ -708,7 +707,7 @@ function createChildReconciler(shouldTrackSideEffects) {
         if (__DEV__) {
           // We treat the parent as the owner for stack purposes.
           created._debugOwner = returnFiber;
-          created._debugTask = returnFiber._debugTask;
+          created._debugTask = returnFiber._debugTask ?? null;
           // Make sure to not push again when handling the Fragment child.
           const prevDebugInfo = pushDebugInfo(newChild._debugInfo);
           created._debugInfo = currentDebugInfo;
@@ -1659,7 +1658,7 @@ function createChildReconciler(shouldTrackSideEffects) {
     if (__DEV__) {
       // We treat the parent as the owner for stack purposes.
       created._debugOwner = returnFiber;
-      created._debugTask = returnFiber._debugTask;
+      created._debugTask = returnFiber._debugTask ?? null;
       created._debugInfo = currentDebugInfo;
     }
     return created;
@@ -1704,7 +1703,7 @@ function createChildReconciler(shouldTrackSideEffects) {
             coerceRef(existing, element);
             existing.return = returnFiber;
             if (__DEV__) {
-              existing._debugOwner = element._owner;
+              existing._debugOwner = element._owner ?? null;
               existing._debugInfo = currentDebugInfo;
             }
             validateFragmentProps(element, existing, returnFiber);
@@ -1733,7 +1732,7 @@ function createChildReconciler(shouldTrackSideEffects) {
           coerceRef(existing, element);
           existing.return = returnFiber;
           if (__DEV__) {
-            existing._debugOwner = element._owner;
+            existing._debugOwner = element._owner ?? null;
             existing._debugInfo = currentDebugInfo;
           }
           return existing;
@@ -1760,7 +1759,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       if (__DEV__) {
         // We treat the parent as the owner for stack purposes.
         created._debugOwner = returnFiber;
-        created._debugTask = returnFiber._debugTask;
+        created._debugTask = returnFiber._debugTask ?? null;
         created._debugInfo = currentDebugInfo;
       }
       validateFragmentProps(element, created, returnFiber);
@@ -2093,8 +2092,8 @@ function createChildReconciler(shouldTrackSideEffects) {
           // component/task.
           // In newer Chrome, Error constructor does capture the Task which is what
           // is logged by reportError. In that case this debugTask isn't used.
-          throwFiber._debugOwner = returnFiber._debugOwner;
-          throwFiber._debugTask = returnFiber._debugTask;
+          throwFiber._debugOwner = returnFiber._debugOwner ?? null;
+          throwFiber._debugTask = returnFiber._debugTask ?? null;
           if (debugInfo != null) {
             const iter = $iter(debugInfo.toReversed());
             while (true) {
@@ -2102,7 +2101,7 @@ function createChildReconciler(shouldTrackSideEffects) {
               if (info != null) {
                 if (typeof info.stack === 'string') {
                   throwFiber._debugOwner = info;
-                  throwFiber._debugTask = info.debugTask;
+                  throwFiber._debugTask = info.debugTask ?? null;
                 } else {
                   continue;
                 }
@@ -2148,8 +2147,7 @@ export function cloneChildFibers(current, workInProgress) {
   while ((sibling = currentChild.sibling) != null) {
     currentChild = sibling;
     const next = createWorkInProgress(currentChild, currentChild.pendingProps);
-    newChild.sibling = next;
-    newChild = next;
+    newChild = newChild.sibling = next;
     newChild.return = workInProgress;
   }
   newChild.sibling = null;
@@ -2175,14 +2173,11 @@ function validateSuspenseListNestedChild(childSlot, index) {
       childSlot != null &&
       typeof childSlot[ASYNC_ITERATOR] === 'function';
     if (isAnArray || isIterable || isAsyncIterable) {
-      let type;
-      if (isAnArray) {
-        type = 'array';
-      } else if (isAsyncIterable) {
-        type = 'async iterable';
-      } else {
-        type = 'iterable';
-      }
+      const type = isAnArray
+        ? 'array'
+        : isAsyncIterable
+          ? 'async iterable'
+          : 'iterable';
       console.error(
         'A nested %s was passed to row #%s in <SuspenseList />. Wrap it in ' +
           'an additional SuspenseList to configure its revealOrder: ' +

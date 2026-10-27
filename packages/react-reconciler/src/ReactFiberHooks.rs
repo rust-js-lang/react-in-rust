@@ -490,16 +490,16 @@ fn warn_on_hook_mismatch_in_dev(current_hook_name: HookType) {
                     let mut row = format!(
                         "{}. {}",
                         i + 1,
-                        js::string(old_hook_name.map(js::unknown_of))
+                        old_hook_name.map_or("undefined", |h| h.name())
                     );
 
                     // Extra space so second column lines up
                     // lol @ IE not supporting String#repeat
-                    while row.encode_utf16().count() < second_column_start {
+                    while js::string::length(&row) < second_column_start {
                         row += " ";
                     }
 
-                    row += &(js::string(new_hook_name.map(js::unknown_of)) + "\n");
+                    row += &(new_hook_name.map_or("undefined", |h| h.name()).to_string() + "\n");
 
                     table += &row;
                 }
@@ -626,30 +626,8 @@ fn are_hook_inputs_equal(
                 "Incoming: %s"
             ),
             CURRENT_HOOK_NAME_IN_DEV.get(),
-            &format!(
-                "[{}]",
-                prev_deps
-                    .iter()
-                    .map(|&dep| if dep.is_some() {
-                        js::string(dep)
-                    } else {
-                        String::new()
-                    })
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ),
-            &format!(
-                "[{}]",
-                next_deps
-                    .iter()
-                    .map(|&dep| if dep.is_some() {
-                        js::string(dep)
-                    } else {
-                        String::new()
-                    })
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ),
+            &format!("[{}]", js::array::join(prev_deps, ", ")),
+            &format!("[{}]", js::array::join(next_deps, ", ")),
         ));
     }
     // $FlowFixMe[incompatible-use] found when upgrading Flow
@@ -720,28 +698,19 @@ pub fn render_with_hooks(
     // so memoizedState would be null during updates and mounts.
     if __DEV__ {
         if current.is_some_and(|current| current.memoized_state.get().is_some()) {
-            REACT_SHARED_INTERNALS.set_h(
-                HOOKS_DISPATCHER_ON_UPDATE_IN_DEV
-                    .with_borrow(Clone::clone)
-                    .as_deref(),
-            );
+            HOOKS_DISPATCHER_ON_UPDATE_IN_DEV
+                .with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
         } else if HOOK_TYPES_DEV.with_borrow(Option::is_some) {
             // This dispatcher handles an edge case where a component is updating,
             // but no stateful hooks have been used.
             // We want to match the production code behavior (which will use HooksDispatcherOnMount),
             // but with the extra DEV validation to ensure hooks ordering hasn't changed.
             // This dispatcher does that.
-            REACT_SHARED_INTERNALS.set_h(
-                HOOKS_DISPATCHER_ON_MOUNT_WITH_HOOK_TYPES_IN_DEV
-                    .with_borrow(Clone::clone)
-                    .as_deref(),
-            );
+            HOOKS_DISPATCHER_ON_MOUNT_WITH_HOOK_TYPES_IN_DEV
+                .with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
         } else {
-            REACT_SHARED_INTERNALS.set_h(
-                HOOKS_DISPATCHER_ON_MOUNT_IN_DEV
-                    .with_borrow(Clone::clone)
-                    .as_deref(),
-            );
+            HOOKS_DISPATCHER_ON_MOUNT_IN_DEV
+                .with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
         }
     } else {
         REACT_SHARED_INTERNALS.set_h(Some(
@@ -1030,11 +999,8 @@ fn render_with_hooks_again(
         }
 
         if __DEV__ {
-            REACT_SHARED_INTERNALS.set_h(
-                HOOKS_DISPATCHER_ON_RERENDER_IN_DEV
-                    .with_borrow(Clone::clone)
-                    .as_deref(),
-            );
+            HOOKS_DISPATCHER_ON_RERENDER_IN_DEV
+                .with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
         } else {
             REACT_SHARED_INTERNALS.set_h(Some(&HOOKS_DISPATCHER_ON_RERENDER));
         }
@@ -1199,6 +1165,7 @@ fn mount_work_in_progress_hook() -> Rc<Hook> {
         None => {
             // This is the first hook in the list
             let rendering_fiber = CURRENTLY_RENDERING_FIBER.with_borrow(Clone::clone).unwrap();
+            WORK_IN_PROGRESS_HOOK.set(Some(Rc::clone(&hook)));
             rendering_fiber
                 .memoized_state
                 .set(Some(js::unknown_of(Rc::clone(&hook))));
@@ -1206,9 +1173,9 @@ fn mount_work_in_progress_hook() -> Rc<Hook> {
         Some(work_in_progress_hook) => {
             // Append to the end of the list
             work_in_progress_hook.next.replace(Some(Rc::clone(&hook)));
+            WORK_IN_PROGRESS_HOOK.set(Some(Rc::clone(&hook)));
         }
     }
-    WORK_IN_PROGRESS_HOOK.set(Some(Rc::clone(&hook)));
     hook
 }
 
@@ -1274,6 +1241,7 @@ fn update_work_in_progress_hook() -> Rc<Hook> {
         match WORK_IN_PROGRESS_HOOK.with_borrow(Clone::clone) {
             None => {
                 // This is the first hook in the list.
+                WORK_IN_PROGRESS_HOOK.set(Some(Rc::clone(&new_hook)));
                 rendering_fiber
                     .memoized_state
                     .set(Some(js::unknown_of(Rc::clone(&new_hook))));
@@ -1283,9 +1251,9 @@ fn update_work_in_progress_hook() -> Rc<Hook> {
                 work_in_progress_hook
                     .next
                     .replace(Some(Rc::clone(&new_hook)));
+                WORK_IN_PROGRESS_HOOK.set(Some(Rc::clone(&new_hook)));
             }
         }
-        WORK_IN_PROGRESS_HOOK.set(Some(Rc::clone(&new_hook)));
         new_hook
     }
 }
@@ -1368,17 +1336,11 @@ fn use_thenable(thenable: &'static Thenable) -> Option<&'static Unknown> {
             if current_fiber
                 .is_some_and(|current_fiber| current_fiber.memoized_state.get().is_some())
             {
-                REACT_SHARED_INTERNALS.set_h(
-                    HOOKS_DISPATCHER_ON_UPDATE_IN_DEV
-                        .with_borrow(Clone::clone)
-                        .as_deref(),
-                );
+                HOOKS_DISPATCHER_ON_UPDATE_IN_DEV
+                    .with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
             } else {
-                REACT_SHARED_INTERNALS.set_h(
-                    HOOKS_DISPATCHER_ON_MOUNT_IN_DEV
-                        .with_borrow(Clone::clone)
-                        .as_deref(),
-                );
+                HOOKS_DISPATCHER_ON_MOUNT_IN_DEV
+                    .with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
             }
         } else {
             REACT_SHARED_INTERNALS.set_h(Some(
@@ -1576,8 +1538,8 @@ fn mount_reducer(
     } else {
         initial_state = initial_arg;
     }
-    hook.memoized_state.set(initial_state);
     hook.base_state.set(initial_state);
+    hook.memoized_state.set(initial_state);
     let queue = Rc::new(UpdateQueue {
         pending: RefCell::new(None),
         lanes: Cell::new(NO_LANES),
@@ -1648,8 +1610,8 @@ fn update_reducer_impl(
                 "This is a bug in React."
             ),));
         }
-        current.base_queue.replace(Some(Rc::clone(&pending_queue)));
-        base_queue = Some(pending_queue);
+        base_queue = Some(Rc::clone(&pending_queue));
+        current.base_queue.replace(Some(pending_queue));
         queue.pending.replace(None);
     }
 
@@ -1742,8 +1704,8 @@ fn update_reducer_impl(
                     });
                     match &new_base_queue_last {
                         None => {
-                            new_base_queue_first = Some(Rc::clone(&clone));
-                            new_base_queue_last = Some(clone);
+                            new_base_queue_last = Some(Rc::clone(&clone));
+                            new_base_queue_first = Some(clone);
                             new_base_state = new_state;
                         }
                         Some(last) => {
@@ -1831,8 +1793,8 @@ fn update_reducer_impl(
                             });
                             match &new_base_queue_last {
                                 None => {
-                                    new_base_queue_first = Some(Rc::clone(&clone));
-                                    new_base_queue_last = Some(clone);
+                                    new_base_queue_last = Some(Rc::clone(&clone));
+                                    new_base_queue_first = Some(clone);
                                     new_base_state = new_state;
                                 }
                                 Some(last) => {
@@ -2305,8 +2267,8 @@ fn mount_state_impl(initial_state: Option<&'static Unknown>) -> Rc<Hook> {
             initial_state_initializer();
         }
     }
-    hook.memoized_state.set(initial_state);
     hook.base_state.set(initial_state);
+    hook.memoized_state.set(initial_state);
     let queue = Rc::new(UpdateQueue {
         pending: RefCell::new(None),
         lanes: Cell::new(NO_LANES),
@@ -2346,8 +2308,8 @@ fn mount_optimistic(
     _reducer: Option<&'static Unknown>,
 ) -> StateAndDispatch {
     let hook = mount_work_in_progress_hook();
-    hook.memoized_state.set(passthrough);
     hook.base_state.set(passthrough);
+    hook.memoized_state.set(passthrough);
     let queue = Rc::new(UpdateQueue {
         pending: RefCell::new(None),
         lanes: Cell::new(NO_LANES),
@@ -2543,8 +2505,8 @@ fn dispatch_action_state(
         None => {
             // There are no pending actions; this is the first one. We can run
             // it immediately.
-            action_node.next.replace(Some(Rc::clone(&action_node)));
             action_queue.pending.replace(Some(Rc::clone(&action_node)));
+            action_node.next.replace(Some(Rc::clone(&action_node)));
             run_action_state_action(action_queue, &action_node);
         }
         Some(last) => {
@@ -2838,8 +2800,8 @@ fn mount_action_state(
     // State hook. The state is stored in a thenable which is then unwrapped by
     // the `use` algorithm during render.
     let state_hook = mount_work_in_progress_hook();
-    state_hook.memoized_state.set(initial_state);
     state_hook.base_state.set(initial_state);
+    state_hook.memoized_state.set(initial_state);
     // TODO: Typing this "correctly" results in recursion limit errors
     // const stateQueue: UpdateQueue<S | Awaited<S>, S | Awaited<S>> = {
     let state_queue = Rc::new(UpdateQueue {
@@ -4291,11 +4253,8 @@ fn dispatch_set_state_internal(
                 let mut prev_dispatcher = None;
                 if __DEV__ {
                     prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                    REACT_SHARED_INTERNALS.set_h(
-                        INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV
-                            .with_borrow(Clone::clone)
-                            .as_deref(),
-                    );
+                    INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV
+                        .with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 }
                 let _restore = RestoreDispatcherInDev(prev_dispatcher);
                 let did_bail_out = panic::catch_unwind(AssertUnwindSafe(|| {
@@ -4716,7 +4675,7 @@ js::on_load! {
                 mount_hook_types_dev();
                 check_deps_are_array_dev(deps.as_ref());
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 mount_memo(create, deps)
             },
@@ -4724,7 +4683,7 @@ js::on_load! {
                 CURRENT_HOOK_NAME_IN_DEV.set(Some(HookType::UseReducer));
                 mount_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 mount_reducer(reducer, initial_arg, init)
             },
@@ -4737,7 +4696,7 @@ js::on_load! {
                 CURRENT_HOOK_NAME_IN_DEV.set(Some(HookType::UseState));
                 mount_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 mount_state(initial_state)
             },
@@ -4833,7 +4792,7 @@ js::on_load! {
                 CURRENT_HOOK_NAME_IN_DEV.set(Some(HookType::UseMemo));
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 mount_memo(create, deps)
             },
@@ -4841,7 +4800,7 @@ js::on_load! {
                 CURRENT_HOOK_NAME_IN_DEV.set(Some(HookType::UseReducer));
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 mount_reducer(reducer, initial_arg, init)
             },
@@ -4854,7 +4813,7 @@ js::on_load! {
                 CURRENT_HOOK_NAME_IN_DEV.set(Some(HookType::UseState));
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 mount_state(initial_state)
             },
@@ -4950,7 +4909,7 @@ js::on_load! {
                 CURRENT_HOOK_NAME_IN_DEV.set(Some(HookType::UseMemo));
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 update_memo(create, deps)
             },
@@ -4958,7 +4917,7 @@ js::on_load! {
                 CURRENT_HOOK_NAME_IN_DEV.set(Some(HookType::UseReducer));
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 update_reducer(reducer, initial_arg, init)
             },
@@ -4971,7 +4930,7 @@ js::on_load! {
                 CURRENT_HOOK_NAME_IN_DEV.set(Some(HookType::UseState));
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 update_state(initial_state)
             },
@@ -5067,7 +5026,7 @@ js::on_load! {
                 CURRENT_HOOK_NAME_IN_DEV.set(Some(HookType::UseMemo));
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_RERENDER_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_RERENDER_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 update_memo(create, deps)
             },
@@ -5075,7 +5034,7 @@ js::on_load! {
                 CURRENT_HOOK_NAME_IN_DEV.set(Some(HookType::UseReducer));
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_RERENDER_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_RERENDER_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 rerender_reducer(reducer, initial_arg, init)
             },
@@ -5088,7 +5047,7 @@ js::on_load! {
                 CURRENT_HOOK_NAME_IN_DEV.set(Some(HookType::UseState));
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_RERENDER_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_RERENDER_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 rerender_state(initial_state)
             },
@@ -5197,7 +5156,7 @@ js::on_load! {
                 warn_invalid_hook_access();
                 mount_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 mount_memo(create, deps)
             },
@@ -5206,7 +5165,7 @@ js::on_load! {
                 warn_invalid_hook_access();
                 mount_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 mount_reducer(reducer, initial_arg, init)
             },
@@ -5221,7 +5180,7 @@ js::on_load! {
                 warn_invalid_hook_access();
                 mount_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_MOUNT_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 mount_state(initial_state)
             },
@@ -5341,7 +5300,7 @@ js::on_load! {
                 warn_invalid_hook_access();
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 update_memo(create, deps)
             },
@@ -5350,7 +5309,7 @@ js::on_load! {
                 warn_invalid_hook_access();
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 update_reducer(reducer, initial_arg, init)
             },
@@ -5365,7 +5324,7 @@ js::on_load! {
                 warn_invalid_hook_access();
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 update_state(initial_state)
             },
@@ -5485,7 +5444,7 @@ js::on_load! {
                 warn_invalid_hook_access();
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 update_memo(create, deps)
             },
@@ -5494,7 +5453,7 @@ js::on_load! {
                 warn_invalid_hook_access();
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 rerender_reducer(reducer, initial_arg, init)
             },
@@ -5509,7 +5468,7 @@ js::on_load! {
                 warn_invalid_hook_access();
                 update_hook_types_dev();
                 let prev_dispatcher = REACT_SHARED_INTERNALS.h();
-                REACT_SHARED_INTERNALS.set_h(INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(Clone::clone).as_deref());
+                INVALID_NESTED_HOOKS_DISPATCHER_ON_UPDATE_IN_DEV.with_borrow(|d| REACT_SHARED_INTERNALS.set_h(d.as_deref()));
                 let _restore = RestoreDispatcher(prev_dispatcher);
                 rerender_state(initial_state)
             },

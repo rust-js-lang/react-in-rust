@@ -21,7 +21,7 @@ export interface ReactElement {
   // __DEV__ or for string refs
   _owner?: unknown | null | undefined;
   // __DEV__
-  _store:
+  _store?:
     | {
         [key: string]: number;
       }

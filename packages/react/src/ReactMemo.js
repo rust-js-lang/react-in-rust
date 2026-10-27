@@ -24,7 +24,9 @@ export function memo(type, compare) {
     Object.defineProperty(elementType, 'displayName', {
       enumerable: false,
       configurable: true,
-      get: () => ownName,
+      get() {
+        return ownName;
+      },
       set(name) {
         ownName = name;
 

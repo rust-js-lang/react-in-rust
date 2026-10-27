@@ -43,12 +43,13 @@ export const CacheContext = {
   Consumer: null,
   Provider: null,
   // We'll initialize these at the root.
+  _currentValue: null,
+  _currentValue2: null,
   _threadCount: 0,
 };
 
 if (__DEV__) {
-  CacheContext._currentRenderer = null;
-  CacheContext._currentRenderer2 = null;
+  CacheContext._currentRenderer2 = CacheContext._currentRenderer = null;
 }
 
 // Creates a new empty Cache instance with a ref-count of 0. The caller is responsible

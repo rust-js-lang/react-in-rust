@@ -270,8 +270,7 @@ export function trackSuspendedTime(lanes, renderEndTime) {
 export function clearBlockingTimers() {
   blockingUpdateTime = -1.1;
   blockingUpdateType = 0;
-  blockingUpdateMethodName = null;
-  blockingUpdateComponentName = null;
+  blockingUpdateComponentName = blockingUpdateMethodName = null;
   blockingSuspendedTime = -1.1;
   blockingEventRepeatTime = blockingEventTime;
   blockingEventTime = -1.1;
@@ -307,8 +306,7 @@ export function clearAsyncTransitionTimer() {
 }
 
 export function clearTransitionTimers() {
-  transitionStartTime = -1.1;
-  transitionUpdateTime = -1.1;
+  transitionUpdateTime = transitionStartTime = -1.1;
   transitionUpdateType = 0;
   transitionSuspendedTime = -1.1;
   transitionEventRepeatTime = transitionEventTime;
@@ -416,8 +414,7 @@ export function resetComponentEffectTimers() {
   if (!enableProfilerTimer || !enableProfilerCommitHooks) {
     return;
   }
-  componentEffectStartTime = -1.1;
-  componentEffectEndTime = -1.1;
+  componentEffectEndTime = componentEffectStartTime = -1.1;
 }
 
 export function pushComponentEffectStart() {
@@ -525,8 +522,7 @@ export function markNestedUpdateScheduled() {
 
 export function resetNestedUpdateFlag() {
   if (enableProfilerNestedUpdatePhase) {
-    currentUpdateIsNested = false;
-    nestedUpdateScheduled = false;
+    nestedUpdateScheduled = currentUpdateIsNested = false;
   }
 }
 
@@ -586,7 +582,7 @@ export function stopProfilerTimerIfRunningAndRecordDuration(fiber) {
     const elapsedTime = now() - profilerStartTime;
     const actualDuration = fiber.actualDuration;
     fiber.actualDuration =
-      actualDuration != null ? actualDuration + elapsedTime : undefined;
+      actualDuration != null ? actualDuration + elapsedTime : null;
     fiber.selfBaseDuration = elapsedTime;
     profilerStartTime = -1;
   }
@@ -601,7 +597,7 @@ export function stopProfilerTimerIfRunningAndRecordIncompleteDuration(fiber) {
     const elapsedTime = now() - profilerStartTime;
     const actualDuration = fiber.actualDuration;
     fiber.actualDuration =
-      actualDuration != null ? actualDuration + elapsedTime : undefined;
+      actualDuration != null ? actualDuration + elapsedTime : null;
     // We don't update the selfBaseDuration here because we errored.
     profilerStartTime = -1;
   }

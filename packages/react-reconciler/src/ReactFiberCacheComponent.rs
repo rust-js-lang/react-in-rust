@@ -111,8 +111,8 @@ thread_local! {
         consumer: Cell::new(None),
         provider: Cell::new(Weak::new()),
         // We'll initialize these at the root.
-        current_value: RefCell::new(None),
-        current_value2: RefCell::new(None),
+        current_value: RefCell::new(js::null()),
+        current_value2: RefCell::new(js::null()),
         thread_count: Cell::new(0.0),
         current_renderer: Cell::new(None),
         current_renderer2: Cell::new(None),

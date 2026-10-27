@@ -19,9 +19,8 @@ import {
 } from '../../shared/ReactSymbols.js';
 import assign from '../../shared/assign.js';
 import getComponentNameFromType from '../../shared/getComponentNameFromType.js';
-import hasOwnProperty from '../../shared/hasOwnProperty.js';
 import isArray from '../../shared/isArray.js';
-import is from '../../shared/objectIs.js';
+import shallowEqual from '../../shared/shallowEqual.js';
 import {
   checkHasForceUpdateAfterProcessing,
   cloneUpdateQueue,
@@ -116,37 +115,6 @@ function warnOnUndefinedDerivedState(type, partialState) {
   }
 }
 
-function shallowEqual(objA, objB) {
-  if (is(objA, objB)) {
-    return true;
-  }
-  if (objA != null) {
-    if (objB != null) {
-      if (typeof objA === 'object') {
-        if (typeof objB === 'object') {
-          const keysA = Object.keys(objA);
-          const keysB = Object.keys(objB);
-          if (keysA.length !== keysB.length) {
-            return false;
-          }
-          const hasOwnProperty$1 = hasOwnProperty;
-          for (const currentKey of keysA) {
-            if (hasOwnProperty$1.call(objB, currentKey)) {
-              if (is(objA[currentKey], objB[currentKey])) {
-                continue;
-              }
-            }
-            return false;
-          }
-          return true;
-        }
-      }
-      return false;
-    }
-  }
-  return false;
-}
-
 function applyDerivedStateFromProps(
   workInProgress,
   ctor,
@@ -158,8 +126,8 @@ function applyDerivedStateFromProps(
   if (__DEV__) {
     if ((workInProgress.mode & StrictLegacyMode) !== NoMode) {
       setIsStrictModeForDevtools(true);
-      // Invoke the function an extra time to help detect side-effects.
       try {
+        // Invoke the function an extra time to help detect side-effects.
         partialState = getDerivedStateFromProps(nextProps, prevState);
       } finally {
         setIsStrictModeForDevtools(false);
@@ -278,8 +246,8 @@ function checkShouldComponentUpdate(
     if (__DEV__) {
       if ((workInProgress.mode & StrictLegacyMode) !== NoMode) {
         setIsStrictModeForDevtools(true);
-        // Invoke the function an extra time to help detect side-effects.
         try {
+          // Invoke the function an extra time to help detect side-effects.
           shouldUpdate = instance.shouldComponentUpdate(
             newProps,
             newState,

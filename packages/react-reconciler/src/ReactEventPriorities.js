@@ -5,21 +5,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {
-  DefaultLane,
-  IdleLane,
-  InputContinuousLane,
-  NoLane,
-  SyncLane,
-  getHighestPriorityLane,
-  includesNonIdleWork,
-} from './ReactFiberLane.js';
+import {getHighestPriorityLane, includesNonIdleWork} from './ReactFiberLane.js';
 
-export const NoEventPriority = NoLane;
-export const DiscreteEventPriority = SyncLane;
-export const ContinuousEventPriority = InputContinuousLane;
-export const DefaultEventPriority = DefaultLane;
-export const IdleEventPriority = IdleLane;
+export const NoEventPriority = 0;
+export const DiscreteEventPriority = 2;
+export const ContinuousEventPriority = 8;
+export const DefaultEventPriority = 32;
+export const IdleEventPriority = 268435456;
 
 export function higherEventPriority(a, b) {
   return a !== 0 && a < b ? a : b;

@@ -113,8 +113,7 @@ export function createFiberRoot(
   }
 
   if (enableGestureTransition) {
-    root.pendingGestures = null;
-    root.gestureClone = null;
+    root.gestureClone = root.pendingGestures = null;
   }
 
   if (enableTransitionTracing) {
@@ -122,8 +121,7 @@ export function createFiberRoot(
   }
 
   if (enableProfilerTimer && enableProfilerCommitHooks) {
-    root.effectDuration = -0;
-    root.passiveEffectDuration = -0;
+    root.passiveEffectDuration = root.effectDuration = -0;
   }
 
   if (enableUpdaterTracking) {

@@ -42,18 +42,23 @@ pub struct SharedStateClient {
     pub act_queue: RefCell<Option<ActQueue>>,
 
     // When zero this means we're outside an async startTransition.
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub async_transitions: Cell<Option<f64>>,
 
     // Used to reproduce behavior of `batchedUpdates` in legacy mode.
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub is_batching_legacy: Cell<Option<bool>>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub did_schedule_legacy_update: Cell<Option<bool>>,
 
     // Tracks whether something called `use` during the current batch of work.
     // Determines whether we should yield to microtasks to unwrap already resolved
     // promises without suspending.
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub did_use_promise: Cell<Option<bool>>,
 
     // Track first uncaught error within this act
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub thrown_errors: RefCell<Option<Vec<Option<&'static Unknown>>>>,
 
     // ReactDebugCurrentFrame
@@ -61,6 +66,7 @@ pub struct SharedStateClient {
     pub get_current_stack: Cell<Option<fn() -> String>>,
 
     // ReactOwnerStackReset
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub recently_created_owner_stacks: Cell<Option<f64>>,
 }
 

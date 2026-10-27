@@ -41,8 +41,7 @@ let isDisallowedContextReadInDEV = false;
 export function resetContextDependencies() {
   // This is called right before React yields execution, to ensure `readContext`
   // cannot be called outside the render phase.
-  currentlyRenderingFiber = null;
-  lastContextDependency = null;
+  lastContextDependency = currentlyRenderingFiber = null;
   if (__DEV__) {
     isDisallowedContextReadInDEV = false;
   }
@@ -567,8 +566,7 @@ function readContextForConsumer(consumer, context) {
     consumer.flags |= NeedsPropagation;
   } else {
     // Append a new context item.
-    lastContextDependency$1.next = contextItem;
-    lastContextDependency = contextItem;
+    lastContextDependency = lastContextDependency$1.next = contextItem;
   }
   return value;
 }

@@ -215,8 +215,7 @@ export function enqueueUpdate(fiber, update, lane) {
       // This is the first update. Create a circular list.
       update.next = update;
     } else {
-      const next = pending.next;
-      update.next = next;
+      update.next = pending.next;
       pending.next = update;
     }
     sharedQueue.pending = update;
@@ -293,11 +292,10 @@ export function enqueueCapturedUpdate(workInProgress, capturedUpdate) {
             next: null,
           };
           if (newLast == null) {
-            newFirst = clone;
+            newFirst = newLast = clone;
           } else {
-            newLast.next = clone;
+            newLast = newLast.next = clone;
           }
-          newLast = clone;
           const next = update.next;
           if (next == null) {
             break;
@@ -307,15 +305,14 @@ export function enqueueCapturedUpdate(workInProgress, capturedUpdate) {
 
         // Append the captured update the end of the cloned list.
         if (newLast == null) {
-          newFirst = capturedUpdate;
+          newFirst = newLast = capturedUpdate;
         } else {
-          newLast.next = capturedUpdate;
+          newLast = newLast.next = capturedUpdate;
         }
       } else {
         // There are no base updates.
-        newFirst = capturedUpdate;
+        newFirst = newLast = capturedUpdate;
       }
-      newLast = capturedUpdate;
       const queue$1 = {
         baseState: currentQueue.baseState,
         firstBaseUpdate: newFirst ?? null,
@@ -409,8 +406,10 @@ function getStateFromUpdate(
     }
     case ForceUpdate:
       hasForceUpdate = true;
+      return prevState;
+    default:
+      return prevState;
   }
-  return prevState;
 }
 
 let didReadFromEntangledAsyncAction = false;
@@ -542,12 +541,10 @@ export function processUpdateQueue(
           next: null,
         };
         if (newLastBaseUpdate == null) {
-          newFirstBaseUpdate = clone;
-          newLastBaseUpdate = clone;
+          newFirstBaseUpdate = newLastBaseUpdate = clone;
           newBaseState = newState;
         } else {
-          newLastBaseUpdate.next = clone;
-          newLastBaseUpdate = clone;
+          newLastBaseUpdate = newLastBaseUpdate.next = clone;
         }
         // Update the remaining priority in the queue.
         newLanes = mergeLanes(newLanes, updateLane);
@@ -577,8 +574,7 @@ export function processUpdateQueue(
 
             next: null,
           };
-          newLastBaseUpdate.next = clone;
-          newLastBaseUpdate = clone;
+          newLastBaseUpdate = newLastBaseUpdate.next = clone;
         }
 
         // Process this update.

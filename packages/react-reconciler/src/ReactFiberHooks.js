@@ -134,17 +134,7 @@ import {
 import {CacheComponent, HostComponent, HostRoot} from './ReactWorkTags.js';
 import {now} from './Scheduler.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
-import {
-  $borrow,
-  $borrowMut,
-  $catchUnwind,
-  $cellReplace,
-  $fieldCell,
-  $index,
-  $roomFor,
-  $unborrow,
-  $unwrap,
-} from '@rust-js/runtime';
+import {$index, $roomFor, $unwrap} from '@rust-js/runtime';
 
 const didWarnAboutMismatchedHooksForComponent = new Set();
 let didWarnUncachedGetSnapshot = false;
@@ -261,7 +251,7 @@ function warnOnHookMismatchInDev(currentHookName) {
           const oldHookName = hookTypesDev$1[i];
           const newHookName = i === updateIndex ? currentHookName : oldHookName;
 
-          let row = `${(i + 1) | 0}. ${String(oldHookName)}`;
+          let row = `${(i + 1) | 0}. ${oldHookName ?? 'undefined'}`;
 
           // Extra space so second column lines up
           // lol @ IE not supporting String#repeat
@@ -269,7 +259,7 @@ function warnOnHookMismatchInDev(currentHookName) {
             row += ' ';
           }
 
-          row += String(newHookName) + '\n';
+          row += (newHookName ?? 'undefined') + '\n';
 
           table += row;
         }
@@ -380,8 +370,8 @@ function areHookInputsEqual(
         'Previous: %s\n' +
         'Incoming: %s',
       currentHookNameInDev,
-      `[${prevDeps.map(dep => (dep != null ? String(dep) : '')).join(', ')}]`,
-      `[${nextDeps.map(dep => (dep != null ? String(dep) : '')).join(', ')}]`,
+      `[${prevDeps.join(', ')}]`,
+      `[${nextDeps.join(', ')}]`,
     );
   }
   // $FlowFixMe[incompatible-use] found when upgrading Flow
@@ -417,8 +407,7 @@ export function renderWithHooks(
     warnIfAsyncClientComponent(component);
   }
 
-  workInProgress.memoizedState = null;
-  workInProgress.updateQueue = null;
+  workInProgress.updateQueue = workInProgress.memoizedState = null;
   workInProgress.lanes = NoLanes;
 
   // The following should have already been reset
@@ -557,8 +546,7 @@ function finishRenderingHooks(current, workInProgress, component) {
   workInProgressHook = null;
 
   if (__DEV__) {
-    currentHookNameInDev = null;
-    hookTypesDev = null;
+    hookTypesDev = currentHookNameInDev = null;
     hookTypesUpdateIndexDev = -1;
 
     // Confirm that a static flag was not added or removed since the last
@@ -709,8 +697,7 @@ function renderWithHooksAgain(workInProgress, component, props, secondArg) {
     }
 
     // Start over from the beginning of the list
-    currentHook = null;
-    workInProgressHook = null;
+    workInProgressHook = currentHook = null;
 
     const updateQueue = workInProgress.updateQueue;
     if (updateQueue) {
@@ -849,8 +836,7 @@ export function resetHooksOnUnwind(workInProgress) {
   }
 
   didScheduleRenderPhaseUpdateDuringThisPass = false;
-  localIdCounter = 0;
-  thenableIndexCounter = 0;
+  thenableIndexCounter = localIdCounter = 0;
   thenableState = null;
 }
 
@@ -869,12 +855,11 @@ function mountWorkInProgressHook() {
   if (workInProgressHook$1 == null) {
     // This is the first hook in the list
     const renderingFiber = $unwrap(currentlyRenderingFiber);
-    renderingFiber.memoizedState = hook;
+    renderingFiber.memoizedState = workInProgressHook = hook;
   } else {
     // Append to the end of the list
-    workInProgressHook$1.next = hook;
+    workInProgressHook = workInProgressHook$1.next = hook;
   }
-  workInProgressHook = hook;
   return hook;
 }
 
@@ -936,12 +921,11 @@ function updateWorkInProgressHook() {
   const workInProgressHook$2 = workInProgressHook;
   if (workInProgressHook$2 == null) {
     // This is the first hook in the list.
-    renderingFiber.memoizedState = newHook;
+    renderingFiber.memoizedState = workInProgressHook = newHook;
   } else {
     // Append to the end of the list.
-    workInProgressHook$2.next = newHook;
+    workInProgressHook = workInProgressHook$2.next = newHook;
   }
-  workInProgressHook = newHook;
   return newHook;
 }
 
@@ -1173,8 +1157,7 @@ function mountReducer(reducer, initialArg, init) {
   } else {
     initialState = initialArg;
   }
-  hook.memoizedState = initialState;
-  hook.baseState = initialState;
+  hook.memoizedState = hook.baseState = initialState;
   const queue = {
     pending: null,
     lanes: NoLanes,
@@ -1233,8 +1216,7 @@ function updateReducerImpl(hook, current, reducer) {
           'This is a bug in React.',
       );
     }
-    current$1.baseQueue = pendingQueue;
-    baseQueue = pendingQueue;
+    current$1.baseQueue = baseQueue = pendingQueue;
     queue.pending = null;
   }
 
@@ -1276,9 +1258,7 @@ function updateReducerImpl(hook, current, reducer) {
         // This is a gesture optimistic update. It should only be considered as part of the
         // rendered state while rendering the gesture lane and if the rendering the associated
         // ScheduledGesture.
-        const borrow = $borrow($fieldCell(update, 'gesture'), true);
-        const scheduledGesture = borrow.value;
-        $unborrow(borrow);
+        const scheduledGesture = update.gesture;
         if (scheduledGesture != null) {
           if (scheduledGesture.count === 0 && !scheduledGesture.committing) {
             // This gesture has already been cancelled. We can clean up this update.
@@ -1307,25 +1287,20 @@ function updateReducerImpl(hook, current, reducer) {
         // Priority is insufficient. Skip this update. If this is the first
         // skipped update, the previous update/state is the new base
         // update/state.
-        const value$1 = update.revertLane;
-        const value = $borrow($fieldCell(update, 'gesture'), true);
         const clone = {
           lane: updateLane,
-          revertLane: value$1,
-          gesture: value.value,
+          revertLane: update.revertLane,
+          gesture: update.gesture,
           action: update.action,
           hasEagerState: update.hasEagerState,
           eagerState: update.eagerState,
           next: null,
         };
-        $unborrow(value);
         if (newBaseQueueLast == null) {
-          newBaseQueueFirst = clone;
-          newBaseQueueLast = clone;
+          newBaseQueueFirst = newBaseQueueLast = clone;
           newBaseState = newState;
         } else {
-          newBaseQueueLast.next = clone;
-          newBaseQueueLast = clone;
+          newBaseQueueLast = newBaseQueueLast.next = clone;
         }
         // Update the remaining priority in the queue.
         // TODO: Don't need to accumulate this. Instead, we can remove
@@ -1354,8 +1329,7 @@ function updateReducerImpl(hook, current, reducer) {
               eagerState: update.eagerState,
               next: null,
             };
-            newBaseQueueLast.next = clone;
-            newBaseQueueLast = clone;
+            newBaseQueueLast = newBaseQueueLast.next = clone;
           }
 
           // Check if this update is part of a pending async action. If so,
@@ -1404,12 +1378,10 @@ function updateReducerImpl(hook, current, reducer) {
               next: null,
             };
             if (newBaseQueueLast == null) {
-              newBaseQueueFirst = clone;
-              newBaseQueueLast = clone;
+              newBaseQueueFirst = newBaseQueueLast = clone;
               newBaseState = newState;
             } else {
-              newBaseQueueLast.next = clone;
-              newBaseQueueLast = clone;
+              newBaseQueueLast = newBaseQueueLast.next = clone;
             }
             // Update the remaining priority in the queue.
             // TODO: Don't need to accumulate this. Instead, we can remove
@@ -1801,16 +1773,15 @@ function mountStateImpl(initialState) {
     initialState = initialStateInitializer();
     if (shouldDoubleInvokeUserFnsInHooksDEV) {
       setIsStrictModeForDevtools(true);
-      // $FlowFixMe[incompatible-use]: Flow doesn't like mixed types
       try {
+        // $FlowFixMe[incompatible-use]: Flow doesn't like mixed types
         initialStateInitializer();
       } finally {
         setIsStrictModeForDevtools(false);
       }
     }
   }
-  hook.memoizedState = initialState;
-  hook.baseState = initialState;
+  hook.memoizedState = hook.baseState = initialState;
   const queue = {
     pending: null,
     lanes: NoLanes,
@@ -1844,8 +1815,7 @@ function rerenderState(initialState) {
 
 function mountOptimistic(passthrough, reducer) {
   const hook = mountWorkInProgressHook();
-  hook.memoizedState = passthrough;
-  hook.baseState = passthrough;
+  hook.memoizedState = hook.baseState = passthrough;
   const queue = {
     pending: null,
     lanes: NoLanes,
@@ -1969,15 +1939,13 @@ function dispatchActionState(
   if (last == null) {
     // There are no pending actions; this is the first one. We can run
     // it immediately.
-    actionNode.next = actionNode;
-    actionQueue.pending = actionNode;
+    actionNode.next = actionQueue.pending = actionNode;
     runActionStateAction(actionQueue, actionNode);
   } else {
     // There's already an action running. Add to the queue.
     const first = last.next;
     actionNode.next = first;
-    last.next = actionNode;
-    actionQueue.pending = actionNode;
+    actionQueue.pending = last.next = actionNode;
   }
 }
 
@@ -2192,8 +2160,7 @@ function mountActionState(action, initialStateProp, permalink) {
   // State hook. The state is stored in a thenable which is then unwrapped by
   // the `use` algorithm during render.
   const stateHook = mountWorkInProgressHook();
-  stateHook.memoizedState = initialState;
-  stateHook.baseState = initialState;
+  stateHook.memoizedState = stateHook.baseState = initialState;
   // TODO: Typing this "correctly" results in recursion limit errors
   // const stateQueue: UpdateQueue<S | Awaited<S>, S | Awaited<S>> = {
   const stateQueue = {
@@ -2389,7 +2356,9 @@ function pushEffectImpl(effect) {
 }
 
 function createEffectInstance() {
-  return {};
+  return {
+    destroy: undefined,
+  };
 }
 
 function mountRef(initialValue) {
@@ -3333,34 +3302,24 @@ function dispatchSetStateInternal(fiber, queue, action, lane) {
             InvalidNestedHooksDispatcherOnUpdateInDEV ?? null;
         }
         try {
-          const didBailOut = $catchUnwind(() => {
-            const currentState = queue.lastRenderedState;
-            const eagerState = lastRenderedReducer(currentState, action);
-            // Stash the eagerly computed state, and the reducer used to compute
-            // it, on the update object. If the reducer hasn't changed by the
-            // time we enter the render phase, then the eager state can be used
-            // without calling the reducer again.
-            update.hasEagerState = true;
-            update.eagerState = eagerState;
-            if (is(eagerState, currentState)) {
-              // Fast path. We can bail out without scheduling React to re-render.
-              // It's still possible that we'll need to rebase this update later,
-              // if the component re-renders for a different reason and by that
-              // time the reducer has changed.
-              // TODO: Do we still need to entangle transitions in this case?
-              enqueueConcurrentHookUpdateAndEagerlyBailout(
-                fiber,
-                queue,
-                update,
-              );
-              return true;
-            }
-            return false;
-          });
-          // An error is suppressed. It will throw again in the render phase.
-          if (didBailOut.TAG === 'Ok' && didBailOut._0) {
+          const currentState = queue.lastRenderedState;
+          const eagerState = lastRenderedReducer(currentState, action);
+          // Stash the eagerly computed state, and the reducer used to compute
+          // it, on the update object. If the reducer hasn't changed by the
+          // time we enter the render phase, then the eager state can be used
+          // without calling the reducer again.
+          update.hasEagerState = true;
+          update.eagerState = eagerState;
+          if (is(eagerState, currentState)) {
+            // Fast path. We can bail out without scheduling React to re-render.
+            // It's still possible that we'll need to rebase this update later,
+            // if the component re-renders for a different reason and by that
+            // time the reducer has changed.
+            // TODO: Do we still need to entangle transitions in this case?
+            enqueueConcurrentHookUpdateAndEagerlyBailout(fiber, queue, update);
             return false;
           }
+        } catch {
         } finally {
           if (__DEV__) {
             ReactSharedInternals.H = prevDispatcher ?? null;
@@ -3472,7 +3431,7 @@ function dispatchOptimisticSetState(
         // If this was a gesture, ensure we have a scheduled gesture and that
         // we associate this update with this specific gesture instance.
         const gesture = scheduleGesture(root, provider);
-        $cellReplace($borrowMut($fieldCell(update, 'gesture')), gesture);
+        update.gesture = gesture;
         // Ensure the gesture always uses the same revert lane. This can happen for
         // two startGestureTransition calls to the same provider in different events.
         if (gesture.revertLane === NoLane) {
@@ -3500,15 +3459,14 @@ function enqueueRenderPhaseUpdate(queue, update) {
   // This is a render phase update. Stash it in a lazily-created map of
   // queue -> linked list of updates. After this render pass, we'll restart
   // and apply the stashed updates on top of the work-in-progress hook.
-  didScheduleRenderPhaseUpdate = true;
-  didScheduleRenderPhaseUpdateDuringThisPass = true;
+  didScheduleRenderPhaseUpdateDuringThisPass =
+    didScheduleRenderPhaseUpdate = true;
   const pending = queue.pending;
   if (pending == null) {
     // This is the first update. Create a circular list.
     update.next = update;
   } else {
-    const next = pending.next;
-    update.next = next;
+    update.next = pending.next;
     pending.next = update;
   }
   queue.pending = update;
@@ -3682,7 +3640,9 @@ if (__DEV__) {
   }
 
   HooksDispatcherOnMountInDEV = {
-    readContext: context => readContext(context),
+    readContext(context) {
+      return readContext(context);
+    },
     use,
     useCallback(callback, deps) {
       currentHookNameInDev = 'useCallback';
@@ -3814,7 +3774,9 @@ if (__DEV__) {
   };
 
   HooksDispatcherOnMountWithHookTypesInDEV = {
-    readContext: context => readContext(context),
+    readContext(context) {
+      return readContext(context);
+    },
     use,
     useCallback(callback, deps) {
       currentHookNameInDev = 'useCallback';
@@ -3940,7 +3902,9 @@ if (__DEV__) {
   };
 
   HooksDispatcherOnUpdateInDEV = {
-    readContext: context => readContext(context),
+    readContext(context) {
+      return readContext(context);
+    },
     use,
     useCallback(callback, deps) {
       currentHookNameInDev = 'useCallback';
@@ -4069,7 +4033,9 @@ if (__DEV__) {
   };
 
   HooksDispatcherOnRerenderInDEV = {
-    readContext: context => readContext(context),
+    readContext(context) {
+      return readContext(context);
+    },
     use,
     useCallback(callback, deps) {
       currentHookNameInDev = 'useCallback';

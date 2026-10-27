@@ -398,27 +398,28 @@ if (__DEV__) {
         'Expected to find a StrictMode component in a strict mode tree. ' +
           'This error is likely caused by a bug in React. Please file an issue.',
       );
-    } else {
-      // Dedup strategy: Warn once per component.
-      if (!didWarnAboutLegacyContext.has(fiber.type)) {
-        if (
-          fiber.type.contextTypes != null ||
-          fiber.type.childContextTypes != null ||
-          (instance != null && typeof instance.getChildContext === 'function')
-        ) {
-          $withBorrowMut(
-            pendingLegacyContextWarning,
-            pendingLegacyContextWarning => {
-              $orInsertWith(
-                pendingLegacyContextWarning,
-                strictRoot,
-                () => [],
-              ).push(fiber);
-            },
-            true,
+      return;
+    }
+
+    // Dedup strategy: Warn once per component.
+    if (didWarnAboutLegacyContext.has(fiber.type)) {
+      return;
+    }
+
+    if (
+      fiber.type.contextTypes != null ||
+      fiber.type.childContextTypes != null ||
+      (instance != null && typeof instance.getChildContext === 'function')
+    ) {
+      $withBorrowMut(
+        pendingLegacyContextWarning,
+        pendingLegacyContextWarning => {
+          $orInsertWith(pendingLegacyContextWarning, strictRoot, () => []).push(
+            fiber,
           );
-        }
-      }
+        },
+        true,
+      );
     }
   };
 

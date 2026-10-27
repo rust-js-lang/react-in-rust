@@ -21,28 +21,40 @@ use crate::react_taint_registry::{EntryValue, Reference, RequestCleanupQueue, Ta
 
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryObjects")]
-    static TAINT_REGISTRY_OBJECTS: Option<&'static WeakMap<Reference, String>> =
-        REACT_SHARED_INTERNALS.with(|internals| internals.taint_registry_objects.get());
+    static TAINT_REGISTRY_OBJECTS: Cell<Option<&'static WeakMap<Reference, String>>> =
+        const { Cell::new(None) };
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryValues")]
-    static TAINT_REGISTRY_VALUES: Option<&'static Map<EntryValue, Rc<TaintEntry>>> =
-        REACT_SHARED_INTERNALS.with(|internals| internals.taint_registry_values.get());
+    static TAINT_REGISTRY_VALUES: Cell<Option<&'static Map<EntryValue, Rc<TaintEntry>>>> =
+        const { Cell::new(None) };
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryByteLengths")]
-    static TAINT_REGISTRY_BYTE_LENGTHS: Option<Rc<RefCell<HashSet<u32>>>> =
-        REACT_SHARED_INTERNALS.with(|internals| internals.taint_registry_byte_lengths.borrow().clone());
+    static TAINT_REGISTRY_BYTE_LENGTHS: RefCell<Option<Rc<RefCell<HashSet<u32>>>>> =
+        const { RefCell::new(None) };
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryPendingRequests")]
-    static TAINT_REGISTRY_PENDING_REQUESTS: Option<Rc<RefCell<HashSet<&'static RequestCleanupQueue>>>> =
-        REACT_SHARED_INTERNALS.with(|internals| internals.taint_registry_pending_requests.borrow().clone());
-}
+    static TAINT_REGISTRY_PENDING_REQUESTS: RefCell<Option<Rc<RefCell<HashSet<&'static RequestCleanupQueue>>>>> =
+        const { RefCell::new(None) };
 
-thread_local! {
     // This is the shared constructor of all typed arrays.
     #[cfg_attr(rust_js, rust_js::name = "TypedArrayConstructor")]
-    static TYPED_ARRAY_CONSTRUCTOR: Option<&'static Unknown> = js::get(
+    static TYPED_ARRAY_CONSTRUCTOR: Cell<Option<&'static Unknown>> = const { Cell::new(None) };
+}
+
+js::on_load! {
+    REACT_SHARED_INTERNALS.with(|internals| {
+        TAINT_REGISTRY_OBJECTS.set(internals.taint_registry_objects.get());
+        TAINT_REGISTRY_VALUES.set(internals.taint_registry_values.get());
+        let taint_registry_byte_lengths = internals.taint_registry_byte_lengths.borrow().clone();
+        TAINT_REGISTRY_BYTE_LENGTHS.set(taint_registry_byte_lengths);
+        let taint_registry_pending_requests =
+            internals.taint_registry_pending_requests.borrow().clone();
+        TAINT_REGISTRY_PENDING_REQUESTS.set(taint_registry_pending_requests);
+    });
+
+    TYPED_ARRAY_CONSTRUCTOR.set(js::get(
         GET_PROTOTYPE_OF.with(|get_prototype_of| {
             get_prototype_of(js::unknown(js::uint32_array::prototype()))
         }),
         "constructor",
-    );
+    ));
 }
 
 #[cfg_attr(rust_js, rust_js::name = "defaultMessage")]
@@ -52,9 +64,9 @@ const DEFAULT_MESSAGE: &str = concat!(
 );
 
 fn cleanup(entry_value: EntryValue) {
-    let entry = TAINT_REGISTRY_VALUES.with(|values| values.unwrap().get(&entry_value));
+    let entry = TAINT_REGISTRY_VALUES.get().unwrap().get(&entry_value);
     if let Some(entry) = entry {
-        TAINT_REGISTRY_PENDING_REQUESTS.with(|pending_requests| {
+        TAINT_REGISTRY_PENDING_REQUESTS.with_borrow(|pending_requests| {
             pending_requests
                 .as_ref()
                 .unwrap()
@@ -66,7 +78,7 @@ fn cleanup(entry_value: EntryValue) {
                 });
         });
         if entry.count.get() == 1 {
-            TAINT_REGISTRY_VALUES.with(|values| values.unwrap().delete(&entry_value));
+            TAINT_REGISTRY_VALUES.get().unwrap().delete(&entry_value);
         } else {
             entry.count.set(entry.count.get() - 1);
         }
@@ -110,17 +122,13 @@ pub fn taint_unique_value(
     if let Kind::String(_) | Kind::BigInt(_) = js::classify(value) {
         // Use as is.
         entry_value = unsafe { js::cast(value) };
-    } else if js::instance_of(
-        value,
-        TYPED_ARRAY_CONSTRUCTOR.with(|&constructor| constructor),
-    ) || js::data_view::is(value)
-    {
+    } else if js::instance_of(value, TYPED_ARRAY_CONSTRUCTOR.get()) || js::data_view::is(value) {
         let value: &ArrayBufferView = unsafe { js::cast(value) };
         // For now, we just convert binary data to a string so that we can just use the native
         // hashing in the Map implementation. It doesn't really matter what form the string
         // take as long as it's the same when we look it up.
         // We're not too worried about collisions since this should be a high entropy value.
-        TAINT_REGISTRY_BYTE_LENGTHS.with(|byte_lengths| {
+        TAINT_REGISTRY_BYTE_LENGTHS.with_borrow(|byte_lengths| {
             byte_lengths
                 .as_ref()
                 .unwrap()
@@ -144,17 +152,17 @@ pub fn taint_unique_value(
             "Cannot taint a {kind} because the value is too general and not unique enough to block globally."
         );
     }
-    let existing_entry = TAINT_REGISTRY_VALUES.with(|values| values.unwrap().get(&entry_value));
+    let existing_entry = TAINT_REGISTRY_VALUES.get().unwrap().get(&entry_value);
     match existing_entry {
-        None => TAINT_REGISTRY_VALUES.with(|values| {
-            values.unwrap().set(
+        None => {
+            TAINT_REGISTRY_VALUES.get().unwrap().set(
                 &entry_value,
                 Rc::new(TaintEntry {
                     message,
                     count: Cell::new(1),
                 }),
             );
-        }),
+        }
         Some(existing_entry) => existing_entry.count.set(existing_entry.count.get() + 1),
     }
     if let Some(finalization_registry) = FINALIZATION_REGISTRY.with(|&registry| registry) {
@@ -185,5 +193,5 @@ pub fn taint_object_reference(message: Option<&str>, object: Option<&Unknown>) {
         panic!("Only objects or functions can be passed to taintObjectReference.");
     }
     let object: &Reference = unsafe { js::cast(object) };
-    TAINT_REGISTRY_OBJECTS.with(|objects| objects.unwrap().set(object, message));
+    TAINT_REGISTRY_OBJECTS.get().unwrap().set(object, message);
 }

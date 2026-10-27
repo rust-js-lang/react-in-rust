@@ -211,8 +211,8 @@ pub fn ensure_root_is_scheduled(root: &Rc<FiberRoot>) {
         let last_scheduled_root = LAST_SCHEDULED_ROOT.with_borrow(Clone::clone);
         match last_scheduled_root {
             None => {
-                FIRST_SCHEDULED_ROOT.set(Some(Rc::clone(root)));
                 LAST_SCHEDULED_ROOT.set(Some(Rc::clone(root)));
+                FIRST_SCHEDULED_ROOT.set(Some(Rc::clone(root)));
             }
             Some(last_scheduled_root) => {
                 last_scheduled_root.next.replace(Some(Rc::clone(root)));

@@ -65,7 +65,7 @@ export interface Dependencies {
     | null
     | undefined;
   // DEV-only: ReactFiberThenable's `ThenableState`.
-  _debugThenableState: unknown | null | undefined;
+  _debugThenableState?: unknown | null | undefined;
 }
 
 /** One of a memo cache's arrays, which a compiled component reads and writes. */
@@ -157,35 +157,35 @@ export interface Fiber {
   // This tells us how well the tree makes use of sCU for memoization.
   // It is reset to 0 each time we render and only updated when we don't bailout.
   // This field is only set when the enableProfilerTimer flag is enabled.
-  actualDuration: number | null | undefined;
+  actualDuration?: number | null | undefined;
   // If the Fiber is currently active in the "render" phase,
   // This marks the time at which the work began.
   // This field is only set when the enableProfilerTimer flag is enabled.
-  actualStartTime: number | null | undefined;
+  actualStartTime?: number | null | undefined;
   // Duration of the most recent render time for this Fiber.
   // This value is not updated when we bailout for memoization purposes.
   // This field is only set when the enableProfilerTimer flag is enabled.
-  selfBaseDuration: number | null | undefined;
+  selfBaseDuration?: number | null | undefined;
   // Sum of base times for all descendants of this Fiber.
   // This value bubbles up during the "complete" phase.
   // This field is only set when the enableProfilerTimer flag is enabled.
-  treeBaseDuration: number | null | undefined;
+  treeBaseDuration?: number | null | undefined;
   // Conceptual aliases
   // workInProgress : Fiber ->  alternate The alternate used for reuse happens
   // to be the same as work in progress.
   // __DEV__ only
-  _debugInfo: unknown | null | undefined;
-  _debugOwner: unknown | null | undefined;
-  _debugStack: any | null | undefined;
-  _debugTask:
+  _debugInfo?: unknown | null | undefined;
+  _debugOwner?: unknown | null | undefined;
+  _debugStack?: any | null | undefined;
+  _debugTask?:
     | {
         run<T>(f: () => T): T;
       }
     | null
     | undefined;
-  _debugNeedsRemount: boolean | null | undefined;
+  _debugNeedsRemount?: boolean | null | undefined;
   // Used to verify that the order of hooks does not change between renders.
-  _debugHookTypes: HookType[] | null | undefined;
+  _debugHookTypes?: HookType[] | null | undefined;
 }
 
 /** What an uncaught or a recoverable error is reported with. */
@@ -343,7 +343,10 @@ export interface FiberRoot {
   onCaughtError: OnCaughtError;
   onRecoverableError: OnError;
   // enableDefaultTransitionIndicator only
-  onDefaultTransitionIndicator: OnDefaultTransitionIndicator | null | undefined;
+  onDefaultTransitionIndicator?:
+    | (() => (() => void) | null | undefined)
+    | null
+    | undefined;
   pendingIndicator?: (() => void) | null | undefined;
   // shared/ReactTypes' `ReactFormState<any, any>`.
   formState?: unknown | null | undefined;
@@ -371,10 +374,10 @@ export interface FiberRoot {
   // empty. We can represent this as a Map of transitions to suspense
   // boundary sets
   incompleteTransitions: Map<Transition, TracingMarkerInstance>;
-  effectDuration: number | null | undefined;
-  passiveEffectDuration: number | null | undefined;
+  effectDuration?: number | null | undefined;
+  passiveEffectDuration?: number | null | undefined;
   // __DEV__ only
-  _debugRootType: string | null | undefined;
+  _debugRootType?: string | null | undefined;
 }
 
 export interface Dispatcher {

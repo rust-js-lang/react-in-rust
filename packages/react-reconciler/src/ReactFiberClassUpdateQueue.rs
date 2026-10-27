@@ -364,8 +364,8 @@ pub fn enqueue_captured_update(work_in_progress: &Fiber, captured_update: &Rc<Up
                     });
                     match &new_last {
                         None => {
-                            new_first = Some(Rc::clone(&clone));
-                            new_last = Some(clone);
+                            new_last = Some(Rc::clone(&clone));
+                            new_first = Some(clone);
                         }
                         Some(last) => {
                             last.next.replace(Some(Rc::clone(&clone)));
@@ -382,8 +382,8 @@ pub fn enqueue_captured_update(work_in_progress: &Fiber, captured_update: &Rc<Up
                 // Append the captured update the end of the cloned list.
                 match &new_last {
                     None => {
-                        new_first = Some(Rc::clone(captured_update));
                         new_last = Some(Rc::clone(captured_update));
+                        new_first = Some(Rc::clone(captured_update));
                     }
                     Some(last) => {
                         last.next.replace(Some(Rc::clone(captured_update)));
@@ -392,8 +392,8 @@ pub fn enqueue_captured_update(work_in_progress: &Fiber, captured_update: &Rc<Up
                 }
             } else {
                 // There are no base updates.
-                new_first = Some(Rc::clone(captured_update));
                 new_last = Some(Rc::clone(captured_update));
+                new_first = Some(Rc::clone(captured_update));
             }
             let queue = Rc::new(UpdateQueue {
                 base_state: Cell::new(current_queue.base_state.get()),
@@ -655,8 +655,8 @@ pub fn process_update_queue(
                 });
                 match &new_last_base_update {
                     None => {
-                        new_first_base_update = Some(Rc::clone(&clone));
-                        new_last_base_update = Some(clone);
+                        new_last_base_update = Some(Rc::clone(&clone));
+                        new_first_base_update = Some(clone);
                         new_base_state = new_state;
                     }
                     Some(last) => {

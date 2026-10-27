@@ -36,6 +36,8 @@ pub mod react_fiber_commit_effects;
 pub mod react_fiber_commit_host_effects;
 #[path = "src/ReactFiberCommitViewTransitions.rs"]
 pub mod react_fiber_commit_view_transitions;
+#[path = "src/ReactFiberCompleteWork.rs"]
+pub mod react_fiber_complete_work;
 #[path = "src/ReactFiberComponentStack.rs"]
 pub mod react_fiber_component_stack;
 #[path = "src/ReactFiberConcurrentUpdates.rs"]

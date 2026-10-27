@@ -34,20 +34,20 @@ export interface SharedStateClient {
   // ReactCurrentActQueue
   actQueue?: RendererTask[] | null | undefined;
   // When zero this means we're outside an async startTransition.
-  asyncTransitions: number | null | undefined;
+  asyncTransitions?: number | null | undefined;
   // Used to reproduce behavior of `batchedUpdates` in legacy mode.
-  isBatchingLegacy: boolean | null | undefined;
-  didScheduleLegacyUpdate: boolean | null | undefined;
+  isBatchingLegacy?: boolean | null | undefined;
+  didScheduleLegacyUpdate?: boolean | null | undefined;
   // Tracks whether something called `use` during the current batch of work.
   // Determines whether we should yield to microtasks to unwrap already resolved
   // promises without suspending.
-  didUsePromise: boolean | null | undefined;
+  didUsePromise?: boolean | null | undefined;
   // Track first uncaught error within this act
-  thrownErrors: (unknown | null | undefined)[] | null | undefined;
+  thrownErrors?: (unknown | null | undefined)[] | null | undefined;
   // ReactDebugCurrentFrame
   getCurrentStack?: (() => string) | null | undefined;
   // ReactOwnerStackReset
-  recentlyCreatedOwnerStacks: number | null | undefined;
+  recentlyCreatedOwnerStacks?: number | null | undefined;
 }
 
 /**

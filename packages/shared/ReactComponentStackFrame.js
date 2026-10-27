@@ -116,7 +116,6 @@ function DetermineComponentFrameRoot(fn, construct) {
             throw new Error();
           },
         });
-
         try {
           new fn();
         } finally {

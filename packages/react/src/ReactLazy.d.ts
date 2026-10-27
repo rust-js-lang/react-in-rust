@@ -45,7 +45,7 @@ export interface LazyComponent {
   _payload: Payload;
   _init: (payload: Payload) => unknown | null | undefined;
   // __DEV__
-  _debugInfo: ReactAsyncInfo[] | null | undefined;
+  _debugInfo?: ReactAsyncInfo[] | null | undefined;
 }
 
 export function lazy(ctor: () => any): LazyComponent;

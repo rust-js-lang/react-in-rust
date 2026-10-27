@@ -91,9 +91,9 @@ export function startScheduledGesture(
     }
     prev = prev.next;
   }
-  return null;
   // No scheduled gestures. It must mean nothing for this renderer updated but
   // some other renderer might have updated.
+  return null;
 }
 
 export function cancelScheduledGesture(root, gesture) {
@@ -147,8 +147,7 @@ export function cancelScheduledGesture(root, gesture) {
       if (gesturePrev == null) {
         if (root.pendingGestures === gesture) {
           // This was the currently rendering gesture.
-          const next = gesture.next;
-          root.pendingGestures = next;
+          root.pendingGestures = gesture.next;
           let remainingLanes = root.pendingLanes;
           if (root.pendingGestures == null) {
             // Gestures don't clear their lanes while the gesture is still active but it
@@ -180,8 +179,7 @@ export function cancelScheduledGesture(root, gesture) {
         if (next != null) {
           next.prev = gesturePrev;
         }
-        gesture.prev = null;
-        gesture.next = null;
+        gesture.next = gesture.prev = null;
       }
     }
   }

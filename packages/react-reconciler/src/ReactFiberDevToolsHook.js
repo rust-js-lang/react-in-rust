@@ -9,6 +9,12 @@ import {
   enableProfilerTimer,
   enableSchedulingProfiler,
 } from '../../shared/ReactFeatureFlags.js';
+import {
+  ContinuousEventPriority,
+  DefaultEventPriority,
+  DiscreteEventPriority,
+  IdleEventPriority,
+} from './ReactEventPriorities.js';
 import {DidCapture} from './ReactFiberFlags.js';
 import {
   IdlePriority as IDLE_SCHEDULER_PRIORITY,
@@ -101,13 +107,13 @@ export function onCommitRoot(root, eventPriority) {
     let schedulerPriority;
     if (enableProfilerTimer) {
       schedulerPriority =
-        eventPriority === 2
+        eventPriority === DiscreteEventPriority
           ? IMMEDIATE_SCHEDULER_PRIORITY
-          : eventPriority === 8
+          : eventPriority === ContinuousEventPriority
             ? USER_BLOCKING_SCHEDULER_PRIORITY
-            : eventPriority === 32
+            : eventPriority === DefaultEventPriority
               ? NORMAL_SCHEDULER_PRIORITY
-              : eventPriority === 268435456
+              : eventPriority === IdleEventPriority
                 ? IDLE_SCHEDULER_PRIORITY
                 : NORMAL_SCHEDULER_PRIORITY;
     } else {

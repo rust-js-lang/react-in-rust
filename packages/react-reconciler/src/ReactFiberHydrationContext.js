@@ -83,6 +83,7 @@ function buildHydrationDiffNode(fiber, distanceFromLeaf) {
     hydrationDiffRootDEV ??= {
       fiber,
       children: [],
+      serverProps: undefined,
       serverTail: [],
       distanceFromLeaf,
     };
@@ -114,6 +115,7 @@ function buildHydrationDiffNode(fiber, distanceFromLeaf) {
   const newNode = {
     fiber,
     children: [],
+    serverProps: undefined,
     serverTail: [],
     distanceFromLeaf,
   };
@@ -678,18 +680,16 @@ function popToNextHostParent(fiber) {
       case ActivityComponent:
       case SuspenseComponent:
         rootOrSingletonContext = false;
-        break;
+        return;
       case HostSingleton:
       case HostRoot:
         rootOrSingletonContext = true;
-        break;
+        return;
       default: {
         const returnFiber = hydrationParentFiber$1.return;
         hydrationParentFiber = returnFiber;
-        continue;
       }
     }
-    return;
   }
 }
 
@@ -800,8 +800,7 @@ export function resetHydrationState() {
     return;
   }
 
-  hydrationParentFiber = null;
-  nextHydratableInstance = null;
+  nextHydratableInstance = hydrationParentFiber = null;
   isHydrating = false;
   didSuspendOrErrorDEV = false;
 }

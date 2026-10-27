@@ -18,7 +18,13 @@ import {
 import ReactSharedInternals from '../../shared/ReactSharedInternals.js';
 import noop from '../../shared/noop.js';
 import reportGlobalError from '../../shared/reportGlobalError.js';
-import {lanesToEventPriority} from './ReactEventPriorities.js';
+import {
+  ContinuousEventPriority,
+  DefaultEventPriority,
+  DiscreteEventPriority,
+  IdleEventPriority,
+  lanesToEventPriority,
+} from './ReactEventPriorities.js';
 import {
   hasOngoingIsomorphicIndicator,
   markIsomorphicIndicatorHandled,
@@ -112,11 +118,10 @@ export function ensureRootIsScheduled(root) {
   } else {
     const lastScheduledRoot$1 = lastScheduledRoot;
     if (lastScheduledRoot$1 == null) {
-      firstScheduledRoot = root;
+      firstScheduledRoot = lastScheduledRoot = root;
     } else {
-      lastScheduledRoot$1.next = root;
+      lastScheduledRoot = lastScheduledRoot$1.next = root;
     }
-    lastScheduledRoot = root;
   }
 
   // Any time a root received an update, we set this to true until the next time
@@ -459,11 +464,11 @@ function scheduleTaskForRootDuringMicrotask(root, currentTime) {
 
   const value = lanesToEventPriority(nextLanes);
   let schedulerPriorityLevel;
-  if (value === 2 || value === 8) {
+  if (value === DiscreteEventPriority || value === ContinuousEventPriority) {
     schedulerPriorityLevel = USER_BLOCKING_SCHEDULER_PRIORITY;
-  } else if (value === 32) {
+  } else if (value === DefaultEventPriority) {
     schedulerPriorityLevel = NORMAL_SCHEDULER_PRIORITY;
-  } else if (value === 268435456) {
+  } else if (value === IdleEventPriority) {
     schedulerPriorityLevel = IDLE_SCHEDULER_PRIORITY;
   } else {
     schedulerPriorityLevel = NORMAL_SCHEDULER_PRIORITY;

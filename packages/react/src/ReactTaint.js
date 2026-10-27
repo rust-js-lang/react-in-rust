@@ -11,15 +11,23 @@ import getPrototypeOf from '../../shared/getPrototypeOf.js';
 import ReactSharedInternals from './ReactSharedInternalsServer.js';
 import {$unwrap} from '@rust-js/runtime';
 
-const {
-  TaintRegistryObjects,
-  TaintRegistryValues,
-  TaintRegistryByteLengths,
-  TaintRegistryPendingRequests,
-} = ReactSharedInternals;
+let TaintRegistryObjects;
+let TaintRegistryValues;
+let TaintRegistryByteLengths;
+let TaintRegistryPendingRequests;
 
 // This is the shared constructor of all typed arrays.
-const TypedArrayConstructor = getPrototypeOf(Uint32Array.prototype).constructor;
+let TypedArrayConstructor;
+
+TaintRegistryObjects = ReactSharedInternals.TaintRegistryObjects;
+TaintRegistryValues = ReactSharedInternals.TaintRegistryValues;
+const taintRegistryByteLengths = ReactSharedInternals.TaintRegistryByteLengths;
+TaintRegistryByteLengths = taintRegistryByteLengths;
+const taintRegistryPendingRequests =
+  ReactSharedInternals.TaintRegistryPendingRequests;
+TaintRegistryPendingRequests = taintRegistryPendingRequests;
+
+TypedArrayConstructor = getPrototypeOf(Uint32Array.prototype).constructor;
 
 const defaultMessage =
   'A tainted value was attempted to be serialized to a Client Component or Action closure. ' +

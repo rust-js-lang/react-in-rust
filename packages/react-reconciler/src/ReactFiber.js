@@ -162,8 +162,7 @@ function createFiber(tag, pendingProps, key, mode) {
     // https://bugs.chromium.org/p/v8/issues/detail?id=8538
     fiber.actualDuration = -0;
     fiber.actualStartTime = -1.1;
-    fiber.selfBaseDuration = -0;
-    fiber.treeBaseDuration = -0;
+    fiber.treeBaseDuration = fiber.selfBaseDuration = -0;
   }
 
   if (__DEV__) {
@@ -200,9 +199,8 @@ export function isFunctionClassComponent(type) {
 
 // This is used to create an alternate fiber to do work on.
 export function createWorkInProgress(current, pendingProps) {
-  const alternate = current.alternate;
-  let workInProgress;
-  if (alternate == null) {
+  let workInProgress = current.alternate;
+  if (workInProgress == null) {
     // We use a double buffering pooling technique because we know that we'll
     // only ever need at most two versions of a tree. We pool the "other" unused
     // node that we're free to reuse. This is lazily created to avoid allocating
@@ -219,27 +217,24 @@ export function createWorkInProgress(current, pendingProps) {
     if (__DEV__) {
       // DEV-only fields
 
-      workInProgress._debugOwner = current._debugOwner;
-      workInProgress._debugStack = current._debugStack;
-      workInProgress._debugTask = current._debugTask;
+      workInProgress._debugOwner = current._debugOwner ?? null;
+      workInProgress._debugStack = current._debugStack ?? null;
+      workInProgress._debugTask = current._debugTask ?? null;
       const debugHookTypes = current._debugHookTypes;
-      workInProgress._debugHookTypes = debugHookTypes;
+      workInProgress._debugHookTypes = debugHookTypes ?? null;
     }
 
     workInProgress.alternate = current;
     current.alternate = workInProgress;
   } else {
-    alternate.pendingProps = pendingProps;
+    workInProgress.pendingProps = pendingProps;
     // Needed because Blocks store data on type.
-    alternate.type = current.type;
+    workInProgress.type = current.type;
 
     // We already have an alternate.
     // Reset the effect tag.
-    alternate.flags = NoFlags;
-
-    // The effects are no longer valid.
-    alternate.subtreeFlags = NoFlags;
-    alternate.deletions = null;
+    workInProgress.subtreeFlags = workInProgress.flags = NoFlags;
+    workInProgress.deletions = null;
 
     if (enableOptimisticKey) {
       // For optimistic keys, the Fibers can have different keys if one is optimistic
@@ -247,7 +242,7 @@ export function createWorkInProgress(current, pendingProps) {
       const value = $borrow($fieldCell(current, 'key'), true);
       const key = value.value;
       $unborrow(value);
-      $cellReplace($borrowMut($fieldCell(alternate, 'key')), key);
+      $cellReplace($borrowMut($fieldCell(workInProgress, 'key')), key);
     }
 
     if (enableProfilerTimer) {
@@ -255,10 +250,9 @@ export function createWorkInProgress(current, pendingProps) {
       // This prevents time from endlessly accumulating in new commits.
       // This has the downside of resetting values for different priority renders,
       // But works for yielding (the common case) and should support resuming.
-      alternate.actualDuration = -0;
-      alternate.actualStartTime = -1.1;
+      workInProgress.actualDuration = -0;
+      workInProgress.actualStartTime = -1.1;
     }
-    workInProgress = alternate;
   }
 
   // Reset all effects except static ones.
@@ -267,8 +261,7 @@ export function createWorkInProgress(current, pendingProps) {
   workInProgress.childLanes = current.childLanes;
   workInProgress.lanes = current.lanes;
 
-  const child = current.child;
-  workInProgress.child = child;
+  workInProgress.child = current.child;
   workInProgress.memoizedProps = current.memoizedProps;
   workInProgress.memoizedState = current.memoizedState;
   workInProgress.updateQueue = current.updateQueue;
@@ -282,7 +275,8 @@ export function createWorkInProgress(current, pendingProps) {
         ? {
             lanes: currentDependencies.lanes,
             firstContext: currentDependencies.firstContext,
-            _debugThenableState: currentDependencies._debugThenableState,
+            _debugThenableState:
+              currentDependencies._debugThenableState ?? null,
           }
         : {
             lanes: currentDependencies.lanes,
@@ -291,20 +285,19 @@ export function createWorkInProgress(current, pendingProps) {
       : null;
 
   // These will be overridden during the parent's reconciliation
-  const sibling = current.sibling;
-  workInProgress.sibling = sibling;
+  workInProgress.sibling = current.sibling;
   workInProgress.index = current.index;
   workInProgress.ref = current.ref;
   workInProgress.refCleanup = current.refCleanup;
 
   if (enableProfilerTimer) {
-    workInProgress.selfBaseDuration = current.selfBaseDuration;
-    workInProgress.treeBaseDuration = current.treeBaseDuration;
+    workInProgress.selfBaseDuration = current.selfBaseDuration ?? null;
+    workInProgress.treeBaseDuration = current.treeBaseDuration ?? null;
   }
 
   if (__DEV__) {
-    workInProgress._debugInfo = current._debugInfo;
-    workInProgress._debugNeedsRemount = current._debugNeedsRemount;
+    workInProgress._debugInfo = current._debugInfo ?? null;
+    workInProgress._debugNeedsRemount = current._debugNeedsRemount ?? null;
     switch (workInProgress.tag) {
       case FunctionComponent:
       case SimpleMemoComponent:
@@ -353,16 +346,14 @@ export function resetWorkInProgress(workInProgress, renderLanes) {
     if (enableProfilerTimer) {
       // Note: We don't reset the actualTime counts. It's useful to accumulate
       // actual time across multiple render passes.
-      workInProgress.selfBaseDuration = 0;
-      workInProgress.treeBaseDuration = 0;
+      workInProgress.treeBaseDuration = workInProgress.selfBaseDuration = 0;
     }
   } else {
     // Reset to the cloned values that createWorkInProgress would've.
     workInProgress.childLanes = current.childLanes;
     workInProgress.lanes = current.lanes;
 
-    const child = current.child;
-    workInProgress.child = child;
+    workInProgress.child = current.child;
     workInProgress.subtreeFlags = NoFlags;
     workInProgress.deletions = null;
     workInProgress.memoizedProps = current.memoizedProps;
@@ -390,7 +381,8 @@ export function resetWorkInProgress(workInProgress, renderLanes) {
           ? {
               lanes: currentDependencies.lanes,
               firstContext: currentDependencies.firstContext,
-              _debugThenableState: currentDependencies._debugThenableState,
+              _debugThenableState:
+                currentDependencies._debugThenableState ?? null,
             }
           : {
               lanes: currentDependencies.lanes,
@@ -401,8 +393,8 @@ export function resetWorkInProgress(workInProgress, renderLanes) {
     if (enableProfilerTimer) {
       // Note: We don't reset the actualTime counts. It's useful to accumulate
       // actual time across multiple render passes.
-      workInProgress.selfBaseDuration = current.selfBaseDuration;
-      workInProgress.treeBaseDuration = current.treeBaseDuration;
+      workInProgress.selfBaseDuration = current.selfBaseDuration ?? null;
+      workInProgress.treeBaseDuration = current.treeBaseDuration ?? null;
     }
   }
 
@@ -586,7 +578,7 @@ export function createFiberFromTypeAndProps(
   fiber.lanes = lanes;
 
   if (__DEV__) {
-    fiber._debugOwner = owner;
+    fiber._debugOwner = owner ?? null;
   }
 
   return fiber;
@@ -609,9 +601,9 @@ export function createFiberFromElement(element, mode, lanes) {
     lanes,
   );
   if (__DEV__) {
-    fiber._debugOwner = element._owner;
-    fiber._debugStack = element._debugStack;
-    fiber._debugTask = element._debugTask;
+    fiber._debugOwner = element._owner ?? null;
+    fiber._debugStack = element._debugStack ?? null;
+    fiber._debugTask = element._debugTask ?? null;
   }
   return fiber;
 }
@@ -626,8 +618,7 @@ export function createFiberFromFragment(elements, mode, lanes, key) {
 // shared/ReactTypes' `ReactScope`.
 function createFiberFromScope(scope, pendingProps, mode, lanes, key) {
   const fiber = createFiber(ScopeComponent, pendingProps, key, mode);
-  fiber.type = scope;
-  fiber.elementType = scope;
+  fiber.elementType = fiber.type = scope;
   fiber.lanes = lanes;
   return fiber;
 }

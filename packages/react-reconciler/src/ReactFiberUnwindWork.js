@@ -177,8 +177,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
           // Cut off any remaining tail work and don't commit the rendering one.
           // This assumes that we have already confirmed that none of these are
           // already mounted.
-          renderState.rendering = null;
-          renderState.tail = null;
+          renderState.tail = renderState.rendering = null;
         }
         // Schedule the commit phase to attach retry listeners.
         workInProgress.flags |= Update;
@@ -222,8 +221,10 @@ export function unwindWork(current, workInProgress, renderLanes) {
       if (enableTransitionTracing && workInProgress.stateNode != null) {
         popMarkerInstance(workInProgress);
       }
+      return null;
+    default:
+      return null;
   }
-  return null;
 }
 
 export function unwindInterruptedWork(current, interruptedWork, renderLanes) {

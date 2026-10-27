@@ -47,9 +47,9 @@ export function getNearestMountedFiber(fiber) {
     // renderContainerIntoSubtree.
     return nearestMounted ?? null;
   }
-  return null;
   // If we didn't hit the root, that means that we're in an disconnected tree
   // that has been unmounted.
+  return null;
 }
 
 // ReactFiberConfig's `SuspenseInstance`.
@@ -83,8 +83,8 @@ export function getActivityInstanceFromFiber(fiber) {
       return activityState.dehydrated;
     }
   }
-  return null;
   // TODO: Implement this on ActivityComponent.
+  return null;
 }
 
 // ReactFiberConfig's `Container`.
@@ -131,8 +131,7 @@ export function findCurrentFiberUsingSlowPath(fiber) {
         // over this extra fragment fiber and proceed to the next parent.
         const nextParent = parentA.return;
         if (nextParent != null) {
-          a = nextParent;
-          b = nextParent;
+          a = b = nextParent;
           continue;
         }
       } else {
@@ -179,15 +178,15 @@ export function findCurrentFiberUsingSlowPath(fiber) {
                 didFindChild = true;
                 a = parentA;
                 b = parentB;
-              } else if (child === b) {
+                break;
+              }
+              if (child === b) {
                 didFindChild = true;
                 b = parentA;
                 a = parentB;
-              } else {
-                child = child.sibling;
-                continue;
+                break;
               }
-              break;
+              child = child.sibling;
             }
             if (!didFindChild) {
               // Search parent B's child set
@@ -197,15 +196,15 @@ export function findCurrentFiberUsingSlowPath(fiber) {
                   didFindChild = true;
                   a = parentB;
                   b = parentA;
-                } else if (child === b) {
+                  break;
+                }
+                if (child === b) {
                   didFindChild = true;
                   b = parentB;
                   a = parentA;
-                } else {
-                  child = child.sibling;
-                  continue;
+                  break;
                 }
-                break;
+                child = child.sibling;
               }
 
               if (!didFindChild) {

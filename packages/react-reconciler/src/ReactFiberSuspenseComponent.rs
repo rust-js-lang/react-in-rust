@@ -9,6 +9,7 @@ use std::rc::Rc;
 use js::{Set, Unknown};
 
 use crate::react_fiber_flags::{DID_CAPTURE, NO_FLAGS};
+use crate::react_fiber_hydration_context::HydrationErrors;
 use crate::react_fiber_lane::Lane;
 use crate::react_fiber_tree_context::TreeContext;
 use crate::react_internal_types::Fiber;
@@ -52,9 +53,8 @@ pub struct SuspenseState {
     // NoLane is the default for normal boundaries, which turns into "normal" pri.
     pub retry_lane: Cell<Lane>,
     // Stashed Errors that happened while attempting to hydrate this boundary.
-    // ReactCapturedValue's `CapturedValue<mixed>`s.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub hydration_errors: RefCell<Option<Vec<&'static Unknown>>>,
+    pub hydration_errors: RefCell<Option<HydrationErrors>>,
 }
 
 unsafe impl js::Defined for SuspenseState {}

@@ -36,7 +36,9 @@ const ReactNoopUpdateQueue = {
   // @return {boolean} True if mounted, false otherwise.
   // @protected
   // @final
-  isMounted: publicInstance => false,
+  isMounted(publicInstance) {
+    return false;
+  },
 
   // Forces an update. This should only be invoked when it is known with
   // certainty that we are **not** in a DOM transaction.

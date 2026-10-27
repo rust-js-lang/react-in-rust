@@ -81,6 +81,34 @@ pub enum HookType {
 // Safety: a JS string, the hook's name.
 unsafe impl js::Defined for HookType {}
 
+impl HookType {
+    /// The hook's name, as React's warnings print it.
+    pub fn name(self) -> &'static str {
+        match self {
+            HookType::UseState => "useState",
+            HookType::UseReducer => "useReducer",
+            HookType::UseContext => "useContext",
+            HookType::UseRef => "useRef",
+            HookType::UseEffect => "useEffect",
+            HookType::UseEffectEvent => "useEffectEvent",
+            HookType::UseInsertionEffect => "useInsertionEffect",
+            HookType::UseLayoutEffect => "useLayoutEffect",
+            HookType::UseCallback => "useCallback",
+            HookType::UseMemo => "useMemo",
+            HookType::UseImperativeHandle => "useImperativeHandle",
+            HookType::UseDebugValue => "useDebugValue",
+            HookType::UseDeferredValue => "useDeferredValue",
+            HookType::UseTransition => "useTransition",
+            HookType::UseSyncExternalStore => "useSyncExternalStore",
+            HookType::UseId => "useId",
+            HookType::UseCacheRefresh => "useCacheRefresh",
+            HookType::UseOptimistic => "useOptimistic",
+            HookType::UseFormState => "useFormState",
+            HookType::UseActionState => "useActionState",
+        }
+    }
+}
+
 /// A context a fiber read, and the value it read of it.
 pub struct ContextDependency<T: 'static> {
     pub context: Rc<ReactContext<T>>,
@@ -97,6 +125,7 @@ pub struct Dependencies {
     pub first_context: RefCell<Option<Rc<ContextDependency<Option<&'static Unknown>>>>>,
     // DEV-only: ReactFiberThenable's `ThenableState`.
     #[cfg_attr(rust_js, rust_js::name = "_debugThenableState")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_thenable_state: Cell<Option<&'static Unknown>>,
 }
 
@@ -218,21 +247,25 @@ pub struct Fiber {
     // This tells us how well the tree makes use of sCU for memoization.
     // It is reset to 0 each time we render and only updated when we don't bailout.
     // This field is only set when the enableProfilerTimer flag is enabled.
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub actual_duration: Cell<Option<f64>>,
 
     // If the Fiber is currently active in the "render" phase,
     // This marks the time at which the work began.
     // This field is only set when the enableProfilerTimer flag is enabled.
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub actual_start_time: Cell<Option<f64>>,
 
     // Duration of the most recent render time for this Fiber.
     // This value is not updated when we bailout for memoization purposes.
     // This field is only set when the enableProfilerTimer flag is enabled.
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub self_base_duration: Cell<Option<f64>>,
 
     // Sum of base times for all descendants of this Fiber.
     // This value bubbles up during the "complete" phase.
     // This field is only set when the enableProfilerTimer flag is enabled.
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub tree_base_duration: Cell<Option<f64>>,
 
     // Conceptual aliases
@@ -240,18 +273,24 @@ pub struct Fiber {
     // to be the same as work in progress.
     // __DEV__ only
     #[cfg_attr(rust_js, rust_js::name = "_debugInfo")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_info: Cell<Option<&'static Unknown>>,
     #[cfg_attr(rust_js, rust_js::name = "_debugOwner")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_owner: Cell<Option<&'static Unknown>>,
     #[cfg_attr(rust_js, rust_js::name = "_debugStack")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_stack: Cell<Option<&'static JsError>>,
     #[cfg_attr(rust_js, rust_js::name = "_debugTask")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_task: Cell<Option<&'static ConsoleTask>>,
     #[cfg_attr(rust_js, rust_js::name = "_debugNeedsRemount")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_needs_remount: Cell<Option<bool>>,
 
     // Used to verify that the order of hooks does not change between renders.
     #[cfg_attr(rust_js, rust_js::name = "_debugHookTypes")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_hook_types: RefCell<Option<Rc<RefCell<Vec<HookType>>>>>,
 }
 
@@ -401,6 +440,7 @@ pub struct FiberRoot {
     pub on_recoverable_error: &'static OnError,
 
     // enableDefaultTransitionIndicator only
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub on_default_transition_indicator: Cell<Option<&'static OnDefaultTransitionIndicator>>,
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub pending_indicator: Cell<Option<&'static dyn Fn()>>,
@@ -443,11 +483,14 @@ pub struct FiberRoot {
     // boundary sets
     pub incomplete_transitions: &'static Map<Transition, Rc<TracingMarkerInstance>>,
 
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub effect_duration: Cell<Option<f64>>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub passive_effect_duration: Cell<Option<f64>>,
 
     // __DEV__ only
     #[cfg_attr(rust_js, rust_js::name = "_debugRootType")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_root_type: Cell<Option<&'static str>>,
 }
 

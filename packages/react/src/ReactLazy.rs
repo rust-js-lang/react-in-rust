@@ -120,6 +120,7 @@ pub struct LazyComponent {
 
     // __DEV__
     #[cfg_attr(rust_js, rust_js::name = "_debugInfo")]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub debug_info: RefCell<Option<Vec<ReactAsyncInfo>>>,
 }
 
@@ -131,8 +132,8 @@ fn lazy_initializer(payload: &Rc<Payload>) -> Option<&'static Unknown> {
             // Mark when we first kicked off the lazy request.
             // $FlowFixMe[cannot-write]
             let now = performance.now();
-            io_info.start.set(now);
             io_info.end.set(now);
+            io_info.start.set(now);
             // Stash a Promise for introspection of the value later.
             // $FlowFixMe[cannot-write]
             io_info.value.set(Some(js::promise::new(|resolve, reject| {

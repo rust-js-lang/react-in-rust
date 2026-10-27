@@ -252,8 +252,8 @@ pub fn create_work_in_progress(
     current: &Rc<Fiber>,
     pending_props: Option<&'static Unknown>,
 ) -> Rc<Fiber> {
-    let alternate = current.alternate.borrow().clone();
-    let work_in_progress = match alternate {
+    let work_in_progress = current.alternate.borrow().clone();
+    let work_in_progress = match work_in_progress {
         None => {
             // We use a double buffering pooling technique because we know that we'll
             // only ever need at most two versions of a tree. We pool the "other" unused

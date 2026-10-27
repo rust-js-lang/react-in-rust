@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {CapturedValue} from './ReactCapturedValue.js';
 import type {Lane} from './ReactFiberLane.js';
 import type {TreeContext} from './ReactFiberTreeContext.js';
 import type {Fiber} from './ReactInternalTypes.js';
@@ -28,8 +29,10 @@ export interface SuspenseState {
   // NoLane is the default for normal boundaries, which turns into "normal" pri.
   retryLane: Lane;
   // Stashed Errors that happened while attempting to hydrate this boundary.
-  // ReactCapturedValue's `CapturedValue<mixed>`s.
-  hydrationErrors?: unknown[] | null | undefined;
+  hydrationErrors?:
+    | CapturedValue<unknown | null | undefined>[]
+    | null
+    | undefined;
 }
 
 /** shared/ReactTypes' `SuspenseListTailMode`. */
