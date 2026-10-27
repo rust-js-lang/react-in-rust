@@ -19,6 +19,7 @@ pub use shared::react_shared_internals::{AsyncDispatcher, Dispatcher};
 use crate::react_fiber_cache_component::Cache;
 use crate::react_fiber_concurrent_updates::ConcurrentUpdate;
 use crate::react_fiber_flags::Flags;
+use crate::react_fiber_gesture_scheduler::ScheduledGesture;
 use crate::react_fiber_lane::{Lane, LaneMap, Lanes};
 use crate::react_fiber_tracing_marker_component::{SuspenseInfo, TracingMarkerInstance};
 use crate::react_root_tags::RootTag;
@@ -400,9 +401,8 @@ pub struct FiberRoot {
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub transition_types: RefCell<Option<Rc<RefCell<Vec<String>>>>>, // TODO: Make this a LaneMap.
     // enableGestureTransition only
-    // ReactFiberGestureScheduler's `ScheduledGesture`.
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub pending_gestures: Cell<Option<&'static Unknown>>,
+    pub pending_gestures: RefCell<Option<Rc<ScheduledGesture>>>,
     // ReactFiberConfig's `Instance`.
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub gesture_clone: Cell<Option<&'static Unknown>>,

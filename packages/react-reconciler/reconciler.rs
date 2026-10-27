@@ -34,6 +34,8 @@ pub mod react_fiber_class_update_queue;
 pub mod react_fiber_commit_effects;
 #[path = "src/ReactFiberCommitHostEffects.rs"]
 pub mod react_fiber_commit_host_effects;
+#[path = "src/ReactFiberCommitViewTransitions.rs"]
+pub mod react_fiber_commit_view_transitions;
 #[path = "src/ReactFiberComponentStack.rs"]
 pub mod react_fiber_component_stack;
 #[path = "src/ReactFiberConcurrentUpdates.rs"]
@@ -48,6 +50,8 @@ pub mod react_fiber_error_logger;
 pub mod react_fiber_flags;
 #[path = "src/ReactFiberFragmentInstance.rs"]
 pub mod react_fiber_fragment_instance;
+#[path = "src/ReactFiberGestureScheduler.rs"]
+pub mod react_fiber_gesture_scheduler;
 #[path = "src/ReactFiberHiddenContext.rs"]
 pub mod react_fiber_hidden_context;
 #[path = "src/ReactFiberHostContext.rs"]

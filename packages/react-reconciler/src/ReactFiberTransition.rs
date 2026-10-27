@@ -3,16 +3,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use std::cell::RefCell;
 use std::rc::Rc;
 
 use js::Unknown;
 use react_isomorphic::react_lazy::Thenable;
 use react_isomorphic::react_start_transition::{
-    GestureProvider, GestureTransitionOptions, OnStartTransitionFinish, Transition, g, s, set_g,
-    set_s, t,
+    OnStartTransitionFinish, Transition, g, s, set_g, set_s, t,
 };
-use react_isomorphic::react_transition_type::TransitionTypes;
 use shared::react_feature_flags::{
     ENABLE_GESTURE_TRANSITION, ENABLE_TRANSITION_TRACING, ENABLE_VIEW_TRANSITION,
 };
@@ -21,6 +18,9 @@ use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use crate::react_fiber_async_action::{entangle_async_action, peek_entangled_action_lane};
 use crate::react_fiber_cache_component::{
     CACHE_CONTEXT, Cache, SpawnedCachePool, create_cache, retain_cache,
+};
+use crate::react_fiber_gesture_scheduler::{
+    ScheduledGesture, cancel_scheduled_gesture, start_scheduled_gesture,
 };
 use crate::react_fiber_lane::{Lanes, NO_LANE};
 use crate::react_fiber_root_scheduler::FIRST_SCHEDULED_ROOT;
@@ -59,29 +59,6 @@ fn get_work_in_progress_transitions() -> Option<Rc<Vec<&'static Transition>>> {
     rust_js::link_name = "./src/ReactFiberWorkLoop.js#markTransitionStarted"
 )]
 fn mark_transition_started() {
-    unreachable!()
-}
-
-// ReactFiberGestureScheduler's `ScheduledGesture`.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberGestureScheduler.js#startScheduledGesture"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn start_scheduled_gesture(
-    root: &FiberRoot,
-    gesture_timeline: &GestureProvider,
-    gesture_options: Option<&GestureTransitionOptions>,
-    #[cfg_attr(rust_js, rust_js::nullable)] transition_types: Option<Rc<RefCell<TransitionTypes>>>,
-) -> Option<&'static Unknown> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberGestureScheduler.js#cancelScheduledGesture"
-)]
-fn cancel_scheduled_gesture(root: &FiberRoot, gesture: &Unknown) {
     unreachable!()
 }
 
@@ -178,11 +155,11 @@ js::on_load! {
 
 fn chain_gesture_cancellation(
     root: Rc<FiberRoot>,
-    scheduled_gesture: &'static Unknown,
+    scheduled_gesture: Rc<ScheduledGesture>,
     prev_cancel: Option<Box<dyn Fn()>>,
 ) -> Box<dyn Fn()> {
     Box::new(move || {
-        cancel_scheduled_gesture(&root, scheduled_gesture);
+        cancel_scheduled_gesture(&root, &scheduled_gesture);
         if let Some(prev_cancel) = &prev_cancel {
             prev_cancel();
         }

@@ -115,7 +115,7 @@ pub fn create_fiber_root(
 
         transition_types: RefCell::new(None),
 
-        pending_gestures: Cell::new(None),
+        pending_gestures: RefCell::new(None),
         gesture_clone: Cell::new(None),
 
         incomplete_transitions: js::map::new(None),
@@ -146,7 +146,7 @@ pub fn create_fiber_root(
     }
 
     if ENABLE_GESTURE_TRANSITION.with(|&enabled| enabled) {
-        root.pending_gestures.set(None);
+        root.pending_gestures.replace(None);
         root.gesture_clone.set(None);
     }
 

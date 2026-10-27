@@ -10,6 +10,7 @@ import type {Transition} from '../../react/src/ReactStartTransition.js';
 import type {Cache} from './ReactFiberCacheComponent.js';
 import type {ConcurrentUpdate} from './ReactFiberConcurrentUpdates.js';
 import type {Flags} from './ReactFiberFlags.js';
+import type {ScheduledGesture} from './ReactFiberGestureScheduler.js';
 import type {Lane, LaneMap, Lanes} from './ReactFiberLane.js';
 import type {
   SuspenseInfo,
@@ -345,8 +346,7 @@ export interface FiberRoot {
   // react/src/ReactTransitionType's `TransitionTypes`.
   transitionTypes?: string[] | null | undefined;
   // enableGestureTransition only
-  // ReactFiberGestureScheduler's `ScheduledGesture`.
-  pendingGestures?: unknown | null | undefined;
+  pendingGestures?: ScheduledGesture | null | undefined;
   // ReactFiberConfig's `Instance`.
   gestureClone?: unknown | null | undefined;
   // The follow fields are only used by enableSuspenseCallback for hydration.
