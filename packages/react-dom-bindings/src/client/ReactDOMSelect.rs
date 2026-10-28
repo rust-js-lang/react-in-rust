@@ -88,10 +88,8 @@ fn update_options(
             dict::set(selected_value, &("$".to_owned() + selected), true);
         }
         for i in 0..options.length() as usize {
-            let selected = js::object::has_own_property.call(
-                js::unknown(selected_value),
-                &("$".to_owned() + &options[i].value()),
-            );
+            let selected = js::unknown(selected_value)
+                .has_own_property(&("$".to_owned() + &options[i].value()));
             if options[i].selected() != selected {
                 options[i].set_selected(selected);
             }
@@ -198,10 +196,8 @@ pub fn hydrate_select(
             }
         }
         for i in 0..options.length() as usize {
-            let expected_selected = js::object::has_own_property.call(
-                js::unknown(selected_value),
-                &("$".to_owned() + &options[i].value()),
-            );
+            let expected_selected = js::unknown(selected_value)
+                .has_own_property(&("$".to_owned() + &options[i].value()));
             if options[i].selected() != expected_selected {
                 changed = true;
                 break;

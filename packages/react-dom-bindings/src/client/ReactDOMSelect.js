@@ -9,7 +9,6 @@ import {getCurrentFiberOwnerNameInDevOrNull} from '../../../react-reconciler/src
 import isArray from '../../../shared/isArray.js';
 import {queueChangeEvent} from '../events/ReactDOMEventReplaying.js';
 import {getToStringValue, toString} from './ToStringValue.js';
-import {$f64ToInt} from '@rust-js/runtime';
 
 let didWarnValueDefaultValue = false;
 
@@ -62,12 +61,9 @@ function updateOptions(node, multiple, propValue, setDefaultSelected) {
       // Prefix to avoid chaos with special keys.
       selectedValue['$' + selected] = true;
     }
-    const end = $f64ToInt(options.length, 0, 4294967295);
-    for (let i = 0; i < end; i++) {
-      const selected = Object.prototype.hasOwnProperty.call(
-        selectedValue,
-        '$' + options[i].value,
-      );
+    for (let i = 0; i < options.length; i++) {
+      const value = '$' + options[i].value;
+      const selected = selectedValue.hasOwnProperty(value);
       if (options[i].selected !== selected) {
         options[i].selected = selected;
       }
@@ -80,8 +76,7 @@ function updateOptions(node, multiple, propValue, setDefaultSelected) {
     // browsers for all cases.
     const selectedValue = toString(getToStringValue(propValue));
     let defaultSelected = null;
-    const end = $f64ToInt(options.length, 0, 4294967295);
-    for (let i = 0; i < end; i++) {
+    for (let i = 0; i < options.length; i++) {
       if (options[i].value === selectedValue) {
         options[i].selected = true;
         if (setDefaultSelected) {
@@ -161,12 +156,9 @@ export function hydrateSelect(element, value, defaultValue, multiple) {
         selectedValue['$' + selected] = true;
       }
     }
-    const end = $f64ToInt(options.length, 0, 4294967295);
-    for (let i = 0; i < end; i++) {
-      const expectedSelected = Object.prototype.hasOwnProperty.call(
-        selectedValue,
-        '$' + options[i].value,
-      );
+    for (let i = 0; i < options.length; i++) {
+      const value = '$' + options[i].value;
+      const expectedSelected = selectedValue.hasOwnProperty(value);
       if (options[i].selected !== expectedSelected) {
         changed = true;
         break;
@@ -175,8 +167,7 @@ export function hydrateSelect(element, value, defaultValue, multiple) {
   } else {
     let selectedValue =
       propValue == null ? undefined : toString(getToStringValue(propValue));
-    const end = $f64ToInt(options.length, 0, 4294967295);
-    for (let i = 0; i < end; i++) {
+    for (let i = 0; i < options.length; i++) {
       if (selectedValue == null && !options[i].disabled) {
         // We expect the first non-disabled option to be selected if the selected is null.
         selectedValue = options[i].value;

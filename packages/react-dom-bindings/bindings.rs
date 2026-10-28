@@ -107,6 +107,8 @@ pub mod react_synthetic_event_type;
 pub mod sanitize_url;
 #[path = "src/client/setTextContent.rs"]
 pub mod set_text_content;
+#[path = "src/events/SyntheticEvent.rs"]
+pub mod synthetic_event;
 #[path = "src/client/ToStringValue.rs"]
 pub mod to_string_value;
 #[path = "src/events/TopLevelEventTypes.rs"]
