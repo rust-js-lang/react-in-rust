@@ -39,6 +39,8 @@ pub mod is_attribute_name_safe;
 pub mod is_custom_element;
 #[path = "src/events/isEventSupported.rs"]
 pub mod is_event_supported;
+#[path = "src/events/isTextInputElement.rs"]
+pub mod is_text_input_element;
 #[path = "src/shared/isUnitlessNumber.rs"]
 pub mod is_unitless_number;
 #[path = "src/shared/possibleStandardNames.rs"]

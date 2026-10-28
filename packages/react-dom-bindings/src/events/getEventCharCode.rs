@@ -14,7 +14,7 @@ js::export_default! {
     ///
     /// @param {object} nativeEvent Native browser event.
     /// @return {number} Normalized `charCode` property.
-    pub fn get_event_char_code(native_event: &KeyboardEvent) -> u32 {
+    pub fn get_event_char_code(native_event: &KeyboardEvent) -> f64 {
         let mut char_code;
         let key_code = native_event.key_code();
 
@@ -22,8 +22,8 @@ js::export_default! {
             char_code = native_event.char_code();
 
             // FF does not set `charCode` for the Enter-key, check against `keyCode`.
-            if char_code == 0 && key_code == 13 {
-                char_code = 13;
+            if char_code == 0.0 && key_code == 13.0 {
+                char_code = 13.0;
             }
         } else {
             // IE8 does not implement `charCode`, but `keyCode` has the correct value.
@@ -32,16 +32,16 @@ js::export_default! {
 
         // IE and Edge (on Windows) and Chrome / Safari (on Windows and Linux)
         // report Enter as charCode 10 when ctrl is pressed.
-        if char_code == 10 {
-            char_code = 13;
+        if char_code == 10.0 {
+            char_code = 13.0;
         }
 
         // Some non-printable keys are reported in `charCode`/`keyCode`, discard them.
         // Must not discard the (non-)printable Enter-key.
-        if char_code >= 32 || char_code == 13 {
+        if char_code >= 32.0 || char_code == 13.0 {
             return char_code;
         }
 
-        0
+        0.0
     }
 }

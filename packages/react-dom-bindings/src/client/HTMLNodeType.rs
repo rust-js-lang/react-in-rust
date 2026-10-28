@@ -5,9 +5,9 @@
 
 // HTML nodeType values that represent the type of the node
 
-pub const ELEMENT_NODE: u16 = 1;
-pub const TEXT_NODE: u16 = 3;
-pub const COMMENT_NODE: u16 = 8;
-pub const DOCUMENT_NODE: u16 = 9;
-pub const DOCUMENT_TYPE_NODE: u16 = 10;
-pub const DOCUMENT_FRAGMENT_NODE: u16 = 11;
+pub const ELEMENT_NODE: f64 = 1.0;
+pub const TEXT_NODE: f64 = 3.0;
+pub const COMMENT_NODE: f64 = 8.0;
+pub const DOCUMENT_NODE: f64 = 9.0;
+pub const DOCUMENT_TYPE_NODE: f64 = 10.0;
+pub const DOCUMENT_FRAGMENT_NODE: f64 = 11.0;

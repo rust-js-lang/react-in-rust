@@ -110,7 +110,7 @@ fn get_implicit_role(element: &Element) -> Option<String> {
 
         "SELECT" => {
             if element.has_attribute("multiple")
-                || html_select_element::unchecked_from(element).size() > 1
+                || html_select_element::unchecked_from(element).size() > 1.0
             {
                 return Some("listbox".to_owned());
             }
