@@ -2557,10 +2557,10 @@ function imperativeHandleEffect(create, ref) {
 
 function mountImperativeHandle(ref, create, deps) {
   if (__DEV__ && typeof create !== 'function') {
-    // $FlowFixMe[invalid-compare]
     console.error(
       'Expected useImperativeHandle() second argument to be a function ' +
         'that creates a handle. Instead received: %s.',
+      // $FlowFixMe[invalid-compare]
       create !== null ? typeof create : 'null',
     );
   }
@@ -2583,10 +2583,10 @@ function mountImperativeHandle(ref, create, deps) {
 
 function updateImperativeHandle(ref, create, deps) {
   if (__DEV__ && typeof create !== 'function') {
-    // $FlowFixMe[invalid-compare]
     console.error(
       'Expected useImperativeHandle() second argument to be a function ' +
         'that creates a handle. Instead received: %s.',
+      // $FlowFixMe[invalid-compare]
       create !== null ? typeof create : 'null',
     );
   }

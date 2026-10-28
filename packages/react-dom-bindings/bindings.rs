@@ -37,6 +37,8 @@ pub mod get_attribute_alias;
 pub mod get_event_char_code;
 #[path = "src/events/getEventTarget.rs"]
 pub mod get_event_target;
+#[path = "src/events/getListener.rs"]
+pub mod get_listener;
 #[path = "src/client/getNodeForCharacterOffset.rs"]
 pub mod get_node_for_character_offset;
 #[path = "src/events/getVendorPrefixedEventName.rs"]
@@ -63,6 +65,12 @@ pub mod possible_standard_names;
 pub mod react_controlled_value_prop_types;
 #[path = "src/client/ReactDOMContainer.rs"]
 pub mod react_dom_container;
+#[path = "src/events/ReactDOMControlledComponent.rs"]
+pub mod react_dom_controlled_component;
+#[path = "src/client/ReactDOMEventHandleTypes.rs"]
+pub mod react_dom_event_handle_types;
+#[path = "src/shared/ReactDOMFormActions.rs"]
+pub mod react_dom_form_actions;
 #[path = "src/shared/ReactDOMInvalidARIAHook.rs"]
 pub mod react_dom_invalid_aria_hook;
 #[path = "src/shared/ReactDOMNullInputValuePropHook.rs"]
@@ -75,6 +83,12 @@ pub mod react_dom_resource_validation;
 pub mod react_dom_src_object;
 #[path = "src/shared/ReactDOMUnknownPropertyHook.rs"]
 pub mod react_dom_unknown_property_hook;
+#[path = "src/events/ReactDOMUpdateBatching.rs"]
+pub mod react_dom_update_batching;
+#[path = "src/client/ReactDOMUpdatePriority.rs"]
+pub mod react_dom_update_priority;
+#[path = "src/events/ReactSyntheticEventType.rs"]
+pub mod react_synthetic_event_type;
 #[path = "src/shared/sanitizeURL.rs"]
 pub mod sanitize_url;
 #[path = "src/client/setTextContent.rs"]

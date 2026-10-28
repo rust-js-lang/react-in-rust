@@ -557,7 +557,6 @@ function recursivelyInsertClonesFromExistingTree(
 ) {
   let child = parentFiber.child;
   while (child != null) {
-    // TODO: Mark the name and find a pair.
     switch (child.tag) {
       case HostComponent: {
         const instance = child.stateNode;
@@ -665,7 +664,7 @@ function recursivelyInsertClonesFromExistingTree(
           visitPhase === CLONE_EXIT
             ? // This was an Enter of a ViewTransition. We now move onto unhiding the inner
               // HostComponents and finding inner pairs.
-              CLONE_UNHIDE
+              CLONE_UNHIDE // TODO: Mark the name and find a pair.
             : visitPhase === CLONE_UPDATE
               ? // If the tree had no mutations and we've found the top most ViewTransition
                 // then this is the one we might apply the "layout" state too if it has changed
@@ -773,7 +772,6 @@ function insertDestinationClonesOfFiber(
   // The effect flag should be checked *after* we refine the type of fiber,
   // because the fiber tag is more specific. An exception is any flag related
   // to reconciliation, because those can be set on all fiber types.
-  // TODO: Mark the name and find a pair.
   switch (finishedWork.tag) {
     case HostHoistable:
       if (supportsResources) {
@@ -896,7 +894,7 @@ function insertDestinationClonesOfFiber(
         visitPhase === CLONE_EXIT
           ? // This was an Enter of a ViewTransition. We now move onto unhiding the inner
             // HostComponents and finding inner pairs.
-            CLONE_UNHIDE
+            CLONE_UNHIDE // TODO: Mark the name and find a pair.
           : visitPhase;
       recursivelyInsertClones(
         finishedWork,
