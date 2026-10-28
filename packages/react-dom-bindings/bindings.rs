@@ -7,10 +7,16 @@ pub mod cross_origin_strings;
 pub mod dom_namespaces;
 #[path = "src/client/escapeSelectorAttributeValueInsideDoubleQuotes.rs"]
 pub mod escape_selector_attribute_value_inside_double_quotes;
+#[path = "src/events/EventSystemFlags.rs"]
+pub mod event_system_flags;
 #[path = "src/client/getActiveElement.rs"]
 pub mod get_active_element;
 #[path = "src/shared/getAttributeAlias.rs"]
 pub mod get_attribute_alias;
+#[path = "src/events/getEventCharCode.rs"]
+pub mod get_event_char_code;
+#[path = "src/events/getEventTarget.rs"]
+pub mod get_event_target;
 #[path = "src/client/getNodeForCharacterOffset.rs"]
 pub mod get_node_for_character_offset;
 #[path = "src/client/HTMLNodeType.rs"]
@@ -21,6 +27,8 @@ pub mod hyphenate_style_name;
 pub mod is_attribute_name_safe;
 #[path = "src/shared/isCustomElement.rs"]
 pub mod is_custom_element;
+#[path = "src/events/isEventSupported.rs"]
+pub mod is_event_supported;
 #[path = "src/shared/isUnitlessNumber.rs"]
 pub mod is_unitless_number;
 #[path = "src/shared/ReactDOMNullInputValuePropHook.rs"]
