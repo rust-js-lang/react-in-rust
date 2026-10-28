@@ -67,6 +67,8 @@ pub mod react_dom_container;
 pub mod react_dom_invalid_aria_hook;
 #[path = "src/shared/ReactDOMNullInputValuePropHook.rs"]
 pub mod react_dom_null_input_value_prop_hook;
+#[path = "src/client/ReactDOMOption.rs"]
+pub mod react_dom_option;
 #[path = "src/shared/ReactDOMResourceValidation.rs"]
 pub mod react_dom_resource_validation;
 #[path = "src/client/ReactDOMSrcObject.rs"]
