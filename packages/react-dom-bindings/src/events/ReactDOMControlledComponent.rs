@@ -4,31 +4,11 @@
 // LICENSE file in the root directory of this source tree.
 
 use std::cell::{Cell, RefCell};
-use std::rc::Rc;
 
 use js::Unknown;
-use react_reconciler::react_internal_types::Fiber;
 use webapi::Node;
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/client/ReactDOMComponentTree.js#getInstanceFromNode",
-    rust_js::nullable
-)]
-fn get_instance_from_node(node: &Node) -> Option<Rc<Fiber>> {
-    let _ = node;
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/client/ReactDOMComponentTree.js#getFiberCurrentPropsFromNode",
-    rust_js::nullable
-)]
-fn get_fiber_current_props_from_node(node: &Unknown) -> Option<&'static Unknown> {
-    let _ = node;
-    unreachable!()
-}
+use crate::react_dom_component_tree::{get_fiber_current_props_from_node, get_instance_from_node};
 
 #[cfg_attr(
     rust_js,
