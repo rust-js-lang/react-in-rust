@@ -3,12 +3,18 @@
 
 #[path = "src/shared/crossOriginStrings.rs"]
 pub mod cross_origin_strings;
+#[path = "src/client/CSSShorthandProperty.rs"]
+pub mod css_shorthand_property;
 #[path = "src/events/CurrentReplayingEvent.rs"]
 pub mod current_replaying_event;
+#[path = "src/client/DOMAccessibilityRoles.rs"]
+pub mod dom_accessibility_roles;
 #[path = "src/client/DOMNamespaces.rs"]
 pub mod dom_namespaces;
 #[path = "src/client/escapeSelectorAttributeValueInsideDoubleQuotes.rs"]
 pub mod escape_selector_attribute_value_inside_double_quotes;
+#[path = "src/client/estimateBandwidth.rs"]
+pub mod estimate_bandwidth;
 #[path = "src/events/EventListener.rs"]
 pub mod event_listener;
 #[path = "src/events/EventSystemFlags.rs"]
@@ -35,6 +41,8 @@ pub mod is_custom_element;
 pub mod is_event_supported;
 #[path = "src/shared/isUnitlessNumber.rs"]
 pub mod is_unitless_number;
+#[path = "src/shared/possibleStandardNames.rs"]
+pub mod possible_standard_names;
 #[path = "src/shared/ReactDOMNullInputValuePropHook.rs"]
 pub mod react_dom_null_input_value_prop_hook;
 #[path = "src/shared/ReactDOMResourceValidation.rs"]
@@ -47,3 +55,5 @@ pub mod sanitize_url;
 pub mod set_text_content;
 #[path = "src/client/ToStringValue.rs"]
 pub mod to_string_value;
+#[path = "src/shared/validAriaProperties.rs"]
+pub mod valid_aria_properties;
