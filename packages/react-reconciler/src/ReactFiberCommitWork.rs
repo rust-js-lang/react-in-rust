@@ -832,21 +832,21 @@ fn commit_layout_effect_on_fiber(
     match finished_work.tag.get() {
         FUNCTION_COMPONENT | FORWARD_REF | SIMPLE_MEMO_COMPONENT => {
             recursively_traverse_layout_effects(finished_root, finished_work, committed_lanes);
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 commit_hook_layout_effects(finished_work, HOOK_LAYOUT | HOOK_HAS_EFFECT);
             }
         }
         CLASS_COMPONENT => {
             recursively_traverse_layout_effects(finished_root, finished_work, committed_lanes);
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 commit_class_layout_lifecycles(finished_work, current.map(Rc::as_ref));
             }
 
-            if (flags & CALLBACK) != NO_FLAGS {
+            if (flags & CALLBACK) != 0 {
                 commit_class_callbacks(finished_work);
             }
 
-            if (flags & REF) != NO_FLAGS {
+            if (flags & REF) != 0 {
                 let return_fiber = finished_work.r#return.borrow().clone();
                 safely_attach_ref(finished_work, return_fiber.as_ref());
             }
@@ -854,7 +854,7 @@ fn commit_layout_effect_on_fiber(
         HOST_ROOT => {
             let prev_profiler_effect_duration = push_nested_effect_durations();
             recursively_traverse_layout_effects(finished_root, finished_work, committed_lanes);
-            if (flags & CALLBACK) != NO_FLAGS {
+            if (flags & CALLBACK) != 0 {
                 commit_root_callbacks(finished_work);
             }
             if ENABLE_PROFILER_TIMER.with(|&enabled| enabled)
@@ -875,7 +875,7 @@ fn commit_layout_effect_on_fiber(
                 // @TODO move this to the mutation phase. The reason it isn't there yet
                 // is it seemingly requires an extra traversal because we need to move the
                 // disappear effect into a phase before the appear phase
-                if current.is_none() && (flags & UPDATE) != NO_FLAGS {
+                if current.is_none() && (flags & UPDATE) != 0 {
                     // Unlike in the reappear path we only acquire on new mount
                     commit_host_singleton_acquisition(finished_work);
                 }
@@ -889,14 +889,14 @@ fn commit_layout_effect_on_fiber(
             // These effects should only be committed when components are first mounted,
             // aka when there is no current/alternate.
             if current.is_none() {
-                if (flags & UPDATE) != NO_FLAGS {
+                if (flags & UPDATE) != 0 {
                     commit_host_mount(finished_work);
-                } else if (flags & HYDRATE) != NO_FLAGS {
+                } else if (flags & HYDRATE) != 0 {
                     commit_host_hydrated_instance(finished_work);
                 }
             }
 
-            if (flags & REF) != NO_FLAGS {
+            if (flags & REF) != 0 {
                 let return_fiber = finished_work.r#return.borrow().clone();
                 safely_attach_ref(finished_work, return_fiber.as_ref());
             }
@@ -904,7 +904,7 @@ fn commit_layout_effect_on_fiber(
         PROFILER => {
             // TODO: Should this fire inside an offscreen tree? Or should it wait to
             // fire when the tree becomes visible again.
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 let prev_profiler_effect_duration = push_nested_effect_durations();
 
                 recursively_traverse_layout_effects(finished_root, finished_work, committed_lanes);
@@ -935,16 +935,16 @@ fn commit_layout_effect_on_fiber(
         }
         ACTIVITY_COMPONENT => {
             recursively_traverse_layout_effects(finished_root, finished_work, committed_lanes);
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 commit_activity_hydration_callbacks(finished_root, finished_work);
             }
         }
         SUSPENSE_COMPONENT => {
             recursively_traverse_layout_effects(finished_root, finished_work, committed_lanes);
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 commit_suspense_hydration_callbacks(finished_root, finished_work);
             }
-            if (flags & CALLBACK) != NO_FLAGS {
+            if (flags & CALLBACK) != 0 {
                 // This Boundary is in fallback and has a dehydrated Suspense instance.
                 // We could in theory assume the dehydrated state but we recheck it for
                 // certainty.
@@ -1036,18 +1036,18 @@ fn commit_layout_effect_on_fiber(
         }
         VIEW_TRANSITION_COMPONENT => {
             if ENABLE_VIEW_TRANSITION {
-                if __DEV__ && (flags & VIEW_TRANSITION_NAMED_STATIC) != NO_FLAGS {
+                if __DEV__ && (flags & VIEW_TRANSITION_NAMED_STATIC) != 0 {
                     track_named_view_transition(finished_work);
                 }
                 recursively_traverse_layout_effects(finished_root, finished_work, committed_lanes);
-                if (flags & REF) != NO_FLAGS {
+                if (flags & REF) != 0 {
                     let return_fiber = finished_work.r#return.borrow().clone();
                     safely_attach_ref(finished_work, return_fiber.as_ref());
                 }
             }
         }
         _ => {
-            if finished_work.tag.get() == FRAGMENT && (flags & REF) != NO_FLAGS {
+            if finished_work.tag.get() == FRAGMENT && (flags & REF) != 0 {
                 let return_fiber = finished_work.r#return.borrow().clone();
                 safely_attach_ref(finished_work, return_fiber.as_ref());
             }
@@ -1429,7 +1429,7 @@ fn hide_or_unhide_nearest_portals(parent_fiber: &Fiber, is_hidden: bool) {
     if !SUPPORTS_MUTATION {
         return;
     }
-    if (parent_fiber.subtree_flags.get() & PORTAL_STATIC) != NO_FLAGS {
+    if (parent_fiber.subtree_flags.get() & PORTAL_STATIC) != 0 {
         let mut child = parent_fiber.child.borrow().clone();
         while let Some(current) = child {
             hide_or_unhide_nearest_portals_on_fiber(&current, is_hidden);
@@ -1875,7 +1875,7 @@ fn commit_deletion_effects_on_fiber(
             );
         }
         OFFSCREEN_COMPONENT => {
-            if DISABLE_LEGACY_MODE || (deleted_fiber.mode.get() & CONCURRENT_MODE) != NO_MODE {
+            if DISABLE_LEGACY_MODE || (deleted_fiber.mode.get() & CONCURRENT_MODE) != 0 {
                 // If this offscreen component is hidden, we already unmounted it. Before
                 // deleting the children, track that it's already unmounted so that we
                 // don't attempt to unmount the effects again.
@@ -1906,7 +1906,7 @@ fn commit_deletion_effects_on_fiber(
             }
         }
         VIEW_TRANSITION_COMPONENT if ENABLE_VIEW_TRANSITION => {
-            if __DEV__ && (deleted_fiber.flags.get() & VIEW_TRANSITION_NAMED_STATIC) != NO_FLAGS {
+            if __DEV__ && (deleted_fiber.flags.get() & VIEW_TRANSITION_NAMED_STATIC) != 0 {
                 untrack_named_view_transition(deleted_fiber);
             }
             safely_detach_ref(deleted_fiber, Some(nearest_mounted_ancestor));
@@ -2189,7 +2189,7 @@ fn recursively_traverse_mutation_effects(root: &FiberRoot, parent_fiber: &Rc<Fib
         }
     }
 
-    if (parent_fiber.subtree_flags.get() & (MUTATION_MASK | CLONED)) != NO_FLAGS {
+    if (parent_fiber.subtree_flags.get() & (MUTATION_MASK | CLONED)) != 0 {
         let mut child = parent_fiber.child.borrow().clone();
         while let Some(current) = child {
             commit_mutation_effects_on_fiber(&current, root, lanes);
@@ -2221,7 +2221,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
             // This ensures that parent event effects are mutated before child effects.
             // This isn't a supported use case, so we can re-consider it,
             // but this was the behavior we originally shipped.
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 let update_queue: Option<&FunctionComponentUpdateQueue> =
                     unsafe { js::cast(finished_work.update_queue.get()) };
                 if let Some(update_queue) = update_queue
@@ -2235,7 +2235,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
             recursively_traverse_mutation_effects(root, finished_work, lanes);
             commit_reconciliation_effects(finished_work, lanes);
 
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 let return_fiber = finished_work.r#return.borrow().clone();
                 commit_hook_effect_list_unmount(
                     HOOK_INSERTION | HOOK_HAS_EFFECT,
@@ -2256,7 +2256,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
             recursively_traverse_mutation_effects(root, finished_work, lanes);
             commit_reconciliation_effects(finished_work, lanes);
 
-            if (flags & REF) != NO_FLAGS
+            if (flags & REF) != 0
                 && !OFFSCREEN_SUBTREE_WAS_HIDDEN.get()
                 && let Some(current) = &current
             {
@@ -2264,7 +2264,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
                 safely_detach_ref(current, return_fiber.as_ref());
             }
 
-            if (flags & CALLBACK) != NO_FLAGS && OFFSCREEN_SUBTREE_IS_HIDDEN.get() {
+            if (flags & CALLBACK) != 0 && OFFSCREEN_SUBTREE_IS_HIDDEN.get() {
                 let update_queue: Option<&UpdateQueue> =
                     unsafe { js::cast(finished_work.update_queue.get()) };
                 if let Some(update_queue) = update_queue {
@@ -2280,7 +2280,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
             recursively_traverse_mutation_effects(root, finished_work, lanes);
             commit_reconciliation_effects(finished_work, lanes);
 
-            if (flags & REF) != NO_FLAGS
+            if (flags & REF) != 0
                 && !OFFSCREEN_SUBTREE_WAS_HIDDEN.get()
                 && let Some(current) = &current
             {
@@ -2288,7 +2288,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
                 safely_detach_ref(current, return_fiber.as_ref());
             }
 
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 let current_resource = match &current {
                     Some(current) => current.memoized_state.get(),
                     None => js::null(),
@@ -2400,7 +2400,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
         HOST_HOISTABLE | HOST_SINGLETON if SUPPORTS_SINGLETONS => {
             recursively_traverse_mutation_effects(root, finished_work, lanes);
             commit_reconciliation_effects(finished_work, lanes);
-            if (flags & REF) != NO_FLAGS
+            if (flags & REF) != 0
                 && !OFFSCREEN_SUBTREE_WAS_HIDDEN.get()
                 && let Some(current) = &current
             {
@@ -2408,7 +2408,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
                 safely_detach_ref(current, return_fiber.as_ref());
             }
             if let Some(current) = &current
-                && (flags & UPDATE) != NO_FLAGS
+                && (flags & UPDATE) != 0
             {
                 let new_props = finished_work.memoized_props.get();
                 let old_props = current.memoized_props.get();
@@ -2427,7 +2427,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
 
             commit_reconciliation_effects(finished_work, lanes);
 
-            if (flags & REF) != NO_FLAGS
+            if (flags & REF) != 0
                 && !OFFSCREEN_SUBTREE_WAS_HIDDEN.get()
                 && let Some(current) = &current
             {
@@ -2441,11 +2441,11 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
                 // the order matters. We should refactor so that ContentReset does not
                 // rely on mutating the flag during commit. Like by setting a flag
                 // during the render phase instead.
-                if (finished_work.flags.get() & CONTENT_RESET) != NO_FLAGS {
+                if (finished_work.flags.get() & CONTENT_RESET) != 0 {
                     commit_host_reset_text_content(finished_work);
                 }
 
-                if (flags & UPDATE) != NO_FLAGS {
+                if (flags & UPDATE) != 0 {
                     let instance = finished_work.state_node.get();
                     if instance.is_some() {
                         // Commit the work prepared earlier.
@@ -2461,7 +2461,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
                     }
                 }
 
-                if (flags & FORM_RESET) != NO_FLAGS {
+                if (flags & FORM_RESET) != 0 {
                     NEEDS_FORM_RESET.set(true);
                     if __DEV__ && !js::strict_equals(finished_work.r#type.get(), "form") {
                         // Paranoid coding. In case we accidentally start using the
@@ -2488,7 +2488,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
             recursively_traverse_mutation_effects(root, finished_work, lanes);
             commit_reconciliation_effects(finished_work, lanes);
 
-            if (flags & UPDATE) != NO_FLAGS && SUPPORTS_MUTATION {
+            if (flags & UPDATE) != 0 && SUPPORTS_MUTATION {
                 if finished_work.state_node.get().is_none() {
                     panic!(concat!(
                         "This should have a text node initialized. This error is likely ",
@@ -2527,7 +2527,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
                 commit_reconciliation_effects(finished_work, lanes);
             }
 
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 if SUPPORTS_MUTATION
                     && SUPPORTS_HYDRATION
                     && let Some(current) = &current
@@ -2610,7 +2610,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
             pop_mutation_context(prev_mutation_context);
             OFFSCREEN_DIRECT_PARENT_IS_HIDDEN.set(prev_offscreen_direct_parent_is_hidden);
 
-            if (flags & UPDATE) != NO_FLAGS && SUPPORTS_PERSISTENCE {
+            if (flags & UPDATE) != 0 && SUPPORTS_PERSISTENCE {
                 commit_host_portal_container_children(
                     unsafe { js::cast(finished_work.state_node.get()) },
                     finished_work,
@@ -2640,7 +2640,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
         ACTIVITY_COMPONENT => {
             recursively_traverse_mutation_effects(root, finished_work, lanes);
             commit_reconciliation_effects(finished_work, lanes);
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 let retry_queue: Option<&RetryQueue> =
                     unsafe { js::cast(finished_work.update_queue.get()) };
                 if let Some(retry_queue) = retry_queue {
@@ -2665,7 +2665,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
             // Also, all this logic could/should move to the passive phase so it
             // doesn't block paint.
             let offscreen_fiber = finished_work.child.borrow().clone().unwrap();
-            if (offscreen_fiber.flags.get() & VISIBILITY) != NO_FLAGS {
+            if (offscreen_fiber.flags.get() & VISIBILITY) != 0 {
                 // Throttle the appearance and disappearance of Suspense fallbacks.
                 let is_showing_fallback = finished_work.memoized_state.get().is_some();
                 let was_showing_fallback = current
@@ -2684,7 +2684,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
                 }
             }
 
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 if let Err(error) = catch_unwind(AssertUnwindSafe(|| {
                     commit_suspense_callback(finished_work);
                 })) && let Some(error) = error.downcast_ref::<&'static JsError>()
@@ -2712,7 +2712,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
                 .as_ref()
                 .is_some_and(|current| current.memoized_state.get().is_some());
 
-            if DISABLE_LEGACY_MODE || (finished_work.mode.get() & CONCURRENT_MODE) != NO_MODE {
+            if DISABLE_LEGACY_MODE || (finished_work.mode.get() & CONCURRENT_MODE) != 0 {
                 // Before committing the children, track on the stack whether this
                 // offscreen subtree was already hidden, so that we don't unmount the
                 // effects again.
@@ -2755,7 +2755,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
 
             commit_reconciliation_effects(finished_work, lanes);
 
-            if (flags & VISIBILITY) != NO_FLAGS {
+            if (flags & VISIBILITY) != 0 {
                 let offscreen_instance: &OffscreenInstance =
                     unsafe { js::cast(finished_work.state_node.get()) };
 
@@ -2830,7 +2830,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
             }
 
             // TODO: Move to passive phase
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 let offscreen_queue: Option<&OffscreenQueue> =
                     unsafe { js::cast(finished_work.update_queue.get()) };
                 if let Some(offscreen_queue) = offscreen_queue {
@@ -2846,7 +2846,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
             recursively_traverse_mutation_effects(root, finished_work, lanes);
             commit_reconciliation_effects(finished_work, lanes);
 
-            if (flags & UPDATE) != NO_FLAGS {
+            if (flags & UPDATE) != 0 {
                 let retry_queue: Option<&RetryQueue> =
                     unsafe { js::cast(finished_work.update_queue.get()) };
                 if let Some(retry_queue) = retry_queue {
@@ -2857,7 +2857,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
         }
         VIEW_TRANSITION_COMPONENT => {
             if ENABLE_VIEW_TRANSITION {
-                if (flags & REF) != NO_FLAGS
+                if (flags & REF) != 0
                     && !OFFSCREEN_SUBTREE_WAS_HIDDEN.get()
                     && let Some(current) = &current
                 {
@@ -2900,7 +2900,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
 
                 // TODO: This is a temporary solution that allowed us to transition away
                 // from React Flare on www.
-                if (flags & REF) != NO_FLAGS {
+                if (flags & REF) != 0 {
                     let return_fiber = finished_work.r#return.borrow().clone();
                     if !OFFSCREEN_SUBTREE_WAS_HIDDEN.get() && current.is_some() {
                         safely_detach_ref(finished_work, return_fiber.as_ref());
@@ -2909,7 +2909,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
                         safely_attach_ref(finished_work, return_fiber.as_ref());
                     }
                 }
-                if (flags & UPDATE) != NO_FLAGS {
+                if (flags & UPDATE) != 0 {
                     let scope_instance = finished_work.state_node.get();
                     prepare_scope_update(scope_instance, finished_work);
                 }
@@ -2917,7 +2917,7 @@ fn commit_mutation_effects_on_fiber(finished_work: &Rc<Fiber>, root: &FiberRoot,
         }
         _ => {
             if finished_work.tag.get() == FRAGMENT {
-                if (flags & REF) != NO_FLAGS
+                if (flags & REF) != 0
                     && !OFFSCREEN_SUBTREE_WAS_HIDDEN.get()
                     && let Some(current) = &current
                 {
@@ -2985,7 +2985,7 @@ fn commit_reconciliation_effects(finished_work: &Rc<Fiber>, _committed_lanes: La
     // type. They needs to happen after the children effects have fired, but
     // before the effects on this fiber have fired.
     let flags = finished_work.flags.get();
-    if (flags & PLACEMENT) != NO_FLAGS {
+    if (flags & PLACEMENT) != 0 {
         commit_host_placement(finished_work);
         // Clear the "placement" from effect tag so that we know that this is
         // inserted, before any life-cycles like componentDidMount gets called.
@@ -2995,7 +2995,7 @@ fn commit_reconciliation_effects(finished_work: &Rc<Fiber>, _committed_lanes: La
             .flags
             .set(finished_work.flags.get() & !PLACEMENT);
     }
-    if (flags & HYDRATING) != NO_FLAGS {
+    if (flags & HYDRATING) != 0 {
         finished_work
             .flags
             .set(finished_work.flags.get() & !HYDRATING);
@@ -3003,7 +3003,7 @@ fn commit_reconciliation_effects(finished_work: &Rc<Fiber>, _committed_lanes: La
 }
 
 fn recursively_reset_forms(parent_fiber: &Fiber) {
-    if (parent_fiber.subtree_flags.get() & FORM_RESET) != NO_FLAGS {
+    if (parent_fiber.subtree_flags.get() & FORM_RESET) != 0 {
         let mut child = parent_fiber.child.borrow().clone();
         while let Some(current) = child {
             reset_form_on_fiber(&current);
@@ -3014,7 +3014,7 @@ fn recursively_reset_forms(parent_fiber: &Fiber) {
 
 fn reset_form_on_fiber(fiber: &Fiber) {
     recursively_reset_forms(fiber);
-    if fiber.tag.get() == HOST_COMPONENT && (fiber.flags.get() & FORM_RESET) != NO_FLAGS {
+    if fiber.tag.get() == HOST_COMPONENT && (fiber.flags.get() & FORM_RESET) != 0 {
         let form_instance = fiber.state_node.get();
         reset_form_instance(form_instance);
     }
@@ -3038,7 +3038,7 @@ fn recursively_traverse_after_mutation_effects(
     lanes: Lanes,
 ) {
     // We need to visit the same nodes that we visited in the before mutation phase.
-    if (parent_fiber.subtree_flags.get() & BEFORE_AND_AFTER_MUTATION_TRANSITION_MASK) != NO_FLAGS {
+    if (parent_fiber.subtree_flags.get() & BEFORE_AND_AFTER_MUTATION_TRANSITION_MASK) != 0 {
         let mut child = parent_fiber.child.borrow().clone();
         while let Some(current) = child {
             commit_after_mutation_effects_on_fiber(&current, root, lanes);
@@ -3218,7 +3218,7 @@ pub fn commit_layout_effects(
 }
 
 fn recursively_traverse_layout_effects(root: &FiberRoot, parent_fiber: &Fiber, lanes: Lanes) {
-    if (parent_fiber.subtree_flags.get() & LAYOUT_MASK) != NO_FLAGS {
+    if (parent_fiber.subtree_flags.get() & LAYOUT_MASK) != 0 {
         let mut child = parent_fiber.child.borrow().clone();
         while let Some(current_child) = child {
             let current = current_child.alternate.borrow().clone();
@@ -3336,8 +3336,7 @@ fn disappear_layout_effects(
         }
         VIEW_TRANSITION_COMPONENT => {
             if ENABLE_VIEW_TRANSITION {
-                if __DEV__ && (finished_work.flags.get() & VIEW_TRANSITION_NAMED_STATIC) != NO_FLAGS
-                {
+                if __DEV__ && (finished_work.flags.get() & VIEW_TRANSITION_NAMED_STATIC) != 0 {
                     untrack_named_view_transition(finished_work);
                 }
                 safely_detach_ref(finished_work, return_fiber.as_ref());
@@ -3451,7 +3450,7 @@ fn reappear_layout_effects(
             commit_class_hidden_callbacks(finished_work);
 
             // If this is newly finished work, check for setState callbacks
-            if include_work_in_progress_effects && (flags & CALLBACK) != NO_FLAGS {
+            if include_work_in_progress_effects && (flags & CALLBACK) != 0 {
                 commit_class_callbacks(finished_work);
             }
 
@@ -3497,8 +3496,7 @@ fn reappear_layout_effects(
             // (eg DOM renderer may schedule auto-focus for inputs and form controls).
             // These effects should only be committed when components are first mounted,
             // aka when there is no current/alternate.
-            if include_work_in_progress_effects && current.is_none() && (flags & UPDATE) != NO_FLAGS
-            {
+            if include_work_in_progress_effects && current.is_none() && (flags & UPDATE) != 0 {
                 commit_host_mount(finished_work);
             }
 
@@ -3549,8 +3547,7 @@ fn reappear_layout_effects(
                 layout_effect_traversal_flags,
             );
 
-            if include_work_in_progress_effects && current.is_none() && (flags & UPDATE) != NO_FLAGS
-            {
+            if include_work_in_progress_effects && current.is_none() && (flags & UPDATE) != 0 {
                 commit_host_mount(finished_work);
             }
 
@@ -3559,7 +3556,7 @@ fn reappear_layout_effects(
         }
         PROFILER => {
             // TODO: Figure out how Profiler updates should work with Offscreen
-            if include_work_in_progress_effects && (flags & UPDATE) != NO_FLAGS {
+            if include_work_in_progress_effects && (flags & UPDATE) != 0 {
                 let prev_profiler_effect_duration = push_nested_effect_durations();
 
                 recursively_traverse_reappear_layout_effects(
@@ -3603,7 +3600,7 @@ fn reappear_layout_effects(
                 layout_effect_traversal_flags,
             );
 
-            if include_work_in_progress_effects && (flags & UPDATE) != NO_FLAGS {
+            if include_work_in_progress_effects && (flags & UPDATE) != 0 {
                 // TODO: Delete this feature.
                 commit_activity_hydration_callbacks(finished_root, finished_work);
             }
@@ -3615,7 +3612,7 @@ fn reappear_layout_effects(
                 layout_effect_traversal_flags,
             );
 
-            if include_work_in_progress_effects && (flags & UPDATE) != NO_FLAGS {
+            if include_work_in_progress_effects && (flags & UPDATE) != 0 {
                 // TODO: Delete this feature.
                 commit_suspense_hydration_callbacks(finished_root, finished_work);
             }
@@ -3643,7 +3640,7 @@ fn reappear_layout_effects(
                     finished_work,
                     layout_effect_traversal_flags,
                 );
-                if __DEV__ && (flags & VIEW_TRANSITION_NAMED_STATIC) != NO_FLAGS {
+                if __DEV__ && (flags & VIEW_TRANSITION_NAMED_STATIC) != 0 {
                     track_named_view_transition(finished_work);
                 }
                 safely_attach_ref(finished_work, return_fiber.as_ref());
@@ -3905,7 +3902,7 @@ fn recursively_traverse_passive_mount_effects(
     } else {
         PASSIVE_MASK
     };
-    if (parent_fiber.subtree_flags.get() & subtree_mask) != NO_FLAGS
+    if (parent_fiber.subtree_flags.get() & subtree_mask) != 0
         // If this subtree rendered with profiling this commit, we need to visit it to log it.
         || (ENABLE_PROFILER_TIMER.with(|&enabled| enabled)
             && ENABLE_COMPONENT_PERFORMANCE_TRACK
@@ -4024,7 +4021,7 @@ fn commit_passive_mount_on_fiber(
                 committed_transitions,
                 end_time,
             );
-            if (flags & PASSIVE) != NO_FLAGS {
+            if (flags & PASSIVE) != 0 {
                 commit_hook_passive_mount_effects(finished_work, HOOK_PASSIVE | HOOK_HAS_EFFECT);
             }
         }
@@ -4107,7 +4104,7 @@ fn commit_passive_mount_on_fiber(
                 restore_root_view_transition_name(finished_root.container_info);
             }
 
-            if (flags & PASSIVE) != NO_FLAGS {
+            if (flags & PASSIVE) != 0 {
                 let mut previous_cache: Option<&Rc<Cache>> = js::null();
                 let alternate = finished_work.alternate.borrow().clone();
                 if let Some(alternate) = &alternate {
@@ -4170,7 +4167,7 @@ fn commit_passive_mount_on_fiber(
         }
         PROFILER => {
             // Only Profilers with work in their subtree will have a Passive effect scheduled.
-            if (flags & PASSIVE) != NO_FLAGS {
+            if (flags & PASSIVE) != 0 {
                 let prev_profiler_effect_duration = push_nested_effect_durations();
 
                 recursively_traverse_passive_mount_effects(
@@ -4341,7 +4338,7 @@ fn commit_passive_mount_on_fiber(
                     end_time,
                 );
 
-                if (flags & PASSIVE) != NO_FLAGS {
+                if (flags & PASSIVE) != 0 {
                     let current = finished_work.alternate.borrow().clone();
                     let instance: &OffscreenInstance =
                         unsafe { js::cast(finished_work.state_node.get()) };
@@ -4381,9 +4378,7 @@ fn commit_passive_mount_on_fiber(
                         committed_transitions,
                         end_time,
                     );
-                } else if DISABLE_LEGACY_MODE
-                    || (finished_work.mode.get() & CONCURRENT_MODE) != NO_MODE
-                {
+                } else if DISABLE_LEGACY_MODE || (finished_work.mode.get() & CONCURRENT_MODE) != 0 {
                     // The effects are currently disconnected. Since the tree is hidden,
                     // don't connect them. This also applies to the initial render.
                     // "Atomic" effects are ones that need to fire on every commit,
@@ -4483,7 +4478,7 @@ fn commit_passive_mount_on_fiber(
                 }
             }
 
-            if (flags & PASSIVE) != NO_FLAGS {
+            if (flags & PASSIVE) != 0 {
                 commit_offscreen_passive_mount_effects(current.as_deref(), finished_work, instance);
             }
         }
@@ -4495,7 +4490,7 @@ fn commit_passive_mount_on_fiber(
                 committed_transitions,
                 end_time,
             );
-            if (flags & PASSIVE) != NO_FLAGS {
+            if (flags & PASSIVE) != 0 {
                 // TODO: Pass `current` as argument to this function
                 let current = finished_work.alternate.borrow().clone();
                 commit_cache_passive_mount_effect(current.as_deref(), finished_work);
@@ -4534,7 +4529,7 @@ fn commit_passive_mount_on_fiber(
                 committed_transitions,
                 end_time,
             );
-            if (flags & PASSIVE) != NO_FLAGS {
+            if (flags & PASSIVE) != 0 {
                 commit_tracing_marker_passive_mount_effect(finished_work);
             }
         }
@@ -4721,7 +4716,7 @@ pub fn reconnect_passive_effects(
                     include_work_in_progress_effects,
                     end_time,
                 );
-                if include_work_in_progress_effects && (flags & PASSIVE) != NO_FLAGS {
+                if include_work_in_progress_effects && (flags & PASSIVE) != 0 {
                     // TODO: Pass `current` as argument to this function
                     let current = finished_work.alternate.borrow().clone();
                     let instance: &OffscreenInstance =
@@ -4752,9 +4747,7 @@ pub fn reconnect_passive_effects(
                         include_work_in_progress_effects,
                         end_time,
                     );
-                } else if DISABLE_LEGACY_MODE
-                    || (finished_work.mode.get() & CONCURRENT_MODE) != NO_MODE
-                {
+                } else if DISABLE_LEGACY_MODE || (finished_work.mode.get() & CONCURRENT_MODE) != 0 {
                     // The effects are currently disconnected. Since the tree is hidden,
                     // don't connect them. This also applies to the initial render.
                     // "Atomic" effects are ones that need to fire on every commit,
@@ -4800,7 +4793,7 @@ pub fn reconnect_passive_effects(
                     end_time,
                 );
             }
-            if include_work_in_progress_effects && (flags & PASSIVE) != NO_FLAGS {
+            if include_work_in_progress_effects && (flags & PASSIVE) != 0 {
                 // TODO: Pass `current` as argument to this function
                 let current = finished_work.alternate.borrow().clone();
                 commit_offscreen_passive_mount_effects(current.as_deref(), finished_work, instance);
@@ -4815,7 +4808,7 @@ pub fn reconnect_passive_effects(
                 include_work_in_progress_effects,
                 end_time,
             );
-            if include_work_in_progress_effects && (flags & PASSIVE) != NO_FLAGS {
+            if include_work_in_progress_effects && (flags & PASSIVE) != 0 {
                 // TODO: Pass `current` as argument to this function
                 let current = finished_work.alternate.borrow().clone();
                 commit_cache_passive_mount_effect(current.as_deref(), finished_work);
@@ -4830,7 +4823,7 @@ pub fn reconnect_passive_effects(
                 include_work_in_progress_effects,
                 end_time,
             );
-            if include_work_in_progress_effects && (flags & PASSIVE) != NO_FLAGS {
+            if include_work_in_progress_effects && (flags & PASSIVE) != 0 {
                 commit_tracing_marker_passive_mount_effect(finished_work);
             }
         }
@@ -4882,7 +4875,7 @@ fn recursively_traverse_atomic_passive_effects(
     // pre-rendering. We call this function when traversing a hidden tree whose
     // regular effects are currently disconnected.
     // TODO: Add special flag for atomic effects
-    if (parent_fiber.subtree_flags.get() & PASSIVE_MASK) != NO_FLAGS
+    if (parent_fiber.subtree_flags.get() & PASSIVE_MASK) != 0
         || (ENABLE_PROFILER_TIMER.with(|&enabled| enabled)
             && ENABLE_COMPONENT_PERFORMANCE_TRACK
             && parent_fiber.actual_duration.get() != Some(0.0)
@@ -4960,7 +4953,7 @@ fn commit_atomic_passive_effects(
                 committed_transitions,
                 end_time,
             );
-            if (flags & PASSIVE) != NO_FLAGS {
+            if (flags & PASSIVE) != 0 {
                 // TODO: Pass `current` as argument to this function
                 let current = finished_work.alternate.borrow().clone();
                 let instance: &OffscreenInstance =
@@ -4976,7 +4969,7 @@ fn commit_atomic_passive_effects(
                 committed_transitions,
                 end_time,
             );
-            if (flags & PASSIVE) != NO_FLAGS {
+            if (flags & PASSIVE) != 0 {
                 // TODO: Pass `current` as argument to this function
                 let current = finished_work.alternate.borrow().clone();
                 commit_cache_passive_mount_effect(current.as_deref(), finished_work);
@@ -5033,7 +5026,7 @@ fn recursively_accumulate_suspensey_commit(
     committed_lanes: Lanes,
     suspended_state: &'static Unknown,
 ) {
-    if (parent_fiber.subtree_flags.get() & SUSPENSEY_COMMIT_FLAG.get()) != NO_FLAGS {
+    if (parent_fiber.subtree_flags.get() & SUSPENSEY_COMMIT_FLAG.get()) != 0 {
         let mut child = parent_fiber.child.borrow().clone();
         while let Some(current) = child {
             accumulate_suspensey_commit_on_fiber(&current, committed_lanes, suspended_state);
@@ -5050,7 +5043,7 @@ fn accumulate_suspensey_commit_on_fiber(
     match fiber.tag.get() {
         HOST_HOISTABLE => {
             recursively_accumulate_suspensey_commit(fiber, committed_lanes, suspended_state);
-            if (fiber.flags.get() & SUSPENSEY_COMMIT_FLAG.get()) != NO_FLAGS {
+            if (fiber.flags.get() & SUSPENSEY_COMMIT_FLAG.get()) != 0 {
                 if let Some(memoized_state) = fiber.memoized_state.get() {
                     suspend_resource(
                         suspended_state,
@@ -5074,7 +5067,7 @@ fn accumulate_suspensey_commit_on_fiber(
         }
         HOST_COMPONENT => {
             recursively_accumulate_suspensey_commit(fiber, committed_lanes, suspended_state);
-            if (fiber.flags.get() & SUSPENSEY_COMMIT_FLAG.get()) != NO_FLAGS {
+            if (fiber.flags.get() & SUSPENSEY_COMMIT_FLAG.get()) != 0 {
                 let instance = fiber.state_node.get();
                 let r#type = fiber.r#type.get();
                 let props = fiber.memoized_props.get();
@@ -5217,7 +5210,7 @@ fn recursively_traverse_passive_unmount_effects(parent_fiber: &Rc<Fiber>) {
     }
 
     // TODO: Split PassiveMask into separate masks for mount and unmount?
-    if (parent_fiber.subtree_flags.get() & PASSIVE_MASK) != NO_FLAGS {
+    if (parent_fiber.subtree_flags.get() & PASSIVE_MASK) != 0 {
         let mut child = parent_fiber.child.borrow().clone();
         while let Some(current) = child {
             commit_passive_unmount_on_fiber(&current);
@@ -5234,7 +5227,7 @@ fn commit_passive_unmount_on_fiber(finished_work: &Rc<Fiber>) {
     match finished_work.tag.get() {
         FUNCTION_COMPONENT | FORWARD_REF | SIMPLE_MEMO_COMPONENT => {
             recursively_traverse_passive_unmount_effects(finished_work);
-            if (finished_work.flags.get() & PASSIVE) != NO_FLAGS {
+            if (finished_work.flags.get() & PASSIVE) != 0 {
                 let return_fiber = finished_work.r#return.borrow().clone();
                 commit_hook_passive_unmount_effects(
                     finished_work,

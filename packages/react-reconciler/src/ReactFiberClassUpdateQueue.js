@@ -118,7 +118,7 @@ import {
   isUnsafeClassRenderPhaseUpdate,
   markSkippedUpdateLanes,
 } from './ReactFiberWorkLoop.js';
-import {NoMode, StrictLegacyMode} from './ReactTypeOfMode.js';
+import {StrictLegacyMode} from './ReactTypeOfMode.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {$unwrap} from '@rust-js/runtime';
 
@@ -352,7 +352,7 @@ function getStateFromUpdate(
         }
         const nextState = payload.call(instance, prevState, nextProps);
         if (__DEV__) {
-          if ((workInProgress.mode & StrictLegacyMode) !== NoMode) {
+          if (workInProgress.mode & StrictLegacyMode) {
             setIsStrictModeForDevtools(true);
             try {
               payload.call(instance, prevState, nextProps);
@@ -382,7 +382,7 @@ function getStateFromUpdate(
         }
         partialState = payload.call(instance, prevState, nextProps);
         if (__DEV__) {
-          if ((workInProgress.mode & StrictLegacyMode) !== NoMode) {
+          if (workInProgress.mode & StrictLegacyMode) {
             setIsStrictModeForDevtools(true);
             try {
               payload.call(instance, prevState, nextProps);

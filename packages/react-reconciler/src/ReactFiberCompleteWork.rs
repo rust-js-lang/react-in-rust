@@ -820,7 +820,7 @@ fn schedule_retry_effect(work_in_progress: &Fiber, retry_queue: Option<&RetryQue
     // We also use this mechanism for Suspensey Resources (e.g. stylesheets),
     // because those don't actually block the render phase, only the commit phase.
     // So we can start rendering even before the resources are ready.
-    if (work_in_progress.flags.get() & SCHEDULE_RETRY) != NO_FLAGS {
+    if (work_in_progress.flags.get() & SCHEDULE_RETRY) != 0 {
         let retry_lane =
             // TODO: This check should probably be moved into claimNextRetryLane
             // I also suspect that we need some further consolidation of offscreen
@@ -1743,7 +1743,7 @@ pub fn complete_work(
                 let fallthrough_to_normal_offscreen_path =
                     complete_dehydrated_activity_boundary(current, work_in_progress, next_state);
                 if !fallthrough_to_normal_offscreen_path {
-                    if (work_in_progress.flags.get() & FORCE_CLIENT_RENDER) != NO_FLAGS {
+                    if (work_in_progress.flags.get() & FORCE_CLIENT_RENDER) != 0 {
                         pop_suspense_handler(work_in_progress);
                         // Special case. There were remaining unhydrated nodes. We treat
                         // this as a mismatch. Revert to client rendering.
@@ -1788,7 +1788,7 @@ pub fn complete_work(
                 let fallthrough_to_normal_suspense_path =
                     complete_dehydrated_suspense_boundary(current, work_in_progress, next_state);
                 if !fallthrough_to_normal_suspense_path {
-                    if (work_in_progress.flags.get() & FORCE_CLIENT_RENDER) != NO_FLAGS {
+                    if (work_in_progress.flags.get() & FORCE_CLIENT_RENDER) != 0 {
                         pop_suspense_handler(work_in_progress);
                         // Special case. There were remaining unhydrated nodes. We treat
                         // this as a mismatch. Revert to client rendering.
@@ -2269,7 +2269,7 @@ pub fn complete_work(
                     // schedule a visibility effect.
                     if (!ENABLE_LEGACY_HIDDEN
                         || work_in_progress.tag.get() != LEGACY_HIDDEN_COMPONENT)
-                        && (work_in_progress.subtree_flags.get() & (PLACEMENT | UPDATE)) != NO_FLAGS
+                        && (work_in_progress.subtree_flags.get() & (PLACEMENT | UPDATE)) != 0
                     {
                         work_in_progress
                             .flags

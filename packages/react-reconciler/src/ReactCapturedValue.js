@@ -24,12 +24,13 @@ export function createCapturedValueAtFiber(value, source) {
     };
     CapturedStacks.set(value, captured);
     return captured;
+  } else {
+    return {
+      value,
+      source,
+      stack: getStackByFiberInDevAndProd(source),
+    };
   }
-  return {
-    value,
-    source,
-    stack: getStackByFiberInDevAndProd(source),
-  };
 }
 
 export function createCapturedValueFromError(value, stack) {

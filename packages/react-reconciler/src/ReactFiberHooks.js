@@ -741,10 +741,13 @@ export function renderTransitionAwareHostComponentWithHooks(
 export function TransitionAwareHostComponent() {
   const dispatcher = ReactSharedInternals.H;
   const [maybeThenable] = dispatcher.useState(undefined);
-  const nextState =
-    typeof maybeThenable.then === 'function'
-      ? useThenable(maybeThenable)
-      : maybeThenable;
+  let nextState;
+  if (typeof maybeThenable.then === 'function') {
+    const thenable = maybeThenable;
+    nextState = useThenable(thenable);
+  } else {
+    nextState = maybeThenable;
+  }
 
   // The "reset state" is an object. If it changes, that means something
   // requested that we reset the form.
@@ -1129,10 +1132,7 @@ function useMemoCache(size) {
 
 function basicStateReducer(state, action) {
   // $FlowFixMe[incompatible-use]: Flow doesn't like mixed types
-  if (typeof action === 'function') {
-    return action(state);
-  }
-  return action;
+  return typeof action === 'function' ? action(state) : action;
 }
 
 function mountReducer(reducer, initialArg, init) {
@@ -1260,8 +1260,7 @@ function updateReducerImpl(hook, current, reducer) {
             // This gesture has already been cancelled. We can clean up this update.
             update = update.next;
             continue;
-          }
-          if (!isGestureRender(renderLanes)) {
+          } else if (!isGestureRender(renderLanes)) {
             shouldSkipUpdate = true;
           } else {
             const root = getWorkInProgressRoot();
@@ -2044,14 +2043,15 @@ function handleActionReturnValue(actionQueue, node, returnValue) {
     // $FlowFixMe[method-unbinding]
     typeof returnValue.then === 'function'
   ) {
+    const thenable = returnValue;
     if (__DEV__) {
       // Keep track of the number of async transitions still running so we can warn.
       ReactSharedInternals.asyncTransitions++;
-      returnValue.then(releaseAsyncTransition, releaseAsyncTransition);
+      thenable.then(releaseAsyncTransition, releaseAsyncTransition);
     }
     // Attach a listener to read the return state of the action. As soon as
     // this resolves, we can run the next action in the sequence.
-    returnValue.then(
+    thenable.then(
       nextState => {
         onActionSuccess(actionQueue, node, nextState);
       },
@@ -2674,14 +2674,14 @@ function updateDeferredValue(value, initialValue) {
 
 function rerenderDeferredValue(value, initialValue) {
   const hook = updateWorkInProgressHook();
-  const currentHook$1 = currentHook;
-  if (currentHook$1 == null) {
+  if (currentHook == null) {
     // This is a rerender during a mount.
     return mountDeferredValueImpl(hook, value, initialValue);
+  } else {
+    // This is a rerender during an update.
+    const prevValue = currentHook.memoizedState;
+    return updateDeferredValueImpl(hook, prevValue, value, initialValue);
   }
-  // This is a rerender during an update.
-  const prevValue = currentHook$1.memoizedState;
-  return updateDeferredValueImpl(hook, prevValue, value, initialValue);
 }
 
 function isRenderingDeferredWork() {
@@ -2718,9 +2718,10 @@ function mountDeferredValueImpl(hook, value, initialValue) {
     markSkippedUpdateLanes(deferredLane);
 
     return initialValue;
+  } else {
+    hook.memoizedState = value;
+    return value;
   }
-  hook.memoizedState = value;
-  return value;
 }
 
 function updateDeferredValueImpl(hook, prevValue, value, initialValue) {
@@ -2839,15 +2840,16 @@ function startTransition(
       typeof returnValue === 'object' &&
       typeof returnValue.then === 'function'
     ) {
+      const thenable = returnValue;
       if (__DEV__) {
         // Keep track of the number of async transitions still running so we can warn.
         ReactSharedInternals.asyncTransitions++;
-        returnValue.then(releaseAsyncTransition, releaseAsyncTransition);
+        thenable.then(releaseAsyncTransition, releaseAsyncTransition);
       }
       // Create a thenable that resolves to `finishedState` once the async
       // action has completed.
       const thenableForFinishedState = chainThenableValue(
-        returnValue,
+        thenable,
         finishedState,
       );
       dispatchSetStateInternal(

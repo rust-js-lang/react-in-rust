@@ -12,6 +12,14 @@ use crate::react_fiber_lane::{
 #[repr(transparent)]
 pub struct EventPriority(Lane);
 
+/// Upstream's `opaque type EventPriority = Lane`: a lane read back as the
+/// priority it is, as `ReactDOMSharedInternals.p` holds one.
+impl From<Lane> for EventPriority {
+    fn from(lane: Lane) -> Self {
+        EventPriority(lane)
+    }
+}
+
 #[cfg_attr(rust_js, rust_js::name = "NoEventPriority")]
 pub const NO_EVENT_PRIORITY: EventPriority = EventPriority(NO_LANE);
 #[cfg_attr(rust_js, rust_js::name = "DiscreteEventPriority")]

@@ -54,7 +54,7 @@ pub fn unwind_work(
                 pop_legacy_context(work_in_progress);
             }
             let flags = work_in_progress.flags.get();
-            if (flags & SHOULD_CAPTURE) != NO_FLAGS {
+            if (flags & SHOULD_CAPTURE) != 0 {
                 work_in_progress
                     .flags
                     .set((flags & !SHOULD_CAPTURE) | DID_CAPTURE);
@@ -117,7 +117,7 @@ pub fn unwind_work(
             }
 
             let flags = work_in_progress.flags.get();
-            if (flags & SHOULD_CAPTURE) != NO_FLAGS {
+            if (flags & SHOULD_CAPTURE) != 0 {
                 work_in_progress
                     .flags
                     .set((flags & !SHOULD_CAPTURE) | DID_CAPTURE);
@@ -152,7 +152,7 @@ pub fn unwind_work(
             }
 
             let flags = work_in_progress.flags.get();
-            if (flags & SHOULD_CAPTURE) != NO_FLAGS {
+            if (flags & SHOULD_CAPTURE) != 0 {
                 work_in_progress
                     .flags
                     .set((flags & !SHOULD_CAPTURE) | DID_CAPTURE);
@@ -171,7 +171,7 @@ pub fn unwind_work(
             // SuspenseList doesn't normally catch anything. It should've been
             // caught by a nested boundary. If not, it should bubble through.
             let flags = work_in_progress.flags.get();
-            if (flags & SHOULD_CAPTURE) != NO_FLAGS {
+            if (flags & SHOULD_CAPTURE) != 0 {
                 work_in_progress
                     .flags
                     .set((flags & !SHOULD_CAPTURE) | DID_CAPTURE);
@@ -210,7 +210,7 @@ pub fn unwind_work(
             pop_hidden_context(work_in_progress);
             pop_transition(work_in_progress, current);
             let flags = work_in_progress.flags.get();
-            if (flags & SHOULD_CAPTURE) != NO_FLAGS {
+            if (flags & SHOULD_CAPTURE) != 0 {
                 work_in_progress
                     .flags
                     .set((flags & !SHOULD_CAPTURE) | DID_CAPTURE);

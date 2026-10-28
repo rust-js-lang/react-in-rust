@@ -201,10 +201,11 @@ function findPaths(root, selectors) {
       isHiddenSubtree(fiber)
     ) {
       continue;
-    }
-    while (selector != null && matchSelector(fiber, selector)) {
-      selectorIndex = (selectorIndex + 1) >>> 0;
-      selector = selectors[selectorIndex];
+    } else {
+      while (selector != null && matchSelector(fiber, selector)) {
+        selectorIndex = (selectorIndex + 1) >>> 0;
+        selector = selectors[selectorIndex];
+      }
     }
 
     if (selectorIndex === selectors.length) {
@@ -239,10 +240,11 @@ function hasMatchingPaths(root, selectors) {
       isHiddenSubtree(fiber)
     ) {
       continue;
-    }
-    while (selector != null && matchSelector(fiber, selector)) {
-      selectorIndex = (selectorIndex + 1) >>> 0;
-      selector = selectors[selectorIndex];
+    } else {
+      while (selector != null && matchSelector(fiber, selector)) {
+        selectorIndex = (selectorIndex + 1) >>> 0;
+        selector = selectors[selectorIndex];
+      }
     }
 
     if (selectorIndex === selectors.length) {
@@ -321,8 +323,7 @@ export function getFindAllNodesFailureDescription(hostRoot, selectors) {
       isHiddenSubtree(fiber)
     ) {
       continue;
-    }
-    if (matchSelector(fiber, selector)) {
+    } else if (matchSelector(fiber, selector)) {
       matchedNames.push(selectorToString(selector));
       selectorIndex = (selectorIndex + 1) >>> 0;
 
@@ -402,8 +403,7 @@ export function findBoundingRects(hostRoot, selectors) {
           // Complete overlapping rects; remove the inner one.
           $removeAt(boundingRects, i);
           break;
-        }
-        if (
+        } else if (
           targetLeft === otherLeft &&
           targetRect.width === otherRect.width &&
           !(otherBottom < targetTop) &&
@@ -420,8 +420,7 @@ export function findBoundingRects(hostRoot, selectors) {
 
           $removeAt(boundingRects, i);
           break;
-        }
-        if (
+        } else if (
           targetTop === otherTop &&
           targetRect.height === otherRect.height &&
           !(otherRight < targetLeft) &&

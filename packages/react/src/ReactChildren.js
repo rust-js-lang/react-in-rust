@@ -157,8 +157,9 @@ function mapIntoArray(children, array, escapedPrefix, nameSoFar, callback) {
             invokeCallback = true;
             break;
           case REACT_LAZY_TYPE: {
-            const payload = children._payload;
-            const init = children._init;
+            const lazy = children;
+            const payload = lazy._payload;
+            const init = lazy._init;
             return mapIntoArray(
               init(payload),
               array,

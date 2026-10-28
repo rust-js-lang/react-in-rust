@@ -124,7 +124,7 @@ function applyDerivedStateFromProps(
   const prevState = workInProgress.memoizedState;
   let partialState = getDerivedStateFromProps(nextProps, prevState);
   if (__DEV__) {
-    if ((workInProgress.mode & StrictLegacyMode) !== NoMode) {
+    if (workInProgress.mode & StrictLegacyMode) {
       setIsStrictModeForDevtools(true);
       try {
         // Invoke the function an extra time to help detect side-effects.
@@ -244,7 +244,7 @@ function checkShouldComponentUpdate(
       nextContext,
     );
     if (__DEV__) {
-      if ((workInProgress.mode & StrictLegacyMode) !== NoMode) {
+      if (workInProgress.mode & StrictLegacyMode) {
         setIsStrictModeForDevtools(true);
         try {
           // Invoke the function an extra time to help detect side-effects.
@@ -565,7 +565,7 @@ export function constructClassInstance(workInProgress, ctor, props) {
 
   let instance = new ctor(props, context);
   // Instantiate twice to help detect side-effects.
-  if (__DEV__ && (workInProgress.mode & StrictLegacyMode) !== NoMode) {
+  if (__DEV__ && workInProgress.mode & StrictLegacyMode) {
     setIsStrictModeForDevtools(true);
     try {
       instance = new ctor(props, context);
@@ -772,7 +772,7 @@ export function mountClassInstance(
       }
     }
 
-    if ((workInProgress.mode & StrictLegacyMode) !== NoMode) {
+    if (workInProgress.mode & StrictLegacyMode) {
       ReactStrictModeWarnings.recordLegacyContextWarning(
         workInProgress,
         instance,

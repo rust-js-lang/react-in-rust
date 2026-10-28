@@ -364,28 +364,29 @@ function traverseVisibleInstancesAndTextInstances(
       child.tag === HostText;
     if (isHostNode && fn(child, a, b, c)) {
       return true;
-    }
-    if (child.tag === OffscreenComponent && child.memoizedState != null) {
-      // Skip hidden subtrees
-    } else if (
-      searchWithinHosts ||
-      (child.tag !== HostComponent && child.tag !== HostSingleton)
-    ) {
-      const grandchild = child.child;
-      if (
-        traverseVisibleInstancesAndTextInstances(
-          grandchild,
-          searchWithinHosts,
-          fn,
-          a,
-          b,
-          c,
-        )
+    } else {
+      if (child.tag === OffscreenComponent && child.memoizedState != null) {
+        // Skip hidden subtrees
+      } else if (
+        searchWithinHosts ||
+        (child.tag !== HostComponent && child.tag !== HostSingleton)
       ) {
-        return true;
+        const grandchild = child.child;
+        if (
+          traverseVisibleInstancesAndTextInstances(
+            grandchild,
+            searchWithinHosts,
+            fn,
+            a,
+            b,
+            c,
+          )
+        ) {
+          return true;
+        }
       }
+      child = child.sibling;
     }
-    child = child.sibling;
   }
   return false;
 }

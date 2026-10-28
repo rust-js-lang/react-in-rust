@@ -487,7 +487,7 @@ pub fn throw_exception(
 
         if __DEV__
             && get_is_hydrating()
-            && (DISABLE_LEGACY_MODE || (source_fiber.mode.get() & CONCURRENT_MODE) != NO_MODE)
+            && (DISABLE_LEGACY_MODE || (source_fiber.mode.get() & CONCURRENT_MODE) != 0)
         {
             mark_did_throw_while_hydrating_dev();
         }
@@ -507,8 +507,7 @@ pub fn throw_exception(
                     // we don't have to recompute it on demand. This would also allow us
                     // to unify with `use` which needs to perform this logic even sooner,
                     // before `throwException` is called.
-                    if DISABLE_LEGACY_MODE || (source_fiber.mode.get() & CONCURRENT_MODE) != NO_MODE
-                    {
+                    if DISABLE_LEGACY_MODE || (source_fiber.mode.get() & CONCURRENT_MODE) != 0 {
                         if get_shell_boundary().is_none() {
                             // Suspended in the "shell" of the app. This is an undesirable
                             // loading state. We should avoid committing this tree.
@@ -582,7 +581,7 @@ pub fn throw_exception(
                         // Suspense always commits fallbacks synchronously, so there are
                         // no pings.
                         if DISABLE_LEGACY_MODE
-                            || (suspense_boundary.mode.get() & CONCURRENT_MODE) != NO_MODE
+                            || (suspense_boundary.mode.get() & CONCURRENT_MODE) != 0
                         {
                             attach_ping_listener(root, wakeable, root_render_lanes);
                         }
@@ -591,7 +590,7 @@ pub fn throw_exception(
                 }
                 OFFSCREEN_COMPONENT
                     if DISABLE_LEGACY_MODE
-                        || (suspense_boundary.mode.get() & CONCURRENT_MODE) != NO_MODE =>
+                        || (suspense_boundary.mode.get() & CONCURRENT_MODE) != 0 =>
                 {
                     suspense_boundary
                         .flags
@@ -666,7 +665,7 @@ pub fn throw_exception(
 
     // This is a regular error, not a Suspense wakeable.
     if get_is_hydrating()
-        && (DISABLE_LEGACY_MODE || (source_fiber.mode.get() & CONCURRENT_MODE) != NO_MODE)
+        && (DISABLE_LEGACY_MODE || (source_fiber.mode.get() & CONCURRENT_MODE) != 0)
     {
         mark_did_throw_while_hydrating_dev();
         let hydration_boundary = get_suspense_handler();

@@ -1153,7 +1153,7 @@ fn update_dehydrated_activity_component(
         // This is the second render pass. We already attempted to hydrated, but
         // something either suspended or errored.
 
-        if (work_in_progress.flags.get() & FORCE_CLIENT_RENDER) != NO_FLAGS {
+        if (work_in_progress.flags.get() & FORCE_CLIENT_RENDER) != 0 {
             // Something errored during hydration. Try again without hydrating.
             // The error should've already been logged in throwException.
             work_in_progress
@@ -1582,7 +1582,7 @@ fn update_function_component(
             }
         }
 
-        if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != NO_MODE {
+        if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != 0 {
             REACT_STRICT_MODE_WARNINGS.with(|react_strict_mode_warnings| {
                 (react_strict_mode_warnings
                     .record_legacy_context_warning
@@ -1914,7 +1914,7 @@ fn finish_class_component(
         if __DEV__ {
             next_children =
                 CALL_RENDER_IN_DEV.with(|call_render_in_dev| call_render_in_dev.unwrap()(instance));
-            if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != NO_MODE {
+            if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != 0 {
                 set_is_strict_mode_for_devtools(true);
                 let _exit = ExitStrictModeForDevtools;
                 CALL_RENDER_IN_DEV.with(|call_render_in_dev| call_render_in_dev.unwrap()(instance));
@@ -2036,7 +2036,7 @@ fn update_host_root(
         update_queue.base_state.set(Some(override_state));
         work_in_progress.memoized_state.set(Some(override_state));
 
-        if (work_in_progress.flags.get() & FORCE_CLIENT_RENDER) != NO_FLAGS {
+        if (work_in_progress.flags.get() & FORCE_CLIENT_RENDER) != 0 {
             // Something errored during a previous attempt to hydrate the shell, so we
             // forced a client render. We should have a recoverable error already scheduled.
             return mount_host_root_without_hydrating(
@@ -2958,7 +2958,7 @@ fn mount_suspense_fallback_children(
             .set(Some(js::unknown_of(primary_child_props)));
 
         if ENABLE_PROFILER_TIMER.with(|&enabled| enabled)
-            && (work_in_progress.mode.get() & PROFILE_MODE) != NO_MODE
+            && (work_in_progress.mode.get() & PROFILE_MODE) != 0
         {
             // Reset the durations from the first pass so they aren't included in the
             // final amounts. This seems counterintuitive, since we're intentionally
@@ -3102,7 +3102,7 @@ fn update_suspense_fallback_children(
             .set(Some(js::unknown_of(primary_child_props)));
 
         if ENABLE_PROFILER_TIMER.with(|&enabled| enabled)
-            && (work_in_progress.mode.get() & PROFILE_MODE) != NO_MODE
+            && (work_in_progress.mode.get() & PROFILE_MODE) != 0
         {
             // Reset the durations from the first pass so they aren't included in the
             // final amounts. This seems counterintuitive, since we're intentionally
@@ -3470,7 +3470,7 @@ fn update_dehydrated_suspense_component(
         // This is the second render pass. We already attempted to hydrated, but
         // something either suspended or errored.
 
-        if (work_in_progress.flags.get() & FORCE_CLIENT_RENDER) != NO_FLAGS {
+        if (work_in_progress.flags.get() & FORCE_CLIENT_RENDER) != 0 {
             // Something errored during hydration. Try again without hydrating.
             // The error should've already been logged in throwException.
             push_primary_tree_suspense_handler(work_in_progress);
@@ -3801,7 +3801,7 @@ fn update_suspense_list_component(
     let mut suspense_context: SuspenseContext =
         SUSPENSE_STACK_CURSOR.with(|cursor| *cursor.current.borrow());
 
-    if (work_in_progress.flags.get() & DID_CAPTURE) != NO_FLAGS {
+    if (work_in_progress.flags.get() & DID_CAPTURE) != 0 {
         // This is the second pass after having suspended in a row. Proceed directly
         // to the complete phase.
         push_suspense_list_context(work_in_progress, suspense_context);
@@ -4521,7 +4521,7 @@ fn attempt_early_bailout_if_no_scheduled_update(
             push_primary_tree_suspense_handler(work_in_progress);
         }
         SUSPENSE_LIST_COMPONENT => {
-            if (work_in_progress.flags.get() & DID_CAPTURE) != NO_FLAGS {
+            if (work_in_progress.flags.get() & DID_CAPTURE) != 0 {
                 // Second pass caught.
                 return update_suspense_list_component(
                     Some(current),

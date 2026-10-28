@@ -143,7 +143,7 @@ fn apply_derived_state_from_props(
     let prev_state = work_in_progress.memoized_state.get();
     let mut partial_state = get_derived_state_from_props(next_props, prev_state);
     if __DEV__ {
-        if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != NO_MODE {
+        if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != 0 {
             set_is_strict_mode_for_devtools(true);
             let _exit = ExitStrictModeForDevtools;
             // Invoke the function an extra time to help detect side-effects.
@@ -272,7 +272,7 @@ fn check_should_component_update(
         let mut should_update =
             instance.should_component_update(new_props, new_state, next_context);
         if __DEV__ {
-            if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != NO_MODE {
+            if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != 0 {
                 set_is_strict_mode_for_devtools(true);
                 let _exit = ExitStrictModeForDevtools;
                 // Invoke the function an extra time to help detect side-effects.
@@ -679,7 +679,7 @@ pub fn construct_class_instance(
 
     let mut instance: &ClassInstance = unsafe { js::cast(Some(js::new(ctor, (props, context)))) };
     // Instantiate twice to help detect side-effects.
-    if __DEV__ && (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != NO_MODE {
+    if __DEV__ && (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != 0 {
         set_is_strict_mode_for_devtools(true);
         let _exit = ExitStrictModeForDevtools;
         instance = unsafe { js::cast(Some(js::new(ctor, (props, context)))) };
@@ -957,7 +957,7 @@ pub fn mount_class_instance(
             }
         }
 
-        if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != NO_MODE {
+        if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != 0 {
             REACT_STRICT_MODE_WARNINGS.with(|react_strict_mode_warnings| {
                 (react_strict_mode_warnings
                     .record_legacy_context_warning

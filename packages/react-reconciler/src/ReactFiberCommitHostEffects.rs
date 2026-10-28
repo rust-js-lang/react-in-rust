@@ -10,7 +10,7 @@ use js::{JsError, Unknown};
 use shared::environment::__DEV__;
 
 use crate::react_current_fiber::run_with_fiber_in_dev;
-use crate::react_fiber_flags::{CONTENT_RESET, NO_FLAGS, PLACEMENT};
+use crate::react_fiber_flags::{CONTENT_RESET, PLACEMENT};
 use crate::react_fiber_fragment_instance::{
     commit_new_child_to_fragment_instances, get_parent_fragment_instances,
 };
@@ -589,7 +589,7 @@ fn get_host_sibling(fiber: &Rc<Fiber>) -> Option<&'static Unknown> {
 
             // If it is not host node and, we might have a host node inside it.
             // Try to search down until we find one.
-            if (node.flags.get() & PLACEMENT) != NO_FLAGS {
+            if (node.flags.get() & PLACEMENT) != 0 {
                 // If we don't have a child, try the siblings instead.
                 continue 'siblings;
             }
@@ -606,7 +606,7 @@ fn get_host_sibling(fiber: &Rc<Fiber>) -> Option<&'static Unknown> {
             }
         }
         // Check if this host node is stable or about to be placed.
-        if (node.flags.get() & PLACEMENT) == NO_FLAGS {
+        if (node.flags.get() & PLACEMENT) == 0 {
             // Found it!
             return node.state_node.get();
         }
@@ -772,7 +772,7 @@ fn commit_placement(finished_work: &Rc<Fiber>) {
         HOST_SINGLETON | HOST_COMPONENT => {
             // ReactFiberConfig's `Instance`.
             let parent = host_parent_fiber.state_node.get();
-            if (host_parent_fiber.flags.get() & CONTENT_RESET) != NO_FLAGS {
+            if (host_parent_fiber.flags.get() & CONTENT_RESET) != 0 {
                 // Reset the text content of the parent before doing any insertions
                 reset_text_content(parent);
                 // Clear ContentReset from the effect tag

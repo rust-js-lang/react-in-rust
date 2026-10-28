@@ -539,8 +539,7 @@ function updateSimpleMemoComponent(
           workInProgress,
           renderLanes,
         );
-      }
-      if ((current.flags & ForceUpdateForLegacySuspense) !== NoFlags) {
+      } else if ((current.flags & ForceUpdateForLegacySuspense) !== NoFlags) {
         // This is a special case that only exists for legacy mode.
         // See https://github.com/react/react/pull/19216.
         didReceiveUpdate = true;
@@ -988,13 +987,14 @@ function updateDehydratedActivityComponent(
           // check for this case on every iteration of the work loop. So doing
           // it this way moves the check out of the fast path.
           throw SelectiveHydrationException;
+        } else {
+          // We have already tried to ping at a higher priority than we're rendering with
+          // so if we got here, we must have failed to hydrate at those levels. We must
+          // now give up. Instead, we're going to delete the whole subtree and instead inject
+          // a new real Activity boundary to take its place. This might suspend for a while
+          // and if it does we might still have an opportunity to hydrate before this pass
+          // commits.
         }
-        // We have already tried to ping at a higher priority than we're rendering with
-        // so if we got here, we must have failed to hydrate at those levels. We must
-        // now give up. Instead, we're going to delete the whole subtree and instead inject
-        // a new real Activity boundary to take its place. This might suspend for a while
-        // and if it does we might still have an opportunity to hydrate before this pass
-        // commits.
       }
 
       // If we did not selectively hydrate, we'll continue rendering without
@@ -1008,59 +1008,61 @@ function updateDehydratedActivityComponent(
         workInProgress,
         renderLanes,
       );
+    } else {
+      // This is the first attempt.
+
+      reenterHydrationStateFromDehydratedActivityInstance(
+        workInProgress,
+        activityInstance,
+        activityState.treeContext,
+      );
+
+      const primaryChildFragment = mountActivityChildren(
+        workInProgress,
+        nextProps,
+        renderLanes,
+      );
+      // Mark the children as hydrating. This is a fast path to know whether this
+      // tree is part of a hydrating tree. This is used to determine if a child
+      // node has fully mounted yet, and for scheduling event replaying.
+      // Conceptually this is similar to Placement in that a new subtree is
+      // inserted into the React tree here. It just happens to not need DOM
+      // mutations because it already exists.
+      // We should still treat it as a newly inserted Fiber to double invoke Strict Effects.
+      primaryChildFragment.flags |= Hydrating | PlacementDEV;
+      return primaryChildFragment;
     }
-    // This is the first attempt.
-
-    reenterHydrationStateFromDehydratedActivityInstance(
-      workInProgress,
-      activityInstance,
-      activityState.treeContext,
-    );
-
-    const primaryChildFragment = mountActivityChildren(
-      workInProgress,
-      nextProps,
-      renderLanes,
-    );
-    // Mark the children as hydrating. This is a fast path to know whether this
-    // tree is part of a hydrating tree. This is used to determine if a child
-    // node has fully mounted yet, and for scheduling event replaying.
-    // Conceptually this is similar to Placement in that a new subtree is
-    // inserted into the React tree here. It just happens to not need DOM
-    // mutations because it already exists.
-    // We should still treat it as a newly inserted Fiber to double invoke Strict Effects.
-    primaryChildFragment.flags |= Hydrating | PlacementDEV;
-    return primaryChildFragment;
-  }
-  // This is the second render pass. We already attempted to hydrated, but
-  // something either suspended or errored.
-
-  if ((workInProgress.flags & ForceClientRender) !== NoFlags) {
-    // Something errored during hydration. Try again without hydrating.
-    // The error should've already been logged in throwException.
-    workInProgress.flags &= ~ForceClientRender;
-    return retryActivityComponentWithoutHydrating(
-      current,
-      workInProgress,
-      renderLanes,
-    );
-  } else if (workInProgress.memoizedState != null) {
-    // Something suspended and we should still be in dehydrated mode.
-    // Leave the existing child in place.
-
-    workInProgress.child = current.child;
-    // The dehydrated completion pass expects this flag to be there
-    // but the normal offscreen pass doesn't.
-    workInProgress.flags |= DidCapture;
-    return null;
   } else {
-    // We called retryActivityComponentWithoutHydrating and tried client rendering
-    // but now we suspended again. We should never arrive here because we should
-    // not have pushed a suspense handler during that second pass and it should
-    // instead have suspended above.
-    throw new Error(
-      'Client rendering an Activity suspended it again. This is a bug in React.',
-    );
+    // This is the second render pass. We already attempted to hydrated, but
+    // something either suspended or errored.
+
+    if (workInProgress.flags & ForceClientRender) {
+      // Something errored during hydration. Try again without hydrating.
+      // The error should've already been logged in throwException.
+      workInProgress.flags &= ~ForceClientRender;
+      return retryActivityComponentWithoutHydrating(
+        current,
+        workInProgress,
+        renderLanes,
+      );
+    } else if (workInProgress.memoizedState != null) {
+      // Something suspended and we should still be in dehydrated mode.
+      // Leave the existing child in place.
+
+      workInProgress.child = current.child;
+      // The dehydrated completion pass expects this flag to be there
+      // but the normal offscreen pass doesn't.
+      workInProgress.flags |= DidCapture;
+      return null;
+    } else {
+      // We called retryActivityComponentWithoutHydrating and tried client rendering
+      // but now we suspended again. We should never arrive here because we should
+      // not have pushed a suspense handler during that second pass and it should
+      // instead have suspended above.
+      throw new Error(
+        'Client rendering an Activity suspended it again. This is a bug in React.',
+      );
+    }
   }
 }
 
@@ -1108,53 +1110,54 @@ function updateActivityComponent(current, workInProgress, renderLanes) {
     }
 
     return mountActivityChildren(workInProgress, nextProps, renderLanes);
-  }
-  // This is an update.
+  } else {
+    // This is an update.
 
-  // Special path for hydration
-  const prevState = current.memoizedState;
+    // Special path for hydration
+    const prevState = current.memoizedState;
 
-  if (prevState != null) {
-    const dehydrated = prevState.dehydrated;
-    return updateDehydratedActivityComponent(
-      current,
-      workInProgress,
-      didSuspend,
-      nextProps,
-      dehydrated,
-      prevState,
-      renderLanes,
+    if (prevState != null) {
+      const dehydrated = prevState.dehydrated;
+      return updateDehydratedActivityComponent(
+        current,
+        workInProgress,
+        didSuspend,
+        nextProps,
+        dehydrated,
+        prevState,
+        renderLanes,
+      );
+    }
+
+    const currentChild = $unwrap(current.child);
+
+    const nextChildren = nextProps.children;
+    const nextMode = nextProps.mode;
+    const offscreenChildProps = {
+      mode: nextMode,
+      children: nextChildren,
+    };
+
+    if (
+      includesSomeLane(renderLanes, OffscreenLane) &&
+      includesSomeLane(renderLanes, current.lanes)
+    ) {
+      // If we're rendering Offscreen and we're entering the activity then it's possible
+      // that the only reason we rendered was because this boundary left work. Provide
+      // it as a cause if another one doesn't already exist.
+      markRenderDerivedCause(workInProgress);
+    }
+
+    const primaryChildFragment = updateWorkInProgressOffscreenFiber(
+      currentChild,
+      offscreenChildProps,
     );
+
+    primaryChildFragment.ref = workInProgress.ref;
+    workInProgress.child = primaryChildFragment;
+    primaryChildFragment.return = workInProgress;
+    return primaryChildFragment;
   }
-
-  const currentChild = $unwrap(current.child);
-
-  const nextChildren = nextProps.children;
-  const nextMode = nextProps.mode;
-  const offscreenChildProps = {
-    mode: nextMode,
-    children: nextChildren,
-  };
-
-  if (
-    includesSomeLane(renderLanes, OffscreenLane) &&
-    includesSomeLane(renderLanes, current.lanes)
-  ) {
-    // If we're rendering Offscreen and we're entering the activity then it's possible
-    // that the only reason we rendered was because this boundary left work. Provide
-    // it as a cause if another one doesn't already exist.
-    markRenderDerivedCause(workInProgress);
-  }
-
-  const primaryChildFragment = updateWorkInProgressOffscreenFiber(
-    currentChild,
-    offscreenChildProps,
-  );
-
-  primaryChildFragment.ref = workInProgress.ref;
-  workInProgress.child = primaryChildFragment;
-  primaryChildFragment.return = workInProgress;
-  return primaryChildFragment;
 }
 
 function updateCacheComponent(current, workInProgress, renderLanes) {
@@ -1310,16 +1313,13 @@ function markRef(current, workInProgress) {
       // Schedule a Ref effect
       workInProgress.flags |= Ref | RefStatic;
     }
-  } else {
-    if (typeof ref !== 'function' && typeof ref !== 'object') {
-      throw new Error(
-        'Expected ref to be a function, an object returned by React.createRef(), or undefined/null.',
-      );
-    }
-    if (current == null || current.ref !== ref) {
-      // Schedule a Ref effect
-      workInProgress.flags |= Ref | RefStatic;
-    }
+  } else if (typeof ref !== 'function' && typeof ref !== 'object') {
+    throw new Error(
+      'Expected ref to be a function, an object returned by React.createRef(), or undefined/null.',
+    );
+  } else if (current == null || current.ref !== ref) {
+    // Schedule a Ref effect
+    workInProgress.flags |= Ref | RefStatic;
   }
 }
 
@@ -1368,7 +1368,7 @@ function updateFunctionComponent(
       }
     }
 
-    if ((workInProgress.mode & StrictLegacyMode) !== NoMode) {
+    if (workInProgress.mode & StrictLegacyMode) {
       ReactStrictModeWarnings.recordLegacyContextWarning(workInProgress, null);
     }
 
@@ -1646,7 +1646,7 @@ function finishClassComponent(
     }
     if (__DEV__) {
       nextChildren = $unwrap(callRenderInDEV)(instance);
-      if ((workInProgress.mode & StrictLegacyMode) !== NoMode) {
+      if (workInProgress.mode & StrictLegacyMode) {
         setIsStrictModeForDevtools(true);
         try {
           $unwrap(callRenderInDEV)(instance);
@@ -1763,7 +1763,7 @@ function updateHostRoot(current, workInProgress, renderLanes) {
     updateQueue.baseState = overrideState;
     workInProgress.memoizedState = overrideState;
 
-    if ((workInProgress.flags & ForceClientRender) !== NoFlags) {
+    if (workInProgress.flags & ForceClientRender) {
       // Something errored during a previous attempt to hydrate the shell, so we
       // forced a client render. We should have a recoverable error already scheduled.
       return mountHostRootWithoutHydrating(
@@ -1772,7 +1772,8 @@ function updateHostRoot(current, workInProgress, renderLanes) {
         nextChildren,
         renderLanes,
       );
-    } else if (nextChildren !== prevChildren) {
+    }
+    if (nextChildren !== prevChildren) {
       const recoverableError = createCapturedValueAtFiber(
         new Error(
           'This root received an early update, before anything was able ' +
@@ -1974,7 +1975,8 @@ function mountLazyComponent(current, workInProgress, elementType, renderLanes) {
   resetSuspendedCurrentOnMountInLegacyMode(current, workInProgress);
 
   const props = workInProgress.pendingProps;
-  let component = resolveLazy(elementType);
+  const lazyComponent = elementType;
+  let component = resolveLazy(lazyComponent);
   if (__DEV__) {
     component = resolveTypeForHotReloading(component);
   }
@@ -2368,108 +2370,109 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
         renderLanes,
       );
     }
-  }
-  // This is an update.
+  } else {
+    // This is an update.
 
-  // Special path for hydration
-  const prevState = current.memoizedState;
-  if (prevState != null) {
-    const dehydrated = prevState.dehydrated;
-    if (dehydrated != null) {
-      return updateDehydratedSuspenseComponent(
-        current,
-        workInProgress,
-        didSuspend,
-        didPrimaryChildrenDefer,
-        nextProps,
-        dehydrated,
-        prevState,
-        renderLanes,
-      );
-    }
-  }
-
-  if (showFallback) {
-    pushFallbackTreeSuspenseHandler(workInProgress);
-
-    const nextFallbackChildren = nextProps.fallback;
-    const nextPrimaryChildren = nextProps.children;
-    updateSuspenseFallbackChildren(
-      current,
-      workInProgress,
-      nextPrimaryChildren,
-      nextFallbackChildren,
-      renderLanes,
-    );
-    const primaryChildFragment = $unwrap(workInProgress.child);
-    const item = $unwrap(current.child);
-    const prevOffscreenState = item.memoizedState;
-    primaryChildFragment.memoizedState =
-      prevOffscreenState == null
-        ? mountSuspenseOffscreenState(renderLanes)
-        : updateSuspenseOffscreenState(prevOffscreenState, renderLanes);
-    if (enableTransitionTracing) {
-      const currentTransitions = getPendingTransitions();
-      if (currentTransitions != null) {
-        const parentMarkerInstances = getMarkerInstances();
-        const offscreenQueue = primaryChildFragment.updateQueue;
-        const currentOffscreenQueue = current.updateQueue;
-        if (offscreenQueue == null) {
-          const newOffscreenQueue = {
-            transitions: currentTransitions,
-            markerInstances: parentMarkerInstances,
-            retryQueue: null,
-          };
-          primaryChildFragment.updateQueue = newOffscreenQueue;
-        } else if (offscreenQueue === currentOffscreenQueue) {
-          // If the work-in-progress queue is the same object as current, we
-          // can't modify it without cloning it first.
-          const newOffscreenQueue = {
-            transitions: currentTransitions,
-            markerInstances: parentMarkerInstances,
-            retryQueue:
-              currentOffscreenQueue != null
-                ? currentOffscreenQueue.retryQueue
-                : null,
-          };
-          primaryChildFragment.updateQueue = newOffscreenQueue;
-        } else {
-          offscreenQueue.transitions = currentTransitions;
-          offscreenQueue.markerInstances = parentMarkerInstances;
-        }
+    // Special path for hydration
+    const prevState = current.memoizedState;
+    if (prevState != null) {
+      const dehydrated = prevState.dehydrated;
+      if (dehydrated != null) {
+        return updateDehydratedSuspenseComponent(
+          current,
+          workInProgress,
+          didSuspend,
+          didPrimaryChildrenDefer,
+          nextProps,
+          dehydrated,
+          prevState,
+          renderLanes,
+        );
       }
     }
-    primaryChildFragment.childLanes = getRemainingWorkInPrimaryTree(
-      current,
-      didPrimaryChildrenDefer,
-      renderLanes,
-    );
-    workInProgress.memoizedState = SUSPENDED_MARKER;
-    const currentChild = current.child;
-    return bailoutOffscreenComponent(currentChild, primaryChildFragment);
-  } else {
-    if (
-      prevState != null &&
-      includesOnlyRetries(renderLanes) &&
-      includesSomeLane(renderLanes, current.lanes)
-    ) {
-      // If we're rendering Retry lanes and we're entering the primary content then it's possible
-      // that the only reason we rendered was because we left this boundary to be warmed up but
-      // nothing else scheduled an update. If so, use it as the cause of the render.
-      markRenderDerivedCause(workInProgress);
+
+    if (showFallback) {
+      pushFallbackTreeSuspenseHandler(workInProgress);
+
+      const nextFallbackChildren = nextProps.fallback;
+      const nextPrimaryChildren = nextProps.children;
+      updateSuspenseFallbackChildren(
+        current,
+        workInProgress,
+        nextPrimaryChildren,
+        nextFallbackChildren,
+        renderLanes,
+      );
+      const primaryChildFragment = $unwrap(workInProgress.child);
+      const item = $unwrap(current.child);
+      const prevOffscreenState = item.memoizedState;
+      primaryChildFragment.memoizedState =
+        prevOffscreenState == null
+          ? mountSuspenseOffscreenState(renderLanes)
+          : updateSuspenseOffscreenState(prevOffscreenState, renderLanes);
+      if (enableTransitionTracing) {
+        const currentTransitions = getPendingTransitions();
+        if (currentTransitions != null) {
+          const parentMarkerInstances = getMarkerInstances();
+          const offscreenQueue = primaryChildFragment.updateQueue;
+          const currentOffscreenQueue = current.updateQueue;
+          if (offscreenQueue == null) {
+            const newOffscreenQueue = {
+              transitions: currentTransitions,
+              markerInstances: parentMarkerInstances,
+              retryQueue: null,
+            };
+            primaryChildFragment.updateQueue = newOffscreenQueue;
+          } else if (offscreenQueue === currentOffscreenQueue) {
+            // If the work-in-progress queue is the same object as current, we
+            // can't modify it without cloning it first.
+            const newOffscreenQueue = {
+              transitions: currentTransitions,
+              markerInstances: parentMarkerInstances,
+              retryQueue:
+                currentOffscreenQueue != null
+                  ? currentOffscreenQueue.retryQueue
+                  : null,
+            };
+            primaryChildFragment.updateQueue = newOffscreenQueue;
+          } else {
+            offscreenQueue.transitions = currentTransitions;
+            offscreenQueue.markerInstances = parentMarkerInstances;
+          }
+        }
+      }
+      primaryChildFragment.childLanes = getRemainingWorkInPrimaryTree(
+        current,
+        didPrimaryChildrenDefer,
+        renderLanes,
+      );
+      workInProgress.memoizedState = SUSPENDED_MARKER;
+      const currentChild = current.child;
+      return bailoutOffscreenComponent(currentChild, primaryChildFragment);
+    } else {
+      if (
+        prevState != null &&
+        includesOnlyRetries(renderLanes) &&
+        includesSomeLane(renderLanes, current.lanes)
+      ) {
+        // If we're rendering Retry lanes and we're entering the primary content then it's possible
+        // that the only reason we rendered was because we left this boundary to be warmed up but
+        // nothing else scheduled an update. If so, use it as the cause of the render.
+        markRenderDerivedCause(workInProgress);
+      }
+
+      pushPrimaryTreeSuspenseHandler(workInProgress);
+
+      const nextPrimaryChildren = nextProps.children;
+      const primaryChildFragment = updateSuspensePrimaryChildren(
+        current,
+        workInProgress,
+        nextPrimaryChildren,
+        renderLanes,
+      );
+      workInProgress.memoizedState = null;
+      return primaryChildFragment;
     }
-
-    pushPrimaryTreeSuspenseHandler(workInProgress);
-
-    const nextPrimaryChildren = nextProps.children;
-    const primaryChildFragment = updateSuspensePrimaryChildren(
-      current,
-      workInProgress,
-      nextPrimaryChildren,
-      renderLanes,
-    );
-    workInProgress.memoizedState = null;
-    return primaryChildFragment;
   }
 }
 
@@ -2520,7 +2523,7 @@ function mountSuspenseFallbackChildren(
     primaryChildFragment.childLanes = NoLanes;
     primaryChildFragment.pendingProps = primaryChildProps;
 
-    if (enableProfilerTimer && (workInProgress.mode & ProfileMode) !== NoMode) {
+    if (enableProfilerTimer && workInProgress.mode & ProfileMode) {
       // Reset the durations from the first pass so they aren't included in the
       // final amounts. This seems counterintuitive, since we're intentionally
       // not measuring part of the render phase, but this makes it match what we
@@ -2641,7 +2644,7 @@ function updateSuspenseFallbackChildren(
     primaryChildFragment.childLanes = NoLanes;
     primaryChildFragment.pendingProps = primaryChildProps;
 
-    if (enableProfilerTimer && (workInProgress.mode & ProfileMode) !== NoMode) {
+    if (enableProfilerTimer && workInProgress.mode & ProfileMode) {
       // Reset the durations from the first pass so they aren't included in the
       // final amounts. This seems counterintuitive, since we're intentionally
       // not measuring part of the render phase, but this makes it match what we
@@ -2917,13 +2920,14 @@ function updateDehydratedSuspenseComponent(
           // check for this case on every iteration of the work loop. So doing
           // it this way moves the check out of the fast path.
           throw SelectiveHydrationException;
+        } else {
+          // We have already tried to ping at a higher priority than we're rendering with
+          // so if we got here, we must have failed to hydrate at those levels. We must
+          // now give up. Instead, we're going to delete the whole subtree and instead inject
+          // a new real Suspense boundary to take its place, which may render content
+          // or fallback. This might suspend for a while and if it does we might still have
+          // an opportunity to hydrate before this pass commits.
         }
-        // We have already tried to ping at a higher priority than we're rendering with
-        // so if we got here, we must have failed to hydrate at those levels. We must
-        // now give up. Instead, we're going to delete the whole subtree and instead inject
-        // a new real Suspense boundary to take its place, which may render content
-        // or fallback. This might suspend for a while and if it does we might still have
-        // an opportunity to hydrate before this pass commits.
       }
 
       // If we did not selectively hydrate, we'll continue rendering without
@@ -2945,8 +2949,7 @@ function updateDehydratedSuspenseComponent(
         workInProgress,
         renderLanes,
       );
-    }
-    if (isSuspenseInstancePending(suspenseInstance)) {
+    } else if (isSuspenseInstancePending(suspenseInstance)) {
       // This component is still pending more data from the server, so we can't hydrate its
       // content. We treat it as if this component suspended itself. It might seem as if
       // we could just try to render it client-side instead. However, this will perform a
@@ -2984,56 +2987,57 @@ function updateDehydratedSuspenseComponent(
       primaryChildFragment.flags |= Hydrating | PlacementDEV;
       return primaryChildFragment;
     }
-  }
-  // This is the second render pass. We already attempted to hydrated, but
-  // something either suspended or errored.
-
-  if ((workInProgress.flags & ForceClientRender) !== NoFlags) {
-    // Something errored during hydration. Try again without hydrating.
-    // The error should've already been logged in throwException.
-    pushPrimaryTreeSuspenseHandler(workInProgress);
-    workInProgress.flags &= ~ForceClientRender;
-    return retrySuspenseComponentWithoutHydrating(
-      current,
-      workInProgress,
-      renderLanes,
-    );
-  } else if (workInProgress.memoizedState != null) {
-    // Something suspended and we should still be in dehydrated mode.
-    // Leave the existing child in place.
-
-    // Push to avoid a mismatch
-    pushFallbackTreeSuspenseHandler(workInProgress);
-
-    workInProgress.child = current.child;
-    // The dehydrated completion pass expects this flag to be there
-    // but the normal suspense pass doesn't.
-    workInProgress.flags |= DidCapture;
-    return null;
   } else {
-    // Suspended but we should no longer be in dehydrated mode.
-    // Therefore we now have to render the fallback.
-    pushFallbackTreeSuspenseHandler(workInProgress);
+    // This is the second render pass. We already attempted to hydrated, but
+    // something either suspended or errored.
 
-    const nextPrimaryChildren = nextProps.children;
-    const nextFallbackChildren = nextProps.fallback;
-    mountSuspenseFallbackAfterRetryWithoutHydrating(
-      current,
-      workInProgress,
-      nextPrimaryChildren,
-      nextFallbackChildren,
-      renderLanes,
-    );
-    const primaryChildFragment = $unwrap(workInProgress.child);
-    primaryChildFragment.memoizedState =
-      mountSuspenseOffscreenState(renderLanes);
-    primaryChildFragment.childLanes = getRemainingWorkInPrimaryTree(
-      current,
-      didPrimaryChildrenDefer,
-      renderLanes,
-    );
-    workInProgress.memoizedState = SUSPENDED_MARKER;
-    return bailoutOffscreenComponent(null, primaryChildFragment);
+    if (workInProgress.flags & ForceClientRender) {
+      // Something errored during hydration. Try again without hydrating.
+      // The error should've already been logged in throwException.
+      pushPrimaryTreeSuspenseHandler(workInProgress);
+      workInProgress.flags &= ~ForceClientRender;
+      return retrySuspenseComponentWithoutHydrating(
+        current,
+        workInProgress,
+        renderLanes,
+      );
+    } else if (workInProgress.memoizedState != null) {
+      // Something suspended and we should still be in dehydrated mode.
+      // Leave the existing child in place.
+
+      // Push to avoid a mismatch
+      pushFallbackTreeSuspenseHandler(workInProgress);
+
+      workInProgress.child = current.child;
+      // The dehydrated completion pass expects this flag to be there
+      // but the normal suspense pass doesn't.
+      workInProgress.flags |= DidCapture;
+      return null;
+    } else {
+      // Suspended but we should no longer be in dehydrated mode.
+      // Therefore we now have to render the fallback.
+      pushFallbackTreeSuspenseHandler(workInProgress);
+
+      const nextPrimaryChildren = nextProps.children;
+      const nextFallbackChildren = nextProps.fallback;
+      mountSuspenseFallbackAfterRetryWithoutHydrating(
+        current,
+        workInProgress,
+        nextPrimaryChildren,
+        nextFallbackChildren,
+        renderLanes,
+      );
+      const primaryChildFragment = $unwrap(workInProgress.child);
+      primaryChildFragment.memoizedState =
+        mountSuspenseOffscreenState(renderLanes);
+      primaryChildFragment.childLanes = getRemainingWorkInPrimaryTree(
+        current,
+        didPrimaryChildrenDefer,
+        renderLanes,
+      );
+      workInProgress.memoizedState = SUSPENDED_MARKER;
+      return bailoutOffscreenComponent(null, primaryChildFragment);
+    }
   }
 }
 
@@ -3261,7 +3265,7 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
   const newChildren = nextProps.children;
   let suspenseContext = suspenseStackCursor.current;
 
-  if ((workInProgress.flags & DidCapture) !== NoFlags) {
+  if (workInProgress.flags & DidCapture) {
     // This is the second pass after having suspended in a row. Proceed directly
     // to the complete phase.
     pushSuspenseListContext(workInProgress, suspenseContext);
@@ -3839,31 +3843,32 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
           // The primary children have pending work. Use the normal path
           // to attempt to render the primary children again.
           return updateSuspenseComponent(current, workInProgress, renderLanes);
+        } else {
+          // The primary child fragment does not have pending work marked
+          // on it
+          pushPrimaryTreeSuspenseHandler(workInProgress);
+          // The primary children do not have pending work with sufficient
+          // priority. Bailout.
+          const child = bailoutOnAlreadyFinishedWork(
+            current,
+            workInProgress,
+            renderLanes,
+          );
+          return child == null
+            ? null
+            : // Note: We can return `null` here because we already checked
+              // whether there were nested context consumers, via the call to
+              // `bailoutOnAlreadyFinishedWork` above.
+              // The fallback children have pending work. Skip over the
+              // primary children and work on the fallback.
+              child.sibling;
         }
-        // The primary child fragment does not have pending work marked
-        // on it
-        pushPrimaryTreeSuspenseHandler(workInProgress);
-        // The primary children do not have pending work with sufficient
-        // priority. Bailout.
-        const child = bailoutOnAlreadyFinishedWork(
-          current,
-          workInProgress,
-          renderLanes,
-        );
-        return child == null
-          ? null
-          : // Note: We can return `null` here because we already checked
-            // whether there were nested context consumers, via the call to
-            // `bailoutOnAlreadyFinishedWork` above.
-            // The fallback children have pending work. Skip over the
-            // primary children and work on the fallback.
-            child.sibling;
       }
       pushPrimaryTreeSuspenseHandler(workInProgress);
       break;
     }
     case SuspenseListComponent: {
-      if ((workInProgress.flags & DidCapture) !== NoFlags) {
+      if (workInProgress.flags & DidCapture) {
         // Second pass caught.
         return updateSuspenseListComponent(
           current,

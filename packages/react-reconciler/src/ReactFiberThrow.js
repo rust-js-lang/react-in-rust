@@ -364,7 +364,7 @@ export function throwException(
     if (
       __DEV__ &&
       getIsHydrating() &&
-      (disableLegacyMode || (sourceFiber.mode & ConcurrentMode) !== NoMode)
+      (disableLegacyMode || sourceFiber.mode & ConcurrentMode)
     ) {
       markDidThrowWhileHydratingDEV();
     }
@@ -386,10 +386,7 @@ export function throwException(
           // we don't have to recompute it on demand. This would also allow us
           // to unify with `use` which needs to perform this logic even sooner,
           // before `throwException` is called.
-          if (
-            disableLegacyMode ||
-            (sourceFiber.mode & ConcurrentMode) !== NoMode
-          ) {
+          if (disableLegacyMode || sourceFiber.mode & ConcurrentMode) {
             if (getShellBoundary() == null) {
               // Suspended in the "shell" of the app. This is an undesirable
               // loading state. We should avoid committing this tree.
@@ -455,20 +452,14 @@ export function throwException(
             // We only attach ping listeners in concurrent mode. Legacy
             // Suspense always commits fallbacks synchronously, so there are
             // no pings.
-            if (
-              disableLegacyMode ||
-              (suspenseBoundary.mode & ConcurrentMode) !== NoMode
-            ) {
+            if (disableLegacyMode || suspenseBoundary.mode & ConcurrentMode) {
               attachPingListener(root, wakeable, rootRenderLanes);
             }
           }
           return false;
         }
         case OffscreenComponent:
-          if (
-            disableLegacyMode ||
-            (suspenseBoundary.mode & ConcurrentMode) !== NoMode
-          ) {
+          if (disableLegacyMode || suspenseBoundary.mode & ConcurrentMode) {
             suspenseBoundary.flags |= ShouldCapture;
             const isSuspenseyResource =
               wakeable === noopSuspenseyCommitThenable;
@@ -530,7 +521,7 @@ export function throwException(
   // This is a regular error, not a Suspense wakeable.
   if (
     getIsHydrating() &&
-    (disableLegacyMode || (sourceFiber.mode & ConcurrentMode) !== NoMode)
+    (disableLegacyMode || sourceFiber.mode & ConcurrentMode)
   ) {
     markDidThrowWhileHydratingDEV();
     const hydrationBoundary = getSuspenseHandler();
@@ -597,6 +588,8 @@ export function throwException(
       renderDidError();
     }
     return false;
+  } else {
+    // Otherwise, fall through to the error path.
   }
 
   const wrapperError = new Error(
@@ -673,6 +666,5 @@ export function throwException(
   } while (workInProgress != null);
 
   return false;
-  // Otherwise, fall through to the error path.
 }
 //# sourceMappingURL=ReactFiberThrow.js.map

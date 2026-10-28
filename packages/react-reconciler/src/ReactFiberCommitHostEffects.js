@@ -35,7 +35,7 @@ import {
   unhideInstance,
   unhideTextInstance,
 } from './ReactFiberConfig.js';
-import {ContentReset, NoFlags, Placement} from './ReactFiberFlags.js';
+import {ContentReset, Placement} from './ReactFiberFlags.js';
 import {
   commitNewChildToFragmentInstances,
   getParentFragmentInstances,
@@ -334,7 +334,7 @@ function getHostSibling(fiber) {
 
       // If it is not host node and, we might have a host node inside it.
       // Try to search down until we find one.
-      if ((node.flags & Placement) !== NoFlags) {
+      if (node.flags & Placement) {
         // If we don't have a child, try the siblings instead.
         continue siblings;
       }
@@ -349,7 +349,7 @@ function getHostSibling(fiber) {
       continue siblings;
     }
     // Check if this host node is stable or about to be placed.
-    if ((node.flags & Placement) === NoFlags) {
+    if (!(node.flags & Placement)) {
       // Found it!
       return node.stateNode ?? null;
     }
@@ -520,7 +520,7 @@ function commitPlacement(finishedWork) {
     case HostComponent: {
       // ReactFiberConfig's `Instance`.
       const parent = hostParentFiber.stateNode;
-      if ((hostParentFiber.flags & ContentReset) !== NoFlags) {
+      if (hostParentFiber.flags & ContentReset) {
         // Reset the text content of the parent before doing any insertions
         resetTextContent(parent);
         // Clear ContentReset from the effect tag

@@ -62,7 +62,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
         popLegacyContext(workInProgress);
       }
       const flags = workInProgress.flags;
-      if ((flags & ShouldCapture) !== NoFlags) {
+      if (flags & ShouldCapture) {
         workInProgress.flags = (flags & ~ShouldCapture) | DidCapture;
         if (
           enableProfilerTimer &&
@@ -121,7 +121,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
       }
 
       const flags = workInProgress.flags;
-      if ((flags & ShouldCapture) !== NoFlags) {
+      if (flags & ShouldCapture) {
         workInProgress.flags = (flags & ~ShouldCapture) | DidCapture;
         // Captured a suspense effect. Re-render the boundary.
         if (
@@ -149,7 +149,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
       }
 
       const flags = workInProgress.flags;
-      if ((flags & ShouldCapture) !== NoFlags) {
+      if (flags & ShouldCapture) {
         workInProgress.flags = (flags & ~ShouldCapture) | DidCapture;
         // Captured a suspense effect. Re-render the boundary.
         if (
@@ -167,7 +167,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
       // SuspenseList doesn't normally catch anything. It should've been
       // caught by a nested boundary. If not, it should bubble through.
       const flags = workInProgress.flags;
-      if ((flags & ShouldCapture) !== NoFlags) {
+      if (flags & ShouldCapture) {
         workInProgress.flags = (flags & ~ShouldCapture) | DidCapture;
         // If we caught something on the SuspenseList itself it's because
         // we want to ignore something. Re-enter the cycle and handle it
@@ -200,7 +200,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
       popHiddenContext(workInProgress);
       popTransition(workInProgress, current);
       const flags = workInProgress.flags;
-      if ((flags & ShouldCapture) !== NoFlags) {
+      if (flags & ShouldCapture) {
         workInProgress.flags = (flags & ~ShouldCapture) | DidCapture;
         // Captured a suspense effect. Re-render the boundary.
         if (

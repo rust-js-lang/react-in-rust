@@ -734,9 +734,10 @@ function createChildReconciler(shouldTrackSideEffects) {
       }
 
       if (newChild.$$typeof === REACT_CONTEXT_TYPE) {
+        const context = newChild;
         return createChild(
           returnFiber,
-          readContextDuringReconciliation(returnFiber, newChild, lanes),
+          readContextDuringReconciliation(returnFiber, context, lanes),
           lanes,
         );
       }
@@ -807,16 +808,18 @@ function createChildReconciler(shouldTrackSideEffects) {
             return null;
           }
         }
-        case REACT_PORTAL_TYPE:
+        case REACT_PORTAL_TYPE: {
+          const portal = newChild;
           // If the old child was an optimisticKey, then we'd normally consider that a match,
           // but instead, we'll bail to return null from the slot which will bail to slow path.
           // That's to ensure that if the new key has a match elsewhere in the list, then that
           // takes precedence over assuming the identity of an optimistic slot.
-          if ((newChild.key ?? null) === (key ?? null)) {
-            return updatePortal(returnFiber, oldFiber, newChild, lanes);
+          if ((portal.key ?? null) === (key ?? null)) {
+            return updatePortal(returnFiber, oldFiber, portal, lanes);
           } else {
             return null;
           }
+        }
         case REACT_LAZY_TYPE: {
           const prevDebugInfo = pushDebugInfo(newChild._debugInfo);
           const resolvedChild = resolveLazy(newChild);
@@ -870,10 +873,11 @@ function createChildReconciler(shouldTrackSideEffects) {
       }
 
       if (newChild.$$typeof === REACT_CONTEXT_TYPE) {
+        const context = newChild;
         return updateSlot(
           returnFiber,
           oldFiber,
-          readContextDuringReconciliation(returnFiber, newChild, lanes),
+          readContextDuringReconciliation(returnFiber, context, lanes),
           lanes,
         );
       }
@@ -942,6 +946,7 @@ function createChildReconciler(shouldTrackSideEffects) {
           return updated;
         }
         case REACT_PORTAL_TYPE: {
+          const portal = newChild;
           function fallback() {
             // If the existing child was an optimistic key, we may still match on the index.
             if (enableOptimisticKey) {
@@ -949,10 +954,10 @@ function createChildReconciler(shouldTrackSideEffects) {
             }
           }
           const matchedFiber =
-            (newChild.key == null
+            (portal.key == null
               ? existingChildren.get(newIdx)
-              : existingChildren.get(newChild.key)) ?? fallback();
-          return updatePortal(returnFiber, matchedFiber, newChild, lanes);
+              : existingChildren.get(portal.key)) ?? fallback();
+          return updatePortal(returnFiber, matchedFiber, portal, lanes);
         }
         case REACT_LAZY_TYPE: {
           const prevDebugInfo = pushDebugInfo(newChild._debugInfo);
@@ -1006,11 +1011,12 @@ function createChildReconciler(shouldTrackSideEffects) {
       }
 
       if (newChild.$$typeof === REACT_CONTEXT_TYPE) {
+        const context = newChild;
         return updateFromMap(
           existingChildren,
           returnFiber,
           newIdx,
-          readContextDuringReconciliation(returnFiber, newChild, lanes),
+          readContextDuringReconciliation(returnFiber, context, lanes),
           lanes,
         );
       }
@@ -1816,8 +1822,9 @@ function createChildReconciler(shouldTrackSideEffects) {
           }
           existing.return = returnFiber;
           return existing;
+        } else {
+          deleteRemainingChildren(shouldTrackSideEffects, returnFiber, current);
         }
-        deleteRemainingChildren(shouldTrackSideEffects, returnFiber, current);
         break;
       }
       deleteChild(shouldTrackSideEffects, returnFiber, current);
@@ -1985,11 +1992,12 @@ function createChildReconciler(shouldTrackSideEffects) {
       }
 
       if (newChild.$$typeof === REACT_CONTEXT_TYPE) {
+        const context = newChild;
         return reconcileChildFibersImpl(
           shouldTrackSideEffects,
           returnFiber,
           currentFirstChild,
-          readContextDuringReconciliation(returnFiber, newChild, lanes),
+          readContextDuringReconciliation(returnFiber, context, lanes),
           lanes,
         );
       }

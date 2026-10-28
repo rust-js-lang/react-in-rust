@@ -103,7 +103,7 @@ use crate::react_fiber_new_context::{
     enter_disallowed_context_read_in_dev, exit_disallowed_context_read_in_dev,
 };
 use crate::react_internal_types::{Fiber, FiberRoot};
-use crate::react_type_of_mode::{NO_MODE, STRICT_LEGACY_MODE};
+use crate::react_type_of_mode::STRICT_LEGACY_MODE;
 
 #[cfg_attr(
     rust_js,
@@ -455,7 +455,7 @@ fn get_state_from_update(
                 let next_state =
                     js::function::call(payload, Some(&instance), (prev_state, next_props));
                 if __DEV__ {
-                    if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != NO_MODE {
+                    if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != 0 {
                         set_is_strict_mode_for_devtools(true);
                         let _exit = ExitStrictModeForDevtools;
                         js::function::call(payload, Some(&instance), (prev_state, next_props));
@@ -483,7 +483,7 @@ fn get_state_from_update(
                 partial_state =
                     js::function::call(payload, Some(&instance), (prev_state, next_props));
                 if __DEV__ {
-                    if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != NO_MODE {
+                    if (work_in_progress.mode.get() & STRICT_LEGACY_MODE) != 0 {
                         set_is_strict_mode_for_devtools(true);
                         let _exit = ExitStrictModeForDevtools;
                         js::function::call(payload, Some(&instance), (prev_state, next_props));

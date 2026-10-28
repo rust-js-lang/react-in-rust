@@ -613,7 +613,7 @@ function scheduleRetryEffect(workInProgress, retryQueue) {
   // We also use this mechanism for Suspensey Resources (e.g. stylesheets),
   // because those don't actually block the render phase, only the commit phase.
   // So we can start rendering even before the resources are ready.
-  if ((workInProgress.flags & ScheduleRetry) !== NoFlags) {
+  if (workInProgress.flags & ScheduleRetry) {
     // TODO: This check should probably be moved into claimNextRetryLane
     // I also suspect that we need some further consolidation of offscreen
     // and retry lanes.
@@ -1015,19 +1015,20 @@ function completeDehydratedSuspenseBoundary(
       }
       return false;
     }
+  } else {
+    // Successfully completed this tree. If this was a forced client render,
+    // there may have been recoverable errors during first hydration
+    // attempt. If so, add them to a queue so we can log them in the
+    // commit phase. We also add them to prev state so we can get to them
+    // from the Suspense Boundary.
+    const hydrationErrors = upgradeHydrationErrorsToRecoverable();
+    if (current != null && current.memoizedState != null) {
+      const prevState = current.memoizedState;
+      prevState.hydrationErrors = hydrationErrors;
+    }
+    // Fall through to normal Suspense path
+    return true;
   }
-  // Successfully completed this tree. If this was a forced client render,
-  // there may have been recoverable errors during first hydration
-  // attempt. If so, add them to a queue so we can log them in the
-  // commit phase. We also add them to prev state so we can get to them
-  // from the Suspense Boundary.
-  const hydrationErrors = upgradeHydrationErrorsToRecoverable();
-  if (current != null && current.memoizedState != null) {
-    const prevState = current.memoizedState;
-    prevState.hydrationErrors = hydrationErrors;
-  }
-  // Fall through to normal Suspense path
-  return true;
 }
 
 export function completeWork(current, workInProgress, renderLanes) {
@@ -1187,62 +1188,63 @@ export function completeWork(current, workInProgress, renderLanes) {
             );
             return null;
           }
-        }
-        // This is an update.
-        if (nextResource != null) {
-          // This is a Resource
-          if (nextResource !== current.memoizedState) {
-            // we have a new Resource. we need to update
-            markUpdate(workInProgress);
-            // This must come at the very end of the complete phase.
-            bubbleProperties(workInProgress);
-            // This must come at the very end of the complete phase, because it might
-            // throw to suspend, and if the resource immediately loads, the work loop
-            // will resume rendering as if the work-in-progress completed. So it must
-            // fully complete.
-            preloadResourceAndSuspendIfNeeded(
-              workInProgress,
-              nextResource,
-              type,
-              newProps,
-              renderLanes,
-            );
-            return null;
-          } else {
-            // This must come at the very end of the complete phase.
-            bubbleProperties(workInProgress);
-            workInProgress.flags &= ~MaySuspendCommit;
-            return null;
-          }
         } else {
-          const oldProps = current.memoizedProps;
-          // This is an Instance
-          // We may have props to update on the Hoistable instance.
-          if (supportsMutation) {
-            if (oldProps !== newProps) {
+          // This is an update.
+          if (nextResource != null) {
+            // This is a Resource
+            if (nextResource !== current.memoizedState) {
+              // we have a new Resource. we need to update
               markUpdate(workInProgress);
+              // This must come at the very end of the complete phase.
+              bubbleProperties(workInProgress);
+              // This must come at the very end of the complete phase, because it might
+              // throw to suspend, and if the resource immediately loads, the work loop
+              // will resume rendering as if the work-in-progress completed. So it must
+              // fully complete.
+              preloadResourceAndSuspendIfNeeded(
+                workInProgress,
+                nextResource,
+                type,
+                newProps,
+                renderLanes,
+              );
+              return null;
+            } else {
+              // This must come at the very end of the complete phase.
+              bubbleProperties(workInProgress);
+              workInProgress.flags &= ~MaySuspendCommit;
+              return null;
             }
           } else {
-            // We use the updateHostComponent path because it produces
-            // the update queue we need for Hoistables.
-            updateHostComponent(
-              current,
+            const oldProps = current.memoizedProps;
+            // This is an Instance
+            // We may have props to update on the Hoistable instance.
+            if (supportsMutation) {
+              if (oldProps !== newProps) {
+                markUpdate(workInProgress);
+              }
+            } else {
+              // We use the updateHostComponent path because it produces
+              // the update queue we need for Hoistables.
+              updateHostComponent(
+                current,
+                workInProgress,
+                type,
+                newProps,
+                renderLanes,
+              );
+            }
+            // This must come at the very end of the complete phase.
+            bubbleProperties(workInProgress);
+            preloadInstanceAndSuspendIfNeeded(
               workInProgress,
               type,
+              oldProps,
               newProps,
               renderLanes,
             );
+            return null;
           }
-          // This must come at the very end of the complete phase.
-          bubbleProperties(workInProgress);
-          preloadInstanceAndSuspendIfNeeded(
-            workInProgress,
-            type,
-            oldProps,
-            newProps,
-            renderLanes,
-          );
-          return null;
         }
       }
     // Fall through
@@ -1457,17 +1459,16 @@ export function completeWork(current, workInProgress, renderLanes) {
             nextState,
           );
         if (!fallthroughToNormalOffscreenPath) {
-          if ((workInProgress.flags & ForceClientRender) !== NoFlags) {
+          if (workInProgress.flags & ForceClientRender) {
             popSuspenseHandler(workInProgress);
             // Special case. There were remaining unhydrated nodes. We treat
             // this as a mismatch. Revert to client rendering.
             return workInProgress;
-          } else {
-            popSuspenseHandler(workInProgress);
-            // Did not finish hydrating, either because this is the initial
-            // render or because something suspended.
-            return null;
           }
+          popSuspenseHandler(workInProgress);
+          // Did not finish hydrating, either because this is the initial
+          // render or because something suspended.
+          return null;
         }
 
         if ((workInProgress.flags & DidCapture) !== NoFlags) {
@@ -1504,17 +1505,16 @@ export function completeWork(current, workInProgress, renderLanes) {
             nextState,
           );
         if (!fallthroughToNormalSuspensePath) {
-          if ((workInProgress.flags & ForceClientRender) !== NoFlags) {
+          if (workInProgress.flags & ForceClientRender) {
             popSuspenseHandler(workInProgress);
             // Special case. There were remaining unhydrated nodes. We treat
             // this as a mismatch. Revert to client rendering.
             return workInProgress;
-          } else {
-            popSuspenseHandler(workInProgress);
-            // Did not finish hydrating, either because this is the initial
-            // render or because something suspended.
-            return null;
           }
+          popSuspenseHandler(workInProgress);
+          // Did not finish hydrating, either because this is the initial
+          // render or because something suspended.
+          return null;
         }
       }
 
@@ -1934,7 +1934,7 @@ export function completeWork(current, workInProgress, renderLanes) {
           if (
             (!enableLegacyHidden ||
               workInProgress.tag !== LegacyHiddenComponent) &&
-            (workInProgress.subtreeFlags & (Placement | Update)) !== NoFlags
+            workInProgress.subtreeFlags & (Placement | Update)
           ) {
             workInProgress.flags |= Visibility;
           }

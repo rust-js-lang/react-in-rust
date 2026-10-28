@@ -187,8 +187,7 @@ export function addValueToProperties(
                 : JSON.stringify(value, null, 0),
             );
             break;
-          }
-          if (kind === 'Entries') {
+          } else if (kind === 'Entries') {
             properties.push([
               prefix + '\xa0\xa0'.repeat(indent) + propertyName,
               '',
