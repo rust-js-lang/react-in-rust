@@ -5,7 +5,7 @@
 
 use js::Unknown;
 
-fn is_custom_element(tag_name: &str, _props: &Unknown) -> bool {
+pub fn is_custom_element(tag_name: &str, _props: &Unknown) -> bool {
     if !tag_name.contains('-') {
         return false;
     }
