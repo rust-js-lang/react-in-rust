@@ -16,7 +16,7 @@ thread_local! {
 }
 
 js::export_default! {
-    fn escape_selector_attribute_value_inside_double_quotes(value: &str) -> String {
+    pub fn escape_selector_attribute_value_inside_double_quotes(value: &str) -> String {
         ESCAPE_SELECTOR_ATTRIBUTE_VALUE_INSIDE_DOUBLE_QUOTES_REGEX.with(|regex| {
             reg_exp::replace(value, regex, |ch: &str| {
                 "\\".to_owned()

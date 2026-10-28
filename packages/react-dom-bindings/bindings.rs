@@ -81,6 +81,8 @@ pub mod react_dom_event_handle_types;
 pub mod react_dom_event_listener;
 #[path = "src/shared/ReactDOMFormActions.rs"]
 pub mod react_dom_form_actions;
+#[path = "src/client/ReactDOMInput.rs"]
+pub mod react_dom_input;
 #[path = "src/shared/ReactDOMInvalidARIAHook.rs"]
 pub mod react_dom_invalid_aria_hook;
 #[path = "src/shared/ReactDOMNullInputValuePropHook.rs"]
