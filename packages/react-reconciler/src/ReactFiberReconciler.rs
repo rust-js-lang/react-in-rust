@@ -226,6 +226,7 @@ pub fn find_host_instance_with_warning(
 }
 
 #[cfg_attr(rust_js, rust_js::nullable(hydration_callbacks))]
+#[cfg_attr(rust_js, rust_js::nullable(transition_callbacks))]
 pub fn create_container(
     // ReactFiberConfig's `Container`.
     container_info: &'static Unknown,
@@ -239,9 +240,7 @@ pub fn create_container(
     on_caught_error: &'static OnCaughtError,
     on_recoverable_error: &'static OnError,
     on_default_transition_indicator: &'static OnDefaultTransitionIndicator,
-    #[cfg_attr(rust_js, rust_js::nullable)] transition_callbacks: Option<
-        &'static TransitionTracingCallbacks,
-    >,
+    transition_callbacks: Option<&'static TransitionTracingCallbacks>,
 ) -> Rc<OpaqueRoot> {
     let hydrate = false;
     let initial_children = js::null();
@@ -265,6 +264,7 @@ pub fn create_container(
 }
 
 #[cfg_attr(rust_js, rust_js::nullable(hydration_callbacks))]
+#[cfg_attr(rust_js, rust_js::nullable(transition_callbacks, form_state))]
 pub fn create_hydration_container(
     // shared/ReactTypes' `ReactNodeList`.
     initial_children: Option<&'static Unknown>,
@@ -282,11 +282,9 @@ pub fn create_hydration_container(
     on_caught_error: &'static OnCaughtError,
     on_recoverable_error: &'static OnError,
     on_default_transition_indicator: &'static OnDefaultTransitionIndicator,
-    #[cfg_attr(rust_js, rust_js::nullable)] transition_callbacks: Option<
-        &'static TransitionTracingCallbacks,
-    >,
+    transition_callbacks: Option<&'static TransitionTracingCallbacks>,
     // shared/ReactTypes' `ReactFormState<any, any>`.
-    #[cfg_attr(rust_js, rust_js::nullable)] form_state: Option<&'static Unknown>,
+    form_state: Option<&'static Unknown>,
 ) -> Rc<OpaqueRoot> {
     let hydrate = true;
     let root = create_fiber_root(

@@ -100,11 +100,12 @@ pub fn schedule_gesture(
 }
 
 #[cfg_attr(rust_js, rust_js::nullable)]
+#[cfg_attr(rust_js, rust_js::nullable(transition_types))]
 pub fn start_scheduled_gesture(
     root: &FiberRoot,
     gesture_timeline: &GestureProvider,
     gesture_options: Option<&GestureTransitionOptions>,
-    #[cfg_attr(rust_js, rust_js::nullable)] transition_types: Option<Rc<RefCell<TransitionTypes>>>,
+    transition_types: Option<Rc<RefCell<TransitionTypes>>>,
 ) -> Option<Rc<ScheduledGesture>> {
     let range_start = gesture_options
         .and_then(|gesture_options| gesture_options.range_start)

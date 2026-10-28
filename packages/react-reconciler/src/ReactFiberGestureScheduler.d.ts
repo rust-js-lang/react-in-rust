@@ -34,8 +34,8 @@ export function scheduleGesture(
 export function startScheduledGesture(
   root: FiberRoot,
   gestureTimeline: unknown,
-  gestureOptions?: GestureTransitionOptions | null | undefined,
-  transitionTypes?: string[] | null | undefined,
+  gestureOptions: GestureTransitionOptions | null | undefined,
+  transitionTypes: string[] | null,
 ): ScheduledGesture | null;
 
 export function cancelScheduledGesture(

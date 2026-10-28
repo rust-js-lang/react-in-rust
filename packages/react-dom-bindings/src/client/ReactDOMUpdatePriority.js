@@ -26,15 +26,11 @@ export function setCurrentUpdatePriority(
 }
 
 export function getCurrentUpdatePriority() {
-  return eventPriorityFromI32_from(
-    ReactDOMSharedInternals.p,
-  ); /* currentUpdatePriority */
+  return ReactDOMSharedInternals.p; /* currentUpdatePriority */
 }
 
 export function resolveUpdatePriority() {
-  const updatePriority = eventPriorityFromI32_from(
-    ReactDOMSharedInternals.p,
-  ); /* currentUpdatePriority */
+  const updatePriority = ReactDOMSharedInternals.p; /* currentUpdatePriority */
   if (updatePriority !== NoEventPriority) {
     return updatePriority;
   }
@@ -43,10 +39,6 @@ export function resolveUpdatePriority() {
     return DefaultEventPriority;
   }
   return getEventPriority(currentEvent.type);
-}
-
-function eventPriorityFromI32_from(lane) {
-  return lane;
 }
 
 export function runWithPriority(priority, fn) {

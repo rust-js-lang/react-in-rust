@@ -40,6 +40,7 @@ pub struct RootState {
 
 unsafe impl js::Defined for RootState {}
 
+#[cfg_attr(rust_js, rust_js::nullable(form_state))]
 pub fn create_fiber_root(
     // ReactFiberConfig's `Container`.
     container_info: &'static Unknown,
@@ -55,7 +56,7 @@ pub fn create_fiber_root(
     // single type, like a DynamicHostConfig that is defined by the renderer.
     identifier_prefix: String,
     // shared/ReactTypes' `ReactFormState<any, any>`.
-    #[cfg_attr(rust_js, rust_js::nullable)] form_state: Option<&'static Unknown>,
+    form_state: Option<&'static Unknown>,
     on_uncaught_error: &'static OnError,
     on_caught_error: &'static OnCaughtError,
     on_recoverable_error: &'static OnError,

@@ -90,7 +90,8 @@ export function createFiberRoot(
 
     pooledCache: null,
     pooledCacheLanes: NoLanes,
-    formState: formState ?? null,
+
+    formState,
 
     incompleteTransitions: new Map(),
     transitionLanes: createLaneMap(null),

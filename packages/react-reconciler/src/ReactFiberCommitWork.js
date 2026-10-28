@@ -1716,7 +1716,7 @@ function commitSuspenseCallback(finishedWork) {
     if (typeof suspenseCallback === 'function') {
       const retryQueue = finishedWork.updateQueue;
       if (retryQueue != null) {
-        suspenseCallback(new Set(Array.from(retryQueue.values())));
+        suspenseCallback(new Set(Array.from(retryQueue)));
       }
     } else if (__DEV__ && suspenseCallback !== undefined) {
       console.error('Unexpected type for suspenseCallback.');

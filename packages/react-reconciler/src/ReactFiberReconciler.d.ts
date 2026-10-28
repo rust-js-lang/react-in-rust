@@ -68,7 +68,7 @@ export function createContainer(
   onCaughtError: OnCaughtError,
   onRecoverableError: OnError,
   onDefaultTransitionIndicator: OnDefaultTransitionIndicator,
-  transitionCallbacks?: TransitionTracingCallbacks | null | undefined,
+  transitionCallbacks: TransitionTracingCallbacks | null,
 ): FiberRoot;
 
 export function createHydrationContainer(
@@ -84,8 +84,8 @@ export function createHydrationContainer(
   onCaughtError: OnCaughtError,
   onRecoverableError: OnError,
   onDefaultTransitionIndicator: OnDefaultTransitionIndicator,
-  transitionCallbacks?: TransitionTracingCallbacks | null | undefined,
-  formState?: unknown | null | undefined,
+  transitionCallbacks: TransitionTracingCallbacks | null,
+  formState: unknown | null,
 ): FiberRoot;
 
 export function updateContainer(

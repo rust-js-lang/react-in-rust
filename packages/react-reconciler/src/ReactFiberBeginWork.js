@@ -714,7 +714,7 @@ function updateOffscreenComponent(
         // be added to the stack to get added to any Offscreen/suspense children
         const instance = workInProgress.stateNode;
         if (instance != null && instance._transitions != null) {
-          transitions = Array.from(instance._transitions.values());
+          transitions = Array.from(instance._transitions);
         }
       }
 
