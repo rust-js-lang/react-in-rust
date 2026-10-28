@@ -51,6 +51,8 @@ pub mod get_vendor_prefixed_event_name;
 pub mod html_node_type;
 #[path = "src/shared/hyphenateStyleName.rs"]
 pub mod hyphenate_style_name;
+#[path = "src/client/inputValueTracking.rs"]
+pub mod input_value_tracking;
 #[path = "src/shared/isAttributeNameSafe.rs"]
 pub mod is_attribute_name_safe;
 #[path = "src/shared/isCustomElement.rs"]

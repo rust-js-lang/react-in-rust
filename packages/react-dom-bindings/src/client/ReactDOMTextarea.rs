@@ -10,27 +10,10 @@ use react_reconciler::react_current_fiber::get_current_fiber_owner_name_in_dev_o
 use shared::environment::__DEV__;
 use shared::is_array::is_array;
 use shared::react_feature_flags::DISABLE_TEXTAREA_CHILDREN;
-use webapi::{Element, EventTarget, console, html_text_area_element};
+use webapi::{Element, EventTarget, console, html_input_element, html_text_area_element};
 
+use crate::input_value_tracking::{track, track_hydrated};
 use crate::to_string_value::{get_to_string_value, to_string};
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/client/inputValueTracking.js#track"
-)]
-fn track(node: &Element) {
-    let _ = node;
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/client/inputValueTracking.js#trackHydrated"
-)]
-fn track_hydrated(node: &Element, initial_value: &str, initial_checked: bool) -> bool {
-    let _ = (node, initial_value, initial_checked);
-    unreachable!()
-}
 
 #[cfg_attr(
     rust_js,
@@ -173,7 +156,7 @@ pub fn init_textarea(
         node.set_value(&text_content);
     }
 
-    track(element);
+    track(html_input_element::unchecked_from(element));
 }
 
 pub fn hydrate_textarea(
@@ -193,7 +176,11 @@ pub fn hydrate_textarea(
     // that any change event that fires will trigger onChange on the actual
     // current value.
     let string_value = to_string(get_to_string_value(initial_value));
-    let changed = track_hydrated(node, &string_value, false);
+    let changed = track_hydrated(
+        html_input_element::unchecked_from(node),
+        &string_value,
+        false,
+    );
     if changed {
         // If the current value is different, that suggests that the user
         // changed it before hydration. Queue a replay of the change event.
