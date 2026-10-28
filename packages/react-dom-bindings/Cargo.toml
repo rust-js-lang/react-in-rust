@@ -1,0 +1,19 @@
+[package]
+name = "react-dom-bindings"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# React DOM's implementation details, `react-dom-bindings`. Its modules are
+# its files, each beside the JS rust-js writes from it; its root declares
+# them and writes no JS of its own.
+[lib]
+path = "bindings.rs"
+
+[dependencies]
+js.workspace = true
+shared.workspace = true
+webapi.workspace = true
+
+[lints]
+workspace = true
