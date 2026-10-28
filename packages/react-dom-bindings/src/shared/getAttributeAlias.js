@@ -88,6 +88,6 @@ const aliases = new Map([
 ]);
 
 export default function getAttributeAlias(name) {
-  return aliases.get(name) ?? name;
+  return aliases.get(name) || name;
 }
 //# sourceMappingURL=getAttributeAlias.js.map

@@ -94,6 +94,10 @@ thread_local! {
 
 js::export_default! {
     fn get_attribute_alias(name: &str) -> &str {
-        ALIASES.with(|aliases| aliases.get(name).copied().unwrap_or(name))
+        ALIASES.with(|aliases| aliases
+            .get(name)
+            .copied()
+            .filter(|alias| !alias.is_empty())
+            .unwrap_or(name))
     }
 }

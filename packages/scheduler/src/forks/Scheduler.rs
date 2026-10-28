@@ -4,7 +4,10 @@
 // LICENSE file in the root directory of this source tree.
 
 use std::cell::{Cell, RefCell};
+use std::panic::{self, AssertUnwindSafe};
 use std::rc::Rc;
+
+use js::{ArrayBuffer, IntoUnknown, Rest};
 
 #[path = "../SchedulerFeatureFlags.rs"]
 pub mod scheduler_feature_flags;
@@ -14,14 +17,85 @@ pub mod scheduler_min_heap;
 pub mod scheduler_priorities;
 
 use scheduler_feature_flags::{
-    ENABLE_ALWAYS_YIELD_SCHEDULER, ENABLE_REQUEST_PAINT, FRAME_YIELD_MS, LOW_PRIORITY_TIMEOUT,
-    NORMAL_PRIORITY_TIMEOUT, USER_BLOCKING_PRIORITY_TIMEOUT,
+    ENABLE_ALWAYS_YIELD_SCHEDULER, ENABLE_PROFILING, ENABLE_REQUEST_PAINT, FRAME_YIELD_MS,
+    LOW_PRIORITY_TIMEOUT, NORMAL_PRIORITY_TIMEOUT, USER_BLOCKING_PRIORITY_TIMEOUT,
 };
 use scheduler_min_heap::{Node, peek, pop, push};
 use scheduler_priorities::{
     IDLE_PRIORITY, IMMEDIATE_PRIORITY, LOW_PRIORITY, NORMAL_PRIORITY, PriorityLevel,
     USER_BLOCKING_PRIORITY,
 };
+
+#[cfg_attr(rust_js, rust_js::link_name = "../SchedulerProfiling.js#markTaskRun")]
+fn mark_task_run(task: &Task, ms: f64) {
+    unreachable!()
+}
+
+#[cfg_attr(rust_js, rust_js::link_name = "../SchedulerProfiling.js#markTaskYield")]
+fn mark_task_yield(task: &Task, ms: f64) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "../SchedulerProfiling.js#markTaskCompleted"
+)]
+fn mark_task_completed(task: &Task, ms: f64) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "../SchedulerProfiling.js#markTaskCanceled"
+)]
+fn mark_task_canceled(task: &Task, ms: f64) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "../SchedulerProfiling.js#markTaskErrored"
+)]
+fn mark_task_errored(task: &Task, ms: f64) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "../SchedulerProfiling.js#markSchedulerSuspended"
+)]
+fn mark_scheduler_suspended(ms: f64) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "../SchedulerProfiling.js#markSchedulerUnsuspended"
+)]
+fn mark_scheduler_unsuspended(ms: f64) {
+    unreachable!()
+}
+
+#[cfg_attr(rust_js, rust_js::link_name = "../SchedulerProfiling.js#markTaskStart")]
+fn mark_task_start(task: &Task, ms: f64) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "../SchedulerProfiling.js#stopLoggingProfilingEvents"
+)]
+fn stop_logging_profiling_events() -> Option<&'static ArrayBuffer> {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "../SchedulerProfiling.js#startLoggingProfilingEvents"
+)]
+fn start_logging_profiling_events() {
+    unreachable!()
+}
 
 /// A task's work: given whether it timed out, it does some, and gives
 /// what's left of it, or nothing where it's done.
@@ -35,6 +109,7 @@ pub struct Task {
     start_time: f64,
     expiration_time: f64,
     sort_index: Cell<f64>,
+    is_queued: Cell<Option<bool>>,
 }
 
 impl Node for Rc<Task> {}
@@ -96,7 +171,11 @@ fn advance_timers(current_time: f64) {
                 let timer = Rc::clone(timer);
                 pop(timer_queue);
                 timer.sort_index.set(timer.expiration_time);
-                TASK_QUEUE.with_borrow_mut(|task_queue| push(task_queue, timer));
+                TASK_QUEUE.with_borrow_mut(|task_queue| push(task_queue, Rc::clone(&timer)));
+                if ENABLE_PROFILING {
+                    mark_task_start(&timer, current_time);
+                    timer.is_queued.set(Some(true));
+                }
             } else {
                 // Remaining timers are pending.
                 return;
@@ -132,10 +211,18 @@ impl Drop for Restore {
         CURRENT_TASK.set(None);
         CURRENT_PRIORITY_LEVEL.set(self.previous_priority_level);
         IS_PERFORMING_WORK.set(false);
+        if ENABLE_PROFILING {
+            let current_time = get_current_time();
+            mark_scheduler_suspended(current_time);
+        }
     }
 }
 
 fn flush_work(initial_time: f64) -> bool {
+    if ENABLE_PROFILING {
+        mark_scheduler_unsuspended(initial_time);
+    }
+
     // We'll need a host callback the next time work is scheduled.
     IS_HOST_CALLBACK_SCHEDULED.set(false);
     if IS_HOST_TIMEOUT_SCHEDULED.get() {
@@ -148,8 +235,22 @@ fn flush_work(initial_time: f64) -> bool {
     let _restore = Restore {
         previous_priority_level: CURRENT_PRIORITY_LEVEL.get(),
     };
-    // No catch in prod code path.
-    work_loop(initial_time)
+    if ENABLE_PROFILING {
+        match panic::catch_unwind(AssertUnwindSafe(|| work_loop(initial_time))) {
+            Ok(has_more_work) => has_more_work,
+            Err(error) => {
+                if let Some(current_task) = CURRENT_TASK.with_borrow(Clone::clone) {
+                    let current_time = get_current_time();
+                    mark_task_errored(&current_task, current_time);
+                    current_task.is_queued.set(Some(false));
+                }
+                panic::resume_unwind(error)
+            }
+        }
+    } else {
+        // No catch in prod code path.
+        work_loop(initial_time)
+    }
 }
 
 fn work_loop(initial_time: f64) -> bool {
@@ -168,14 +269,24 @@ fn work_loop(initial_time: f64) -> bool {
         if let Some(Callback(mut callback)) = callback {
             CURRENT_PRIORITY_LEVEL.set(current_task.priority_level);
             let did_user_callback_timeout = current_task.expiration_time <= current_time;
+            if ENABLE_PROFILING {
+                mark_task_run(&current_task, current_time);
+            }
             let continuation_callback = callback(did_user_callback_timeout);
             current_time = get_current_time();
             if let Some(continuation_callback) = continuation_callback {
                 // If a continuation is returned, immediately yield to the main thread
                 // regardless of how much time is left in the current time slice.
                 current_task.callback.replace(Some(continuation_callback));
+                if ENABLE_PROFILING {
+                    mark_task_yield(&current_task, current_time);
+                }
                 advance_timers(current_time);
                 return true;
+            }
+            if ENABLE_PROFILING {
+                mark_task_completed(&current_task, current_time);
+                current_task.is_queued.set(Some(false));
             }
             TASK_QUEUE.with_borrow_mut(|task_queue| {
                 if peek(task_queue).is_some_and(|first| Rc::ptr_eq(first, &current_task)) {
@@ -254,14 +365,16 @@ pub fn unstable_next<T>(event_handler: impl FnOnce() -> T) -> T {
 }
 
 #[cfg_attr(rust_js, rust_js::name = "unstable_wrapCallback")]
-pub fn unstable_wrap_callback<A, T>(callback: impl Fn(A) -> T + 'static) -> impl Fn(A) -> T {
+pub fn unstable_wrap_callback<T>(
+    callback: impl Fn(&dyn Rest<dyn IntoUnknown>) -> T + 'static,
+) -> impl Fn(&dyn Rest<dyn IntoUnknown>) -> T {
     let parent_priority_level = CURRENT_PRIORITY_LEVEL.get();
-    move |argument| {
+    move |args: &dyn Rest<dyn IntoUnknown>| {
         // This is a fork of runWithPriority, inlined for performance.
         let _restore = RestorePriority(CURRENT_PRIORITY_LEVEL.get());
         CURRENT_PRIORITY_LEVEL.set(parent_priority_level);
 
-        callback(argument)
+        callback(args)
     }
 }
 
@@ -302,7 +415,11 @@ pub fn unstable_schedule_callback(
         start_time,
         expiration_time,
         sort_index: Cell::new(-1.0),
+        is_queued: Cell::new(None),
     });
+    if ENABLE_PROFILING {
+        new_task.is_queued.set(Some(false));
+    }
 
     if start_time > current_time {
         // This is a delayed task.
@@ -326,6 +443,10 @@ pub fn unstable_schedule_callback(
     } else {
         new_task.sort_index.set(expiration_time);
         TASK_QUEUE.with_borrow_mut(|task_queue| push(task_queue, new_task.clone()));
+        if ENABLE_PROFILING {
+            mark_task_start(&new_task, current_time);
+            new_task.is_queued.set(Some(true));
+        }
         // Schedule a host callback, if needed. If we're already performing work,
         // wait until the next time we yield.
         if !IS_HOST_CALLBACK_SCHEDULED.get() && !IS_PERFORMING_WORK.get() {
@@ -339,6 +460,12 @@ pub fn unstable_schedule_callback(
 
 #[cfg_attr(rust_js, rust_js::name = "unstable_cancelCallback")]
 pub fn unstable_cancel_callback(task: &Task) {
+    if ENABLE_PROFILING && task.is_queued.get() == Some(true) {
+        let current_time = get_current_time();
+        mark_task_canceled(task, current_time);
+        task.is_queued.set(Some(false));
+    }
+
     // Null out the callback to indicate the task has been canceled. (Can't
     // remove from the queue because you can't remove arbitrary nodes from an
     // array based heap, only the first one.)
@@ -524,9 +651,19 @@ pub use scheduler_priorities::NORMAL_PRIORITY as UNSTABLE_NORMAL_PRIORITY;
 #[cfg_attr(rust_js, rust_js::name = "unstable_UserBlockingPriority")]
 pub use scheduler_priorities::USER_BLOCKING_PRIORITY as UNSTABLE_USER_BLOCKING_PRIORITY;
 
-/// What profiles the scheduler's work, where it's built with
-/// `enableProfiling`, which this build isn't.
-pub struct Profiling;
+/// What starts and stops logging the scheduler's profiling events.
+pub struct Profiling {
+    pub start_logging_profiling_events: fn(),
+    pub stop_logging_profiling_events: fn() -> Option<&'static ArrayBuffer>,
+}
 
 #[cfg_attr(rust_js, rust_js::name = "unstable_Profiling")]
-pub const UNSTABLE_PROFILING: Option<Profiling> = None;
+#[cfg_attr(rust_js, rust_js::nullable)]
+pub const UNSTABLE_PROFILING: Option<Profiling> = if ENABLE_PROFILING {
+    Some(Profiling {
+        start_logging_profiling_events,
+        stop_logging_profiling_events,
+    })
+} else {
+    None
+};

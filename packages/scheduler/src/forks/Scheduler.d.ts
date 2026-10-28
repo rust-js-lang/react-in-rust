@@ -28,6 +28,7 @@ export interface Task {
   startTime: number;
   expirationTime: number;
   sortIndex: number;
+  isQueued: boolean | null | undefined;
 }
 
 /** What `unstable_scheduleCallback` is given: how long to wait first. */
@@ -44,7 +45,9 @@ export function unstable_runWithPriority<T>(
 
 export function unstable_next<T>(eventHandler: () => T): T;
 
-export function unstable_wrapCallback<A, T>(callback: (a: A) => T): (a: A) => T;
+export function unstable_wrapCallback<T>(
+  callback: (...args: (unknown | null | undefined)[]) => T,
+): (...args: (unknown | null | undefined)[]) => T;
 
 export function unstable_scheduleCallback(
   priorityLevel: PriorityLevel,
@@ -62,7 +65,13 @@ export function unstable_requestPaint(): void;
 
 export function unstable_forceFrameRate(fps: number): void;
 
-export const unstable_Profiling: any | null | undefined;
+/** What starts and stops logging the scheduler's profiling events. */
+export interface Profiling {
+  startLoggingProfilingEvents: () => void;
+  stopLoggingProfilingEvents: () => any | null | undefined;
+}
+
+export const unstable_Profiling: Profiling | null;
 
 export {
   getCurrentTime as unstable_now,
