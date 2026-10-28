@@ -9,6 +9,8 @@ pub mod css_shorthand_property;
 pub mod current_replaying_event;
 #[path = "src/client/DOMAccessibilityRoles.rs"]
 pub mod dom_accessibility_roles;
+#[path = "src/events/DOMEventNames.rs"]
+pub mod dom_event_names;
 #[path = "src/client/DOMNamespaces.rs"]
 pub mod dom_namespaces;
 #[path = "src/client/escapeSelectorAttributeValueInsideDoubleQuotes.rs"]
@@ -45,6 +47,10 @@ pub mod is_text_input_element;
 pub mod is_unitless_number;
 #[path = "src/shared/possibleStandardNames.rs"]
 pub mod possible_standard_names;
+#[path = "src/shared/ReactControlledValuePropTypes.rs"]
+pub mod react_controlled_value_prop_types;
+#[path = "src/client/ReactDOMContainer.rs"]
+pub mod react_dom_container;
 #[path = "src/shared/ReactDOMInvalidARIAHook.rs"]
 pub mod react_dom_invalid_aria_hook;
 #[path = "src/shared/ReactDOMNullInputValuePropHook.rs"]
@@ -61,3 +67,5 @@ pub mod set_text_content;
 pub mod to_string_value;
 #[path = "src/shared/validAriaProperties.rs"]
 pub mod valid_aria_properties;
+#[path = "src/shared/warnValidStyle.rs"]
+pub mod warn_valid_style;
