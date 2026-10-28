@@ -9,7 +9,7 @@ thread_local! {
     // When adding attributes to the HTML or SVG allowed attribute list, be sure to
     // also add them to this module to ensure casing and incorrect name
     // warnings.
-    static POSSIBLE_STANDARD_NAMES: &'static Dict<&'static str> = dict::from_entries(vec![
+    pub static POSSIBLE_STANDARD_NAMES: &'static Dict<&'static str> = dict::from_entries(vec![
         // HTML
         ("accept", "accept"),
         ("acceptcharset", "acceptCharset"),

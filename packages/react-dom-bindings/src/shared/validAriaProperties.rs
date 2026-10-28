@@ -6,7 +6,7 @@
 use js::{Dict, dict};
 
 thread_local! {
-    static ARIA_PROPERTIES: &'static Dict<u8> = dict::from_entries(vec![
+    pub static ARIA_PROPERTIES: &'static Dict<u8> = dict::from_entries(vec![
         ("aria-current", 0), // state
         ("aria-description", 0),
         ("aria-details", 0),

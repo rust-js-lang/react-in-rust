@@ -43,6 +43,8 @@ pub mod is_event_supported;
 pub mod is_unitless_number;
 #[path = "src/shared/possibleStandardNames.rs"]
 pub mod possible_standard_names;
+#[path = "src/shared/ReactDOMInvalidARIAHook.rs"]
+pub mod react_dom_invalid_aria_hook;
 #[path = "src/shared/ReactDOMNullInputValuePropHook.rs"]
 pub mod react_dom_null_input_value_prop_hook;
 #[path = "src/shared/ReactDOMResourceValidation.rs"]
