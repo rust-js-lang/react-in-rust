@@ -104,11 +104,7 @@ export const enableDefaultTransitionIndicator: boolean;
 
 export const enableOptimisticKey: boolean;
 
-/**
- *
- * * Switches Fiber creation to a simple object instead of a constructor.
- *
- */
+/** Switches Fiber creation to a simple object instead of a constructor. */
 export const enableObjectFiber: boolean;
 
 export const enableTransitionTracing: boolean;
@@ -130,11 +126,7 @@ export const alwaysThrottleRetries: boolean;
 
 export const passChildrenWhenCloningPersistedNodes: boolean;
 
-/**
- *
- * * Enables an expiration time for retry lanes to avoid starvation.
- *
- */
+/** Enables an expiration time for retry lanes to avoid starvation. */
 export const enableRetryLaneExpiration: boolean;
 
 export const retryLaneExpirationMs: number;
@@ -144,19 +136,15 @@ export const syncLaneExpirationMs: number;
 export const transitionLaneExpirationMs: number;
 
 /**
- *
- * * Enables a new error detection for infinite render loops from updates caused
- * * by setState or similar outside of the component owning the state.
- *
+ * Enables a new error detection for infinite render loops from updates caused
+ * by setState or similar outside of the component owning the state.
  */
 export const enableInfiniteRenderLoopDetection: boolean;
 
 /**
- *
- * * When `enableInfiniteRenderLoopDetection` is on, forces the detection
- * * mechanism to throw instead of only warning in cases where it would
- * * otherwise downgrade to a warning.
- *
+ * When `enableInfiniteRenderLoopDetection` is on, forces the detection
+ * mechanism to throw instead of only warning in cases where it would
+ * otherwise downgrade to a warning.
  */
 export const enableInfiniteRenderLoopDetectionForceThrow: boolean;
 
@@ -176,18 +164,10 @@ export const enableInternalInstanceMap: boolean;
 
 // const __NEXT_MAJOR__ = __EXPERIMENTAL__;
 
-/**
- *
- * * Removes legacy style context defined using static `contextTypes` and consumed with static `childContextTypes`.
- *
- */
+/** Removes legacy style context defined using static `contextTypes` and consumed with static `childContextTypes`. */
 export const disableLegacyContext: boolean;
 
-/**
- *
- * * Removes legacy style context just from function components.
- *
- */
+/** Removes legacy style context just from function components. */
 export const disableLegacyContextForFunctionComponents: boolean;
 
 // Enable the moveBefore() alternative to insertBefore(). This preserves states of moves.

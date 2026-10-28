@@ -96,14 +96,14 @@ fn set_value_for_style(style: &CSSStyleProperties, style_name: &str, value: Opti
             js::set(style, style_name, "");
         }
     } else if is_custom_property {
-        style.set_property(style_name, unsafe { js::cast(value) }, None);
+        style.set_property(style_name, value, None);
     } else if let Kind::Number(number) = js::classify(value)
         && number != 0.0
         && !is_unitless_number(style_name)
     {
         js::set(style, style_name, js::concat_text(number) + "px"); // Presumes implicit 'px' suffix for unitless numbers
     } else if style_name == "float" {
-        style.set_css_float(unsafe { js::cast(value) });
+        style.set_css_float(value);
     } else {
         if __DEV__ {
             check_css_property_string_coercion(value, style_name);

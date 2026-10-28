@@ -25,19 +25,20 @@ export interface DispatchConfig {
 /**
  * A synthetic event, its private properties too: a `KnownReactSyntheticEvent`
  * where its `_reactName` is a string, an `UnknownReactSyntheticEvent` where
- * it's `null`.
+ * it's `null`. SyntheticEvent's constructors make it.
  */
 export interface ReactSyntheticEvent {
   isPersistent: () => boolean;
   isPropagationStopped: () => boolean;
+  isDefaultPrevented: () => boolean;
   // `null`, a fiber, or an array of fibers or `null`s.
   _dispatchInstances?: unknown;
   // `null`, a function, or an array of functions.
   _dispatchListeners?: unknown;
-  _targetInst: Fiber;
-  nativeEvent: Event;
-  target?: unknown;
-  relatedTarget?: unknown;
+  _targetInst?: Fiber | null | undefined;
+  nativeEvent: Event | null | undefined;
+  target?: unknown | null | undefined;
+  relatedTarget: unknown | null | undefined;
   type: string;
   currentTarget?: EventTarget | null | undefined;
   _reactName?: string | null | undefined;

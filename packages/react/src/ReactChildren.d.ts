@@ -7,9 +7,12 @@
 
 /**
  * Maps children that are typically specified as `props.children`.
+ *
  * See https://reactjs.org/docs/react-api.html#reactchildrenmap
+ *
  * The provided mapFunction(child, index) will be called for each
  * leaf child.
+ *
  * @param {?*} children Children tree container.
  * @param {function(*, int)} func The map function.
  * @param {*} context Context for mapFunction.
@@ -27,7 +30,9 @@ declare function mapChildren(
 /**
  * Count the number of children that are typically specified as
  * `props.children`.
+ *
  * See https://reactjs.org/docs/react-api.html#reactchildrencount
+ *
  * @param {?*} children Children tree container.
  * @return {number} The number of children.
  */
@@ -35,9 +40,12 @@ declare function countChildren(children?: unknown | null | undefined): number;
 
 /**
  * Iterates through children that are typically specified as `props.children`.
+ *
  * See https://reactjs.org/docs/react-api.html#reactchildrenforeach
+ *
  * The provided forEachFunc(child, index) will be called for each
  * leaf child.
+ *
  * @param {?*} children Children tree container.
  * @param {function(*, int)} forEachFunc
  * @param {*} forEachContext Context for forEachContext.
@@ -51,6 +59,7 @@ declare function forEachChildren(
 /**
  * Flatten a children object (typically specified as `props.children`) and
  * return an array with appropriately re-keyed children.
+ *
  * See https://reactjs.org/docs/react-api.html#reactchildrentoarray
  */
 export function toArray(
@@ -60,10 +69,13 @@ export function toArray(
 /**
  * Returns the first child in a collection of children and verifies that there
  * is only one child in the collection.
+ *
  * See https://reactjs.org/docs/react-api.html#reactchildrenonly
+ *
  * The current implementation of this function assumes that a single child gets
  * passed without a wrapper, but the purpose of this helper function is to
  * abstract away the particular structure of children.
+ *
  * @param {?object} children Child collection structure.
  * @return {ReactElement} The first and only `ReactElement` contained in the
  * structure.

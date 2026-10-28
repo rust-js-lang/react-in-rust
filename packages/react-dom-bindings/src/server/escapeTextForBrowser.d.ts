@@ -34,6 +34,7 @@
 
 /**
  * Escapes text to prevent scripting attacks.
+ *
  * @param {*} text Text value to escape.
  * @return {string} An escaped string.
  */

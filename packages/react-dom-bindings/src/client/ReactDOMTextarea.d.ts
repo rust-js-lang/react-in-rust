@@ -6,21 +6,19 @@
 // LICENSE file in the root directory of this source tree.
 
 /**
+ * Implements a <textarea> host component that allows setting `value`, and
+ * `defaultValue`. This differs from the traditional DOM API because value is
+ * usually set as PCDATA children.
  *
- * * Implements a <textarea> host component that allows setting `value`, and
- * * `defaultValue`. This differs from the traditional DOM API because value is
- * * usually set as PCDATA children.
- * *
- * * If `value` is not supplied (or null/undefined), user actions that affect the
- * * value will trigger updates to the element.
- * *
- * * If `value` is supplied (and not null/undefined), the rendered element will
- * * not trigger updates to the element. Instead, the `value` prop must change in
- * * order for the rendered element to be updated.
- * *
- * * The rendered element will be initialized with an empty value, the prop
- * * `defaultValue` if specified, or the children content (deprecated).
+ * If `value` is not supplied (or null/undefined), user actions that affect the
+ * value will trigger updates to the element.
  *
+ * If `value` is supplied (and not null/undefined), the rendered element will
+ * not trigger updates to the element. Instead, the `value` prop must change in
+ * order for the rendered element to be updated.
+ *
+ * The rendered element will be initialized with an empty value, the prop
+ * `defaultValue` if specified, or the children content (deprecated).
  */
 export function validateTextareaProps(element: Element, props: unknown): void;
 

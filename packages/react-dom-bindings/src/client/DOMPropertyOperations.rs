@@ -141,7 +141,7 @@ pub fn set_value_for_attribute(node: &Element, name: &str, value: Option<&Unknow
         if __DEV__ {
             check_attribute_string_coercion(value, name);
         }
-        node.set_attribute(name, unsafe { js::cast(value) });
+        node.set_attribute(name, value);
     }
 }
 
@@ -160,7 +160,7 @@ pub fn set_value_for_known_attribute(node: &Element, name: &str, value: Option<&
     if __DEV__ {
         check_attribute_string_coercion(value, name);
     }
-    node.set_attribute(name, unsafe { js::cast(value) });
+    node.set_attribute(name, value);
 }
 
 pub fn set_value_for_namespaced_attribute(
@@ -183,7 +183,7 @@ pub fn set_value_for_namespaced_attribute(
     if __DEV__ {
         check_attribute_string_coercion(value, name);
     }
-    node.set_attribute_ns(namespace, name, unsafe { js::cast(value) });
+    node.set_attribute_ns(namespace, name, value);
 }
 
 pub fn set_value_for_property_on_custom_component(

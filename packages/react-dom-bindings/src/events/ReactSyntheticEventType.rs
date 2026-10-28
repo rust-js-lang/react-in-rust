@@ -5,6 +5,7 @@
 
 // Flow type for SyntheticEvent class that includes private properties
 
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::Unknown;
@@ -29,27 +30,31 @@ pub struct DispatchConfig {
 
 /// A synthetic event, its private properties too: a `KnownReactSyntheticEvent`
 /// where its `_reactName` is a string, an `UnknownReactSyntheticEvent` where
-/// it's `null`.
+/// it's `null`. SyntheticEvent's constructors make it.
 pub struct ReactSyntheticEvent {
-    pub is_persistent: &'static dyn Fn() -> bool,
-    pub is_propagation_stopped: &'static dyn Fn() -> bool,
+    pub is_persistent: fn() -> bool,
+    pub is_propagation_stopped: Cell<fn() -> bool>,
+    pub is_default_prevented: Cell<fn() -> bool>,
     // `null`, a fiber, or an array of fibers or `null`s.
     #[cfg_attr(rust_js, rust_js::name = "_dispatchInstances")]
     pub dispatch_instances: Option<&'static Unknown>,
     // `null`, a function, or an array of functions.
     #[cfg_attr(rust_js, rust_js::name = "_dispatchListeners")]
     pub dispatch_listeners: Option<&'static Unknown>,
-    #[cfg_attr(rust_js, rust_js::name = "_targetInst")]
-    pub target_inst: Rc<Fiber>,
-    pub native_event: &'static Event,
-    pub target: Option<&'static Unknown>,
-    pub related_target: Option<&'static Unknown>,
-    pub r#type: String,
+    #[cfg_attr(rust_js, rust_js::name = "_targetInst", rust_js::nullable)]
+    pub target_inst: RefCell<Option<Rc<Fiber>>>,
+    pub native_event: Cell<Option<&'static Event>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub current_target: Option<&'static EventTarget>,
+    pub target: Cell<Option<&'static Unknown>>,
+    pub related_target: Cell<Option<&'static Unknown>>,
+    pub r#type: Cell<&'static str>,
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub current_target: Cell<Option<&'static EventTarget>>,
     #[cfg_attr(rust_js, rust_js::name = "_reactName", rust_js::nullable)]
-    pub react_name: Option<String>,
+    pub react_name: Cell<Option<&'static str>>,
 }
+
+unsafe impl js::Defined for ReactSyntheticEvent {}
 
 pub type KnownReactSyntheticEvent = ReactSyntheticEvent;
 pub type UnknownReactSyntheticEvent = ReactSyntheticEvent;

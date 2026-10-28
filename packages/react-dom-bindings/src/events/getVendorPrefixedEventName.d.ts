@@ -7,6 +7,7 @@
 
 /**
  * Attempts to determine the correct vendor prefixed event name.
+ *
  * @param {string} eventName
  * @returns {string}
  */

@@ -1041,7 +1041,7 @@ function useMemoCache(size) {
   let memoCache;
   // Fast-path, load memo cache from wip fiber if already prepared
   const renderingFiber = $unwrap(currentlyRenderingFiber);
-  const updateQueue = renderingFiber.updateQueue;
+  let updateQueue = renderingFiber.updateQueue;
   if (updateQueue != null) {
     memoCache = updateQueue.memoCache;
   }
@@ -1091,14 +1091,11 @@ function useMemoCache(size) {
     data: [],
     index: 0,
   };
-  let updateQueue$1;
-  if (updateQueue != null) {
-    updateQueue$1 = updateQueue;
-  } else {
-    updateQueue$1 = createFunctionComponentUpdateQueue();
-    renderingFiber.updateQueue = updateQueue$1;
+  if (updateQueue == null) {
+    updateQueue = createFunctionComponentUpdateQueue();
+    renderingFiber.updateQueue = updateQueue;
   }
-  updateQueue$1.memoCache = memoCache;
+  updateQueue.memoCache = memoCache;
 
   const index = memoCache.index;
   let data = memoCache.data[index];

@@ -264,16 +264,13 @@ export function getEventHandlerListeners(scope) {
 }
 
 export function addEventHandleToTarget(target, eventHandle) {
-  const eventHandles = target[internalEventHandlesSetKey];
-  let eventHandles$1;
-  if (eventHandles != null) {
-    eventHandles$1 = eventHandles;
-  } else {
-    const eventHandles = new Set();
-    target[internalEventHandlesSetKey] = eventHandles;
-    eventHandles$1 = eventHandles;
+  let eventHandles = target[internalEventHandlesSetKey];
+  if (eventHandles == null) {
+    const eventHandles$1 = new Set();
+    target[internalEventHandlesSetKey] = eventHandles$1;
+    eventHandles = eventHandles$1;
   }
-  eventHandles$1.add(eventHandle);
+  eventHandles.add(eventHandle);
 }
 
 export function doesTargetHaveEventHandle(target, eventHandle) {

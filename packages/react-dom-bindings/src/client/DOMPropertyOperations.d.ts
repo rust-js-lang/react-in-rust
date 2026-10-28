@@ -6,11 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 /**
- *
- * * Get the value for a attribute on a node. Only used in DEV for SSR validation.
- * * The third argument is used as a hint of what the expected value is. Some
- * * attributes have multiple equivalent values.
- *
+ * Get the value for a attribute on a node. Only used in DEV for SSR validation.
+ * The third argument is used as a hint of what the expected value is. Some
+ * attributes have multiple equivalent values.
  */
 export function getValueForAttribute(
   node: Element,
