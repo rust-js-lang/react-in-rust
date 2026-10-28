@@ -27,7 +27,7 @@ function createCacheNode() {
 export function cache(fn) {
   return (...args) => {
     const dispatcher = ReactSharedInternals.A;
-    if (!dispatcher) {
+    if (dispatcher == null) {
       // If there is no dispatcher, then we treat this as not being cached.
       // $FlowFixMe[incompatible-type]: We don't want to use rest arguments since we transpile the code.
       return fn.apply(null, args);
@@ -49,7 +49,7 @@ export function cache(fn) {
       ) {
         // Objects go into a WeakMap
         let objectCache = cacheNode.o;
-        if (!objectCache) {
+        if (objectCache == null) {
           objectCache = new WeakMap();
           cacheNode.o = objectCache;
         }
@@ -63,7 +63,7 @@ export function cache(fn) {
       } else {
         // Primitives go into a regular Map
         let primitiveCache = cacheNode.p;
-        if (!primitiveCache) {
+        if (primitiveCache == null) {
           primitiveCache = new Map();
           cacheNode.p = primitiveCache;
         }
@@ -101,7 +101,7 @@ export function cache(fn) {
 
 export function cacheSignal() {
   const dispatcher = ReactSharedInternals.A;
-  if (!dispatcher) {
+  if (dispatcher == null) {
     // If there is no dispatcher, then we treat this as not having an AbortSignal
     // since in the same context, a cached function will be allowed to be called
     // but it won't be cached. So it's neither an infinite AbortSignal nor an

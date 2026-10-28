@@ -219,7 +219,7 @@ function updateHookTypesDev() {
 }
 
 function checkDepsAreArrayDev(deps) {
-  if (__DEV__ && deps && !isArray(deps)) {
+  if (__DEV__ && deps != null && !isArray(deps)) {
     // Verify deps, but only on mount to avoid extra checks.
     // It's unlikely their type would change as usually you define them inline.
     console.error(
@@ -698,7 +698,7 @@ function renderWithHooksAgain(workInProgress, component, props, secondArg) {
     workInProgressHook = null;
 
     const updateQueue = workInProgress.updateQueue;
-    if (updateQueue) {
+    if (updateQueue != null) {
       resetFunctionComponentUpdateQueue(updateQueue);
     }
 
@@ -812,7 +812,7 @@ export function resetHooksOnUnwind(workInProgress) {
     let hook = workInProgress.memoizedState;
     while (hook != null) {
       const queue = hook.queue;
-      if (queue) {
+      if (queue != null) {
         queue.pending = null;
       }
       hook = hook.next;
@@ -1178,7 +1178,7 @@ function updateReducer(reducer, initialArg, init) {
 function updateReducerImpl(hook, current, reducer) {
   const queue = hook.queue;
 
-  if (!queue) {
+  if (queue == null) {
     throw new Error(
       'Should have a queue. You are likely calling Hooks conditionally, ' +
         'which is not allowed. (https://react.dev/link/invalid-hook-call)',
@@ -1418,7 +1418,7 @@ function updateReducerImpl(hook, current, reducer) {
       // suspends if the memo boundary produces a new value.
       if (didReadFromEntangledAsyncAction) {
         const entangledActionThenable = peekEntangledActionThenable();
-        if (entangledActionThenable) {
+        if (entangledActionThenable != null) {
           // TODO: Instead of the throwing the thenable directly, throw a
           // special object like `use` does so we can detect if it's captured
           // by userspace.
@@ -1448,7 +1448,7 @@ function rerenderReducer(reducer, initialArg, init) {
   const hook = updateWorkInProgressHook();
   const queue = hook.queue;
 
-  if (!queue) {
+  if (queue == null) {
     throw new Error(
       'Should have a queue. You are likely calling Hooks conditionally, ' +
         'which is not allowed. (https://react.dev/link/invalid-hook-call)',
@@ -1697,7 +1697,7 @@ function pushStoreConsistencyCheck(fiber, getSnapshot, renderedSnapshot) {
     const componentUpdateQueue = createFunctionComponentUpdateQueue();
     renderingFiber.updateQueue = componentUpdateQueue;
     componentUpdateQueue.stores = [check];
-  } else if (!componentUpdateQueue.stores) {
+  } else if (componentUpdateQueue.stores == null) {
     componentUpdateQueue.stores = [check];
   } else {
     componentUpdateQueue.stores.push(check);
@@ -1894,7 +1894,7 @@ function dispatchActionState(
   }
 
   const currentAction = actionQueue.action;
-  if (!currentAction) {
+  if (currentAction == null) {
     // An earlier action errored. Subsequent actions should not run.
     return;
   }
@@ -1914,7 +1914,7 @@ function dispatchActionState(
   // Check if we're inside a transition. If so, we'll need to restore the
   // transition context when the action is run.
   const prevTransition = ReactSharedInternals.T;
-  if (prevTransition) {
+  if (prevTransition != null) {
     // Optimistically update the pending state, similar to useTransition.
     // This will be reverted automatically when all actions are finished.
     setPendingState(true, undefined);
@@ -1983,7 +1983,7 @@ function runActionStateAction(actionQueue, node) {
     try {
       const returnValue = action(prevState, payload);
       const onStartTransitionFinish = ReactSharedInternals.S;
-      if (onStartTransitionFinish) {
+      if (onStartTransitionFinish != null) {
         onStartTransitionFinish(currentTransition, returnValue);
       }
       handleActionReturnValue(actionQueue, node, returnValue);
@@ -1991,7 +1991,7 @@ function runActionStateAction(actionQueue, node) {
       onActionError(actionQueue, node, error);
     } finally {
       const currentTypes = currentTransition.types;
-      if (prevTransition && currentTypes != null) {
+      if (prevTransition != null && currentTypes != null) {
         // If we created a new types set in the inner transition, we transfer it to the parent
         // since they should share the same set. They're conceptually entangled.
         if (
@@ -2010,7 +2010,11 @@ function runActionStateAction(actionQueue, node) {
       }
       ReactSharedInternals.T = prevTransition;
 
-      if (__DEV__ && !prevTransition && currentTransition._updatedFibers) {
+      if (
+        __DEV__ &&
+        prevTransition == null &&
+        currentTransition._updatedFibers != null
+      ) {
         const updatedFibersCount = currentTransition._updatedFibers.size;
         currentTransition._updatedFibers.clear();
         if (updatedFibersCount > 10) {
@@ -2373,7 +2377,7 @@ function updateRef(initialValue) {
 
 function mountEffectImpl(fiberFlags, hookFlags, create, deps) {
   const hook = mountWorkInProgressHook();
-  const nextDeps = deps || null;
+  const nextDeps = deps ?? null;
   const renderingFiber = $unwrap(currentlyRenderingFiber);
   renderingFiber.flags |= fiberFlags;
   hook.memoizedState = pushSimpleEffect(
@@ -2386,13 +2390,13 @@ function mountEffectImpl(fiberFlags, hookFlags, create, deps) {
 
 function updateEffectImpl(fiberFlags, hookFlags, create, deps) {
   const hook = updateWorkInProgressHook();
-  const nextDeps = deps || null;
+  const nextDeps = deps ?? null;
   const effect = hook.memoizedState;
   const inst = effect.inst;
 
   // currentHook is null on initial mount when rerendering after a render phase
   // state update or for strict mode.
-  if (currentHook != null && nextDeps) {
+  if (currentHook != null && nextDeps != null) {
     const prevEffect = currentHook.memoizedState;
     const prevDeps = prevEffect.deps;
     // $FlowFixMe[incompatible-type] (@poteto)
@@ -2444,7 +2448,7 @@ function useEffectEventImpl(payload) {
     const componentUpdateQueue = createFunctionComponentUpdateQueue();
     renderingFiber.updateQueue = componentUpdateQueue;
     componentUpdateQueue.events = [payload];
-  } else if (!componentUpdateQueue.events) {
+  } else if (componentUpdateQueue.events == null) {
     componentUpdateQueue.events = [payload];
   } else {
     componentUpdateQueue.events.push(payload);
@@ -2547,7 +2551,7 @@ function mountImperativeHandle(ref, create, deps) {
   }
 
   // TODO: If deps are provided, should we skip comparing the ref itself?
-  const effectDeps = deps ? [...deps, ref] : undefined;
+  const effectDeps = deps != null ? [...deps, ref] : undefined;
 
   let fiberFlags = UpdateEffect | LayoutStaticEffect;
   const renderingFiber = $unwrap(currentlyRenderingFiber);
@@ -2573,7 +2577,7 @@ function updateImperativeHandle(ref, create, deps) {
   }
 
   // TODO: If deps are provided, should we skip comparing the ref itself?
-  const effectDeps = deps ? [...deps, ref] : undefined;
+  const effectDeps = deps != null ? [...deps, ref] : undefined;
 
   updateEffectImpl(
     UpdateEffect,
@@ -2593,7 +2597,7 @@ const updateDebugValue = mountDebugValue;
 
 function mountCallback(callback, deps) {
   const hook = mountWorkInProgressHook();
-  const nextDeps = deps || null;
+  const nextDeps = deps ?? null;
   const memoized = [callback, nextDeps];
   hook.memoizedState = memoized;
   return callback;
@@ -2601,9 +2605,9 @@ function mountCallback(callback, deps) {
 
 function updateCallback(callback, deps) {
   const hook = updateWorkInProgressHook();
-  const nextDeps = deps || null;
+  const nextDeps = deps ?? null;
   const prevState = hook.memoizedState;
-  if (nextDeps) {
+  if (nextDeps != null) {
     const prevDeps = prevState[1];
     if (areHookInputsEqual(nextDeps, prevDeps)) {
       return prevState[0];
@@ -2616,7 +2620,7 @@ function updateCallback(callback, deps) {
 
 function mountMemo(nextCreate, deps) {
   const hook = mountWorkInProgressHook();
-  const nextDeps = deps || null;
+  const nextDeps = deps ?? null;
   const nextValue = nextCreate();
   if (shouldDoubleInvokeUserFnsInHooksDEV) {
     setIsStrictModeForDevtools(true);
@@ -2633,10 +2637,10 @@ function mountMemo(nextCreate, deps) {
 
 function updateMemo(nextCreate, deps) {
   const hook = updateWorkInProgressHook();
-  const nextDeps = deps || null;
+  const nextDeps = deps ?? null;
   const prevState = hook.memoizedState;
   // Assume these are defined. If they're not, areHookInputsEqual will warn.
-  if (nextDeps) {
+  if (nextDeps != null) {
     const prevDeps = prevState[1];
     if (areHookInputsEqual(nextDeps, prevDeps)) {
       return prevState[0];
@@ -2818,7 +2822,7 @@ function startTransition(
   try {
     const returnValue = callback();
     const onStartTransitionFinish = ReactSharedInternals.S;
-    if (onStartTransitionFinish) {
+    if (onStartTransitionFinish != null) {
       onStartTransitionFinish(currentTransition, returnValue);
     }
 
@@ -2879,7 +2883,7 @@ function startTransition(
     setCurrentUpdatePriority(previousPriority);
 
     const currentTypes = currentTransition.types;
-    if (prevTransition && currentTypes != null) {
+    if (prevTransition != null && currentTypes != null) {
       // If we created a new types set in the inner transition, we transfer it to the parent
       // since they should share the same set. They're conceptually entangled.
       if (
@@ -2898,7 +2902,11 @@ function startTransition(
     }
     ReactSharedInternals.T = prevTransition;
 
-    if (__DEV__ && !prevTransition && currentTransition._updatedFibers) {
+    if (
+      __DEV__ &&
+      prevTransition == null &&
+      currentTransition._updatedFibers != null
+    ) {
       const updatedFibersCount = currentTransition._updatedFibers.size;
       currentTransition._updatedFibers.clear();
       if (updatedFibersCount > 10) {
@@ -2932,15 +2940,16 @@ export function startHostTransition(formFiber, pendingState, action, formData) {
   // TODO: `startTransition` both sets the pending state and dispatches
   // the action, if one is provided. Consider refactoring these two
   // concerns to avoid the extra lambda.
-  const callback = !action
-    ? // No action was provided, but we still call `startTransition` to
-      // set the pending form status.
-      noop
-    : () => {
-        // Automatically reset the form when the action completes.
-        requestFormReset(formFiber);
-        return action(formData);
-      };
+  const callback =
+    action == null
+      ? // No action was provided, but we still call `startTransition` to
+        // set the pending form status.
+        noop
+      : () => {
+          // Automatically reset the form when the action completes.
+          requestFormReset(formFiber);
+          return action(formData);
+        };
   startTransition(
     formFiber,
     queue,
@@ -3017,7 +3026,7 @@ function ensureFormComponentIsStateful(formFiber) {
 
 export function requestFormReset(formFiber) {
   const transition = requestCurrentTransition();
-  if (!transition) {
+  if (transition == null) {
     if (__DEV__) {
       // An optimistic update occurred, but startTransition is not on the stack.
       // The form reset will be scheduled at default (sync) priority, which
@@ -3289,7 +3298,7 @@ function dispatchSetStateInternal(fiber, queue, action, lane) {
       // next state before entering the render phase. If the new state is the
       // same as the current state, we may be able to bail out entirely.
       const lastRenderedReducer = queue.lastRenderedReducer;
-      if (lastRenderedReducer) {
+      if (lastRenderedReducer != null) {
         let prevDispatcher;
         if (__DEV__) {
           prevDispatcher = ReactSharedInternals.H;
@@ -3343,7 +3352,7 @@ function dispatchOptimisticSetState(
 ) {
   const transition = requestCurrentTransition();
 
-  if (__DEV__ && !transition) {
+  if (__DEV__ && transition == null) {
     // An optimistic update occurred, but startTransition is not on the stack.
     // There are two likely scenarios.
 
@@ -3422,7 +3431,11 @@ function dispatchOptimisticSetState(
       scheduleUpdateOnFiber(root, fiber, lane);
       // Optimistic updates are always synchronous, so we don't need to call
       // entangleTransitionUpdate here.
-      if (enableGestureTransition && transition && transition.gesture != null) {
+      if (
+        enableGestureTransition &&
+        transition != null &&
+        transition.gesture != null
+      ) {
         const provider = transition.gesture;
         // If this was a gesture, ensure we have a scheduled gesture and that
         // we associate this update with this specific gesture instance.

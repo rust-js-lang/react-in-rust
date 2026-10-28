@@ -320,7 +320,7 @@ export function commitHookPassiveUnmountEffects(
 
 export function commitClassLayoutLifecycles(finishedWork, current) {
   const instance = finishedWork.stateNode;
-  if (!current) {
+  if (current == null) {
     // We could update instance props and state here,
     // but instead we rely on them being set during last render.
     // TODO: revisit this when we implement resuming.
@@ -520,7 +520,7 @@ export function commitClassCallbacks(finishedWork) {
   // TODO: I think this is now always non-null by the time it reaches the
   // commit phase. Consider removing the type check.
   const updateQueue = finishedWork.updateQueue;
-  if (updateQueue) {
+  if (updateQueue != null) {
     const instance = finishedWork.stateNode;
     if (
       __DEV__ &&
@@ -570,7 +570,7 @@ export function commitClassHiddenCallbacks(finishedWork) {
   // Commit any callbacks that would have fired while the component
   // was hidden.
   const updateQueue = finishedWork.updateQueue;
-  if (updateQueue) {
+  if (updateQueue != null) {
     const instance = finishedWork.stateNode;
     try {
       if (__DEV__) {
@@ -594,7 +594,7 @@ export function commitRootCallbacks(finishedWork) {
   // TODO: I think this is now always non-null by the time it reaches the
   // commit phase. Consider removing the type check.
   const updateQueue = finishedWork.updateQueue;
-  if (updateQueue) {
+  if (updateQueue != null) {
     let instance = null;
     const child = finishedWork.child;
     if (child != null) {
@@ -932,7 +932,7 @@ function commitProfiler(
   const onCommit = finishedWork.memoizedProps.onCommit;
   const onRender = finishedWork.memoizedProps.onRender;
 
-  let phase = !current ? 'mount' : 'update';
+  let phase = current == null ? 'mount' : 'update';
   if (enableProfilerNestedUpdatePhase && isCurrentUpdateNested()) {
     phase = 'nested-update';
   }
@@ -992,7 +992,7 @@ function commitProfilerPostCommitImpl(
   const id = finishedWork.memoizedProps.id;
   const onPostCommit = finishedWork.memoizedProps.onPostCommit;
 
-  let phase = !current ? 'mount' : 'update';
+  let phase = current == null ? 'mount' : 'update';
   if (enableProfilerNestedUpdatePhase && isCurrentUpdateNested()) {
     phase = 'nested-update';
   }

@@ -53,7 +53,7 @@ export function runWithFiberInDEV(
     setCurrentFiber(fiber);
     let result;
     try {
-      if (fiber != null && fiber._debugTask) {
+      if (fiber != null && fiber._debugTask != null) {
         const debugTask = fiber._debugTask;
         result = debugTask.run(() => callback(arg0, arg1, arg2, arg3, arg4));
       } else {

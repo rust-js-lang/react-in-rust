@@ -38,12 +38,12 @@ export function setRefreshHandler(handler) {
 
 export function resolveTypeForHotReloading(type) {
   if (__DEV__) {
-    if (!resolveFamily) {
+    if (resolveFamily == null) {
       // Hot reloading is disabled.
       return type;
     }
     const family = resolveFamily(type);
-    if (!family) {
+    if (family == null) {
       return type;
     }
     // Use the latest known implementation.
@@ -57,7 +57,7 @@ export function resolveTypeForHotReloading(type) {
 export function isCompatibleFamilyForHotReloading(fiber, element) {
   if (__DEV__) {
     const resolve = resolveFamily;
-    if (!resolve) {
+    if (resolve == null) {
       // Hot reloading is disabled.
       return false;
     }
@@ -119,7 +119,7 @@ export function isCompatibleFamilyForHotReloading(fiber, element) {
       // then we would risk falsely saying two separate memo(Foo)
       // calls are equivalent because they wrap the same Foo function.
       const prevFamily = resolve(prevType);
-      if (prevFamily && prevFamily === resolve(nextType)) {
+      if (prevFamily != null && prevFamily === resolve(nextType)) {
         return true;
       }
     }
@@ -129,7 +129,7 @@ export function isCompatibleFamilyForHotReloading(fiber, element) {
 
 export function markFailedErrorBoundaryForHotReloading(fiber) {
   if (__DEV__) {
-    if (!resolveFamily) {
+    if (resolveFamily == null) {
       // Hot reloading is disabled.
       return;
     }
@@ -143,7 +143,7 @@ export function markFailedErrorBoundaryForHotReloading(fiber) {
 
 export function scheduleRefresh(root, update) {
   if (__DEV__) {
-    if (!resolveFamily) {
+    if (resolveFamily == null) {
       // Hot reloading is disabled.
       return;
     }
@@ -212,7 +212,7 @@ function scheduleFibersWithFamiliesRecursively(
       }
 
       const resolve = resolveFamily;
-      if (!resolve) {
+      if (resolve == null) {
         throw new Error('Expected resolveFamily to be set during hot reload.');
       }
 
@@ -220,7 +220,7 @@ function scheduleFibersWithFamiliesRecursively(
       let needsRemount = false;
       if (candidateType != null) {
         const family = resolve(candidateType);
-        if (family) {
+        if (family != null) {
           if (staleFamilies.has(family)) {
             needsRemount = true;
           } else if (updatedFamilies.has(family)) {
@@ -250,7 +250,7 @@ function scheduleFibersWithFamiliesRecursively(
         }
       }
       if (
-        failedBoundaries &&
+        failedBoundaries != null &&
         (failedBoundaries.has(fiber) ||
           (alternate != null && failedBoundaries.has(alternate)))
       ) {

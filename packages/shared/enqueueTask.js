@@ -11,7 +11,7 @@ let didWarnAboutMessageChannel = false;
 let enqueueTaskImpl;
 
 export default function enqueueTask(task) {
-  if (!enqueueTaskImpl) {
+  if (enqueueTaskImpl == null) {
     try {
       // read require off the module object to get around the bundlers.
       // we don't want them to detect a require and bundle a Node polyfill.

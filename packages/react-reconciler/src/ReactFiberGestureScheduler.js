@@ -129,7 +129,7 @@ export function cancelScheduledGesture(root, gesture) {
       gesture.committing = true;
       if (root.pendingGestures === gesture) {
         const commitCallback = gesture.commit;
-        if (commitCallback) {
+        if (commitCallback != null) {
           gesture.commit = null;
           // If we already have a commit prepared we can immediately commit the tree
           // without rerendering.

@@ -904,7 +904,7 @@ export function markRootFinished(
     $index(hiddenUpdates, index);
     const hiddenUpdatesForLane = hiddenUpdates[index];
     hiddenUpdates[index] = null;
-    if (hiddenUpdatesForLane) {
+    if (hiddenUpdatesForLane != null) {
       // "Hidden" updates are updates that were made to a hidden component. They
       // have special logic associated with them because they may be entangled
       // with updates that occur outside that tree. But once the outer tree
@@ -1036,7 +1036,7 @@ export function markHiddenUpdate(root, update, lane) {
   const index = laneToIndex(lane);
   const hiddenUpdates = root.hiddenUpdates;
   $index(hiddenUpdates, index);
-  if (!hiddenUpdates[index]) {
+  if (hiddenUpdates[index] == null) {
     hiddenUpdates[index] = [update];
   } else {
     const hiddenUpdatesForLane = hiddenUpdates[index];
@@ -1170,7 +1170,7 @@ export function getTransitionsForLanes(root, lanes) {
     const index = laneToIndex(lanes);
     const lane = 1 << index;
     const transitions = $index(root.transitionLanes, index);
-    if (transitions) {
+    if (transitions != null) {
       transitions.forEach(transition => {
         transitionsForLanes.push(transition);
       });
@@ -1197,7 +1197,7 @@ export function clearTransitionsForLanes(root, lanes) {
 
     const transitionLanes = root.transitionLanes;
     const transitions = $index(transitionLanes, index);
-    if (transitions) {
+    if (transitions != null) {
       transitionLanes[index] = null;
     }
 

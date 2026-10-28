@@ -21,7 +21,7 @@ export function processTransitionCallbacks(
   if (enableTransitionTracing) {
     const transitionStart = pendingTransitions.transitionStart;
     const onTransitionStart = callbacks.onTransitionStart;
-    if (transitionStart && onTransitionStart) {
+    if (transitionStart != null && onTransitionStart != null) {
       transitionStart.forEach(transition => {
         if (transition.name != null) {
           onTransitionStart(transition.name, $unwrap(transition.startTime));
@@ -31,13 +31,14 @@ export function processTransitionCallbacks(
 
     const markerProgress = pendingTransitions.markerProgress;
     const onMarkerProgress = callbacks.onMarkerProgress;
-    if (onMarkerProgress && markerProgress) {
+    if (onMarkerProgress != null && markerProgress != null) {
       markerProgress.forEach((markerInstance, markerName) => {
-        if (markerInstance.transitions) {
+        if (markerInstance.transitions != null) {
           // TODO: Clone the suspense object so users can't modify it
-          const pending = markerInstance.pendingBoundaries
-            ? markerInstance.pendingBoundaries.values().toArray()
-            : [];
+          const pending =
+            markerInstance.pendingBoundaries != null
+              ? markerInstance.pendingBoundaries.values().toArray()
+              : [];
           markerInstance.transitions.forEach(transition => {
             if (transition.name != null) {
               const value = $unwrap(transition.startTime);
@@ -56,7 +57,7 @@ export function processTransitionCallbacks(
 
     const markerComplete = pendingTransitions.markerComplete;
     const onMarkerComplete = callbacks.onMarkerComplete;
-    if (markerComplete && onMarkerComplete) {
+    if (markerComplete != null && onMarkerComplete != null) {
       markerComplete.forEach((transitions, markerName) => {
         transitions.forEach(transition => {
           if (transition.name != null) {
@@ -73,7 +74,7 @@ export function processTransitionCallbacks(
 
     const markerIncomplete = pendingTransitions.markerIncomplete;
     const onMarkerIncomplete = callbacks.onMarkerIncomplete;
-    if (onMarkerIncomplete && markerIncomplete) {
+    if (onMarkerIncomplete != null && markerIncomplete != null) {
       markerIncomplete.forEach(({transitions, aborts}, markerName) => {
         transitions.forEach(transition => {
           const filteredAborts = [];
@@ -109,7 +110,7 @@ export function processTransitionCallbacks(
 
     const transitionProgress = pendingTransitions.transitionProgress;
     const onTransitionProgress = callbacks.onTransitionProgress;
-    if (onTransitionProgress && transitionProgress) {
+    if (onTransitionProgress != null && transitionProgress != null) {
       transitionProgress.forEach((pending, transition) => {
         if (transition.name != null) {
           const value = $unwrap(transition.startTime);
@@ -125,7 +126,7 @@ export function processTransitionCallbacks(
 
     const transitionComplete = pendingTransitions.transitionComplete;
     const onTransitionComplete = callbacks.onTransitionComplete;
-    if (transitionComplete && onTransitionComplete) {
+    if (transitionComplete != null && onTransitionComplete != null) {
       transitionComplete.forEach(transition => {
         if (transition.name != null) {
           onTransitionComplete(

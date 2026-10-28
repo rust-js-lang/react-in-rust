@@ -181,7 +181,7 @@ export function lazy(ctor) {
       value: null,
       owner,
       debugStack: new Error('react-stack-top-frame'),
-      debugTask: createTask ? createTask('lazy()') : null,
+      debugTask: createTask != null ? createTask('lazy()') : null,
     };
     payload._ioInfo = ioInfo;
     // Add debug info to the lazy, but this doesn't have an await stack yet.

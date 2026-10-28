@@ -204,7 +204,7 @@ function flushSyncWorkAcrossRoots_impl(syncTransitionLanes, onlyLegacy) {
         const workInProgressRootRenderLanes =
           getWorkInProgressRootRenderLanes();
         const rootHasPendingCommit =
-          !!root.cancelPendingCommit || root.timeoutHandle !== noTimeout;
+          root.cancelPendingCommit != null || root.timeoutHandle !== noTimeout;
         const nextLanes = getNextLanes(
           root,
           root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes,
@@ -342,7 +342,10 @@ function startDefaultTransitionIndicatorIfNeeded() {
   let root = firstScheduledRoot;
   while (root != null) {
     const current = root;
-    if (current.indicatorLanes !== NoLanes && !current.pendingIndicator) {
+    if (
+      current.indicatorLanes !== NoLanes &&
+      current.pendingIndicator == null
+    ) {
       // We have new indicator lanes that requires a loading state. Start the
       // default transition indicator.
       if (hasOngoingIsomorphicIndicator()) {
@@ -386,7 +389,7 @@ function scheduleTaskForRootDuringMicrotask(root, currentTime) {
   const workInProgressRoot = getWorkInProgressRoot();
   const workInProgressRootRenderLanes = getWorkInProgressRootRenderLanes();
   const rootHasPendingCommit =
-    !!root.cancelPendingCommit || root.timeoutHandle !== noTimeout;
+    root.cancelPendingCommit != null || root.timeoutHandle !== noTimeout;
   const nextLanes =
     enableYieldingBeforePassive && root === rootWithPendingPassiveEffects
       ? // This will schedule the callback at the priority of the lane but we used to
@@ -413,7 +416,7 @@ function scheduleTaskForRootDuringMicrotask(root, currentTime) {
       workInProgressRoot &&
       isWorkLoopSuspendedOnData()) ||
     // Suspended commit phase
-    root.cancelPendingCommit
+    root.cancelPendingCommit != null
   ) {
     // Fast path: There's nothing to work on.
     if (existingCallbackNode != null) {
@@ -542,7 +545,7 @@ function performWorkOnRootViaSchedulerTask(root, didTimeout) {
   const workInProgressRoot = getWorkInProgressRoot();
   const workInProgressRootRenderLanes = getWorkInProgressRootRenderLanes();
   const rootHasPendingCommit =
-    !!root.cancelPendingCommit || root.timeoutHandle !== noTimeout;
+    root.cancelPendingCommit != null || root.timeoutHandle !== noTimeout;
   const lanes = getNextLanes(
     root,
     root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes,

@@ -446,7 +446,7 @@ export function throwException(
             suspenseBoundary.flags |= ScheduleRetry;
           } else {
             const retryQueue = suspenseBoundary.updateQueue;
-            if (!retryQueue) {
+            if (retryQueue == null) {
               suspenseBoundary.updateQueue = new Set([wakeable]);
             } else {
               retryQueue.add(wakeable);
@@ -476,7 +476,7 @@ export function throwException(
               suspenseBoundary.flags |= ScheduleRetry;
             } else {
               const offscreenQueue = suspenseBoundary.updateQueue;
-              if (!offscreenQueue) {
+              if (offscreenQueue == null) {
                 const newOffscreenQueue = {
                   transitions: null,
                   markerInstances: null,
@@ -485,7 +485,7 @@ export function throwException(
                 suspenseBoundary.updateQueue = newOffscreenQueue;
               } else {
                 const retryQueue = offscreenQueue.retryQueue;
-                if (!retryQueue) {
+                if (retryQueue == null) {
                   offscreenQueue.retryQueue = new Set([wakeable]);
                 } else {
                   retryQueue.add(wakeable);
@@ -657,7 +657,7 @@ export function throwException(
       }
       case OffscreenComponent: {
         const offscreenState = workInProgress.memoizedState;
-        if (offscreenState) {
+        if (offscreenState != null) {
           // An error was thrown inside a hidden Offscreen boundary. This should
           // not be allowed to escape into the visible part of the UI. Mark the
           // boundary with ShouldCapture to abort the ongoing prerendering

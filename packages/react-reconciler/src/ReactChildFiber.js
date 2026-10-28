@@ -106,7 +106,7 @@ function getCurrentDebugTask() {
         const componentInfo = debugInfo[i];
         if (componentInfo.name != null) {
           const debugTask = componentInfo.debugTask;
-          if (debugTask) {
+          if (debugTask != null) {
             return debugTask;
           }
         }
@@ -285,7 +285,7 @@ function throwOnInvalidObjectTypeImpl(returnFiber, newChild) {
 
 function throwOnInvalidObjectType(returnFiber, newChild) {
   const debugTask = getCurrentDebugTask();
-  if (__DEV__ && debugTask) {
+  if (__DEV__ && debugTask != null) {
     debugTask.run(() => throwOnInvalidObjectTypeImpl(returnFiber, newChild));
   } else {
     throwOnInvalidObjectTypeImpl(returnFiber, newChild);
@@ -331,7 +331,7 @@ function warnOnFunctionTypeImpl(returnFiber, invalidChild) {
 
 function warnOnFunctionType(returnFiber, invalidChild) {
   const debugTask = getCurrentDebugTask();
-  if (__DEV__ && debugTask) {
+  if (__DEV__ && debugTask != null) {
     debugTask.run(() => warnOnFunctionTypeImpl(returnFiber, invalidChild));
   } else {
     warnOnFunctionTypeImpl(returnFiber, invalidChild);
@@ -368,7 +368,7 @@ function warnOnSymbolTypeImpl(returnFiber, invalidChild) {
 
 function warnOnSymbolType(returnFiber, invalidChild) {
   const debugTask = getCurrentDebugTask();
-  if (__DEV__ && debugTask) {
+  if (__DEV__ && debugTask != null) {
     debugTask.run(() => warnOnSymbolTypeImpl(returnFiber, invalidChild));
   } else {
     warnOnSymbolTypeImpl(returnFiber, invalidChild);
@@ -1044,7 +1044,7 @@ function createChildReconciler(shouldTrackSideEffects) {
           warnForMissingKey(returnFiber, workInProgress, child);
           const key = child.key;
           if (typeof key === 'string') {
-            if (!knownKeys) {
+            if (knownKeys == null) {
               const newKnownKeys = new Set();
               newKnownKeys.add(key);
               knownKeys = newKnownKeys;
@@ -1432,7 +1432,7 @@ function createChildReconciler(shouldTrackSideEffects) {
     newChildren,
     lanes,
   ) {
-    if (!newChildren) {
+    if (newChildren == null) {
       throw new Error('An iterable object provided no iterator.');
     }
 
@@ -2133,7 +2133,7 @@ export function resetChildReconcilerOnUnwind() {
 }
 
 export function cloneChildFibers(current, workInProgress) {
-  if (current && workInProgress.child != current.child) {
+  if (current != null && workInProgress.child != current.child) {
     throw new Error('Resuming work not yet implemented.');
   }
 
@@ -2220,7 +2220,7 @@ export function validateSuspenseListChildren(children, revealOrder) {
       const iteratorFn = getIteratorFn(children);
       if (typeof iteratorFn === 'function') {
         const childrenIterator = iteratorFn.call(children);
-        if (childrenIterator) {
+        if (childrenIterator != null) {
           let step = childrenIterator.next();
           let i = 0;
           while (!step.done) {

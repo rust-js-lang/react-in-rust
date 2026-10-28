@@ -20,20 +20,20 @@ export function getOwnerStackByComponentInfoInDev(componentInfo) {
     // on the regular stack that's currently executing. However, if there is no owner at all, then
     // there's no stack frame so we add the name of the root component to the stack to know which
     // component is currently executing.
-    if (!componentInfo.owner) {
+    if (componentInfo.owner == null) {
       return describeBuiltInComponentFrame(componentInfo.name);
     }
 
     let owner = componentInfo;
 
-    while (owner) {
+    while (owner != null) {
       const ownerStack = owner.debugStack;
-      if (!ownerStack) {
+      if (ownerStack == null) {
         break;
       }
       // Server Component
       owner = owner.owner;
-      if (owner) {
+      if (owner != null) {
         // TODO: Should we stash this somewhere for caching purposes?
         info += '\n' + formatOwnerStack(ownerStack);
       }

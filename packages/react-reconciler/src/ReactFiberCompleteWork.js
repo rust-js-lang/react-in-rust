@@ -600,7 +600,7 @@ function preloadResourceAndSuspendIfNeeded(
 
 function scheduleRetryEffect(workInProgress, retryQueue) {
   const wakeables = retryQueue;
-  if (wakeables) {
+  if (wakeables != null) {
     // Schedule an effect to attach a retry listener to the promise.
     // TODO: Move to passive phase
     workInProgress.flags |= Update;
@@ -662,9 +662,9 @@ function cutOffTailIfNeeded(renderState, hasRenderedATailFallback) {
   // Hidden is now the default.
   switch (renderState.tailMode) {
     case 'visible':
+      // Everything should remain as it was.
       break;
     case 'collapsed': {
-      // Everything should remain as it was.
       // Any insertions at the end of the tail list after this point
       // should be invisible. If there are already mounted boundaries
       // anything before them are not considered for collapsing.
@@ -864,10 +864,10 @@ function completeDehydratedActivityBoundary(
 ) {
   const wasHydrated = popHydrationState(workInProgress);
 
-  if (nextState) {
+  if (nextState != null) {
     // We might be inside a hydration state the first time we're picking up this
     // Activity boundary, and also after we've reentered it for further hydration.
-    if (!current) {
+    if (current == null) {
       if (!wasHydrated) {
         throw new Error(
           'A dehydrated suspense component was completed without a hydrated node. ' +
@@ -893,37 +893,41 @@ function completeDehydratedActivityBoundary(
         }
       }
       return false;
-    }
-    emitPendingHydrationWarnings();
-    // We might have reentered this boundary to hydrate it. If so, we need to reset the hydration
-    // state since we're now exiting out of it. popHydrationState doesn't do that for us.
-    resetHydrationState();
-    if ((workInProgress.flags & DidCapture) === NoFlags) {
-      // This boundary did not suspend so it's now hydrated and unsuspended.
-      nextState = null;
-      workInProgress.memoizedState = null;
-    }
-    // If nothing suspended, we need to schedule an effect to mark this boundary
-    // as having hydrated so events know that they're free to be invoked.
-    // It's also a signal to replay events and the suspense callback.
-    // If something suspended, schedule an effect to attach retry listeners.
-    // So we might as well always mark this.
-    workInProgress.flags |= Update;
-    bubbleProperties(workInProgress);
-    if (enableProfilerTimer && (workInProgress.mode & ProfileMode) !== NoMode) {
-      const isTimedOutSuspense = nextState != null;
-      if (isTimedOutSuspense) {
-        // Don't count time spent in a timed out Suspense subtree as part of the base duration.
-        const primaryChildFragment = workInProgress.child;
-        if (primaryChildFragment != null) {
-          // $FlowFixMe[unsafe-arithmetic] Flow doesn't support type casting in combination with the -= operator
-          workInProgress.treeBaseDuration =
-            $unwrap(workInProgress.treeBaseDuration) -
-            $unwrap(primaryChildFragment.treeBaseDuration);
+    } else {
+      emitPendingHydrationWarnings();
+      // We might have reentered this boundary to hydrate it. If so, we need to reset the hydration
+      // state since we're now exiting out of it. popHydrationState doesn't do that for us.
+      resetHydrationState();
+      if ((workInProgress.flags & DidCapture) === NoFlags) {
+        // This boundary did not suspend so it's now hydrated and unsuspended.
+        nextState = null;
+        workInProgress.memoizedState = null;
+      }
+      // If nothing suspended, we need to schedule an effect to mark this boundary
+      // as having hydrated so events know that they're free to be invoked.
+      // It's also a signal to replay events and the suspense callback.
+      // If something suspended, schedule an effect to attach retry listeners.
+      // So we might as well always mark this.
+      workInProgress.flags |= Update;
+      bubbleProperties(workInProgress);
+      if (
+        enableProfilerTimer &&
+        (workInProgress.mode & ProfileMode) !== NoMode
+      ) {
+        const isTimedOutSuspense = nextState != null;
+        if (isTimedOutSuspense) {
+          // Don't count time spent in a timed out Suspense subtree as part of the base duration.
+          const primaryChildFragment = workInProgress.child;
+          if (primaryChildFragment != null) {
+            // $FlowFixMe[unsafe-arithmetic] Flow doesn't support type casting in combination with the -= operator
+            workInProgress.treeBaseDuration =
+              $unwrap(workInProgress.treeBaseDuration) -
+              $unwrap(primaryChildFragment.treeBaseDuration);
+          }
         }
       }
+      return false;
     }
-    return false;
   } else {
     // Successfully completed this tree. If this was a forced client render,
     // there may have been recoverable errors during first hydration
@@ -931,7 +935,7 @@ function completeDehydratedActivityBoundary(
     // commit phase. We also add them to prev state so we can get to them
     // from the Suspense Boundary.
     const hydrationErrors = upgradeHydrationErrorsToRecoverable();
-    if (current && current.memoizedState) {
+    if (current != null && current.memoizedState != null) {
       const prevState = current.memoizedState;
       prevState.hydrationErrors = hydrationErrors;
     }
@@ -950,7 +954,7 @@ function completeDehydratedSuspenseBoundary(
   if (nextState != null && nextState.dehydrated != null) {
     // We might be inside a hydration state the first time we're picking up this
     // Suspense boundary, and also after we've reentered it for further hydration.
-    if (!current) {
+    if (current == null) {
       if (!wasHydrated) {
         throw new Error(
           'A dehydrated suspense component was completed without a hydrated node. ' +
@@ -976,37 +980,41 @@ function completeDehydratedSuspenseBoundary(
         }
       }
       return false;
-    }
-    emitPendingHydrationWarnings();
-    // We might have reentered this boundary to hydrate it. If so, we need to reset the hydration
-    // state since we're now exiting out of it. popHydrationState doesn't do that for us.
-    resetHydrationState();
-    if ((workInProgress.flags & DidCapture) === NoFlags) {
-      // This boundary did not suspend so it's now hydrated and unsuspended.
-      nextState = null;
-      workInProgress.memoizedState = null;
-    }
-    // If nothing suspended, we need to schedule an effect to mark this boundary
-    // as having hydrated so events know that they're free to be invoked.
-    // It's also a signal to replay events and the suspense callback.
-    // If something suspended, schedule an effect to attach retry listeners.
-    // So we might as well always mark this.
-    workInProgress.flags |= Update;
-    bubbleProperties(workInProgress);
-    if (enableProfilerTimer && (workInProgress.mode & ProfileMode) !== NoMode) {
-      const isTimedOutSuspense = nextState != null;
-      if (isTimedOutSuspense) {
-        // Don't count time spent in a timed out Suspense subtree as part of the base duration.
-        const primaryChildFragment = workInProgress.child;
-        if (primaryChildFragment != null) {
-          // $FlowFixMe[unsafe-arithmetic] Flow doesn't support type casting in combination with the -= operator
-          workInProgress.treeBaseDuration =
-            $unwrap(workInProgress.treeBaseDuration) -
-            $unwrap(primaryChildFragment.treeBaseDuration);
+    } else {
+      emitPendingHydrationWarnings();
+      // We might have reentered this boundary to hydrate it. If so, we need to reset the hydration
+      // state since we're now exiting out of it. popHydrationState doesn't do that for us.
+      resetHydrationState();
+      if ((workInProgress.flags & DidCapture) === NoFlags) {
+        // This boundary did not suspend so it's now hydrated and unsuspended.
+        nextState = null;
+        workInProgress.memoizedState = null;
+      }
+      // If nothing suspended, we need to schedule an effect to mark this boundary
+      // as having hydrated so events know that they're free to be invoked.
+      // It's also a signal to replay events and the suspense callback.
+      // If something suspended, schedule an effect to attach retry listeners.
+      // So we might as well always mark this.
+      workInProgress.flags |= Update;
+      bubbleProperties(workInProgress);
+      if (
+        enableProfilerTimer &&
+        (workInProgress.mode & ProfileMode) !== NoMode
+      ) {
+        const isTimedOutSuspense = nextState != null;
+        if (isTimedOutSuspense) {
+          // Don't count time spent in a timed out Suspense subtree as part of the base duration.
+          const primaryChildFragment = workInProgress.child;
+          if (primaryChildFragment != null) {
+            // $FlowFixMe[unsafe-arithmetic] Flow doesn't support type casting in combination with the -= operator
+            workInProgress.treeBaseDuration =
+              $unwrap(workInProgress.treeBaseDuration) -
+              $unwrap(primaryChildFragment.treeBaseDuration);
+          }
         }
       }
+      return false;
     }
-    return false;
   }
   // Successfully completed this tree. If this was a forced client render,
   // there may have been recoverable errors during first hydration
@@ -1014,7 +1022,7 @@ function completeDehydratedSuspenseBoundary(
   // commit phase. We also add them to prev state so we can get to them
   // from the Suspense Boundary.
   const hydrationErrors = upgradeHydrationErrorsToRecoverable();
-  if (current && current.memoizedState) {
+  if (current != null && current.memoizedState != null) {
     const prevState = current.memoizedState;
     prevState.hydrationErrors = hydrationErrors;
   }
@@ -1074,7 +1082,7 @@ export function completeWork(current, workInProgress, renderLanes) {
       }
 
       let previousCache = null;
-      if (current) {
+      if (current != null) {
         previousCache = current.memoizedState.cache;
       }
       const cache = workInProgress.memoizedState.cache;
@@ -1104,7 +1112,7 @@ export function completeWork(current, workInProgress, renderLanes) {
           // If we hydrated, then we'll need to schedule an update for
           // the commit side-effects on the root.
           markUpdate(workInProgress);
-        } else if (current) {
+        } else if (current != null) {
           const prevState = current.memoizedState;
           if (
             // Check if this is a client root
@@ -1148,7 +1156,7 @@ export function completeWork(current, workInProgress, renderLanes) {
 
         const type = workInProgress.type;
         const nextResource = workInProgress.memoizedState;
-        if (!current) {
+        if (current == null) {
           // We are mounting and must Update this Hoistable in this commit
           // @TODO refactor this block to create the instance here in complete
           // phase if we are not hydrating.
@@ -1243,7 +1251,7 @@ export function completeWork(current, workInProgress, renderLanes) {
         popHostContext(workInProgress);
         const rootContainerInstance = getRootHostContainer();
         const type = workInProgress.type;
-        if (current && workInProgress.stateNode != null) {
+        if (current != null && workInProgress.stateNode != null) {
           if (supportsMutation) {
             const oldProps = current.memoizedProps;
             if (oldProps !== newProps) {
@@ -1308,7 +1316,7 @@ export function completeWork(current, workInProgress, renderLanes) {
     case HostComponent: {
       popHostContext(workInProgress);
       const type = workInProgress.type;
-      if (current && workInProgress.stateNode != null) {
+      if (current != null && workInProgress.stateNode != null) {
         updateHostComponent(
           current,
           workInProgress,
@@ -1399,7 +1407,7 @@ export function completeWork(current, workInProgress, renderLanes) {
       preloadInstanceAndSuspendIfNeeded(
         workInProgress,
         workInProgress.type,
-        !current ? null : current.memoizedProps,
+        current == null ? null : current.memoizedProps,
         workInProgress.pendingProps,
         renderLanes,
       );
@@ -1407,7 +1415,7 @@ export function completeWork(current, workInProgress, renderLanes) {
     }
     case HostText: {
       const newText = newProps;
-      if (current && workInProgress.stateNode != null) {
+      if (current != null && workInProgress.stateNode != null) {
         const oldText = current.memoizedProps;
         // If we have an alternate, that means this is an update and we need
         // to schedule a side-effect to do the updates.
@@ -1525,7 +1533,7 @@ export function completeWork(current, workInProgress, renderLanes) {
         return workInProgress;
       }
 
-      const nextDidTimeout = !!nextState;
+      const nextDidTimeout = nextState != null;
       const prevDidTimeout = current != null && current.memoizedState != null;
 
       if (nextDidTimeout) {
@@ -1534,14 +1542,14 @@ export function completeWork(current, workInProgress, renderLanes) {
         const alternate = offscreenFiber.alternate;
         if (
           alternate != null &&
-          alternate.memoizedState &&
-          alternate.memoizedState.cachePool
+          alternate.memoizedState != null &&
+          alternate.memoizedState.cachePool != null
         ) {
           previousCache = alternate.memoizedState.cachePool.pool;
         }
         let cache = null;
         const memoizedState = offscreenFiber.memoizedState;
-        if (memoizedState && memoizedState.cachePool) {
+        if (memoizedState != null && memoizedState.cachePool != null) {
           cache = memoizedState.cachePool.pool;
         }
         if (cache !== previousCache) {
@@ -1607,7 +1615,7 @@ export function completeWork(current, workInProgress, renderLanes) {
     case HostPortal:
       popHostContainer(workInProgress);
       updateHostContainer(current, workInProgress);
-      if (!current) {
+      if (current == null) {
         const portal = workInProgress.stateNode;
         preparePortalMount(portal.containerInfo);
       }
@@ -1639,7 +1647,7 @@ export function completeWork(current, workInProgress, renderLanes) {
 
       const renderState = workInProgress.memoizedState;
 
-      if (!renderState) {
+      if (renderState == null) {
         // We're running in the default, "independent" mode.
         // We don't do anything in this mode.
         bubbleProperties(workInProgress);
@@ -1863,7 +1871,7 @@ export function completeWork(current, workInProgress, renderLanes) {
     }
     case ScopeComponent:
       if (enableScopeAPI) {
-        if (!current) {
+        if (current == null) {
           const scopeInstance = createScopeInstance();
           workInProgress.stateNode = scopeInstance;
           prepareScopeUpdate(scopeInstance, workInProgress);
@@ -1886,14 +1894,14 @@ export function completeWork(current, workInProgress, renderLanes) {
       popSuspenseHandler(workInProgress);
       popHiddenContext(workInProgress);
       const nextState = workInProgress.memoizedState;
-      const nextIsHidden = !!nextState;
+      const nextIsHidden = nextState != null;
 
       // Schedule a Visibility effect if the visibility has changed
       if (enableLegacyHidden && workInProgress.tag === LegacyHiddenComponent) {
         // LegacyHidden doesn't do any hiding — it only pre-renders.
-      } else if (current) {
+      } else if (current != null) {
         const prevState = current.memoizedState;
-        const prevIsHidden = !!prevState;
+        const prevIsHidden = prevState != null;
         if (prevIsHidden !== nextIsHidden) {
           workInProgress.flags |= Visibility;
         }
@@ -1934,18 +1942,22 @@ export function completeWork(current, workInProgress, renderLanes) {
       }
 
       const offscreenQueue = workInProgress.updateQueue;
-      if (offscreenQueue) {
+      if (offscreenQueue != null) {
         const retryQueue = offscreenQueue.retryQueue;
         scheduleRetryEffect(workInProgress, retryQueue);
       }
 
       let previousCache = null;
-      if (current && current.memoizedState && current.memoizedState.cachePool) {
+      if (
+        current != null &&
+        current.memoizedState != null &&
+        current.memoizedState.cachePool != null
+      ) {
         previousCache = current.memoizedState.cachePool.pool;
       }
       let cache = null;
       const memoizedState = workInProgress.memoizedState;
-      if (memoizedState && memoizedState.cachePool) {
+      if (memoizedState != null && memoizedState.cachePool != null) {
         cache = memoizedState.cachePool.pool;
       }
       if (cache !== previousCache) {
@@ -1959,7 +1971,7 @@ export function completeWork(current, workInProgress, renderLanes) {
     }
     case CacheComponent: {
       let previousCache = null;
-      if (current) {
+      if (current != null) {
         previousCache = current.memoizedState.cache;
       }
       const cache = workInProgress.memoizedState.cache;
@@ -1974,7 +1986,7 @@ export function completeWork(current, workInProgress, renderLanes) {
     case TracingMarkerComponent:
       if (enableTransitionTracing) {
         const instance = workInProgress.stateNode;
-        if (instance) {
+        if (instance != null) {
           popMarkerInstance(workInProgress);
         }
         bubbleProperties(workInProgress);

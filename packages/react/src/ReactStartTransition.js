@@ -47,7 +47,7 @@ export function startTransition(scope, options) {
   try {
     const returnValue = scope();
     const onStartTransitionFinish = ReactSharedInternals.S;
-    if (onStartTransitionFinish) {
+    if (onStartTransitionFinish != null) {
       onStartTransitionFinish(currentTransition, returnValue);
     }
     if (
@@ -68,7 +68,7 @@ export function startTransition(scope, options) {
   } finally {
     warnAboutTransitionSubscriptions(prevTransition, currentTransition);
     const currentTypes = currentTransition.types;
-    if (prevTransition && currentTypes != null) {
+    if (prevTransition != null && currentTypes != null) {
       // If we created a new types set in the inner transition, we transfer it to the parent
       // since they should share the same set. They're conceptually entangled.
       if (
@@ -137,7 +137,7 @@ export function startGestureTransition(provider, scope, options) {
         );
       }
       const onStartGestureTransitionFinish = ReactSharedInternals.G;
-      return onStartGestureTransitionFinish
+      return onStartGestureTransitionFinish != null
         ? onStartGestureTransitionFinish(currentTransition, provider, options)
         : undefined;
     });
@@ -176,7 +176,11 @@ export function startGestureTransition(provider, scope, options) {
 }
 
 function warnAboutTransitionSubscriptions(prevTransition, currentTransition) {
-  if (__DEV__ && !prevTransition && currentTransition._updatedFibers) {
+  if (
+    __DEV__ &&
+    prevTransition == null &&
+    currentTransition._updatedFibers != null
+  ) {
     const updatedFibersCount = currentTransition._updatedFibers.size;
     currentTransition._updatedFibers.clear();
     if (updatedFibersCount > 10) {

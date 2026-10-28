@@ -113,7 +113,7 @@ function onStartTransitionFinishForReconciler(transition, returnValue) {
       }
     }
   }
-  if (prevOnStartTransitionFinish) {
+  if (prevOnStartTransitionFinish != null) {
     prevOnStartTransitionFinish(transition, returnValue);
   }
 }
@@ -133,7 +133,7 @@ if (enableGestureTransition) {
   const prevOnStartGestureTransitionFinish = ReactSharedInternals.G;
   ReactSharedInternals.G = (transition, provider, options) => {
     let cancel;
-    if (prevOnStartGestureTransitionFinish) {
+    if (prevOnStartGestureTransitionFinish != null) {
       cancel = prevOnStartGestureTransitionFinish(
         transition,
         provider,
@@ -246,7 +246,7 @@ export function pushTransition(
   prevCachePool,
   newTransitions,
 ) {
-  if (!prevCachePool) {
+  if (prevCachePool == null) {
     const current = resumedCache.current;
     push(resumedCache, current, offscreenWorkInProgress);
   } else {
@@ -272,7 +272,7 @@ export function pushTransition(
 }
 
 export function popTransition(workInProgress, current) {
-  if (current) {
+  if (current != null) {
     if (enableTransitionTracing) {
       pop(transitionStack, workInProgress);
     }

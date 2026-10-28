@@ -148,7 +148,7 @@ export function processChildContext(fiber, type, parentContext) {
         const componentName = getComponentNameFromFiber(fiber) || 'Unknown';
 
         if (
-          warnedAboutMissingGetChildContext &&
+          warnedAboutMissingGetChildContext != null &&
           !warnedAboutMissingGetChildContext[componentName]
         ) {
           warnedAboutMissingGetChildContext[componentName] = true;

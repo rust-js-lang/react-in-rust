@@ -180,7 +180,7 @@ export function getOwnerStackByFiberInDev(workInProgress) {
         // in a React render but in some imperative bootstrapping code. It could be useful
         // if the element was created in module scope. E.g. hoisted. We could add a a single
         // stack frame for context for example but it doesn't say much if that's a wrapper.
-        if (owner != null && debugStack) {
+        if (owner != null && debugStack != null) {
           const formattedStack = formatOwnerStack(debugStack);
           if (formattedStack) {
             info += '\n' + formattedStack;

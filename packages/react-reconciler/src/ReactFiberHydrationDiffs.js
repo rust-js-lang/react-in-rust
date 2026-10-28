@@ -386,7 +386,7 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
             ? clientValue
             : undefined;
         if (
-          clientObject &&
+          clientObject != null &&
           typeof serverValue === 'object' &&
           serverValue !== null &&
           objectName(clientObject) === 'Object' &&

@@ -108,7 +108,7 @@ function pingEngtangledActionScope() {
       // All the actions have finished. Close the entangled async action scope
       // and notify all the listeners.
       const fulfilledThenable = currentEntangledActionThenable;
-      if (fulfilledThenable) {
+      if (fulfilledThenable != null) {
         fulfilledThenable.status = 'fulfilled';
       }
       currentEntangledLane = NoLane;
@@ -200,7 +200,7 @@ export function startIsomorphicDefaultIndicatorIfNeeded() {
   }
   if (
     typeof isomorphicDefaultTransitionIndicator === 'function' &&
-    !pendingIsomorphicIndicator
+    pendingIsomorphicIndicator == null
   ) {
     try {
       const cleanup = isomorphicDefaultTransitionIndicator();
@@ -216,9 +216,9 @@ function stopIsomorphicDefaultIndicator() {
   if (!enableDefaultTransitionIndicator) {
     return;
   }
-  const cleanup = pendingIsomorphicIndicator;
-  pendingIsomorphicIndicator = null;
-  if (cleanup) {
+  if (pendingIsomorphicIndicator != null) {
+    const cleanup = pendingIsomorphicIndicator;
+    pendingIsomorphicIndicator = null;
     cleanup();
   }
 }
@@ -231,7 +231,7 @@ function releaseIsomorphicIndicator() {
 }
 
 export function hasOngoingIsomorphicIndicator() {
-  return !!pendingIsomorphicIndicator;
+  return pendingIsomorphicIndicator != null;
 }
 
 export function retainIsomorphicIndicator() {

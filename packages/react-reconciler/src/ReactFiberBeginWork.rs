@@ -4517,9 +4517,8 @@ fn attempt_early_bailout_if_no_scheduled_update(
                     // primary children and work on the fallback.
                     return child.sibling.borrow().clone();
                 }
-            } else {
-                push_primary_tree_suspense_handler(work_in_progress);
             }
+            push_primary_tree_suspense_handler(work_in_progress);
         }
         SUSPENSE_LIST_COMPONENT => {
             if (work_in_progress.flags.get() & DID_CAPTURE) != NO_FLAGS {

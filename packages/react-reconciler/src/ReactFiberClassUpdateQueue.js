@@ -184,7 +184,7 @@ export function createUpdate(lane) {
 
 export function enqueueUpdate(fiber, update, lane) {
   const updateQueue = fiber.updateQueue;
-  if (!updateQueue) {
+  if (updateQueue == null) {
     // Only occurs if the fiber has been unmounted.
     return null;
   }
@@ -232,7 +232,7 @@ export function enqueueUpdate(fiber, update, lane) {
 
 export function entangleTransitions(root, fiber, lane) {
   const updateQueue = fiber.updateQueue;
-  if (!updateQueue) {
+  if (updateQueue == null) {
     // Only occurs if the fiber has been unmounted.
     return;
   }
@@ -426,7 +426,7 @@ export function suspendIfUpdateReadFromEntangledAsyncAction() {
   // suspends if the memo boundary produces a new value.
   if (didReadFromEntangledAsyncAction) {
     const entangledActionThenable = peekEntangledActionThenable();
-    if (entangledActionThenable) {
+    if (entangledActionThenable != null) {
       // TODO: Instead of the throwing the thenable directly, throw a
       // special object like `use` does so we can detect if it's captured
       // by userspace.

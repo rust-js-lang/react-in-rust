@@ -33,10 +33,11 @@ const now = Scheduler.unstable_now;
 // eslint-disable-next-line react-internal/no-production-logging
 const createTask$1 = __DEV__ ? console.createTask : undefined;
 
-const createTask = createTask$1
-  ? // eslint-disable-next-line react-internal/no-production-logging
-    name => createTask$1(name)
-  : noTask;
+const createTask =
+  createTask$1 != null
+    ? // eslint-disable-next-line react-internal/no-production-logging
+      name => createTask$1(name)
+    : noTask;
 
 export const REGULAR_UPDATE = 0;
 export const SPAWNED_UPDATE = 1;
@@ -115,7 +116,7 @@ export function startUpdateTimerByLane(lane, method, fiber) {
       gestureUpdateTime = now();
       gestureUpdateTask = createTask(method) ?? null;
       gestureUpdateMethodName = method;
-      if (__DEV__ && fiber) {
+      if (__DEV__ && fiber != null) {
         gestureUpdateComponentName = getComponentNameFromFiber(fiber);
       }
       const newEventTime = resolveEventTimeStamp();
@@ -134,7 +135,7 @@ export function startUpdateTimerByLane(lane, method, fiber) {
       blockingUpdateTime = now();
       blockingUpdateTask = createTask(method) ?? null;
       blockingUpdateMethodName = method;
-      if (__DEV__ && fiber) {
+      if (__DEV__ && fiber != null) {
         blockingUpdateComponentName = getComponentNameFromFiber(fiber);
       }
       if (isAlreadyRendering()) {
@@ -161,7 +162,7 @@ export function startUpdateTimerByLane(lane, method, fiber) {
     transitionUpdateTime = now();
     transitionUpdateTask = createTask(method) ?? null;
     transitionUpdateMethodName = method;
-    if (__DEV__ && fiber) {
+    if (__DEV__ && fiber != null) {
       transitionUpdateComponentName = getComponentNameFromFiber(fiber);
     }
     if (transitionStartTime < 0) {

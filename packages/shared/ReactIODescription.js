@@ -16,10 +16,7 @@ export function getIODescription(value) {
     switch (typeof value) {
       case 'function': {
         const name = value.name;
-        if (typeof name === 'string') {
-          return name;
-        }
-        return '';
+        return typeof name === 'string' ? name : '';
       }
       case 'object': {
         // Test the object for a bunch of common property names that are useful identifiers.

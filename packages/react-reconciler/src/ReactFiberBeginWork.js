@@ -589,9 +589,10 @@ function updateOffscreenComponent(
       // Something suspended inside a hidden tree
 
       // Include the base lanes from the last render
-      const nextBaseLanes = prevState
-        ? mergeLanes(prevState.baseLanes, renderLanes)
-        : renderLanes;
+      const nextBaseLanes =
+        prevState != null
+          ? mergeLanes(prevState.baseLanes, renderLanes)
+          : renderLanes;
 
       let remainingChildLanes;
       if (current != null) {
@@ -658,9 +659,10 @@ function updateOffscreenComponent(
       workInProgress.lanes = remainingChildLanes;
 
       // Include the base lanes from the last render
-      const nextBaseLanes = prevState
-        ? mergeLanes(prevState.baseLanes, renderLanes)
-        : renderLanes;
+      const nextBaseLanes =
+        prevState != null
+          ? mergeLanes(prevState.baseLanes, renderLanes)
+          : renderLanes;
 
       return deferHiddenOffscreenComponent(
         current,
@@ -683,14 +685,14 @@ function updateOffscreenComponent(
         // If the render that spawned this one accessed the cache pool, resume
         // using the same cache. Unless the parent changed, since that means
         // there was a refresh.
-        const prevCachePool = prevState ? prevState.cachePool : null;
+        const prevCachePool = prevState != null ? prevState.cachePool : null;
         // TODO: Consider if and how Offscreen pre-rendering should
         // be attributed to the transition that spawned it
         pushTransition(workInProgress, prevCachePool, null);
       }
 
       // Push the lanes that were skipped when we bailed out.
-      if (prevState) {
+      if (prevState != null) {
         pushHiddenContext(workInProgress, prevState);
       } else {
         reuseHiddenContextOnStack(workInProgress);
@@ -699,7 +701,7 @@ function updateOffscreenComponent(
     }
   } else {
     // Rendering a visible tree.
-    if (prevState) {
+    if (prevState != null) {
       // We're going from hidden -> visible.
       // If the render that spawned this one accessed the cache pool, resume
       // using the same cache. Unless the parent changed, since that means
@@ -711,7 +713,7 @@ function updateOffscreenComponent(
         // We have now gone from hidden to visible, so any transitions should
         // be added to the stack to get added to any Offscreen/suspense children
         const instance = workInProgress.stateNode;
-        if (instance && instance._transitions) {
+        if (instance != null && instance._transitions != null) {
           transitions = instance._transitions.values().toArray();
         }
       }
@@ -1112,7 +1114,7 @@ function updateActivityComponent(current, workInProgress, renderLanes) {
   // Special path for hydration
   const prevState = current.memoizedState;
 
-  if (prevState) {
+  if (prevState != null) {
     const dehydrated = prevState.dehydrated;
     return updateDehydratedActivityComponent(
       current,
@@ -1692,7 +1694,7 @@ function finishClassComponent(
 function pushHostRootContext(workInProgress) {
   const root = workInProgress.stateNode;
   const pendingContext = root.pendingContext;
-  if (pendingContext) {
+  if (pendingContext != null) {
     pushTopLevelContextObject(
       workInProgress,
       pendingContext,
@@ -1700,7 +1702,7 @@ function pushHostRootContext(workInProgress) {
     );
   } else {
     const context = root.context;
-    if (context) {
+    if (context != null) {
       // Should always be set
       pushTopLevelContextObject(workInProgress, context, false);
     }
@@ -2148,7 +2150,7 @@ function mountSuspenseOffscreenState(renderLanes) {
 function updateSuspenseOffscreenState(prevOffscreenState, renderLanes) {
   const prevCachePool = prevOffscreenState.cachePool;
   let cachePool;
-  if (prevCachePool) {
+  if (prevCachePool != null) {
     const parentCache = $unwrap(
       isPrimaryRenderer
         ? CacheContext._currentValue
@@ -2180,9 +2182,9 @@ function shouldRemainOnFallback(current, workInProgress, renderLanes) {
   // For example, SuspenseList coordinates when nested content appears.
   // TODO: For compatibility with offscreen prerendering, this should also check
   // whether the current fiber (if it exists) was visible in the previous tree.
-  if (current) {
+  if (current != null) {
     const suspenseState = current.memoizedState;
-    if (!suspenseState) {
+    if (suspenseState == null) {
       // Currently showing content. Don't hide it, even if ForceSuspenseFallback
       // is true. More precise name might be "ForceRemainSuspenseFallback".
       // Note: This is a factoring smell. Can't remain on a fallback if there's
@@ -2201,9 +2203,8 @@ function getRemainingWorkInPrimaryTree(
   primaryTreeDidDefer,
   renderLanes,
 ) {
-  let remainingLanes = current
-    ? removeLanes(current.childLanes, renderLanes)
-    : NoLanes;
+  let remainingLanes =
+    current != null ? removeLanes(current.childLanes, renderLanes) : NoLanes;
   if (primaryTreeDidDefer) {
     // A useDeferredValue hook spawned a deferred task inside the primary tree.
     // Ensure that we retry this component at the deferred priority.
@@ -2311,7 +2312,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
         if (currentTransitions != null) {
           const parentMarkerInstances = getMarkerInstances();
           const offscreenQueue = primaryChildFragment.updateQueue;
-          if (!offscreenQueue) {
+          if (offscreenQueue == null) {
             const newOffscreenQueue = {
               transitions: currentTransitions,
               markerInstances: parentMarkerInstances,
@@ -2372,7 +2373,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
 
   // Special path for hydration
   const prevState = current.memoizedState;
-  if (prevState) {
+  if (prevState != null) {
     const dehydrated = prevState.dehydrated;
     if (dehydrated != null) {
       return updateDehydratedSuspenseComponent(
@@ -2403,16 +2404,17 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
     const primaryChildFragment = $unwrap(workInProgress.child);
     const item = $unwrap(current.child);
     const prevOffscreenState = item.memoizedState;
-    primaryChildFragment.memoizedState = !prevOffscreenState
-      ? mountSuspenseOffscreenState(renderLanes)
-      : updateSuspenseOffscreenState(prevOffscreenState, renderLanes);
+    primaryChildFragment.memoizedState =
+      prevOffscreenState == null
+        ? mountSuspenseOffscreenState(renderLanes)
+        : updateSuspenseOffscreenState(prevOffscreenState, renderLanes);
     if (enableTransitionTracing) {
       const currentTransitions = getPendingTransitions();
       if (currentTransitions != null) {
         const parentMarkerInstances = getMarkerInstances();
         const offscreenQueue = primaryChildFragment.updateQueue;
         const currentOffscreenQueue = current.updateQueue;
-        if (!offscreenQueue) {
+        if (offscreenQueue == null) {
           const newOffscreenQueue = {
             transitions: currentTransitions,
             markerInstances: parentMarkerInstances,
@@ -2425,9 +2427,10 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
           const newOffscreenQueue = {
             transitions: currentTransitions,
             markerInstances: parentMarkerInstances,
-            retryQueue: currentOffscreenQueue
-              ? currentOffscreenQueue.retryQueue
-              : null,
+            retryQueue:
+              currentOffscreenQueue != null
+                ? currentOffscreenQueue.retryQueue
+                : null,
           };
           primaryChildFragment.updateQueue = newOffscreenQueue;
         } else {
@@ -2446,7 +2449,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
     return bailoutOffscreenComponent(currentChild, primaryChildFragment);
   } else {
     if (
-      prevState &&
+      prevState != null &&
       includesOnlyRetries(renderLanes) &&
       includesSomeLane(renderLanes, current.lanes)
     ) {
@@ -3057,7 +3060,7 @@ function propagateSuspenseContextChange(
     const child = current.child;
     if (current.tag === SuspenseComponent) {
       const state = current.memoizedState;
-      if (state) {
+      if (state != null) {
         scheduleSuspenseWorkOnFiber(current, renderLanes, workInProgress);
       }
     } else if (current.tag === SuspenseListComponent) {
@@ -3210,7 +3213,7 @@ function initSuspenseListRenderState(
   treeForkCount,
 ) {
   const renderState = workInProgress.memoizedState;
-  if (!renderState) {
+  if (renderState == null) {
     workInProgress.memoizedState = {
       isBackwards,
       rendering: null,
@@ -3581,7 +3584,7 @@ function resetSuspendedCurrentOnMountInLegacyMode(current, workInProgress) {
   if (
     !disableLegacyMode &&
     (workInProgress.mode & ConcurrentMode) === NoMode &&
-    current
+    current != null
   ) {
     // A lazy component only mounts if it suspended inside a non-
     // concurrent tree, in an inconsistent state. We want to treat it like
@@ -3784,7 +3787,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
       break;
     case ActivityComponent: {
       const state = workInProgress.memoizedState;
-      if (state) {
+      if (state != null) {
         // We're dehydrated so we're not going to render the children. This is just
         // to maintain push/pop symmetry.
         // We know that this component will suspend again because if it has
@@ -3798,7 +3801,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
     }
     case SuspenseComponent: {
       const state = workInProgress.memoizedState;
-      if (state) {
+      if (state != null) {
         if (state.dehydrated != null) {
           // We're not going to render the children, so this is just to maintain
           // push/pop symmetry
@@ -3913,7 +3916,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
       // then the tail doesn't matter. Anything new that suspends will work
       // in the "together" mode, so we can continue from the state we had.
       const renderState = workInProgress.memoizedState;
-      if (renderState) {
+      if (renderState != null) {
         // Reset to the "together" mode in case we've started a different
         // update in the past but didn't complete it.
         renderState.rendering = null;

@@ -31,7 +31,7 @@ export function commitNewChildToFragmentInstances(
   ) {
     return;
   }
-  if (!parentFragmentInstances) {
+  if (parentFragmentInstances == null) {
     return;
   }
   for (const fragmentInstance of parentFragmentInstances) {
@@ -80,7 +80,7 @@ export function getParentFragmentInstances(fiber) {
     if (isFragmentInstanceParent(parent)) {
       // ReactFiberConfig's `FragmentInstanceType`.
       const fragmentInstance = parent.stateNode;
-      if (!parentFragmentInstances) {
+      if (parentFragmentInstances == null) {
         parentFragmentInstances = [fragmentInstance];
       } else {
         parentFragmentInstances.push(fragmentInstance);

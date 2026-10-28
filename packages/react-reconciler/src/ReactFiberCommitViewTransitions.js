@@ -112,7 +112,7 @@ function applyViewTransitionToHostInstances(
   );
   if (enableProfilerTimer && enableComponentPerformanceTrack && inViewport) {
     const debugTask = fiber._debugTask;
-    if (debugTask) {
+    if (debugTask != null) {
       trackAnimatingTask(debugTask);
     }
   }
@@ -174,7 +174,7 @@ function applyViewTransitionToHostInstancesRecursive(
   while (child != null) {
     if (child.tag === HostComponent) {
       const instance = child.stateNode;
-      if (collectMeasurements) {
+      if (collectMeasurements != null) {
         const measurement = measureInstance(instance);
         collectMeasurements.push(measurement);
         if (wasInstanceInViewport(measurement)) {
@@ -328,8 +328,8 @@ export function commitParentEnterViewTransitions(parent, gesture) {
       const props = child.memoizedProps;
       const hasParentClass = props.parentEnter != null;
       const hasParentHandler = gesture
-        ? !!props.onGestureParentEnter
-        : !!props.onParentEnter;
+        ? props.onGestureParentEnter != null
+        : props.onParentEnter != null;
       if (hasParentClass || hasParentHandler) {
         let relay = true;
         if (hasParentClass) {
@@ -385,8 +385,8 @@ export function commitParentExitViewTransitions(parent, gesture) {
       const props = child.memoizedProps;
       const hasParentClass = props.parentExit != null;
       const hasParentHandler = gesture
-        ? !!props.onGestureParentExit
-        : !!props.onParentExit;
+        ? props.onGestureParentExit != null
+        : props.onParentExit != null;
       if (hasParentClass || hasParentHandler) {
         let relay = true;
         if (hasParentClass) {
@@ -443,10 +443,10 @@ function restoreParentEnterOrExitViewTransitions(parent) {
       const hasParentClass =
         props.parentEnter != null || props.parentExit != null;
       const hasParentHandler =
-        props.onParentEnter ||
-        props.onParentExit ||
-        props.onGestureParentEnter ||
-        props.onGestureParentExit;
+        props.onParentEnter != null ||
+        props.onParentExit != null ||
+        props.onGestureParentEnter != null ||
+        props.onGestureParentExit != null;
       if (hasParentClass) {
         const grandchild = child.child;
         restoreViewTransitionOnHostInstances(grandchild, false);
@@ -889,7 +889,7 @@ function measureViewTransitionHostInstancesRecursive(
     if (current.tag === HostComponent) {
       const instance = current.stateNode;
       if (
-        previousMeasurements &&
+        previousMeasurements != null &&
         viewTransitionHostInstanceIdx < previousMeasurements.length
       ) {
         // The previous measurement of the Instance in this location within the ViewTransition.

@@ -92,7 +92,7 @@ export function trackUsedThenable(
   }
   const trackedThenables = thenableState.thenables;
   const previous = trackedThenables[index];
-  if (!previous) {
+  if (previous == null) {
     trackedThenables.push(thenable);
   } else if (previous !== thenable) {
     // Reuse the previous thenable, and drop the new one. We can assume
@@ -338,7 +338,7 @@ export function getSuspendedThenable() {
   // this function.
   const thenable = suspendedThenable;
   suspendedThenable = null;
-  if (!thenable) {
+  if (thenable == null) {
     throw new Error(
       'Expected a suspended thenable. This is a bug in React. Please file ' +
         'an issue.',
@@ -429,7 +429,7 @@ export function checkIfUseWasUsedBefore(unsuspendedFiber, thenableState) {
       lastSuspendedFiber != null &&
       areSameKeyPath(lastSuspendedFiber, unsuspendedFiber)
     ) {
-      if (thenableState) {
+      if (thenableState != null) {
         // It's still using use() ever after resolving. We could warn for different number of them but for
         // now we treat this as ok and clear the state.
         lastSuspendedFiber = null;
@@ -437,7 +437,7 @@ export function checkIfUseWasUsedBefore(unsuspendedFiber, thenableState) {
       } else {
         // The last suspended Fiber using use() is no longer using use() in the same position.
         // That's suspicious. Likely it was unblocked by conditionally using use() which is incorrect.
-        if (lastSuspendedStack && !didIssueUseWarning) {
+        if (lastSuspendedStack != null && !didIssueUseWarning) {
           didIssueUseWarning = true;
           // We pass the error object instead of custom message so that the browser displays the error natively.
           console.error(lastSuspendedStack);

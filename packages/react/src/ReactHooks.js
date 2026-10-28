@@ -10,7 +10,7 @@ import {REACT_CONSUMER_TYPE} from '../../shared/ReactSymbols.js';
 
 function resolveDispatcher() {
   const dispatcher = ReactSharedInternals.H;
-  if (__DEV__ && !dispatcher) {
+  if (__DEV__ && dispatcher == null) {
     console.error(
       'Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for' +
         ' one of the following reasons:\n' +
@@ -28,7 +28,7 @@ function resolveDispatcher() {
 
 export function getCacheForType(resourceType) {
   const dispatcher = ReactSharedInternals.A;
-  if (!dispatcher) {
+  if (dispatcher == null) {
     // If there is no dispatcher, then we treat this as not being cached.
     return resourceType();
   }
@@ -62,7 +62,7 @@ export function useRef(initialValue) {
 }
 
 export function useEffect(create, deps) {
-  if (__DEV__ && !create) {
+  if (__DEV__ && create == null) {
     console.warn(
       'React Hook useEffect requires an effect callback. Did you forget to pass a callback to the hook?',
     );
@@ -73,7 +73,7 @@ export function useEffect(create, deps) {
 }
 
 export function useInsertionEffect(create, deps) {
-  if (__DEV__ && !create) {
+  if (__DEV__ && create == null) {
     console.warn(
       'React Hook useInsertionEffect requires an effect callback. Did you forget to pass a callback to the hook?',
     );
@@ -84,7 +84,7 @@ export function useInsertionEffect(create, deps) {
 }
 
 export function useLayoutEffect(create, deps) {
-  if (__DEV__ && !create) {
+  if (__DEV__ && create == null) {
     console.warn(
       'React Hook useLayoutEffect requires an effect callback. Did you forget to pass a callback to the hook?',
     );

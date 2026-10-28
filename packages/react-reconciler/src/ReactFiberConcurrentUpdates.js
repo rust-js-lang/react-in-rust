@@ -170,7 +170,7 @@ function markUpdateLaneFromFiberToRoot(sourceFiber, update, lane) {
       // too.)
       const offscreenInstance = parent.stateNode;
       if (
-        offscreenInstance &&
+        offscreenInstance != null &&
         !(offscreenInstance._visibility & OffscreenVisible)
       ) {
         isHidden = true;

@@ -10,7 +10,7 @@ import ReactSharedInternals from '../../shared/ReactSharedInternals.js';
 export function captureOwnerStack() {
   if (__DEV__) {
     const getCurrentStack = ReactSharedInternals.getCurrentStack;
-    if (!getCurrentStack) {
+    if (getCurrentStack == null) {
       return null;
     }
     // The current stack will be the owner stack which it is always here.

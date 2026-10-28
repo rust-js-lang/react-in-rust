@@ -266,7 +266,7 @@ function propagateContextChanges(
       nextFiber = undefined;
     } else if (
       fiber.tag === SuspenseComponent &&
-      fiber.memoizedState &&
+      fiber.memoizedState != null &&
       fiber.memoizedState.dehydrated == null
     ) {
       // This is a client-rendered Suspense boundary that is currently
@@ -404,7 +404,7 @@ function propagateParentContextChanges(
         const oldValue = oldProps.value;
 
         if (!is(newValue, oldValue)) {
-          if (contexts) {
+          if (contexts != null) {
             contexts.push(context);
           } else {
             contexts = [context];
@@ -429,7 +429,7 @@ function propagateParentContextChanges(
       // This uses regular equality instead of Object.is because we assume that
       // host transition state doesn't include NaN as a valid type.
       if (oldState !== newState) {
-        if (contexts) {
+        if (contexts != null) {
           contexts.push(HostTransitionContext);
         } else {
           contexts = [HostTransitionContext];
@@ -439,7 +439,7 @@ function propagateParentContextChanges(
     parent = parent.return;
   }
 
-  if (contexts) {
+  if (contexts != null) {
     // If there were any changed providers, search through the children and
     // propagate their changes.
     propagateContextChanges(
@@ -470,7 +470,7 @@ function propagateParentContextChanges(
   // then we could remove both `DidPropagateContext` and `NeedsPropagation`.
   // Consider this as part of the next refactor to the fiber tree structure.
   workInProgress.flags |= DidPropagateContext;
-  return !!contexts;
+  return contexts != null;
 }
 
 export function checkIfContextChanged(currentDependencies) {

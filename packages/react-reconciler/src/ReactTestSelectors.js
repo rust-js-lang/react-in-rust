@@ -202,7 +202,7 @@ function findPaths(root, selectors) {
     ) {
       continue;
     }
-    while (selector && matchSelector(fiber, selector)) {
+    while (selector != null && matchSelector(fiber, selector)) {
       selectorIndex = (selectorIndex + 1) >>> 0;
       selector = selectors[selectorIndex];
     }
@@ -240,7 +240,7 @@ function hasMatchingPaths(root, selectors) {
     ) {
       continue;
     }
-    while (selector && matchSelector(fiber, selector)) {
+    while (selector != null && matchSelector(fiber, selector)) {
       selectorIndex = (selectorIndex + 1) >>> 0;
       selector = selectors[selectorIndex];
     }

@@ -17,7 +17,7 @@ export function findFirstSuspended(row) {
   while (true) {
     if (node.tag === SuspenseComponent) {
       const state = node.memoizedState;
-      if (state) {
+      if (state != null) {
         const dehydrated = state.dehydrated;
         if (
           dehydrated == null ||

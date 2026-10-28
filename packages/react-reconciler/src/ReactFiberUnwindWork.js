@@ -107,7 +107,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
       return null;
     case ActivityComponent: {
       const activityState = workInProgress.memoizedState;
-      if (activityState) {
+      if (activityState != null) {
         popSuspenseHandler(workInProgress);
 
         if (workInProgress.alternate == null) {
@@ -137,7 +137,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
     case SuspenseComponent: {
       popSuspenseHandler(workInProgress);
       const suspenseState = workInProgress.memoizedState;
-      if (suspenseState && suspenseState.dehydrated != null) {
+      if (suspenseState != null && suspenseState.dehydrated != null) {
         if (workInProgress.alternate == null) {
           throw new Error(
             'Threw in newly mounted dehydrated component. This is likely a bug in ' +
@@ -173,7 +173,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
         // we want to ignore something. Re-enter the cycle and handle it
         // in the complete phase.
         const renderState = workInProgress.memoizedState;
-        if (renderState) {
+        if (renderState != null) {
           // Cut off any remaining tail work and don't commit the rendering one.
           // This assumes that we have already confirmed that none of these are
           // already mounted.

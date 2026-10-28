@@ -15,7 +15,7 @@ import {startTransition} from './ReactStartTransition.js';
 export function addTransitionType(type) {
   if (enableViewTransition) {
     const transition = ReactSharedInternals.T;
-    if (transition) {
+    if (transition != null) {
       const transitionTypes = transition.types;
       if (transitionTypes == null) {
         transition.types = [type];

@@ -111,7 +111,7 @@ function logComponentTrigger(fiber, startTime, endTime, trigger) {
       },
     };
     const debugTask = fiber._debugTask;
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(performance.measure.bind(performance, trigger, options));
     } else {
       performance.measure(trigger, options);
@@ -260,7 +260,7 @@ export function logComponentRender(
           };
 
           const measureName = '\u200b' + name;
-          if (debugTask) {
+          if (debugTask != null) {
             debugTask.run(
               performance.measure.bind(performance, measureName, options),
             );
@@ -268,7 +268,7 @@ export function logComponentRender(
             performance.measure(measureName, options);
           }
           performance.clearMeasures(measureName);
-        } else if (debugTask) {
+        } else if (debugTask != null) {
           debugTask.run(
             console.timeStamp.bind(
               console,
@@ -290,7 +290,7 @@ export function logComponentRender(
             color,
           );
         }
-      } else if (debugTask) {
+      } else if (debugTask != null) {
         debugTask.run(
           console.timeStamp.bind(
             console,
@@ -328,7 +328,7 @@ export function logComponentErrored(fiber, startTime, endTime, errors) {
       const properties = [];
       for (let i = 0; i < errors.length; i++) {
         const capturedValue = errors[i];
-        if (!debugTask && capturedValue.source != null) {
+        if (debugTask == null && capturedValue.source != null) {
           // If the captured value has a source Fiber, use its debugTask for
           // the stack instead of the error boundary's stack. So you can find
           // which component errored since we don't show the errored render tree.
@@ -375,7 +375,7 @@ export function logComponentErrored(fiber, startTime, endTime, errors) {
       };
 
       const measureName = '\u200b' + name;
-      if (debugTask) {
+      if (debugTask != null) {
         debugTask.run(
           performance.measure.bind(performance, measureName, options),
         );
@@ -442,7 +442,7 @@ function logComponentEffectErrored(fiber, startTime, endTime, errors) {
       };
       const debugTask = fiber._debugTask;
       const measureName = '\u200b' + name;
-      if (debugTask) {
+      if (debugTask != null) {
         debugTask.run(
           performance.measure.bind(performance, measureName, options),
         );
@@ -470,7 +470,7 @@ export function logComponentEffect(
   selfTime,
   errors,
 ) {
-  if (errors) {
+  if (errors != null) {
     logComponentEffectErrored(fiber, startTime, endTime, errors);
     return;
   }
@@ -489,7 +489,7 @@ export function logComponentEffect(
             ? 'secondary-dark'
             : 'error';
     const debugTask = fiber._debugTask;
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -548,7 +548,7 @@ export function logYieldTime(startTime, endTime) {
 export function logSuspendedYieldTime(startTime, endTime, suspendedFiber) {
   if (supportsUserTiming) {
     const debugTask = suspendedFiber._debugTask;
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -576,7 +576,7 @@ export function logSuspendedYieldTime(startTime, endTime, suspendedFiber) {
 export function logActionYieldTime(startTime, endTime, suspendedFiber) {
   if (supportsUserTiming) {
     const debugTask = suspendedFiber._debugTask;
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -637,7 +637,7 @@ export function logBlockingStart(
     if (eventType != null && updateTime > eventTime) {
       // Log the time from the event timeStamp until we called setState.
       const color = eventIsRepeat ? 'secondary-light' : 'warning';
-      if (__DEV__ && debugTask) {
+      if (__DEV__ && debugTask != null) {
         debugTask.run(
           console.timeStamp.bind(
             console,
@@ -700,7 +700,7 @@ export function logBlockingStart(
           detail,
         };
 
-        if (debugTask) {
+        if (debugTask != null) {
           debugTask.run(
             performance.measure.bind(performance, label, measureOptions),
           );
@@ -754,7 +754,7 @@ export function logGestureStart(
     if (updateTime > eventTime && eventType != null) {
       // Log the time from the event timeStamp until we started a gesture.
       const color = eventIsRepeat ? 'secondary-light' : 'warning';
-      if (__DEV__ && debugTask) {
+      if (__DEV__ && debugTask != null) {
         debugTask.run(
           console.timeStamp.bind(
             console,
@@ -805,7 +805,7 @@ export function logGestureStart(
           },
         };
 
-        if (debugTask) {
+        if (debugTask != null) {
           debugTask.run(
             performance.measure.bind(performance, label, measureOptions),
           );
@@ -867,7 +867,7 @@ export function logTransitionStart(
     if (startTime > eventTime && eventType != null) {
       // Log the time from the event timeStamp until we started a transition.
       const color = eventIsRepeat ? 'secondary-light' : 'warning';
-      if (__DEV__ && debugTask) {
+      if (__DEV__ && debugTask != null) {
         debugTask.run(
           console.timeStamp.bind(
             console,
@@ -893,7 +893,7 @@ export function logTransitionStart(
     if (updateTime > startTime) {
       // Log the time from when we started an async transition until we called setState or started rendering.
       // TODO: Ideally this would use the debugTask of the startTransition call perhaps.
-      if (__DEV__ && debugTask) {
+      if (__DEV__ && debugTask != null) {
         debugTask.run(
           console.timeStamp.bind(
             console,
@@ -944,7 +944,7 @@ export function logTransitionStart(
           },
         };
 
-        if (debugTask) {
+        if (debugTask != null) {
           debugTask.run(
             performance.measure.bind(performance, label, measureOptions),
           );
@@ -979,7 +979,7 @@ export function logRenderPhase(startTime, endTime, lanes, debugTask) {
       : includesOnlyHydrationLanes(lanes)
         ? 'Hydrated'
         : 'Render';
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1022,7 +1022,7 @@ export function logInterruptedRenderPhase(
       : includesOnlyHydrationLanes(lanes)
         ? 'Interrupted Hydration'
         : 'Interrupted Render';
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1055,7 +1055,7 @@ export function logSuspendedRenderPhase(startTime, endTime, lanes, debugTask) {
     const color = includesOnlyHydrationOrOffscreenLanes(lanes)
       ? 'tertiary-dark'
       : 'primary-dark';
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1094,7 +1094,7 @@ export function logSuspendedWithDelayPhase(
     const color = includesOnlyHydrationOrOffscreenLanes(lanes)
       ? 'tertiary-dark'
       : 'primary-dark';
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1161,7 +1161,7 @@ export function logRecoveredRenderPhase(
           },
         },
       };
-      if (debugTask) {
+      if (debugTask != null) {
         debugTask.run(
           performance.measure.bind(performance, 'Recovered', options),
         );
@@ -1187,7 +1187,7 @@ export function logErroredRenderPhase(startTime, endTime, lanes, debugTask) {
     if (endTime <= startTime) {
       return;
     }
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1217,7 +1217,7 @@ export function logInconsistentRender(startTime, endTime, debugTask) {
     if (endTime <= startTime) {
       return;
     }
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1250,7 +1250,7 @@ export function logSuspendedCommitPhase(startTime, endTime, reason, debugTask) {
     }
     // TODO: Include the exact reason and URLs of what resources suspended.
     // TODO: This might also be Suspended while waiting on a View Transition.
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1288,7 +1288,7 @@ export function logSuspendedViewTransitionPhase(
     }
     // TODO: Include the exact reason and URLs of what resources suspended.
     // TODO: This might also be Suspended while waiting on a View Transition.
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1354,7 +1354,7 @@ export function logCommitErrored(
           },
         },
       };
-      if (debugTask) {
+      if (debugTask != null) {
         debugTask.run(
           performance.measure.bind(performance, 'Errored', options),
         );
@@ -1382,7 +1382,7 @@ export function logCommitPhase(
   abortedViewTransition,
   debugTask,
 ) {
-  if (errors) {
+  if (errors != null) {
     logCommitErrored(startTime, endTime, errors, false, debugTask);
     return;
   }
@@ -1390,7 +1390,7 @@ export function logCommitPhase(
     if (endTime <= startTime) {
       return;
     }
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1427,7 +1427,7 @@ export function logPaintYieldPhase(
     if (endTime <= startTime) {
       return;
     }
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1457,7 +1457,7 @@ export function logApplyGesturePhase(startTime, endTime, debugTask) {
     if (endTime <= startTime) {
       return;
     }
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1492,7 +1492,7 @@ export function logStartViewTransitionYieldPhase(
     if (endTime <= startTime) {
       return;
     }
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1526,7 +1526,7 @@ export function logAnimatingPhase(startTime, endTime, debugTask) {
     if (endTime <= startTime) {
       return;
     }
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,
@@ -1552,7 +1552,7 @@ export function logAnimatingPhase(startTime, endTime, debugTask) {
 }
 
 export function logPassiveCommitPhase(startTime, endTime, errors, debugTask) {
-  if (errors) {
+  if (errors != null) {
     logCommitErrored(startTime, endTime, errors, true, debugTask);
     return;
   }
@@ -1560,7 +1560,7 @@ export function logPassiveCommitPhase(startTime, endTime, errors, debugTask) {
     if (endTime <= startTime) {
       return;
     }
-    if (__DEV__ && debugTask) {
+    if (__DEV__ && debugTask != null) {
       debugTask.run(
         console.timeStamp.bind(
           console,

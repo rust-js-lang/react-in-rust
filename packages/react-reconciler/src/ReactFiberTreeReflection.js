@@ -56,13 +56,13 @@ export function getNearestMountedFiber(fiber) {
 export function getSuspenseInstanceFromFiber(fiber) {
   if (fiber.tag === SuspenseComponent) {
     let suspenseState = fiber.memoizedState;
-    if (!suspenseState) {
+    if (suspenseState == null) {
       const current = fiber.alternate;
       if (current != null) {
         suspenseState = current.memoizedState;
       }
     }
-    if (suspenseState) {
+    if (suspenseState != null) {
       return suspenseState.dehydrated;
     }
   }
@@ -73,13 +73,13 @@ export function getSuspenseInstanceFromFiber(fiber) {
 export function getActivityInstanceFromFiber(fiber) {
   if (fiber.tag === ActivityComponent) {
     let activityState = fiber.memoizedState;
-    if (!activityState) {
+    if (activityState == null) {
       const current = fiber.alternate;
       if (current != null) {
         activityState = current.memoizedState;
       }
     }
-    if (activityState) {
+    if (activityState != null) {
       return activityState.dehydrated;
     }
   }

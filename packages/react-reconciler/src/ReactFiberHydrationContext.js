@@ -172,7 +172,7 @@ export function reenterHydrationStateFromDehydratedActivityInstance(
   didSuspendOrErrorDEV = false;
   hydrationDiffRootDEV = null;
   rootOrSingletonContext = false;
-  if (treeContext) {
+  if (treeContext != null) {
     restoreSuspendedTreeContext(fiber, treeContext);
   }
   return true;
@@ -195,7 +195,7 @@ export function reenterHydrationStateFromDehydratedSuspenseInstance(
   didSuspendOrErrorDEV = false;
   hydrationDiffRootDEV = null;
   rootOrSingletonContext = false;
-  if (treeContext) {
+  if (treeContext != null) {
     restoreSuspendedTreeContext(fiber, treeContext);
   }
   return true;
@@ -349,11 +349,11 @@ export const HydrationMismatchException = new Error(
 function throwOnHydrationMismatch(fiber, fromText) {
   let diff = '';
   if (__DEV__) {
-    // Consume the diff root for this mismatch.
-    // Any other errors will get their own diffs.
-    const diffRoot = hydrationDiffRootDEV;
-    hydrationDiffRootDEV = null;
-    if (diffRoot != null) {
+    if (hydrationDiffRootDEV != null) {
+      // Consume the diff root for this mismatch.
+      // Any other errors will get their own diffs.
+      const diffRoot = hydrationDiffRootDEV;
+      hydrationDiffRootDEV = null;
       diff = describeDiff(diffRoot);
     }
   }
@@ -861,11 +861,11 @@ export function queueHydrationError(error) {
 
 export function emitPendingHydrationWarnings() {
   if (__DEV__) {
-    // If we haven't yet thrown any hydration errors by the time we reach the end we've successfully
-    // hydrated, however, we might still have DEV-only mismatches that we log now.
-    const diffRoot = hydrationDiffRootDEV;
-    hydrationDiffRootDEV = null;
-    if (diffRoot != null) {
+    if (hydrationDiffRootDEV != null) {
+      // If we haven't yet thrown any hydration errors by the time we reach the end we've successfully
+      // hydrated, however, we might still have DEV-only mismatches that we log now.
+      const diffRoot = hydrationDiffRootDEV;
+      hydrationDiffRootDEV = null;
       const diff = describeDiff(diffRoot);
 
       // Just pick the DFS-first leaf as the owner.
