@@ -3,10 +3,14 @@
 
 #[path = "src/shared/crossOriginStrings.rs"]
 pub mod cross_origin_strings;
+#[path = "src/events/CurrentReplayingEvent.rs"]
+pub mod current_replaying_event;
 #[path = "src/client/DOMNamespaces.rs"]
 pub mod dom_namespaces;
 #[path = "src/client/escapeSelectorAttributeValueInsideDoubleQuotes.rs"]
 pub mod escape_selector_attribute_value_inside_double_quotes;
+#[path = "src/events/EventListener.rs"]
+pub mod event_listener;
 #[path = "src/events/EventSystemFlags.rs"]
 pub mod event_system_flags;
 #[path = "src/client/getActiveElement.rs"]
