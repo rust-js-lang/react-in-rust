@@ -69,7 +69,7 @@ const timerQueue = [];
 // Incrementing id counter. Used to maintain insertion order.
 let taskIdCounter = 1;
 
-let currentTask;
+let currentTask = null;
 let currentPriorityLevel = NormalPriority;
 
 // This is set while performing work, to prevent re-entrance.
@@ -167,7 +167,7 @@ function flushWork(initialTime) {
       result = workLoop(initialTime);
     }
   } finally {
-    currentTask = undefined;
+    currentTask = null;
     currentPriorityLevel = previousPriorityLevel;
     isPerformingWork = false;
     if (enableProfiling) {
@@ -195,7 +195,7 @@ function workLoop(initialTime) {
     }
     if (currentTask$1.callback != null) {
       const callback = currentTask$1.callback;
-      currentTask$1.callback = undefined;
+      currentTask$1.callback = null;
       currentPriorityLevel = currentTask$1.priorityLevel;
       const didUserCallbackTimeout =
         currentTask$1.expirationTime <= currentTime;
@@ -408,7 +408,7 @@ export function unstable_cancelCallback(task) {
   // Null out the callback to indicate the task has been canceled. (Can't
   // remove from the queue because you can't remove arbitrary nodes from an
   // array based heap, only the first one.)
-  task.callback = undefined;
+  task.callback = null;
 }
 
 export function unstable_getCurrentPriorityLevel() {

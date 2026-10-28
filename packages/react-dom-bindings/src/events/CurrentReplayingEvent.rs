@@ -12,7 +12,8 @@ use webapi::{Event, console};
 // and DOMPluginEventSystem.
 
 thread_local! {
-    static CURRENT_REPLAYING_EVENT: Cell<Option<&'static Event>> = const { Cell::new(js::null()) };
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    static CURRENT_REPLAYING_EVENT: Cell<Option<&'static Event>> = const { Cell::new(None) };
 }
 
 pub fn set_replaying_event(event: &'static Event) {
@@ -32,7 +33,7 @@ pub fn reset_replaying_event() {
             "is likely caused by a bug in React. Please file an issue."
         ),));
     }
-    CURRENT_REPLAYING_EVENT.set(js::null());
+    CURRENT_REPLAYING_EVENT.set(None);
 }
 
 pub fn is_replaying_event(event: &Event) -> bool {

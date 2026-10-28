@@ -43,6 +43,7 @@ pub struct Callback(Box<dyn FnMut(bool) -> Option<Callback>>);
 
 pub struct Task {
     pub id: f64,
+    #[cfg_attr(rust_js, rust_js::nullable)]
     callback: RefCell<Option<Callback>>,
     priority_level: PriorityLevel,
     start_time: f64,
@@ -86,6 +87,7 @@ thread_local! {
     // Incrementing id counter. Used to maintain insertion order.
     static TASK_ID_COUNTER: Cell<f64> = const { Cell::new(1.0) };
 
+    #[cfg_attr(rust_js, rust_js::nullable)]
     static CURRENT_TASK: RefCell<Option<Rc<Task>>> = const { RefCell::new(None) };
     static CURRENT_PRIORITY_LEVEL: Cell<PriorityLevel> = const { Cell::new(NORMAL_PRIORITY) };
 

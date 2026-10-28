@@ -17,9 +17,12 @@ use webapi::{EventTarget, html_input_element, node};
 // use its position to find its replacement.
 
 thread_local! {
-    static ROOT: Cell<Option<&'static EventTarget>> = const { Cell::new(js::null()) };
-    static START_TEXT: RefCell<Option<String>> = const { RefCell::new(js::null()) };
-    static FALLBACK_TEXT: RefCell<Option<String>> = const { RefCell::new(js::null()) };
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    static ROOT: Cell<Option<&'static EventTarget>> = const { Cell::new(None) };
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    static START_TEXT: RefCell<Option<String>> = const { RefCell::new(None) };
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    static FALLBACK_TEXT: RefCell<Option<String>> = const { RefCell::new(None) };
 }
 
 pub fn initialize(native_event_target: &'static EventTarget) -> bool {
@@ -29,9 +32,9 @@ pub fn initialize(native_event_target: &'static EventTarget) -> bool {
 }
 
 pub fn reset() {
-    ROOT.set(js::null());
-    START_TEXT.set(js::null());
-    FALLBACK_TEXT.set(js::null());
+    ROOT.set(None);
+    START_TEXT.set(None);
+    FALLBACK_TEXT.set(None);
 }
 
 pub fn get_data() -> String {
@@ -72,6 +75,7 @@ pub fn get_data() -> String {
     fallback_text
 }
 
+#[cfg_attr(rust_js, rust_js::nullable)]
 pub fn get_text() -> Option<String> {
     let root = ROOT.get().unwrap();
     if js::has(root, "value") {

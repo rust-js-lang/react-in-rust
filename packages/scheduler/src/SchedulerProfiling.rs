@@ -22,7 +22,9 @@ const MAX_EVENT_LOG_SIZE: f64 = 524288.0; // Equivalent to 2 megabytes
 
 thread_local! {
     static EVENT_LOG_SIZE: Cell<f64> = const { Cell::new(0.0) };
+    #[cfg_attr(rust_js, rust_js::nullable)]
     static EVENT_LOG_BUFFER: Cell<Option<&'static ArrayBuffer>> = const { Cell::new(None) };
+    #[cfg_attr(rust_js, rust_js::nullable)]
     static EVENT_LOG: Cell<Option<&'static Int32Array>> = const { Cell::new(None) };
     static EVENT_LOG_INDEX: Cell<f64> = const { Cell::new(0.0) };
 }

@@ -21,6 +21,7 @@ export {
 } from './jsx/ReactJSXElement.js';
 export {lazy} from './ReactLazy.js';
 export {memo} from './ReactMemo.js';
+
 export {
   REACT_ACTIVITY_TYPE as Activity,
   REACT_FRAGMENT_TYPE as Fragment,
@@ -30,6 +31,7 @@ export {
   REACT_VIEW_TRANSITION_TYPE as ViewTransition,
   REACT_VIEW_TRANSITION_TYPE as unstable_ViewTransition,
 } from '../../shared/ReactSymbols.js';
+
 export {default as version} from '../../shared/ReactVersion.js';
 // Experimental
 export {REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList} from '../../shared/ReactSymbols.js';

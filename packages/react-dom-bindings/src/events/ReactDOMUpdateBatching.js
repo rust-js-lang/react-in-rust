@@ -42,15 +42,15 @@ function finishEventHandler() {
   }
 }
 
-export function batchedUpdates(fn, a) {
+export function batchedUpdates(fn, a, b) {
   if (isInsideEventHandler) {
     // If we are currently inside another batch, we need to wait until it
     // fully completes before restoring state.
-    return fn(a);
+    return fn(a, b);
   }
   isInsideEventHandler = true;
   try {
-    return batchedUpdatesImpl(fn, a);
+    return batchedUpdatesImpl(a => fn(a, b), a);
   } finally {
     isInsideEventHandler = false;
     finishEventHandler();

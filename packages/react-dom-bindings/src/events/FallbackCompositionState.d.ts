@@ -11,4 +11,4 @@ export function reset(): void;
 
 export function getData(): string;
 
-export function getText(): string | null | undefined;
+export function getText(): string | null;

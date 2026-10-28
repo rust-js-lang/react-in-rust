@@ -47,8 +47,10 @@ fn restore_controlled_state(
 // Use to restore controlled state after a change event has fired.
 
 thread_local! {
-    static RESTORE_TARGET: Cell<Option<&'static Node>> = const { Cell::new(js::null()) };
-    static RESTORE_QUEUE: RefCell<Option<Vec<&'static Node>>> = const { RefCell::new(js::null()) };
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    static RESTORE_TARGET: Cell<Option<&'static Node>> = const { Cell::new(None) };
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    static RESTORE_QUEUE: RefCell<Option<Vec<&'static Node>>> = const { RefCell::new(None) };
 }
 
 fn restore_state_of_target(target: &Node) {

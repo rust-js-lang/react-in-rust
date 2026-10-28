@@ -54,9 +54,9 @@ export function restoreStateIfNeeded() {
   if (target == null) {
     return;
   }
-  restoreTarget = undefined;
+  restoreTarget = null;
   const queuedTargets = restoreQueue;
-  restoreQueue = undefined;
+  restoreQueue = null;
 
   restoreStateOfTarget(target);
   if (queuedTargets != null) {

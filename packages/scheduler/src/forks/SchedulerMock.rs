@@ -55,6 +55,7 @@ thread_local! {
     // Incrementing id counter. Used to maintain insertion order.
     static TASK_ID_COUNTER: Cell<f64> = const { Cell::new(1.0) };
 
+    #[cfg_attr(rust_js, rust_js::nullable)]
     static CURRENT_TASK: RefCell<Option<Rc<Task>>> = const { RefCell::new(None) };
     static CURRENT_PRIORITY_LEVEL: Cell<PriorityLevel> = const { Cell::new(NORMAL_PRIORITY) };
 
@@ -65,9 +66,12 @@ thread_local! {
     static IS_HOST_TIMEOUT_SCHEDULED: Cell<bool> = const { Cell::new(false) };
 
     static CURRENT_MOCK_TIME: Cell<f64> = const { Cell::new(0.0) };
+    #[cfg_attr(rust_js, rust_js::nullable)]
     static SCHEDULED_CALLBACK: Cell<Option<HostCallback>> = const { Cell::new(None) };
+    #[cfg_attr(rust_js, rust_js::nullable)]
     static SCHEDULED_TIMEOUT: Cell<Option<fn(f64)>> = const { Cell::new(None) };
     static TIMEOUT_TIME: Cell<f64> = const { Cell::new(-1.0) };
+    #[cfg_attr(rust_js, rust_js::nullable)]
     static YIELDED_VALUES: RefCell<Option<Vec<Option<&'static Unknown>>>> = const { RefCell::new(None) };
     static EXPECTED_NUMBER_OF_YIELDS: Cell<f64> = const { Cell::new(-1.0) };
     static DID_STOP: Cell<bool> = const { Cell::new(false) };

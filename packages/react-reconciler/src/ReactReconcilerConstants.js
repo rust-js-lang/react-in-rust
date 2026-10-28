@@ -15,5 +15,6 @@ export {
   IdleEventPriority,
   NoEventPriority,
 } from './ReactEventPriorities.js';
+
 export {ConcurrentRoot, LegacyRoot} from './ReactRootTags.js';
 //# sourceMappingURL=ReactReconcilerConstants.js.map

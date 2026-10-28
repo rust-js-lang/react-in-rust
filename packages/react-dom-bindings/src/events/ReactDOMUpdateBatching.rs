@@ -51,15 +51,15 @@ impl Drop for ExitEventHandler {
     }
 }
 
-pub fn batched_updates<A, R>(r#fn: impl FnOnce(A) -> R, a: A) -> R {
+pub fn batched_updates<A, B, R>(r#fn: impl FnOnce(A, Option<B>) -> R, a: A, b: Option<B>) -> R {
     if IS_INSIDE_EVENT_HANDLER.get() {
         // If we are currently inside another batch, we need to wait until it
         // fully completes before restoring state.
-        return r#fn(a);
+        return r#fn(a, b);
     }
     IS_INSIDE_EVENT_HANDLER.set(true);
     let _exit = ExitEventHandler;
-    batched_updates_impl(r#fn, a)
+    batched_updates_impl(|a| r#fn(a, b), a)
 }
 
 // TODO: Replace with flushSync

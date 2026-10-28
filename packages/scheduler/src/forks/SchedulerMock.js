@@ -28,10 +28,6 @@ import {
 } from '../SchedulerProfiling.js';
 import {$withBorrow, $withBorrowMut} from '@rust-js/runtime';
 
-// If `shouldYieldForPaint` is false, we keep flushing synchronously
-// without yielding to the main thread. This is the behavior of the
-// `toFlushAndYield` and `toFlushAndYieldThrough` testing helpers .
-// No-op
 export {
   IdlePriority as unstable_IdlePriority,
   ImmediatePriority as unstable_ImmediatePriority,
@@ -67,7 +63,7 @@ const timerQueue = [];
 // Incrementing id counter. Used to maintain insertion order.
 let taskIdCounter = 1;
 
-let currentTask;
+let currentTask = null;
 let currentPriorityLevel = NormalPriority;
 
 // This is set while performing work, to prevent re-entrance.
@@ -77,10 +73,10 @@ let isHostCallbackScheduled = false;
 let isHostTimeoutScheduled = false;
 
 let currentMockTime = 0;
-let scheduledCallback;
-let scheduledTimeout;
+let scheduledCallback = null;
+let scheduledTimeout = null;
 let timeoutTime = -1;
-let yieldedValues;
+let yieldedValues = null;
 let expectedNumberOfYields = -1;
 let didStop = false;
 let isFlushing = false;
@@ -180,7 +176,7 @@ function flushWork(hasTimeRemaining, initialTime) {
       result = workLoop(hasTimeRemaining, initialTime);
     }
   } finally {
-    currentTask = undefined;
+    currentTask = null;
     currentPriorityLevel = previousPriorityLevel;
     isPerformingWork = false;
     if (enableProfiling) {
@@ -210,7 +206,7 @@ function workLoop(hasTimeRemaining, initialTime) {
       currentTask$1.callback != null
     ) {
       const callback = currentTask$1.callback;
-      currentTask$1.callback = undefined;
+      currentTask$1.callback = null;
       currentPriorityLevel = currentTask$1.priorityLevel;
       const didUserCallbackTimeout =
         currentTask$1.expirationTime <= currentTime;
@@ -232,6 +228,9 @@ function workLoop(hasTimeRemaining, initialTime) {
           needsPaint = true;
           return true;
         }
+        // If `shouldYieldForPaint` is false, we keep flushing synchronously
+        // without yielding to the main thread. This is the behavior of the
+        // `toFlushAndYield` and `toFlushAndYieldThrough` testing helpers .
       } else {
         if (enableProfiling) {
           markTaskCompleted(currentTask$1, currentTime);
@@ -416,7 +415,7 @@ export function unstable_cancelCallback(task) {
   // Null out the callback to indicate the task has been canceled. (Can't
   // remove from the queue because you can't remove arbitrary nodes from an
   // array based heap, only the first one.)
-  task.callback = undefined;
+  task.callback = null;
 }
 
 export function unstable_getCurrentPriorityLevel() {
@@ -433,7 +432,7 @@ function requestHostTimeout(callback, ms) {
 }
 
 function cancelHostTimeout() {
-  scheduledTimeout = undefined;
+  scheduledTimeout = null;
   timeoutTime = -1;
 }
 
@@ -456,17 +455,19 @@ function getCurrentTime() {
   return currentMockTime;
 }
 
-function forceFrameRate() {}
+function forceFrameRate() {
+  // No-op
+}
 
 export function reset() {
   if (isFlushing) {
     throw new Error('Cannot reset while already flushing work.');
   }
   currentMockTime = 0;
-  scheduledCallback = undefined;
-  scheduledTimeout = undefined;
+  scheduledCallback = null;
+  scheduledTimeout = null;
   timeoutTime = -1;
-  yieldedValues = undefined;
+  yieldedValues = null;
   expectedNumberOfYields = -1;
   didStop = false;
   isFlushing = false;
@@ -496,7 +497,7 @@ export function unstable_flushNumberOfYields(count) {
         continue;
       }
       if (!hasMoreWork) {
-        scheduledCallback = undefined;
+        scheduledCallback = null;
       }
       expectedNumberOfYields = -1;
       didStop = false;
@@ -529,7 +530,7 @@ export function unstable_flushUntilNextPaint() {
         continue;
       }
       if (!hasMoreWork) {
-        scheduledCallback = undefined;
+        scheduledCallback = null;
       }
       shouldYieldForPaint = false;
       didStop = false;
@@ -553,7 +554,7 @@ export function unstable_flushExpired() {
     try {
       const hasMoreWork = scheduledCallback(false, currentMockTime);
       if (!hasMoreWork) {
-        scheduledCallback = undefined;
+        scheduledCallback = null;
       }
     } finally {
       isFlushing = false;
@@ -579,7 +580,7 @@ export function unstable_flushAllWithoutAsserting() {
       }
       if (!hasMoreWork) {
         if (!hasMoreWork) {
-          scheduledCallback = undefined;
+          scheduledCallback = null;
         }
         const result = true;
         isFlushing = false;
@@ -593,7 +594,7 @@ export function unstable_flushAllWithoutAsserting() {
 
 export function unstable_clearLog() {
   const old = yieldedValues;
-  yieldedValues = undefined;
+  yieldedValues = null;
   return old ?? [];
 }
 
@@ -639,7 +640,7 @@ export function unstable_advanceTime(ms) {
   if (scheduledTimeout != null && timeoutTime <= currentMockTime) {
     scheduledTimeout(currentMockTime);
     timeoutTime = -1;
-    scheduledTimeout = undefined;
+    scheduledTimeout = null;
   }
 }
 

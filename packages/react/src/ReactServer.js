@@ -20,6 +20,7 @@ export {
 } from './jsx/ReactJSXElement.js';
 export {lazy} from './ReactLazy.js';
 export {memo} from './ReactMemo.js';
+
 export {
   REACT_ACTIVITY_TYPE as Activity,
   REACT_FRAGMENT_TYPE as Fragment,
@@ -28,6 +29,7 @@ export {
   REACT_SUSPENSE_TYPE as Suspense,
   REACT_VIEW_TRANSITION_TYPE as ViewTransition,
 } from '../../shared/ReactSymbols.js';
+
 export {default as version} from '../../shared/ReactVersion.js';
 // DEV-only
 export {captureOwnerStack} from './ReactOwnerStack.js';

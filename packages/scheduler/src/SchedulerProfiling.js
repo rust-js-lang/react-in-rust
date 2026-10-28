@@ -15,8 +15,8 @@ const INITIAL_EVENT_LOG_SIZE = 131072;
 const MAX_EVENT_LOG_SIZE = 524288; // Equivalent to 2 megabytes
 
 let eventLogSize = 0;
-let eventLogBuffer;
-let eventLog;
+let eventLogBuffer = null;
+let eventLog = null;
 let eventLogIndex = 0;
 
 const TaskStartEvent = 1;
@@ -66,10 +66,10 @@ export function startLoggingProfilingEvents() {
 export function stopLoggingProfilingEvents() {
   const buffer = eventLogBuffer;
   eventLogSize = 0;
-  eventLogBuffer = undefined;
-  eventLog = undefined;
+  eventLogBuffer = null;
+  eventLog = null;
   eventLogIndex = 0;
-  return buffer ?? null;
+  return buffer;
 }
 
 export function markTaskStart(task, ms) {

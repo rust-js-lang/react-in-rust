@@ -5,7 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export function batchedUpdates<A, R>(fn: (a: A) => R, a: A): R;
+export function batchedUpdates<A, B, R>(
+  fn: (a: A, value: B | null | undefined) => R,
+  a: A,
+  b?: B | null | undefined,
+): R;
 
 // TODO: Replace with flushSync
 export function discreteUpdates<A, B, C, D, R>(
