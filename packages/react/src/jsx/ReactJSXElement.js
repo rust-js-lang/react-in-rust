@@ -23,11 +23,6 @@ import hasOwnProperty from '../../../shared/hasOwnProperty.js';
 import isArray from '../../../shared/isArray.js';
 import {$unwrap} from '@rust-js/runtime';
 
-/**
- * What `console.createTask` is: given a name, the task DevTools shows the
- * stack of where it was made, or `None` where it makes none.
- */
-
 function noTask(name) {
   return null;
 }

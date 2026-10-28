@@ -3,19 +3,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+use crate::get_vendor_prefixed_event_name::get_vendor_prefixed_event_name;
+
 /// A DOM event's name, `'click'` say: one of the names the DOM fires,
 /// some vendor-prefixed, as `getVendorPrefixedEventName` gives them, and
 /// `'afterblur'` and `'beforeblur'`, not real events, used by event
 /// experiments, and `'textInput'`, intentionally camelCase, non-standard.
 pub type DOMEventName = String;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/getVendorPrefixedEventName.js#default"
-)]
-fn get_vendor_prefixed_event_name(event_name: &str) -> DOMEventName {
-    unreachable!()
-}
 
 thread_local! {
     pub static ANIMATION_CANCEL: DOMEventName = get_vendor_prefixed_event_name("animationcancel");

@@ -17,29 +17,25 @@ export function validateOptionProps(element, props) {
     // If a value is not provided, then the children must be simple.
     if (props.value == null) {
       if (typeof props.children === 'object' && props.children != null) {
-        Children.forEach(
-          props.children,
-          child => {
-            if (child == null) {
-              return;
-            }
-            if (
-              typeof child === 'string' ||
-              typeof child === 'number' ||
-              typeof child === 'bigint'
-            ) {
-              return;
-            }
-            if (!didWarnInvalidChild) {
-              didWarnInvalidChild = true;
-              console.error(
-                'Cannot infer the option value of complex children. ' +
-                  'Pass a `value` prop or use a plain string as children to <option>.',
-              );
-            }
-          },
-          undefined,
-        );
+        Children.forEach(props.children, child => {
+          if (child == null) {
+            return;
+          }
+          if (
+            typeof child === 'string' ||
+            typeof child === 'number' ||
+            typeof child === 'bigint'
+          ) {
+            return;
+          }
+          if (!didWarnInvalidChild) {
+            didWarnInvalidChild = true;
+            console.error(
+              'Cannot infer the option value of complex children. ' +
+                'Pass a `value` prop or use a plain string as children to <option>.',
+            );
+          }
+        });
       } else if (
         props.dangerouslySetInnerHTML != null &&
         !didWarnInvalidInnerHTML

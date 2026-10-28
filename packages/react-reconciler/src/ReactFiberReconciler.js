@@ -532,12 +532,6 @@ export function findHostInstanceWithNoPortals(fiber) {
   return getPublicInstance(hostFiber.stateNode);
 }
 
-/**
- * What DevTools decides of a boundary: to force it to error (`true`), to
- * stop forcing it (`false`), or neither.
- * What DevTools decides of a boundary: to force it to suspend.
- */
-
 let shouldErrorImpl = fiber => null;
 
 export function shouldError(fiber) {
@@ -545,11 +539,6 @@ export function shouldError(fiber) {
 }
 
 export let shouldSuspend = fiber => false;
-
-/**
- * A path DevTools edits a value at: each key, a property's name or an
- * array's index.
- */
 
 let overrideHookState = null;
 let overrideHookStateDeletePath = null;

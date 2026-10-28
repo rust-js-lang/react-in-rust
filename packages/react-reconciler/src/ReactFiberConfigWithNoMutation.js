@@ -16,11 +16,6 @@ function shim() {
   );
 }
 
-/**
- * What this module gives for each function the renderer hasn't: it
- * throws, whatever it's given.
- */
-
 // Mutation (when unsupported)
 export const supportsMutation = false;
 export const cloneMutableInstance = shim;

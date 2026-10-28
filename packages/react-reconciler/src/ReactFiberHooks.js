@@ -2458,12 +2458,6 @@ function useEffectEventImpl(payload) {
   }
 }
 
-/**
- * What `useEffectEvent` gives: a function calling what the component last
- * gave with its arguments.
- * What `useEffectEvent` is given: any function.
- */
-
 function mountEvent(callback) {
   const hook = mountWorkInProgressHook();
   const ref = {
@@ -2519,12 +2513,6 @@ function mountLayoutEffect(create, deps) {
 function updateLayoutEffect(create, deps) {
   updateEffectImpl(UpdateEffect, HookLayout, create, deps);
 }
-
-/**
- * What a ref callback is: called with the instance, or `null`; what it
- * gives is the cleanup it's called with `null` in place of, if it's a
- * function.
- */
 
 function imperativeHandleEffect(create, ref) {
   if (typeof ref === 'function') {
@@ -2602,8 +2590,6 @@ function updateImperativeHandle(ref, create, deps) {
   );
 }
 
-/** What `useDebugValue` formats its value with, for DevTools. */
-
 function mountDebugValue(value, formatterFn) {
   // This hook is normally a no-op.
   // The react-debug-hooks package injects its own implementation
@@ -2611,11 +2597,6 @@ function mountDebugValue(value, formatterFn) {
 }
 
 const updateDebugValue = mountDebugValue;
-
-/**
- * What `useCallback` and `useMemo` keep: the value, and the deps it was
- * made of.
- */
 
 function mountCallback(callback, deps) {
   const hook = mountWorkInProgressHook();
@@ -2639,8 +2620,6 @@ function updateCallback(callback, deps) {
   hook.memoizedState = memoized;
   return callback;
 }
-
-/** What `useMemo` calls for its value. */
 
 function mountMemo(nextCreate, deps) {
   const hook = mountWorkInProgressHook();
@@ -2950,8 +2929,6 @@ function startTransition(
 
 const noop = () => undefined;
 
-/** What a form's action is: called with the form's data. */
-
 // ReactFiberConfig's `TransitionStatus`, and the form's data.
 export function startHostTransition(formFiber, pendingState, action, formData) {
   if (formFiber.tag !== HostComponent) {
@@ -3104,11 +3081,6 @@ export function requestFormReset(formFiber) {
   );
 }
 
-/**
- * What `useTransition` gives to start a Transition: of the callback to
- * call in it.
- */
-
 function mountTransition() {
   const stateHook = mountStateImpl(false);
   // The `start` method never changes.
@@ -3193,11 +3165,6 @@ function updateId() {
   const id = hook.memoizedState;
   return id;
 }
-
-/**
- * What `useCacheRefresh` gives: what refreshes the cache, of what makes
- * its next value, and the value it seeds it with.
- */
 
 function mountRefresh() {
   const hook = mountWorkInProgressHook();

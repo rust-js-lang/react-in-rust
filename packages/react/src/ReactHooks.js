@@ -8,11 +8,6 @@
 import ReactSharedInternals from '../../shared/ReactSharedInternals.js';
 import {REACT_CONSUMER_TYPE} from '../../shared/ReactSymbols.js';
 
-/**
- * What `useCacheRefresh` gives: what refreshes the cache, of what makes
- * its next value, and the value it seeds it with.
- */
-
 function resolveDispatcher() {
   const dispatcher = ReactSharedInternals.H;
   if (__DEV__ && dispatcher == null) {

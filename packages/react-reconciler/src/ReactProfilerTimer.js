@@ -24,13 +24,6 @@ import {
 import {isAlreadyRendering} from './ReactFiberWorkLoop.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 
-/**
- * ReactFiberWorkLoop's `SuspendedReason`: why the work loop yielded.
- * The errors a phase captured: shared arrays, as upstream's live ones.
- * What `console.createTask` is: given a name, the task DevTools shows the
- * stack of where it was made, or `None` where it makes none.
- */
-
 function noTask(name) {
   return null;
 }

@@ -16,11 +16,6 @@ function shim() {
   );
 }
 
-/**
- * What this module gives for each function the renderer hasn't: it
- * throws, whatever it's given.
- */
-
 // React Scopes (when unsupported)
 export const prepareScopeUpdate = shim;
 export const getInstanceFromScope = shim;

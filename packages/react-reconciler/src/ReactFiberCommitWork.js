@@ -1790,11 +1790,6 @@ function commitSuspenseHydrationCallbacks(finishedRoot, finishedWork) {
   }
 }
 
-/**
- * shared/ReactTypes' `Wakeable`s a boundary already listens to: a `WeakSet`
- * where the host has one, a `Set` where it hasn't.
- */
-
 function getRetryCache(finishedWork) {
   // TODO: Unify the interface for the retry cache so we don't have to switch
   // on the tag like this.
@@ -3314,8 +3309,6 @@ function recursivelyTraverseReappearLayoutEffects(
     child = child.sibling;
   }
 }
-
-/** What the work loop committed: the transitions of this render, if any. */
 
 function commitOffscreenPassiveMountEffects(current, finishedWork, instance) {
   let previousCache = null;

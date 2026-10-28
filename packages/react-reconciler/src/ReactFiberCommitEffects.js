@@ -922,11 +922,6 @@ function safelyCallDestroy(current, nearestMountedAncestor, destroy) {
   }
 }
 
-/**
- * shared/ReactTypes' `ProfilerProps`' `onRender`.
- * shared/ReactTypes' `ProfilerProps`' `onCommit` and `onPostCommit`.
- */
-
 function commitProfiler(
   finishedWork,
   current,

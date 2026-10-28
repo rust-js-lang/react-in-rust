@@ -51,11 +51,6 @@ export function resetShouldStartViewTransition() {
   shouldStartViewTransition = false;
 }
 
-/**
- * The named ViewTransitions that appear, by name: a map the apply gesture
- * phase deletes from too.
- */
-
 // This tracks named ViewTransition components found in the accumulateSuspenseyCommit
 // phase that might need to find deleted pairs in the beforeMutation phase.
 export let appearingViewTransitions = null;
@@ -82,11 +77,6 @@ export function trackEnterViewTransitions(placement) {
     shouldStartViewTransition = true;
   }
 }
-
-/**
- * What a ViewTransition's children that may be canceled are, tupled: each
- * entry's ReactFiberConfig `Instance`, its old name, and its `Props`.
- */
 
 // We can't cancel view transition children until we know that their parent also
 // don't need to transition.

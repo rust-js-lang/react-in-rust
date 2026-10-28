@@ -36,12 +36,6 @@ export {
   UserBlockingPriority as unstable_UserBlockingPriority,
 } from '../SchedulerPriorities.js';
 
-/**
- * `console.log`, which a test may patch.
- * What the host is asked to call: given whether there's time left and the
- * time it starts, it works, and says whether there's more.
- */
-
 // Max 31 bit integer. The max integer size in V8 for 32-bit systems.
 // Math.pow(2, 30) - 1
 // 0b111111111111111111111111111111

@@ -116,8 +116,6 @@ function getCurrentDebugTask() {
   return null;
 }
 
-/** What warns that a child in a list has no key. */
-
 let didWarnAboutMaps = false;
 let didWarnAboutGenerators = false;
 const ownerHasKeyUseWarning = {};

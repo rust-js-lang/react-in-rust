@@ -16,11 +16,6 @@ function shim() {
   );
 }
 
-/**
- * What this module gives for each function the renderer hasn't: it
- * throws, whatever it's given.
- */
-
 // View Transitions (when unsupported)
 export const applyViewTransitionName = shim;
 export const restoreViewTransitionName = shim;

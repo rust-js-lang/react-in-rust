@@ -19,11 +19,6 @@ import {
 } from './ReactWorkTags.js';
 import {$unwrap} from '@rust-js/runtime';
 
-/**
- * shared/ReactTypes' `ReactScopeQuery`: whether a host instance, of its
- * type and props, is one the query wants.
- */
-
 function getSuspenseFallbackChild(fiber) {
   const item = $unwrap(fiber.child);
   const item$1 = $unwrap(item.sibling);

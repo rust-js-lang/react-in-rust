@@ -415,8 +415,6 @@ function updateForwardRef(
   return workInProgress.child;
 }
 
-/** What a `memo`'s `compare` is: whether its props are equal enough to bail out. */
-
 function updateMemoComponent(
   current,
   workInProgress,
@@ -3559,7 +3557,7 @@ function updateContextConsumer(current, workInProgress, renderLanes) {
   }
   let newChildren;
   if (__DEV__) {
-    newChildren = $unwrap(callComponentInDEV)(render, newValue, undefined);
+    newChildren = $unwrap(callComponentInDEV)(render, newValue);
   } else {
     newChildren = render(newValue);
   }

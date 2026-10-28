@@ -11,12 +11,6 @@ const UNTERMINATED = 0;
 const TERMINATED = 1;
 const ERRORED = 2;
 
-/**
- * A JS function of any arguments, TypeScript's `Function`.
- * What `cache` gives of a function: one JS calls with the same arguments,
- * cached.
- */
-
 function createCacheRoot() {
   return new WeakMap();
 }

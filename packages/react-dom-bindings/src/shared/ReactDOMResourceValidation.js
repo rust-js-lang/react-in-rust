@@ -69,10 +69,10 @@ export function getValueDescriptorExpectingObjectForWarning(thing) {
     return '`null`';
   } else if (thing === undefined) {
     return '`undefined`';
+  } else if (thing === '') {
+    return 'an empty string';
   } else {
-    return thing === ''
-      ? 'an empty string'
-      : `something with type "${typeof thing}"`;
+    return `something with type "${typeof thing}"`;
   }
 }
 
@@ -83,10 +83,10 @@ export function getValueDescriptorExpectingEnumForWarning(thing) {
     return '`undefined`';
   } else if (thing === '') {
     return 'an empty string';
+  } else if (typeof thing === 'string') {
+    return JSON.stringify(thing);
   } else {
-    return typeof thing === 'string'
-      ? JSON.stringify(thing)
-      : `something with type "${typeof thing}"`;
+    return `something with type "${typeof thing}"`;
   }
 }
 //# sourceMappingURL=ReactDOMResourceValidation.js.map

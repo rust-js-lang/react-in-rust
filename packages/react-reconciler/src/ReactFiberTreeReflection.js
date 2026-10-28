@@ -335,7 +335,7 @@ export function traverseFragmentInstancesAndTextInstances(
   c,
 ) {
   const child = fragmentFiber.child;
-  traverseVisibleInstancesAndTextInstancesUnboxed(child, false, fn, a, b, c);
+  traverseVisibleInstancesAndTextInstances(child, false, fn, a, b, c);
 }
 
 export function traverseFragmentInstancesAndTextInstancesDeeply(
@@ -346,7 +346,7 @@ export function traverseFragmentInstancesAndTextInstancesDeeply(
   c,
 ) {
   const child = fragmentFiber.child;
-  traverseVisibleInstancesAndTextInstancesUnboxed(child, true, fn, a, b, c);
+  traverseVisibleInstancesAndTextInstances(child, true, fn, a, b, c);
 }
 
 function traverseVisibleInstancesAndTextInstances(
@@ -374,47 +374,6 @@ function traverseVisibleInstancesAndTextInstances(
         const grandchild = child.child;
         if (
           traverseVisibleInstancesAndTextInstances(
-            grandchild,
-            searchWithinHosts,
-            fn,
-            a,
-            b,
-            c,
-          )
-        ) {
-          return true;
-        }
-      }
-      child = child.sibling;
-    }
-  }
-  return false;
-}
-
-function traverseVisibleInstancesAndTextInstancesUnboxed(
-  child,
-  searchWithinHosts,
-  fn,
-  a,
-  b,
-  c,
-) {
-  while (child != null) {
-    const isHostNode =
-      child.tag === HostComponent ||
-      child.tag === HostSingleton ||
-      child.tag === HostText;
-    if (isHostNode && fn(child, a, b, c)) {
-      return true;
-    } else {
-      if (child.tag === OffscreenComponent && child.memoizedState != null) {
-      } else if (
-        searchWithinHosts ||
-        (child.tag !== HostComponent && child.tag !== HostSingleton)
-      ) {
-        const grandchild = child.child;
-        if (
-          traverseVisibleInstancesAndTextInstancesUnboxed(
             grandchild,
             searchWithinHosts,
             fn,

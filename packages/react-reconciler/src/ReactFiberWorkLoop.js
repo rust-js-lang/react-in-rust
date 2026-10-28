@@ -375,8 +375,6 @@ import {
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {$unwrap} from '@rust-js/runtime';
 
-/** A root's ping cache: the lanes each wakeable has a ping listener for. */
-
 const PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map;
 
 export const NoContext = /*             */ 0b000;
@@ -646,11 +644,6 @@ const PENDING_SPAWNED_WORK = 4;
 const PENDING_PASSIVE_PHASE = 5;
 const PENDING_GESTURE_MUTATION_PHASE = 6;
 const PENDING_GESTURE_ANIMATION_PHASE = 7;
-
-/**
- * A callback a `<ViewTransition>` scheduled for the commit, bound to its
- * instance: given the transition's types, it may return a cleanup.
- */
 
 let pendingEffectsStatus = 0;
 let pendingEffectsRoot = null;
