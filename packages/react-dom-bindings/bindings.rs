@@ -83,6 +83,8 @@ pub mod react_dom_option;
 pub mod react_dom_resource_validation;
 #[path = "src/client/ReactDOMSrcObject.rs"]
 pub mod react_dom_src_object;
+#[path = "src/client/ReactDOMTextarea.rs"]
+pub mod react_dom_textarea;
 #[path = "src/shared/ReactDOMUnknownPropertyHook.rs"]
 pub mod react_dom_unknown_property_hook;
 #[path = "src/events/ReactDOMUpdateBatching.rs"]
