@@ -83,7 +83,7 @@ thread_local! {
 }
 
 js::export_default! {
-    fn is_unitless_number(name: &str) -> bool {
+    pub fn is_unitless_number(name: &str) -> bool {
         UNITLESS_NUMBERS.with(|unitless_numbers| unitless_numbers.contains(name))
     }
 }

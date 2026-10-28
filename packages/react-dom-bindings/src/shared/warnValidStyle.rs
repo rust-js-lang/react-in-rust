@@ -125,7 +125,7 @@ fn warn_style_value_is_infinity(name: &str, _value: f64) {
     }
 }
 
-fn warn_valid_style(name: &str, value: Option<&Unknown>) {
+pub fn warn_valid_style(name: &str, value: Option<&Unknown>) {
     if __DEV__ {
         if name.contains('-') {
             warn_hyphenated_style_name(name);

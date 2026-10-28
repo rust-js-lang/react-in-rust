@@ -22,7 +22,7 @@ js::export_default! {
     ///
     /// As Modernizr suggests (http://modernizr.com/docs/#prefixed), an `ms` prefix
     /// is converted to `-ms-`.
-    fn hyphenate_style_name(name: &str) -> String {
+    pub fn hyphenate_style_name(name: &str) -> String {
         UPPERCASE_PATTERN.with(|uppercase_pattern| {
             MS_PATTERN.with(|ms_pattern| {
                 reg_exp::replace(

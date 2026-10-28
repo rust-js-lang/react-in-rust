@@ -3,6 +3,8 @@
 
 #[path = "src/shared/crossOriginStrings.rs"]
 pub mod cross_origin_strings;
+#[path = "src/client/CSSPropertyOperations.rs"]
+pub mod css_property_operations;
 #[path = "src/client/CSSShorthandProperty.rs"]
 pub mod css_shorthand_property;
 #[path = "src/events/CurrentReplayingEvent.rs"]
@@ -15,6 +17,8 @@ pub mod dom_event_names;
 pub mod dom_event_properties;
 #[path = "src/client/DOMNamespaces.rs"]
 pub mod dom_namespaces;
+#[path = "src/client/DOMPropertyOperations.rs"]
+pub mod dom_property_operations;
 #[path = "src/client/escapeSelectorAttributeValueInsideDoubleQuotes.rs"]
 pub mod escape_selector_attribute_value_inside_double_quotes;
 #[path = "src/server/escapeTextForBrowser.rs"]

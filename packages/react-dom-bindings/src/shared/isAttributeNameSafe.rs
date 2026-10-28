@@ -27,7 +27,7 @@ thread_local! {
 }
 
 js::export_default! {
-    fn is_attribute_name_safe(attribute_name: &str) -> bool {
+    pub fn is_attribute_name_safe(attribute_name: &str) -> bool {
         let has_own_property = HAS_OWN_PROPERTY.with(|has_own_property| *has_own_property);
         if VALIDATED_ATTRIBUTE_NAME_CACHE.with(|cache| has_own_property.call(js::unknown(*cache), attribute_name)) {
             return true;
