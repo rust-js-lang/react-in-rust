@@ -199,9 +199,12 @@ function workLoop(hasTimeRemaining, initialTime) {
       // This currentTask hasn't expired, and we've reached the deadline.
       break;
     }
-    const callback = currentTask$1.callback;
-    currentTask$1.callback = undefined;
-    if (typeof callback === 'function') {
+    if (
+      typeof currentTask$1.callback === 'function' &&
+      currentTask$1.callback != null
+    ) {
+      const callback = currentTask$1.callback;
+      currentTask$1.callback = undefined;
       currentPriorityLevel = currentTask$1.priorityLevel;
       const didUserCallbackTimeout =
         currentTask$1.expirationTime <= currentTime;

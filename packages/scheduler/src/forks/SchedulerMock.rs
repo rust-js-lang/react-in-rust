@@ -190,9 +190,8 @@ fn work_loop(has_time_remaining: bool, initial_time: f64) -> bool {
             // This currentTask hasn't expired, and we've reached the deadline.
             break;
         }
-        let callback = current_task.callback.take();
-        if let Some(Callback(mut callback)) = callback
-            && js::is_function(&callback)
+        if js::is_function(&*current_task.callback.borrow())
+            && let Some(Callback(mut callback)) = current_task.callback.take()
         {
             CURRENT_PRIORITY_LEVEL.set(current_task.priority_level);
             let did_user_callback_timeout = current_task.expiration_time <= current_time;
