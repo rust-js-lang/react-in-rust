@@ -75,6 +75,8 @@ pub mod react_dom_container;
 pub mod react_dom_controlled_component;
 #[path = "src/client/ReactDOMEventHandleTypes.rs"]
 pub mod react_dom_event_handle_types;
+#[path = "src/events/ReactDOMEventListener.rs"]
+pub mod react_dom_event_listener;
 #[path = "src/shared/ReactDOMFormActions.rs"]
 pub mod react_dom_form_actions;
 #[path = "src/shared/ReactDOMInvalidARIAHook.rs"]

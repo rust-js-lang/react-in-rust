@@ -11,14 +11,7 @@ use react_reconciler::react_event_priorities::{
 use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS;
 use webapi::window;
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/ReactDOMEventListener.js#getEventPriority"
-)]
-fn get_event_priority(dom_event_name: &str) -> EventPriority {
-    let _ = dom_event_name;
-    unreachable!()
-}
+use crate::react_dom_event_listener::get_event_priority;
 
 pub fn set_current_update_priority(
     new_priority: EventPriority,
