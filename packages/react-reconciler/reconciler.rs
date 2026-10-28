@@ -18,6 +18,8 @@ pub mod react_fiber;
 pub mod react_fiber_act;
 #[path = "src/ReactFiberActivityComponent.rs"]
 pub mod react_fiber_activity_component;
+#[path = "src/ReactFiberApplyGesture.rs"]
+pub mod react_fiber_apply_gesture;
 #[path = "src/ReactFiberAsyncAction.rs"]
 pub mod react_fiber_async_action;
 #[path = "src/ReactFiberAsyncDispatcher.rs"]
@@ -100,6 +102,8 @@ pub mod react_fiber_new_context;
 pub mod react_fiber_offscreen_component;
 #[path = "src/ReactFiberPerformanceTrack.rs"]
 pub mod react_fiber_performance_track;
+#[path = "src/ReactFiberReconciler.rs"]
+pub mod react_fiber_reconciler;
 #[path = "src/ReactFiberRoot.rs"]
 pub mod react_fiber_root;
 #[path = "src/ReactFiberRootScheduler.rs"]
@@ -132,6 +136,8 @@ pub mod react_fiber_tree_reflection;
 pub mod react_fiber_unwind_work;
 #[path = "src/ReactFiberViewTransitionComponent.rs"]
 pub mod react_fiber_view_transition_component;
+#[path = "src/ReactFiberWorkLoop.rs"]
+pub mod react_fiber_work_loop;
 #[path = "src/ReactHookEffectTags.rs"]
 pub mod react_hook_effect_tags;
 #[path = "src/ReactInternalTypes.rs"]

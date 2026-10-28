@@ -28,9 +28,9 @@ export interface Transition {
   // enableTransitionTracing only
   name?: string | null | undefined;
   // enableTransitionTracing only
-  startTime?: number | undefined;
+  startTime?: number | null | undefined;
   // DEV-only
-  _updatedFibers?: Set<any> | undefined;
+  _updatedFibers?: Set<any> | null | undefined;
 }
 
 /** What the renderer does as a Transition's scope returns. */

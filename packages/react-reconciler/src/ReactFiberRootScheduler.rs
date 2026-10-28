@@ -35,6 +35,13 @@ use crate::react_fiber_lane::{
     get_next_lanes_to_flush_sync, includes_sync_lane, is_gesture_render,
     mark_starved_lanes_as_expired,
 };
+use crate::react_fiber_work_loop::{
+    COMMIT_CONTEXT, NO_CONTEXT, RENDER_CONTEXT, flush_pending_effects,
+    flush_pending_effects_delayed, get_execution_context, get_pending_passive_effects_lanes,
+    get_root_with_pending_passive_effects, get_work_in_progress_root,
+    get_work_in_progress_root_render_lanes, has_pending_commit_effects,
+    is_work_loop_suspended_on_data, perform_work_on_root,
+};
 use crate::react_internal_types::FiberRoot;
 use crate::react_profiler_timer::{reset_nested_update_flag, sync_nested_update_flag};
 use crate::react_root_tags::LEGACY_ROOT;
@@ -53,99 +60,11 @@ use crate::scheduler::USER_BLOCKING_PRIORITY as USER_BLOCKING_SCHEDULER_PRIORITY
 use crate::scheduler::{NOW as now, PriorityLevel, SchedulerCallback};
 
 unsafe extern "Rust" {
-    #[link_name = "./src/ReactFiberWorkLoop.js#CommitContext"]
-    safe static COMMIT_CONTEXT: u8;
-    #[link_name = "./src/ReactFiberWorkLoop.js#NoContext"]
-    safe static NO_CONTEXT: u8;
-    #[link_name = "./src/ReactFiberWorkLoop.js#RenderContext"]
-    safe static RENDER_CONTEXT: u8;
     #[link_name = "./src/ReactFiberConfig.js#supportsMicrotasks"]
     safe static SUPPORTS_MICROTASKS: bool;
     // ReactFiberConfig's `TimeoutHandle`'s none.
     #[link_name = "./src/ReactFiberConfig.js#noTimeout"]
     safe static NO_TIMEOUT: &'static Unknown;
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#flushPendingEffects"
-)]
-fn flush_pending_effects() -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#flushPendingEffectsDelayed"
-)]
-fn flush_pending_effects_delayed() -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getExecutionContext"
-)]
-fn get_execution_context() -> u8 {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getWorkInProgressRoot",
-    rust_js::nullable
-)]
-fn get_work_in_progress_root() -> Option<Rc<FiberRoot>> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getWorkInProgressRootRenderLanes"
-)]
-fn get_work_in_progress_root_render_lanes() -> Lanes {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getRootWithPendingPassiveEffects",
-    rust_js::nullable
-)]
-fn get_root_with_pending_passive_effects() -> Option<Rc<FiberRoot>> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getPendingPassiveEffectsLanes"
-)]
-fn get_pending_passive_effects_lanes() -> Lanes {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#hasPendingCommitEffects"
-)]
-fn has_pending_commit_effects() -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#isWorkLoopSuspendedOnData"
-)]
-fn is_work_loop_suspended_on_data() -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#performWorkOnRoot"
-)]
-fn perform_work_on_root(root: &FiberRoot, lanes: Lanes, force_sync: bool) {
-    unreachable!()
 }
 
 #[cfg_attr(
@@ -306,7 +225,7 @@ fn flush_sync_work_across_roots_impl(sync_transition_lanes: Lanes, only_legacy: 
             } else {
                 let work_in_progress_root = get_work_in_progress_root();
                 let work_in_progress_root_render_lanes = get_work_in_progress_root_render_lanes();
-                let root_has_pending_commit = current.cancel_pending_commit.get().is_some()
+                let root_has_pending_commit = current.cancel_pending_commit.borrow().is_some()
                     || !js::strict_equals(current.timeout_handle.get(), NO_TIMEOUT);
                 let next_lanes = get_next_lanes(
                     &current,
@@ -503,7 +422,7 @@ fn schedule_task_for_root_during_microtask(root: &Rc<FiberRoot>, current_time: f
     let pending_passive_effects_lanes = get_pending_passive_effects_lanes();
     let work_in_progress_root = get_work_in_progress_root();
     let work_in_progress_root_render_lanes = get_work_in_progress_root_render_lanes();
-    let root_has_pending_commit = root.cancel_pending_commit.get().is_some()
+    let root_has_pending_commit = root.cancel_pending_commit.borrow().is_some()
         || !js::strict_equals(root.timeout_handle.get(), NO_TIMEOUT);
     let next_lanes = if ENABLE_YIELDING_BEFORE_PASSIVE
         && root_with_pending_passive_effects.is_some_and(|root_with_pending_passive_effects| {
@@ -542,7 +461,7 @@ fn schedule_task_for_root_during_microtask(root: &Rc<FiberRoot>, current_time: f
             .is_some_and(|work_in_progress_root| Rc::ptr_eq(root, &work_in_progress_root))
             && is_work_loop_suspended_on_data())
         // Suspended commit phase
-        || root.cancel_pending_commit.get().is_some()
+        || root.cancel_pending_commit.borrow().is_some()
     {
         // Fast path: There's nothing to work on.
         if existing_callback_node.is_some() {
@@ -679,7 +598,7 @@ fn perform_work_on_root_via_scheduler_task(
     // it's available).
     let work_in_progress_root = get_work_in_progress_root();
     let work_in_progress_root_render_lanes = get_work_in_progress_root_render_lanes();
-    let root_has_pending_commit = root.cancel_pending_commit.get().is_some()
+    let root_has_pending_commit = root.cancel_pending_commit.borrow().is_some()
         || !js::strict_equals(root.timeout_handle.get(), NO_TIMEOUT);
     let lanes = get_next_lanes(
         root,
@@ -725,7 +644,7 @@ fn perform_work_on_root_via_scheduler_task(
     None
 }
 
-fn perform_sync_work_on_root(root: &FiberRoot, lanes: Lanes) {
+fn perform_sync_work_on_root(root: &Rc<FiberRoot>, lanes: Lanes) {
     // This is the entry point for synchronous tasks that don't go
     // through Scheduler.
     let did_flush_passive_effects = flush_pending_effects();

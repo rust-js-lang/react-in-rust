@@ -176,19 +176,18 @@ export function startGestureTransition(provider, scope, options) {
 }
 
 function warnAboutTransitionSubscriptions(prevTransition, currentTransition) {
-  if (
-    __DEV__ &&
-    prevTransition == null &&
-    currentTransition._updatedFibers != null
-  ) {
-    const updatedFibersCount = currentTransition._updatedFibers.size;
-    currentTransition._updatedFibers.clear();
-    if (updatedFibersCount > 10) {
-      console.warn(
-        'Detected a large number of updates inside startTransition. ' +
-          'If this is due to a subscription please re-write it to use React provided hooks. ' +
-          'Otherwise concurrent mode guarantees are off the table.',
-      );
+  if (__DEV__ && prevTransition == null) {
+    const updatedFibers = currentTransition._updatedFibers;
+    if (updatedFibers != null) {
+      const updatedFibersCount = updatedFibers.size;
+      updatedFibers.clear();
+      if (updatedFibersCount > 10) {
+        console.warn(
+          'Detected a large number of updates inside startTransition. ' +
+            'If this is due to a subscription please re-write it to use React provided hooks. ' +
+            'Otherwise concurrent mode guarantees are off the table.',
+        );
+      }
     }
   }
 }

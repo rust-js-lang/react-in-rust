@@ -29,32 +29,17 @@ use crate::react_fiber_dev_tools_hook::{
     mark_force_update_scheduled, mark_state_update_scheduled, set_is_strict_mode_for_devtools,
 };
 use crate::react_fiber_flags::{LAYOUT_STATIC, MOUNT_LAYOUT_DEV, SNAPSHOT, UPDATE};
-use crate::react_fiber_lane::{Lane, Lanes, NO_LANES};
+use crate::react_fiber_lane::{Lanes, NO_LANES};
 use crate::react_fiber_legacy_context::{
     EMPTY_CONTEXT_OBJECT, cache_context, get_masked_context, get_unmasked_context,
     has_context_changed,
 };
 use crate::react_fiber_new_context::{check_if_context_changed, read_context};
-use crate::react_internal_types::{Fiber, FiberRoot};
+use crate::react_fiber_work_loop::{request_update_lane, schedule_update_on_fiber};
+use crate::react_internal_types::Fiber;
 use crate::react_profiler_timer::start_update_timer_by_lane;
 use crate::react_strict_mode_warnings::REACT_STRICT_MODE_WARNINGS;
 use crate::react_type_of_mode::{NO_MODE, STRICT_EFFECTS_MODE, STRICT_LEGACY_MODE};
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#requestUpdateLane"
-)]
-fn request_update_lane(fiber: &Fiber) -> Lane {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#scheduleUpdateOnFiber"
-)]
-fn schedule_update_on_fiber(root: &FiberRoot, fiber: &Fiber, lane: Lane) {
-    unreachable!()
-}
 
 /// A class's static `getDerivedStateFromProps`: the state its props derive,
 /// given its previous state.

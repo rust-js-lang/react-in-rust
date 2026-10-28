@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {Transition} from '../../react/src/ReactStartTransition.js';
 import type {ConcurrentUpdate} from './ReactFiberConcurrentUpdates.js';
 import type {Fiber, FiberRoot} from './ReactInternalTypes.js';
 
@@ -221,14 +222,14 @@ export function movePendingFibersToMemoized(
 
 export function addTransitionToLanesMap(
   root: FiberRoot,
-  transition: unknown,
+  transition: Transition,
   lane: Lane,
 ): void;
 
 export function getTransitionsForLanes(
   root: FiberRoot,
   lanes: Lanes,
-): unknown[] | null;
+): Transition[] | null;
 
 export function clearTransitionsForLanes(root: FiberRoot, lanes: Lanes): void;
 

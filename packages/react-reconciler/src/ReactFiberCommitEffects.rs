@@ -35,6 +35,7 @@ use crate::react_fiber_dev_tools_hook::{
 };
 use crate::react_fiber_flags::NO_FLAGS;
 use crate::react_fiber_view_transition_component::{ViewTransitionProps, get_view_transition_name};
+use crate::react_fiber_work_loop::{capture_commit_phase_error, set_is_running_insertion_effect};
 use crate::react_hook_effect_tags::HookFlags;
 #[cfg_attr(rust_js, rust_js::name = "HookInsertion")]
 use crate::react_hook_effect_tags::INSERTION as HOOK_INSERTION;
@@ -79,27 +80,6 @@ fn create_view_transition_instance(name: &str) -> &'static Unknown {
     rust_js::link_name = "./src/ReactFiberConfig.js#createFragmentInstance"
 )]
 fn create_fragment_instance(fragment_fiber: &Fiber) -> &'static Unknown {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#captureCommitPhaseError"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(nearest_mounted_ancestor))]
-fn capture_commit_phase_error(
-    source_fiber: &Fiber,
-    nearest_mounted_ancestor: Option<&Rc<Fiber>>,
-    error: Option<&'static Unknown>,
-) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#setIsRunningInsertionEffect"
-)]
-fn set_is_running_insertion_effect(is_running: bool) {
     unreachable!()
 }
 

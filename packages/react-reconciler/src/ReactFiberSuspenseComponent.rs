@@ -97,6 +97,8 @@ unsafe impl js::Defined for SuspenseListRenderState {}
 pub struct Wakeable(PhantomData<JsObject>);
 
 unsafe impl js::Defined for Wakeable {}
+// Safety: a wakeable is an object, a ping cache's key.
+unsafe impl js::WeakKey for Wakeable {}
 
 impl Wakeable {
     #[cfg_attr(rust_js, rust_js::link_name = "then")]

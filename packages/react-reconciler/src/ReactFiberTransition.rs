@@ -28,38 +28,15 @@ use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
 use crate::react_fiber_transition_types::{
     ENTANGLED_TRANSITION_TYPES, entangle_async_transition_types, queue_transition_types,
 };
+use crate::react_fiber_work_loop::{
+    get_work_in_progress_root, get_work_in_progress_transitions, mark_transition_started,
+};
 use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_profiler_timer::start_async_transition_timer;
 
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFiberConfig.js#isPrimaryRenderer"]
     safe static IS_PRIMARY_RENDERER: bool;
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getWorkInProgressRoot"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn get_work_in_progress_root() -> Option<Rc<FiberRoot>> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getWorkInProgressTransitions"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn get_work_in_progress_transitions() -> Option<Rc<Vec<&'static Transition>>> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#markTransitionStarted"
-)]
-fn mark_transition_started() {
-    unreachable!()
 }
 
 #[cfg_attr(rust_js, rust_js::name = "NoTransition")]

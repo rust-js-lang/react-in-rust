@@ -306,7 +306,7 @@ export interface FiberRoot {
   // The currently active root fiber. This is the mutable root of the tree.
   current: Fiber;
   // A `WeakMap` where the host has one, a `Map` where it hasn't.
-  pingCache?: WeakMap<object, Set<unknown>> | null | undefined;
+  pingCache?: WeakMap<any, Set<number>> | null | undefined;
   // Timeout handle returned by setTimeout. Used to cancel a pending timeout, if
   // it's superseded by a new one.
   // ReactFiberConfig's `TimeoutHandle | NoTimeout`.
@@ -372,7 +372,7 @@ export interface FiberRoot {
   // The following fields are only used in transition tracing in Profile builds
   // react/src/ReactStartTransition's `Transition`s.
   transitionCallbacks?: TransitionTracingCallbacks | null | undefined;
-  transitionLanes: LaneMap<Set<unknown> | null | undefined>;
+  transitionLanes: LaneMap<Set<Transition> | null | undefined>;
   // Transitions on the root can be represented as a bunch of tracing markers.
   // Each entangled group of transitions can be treated as a tracing marker.
   // It will have a set of pending suspense boundaries. These transitions

@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
@@ -64,10 +64,12 @@ pub struct Transition {
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub name: Option<String>,
     // enableTransitionTracing only
-    pub start_time: Option<f64>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub start_time: Cell<Option<f64>>,
     // DEV-only
     #[cfg_attr(rust_js, rust_js::name = "_updatedFibers")]
-    pub updated_fibers: Option<RefCell<HashSet<&'static Fiber>>>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub updated_fibers: RefCell<Option<HashSet<&'static Fiber>>>,
 }
 
 /// What the renderer does as a Transition's scope returns.
@@ -181,8 +183,8 @@ pub fn start_transition(
         types: RefCell::new(None),
         gesture: None,
         name: None,
-        start_time: None,
-        updated_fibers: None,
+        start_time: Cell::new(None),
+        updated_fibers: RefCell::new(None),
     };
     if ENABLE_VIEW_TRANSITION {
         *current_transition.types.get_mut() = match prev_transition {
@@ -200,10 +202,10 @@ pub fn start_transition(
     }
     if ENABLE_TRANSITION_TRACING {
         current_transition.name = options.and_then(|options| options.name.clone());
-        current_transition.start_time = Some(-1.0); // TODO: This should read the timestamp.
+        current_transition.start_time.set(Some(-1.0)); // TODO: This should read the timestamp.
     }
     if __DEV__ {
-        current_transition.updated_fibers = Some(RefCell::new(HashSet::new()));
+        *current_transition.updated_fibers.get_mut() = Some(HashSet::new());
     }
     set_t(REACT_SHARED_INTERNALS, Some(&current_transition));
 
@@ -278,8 +280,8 @@ pub fn start_gesture_transition(
         types: RefCell::new(None),
         gesture: None,
         name: None,
-        start_time: None,
-        updated_fibers: None,
+        start_time: Cell::new(None),
+        updated_fibers: RefCell::new(None),
     };
     if ENABLE_VIEW_TRANSITION {
         *current_transition.types.get_mut() = None;
@@ -290,10 +292,10 @@ pub fn start_gesture_transition(
     }
     if ENABLE_TRANSITION_TRACING {
         current_transition.name = options.and_then(|options| options.name.clone());
-        current_transition.start_time = Some(-1.0); // TODO: This should read the timestamp.
+        current_transition.start_time.set(Some(-1.0)); // TODO: This should read the timestamp.
     }
     if __DEV__ {
-        current_transition.updated_fibers = Some(RefCell::new(HashSet::new()));
+        *current_transition.updated_fibers.get_mut() = Some(HashSet::new());
     }
     set_t(REACT_SHARED_INTERNALS, Some(&current_transition));
 
@@ -333,10 +335,10 @@ fn warn_about_transition_subscriptions(
 ) {
     if __DEV__
         && prev_transition.is_none()
-        && let Some(updated_fibers) = &current_transition.updated_fibers
+        && let Some(updated_fibers) = current_transition.updated_fibers.borrow_mut().as_mut()
     {
-        let updated_fibers_count = updated_fibers.borrow().len();
-        updated_fibers.borrow_mut().clear();
+        let updated_fibers_count = updated_fibers.len();
+        updated_fibers.clear();
         if updated_fibers_count > 10 {
             console::warn((concat!(
                 "Detected a large number of updates inside startTransition. ",

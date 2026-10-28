@@ -12,7 +12,13 @@ export let shouldStartViewTransition: boolean;
 
 export function resetShouldStartViewTransition(): void;
 
-export let appearingViewTransitions: Map<string, ViewTransitionState> | null;
+/**
+ * The named ViewTransitions that appear, by name: a map the apply gesture
+ * phase deletes from too.
+ */
+export type AppearingViewTransitions = Map<string, ViewTransitionState>;
+
+export let appearingViewTransitions: AppearingViewTransitions | null;
 
 export function resetAppearingViewTransitions(): void;
 

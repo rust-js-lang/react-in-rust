@@ -1696,10 +1696,13 @@ function pushStoreConsistencyCheck(fiber, getSnapshot, renderedSnapshot) {
     const componentUpdateQueue = createFunctionComponentUpdateQueue();
     renderingFiber.updateQueue = componentUpdateQueue;
     componentUpdateQueue.stores = [check];
-  } else if (componentUpdateQueue.stores == null) {
-    componentUpdateQueue.stores = [check];
   } else {
-    componentUpdateQueue.stores.push(check);
+    const stores = componentUpdateQueue.stores;
+    if (stores == null) {
+      componentUpdateQueue.stores = [check];
+    } else {
+      stores.push(check);
+    }
   }
 }
 
@@ -2014,8 +2017,9 @@ function runActionStateAction(actionQueue, node) {
         prevTransition == null &&
         currentTransition._updatedFibers != null
       ) {
-        const updatedFibersCount = currentTransition._updatedFibers.size;
-        currentTransition._updatedFibers.clear();
+        const updatedFibers = currentTransition._updatedFibers;
+        const updatedFibersCount = updatedFibers.size;
+        updatedFibers.clear();
         if (updatedFibersCount > 10) {
           console.warn(
             'Detected a large number of updates inside startTransition. ' +
@@ -2904,14 +2908,16 @@ function startTransition(
     }
     ReactSharedInternals.T = prevTransition;
 
-    if (
-      __DEV__ &&
-      prevTransition == null &&
-      currentTransition._updatedFibers != null
-    ) {
-      const updatedFibersCount = currentTransition._updatedFibers.size;
-      currentTransition._updatedFibers.clear();
-      if (updatedFibersCount > 10) {
+    if (__DEV__ && prevTransition == null) {
+      const updatedFibers = currentTransition._updatedFibers;
+      function map(updatedFibers) {
+        const updatedFibersCount = updatedFibers.size;
+        updatedFibers.clear();
+        return updatedFibersCount;
+      }
+      const updatedFibersCount =
+        updatedFibers != null ? map(updatedFibers) : undefined;
+      if (updatedFibersCount != null && updatedFibersCount > 10) {
         console.warn(
           'Detected a large number of updates inside startTransition. ' +
             'If this is due to a subscription please re-write it to use React provided hooks. ' +

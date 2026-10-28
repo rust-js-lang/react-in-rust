@@ -86,6 +86,11 @@ use crate::react_fiber_thenable::{
 };
 use crate::react_fiber_transition::request_current_transition;
 use crate::react_fiber_tree_context::get_tree_id;
+use crate::react_fiber_work_loop::{
+    get_work_in_progress_root, get_work_in_progress_root_render_lanes,
+    is_invalid_execution_context_for_event_function, mark_skipped_update_lanes,
+    request_deferred_lane, request_update_lane, schedule_update_on_fiber,
+};
 #[cfg_attr(rust_js, rust_js::name = "HookHasEffect")]
 use crate::react_hook_effect_tags::HAS_EFFECT as HOOK_HAS_EFFECT;
 use crate::react_hook_effect_tags::HookFlags;
@@ -130,63 +135,6 @@ fn set_current_update_priority(new_priority: EventPriority) {
     rust_js::link_name = "./src/ReactFiberConfig.js#getCurrentUpdatePriority"
 )]
 fn get_current_update_priority() -> EventPriority {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getWorkInProgressRoot"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn get_work_in_progress_root() -> Option<Rc<FiberRoot>> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getWorkInProgressRootRenderLanes"
-)]
-fn get_work_in_progress_root_render_lanes() -> Lanes {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#scheduleUpdateOnFiber"
-)]
-fn schedule_update_on_fiber(root: &FiberRoot, fiber: &Fiber, lane: Lane) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#requestUpdateLane"
-)]
-fn request_update_lane(fiber: &Fiber) -> Lane {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#requestDeferredLane"
-)]
-fn request_deferred_lane() -> Lane {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#markSkippedUpdateLanes"
-)]
-fn mark_skipped_update_lanes(lane: Lanes) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#isInvalidExecutionContextForEventFunction"
-)]
-fn is_invalid_execution_context_for_event_function() -> bool {
     unreachable!()
 }
 
@@ -300,9 +248,10 @@ struct StoreInstance {
     get_snapshot: Cell<&'static GetSnapshot>,
 }
 
-struct StoreConsistencyCheck {
-    value: Option<&'static Unknown>,
-    get_snapshot: &'static GetSnapshot,
+#[derive(Clone, Copy)]
+pub struct StoreConsistencyCheck {
+    pub value: Option<&'static Unknown>,
+    pub get_snapshot: &'static GetSnapshot,
 }
 
 /// What `useSyncExternalStore` reads the store with.
@@ -328,7 +277,7 @@ pub struct FunctionComponentUpdateQueue {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub events: RefCell<Option<Vec<EventFunctionPayload>>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
-    stores: RefCell<Option<Vec<StoreConsistencyCheck>>>,
+    pub stores: RefCell<Option<Rc<RefCell<Vec<StoreConsistencyCheck>>>>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub memo_cache: RefCell<Option<Rc<MemoCache>>>,
 }
@@ -2166,13 +2115,19 @@ fn push_store_consistency_check(
             rendering_fiber
                 .update_queue
                 .set(Some(js::unknown_of(Rc::clone(&component_update_queue))));
-            component_update_queue.stores.replace(Some(vec![check]));
+            component_update_queue
+                .stores
+                .replace(Some(Rc::new(RefCell::new(vec![check]))));
         }
         Some(component_update_queue) => {
-            let mut stores = component_update_queue.stores.borrow_mut();
-            match stores.as_mut() {
-                None => *stores = Some(vec![check]),
-                Some(stores) => stores.push(check),
+            let stores = component_update_queue.stores.borrow().clone();
+            match stores {
+                None => {
+                    component_update_queue
+                        .stores
+                        .replace(Some(Rc::new(RefCell::new(vec![check]))));
+                }
+                Some(stores) => stores.borrow_mut().push(check),
             }
         }
     }
@@ -2538,10 +2493,11 @@ impl Drop for FinishActionStateTransition<'_> {
 
         if __DEV__
             && self.prev_transition.is_none()
-            && let Some(updated_fibers) = &self.current_transition.updated_fibers
+            && let Some(updated_fibers) =
+                self.current_transition.updated_fibers.borrow_mut().as_mut()
         {
-            let updated_fibers_count = updated_fibers.borrow().len();
-            updated_fibers.borrow_mut().clear();
+            let updated_fibers_count = updated_fibers.len();
+            updated_fibers.clear();
             if updated_fibers_count > 10 {
                 console::warn((concat!(
                     "Detected a large number of updates inside startTransition. ",
@@ -2574,8 +2530,8 @@ fn run_action_state_action(action_queue: &Rc<ActionStateQueue>, node: &Rc<Action
             types: RefCell::new(None),
             gesture: None,
             name: None,
-            start_time: None,
-            updated_fibers: None,
+            start_time: Cell::new(None),
+            updated_fibers: RefCell::new(None),
         };
         if ENABLE_VIEW_TRANSITION {
             *current_transition.types.get_mut() = match prev_transition {
@@ -2593,10 +2549,10 @@ fn run_action_state_action(action_queue: &Rc<ActionStateQueue>, node: &Rc<Action
         }
         if ENABLE_TRANSITION_TRACING {
             current_transition.name = None;
-            current_transition.start_time = Some(-1.0);
+            current_transition.start_time.set(Some(-1.0));
         }
         if __DEV__ {
-            current_transition.updated_fibers = Some(RefCell::new(HashSet::new()));
+            *current_transition.updated_fibers.get_mut() = Some(HashSet::new());
         }
         set_t(REACT_SHARED_INTERNALS, Some(&current_transition));
         let _finish = FinishActionStateTransition {
@@ -3631,13 +3587,20 @@ impl Drop for FinishTransition<'_> {
         }
         set_t(REACT_SHARED_INTERNALS, self.prev_transition);
 
-        if __DEV__
-            && self.prev_transition.is_none()
-            && let Some(updated_fibers) = &self.current_transition.updated_fibers
-        {
-            let updated_fibers_count = updated_fibers.borrow().len();
-            updated_fibers.borrow_mut().clear();
-            if updated_fibers_count > 10 {
+        if __DEV__ && self.prev_transition.is_none() {
+            let updated_fibers_count = self
+                .current_transition
+                .updated_fibers
+                .borrow_mut()
+                .as_mut()
+                .map(|updated_fibers| {
+                    let updated_fibers_count = updated_fibers.len();
+                    updated_fibers.clear();
+                    updated_fibers_count
+                });
+            if let Some(updated_fibers_count) = updated_fibers_count
+                && updated_fibers_count > 10
+            {
                 console::warn((concat!(
                     "Detected a large number of updates inside startTransition. ",
                     "If this is due to a subscription please re-write it to use React provided hooks. ",
@@ -3676,8 +3639,8 @@ fn start_transition(
         types: RefCell::new(None),
         gesture: None,
         name: None,
-        start_time: None,
-        updated_fibers: None,
+        start_time: Cell::new(None),
+        updated_fibers: RefCell::new(None),
     };
     if ENABLE_VIEW_TRANSITION {
         *current_transition.types.get_mut() = match prev_transition {
@@ -3695,10 +3658,10 @@ fn start_transition(
     }
     if ENABLE_TRANSITION_TRACING {
         current_transition.name = options.and_then(|options| options.name.clone());
-        current_transition.start_time = Some(now());
+        current_transition.start_time.set(Some(now()));
     }
     if __DEV__ {
-        current_transition.updated_fibers = Some(RefCell::new(HashSet::new()));
+        *current_transition.updated_fibers.get_mut() = Some(HashSet::new());
     }
 
     // We don't really need to use an optimistic update here, because we

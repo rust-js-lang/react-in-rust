@@ -12,18 +12,10 @@ use shared::react_feature_flags::ENABLE_TRANSITION_TRACING;
 
 use crate::react_fiber_offscreen_component::OffscreenInstance;
 use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
+use crate::react_fiber_work_loop::get_work_in_progress_transitions;
 use crate::react_internal_types::{
     Fiber, FiberRoot, TransitionTracingCallbacks, TransitionTracingDeletion,
 };
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getWorkInProgressTransitions"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn get_work_in_progress_transitions() -> Option<Rc<Vec<&'static Transition>>> {
-    unreachable!()
-}
 
 pub struct SuspenseInfo {
     #[cfg_attr(rust_js, rust_js::nullable)]
@@ -117,7 +109,7 @@ pub fn process_transition_callbacks(
         {
             transition_start.iter().for_each(|transition| {
                 if let Some(name) = &transition.name {
-                    on_transition_start(name, transition.start_time.unwrap());
+                    on_transition_start(name, transition.start_time.get().unwrap());
                 }
             });
         }
@@ -139,7 +131,7 @@ pub fn process_transition_callbacks(
                             on_marker_progress(
                                 name,
                                 marker_name,
-                                transition.start_time.unwrap(),
+                                transition.start_time.get().unwrap(),
                                 end_time,
                                 &pending,
                             );
@@ -160,7 +152,7 @@ pub fn process_transition_callbacks(
                         on_marker_complete(
                             name,
                             marker_name,
-                            transition.start_time.unwrap(),
+                            transition.start_time.get().unwrap(),
                             end_time,
                         );
                     }
@@ -205,7 +197,7 @@ pub fn process_transition_callbacks(
                             on_marker_incomplete(
                                 name,
                                 marker_name,
-                                transition.start_time.unwrap(),
+                                transition.start_time.get().unwrap(),
                                 &filtered_aborts,
                             );
                         }
@@ -223,7 +215,7 @@ pub fn process_transition_callbacks(
                 if let Some(name) = &transition.name {
                     on_transition_progress(
                         name,
-                        transition.start_time.unwrap(),
+                        transition.start_time.get().unwrap(),
                         end_time,
                         &pending.values().collect::<Vec<_>>(),
                     );
@@ -238,7 +230,7 @@ pub fn process_transition_callbacks(
         {
             transition_complete.iter().for_each(|transition| {
                 if let Some(name) = &transition.name {
-                    on_transition_complete(name, transition.start_time.unwrap(), end_time);
+                    on_transition_complete(name, transition.start_time.get().unwrap(), end_time);
                 }
             });
         }

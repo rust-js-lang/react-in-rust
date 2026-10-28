@@ -28,6 +28,7 @@ use crate::react_fiber_hooks::{
     Subscribe,
 };
 use crate::react_fiber_lane::{Lane, LaneMap, Lanes};
+use crate::react_fiber_suspense_component::Wakeable;
 use crate::react_fiber_tracing_marker_component::{SuspenseInfo, TracingMarkerInstance};
 use crate::react_root_tags::RootTag;
 use crate::react_type_of_mode::TypeOfMode;
@@ -388,7 +389,7 @@ pub struct FiberRoot {
 
     // A `WeakMap` where the host has one, a `Map` where it hasn't.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub ping_cache: Cell<Option<&'static WeakMap<JsObject, &'static Set<Unknown>>>>,
+    pub ping_cache: Cell<Option<&'static WeakMap<Wakeable, &'static Set<Lanes>>>>,
 
     // Timeout handle returned by setTimeout. Used to cancel a pending timeout, if
     // it's superseded by a new one.
@@ -398,7 +399,7 @@ pub struct FiberRoot {
     // cancel it.
     // TODO: Can this be consolidated with timeoutHandle?
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub cancel_pending_commit: Cell<Option<&'static dyn Fn()>>,
+    pub cancel_pending_commit: RefCell<Option<Box<dyn Fn()>>>,
     // Top context object, used by renderSubtreeIntoContainer
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub context: Cell<Option<&'static JsObject>>,
@@ -481,7 +482,7 @@ pub struct FiberRoot {
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub transition_callbacks: Cell<Option<&'static TransitionTracingCallbacks>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub transition_lanes: RefCell<LaneMap<Option<&'static Set<Unknown>>>>,
+    pub transition_lanes: RefCell<LaneMap<Option<&'static Set<Transition>>>>,
     // Transitions on the root can be represented as a bunch of tracing markers.
     // Each entangled group of transitions can be treated as a tracing marker.
     // It will have a set of pending suspense boundaries. These transitions

@@ -14,6 +14,7 @@ use crate::react_fiber_lane::{
     GESTURE_LANE, Lane, NO_LANE, NO_LANES, mark_root_entangled, mark_root_finished,
 };
 use crate::react_fiber_root_scheduler::{ensure_root_is_scheduled, request_transition_lane};
+use crate::react_fiber_work_loop::{ping_gesture_root, restart_gesture_root};
 use crate::react_internal_types::FiberRoot;
 
 // ReactFiberConfig's `GestureTimeline`.
@@ -34,22 +35,6 @@ fn stop_view_transition(transition: &'static Unknown) {
     unreachable!()
 }
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#pingGestureRoot"
-)]
-fn ping_gesture_root(root: &FiberRoot) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#restartGestureRoot"
-)]
-fn restart_gesture_root(root: &FiberRoot) {
-    unreachable!()
-}
-
 // This type keeps track of any scheduled or active gestures.
 pub struct ScheduledGesture {
     // ReactFiberConfig's `GestureTimeline`.
@@ -63,7 +48,7 @@ pub struct ScheduledGesture {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub running: Cell<Option<&'static Unknown>>, // Used to cancel the running transition after we're done.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub commit: Cell<Option<&'static dyn Fn()>>, // Callback to run to commit if there's a pending commit.
+    pub commit: RefCell<Option<Box<dyn Fn()>>>, // Callback to run to commit if there's a pending commit.
     pub committing: Cell<bool>, // If the gesture was released in a committed state and should actually commit.
     pub revert_lane: Cell<Lane>, // The Lane that we'll use to schedule the revert.
     #[cfg_attr(rust_js, rust_js::nullable)]
@@ -96,7 +81,7 @@ pub fn schedule_gesture(
         range_end: Cell::new(100.0), // Uninitialized
         types: RefCell::new(js::null()),
         running: Cell::new(js::null()),
-        commit: Cell::new(js::null()),
+        commit: RefCell::new(js::null()),
         committing: Cell::new(false),
         revert_lane: Cell::new(NO_LANE), // Starts uninitialized.
         prev: RefCell::new(prev.clone()),
@@ -162,7 +147,7 @@ pub fn start_scheduled_gesture(
     None
 }
 
-pub fn cancel_scheduled_gesture(root: &FiberRoot, gesture: &Rc<ScheduledGesture>) {
+pub fn cancel_scheduled_gesture(root: &Rc<FiberRoot>, gesture: &Rc<ScheduledGesture>) {
     // Entangle any Transitions started in this event with the revertLane of the gesture
     // so that we commit them all together.
     if gesture.revert_lane.get() != NO_LANE {
@@ -200,9 +185,8 @@ pub fn cancel_scheduled_gesture(root: &FiberRoot, gesture: &Rc<ScheduledGesture>
                 .as_ref()
                 .is_some_and(|pending_gestures| Rc::ptr_eq(pending_gestures, gesture))
             {
-                let commit_callback = gesture.commit.get();
+                let commit_callback = gesture.commit.take();
                 if let Some(commit_callback) = commit_callback {
-                    gesture.commit.set(js::null());
                     // If we already have a commit prepared we can immediately commit the tree
                     // without rerendering.
                     // TODO: Consider scheduling this in a task instead of synchronously inside the last cancellation.s
@@ -298,11 +282,11 @@ pub fn stop_committed_gesture(root: &FiberRoot) {
 
 pub fn schedule_gesture_commit(
     gesture: &Rc<ScheduledGesture>,
-    callback: &'static dyn Fn(),
+    callback: Box<dyn Fn()>,
 ) -> Box<dyn Fn()> {
-    gesture.commit.set(Some(callback));
+    gesture.commit.replace(Some(callback));
     let gesture = Rc::clone(gesture);
     Box::new(move || {
-        gesture.commit.set(js::null());
+        gesture.commit.replace(js::null());
     })
 }

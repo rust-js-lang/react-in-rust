@@ -8,6 +8,7 @@ use std::rc::Rc;
 
 use js::{Kind, Unknown};
 use shared::environment::__DEV__;
+use shared::react_shared_internals::CacheDispatcher;
 use webapi::AbortSignal;
 
 use crate::react_current_fiber::CURRENT as CURRENT_OWNER;
@@ -30,6 +31,8 @@ pub struct DefaultAsyncDispatcher {
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub get_owner: Cell<Option<GetOwner>>,
 }
+
+impl CacheDispatcher for DefaultAsyncDispatcher {}
 
 fn get_cache_for_type(resource_type: &'static ResourceType) -> Option<&'static Unknown> {
     let cache: Rc<Cache> = CACHE_CONTEXT.with(read_context).unwrap();

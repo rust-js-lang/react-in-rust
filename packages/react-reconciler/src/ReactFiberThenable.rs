@@ -17,17 +17,9 @@ use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use webapi::{console, performance};
 
 use crate::react_fiber_call_user_space::CALL_LAZY_INIT_IN_DEV;
-use crate::react_internal_types::{Fiber, FiberRoot};
+use crate::react_fiber_work_loop::get_work_in_progress_root;
+use crate::react_internal_types::Fiber;
 use crate::react_work_tags::HOST_ROOT;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getWorkInProgressRoot"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn get_work_in_progress_root() -> Option<Rc<FiberRoot>> {
-    unreachable!()
-}
 
 /// The thenables a component used, in the order it used them, and whether
 /// it was warned of an uncached one (DEV only).

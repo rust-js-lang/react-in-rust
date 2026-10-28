@@ -13,20 +13,8 @@ use shared::environment::__DEV__;
 
 use crate::react_captured_value::CapturedValue;
 use crate::react_current_fiber::{IS_RENDERING, set_is_rendering};
+use crate::react_fiber_work_loop::capture_commit_phase_error;
 use crate::react_internal_types::Fiber;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#captureCommitPhaseError"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(nearest_mounted_ancestor))]
-fn capture_commit_phase_error(
-    source_fiber: &Rc<Fiber>,
-    nearest_mounted_ancestor: Option<&Rc<Fiber>>,
-    error: Option<&'static Unknown>,
-) {
-    unreachable!()
-}
 
 // These indirections exists so we can exclude its stack frame in DEV (and anything below it).
 // TODO: Consider marking the whole bundle instead of these boundaries.

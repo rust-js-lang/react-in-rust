@@ -102,32 +102,12 @@ use crate::react_fiber_lane::{
 use crate::react_fiber_new_context::{
     enter_disallowed_context_read_in_dev, exit_disallowed_context_read_in_dev,
 };
+use crate::react_fiber_work_loop::{
+    get_work_in_progress_root_render_lanes, is_unsafe_class_render_phase_update,
+    mark_skipped_update_lanes,
+};
 use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_type_of_mode::STRICT_LEGACY_MODE;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#markSkippedUpdateLanes"
-)]
-fn mark_skipped_update_lanes(lane: Lanes) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#isUnsafeClassRenderPhaseUpdate"
-)]
-fn is_unsafe_class_render_phase_update(fiber: &Fiber) -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getWorkInProgressRootRenderLanes"
-)]
-fn get_work_in_progress_root_render_lanes() -> Lanes {
-    unreachable!()
-}
 
 pub type UpdateTag = u8;
 

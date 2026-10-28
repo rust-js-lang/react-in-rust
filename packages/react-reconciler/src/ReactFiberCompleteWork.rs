@@ -7,7 +7,6 @@ use std::rc::Rc;
 
 use js::{Kind, Unknown};
 use react_isomorphic::react_context::ReactContext;
-use react_isomorphic::react_start_transition::Transition;
 use shared::react_feature_flags::{
     DISABLE_LEGACY_MODE, ENABLE_LEGACY_HIDDEN, ENABLE_PROFILER_TIMER, ENABLE_SCOPE_API,
     ENABLE_SUSPENSE_CALLBACK, ENABLE_SUSPENSEY_IMAGES, ENABLE_TRANSITION_TRACING,
@@ -49,7 +48,7 @@ use crate::react_fiber_hydration_context::{
     reset_hydration_state, upgrade_hydration_errors_to_recoverable,
 };
 use crate::react_fiber_lane::{
-    Lane, Lanes, NO_LANES, OFFSCREEN_LANE, SOME_RETRY_LANE, claim_next_retry_lane,
+    Lanes, NO_LANES, OFFSCREEN_LANE, SOME_RETRY_LANE, claim_next_retry_lane,
     includes_only_suspensey_commit_eligible_lanes, includes_some_lane, merge_lanes,
 };
 use crate::react_fiber_legacy_context::{
@@ -74,6 +73,10 @@ use crate::react_fiber_tracing_marker_component::{
 };
 use crate::react_fiber_transition::{pop_root_transition, pop_transition};
 use crate::react_fiber_tree_context::{pop_tree_context, push_tree_fork};
+use crate::react_fiber_work_loop::{
+    get_render_target_time, get_work_in_progress_transitions, mark_spawned_retry_lane,
+    render_has_not_suspended_yet, should_remain_on_previous_screen,
+};
 use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_profiler_timer::transfer_actual_duration;
 
@@ -305,47 +308,6 @@ fn preload_instance(
     rust_js::link_name = "./src/ReactFiberConfig.js#preloadResource"
 )]
 fn preload_resource(resource: &'static Unknown) -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#renderHasNotSuspendedYet"
-)]
-fn render_has_not_suspended_yet() -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getRenderTargetTime"
-)]
-fn get_render_target_time() -> f64 {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getWorkInProgressTransitions"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn get_work_in_progress_transitions() -> Option<Rc<Vec<&'static Transition>>> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#shouldRemainOnPreviousScreen"
-)]
-fn should_remain_on_previous_screen() -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#markSpawnedRetryLane"
-)]
-fn mark_spawned_retry_lane(lane: Lane) {
     unreachable!()
 }
 

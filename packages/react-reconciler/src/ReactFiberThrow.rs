@@ -39,6 +39,11 @@ use crate::react_fiber_offscreen_component::{OffscreenQueue, OffscreenState};
 use crate::react_fiber_suspense_component::RetryQueue;
 use crate::react_fiber_suspense_context::{get_shell_boundary, get_suspense_handler};
 use crate::react_fiber_thenable::NOOP_SUSPENSEY_COMMIT_THENABLE;
+use crate::react_fiber_work_loop::{
+    attach_ping_listener, is_already_failed_legacy_error_boundary,
+    mark_legacy_error_boundary_as_failed, queue_concurrent_error, render_did_error,
+    render_did_suspend, render_did_suspend_delay_if_possible, restore_pending_updaters,
+};
 use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_root_tags::CONCURRENT_ROOT;
 use crate::react_type_of_mode::{CONCURRENT_MODE, NO_MODE};
@@ -47,71 +52,6 @@ use crate::react_work_tags::{
     INCOMPLETE_CLASS_COMPONENT, INCOMPLETE_FUNCTION_COMPONENT, OFFSCREEN_COMPONENT,
     SIMPLE_MEMO_COMPONENT, SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT,
 };
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#renderDidError"
-)]
-fn render_did_error() {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#queueConcurrentError"
-)]
-fn queue_concurrent_error(error: Rc<CapturedValue<Option<&'static Unknown>>>) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#renderDidSuspendDelayIfPossible"
-)]
-fn render_did_suspend_delay_if_possible() {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#markLegacyErrorBoundaryAsFailed"
-)]
-fn mark_legacy_error_boundary_as_failed(instance: &ClassInstance) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#isAlreadyFailedLegacyErrorBoundary"
-)]
-fn is_already_failed_legacy_error_boundary(instance: &Unknown) -> bool {
-    unreachable!()
-}
-
-// shared/ReactTypes' `Wakeable`.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#attachPingListener"
-)]
-fn attach_ping_listener(root: &FiberRoot, wakeable: &'static Unknown, lanes: Lanes) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#restorePendingUpdaters"
-)]
-fn restore_pending_updaters(root: &FiberRoot, lanes: Lanes) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#renderDidSuspend"
-)]
-fn render_did_suspend() {
-    unreachable!()
-}
 
 /// What `new Error(message, options)` is given: what caused the error.
 struct ErrorOptions {
@@ -248,7 +188,7 @@ pub fn initialize_class_error_update(
                 // This gets reset before we yield back to the browser.
                 // TODO: Warn in strict mode if getDerivedStateFromError is
                 // not defined.
-                mark_legacy_error_boundary_as_failed(this);
+                mark_legacy_error_boundary_as_failed(js::unknown(this));
             }
             if __DEV__ {
                 CALL_COMPONENT_DID_CATCH_IN_DEV.with(|call_component_did_catch_in_dev| {
@@ -583,7 +523,11 @@ pub fn throw_exception(
                         if DISABLE_LEGACY_MODE
                             || (suspense_boundary.mode.get() & CONCURRENT_MODE) != 0
                         {
-                            attach_ping_listener(root, wakeable, root_render_lanes);
+                            attach_ping_listener(
+                                root,
+                                unsafe { js::cast(Some(wakeable)) },
+                                root_render_lanes,
+                            );
                         }
                     }
                     return false;
@@ -626,7 +570,11 @@ pub fn throw_exception(
                             }
                         }
 
-                        attach_ping_listener(root, wakeable, root_render_lanes);
+                        attach_ping_listener(
+                            root,
+                            unsafe { js::cast(Some(wakeable)) },
+                            root_render_lanes,
+                        );
                     }
                     return false;
                 }
@@ -647,7 +595,7 @@ pub fn throw_exception(
                 // TODO: Should we have different behavior for discrete updates? What
                 // about flushSync? Maybe it should put the tree into an inert state,
                 // and potentially log a warning. Revisit this for a future release.
-                attach_ping_listener(root, wakeable, root_render_lanes);
+                attach_ping_listener(root, unsafe { js::cast(Some(wakeable)) }, root_render_lanes);
                 render_did_suspend_delay_if_possible();
                 return false;
             } else {

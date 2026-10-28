@@ -82,7 +82,7 @@ use crate::react_fiber_hydration_context::{
     warn_if_hydrating,
 };
 use crate::react_fiber_lane::{
-    DEFAULT_LANE, Lane, Lanes, NO_LANE, NO_LANES, OFFSCREEN_LANE, SOME_RETRY_LANE,
+    DEFAULT_LANE, Lanes, NO_LANE, NO_LANES, OFFSCREEN_LANE, SOME_RETRY_LANE,
     get_bumped_lane_for_hydration, includes_only_retries, includes_some_lane, lane_to_lanes,
     merge_lanes, pick_arbitrary_lane, remove_lanes,
 };
@@ -100,6 +100,7 @@ use crate::react_fiber_offscreen_component::{
     LegacyHiddenProps, OFFSCREEN_VISIBLE, OffscreenInstance, OffscreenMode, OffscreenProps,
     OffscreenQueue, OffscreenState,
 };
+use crate::react_fiber_reconciler::{should_error, should_suspend};
 use crate::react_fiber_root::RootState;
 use crate::react_fiber_suspense_component::{
     SuspenseListRenderState, SuspenseListTailMode, SuspenseState, find_first_suspended,
@@ -126,6 +127,10 @@ use crate::react_fiber_tree_context::{
     get_forks_at_level, is_forked_child, push_materialized_tree_id, push_tree_id,
 };
 use crate::react_fiber_view_transition_component::ViewTransitionProps;
+use crate::react_fiber_work_loop::{
+    get_work_in_progress_root, mark_render_derived_cause, mark_skipped_update_lanes,
+    peek_deferred_lane, render_did_suspend_delay_if_possible, schedule_update_on_fiber,
+};
 use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_profiler_timer::stop_profiler_timer_if_running;
 use crate::react_strict_mode_warnings::REACT_STRICT_MODE_WARNINGS;
@@ -224,74 +229,6 @@ fn create_hoistable_instance(
     root_container_instance: Option<&'static Unknown>,
     internal_instance_handle: &Fiber,
 ) -> &'static Unknown {
-    unreachable!()
-}
-
-// ReactFiberReconciler's DevTools overrides: whether DevTools forces a
-// boundary to error (`true`), stopped forcing it (`false`), or neither.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberReconciler.js#shouldError"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn should_error(fiber: &Fiber) -> Option<bool> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberReconciler.js#shouldSuspend"
-)]
-fn should_suspend(fiber: &Fiber) -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#scheduleUpdateOnFiber"
-)]
-fn schedule_update_on_fiber(root: &FiberRoot, fiber: &Fiber, lane: Lane) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#renderDidSuspendDelayIfPossible"
-)]
-fn render_did_suspend_delay_if_possible() {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#markSkippedUpdateLanes"
-)]
-fn mark_skipped_update_lanes(lane: Lanes) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#markRenderDerivedCause"
-)]
-fn mark_render_derived_cause(fiber: &Fiber) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getWorkInProgressRoot"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn get_work_in_progress_root() -> Option<Rc<FiberRoot>> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#peekDeferredLane"
-)]
-fn peek_deferred_lane() -> Lane {
     unreachable!()
 }
 

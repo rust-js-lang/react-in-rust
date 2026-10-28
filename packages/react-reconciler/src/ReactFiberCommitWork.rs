@@ -90,12 +90,22 @@ use crate::react_fiber_root::RootState;
 use crate::react_fiber_root_scheduler::mark_indicator_handled;
 use crate::react_fiber_suspense_component::{RetryQueue, SuspenseState, Wakeable};
 use crate::react_fiber_tracing_marker_component::{
-    PendingBoundaries, SuspenseInfo, TRANSITION_ROOT, TRANSITION_TRACING_MARKER,
-    TracingMarkerInstance, TransitionAbort, TransitionAbortReason, TransitionAborts,
+    SuspenseInfo, TRANSITION_ROOT, TRANSITION_TRACING_MARKER, TracingMarkerInstance,
+    TransitionAbort, TransitionAbortReason, TransitionAborts,
 };
 use crate::react_fiber_tree_reflection::does_fiber_contain;
 use crate::react_fiber_view_transition_component::{
-    ViewTransitionCallback, ViewTransitionProps, get_view_transition_class_name,
+    ViewTransitionProps, get_view_transition_class_name,
+};
+use crate::react_fiber_work_loop::{
+    add_marker_complete_callback_to_pending_transition,
+    add_marker_incomplete_callback_to_pending_transition,
+    add_marker_progress_callback_to_pending_transition,
+    add_transition_complete_callback_to_pending_transition,
+    add_transition_progress_callback_to_pending_transition,
+    add_transition_start_callback_to_pending_transition, capture_commit_phase_error,
+    mark_commit_time_of_fallback, resolve_retry_wakeable, restore_pending_updaters,
+    retry_dehydrated_suspense_boundary, schedule_view_transition_event,
 };
 #[cfg_attr(rust_js, rust_js::name = "HookHasEffect")]
 use crate::react_hook_effect_tags::HAS_EFFECT as HOOK_HAS_EFFECT;
@@ -390,125 +400,7 @@ fn update_fragment_instance_fiber(fiber: &Fiber, instance: &'static Unknown) {
     unreachable!()
 }
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#captureCommitPhaseError"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(nearest_mounted_ancestor))]
-fn capture_commit_phase_error(
-    source_fiber: &Fiber,
-    nearest_mounted_ancestor: Option<&Rc<Fiber>>,
-    error: Option<&'static Unknown>,
-) {
-    unreachable!()
-}
-
 // shared/ReactTypes' `Wakeable`.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#resolveRetryWakeable"
-)]
-fn resolve_retry_wakeable(boundary_fiber: &Rc<Fiber>, wakeable: &'static Unknown) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#markCommitTimeOfFallback"
-)]
-fn mark_commit_time_of_fallback() {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#restorePendingUpdaters"
-)]
-fn restore_pending_updaters(root: &FiberRoot, lanes: Lanes) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#addTransitionStartCallbackToPendingTransition"
-)]
-fn add_transition_start_callback_to_pending_transition(transition: &'static Transition) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#addTransitionProgressCallbackToPendingTransition"
-)]
-fn add_transition_progress_callback_to_pending_transition(
-    transition: &'static Transition,
-    boundaries: &'static PendingBoundaries,
-) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#addTransitionCompleteCallbackToPendingTransition"
-)]
-fn add_transition_complete_callback_to_pending_transition(transition: &'static Transition) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#addMarkerProgressCallbackToPendingTransition"
-)]
-fn add_marker_progress_callback_to_pending_transition(
-    marker_name: &str,
-    transitions: &'static Set<Transition>,
-    pending_boundaries: &'static PendingBoundaries,
-) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#addMarkerIncompleteCallbackToPendingTransition"
-)]
-fn add_marker_incomplete_callback_to_pending_transition(
-    marker_name: &str,
-    transitions: &'static Set<Transition>,
-    aborts: &TransitionAborts,
-) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#addMarkerCompleteCallbackToPendingTransition"
-)]
-fn add_marker_complete_callback_to_pending_transition(
-    marker_name: &str,
-    transitions: &'static Set<Transition>,
-) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#retryDehydratedSuspenseBoundary"
-)]
-fn retry_dehydrated_suspense_boundary(boundary_fiber: &Rc<Fiber>) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#scheduleViewTransitionEvent"
-)]
-fn schedule_view_transition_event(
-    fiber: &Fiber,
-    callback: Option<&'static ViewTransitionCallback>,
-) {
-    unreachable!()
-}
-
 type LayoutEffectTraversalFlags = i32;
 
 #[cfg_attr(rust_js, rust_js::name = "NoLayoutEffectTraversalFlags")]

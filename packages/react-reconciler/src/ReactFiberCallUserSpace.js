@@ -100,7 +100,7 @@ const callComponentWillUnmount = {
     try {
       instance.componentWillUnmount();
     } catch (error) {
-      captureCommitPhaseError(current, nearestMountedAncestor ?? null, error);
+      captureCommitPhaseError(current, nearestMountedAncestor, error);
     }
   },
 };
@@ -132,7 +132,7 @@ const callDestroy = {
     try {
       destroy();
     } catch (error) {
-      captureCommitPhaseError(current, nearestMountedAncestor ?? null, error);
+      captureCommitPhaseError(current, nearestMountedAncestor, error);
     }
   },
 };

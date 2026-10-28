@@ -6,7 +6,7 @@
 use std::cell::Cell;
 use std::rc::Rc;
 
-use js::Unknown;
+use react_isomorphic::react_start_transition::Transition;
 use shared::environment::__DEV__;
 use shared::react_feature_flags::{
     DISABLE_LEGACY_MODE, ENABLE_DEFAULT_TRANSITION_INDICATOR, ENABLE_GESTURE_TRANSITION,
@@ -1168,7 +1168,7 @@ pub fn move_pending_fibers_to_memoized(root: &FiberRoot, mut lanes: Lanes) {
     }
 }
 
-pub fn add_transition_to_lanes_map(root: &FiberRoot, transition: &Unknown, lane: Lane) {
+pub fn add_transition_to_lanes_map(root: &FiberRoot, transition: &Transition, lane: Lane) {
     if ENABLE_TRANSITION_TRACING {
         let mut transition_lanes_map = root.transition_lanes.borrow_mut();
         let index = lane_to_index(lane);
@@ -1183,7 +1183,7 @@ pub fn add_transition_to_lanes_map(root: &FiberRoot, transition: &Unknown, lane:
 pub fn get_transitions_for_lanes(
     root: &FiberRoot,
     mut lanes: Lanes,
-) -> Option<Vec<&'static Unknown>> {
+) -> Option<Vec<&'static Transition>> {
     if !ENABLE_TRANSITION_TRACING {
         return None;
     }

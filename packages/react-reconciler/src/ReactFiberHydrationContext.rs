@@ -23,6 +23,7 @@ use crate::react_fiber_suspense_component::SuspenseState;
 use crate::react_fiber_tree_context::{
     TreeContext, get_suspended_tree_context, restore_suspended_tree_context,
 };
+use crate::react_fiber_work_loop::queue_recoverable_errors;
 use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_work_tags::{
     ACTIVITY_COMPONENT, HOST_COMPONENT, HOST_ROOT, HOST_SINGLETON, SUSPENSE_COMPONENT,
@@ -344,14 +345,6 @@ fn validate_hydratable_instance(
     rust_js::link_name = "./src/ReactFiberConfig.js#validateHydratableTextInstance"
 )]
 fn validate_hydratable_text_instance(text: &str, host_context: Option<&'static Unknown>) -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#queueRecoverableErrors"
-)]
-fn queue_recoverable_errors(errors: &HydrationErrors) {
     unreachable!()
 }
 

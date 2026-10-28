@@ -16,11 +16,6 @@ interface EffectInstance {
   destroy: Destroy;
 }
 
-interface StoreConsistencyCheck {
-  value?: unknown;
-  getSnapshot: GetSnapshot;
-}
-
 export interface Update {
   lane: Lane;
   revertLane: Lane;
@@ -111,6 +106,11 @@ export interface Effect {
   create: Create;
   deps?: Deps | null | undefined;
   next: Effect | null | undefined;
+}
+
+export interface StoreConsistencyCheck {
+  value?: unknown;
+  getSnapshot: GetSnapshot;
 }
 
 /** What `useSyncExternalStore` reads the store with. */

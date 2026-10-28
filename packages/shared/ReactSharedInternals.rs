@@ -25,6 +25,12 @@ unsafe impl js::Defined for Dispatcher {}
 /// The renderer's cache dispatcher, `ReactInternalTypes`' `AsyncDispatcher`.
 pub struct AsyncDispatcher(PhantomData<js::JsObject>);
 
+/// What `ReactSharedInternals.A` is set to: the renderer's cache dispatcher,
+/// or one read back from it.
+pub trait CacheDispatcher {}
+
+impl CacheDispatcher for AsyncDispatcher {}
+
 impl AsyncDispatcher {
     /// What `resource_type` made for the current cache, made once of it.
     #[cfg_attr(rust_js, rust_js::link_name = "getCacheForType")]
@@ -67,6 +73,14 @@ impl SharedStateClient {
     #[cfg_attr(rust_js, rust_js::link_name = "set H")]
     #[cfg_attr(rust_js, rust_js::nullable(dispatcher))]
     pub fn set_h<D: HooksDispatcher>(&self, dispatcher: Option<&D>) {
+        let _ = dispatcher;
+        unreachable!()
+    }
+
+    /// The cache dispatcher from now on, `None` `null`.
+    #[cfg_attr(rust_js, rust_js::link_name = "set A")]
+    #[cfg_attr(rust_js, rust_js::nullable(dispatcher))]
+    pub fn set_a<D: CacheDispatcher>(&self, dispatcher: Option<&D>) {
         let _ = dispatcher;
         unreachable!()
     }

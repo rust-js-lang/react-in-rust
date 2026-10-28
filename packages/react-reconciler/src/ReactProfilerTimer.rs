@@ -19,6 +19,7 @@ use crate::react_fiber_lane::{
     Lane, Lanes, NO_LANES, includes_blocking_lane, includes_transition_lane, is_blocking_lane,
     is_gesture_render, is_transition_lane,
 };
+use crate::react_fiber_work_loop::is_already_rendering;
 use crate::react_internal_types::Fiber;
 
 #[cfg_attr(
@@ -35,14 +36,6 @@ fn resolve_event_type() -> Option<String> {
     rust_js::link_name = "./src/ReactFiberConfig.js#resolveEventTimeStamp"
 )]
 fn resolve_event_time_stamp() -> f64 {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#isAlreadyRendering"
-)]
-fn is_already_rendering() -> bool {
     unreachable!()
 }
 

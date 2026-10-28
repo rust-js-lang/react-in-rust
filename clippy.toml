@@ -2,6 +2,6 @@
 # don't change a key; clippy's mutable_key_type would flag every Set of them.
 ignore-interior-mutability = ["react_reconciler::react_internal_types::Fiber"]
 
-# React's public functions are ported with upstream's parameters (createFiberRoot
-# takes 13), so a long list is React's signature, not one to bundle.
-too-many-arguments-threshold = 13
+# React's functions are ported with upstream's parameters (ReactFiberWorkLoop's
+# completeRoot takes 15), so a long list is React's signature, not one to bundle.
+too-many-arguments-threshold = 15

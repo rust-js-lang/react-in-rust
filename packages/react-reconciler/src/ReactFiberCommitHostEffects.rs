@@ -15,6 +15,7 @@ use crate::react_fiber_fragment_instance::{
     commit_new_child_to_fragment_instances, get_parent_fragment_instances,
 };
 use crate::react_fiber_mutation_tracking::track_host_mutation;
+use crate::react_fiber_work_loop::capture_commit_phase_error;
 use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_work_tags::{
     DEHYDRATED_FRAGMENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL, HOST_ROOT, HOST_SINGLETON,
@@ -235,19 +236,6 @@ fn release_singleton_instance(
     instance: Option<&'static Unknown>,
     r#type: Option<&'static Unknown>,
     props: Option<&'static Unknown>,
-) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#captureCommitPhaseError"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(nearest_mounted_ancestor))]
-fn capture_commit_phase_error(
-    source_fiber: &Fiber,
-    nearest_mounted_ancestor: Option<&Rc<Fiber>>,
-    error: Option<&'static Unknown>,
 ) {
     unreachable!()
 }

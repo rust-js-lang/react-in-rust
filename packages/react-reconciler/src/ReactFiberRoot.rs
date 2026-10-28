@@ -76,7 +76,7 @@ pub fn create_fiber_root(
         current: RefCell::new(Rc::clone(&uninitialized_fiber)),
         ping_cache: Cell::new(None),
         timeout_handle: Cell::new(NO_TIMEOUT),
-        cancel_pending_commit: Cell::new(None),
+        cancel_pending_commit: RefCell::new(None),
         context: Cell::new(None),
         pending_context: Cell::new(None),
         next: RefCell::new(None),

@@ -7,6 +7,7 @@
 
 import type {ViewTransitionState} from './ReactFiber.js';
 
+// react/src/ReactTransitionType's `TransitionTypes`.
 /**
  * shared/ReactTypes' `ViewTransitionClass`: a class name, `'none'` or
  * `'auto'` among them, or one for each transition type.

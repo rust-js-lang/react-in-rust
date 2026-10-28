@@ -9,27 +9,10 @@ use std::rc::Rc;
 use js::{Dict, Unknown};
 
 pub use crate::react_fiber::ViewTransitionState;
+use crate::react_fiber_work_loop::{get_committing_root, get_pending_transition_types};
 use crate::react_internal_types::FiberRoot;
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getCommittingRoot"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn get_committing_root() -> Option<Rc<FiberRoot>> {
-    unreachable!()
-}
-
 // react/src/ReactTransitionType's `TransitionTypes`.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getPendingTransitionTypes"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn get_pending_transition_types() -> Option<Rc<RefCell<Vec<String>>>> {
-    unreachable!()
-}
-
 /// shared/ReactTypes' `ViewTransitionClass`: a class name, `'none'` or
 /// `'auto'` among them, or one for each transition type.
 #[derive(Clone, Copy)]
@@ -51,7 +34,8 @@ pub struct GestureOptionsRequired {
 /// What a `<ViewTransition>` calls as it animates, given its
 /// ReactFiberConfig's `ViewTransitionInstance` and the transition's types:
 /// what cleans up after it, if anything.
-pub type ViewTransitionCallback = dyn Fn(&'static Unknown, &[String]) -> Option<&'static dyn Fn()>;
+pub type ViewTransitionCallback =
+    dyn Fn(&'static Unknown, &Rc<RefCell<Vec<String>>>) -> Option<&'static dyn Fn()>;
 
 /// What a `<ViewTransition>` calls as a gesture animates it, given the
 /// ReactFiberConfig's `GestureTimeline` first.
@@ -59,7 +43,7 @@ pub type ViewTransitionGestureCallback = dyn Fn(
     &'static Unknown,
     &GestureOptionsRequired,
     &'static Unknown,
-    &[String],
+    &Rc<RefCell<Vec<String>>>,
 ) -> Option<&'static dyn Fn()>;
 
 /// shared/ReactTypes' `ViewTransitionProps`.

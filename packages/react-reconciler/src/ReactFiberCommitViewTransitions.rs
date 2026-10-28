@@ -19,8 +19,10 @@ use crate::react_fiber_flags::{
     VIEW_TRANSITION_STATIC_PARENT,
 };
 use crate::react_fiber_view_transition_component::{
-    ViewTransitionCallback, ViewTransitionGestureCallback, ViewTransitionProps,
-    get_view_transition_class_name, get_view_transition_name,
+    ViewTransitionProps, get_view_transition_class_name, get_view_transition_name,
+};
+use crate::react_fiber_work_loop::{
+    schedule_gesture_transition_event, schedule_view_transition_event,
 };
 use crate::react_internal_types::Fiber;
 use crate::react_profiler_timer::track_animating_task;
@@ -96,28 +98,6 @@ fn was_instance_in_viewport(measurement: &Unknown) -> bool {
     unreachable!()
 }
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#scheduleViewTransitionEvent"
-)]
-fn schedule_view_transition_event(
-    fiber: &Fiber,
-    callback: Option<&'static ViewTransitionCallback>,
-) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#scheduleGestureTransitionEvent"
-)]
-fn schedule_gesture_transition_event(
-    fiber: &Fiber,
-    callback: Option<&'static ViewTransitionGestureCallback>,
-) {
-    unreachable!()
-}
-
 thread_local! {
     pub static SHOULD_START_VIEW_TRANSITION: Cell<bool> = const { Cell::new(false) };
 }
@@ -126,11 +106,15 @@ pub fn reset_should_start_view_transition() {
     SHOULD_START_VIEW_TRANSITION.set(false);
 }
 
+/// The named ViewTransitions that appear, by name: a map the apply gesture
+/// phase deletes from too.
+pub type AppearingViewTransitions = Rc<RefCell<HashMap<String, Rc<ViewTransitionState>>>>;
+
 thread_local! {
     // This tracks named ViewTransition components found in the accumulateSuspenseyCommit
     // phase that might need to find deleted pairs in the beforeMutation phase.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub static APPEARING_VIEW_TRANSITIONS: RefCell<Option<HashMap<String, Rc<ViewTransitionState>>>> =
+    pub static APPEARING_VIEW_TRANSITIONS: RefCell<Option<AppearingViewTransitions>> =
         const { RefCell::new(js::null()) };
 }
 
@@ -139,11 +123,11 @@ pub fn reset_appearing_view_transitions() {
 }
 
 pub fn track_appearing_view_transition(name: String, state: Rc<ViewTransitionState>) {
-    APPEARING_VIEW_TRANSITIONS.with_borrow_mut(|appearing_view_transitions| {
-        appearing_view_transitions
-            .get_or_insert_with(HashMap::new)
-            .insert(name, state);
-    });
+    let appearing_view_transitions =
+        APPEARING_VIEW_TRANSITIONS.with_borrow_mut(|appearing_view_transitions| {
+            Rc::clone(appearing_view_transitions.get_or_insert_with(Default::default))
+        });
+    appearing_view_transitions.borrow_mut().insert(name, state);
 }
 
 pub fn track_enter_view_transitions(placement: &Fiber) {
@@ -590,7 +574,7 @@ fn commit_deleted_pair_view_transitions(deletion: &Fiber) {
     if APPEARING_VIEW_TRANSITIONS.with_borrow(|appearing_view_transitions| {
         appearing_view_transitions
             .as_ref()
-            .is_none_or(|appearing_view_transitions| appearing_view_transitions.is_empty())
+            .is_none_or(|appearing_view_transitions| appearing_view_transitions.borrow().is_empty())
     }) {
         // We've found all.
         return;
@@ -613,7 +597,9 @@ fn commit_deleted_pair_view_transitions(deletion: &Fiber) {
                     && name != "auto"
                 {
                     let pair = APPEARING_VIEW_TRANSITIONS.with_borrow(|pairs| {
-                        pairs.as_ref().and_then(|pairs| pairs.get(name).cloned())
+                        pairs
+                            .as_ref()
+                            .and_then(|pairs| pairs.borrow().get(name).cloned())
                     });
                     if let Some(pair) = pair {
                         let class_name = get_view_transition_class_name(props.default, props.share);
@@ -646,10 +632,10 @@ fn commit_deleted_pair_view_transitions(deletion: &Fiber) {
                         }
                         // Delete the entry so that we know when we've found all of them
                         // and can stop searching (size reaches zero).
-                        let found_all = APPEARING_VIEW_TRANSITIONS.with_borrow_mut(|pairs| {
-                            let pairs = pairs.as_mut().unwrap();
-                            pairs.remove(name);
-                            pairs.is_empty()
+                        let found_all = APPEARING_VIEW_TRANSITIONS.with_borrow(|pairs| {
+                            let pairs = pairs.as_ref().unwrap();
+                            pairs.borrow_mut().remove(name);
+                            pairs.borrow().is_empty()
                         });
                         if found_all {
                             break;
@@ -671,7 +657,7 @@ pub fn commit_exit_view_transitions(deletion: &Fiber) {
             appearing_view_transitions
                 .as_ref()
                 .and_then(|appearing_view_transitions| {
-                    appearing_view_transitions.get(&name).cloned()
+                    appearing_view_transitions.borrow().get(&name).cloned()
                 })
         });
         let class_name = get_view_transition_class_name(
@@ -706,9 +692,13 @@ pub fn commit_exit_view_transitions(deletion: &Fiber) {
                 old_instance.paired.replace(Some(new_instance));
                 // Delete the entry so that we know when we've found all of them
                 // and can stop searching (size reaches zero).
-                APPEARING_VIEW_TRANSITIONS.with_borrow_mut(|appearing_view_transitions| {
+                APPEARING_VIEW_TRANSITIONS.with_borrow(|appearing_view_transitions| {
                     // Refined by the pair.
-                    appearing_view_transitions.as_mut().unwrap().remove(&name);
+                    appearing_view_transitions
+                        .as_ref()
+                        .unwrap()
+                        .borrow_mut()
+                        .remove(&name);
                 });
                 // Note: If the other side ends up outside the viewport, we'll still run this.
                 // Therefore it's possible for onShare to be called with only an old snapshot.
@@ -1128,6 +1118,7 @@ pub fn measure_update_view_transition(
         let clones = state.clones.borrow();
         clones.as_ref().map(|clones| {
             clones
+                .borrow()
                 .iter()
                 .copied()
                 .map(measure_cloned_instance)
@@ -1173,6 +1164,7 @@ pub fn measure_nested_view_transitions(changed_parent: &Fiber, gesture: bool) {
                 let clones = state.clones.borrow();
                 clones.as_ref().map(|clones| {
                     clones
+                        .borrow()
                         .iter()
                         .copied()
                         .map(measure_cloned_instance)

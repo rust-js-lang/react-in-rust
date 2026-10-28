@@ -7,23 +7,8 @@ use std::rc::Rc;
 
 use crate::react_fiber_lane::{Lanes, NO_LANES, merge_lanes};
 use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
+use crate::react_fiber_work_loop::{get_entangled_render_lanes, set_entangled_render_lanes};
 use crate::react_internal_types::Fiber;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getEntangledRenderLanes"
-)]
-fn get_entangled_render_lanes() -> Lanes {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#setEntangledRenderLanes"
-)]
-fn set_entangled_render_lanes(new_entangled_render_lanes: Lanes) {
-    unreachable!()
-}
 
 // TODO: Remove `renderLanes` context in favor of hidden context
 pub struct HiddenContext {

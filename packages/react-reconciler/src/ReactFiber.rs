@@ -108,9 +108,9 @@ pub struct ViewTransitionState {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub paired: RefCell<Option<Rc<ViewTransitionState>>>,
     // a temporary state during the apply gesture phase if we cloned this boundary
-    // ReactFiberConfig's `Instance`s.
+    // ReactFiberConfig's `Instance`s, an array the apply phase adds to and reads.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub clones: RefCell<Option<Vec<&'static Unknown>>>,
+    pub clones: RefCell<Option<Rc<RefCell<Vec<&'static Unknown>>>>>,
     // the current ref instance. This can change through the lifetime of the instance.
     // ReactFiberConfig's `ViewTransitionInstance`.
     #[cfg_attr(rust_js, rust_js::nullable)]

@@ -11,50 +11,15 @@ use shared::environment::__DEV__;
 use shared::react_symbols::{REACT_FORWARD_REF_TYPE, REACT_LAZY_TYPE, REACT_MEMO_TYPE};
 
 use crate::react_fiber_concurrent_updates::enqueue_concurrent_render_for_lane;
-use crate::react_fiber_lane::{Lane, SYNC_LANE};
+use crate::react_fiber_lane::SYNC_LANE;
+use crate::react_fiber_reconciler::update_container_sync;
+use crate::react_fiber_work_loop::{
+    flush_pending_effects, flush_sync_work, schedule_update_on_fiber,
+};
 use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_work_tags::{
     CLASS_COMPONENT, FORWARD_REF, FUNCTION_COMPONENT, MEMO_COMPONENT, SIMPLE_MEMO_COMPONENT,
 };
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#flushSyncWork"
-)]
-fn flush_sync_work() -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#scheduleUpdateOnFiber"
-)]
-fn schedule_update_on_fiber(root: &FiberRoot, fiber: &Fiber, lane: Lane) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#flushPendingEffects"
-)]
-fn flush_pending_effects() -> bool {
-    unreachable!()
-}
-
-// shared/ReactTypes' `ReactNodeList`, and a class component.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberReconciler.js#updateContainerSync"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(parent_component, callback))]
-fn update_container_sync(
-    element: Option<&'static Unknown>,
-    container: &FiberRoot,
-    parent_component: Option<&'static Unknown>,
-    callback: Option<&'static Unknown>,
-) -> Lane {
-    unreachable!()
-}
 
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFiberLegacyContext.js#emptyContextObject"]

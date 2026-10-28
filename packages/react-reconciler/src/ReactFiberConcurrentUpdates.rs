@@ -13,35 +13,12 @@ use crate::react_fiber_flags::{HYDRATING, NO_FLAGS, PLACEMENT};
 use crate::react_fiber_hooks::{Update as HookUpdate, UpdateQueue as HookQueue};
 use crate::react_fiber_lane::{Lane, Lanes, NO_LANE, NO_LANES, mark_hidden_update, merge_lanes};
 use crate::react_fiber_offscreen_component::{OFFSCREEN_VISIBLE, OffscreenInstance};
+use crate::react_fiber_work_loop::{
+    get_work_in_progress_root, throw_if_infinite_update_loop_detected,
+    warn_about_update_on_not_yet_mounted_fiber_in_dev,
+};
 use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_work_tags::{HOST_ROOT, OFFSCREEN_COMPONENT};
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#warnAboutUpdateOnNotYetMountedFiberInDEV"
-)]
-fn warn_about_update_on_not_yet_mounted_fiber_in_dev(fiber: &Fiber) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#throwIfInfiniteUpdateLoopDetected"
-)]
-fn throw_if_infinite_update_loop_detected(
-    is_from_infinite_render_loop_detection_instrumentation: bool,
-) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberWorkLoop.js#getWorkInProgressRoot"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn get_work_in_progress_root() -> Option<Rc<FiberRoot>> {
-    unreachable!()
-}
 
 pub struct ConcurrentUpdate {
     pub next: RefCell<Rc<ConcurrentUpdate>>,
@@ -331,7 +308,7 @@ fn get_root_for_updated_fiber(source_fiber: &Rc<Fiber>) -> Option<Rc<FiberRoot>>
     }
 }
 
-fn detect_update_on_unmounted_fiber(source_fiber: &Fiber, parent: &Fiber) {
+fn detect_update_on_unmounted_fiber(source_fiber: &Rc<Fiber>, parent: &Fiber) {
     if __DEV__ {
         let alternate = parent.alternate.borrow().clone();
         if alternate.is_none() && (parent.flags.get() & (PLACEMENT | HYDRATING)) != NO_FLAGS {

@@ -128,8 +128,8 @@ export function cancelScheduledGesture(root, gesture) {
       // lane to actually commit it.
       gesture.committing = true;
       if (root.pendingGestures === gesture) {
-        const commitCallback = gesture.commit;
-        if (commitCallback != null) {
+        if (gesture.commit != null) {
+          const commitCallback = gesture.commit;
           gesture.commit = null;
           // If we already have a commit prepared we can immediately commit the tree
           // without rerendering.
