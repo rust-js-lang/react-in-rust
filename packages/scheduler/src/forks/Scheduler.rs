@@ -7,14 +7,18 @@ use std::cell::{Cell, RefCell};
 use std::panic::{self, AssertUnwindSafe};
 use std::rc::Rc;
 
-use js::{ArrayBuffer, IntoUnknown, Rest};
+use js::{ArrayBuffer, IntoUnknown, Rest, Unknown, function};
 
 #[path = "../SchedulerFeatureFlags.rs"]
 pub mod scheduler_feature_flags;
 #[path = "../SchedulerMinHeap.rs"]
 pub mod scheduler_min_heap;
+#[path = "SchedulerMock.rs"]
+pub mod scheduler_mock;
 #[path = "../SchedulerPriorities.rs"]
 pub mod scheduler_priorities;
+#[path = "../SchedulerProfiling.rs"]
+pub mod scheduler_profiling;
 
 use scheduler_feature_flags::{
     ENABLE_ALWAYS_YIELD_SCHEDULER, ENABLE_PROFILING, ENABLE_REQUEST_PAINT, FRAME_YIELD_MS,
@@ -26,76 +30,11 @@ use scheduler_priorities::{
     USER_BLOCKING_PRIORITY,
 };
 
-#[cfg_attr(rust_js, rust_js::link_name = "../SchedulerProfiling.js#markTaskRun")]
-fn mark_task_run(task: &Task, ms: f64) {
-    unreachable!()
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "../SchedulerProfiling.js#markTaskYield")]
-fn mark_task_yield(task: &Task, ms: f64) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "../SchedulerProfiling.js#markTaskCompleted"
-)]
-fn mark_task_completed(task: &Task, ms: f64) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "../SchedulerProfiling.js#markTaskCanceled"
-)]
-fn mark_task_canceled(task: &Task, ms: f64) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "../SchedulerProfiling.js#markTaskErrored"
-)]
-fn mark_task_errored(task: &Task, ms: f64) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "../SchedulerProfiling.js#markSchedulerSuspended"
-)]
-fn mark_scheduler_suspended(ms: f64) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "../SchedulerProfiling.js#markSchedulerUnsuspended"
-)]
-fn mark_scheduler_unsuspended(ms: f64) {
-    unreachable!()
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "../SchedulerProfiling.js#markTaskStart")]
-fn mark_task_start(task: &Task, ms: f64) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "../SchedulerProfiling.js#stopLoggingProfilingEvents"
-)]
-fn stop_logging_profiling_events() -> Option<&'static ArrayBuffer> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "../SchedulerProfiling.js#startLoggingProfilingEvents"
-)]
-fn start_logging_profiling_events() {
-    unreachable!()
-}
+use scheduler_profiling::{
+    mark_scheduler_suspended, mark_scheduler_unsuspended, mark_task_canceled, mark_task_completed,
+    mark_task_errored, mark_task_run, mark_task_start, mark_task_yield,
+    start_logging_profiling_events, stop_logging_profiling_events,
+};
 
 /// A task's work: given whether it timed out, it does some, and gives
 /// what's left of it, or nothing where it's done.
@@ -365,17 +304,23 @@ pub fn unstable_next<T>(event_handler: impl FnOnce() -> T) -> T {
 }
 
 #[cfg_attr(rust_js, rust_js::name = "unstable_wrapCallback")]
-pub fn unstable_wrap_callback<T>(
-    callback: impl Fn(&dyn Rest<dyn IntoUnknown>) -> T + 'static,
-) -> impl Fn(&dyn Rest<dyn IntoUnknown>) -> T {
+pub fn unstable_wrap_callback(
+    callback: &'static dyn Fn(&dyn Rest<dyn IntoUnknown>) -> Option<&'static Unknown>,
+) -> Box<dyn Fn(&'static dyn Rest<dyn IntoUnknown>) -> Option<&'static Unknown>> {
     let parent_priority_level = CURRENT_PRIORITY_LEVEL.get();
-    move |args: &dyn Rest<dyn IntoUnknown>| {
-        // This is a fork of runWithPriority, inlined for performance.
-        let _restore = RestorePriority(CURRENT_PRIORITY_LEVEL.get());
-        CURRENT_PRIORITY_LEVEL.set(parent_priority_level);
+    function::with_this(
+        move |this, (args,): (&'static dyn Rest<dyn IntoUnknown>,)| {
+            // This is a fork of runWithPriority, inlined for performance.
+            let _restore = RestorePriority(CURRENT_PRIORITY_LEVEL.get());
+            CURRENT_PRIORITY_LEVEL.set(parent_priority_level);
 
-        callback(args)
-    }
+            function::apply(
+                callback,
+                this.map(|this| this as &dyn IntoUnknown),
+                Some(&args),
+            )
+        },
+    )
 }
 
 #[cfg_attr(rust_js, rust_js::name = "unstable_scheduleCallback")]
