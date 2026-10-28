@@ -48,8 +48,9 @@ export function resolveTypeForHotReloading(type) {
     }
     // Use the latest known implementation.
     return family.current;
+  } else {
+    return type;
   }
-  return type;
 }
 
 // shared/ReactElementType's `ReactElement`.

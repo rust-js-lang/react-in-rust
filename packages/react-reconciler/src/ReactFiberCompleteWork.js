@@ -924,19 +924,20 @@ function completeDehydratedActivityBoundary(
       }
     }
     return false;
+  } else {
+    // Successfully completed this tree. If this was a forced client render,
+    // there may have been recoverable errors during first hydration
+    // attempt. If so, add them to a queue so we can log them in the
+    // commit phase. We also add them to prev state so we can get to them
+    // from the Suspense Boundary.
+    const hydrationErrors = upgradeHydrationErrorsToRecoverable();
+    if (current && current.memoizedState) {
+      const prevState = current.memoizedState;
+      prevState.hydrationErrors = hydrationErrors;
+    }
+    // Fall through to normal Offscreen path
+    return true;
   }
-  // Successfully completed this tree. If this was a forced client render,
-  // there may have been recoverable errors during first hydration
-  // attempt. If so, add them to a queue so we can log them in the
-  // commit phase. We also add them to prev state so we can get to them
-  // from the Suspense Boundary.
-  const hydrationErrors = upgradeHydrationErrorsToRecoverable();
-  if (current && current.memoizedState) {
-    const prevState = current.memoizedState;
-    prevState.hydrationErrors = hydrationErrors;
-  }
-  // Fall through to normal Offscreen path
-  return true;
 }
 
 function completeDehydratedSuspenseBoundary(
@@ -1165,18 +1166,19 @@ export function completeWork(current, workInProgress, renderLanes) {
               renderLanes,
             );
             return null;
+          } else {
+            // This is a Hoistable Instance
+            // This must come at the very end of the complete phase.
+            bubbleProperties(workInProgress);
+            preloadInstanceAndSuspendIfNeeded(
+              workInProgress,
+              type,
+              null,
+              newProps,
+              renderLanes,
+            );
+            return null;
           }
-          // This is a Hoistable Instance
-          // This must come at the very end of the complete phase.
-          bubbleProperties(workInProgress);
-          preloadInstanceAndSuspendIfNeeded(
-            workInProgress,
-            type,
-            null,
-            newProps,
-            renderLanes,
-          );
-          return null;
         }
         // This is an update.
         if (nextResource != null) {
@@ -1198,40 +1200,42 @@ export function completeWork(current, workInProgress, renderLanes) {
               renderLanes,
             );
             return null;
+          } else {
+            // This must come at the very end of the complete phase.
+            bubbleProperties(workInProgress);
+            workInProgress.flags &= ~MaySuspendCommit;
+            return null;
+          }
+        } else {
+          const oldProps = current.memoizedProps;
+          // This is an Instance
+          // We may have props to update on the Hoistable instance.
+          if (supportsMutation) {
+            if (oldProps !== newProps) {
+              markUpdate(workInProgress);
+            }
+          } else {
+            // We use the updateHostComponent path because it produces
+            // the update queue we need for Hoistables.
+            updateHostComponent(
+              current,
+              workInProgress,
+              type,
+              newProps,
+              renderLanes,
+            );
           }
           // This must come at the very end of the complete phase.
           bubbleProperties(workInProgress);
-          workInProgress.flags &= ~MaySuspendCommit;
-          return null;
-        }
-        const oldProps = current.memoizedProps;
-        // This is an Instance
-        // We may have props to update on the Hoistable instance.
-        if (supportsMutation) {
-          if (oldProps !== newProps) {
-            markUpdate(workInProgress);
-          }
-        } else {
-          // We use the updateHostComponent path because it produces
-          // the update queue we need for Hoistables.
-          updateHostComponent(
-            current,
+          preloadInstanceAndSuspendIfNeeded(
             workInProgress,
             type,
+            oldProps,
             newProps,
             renderLanes,
           );
+          return null;
         }
-        // This must come at the very end of the complete phase.
-        bubbleProperties(workInProgress);
-        preloadInstanceAndSuspendIfNeeded(
-          workInProgress,
-          type,
-          oldProps,
-          newProps,
-          renderLanes,
-        );
-        return null;
       }
     // Fall through
     case HostSingleton:
@@ -1450,11 +1454,12 @@ export function completeWork(current, workInProgress, renderLanes) {
             // Special case. There were remaining unhydrated nodes. We treat
             // this as a mismatch. Revert to client rendering.
             return workInProgress;
+          } else {
+            popSuspenseHandler(workInProgress);
+            // Did not finish hydrating, either because this is the initial
+            // render or because something suspended.
+            return null;
           }
-          popSuspenseHandler(workInProgress);
-          // Did not finish hydrating, either because this is the initial
-          // render or because something suspended.
-          return null;
         }
 
         if ((workInProgress.flags & DidCapture) !== NoFlags) {
@@ -1496,11 +1501,12 @@ export function completeWork(current, workInProgress, renderLanes) {
             // Special case. There were remaining unhydrated nodes. We treat
             // this as a mismatch. Revert to client rendering.
             return workInProgress;
+          } else {
+            popSuspenseHandler(workInProgress);
+            // Did not finish hydrating, either because this is the initial
+            // render or because something suspended.
+            return null;
           }
-          popSuspenseHandler(workInProgress);
-          // Did not finish hydrating, either because this is the initial
-          // render or because something suspended.
-          return null;
         }
       }
 

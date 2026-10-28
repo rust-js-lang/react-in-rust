@@ -247,8 +247,9 @@ export function act(callback) {
         }
       },
     };
+  } else {
+    throw new Error('act(...) is not supported in production builds of React.');
   }
-  throw new Error('act(...) is not supported in production builds of React.');
 }
 
 function popActScope(prevActQueue, prevActScopeDepth) {

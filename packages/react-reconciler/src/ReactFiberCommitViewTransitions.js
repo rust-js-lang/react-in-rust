@@ -166,8 +166,9 @@ function applyViewTransitionToHostInstancesRecursive(
         child = child.sibling;
       }
       return true;
+    } else {
+      return false;
     }
-    return false;
   }
   let inViewport = false;
   while (child != null) {
@@ -878,8 +879,9 @@ function measureViewTransitionHostInstancesRecursive(
         child = child.sibling;
       }
       return true;
+    } else {
+      return false;
     }
-    return false;
   }
   let inViewport = false;
   while (child != null) {

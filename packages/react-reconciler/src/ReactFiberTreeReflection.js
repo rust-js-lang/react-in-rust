@@ -493,8 +493,9 @@ function findFragmentInstanceOrTextInstanceSiblings(
       if (state.foundSelf) {
         result[1] = child;
         return true;
+      } else {
+        result[0] = child;
       }
-      result[0] = child;
     } else if (
       child.tag === OffscreenComponent &&
       child.memoizedState != null

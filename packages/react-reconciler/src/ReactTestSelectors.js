@@ -91,18 +91,19 @@ function findFiberRootForHostRoot(hostRoot) {
     }
 
     return maybeFiber;
-  }
-  const fiberRoot = findFiberRoot(hostRoot);
+  } else {
+    const fiberRoot = findFiberRoot(hostRoot);
 
-  if (fiberRoot == null) {
-    throw new Error(
-      'Could not find React container within specified host subtree.',
-    );
-  }
+    if (fiberRoot == null) {
+      throw new Error(
+        'Could not find React container within specified host subtree.',
+      );
+    }
 
-  // The Flow type for FiberRoot is a little funky.
-  // createFiberRoot() cheats this by treating the root as :any and adding stateNode lazily.
-  return fiberRoot.stateNode.current;
+    // The Flow type for FiberRoot is a little funky.
+    // createFiberRoot() cheats this by treating the root as :any and adding stateNode lazily.
+    return fiberRoot.stateNode.current;
+  }
 }
 
 function matchSelector(fiber, selector) {
@@ -246,11 +247,12 @@ function hasMatchingPaths(root, selectors) {
 
     if (selectorIndex === selectors.length) {
       return true;
-    }
-    let child = fiber.child;
-    while (child != null) {
-      stack.push([child, selectorIndex]);
-      child = child.sibling;
+    } else {
+      let child = fiber.child;
+      while (child != null) {
+        stack.push([child, selectorIndex]);
+        child = child.sibling;
+      }
     }
   }
 

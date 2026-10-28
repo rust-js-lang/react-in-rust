@@ -225,8 +225,9 @@ export function enqueueUpdate(fiber, update, lane) {
     // update a different component during render phase than the one that is
     // currently renderings (a pattern that is accompanied by a warning).
     return unsafe_markUpdateLaneFromFiberToRoot(fiber, lane);
+  } else {
+    return enqueueConcurrentClassUpdate(fiber, sharedQueue, update, lane);
   }
-  return enqueueConcurrentClassUpdate(fiber, sharedQueue, update, lane);
 }
 
 export function entangleTransitions(root, fiber, lane) {

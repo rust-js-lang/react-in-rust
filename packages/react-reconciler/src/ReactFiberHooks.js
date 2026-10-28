@@ -885,43 +885,45 @@ function updateWorkInProgressHook() {
 
     currentHook = nextCurrentHook ?? null;
     return nextWorkInProgressHook;
-  }
-  // Clone from the current hook.
-
-  if (nextCurrentHook == null) {
-    const currentFiber = renderingFiber.alternate;
-    if (currentFiber == null) {
-      // This is the initial render. This branch is reached when the component
-      // suspends, resumes, then renders an additional hook.
-      // Should never be reached because we should switch to the mount dispatcher first.
-      throw new Error(
-        'Update hook called on initial render. This is likely a bug in React. Please file an issue.',
-      );
-    }
-    // This is an update. We should always have a current hook.
-    throw new Error('Rendered more hooks than during the previous render.');
-  }
-
-  currentHook = nextCurrentHook;
-
-  const newHook = {
-    memoizedState: nextCurrentHook.memoizedState,
-
-    baseState: nextCurrentHook.baseState,
-    baseQueue: nextCurrentHook.baseQueue,
-    queue: nextCurrentHook.queue,
-
-    next: null,
-  };
-  if (workInProgressHook == null) {
-    // This is the first hook in the list.
-    renderingFiber.memoizedState = newHook;
   } else {
-    // Append to the end of the list.
-    workInProgressHook.next = newHook;
+    // Clone from the current hook.
+
+    if (nextCurrentHook == null) {
+      const currentFiber = renderingFiber.alternate;
+      if (currentFiber == null) {
+        // This is the initial render. This branch is reached when the component
+        // suspends, resumes, then renders an additional hook.
+        // Should never be reached because we should switch to the mount dispatcher first.
+        throw new Error(
+          'Update hook called on initial render. This is likely a bug in React. Please file an issue.',
+        );
+      } else {
+        // This is an update. We should always have a current hook.
+        throw new Error('Rendered more hooks than during the previous render.');
+      }
+    }
+
+    currentHook = nextCurrentHook;
+
+    const newHook = {
+      memoizedState: nextCurrentHook.memoizedState,
+
+      baseState: nextCurrentHook.baseState,
+      baseQueue: nextCurrentHook.baseQueue,
+      queue: nextCurrentHook.queue,
+
+      next: null,
+    };
+    if (workInProgressHook == null) {
+      // This is the first hook in the list.
+      renderingFiber.memoizedState = newHook;
+    } else {
+      // Append to the end of the list.
+      workInProgressHook.next = newHook;
+    }
+    workInProgressHook = newHook;
+    return newHook;
   }
-  workInProgressHook = newHook;
-  return newHook;
 }
 
 function createFunctionComponentUpdateQueue() {
@@ -1017,13 +1019,11 @@ function use(usable) {
         // This is a thenable.
         const thenable = usable;
         return useThenable(thenable);
-      }
-      if (usable.$$typeof === REACT_RECOVERABLE_TYPE) {
+      } else if (usable.$$typeof === REACT_RECOVERABLE_TYPE) {
         // Fiber is the final renderer, so there is no downstream host that
         // needs to recover this subtree. Continue rendering through it.
         return;
-      }
-      if (usable.$$typeof === REACT_CONTEXT_TYPE) {
+      } else if (usable.$$typeof === REACT_CONTEXT_TYPE) {
         const context = usable;
         return readContext(context);
       }
@@ -2250,8 +2250,9 @@ function updateActionStateImpl(
         // If we Suspend here, mark this separately so that we can track this
         // as an Action in Profiling tools.
         throw SuspenseActionException;
+      } else {
+        throw x;
       }
-      throw x;
     }
   } else {
     state = actionResult;
@@ -2519,8 +2520,7 @@ function imperativeHandleEffect(create, ref) {
         refCallback(null);
       }
     };
-  }
-  if (ref != null) {
+  } else if (ref != null) {
     if (__DEV__ && !ref.hasOwnProperty('current')) {
       console.error(
         'Expected useImperativeHandle() first argument to either be a ' +
@@ -2534,7 +2534,6 @@ function imperativeHandleEffect(create, ref) {
       ref.current = null;
     };
   }
-  return;
 }
 
 function mountImperativeHandle(ref, create, deps) {
@@ -2725,44 +2724,46 @@ function updateDeferredValueImpl(hook, prevValue, value, initialValue) {
     // The incoming value is referentially identical to the currently rendered
     // value, so we can bail out quickly.
     return value;
-  }
-  // Received a new value that's different from the current value.
+  } else {
+    // Received a new value that's different from the current value.
 
-  // Check if we're inside a hidden tree
-  if (isCurrentTreeHidden()) {
-    // Revealing a prerendered tree is considered the same as mounting new
-    // one, so we reuse the "mount" path in this case.
-    const resultValue = mountDeferredValueImpl(hook, value, initialValue);
-    // Unlike during an actual mount, we need to mark this as an update if
-    // the value changed.
-    if (!is(resultValue, prevValue)) {
-      markWorkInProgressReceivedUpdate();
+    // Check if we're inside a hidden tree
+    if (isCurrentTreeHidden()) {
+      // Revealing a prerendered tree is considered the same as mounting new
+      // one, so we reuse the "mount" path in this case.
+      const resultValue = mountDeferredValueImpl(hook, value, initialValue);
+      // Unlike during an actual mount, we need to mark this as an update if
+      // the value changed.
+      if (!is(resultValue, prevValue)) {
+        markWorkInProgressReceivedUpdate();
+      }
+      return resultValue;
     }
-    return resultValue;
+    const shouldDeferValue =
+      !includesOnlyNonUrgentLanes(renderLanes) && !isRenderingDeferredWork();
+    if (shouldDeferValue) {
+      // This is an urgent update. Since the value has changed, keep using the
+      // previous value and spawn a deferred render to update it later.
+
+      // Schedule a deferred render
+      const deferredLane = requestDeferredLane();
+      const renderingFiber = $unwrap(currentlyRenderingFiber);
+      renderingFiber.lanes = mergeLanes(renderingFiber.lanes, deferredLane);
+      markSkippedUpdateLanes(deferredLane);
+
+      // Reuse the previous value. We do not need to mark this as an update,
+      // because we did not render a new value.
+      return prevValue;
+    } else {
+      // This is not an urgent update, so we can use the latest value regardless
+      // of what it is. No need to defer it.
+
+      // Mark this as an update to prevent the fiber from bailing out.
+      markWorkInProgressReceivedUpdate();
+      hook.memoizedState = value;
+      return value;
+    }
   }
-  const shouldDeferValue =
-    !includesOnlyNonUrgentLanes(renderLanes) && !isRenderingDeferredWork();
-  if (shouldDeferValue) {
-    // This is an urgent update. Since the value has changed, keep using the
-    // previous value and spawn a deferred render to update it later.
-
-    // Schedule a deferred render
-    const deferredLane = requestDeferredLane();
-    const renderingFiber = $unwrap(currentlyRenderingFiber);
-    renderingFiber.lanes = mergeLanes(renderingFiber.lanes, deferredLane);
-    markSkippedUpdateLanes(deferredLane);
-
-    // Reuse the previous value. We do not need to mark this as an update,
-    // because we did not render a new value.
-    return prevValue;
-  }
-  // This is not an urgent update, so we can use the latest value regardless
-  // of what it is. No need to defer it.
-
-  // Mark this as an update to prevent the fiber from bailing out.
-  markWorkInProgressReceivedUpdate();
-  hook.memoizedState = value;
-  return value;
 }
 
 function releaseAsyncTransition() {
@@ -3401,13 +3402,14 @@ function dispatchOptimisticSetState(
     // is a new API so it's OK to throw.
     if (throwIfDuringRender) {
       throw new Error('Cannot update optimistic state while rendering.');
-    }
-    // startTransition was called during render. We don't need to do anything
-    // besides warn here because the render phase update would be overidden by
-    // the second update, anyway. We can remove this branch and make it throw
-    // in a future release.
-    if (__DEV__) {
-      console.error('Cannot call startTransition while rendering.');
+    } else {
+      // startTransition was called during render. We don't need to do anything
+      // besides warn here because the render phase update would be overidden by
+      // the second update, anyway. We can remove this branch and make it throw
+      // in a future release.
+      if (__DEV__) {
+        console.error('Cannot call startTransition while rendering.');
+      }
     }
   } else {
     const root = enqueueConcurrentHookUpdate(fiber, queue, update, lane);

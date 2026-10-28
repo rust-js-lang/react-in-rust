@@ -555,12 +555,7 @@ export function commitClassCallbacks(finishedWork) {
     // TODO: revisit this when we implement resuming.
     try {
       if (__DEV__) {
-        runWithFiberInDEV(
-          finishedWork,
-          (updateQueue, instance) => commitCallbacks(updateQueue, instance),
-          updateQueue,
-          instance,
-        );
+        runWithFiberInDEV(finishedWork, commitCallbacks, updateQueue, instance);
       } else {
         commitCallbacks(updateQueue, instance);
       }
@@ -833,7 +828,7 @@ function commitAttachRef(finishedWork) {
 export function safelyAttachRef(current, nearestMountedAncestor) {
   try {
     if (__DEV__) {
-      runWithFiberInDEV(current, current => commitAttachRef(current), current);
+      runWithFiberInDEV(current, commitAttachRef, current);
     } else {
       commitAttachRef(current);
     }
@@ -972,13 +967,7 @@ export function commitProfilerUpdate(
       if (__DEV__) {
         runWithFiberInDEV(
           finishedWork,
-          (finishedWork, current, commitStartTime, effectDuration) =>
-            commitProfiler(
-              finishedWork,
-              current,
-              commitStartTime,
-              effectDuration,
-            ),
+          commitProfiler,
           finishedWork,
           current,
           commitStartTime,
@@ -1023,13 +1012,7 @@ export function commitProfilerPostCommit(
     if (__DEV__) {
       runWithFiberInDEV(
         finishedWork,
-        (finishedWork, current, commitStartTime, passiveEffectDuration) =>
-          commitProfilerPostCommitImpl(
-            finishedWork,
-            current,
-            commitStartTime,
-            passiveEffectDuration,
-          ),
+        commitProfilerPostCommitImpl,
         finishedWork,
         current,
         commitStartTime,

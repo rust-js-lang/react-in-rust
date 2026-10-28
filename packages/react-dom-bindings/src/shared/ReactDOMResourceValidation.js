@@ -67,27 +67,26 @@ function propNamesListJoin(list, combinator) {
 export function getValueDescriptorExpectingObjectForWarning(thing) {
   if (thing === null) {
     return '`null`';
-  }
-  if (thing === undefined) {
+  } else if (thing === undefined) {
     return '`undefined`';
+  } else {
+    return thing === ''
+      ? 'an empty string'
+      : `something with type "${typeof thing}"`;
   }
-  return thing === ''
-    ? 'an empty string'
-    : `something with type "${typeof thing}"`;
 }
 
 export function getValueDescriptorExpectingEnumForWarning(thing) {
   if (thing === null) {
     return '`null`';
-  }
-  if (thing === undefined) {
+  } else if (thing === undefined) {
     return '`undefined`';
-  }
-  if (thing === '') {
+  } else if (thing === '') {
     return 'an empty string';
+  } else {
+    return typeof thing === 'string'
+      ? JSON.stringify(thing)
+      : `something with type "${typeof thing}"`;
   }
-  return typeof thing === 'string'
-    ? JSON.stringify(thing)
-    : `something with type "${typeof thing}"`;
 }
 //# sourceMappingURL=ReactDOMResourceValidation.js.map

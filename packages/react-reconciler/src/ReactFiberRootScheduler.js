@@ -523,8 +523,9 @@ function performWorkOnRootViaSchedulerTask(root, didTimeout) {
       // `ensureRootIsScheduled` because the check above implies either that
       // there's a new task, or that there's no remaining work on this root.
       return null;
+    } else {
+      // Current task was not canceled. Continue.
     }
-    // Current task was not canceled. Continue.
   }
 
   // Determine the next lanes to work on, using the fields stored on the root.

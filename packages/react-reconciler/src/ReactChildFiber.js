@@ -475,13 +475,15 @@ function createChildReconciler(shouldTrackSideEffects) {
         // re-run the effects in its subtree as if it had remounted.
         newFiber.flags |= Placement;
         return lastPlacedIndex;
+      } else {
+        // This item can stay in place.
+        return oldIndex;
       }
-      // This item can stay in place.
-      return oldIndex;
+    } else {
+      // This is an insertion.
+      newFiber.flags |= Placement | PlacementDEV;
+      return lastPlacedIndex;
     }
-    // This is an insertion.
-    newFiber.flags |= Placement | PlacementDEV;
-    return lastPlacedIndex;
   }
 
   function placeSingleChild(shouldTrackSideEffects, newFiber) {
@@ -801,8 +803,9 @@ function createChildReconciler(shouldTrackSideEffects) {
             );
             currentDebugInfo = prevDebugInfo;
             return updated;
+          } else {
+            return null;
           }
-          return null;
         }
         case REACT_PORTAL_TYPE:
           // If the old child was an optimisticKey, then we'd normally consider that a match,
@@ -811,8 +814,9 @@ function createChildReconciler(shouldTrackSideEffects) {
           // takes precedence over assuming the identity of an optimistic slot.
           if ((newChild.key ?? null) === (key ?? null)) {
             return updatePortal(returnFiber, oldFiber, newChild, lanes);
+          } else {
+            return null;
           }
-          return null;
         case REACT_LAZY_TYPE: {
           const prevDebugInfo = pushDebugInfo(newChild._debugInfo);
           const resolvedChild = resolveLazy(newChild);

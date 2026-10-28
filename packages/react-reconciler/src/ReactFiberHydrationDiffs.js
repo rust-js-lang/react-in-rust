@@ -107,14 +107,15 @@ function describeTextNode(content, maxLength) {
       return '{' + encoded.slice(0, maxLength - 7) + '..."}';
     }
     return '{' + encoded + '}';
-  }
-  if (content.length > maxLength) {
-    if (maxLength < 5) {
-      return '{"..."}';
+  } else {
+    if (content.length > maxLength) {
+      if (maxLength < 5) {
+        return '{"..."}';
+      }
+      return content.slice(0, maxLength - 3) + '...';
     }
-    return content.slice(0, maxLength - 3) + '...';
+    return content;
   }
-  return content;
 }
 
 function describeTextDiff(clientText, serverProps, indent) {
@@ -203,11 +204,12 @@ function describeValue(value, maxLength) {
           properties += (!properties ? '' : ',') + propName + ':' + propValue;
         }
         return '{' + properties + '}';
+      } else {
+        if ((name === 'Blob' || name === 'File') && enableSrcObject) {
+          return name + ':' + ('' + value.type);
+        }
+        return name;
       }
-      if ((name === 'Blob' || name === 'File') && enableSrcObject) {
-        return name + ':' + ('' + value.type);
-      }
-      return name;
     }
     case 'function': {
       const name = value.displayName || value.name;
@@ -287,22 +289,22 @@ function describeExpandedElement(type, props, rowPrefix) {
 
   if (properties.length === 0) {
     return rowPrefix + '<' + type + '>\n';
-  }
-  if (remainingRowLength > 0) {
+  } else if (remainingRowLength > 0) {
     return rowPrefix + '<' + type + ' ' + properties.join(' ') + '>\n';
+  } else {
+    return (
+      rowPrefix +
+      '<' +
+      type +
+      '\n' +
+      rowPrefix +
+      '  ' +
+      properties.join('\n' + rowPrefix + '  ') +
+      '\n' +
+      rowPrefix +
+      '>\n'
+    );
   }
-  return (
-    rowPrefix +
-    '<' +
-    type +
-    '\n' +
-    rowPrefix +
-    '  ' +
-    properties.join('\n' + rowPrefix + '  ') +
-    '\n' +
-    rowPrefix +
-    '>\n'
-  );
 }
 
 function describePropertiesDiff(clientObject, serverObject, indent) {

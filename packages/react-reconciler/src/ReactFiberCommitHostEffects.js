@@ -514,7 +514,7 @@ function commitPlacement(finishedWork) {
           parent,
           parentFragmentInstances,
         );
-        return;
+        break;
       }
     // Fall through
     case HostComponent: {
@@ -549,7 +549,7 @@ function commitPlacement(finishedWork) {
         parent,
         parentFragmentInstances,
       );
-      return;
+      break;
     }
     default:
       throw new Error(

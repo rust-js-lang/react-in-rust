@@ -237,16 +237,17 @@ function workLoop(initialTime) {
   // Return whether there's additional work
   if (currentTask != null) {
     return true;
+  } else {
+    const startTime = $withBorrow(
+      timerQueue,
+      timerQueue => peek(timerQueue)?.startTime,
+      true,
+    );
+    if (startTime != null) {
+      requestHostTimeout(handleTimeout, startTime - currentTime);
+    }
+    return false;
   }
-  const startTime = $withBorrow(
-    timerQueue,
-    timerQueue => peek(timerQueue)?.startTime,
-    true,
-  );
-  if (startTime != null) {
-    requestHostTimeout(handleTimeout, startTime - currentTime);
-  }
-  return false;
 }
 
 export function unstable_runWithPriority(priorityLevel, eventHandler) {

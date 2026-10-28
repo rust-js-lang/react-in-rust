@@ -186,17 +186,15 @@ export function getOwnerStackByFiberInDev(workInProgress) {
             info += '\n' + formattedStack;
           }
         }
-      } else {
-        if (owner.debugStack != null) {
-          // Server Component
-          const ownerStack = owner.debugStack;
-          owner = owner.owner;
-          if (owner != null) {
-            // TODO: Should we stash this somewhere for caching purposes?
-            info += '\n' + formatOwnerStack(ownerStack);
-          }
-          continue;
+      } else if (owner.debugStack != null) {
+        // Server Component
+        const ownerStack = owner.debugStack;
+        owner = owner.owner;
+        if (owner != null) {
+          // TODO: Should we stash this somewhere for caching purposes?
+          info += '\n' + formatOwnerStack(ownerStack);
         }
+      } else {
         break;
       }
     }

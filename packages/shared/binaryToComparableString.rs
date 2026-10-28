@@ -11,8 +11,8 @@ js::export_default! {
     pub fn binary_to_comparable_string(view: &ArrayBufferView) -> String {
         string::from_char_code(uint8_array::new_with_buffer(
             view.buffer(),
-            Some(view.byte_offset()),
-            Some(view.byte_length()),
+            Some(view.byte_offset().into()),
+            Some(view.byte_length().into()),
         ))
     }
 }

@@ -149,8 +149,9 @@ function lazyInitializer(payload) {
       );
     }
     return moduleObject.default;
+  } else {
+    throw payload._result;
   }
-  throw payload._result;
 }
 
 export function lazy(ctor) {

@@ -37,15 +37,16 @@ export function getUnmaskedContext(
 ) {
   if (disableLegacyContext) {
     return emptyContextObject;
+  } else {
+    if (didPushOwnContextIfProvider && isContextProvider(component)) {
+      // If the fiber is a context provider itself, when we read its context
+      // we may have already pushed its own child context on the stack. A context
+      // provider should not "see" its own child context. Therefore we read the
+      // previous (parent) context instead for a context provider.
+      return previousContext;
+    }
+    return contextStackCursor.current;
   }
-  if (didPushOwnContextIfProvider && isContextProvider(component)) {
-    // If the fiber is a context provider itself, when we read its context
-    // we may have already pushed its own child context on the stack. A context
-    // provider should not "see" its own child context. Therefore we read the
-    // previous (parent) context instead for a context provider.
-    return previousContext;
-  }
-  return contextStackCursor.current;
 }
 
 export function cacheContext(workInProgress, unmaskedContext, maskedContext) {
@@ -59,36 +60,37 @@ export function cacheContext(workInProgress, unmaskedContext, maskedContext) {
 export function getMaskedContext(workInProgress, unmaskedContext) {
   if (disableLegacyContext) {
     return emptyContextObject;
-  }
-  const type = workInProgress.type;
-  const contextTypes = type.contextTypes;
-  if (!contextTypes) {
-    return emptyContextObject;
-  }
+  } else {
+    const type = workInProgress.type;
+    const contextTypes = type.contextTypes;
+    if (!contextTypes) {
+      return emptyContextObject;
+    }
 
-  // Avoid recreating masked context unless unmasked context has changed.
-  // Failing to do this will result in unnecessary calls to componentWillReceiveProps.
-  // This may trigger infinite loops if componentWillReceiveProps calls setState.
-  const instance = workInProgress.stateNode;
-  if (
-    instance &&
-    instance.__reactInternalMemoizedUnmaskedChildContext === unmaskedContext
-  ) {
-    return instance.__reactInternalMemoizedMaskedChildContext;
-  }
+    // Avoid recreating masked context unless unmasked context has changed.
+    // Failing to do this will result in unnecessary calls to componentWillReceiveProps.
+    // This may trigger infinite loops if componentWillReceiveProps calls setState.
+    const instance = workInProgress.stateNode;
+    if (
+      instance &&
+      instance.__reactInternalMemoizedUnmaskedChildContext === unmaskedContext
+    ) {
+      return instance.__reactInternalMemoizedMaskedChildContext;
+    }
 
-  const context = {};
-  for (const key in contextTypes) {
-    context[key] = unmaskedContext[key];
-  }
+    const context = {};
+    for (const key in contextTypes) {
+      context[key] = unmaskedContext[key];
+    }
 
-  // Cache unmasked context so we can avoid recreating masked context unless necessary.
-  // Context is created before the class component is instantiated so check for instance.
-  if (instance) {
-    cacheContext(workInProgress, unmaskedContext, context);
-  }
+    // Cache unmasked context so we can avoid recreating masked context unless necessary.
+    // Context is created before the class component is instantiated so check for instance.
+    if (instance) {
+      cacheContext(workInProgress, unmaskedContext, context);
+    }
 
-  return context;
+    return context;
+  }
 }
 
 export function hasContextChanged() {
@@ -98,9 +100,10 @@ export function hasContextChanged() {
 export function isContextProvider(type) {
   if (disableLegacyContext) {
     return false;
+  } else {
+    const childContextTypes = type.childContextTypes;
+    return childContextTypes != null;
   }
-  const childContextTypes = type.childContextTypes;
-  return childContextTypes != null;
 }
 
 export function popContext(fiber) {
@@ -134,69 +137,72 @@ export function pushTopLevelContextObject(fiber, context, didChange) {
 export function processChildContext(fiber, type, parentContext) {
   if (disableLegacyContext) {
     return parentContext;
-  }
-  const instance = fiber.stateNode;
-  const childContextTypes = type.childContextTypes;
+  } else {
+    const instance = fiber.stateNode;
+    const childContextTypes = type.childContextTypes;
 
-  // TODO (bvaughn) Replace this behavior with an invariant() in the future.
-  // It has only been added in Fiber to match the (unintentional) behavior in Stack.
-  if (typeof instance.getChildContext !== 'function') {
-    if (__DEV__) {
-      const componentName = getComponentNameFromFiber(fiber) || 'Unknown';
+    // TODO (bvaughn) Replace this behavior with an invariant() in the future.
+    // It has only been added in Fiber to match the (unintentional) behavior in Stack.
+    if (typeof instance.getChildContext !== 'function') {
+      if (__DEV__) {
+        const componentName = getComponentNameFromFiber(fiber) || 'Unknown';
 
-      if (
-        warnedAboutMissingGetChildContext &&
-        !warnedAboutMissingGetChildContext[componentName]
-      ) {
-        warnedAboutMissingGetChildContext[componentName] = true;
-        console.error(
-          '%s.childContextTypes is specified but there is no getChildContext() method ' +
-            'on the instance. You can either define getChildContext() on %s or remove ' +
-            'childContextTypes from it.',
-          componentName,
-          componentName,
+        if (
+          warnedAboutMissingGetChildContext &&
+          !warnedAboutMissingGetChildContext[componentName]
+        ) {
+          warnedAboutMissingGetChildContext[componentName] = true;
+          console.error(
+            '%s.childContextTypes is specified but there is no getChildContext() method ' +
+              'on the instance. You can either define getChildContext() on %s or remove ' +
+              'childContextTypes from it.',
+            componentName,
+            componentName,
+          );
+        }
+      }
+      return parentContext;
+    }
+
+    const childContext = instance.getChildContext();
+    for (const contextKey in childContext) {
+      if (!(contextKey in childContextTypes)) {
+        throw new Error(
+          `${
+            getComponentNameFromFiber(fiber) || 'Unknown'
+          }.getChildContext(): key "${contextKey}" is not defined in childContextTypes.`,
         );
       }
     }
-    return parentContext;
-  }
 
-  const childContext = instance.getChildContext();
-  for (const contextKey in childContext) {
-    if (!(contextKey in childContextTypes)) {
-      throw new Error(
-        `${
-          getComponentNameFromFiber(fiber) || 'Unknown'
-        }.getChildContext(): key "${contextKey}" is not defined in childContextTypes.`,
-      );
-    }
+    const merged = {};
+    Object.assign(merged, parentContext, childContext);
+    return merged;
   }
-
-  const merged = {};
-  Object.assign(merged, parentContext, childContext);
-  return merged;
 }
 
 export function pushContextProvider(workInProgress) {
   if (disableLegacyContext) {
     return false;
+  } else {
+    const instance = workInProgress.stateNode;
+    // We push the context as early as possible to ensure stack integrity.
+    // If the instance does not exist yet, we will push null at first,
+    // and replace it on the stack later when invalidating the context.
+    let memoizedMergedChildContext =
+      instance && instance.__reactInternalMemoizedMergedChildContext;
+    memoizedMergedChildContext =
+      memoizedMergedChildContext || emptyContextObject;
+
+    // Remember the parent context so we can merge with it later.
+    // Inherit the parent's did-perform-work value to avoid inadvertently blocking updates.
+    previousContext = contextStackCursor.current;
+    push(contextStackCursor, memoizedMergedChildContext, workInProgress);
+    const didPerformWork = didPerformWorkStackCursor.current;
+    push(didPerformWorkStackCursor, didPerformWork, workInProgress);
+
+    return true;
   }
-  const instance = workInProgress.stateNode;
-  // We push the context as early as possible to ensure stack integrity.
-  // If the instance does not exist yet, we will push null at first,
-  // and replace it on the stack later when invalidating the context.
-  let memoizedMergedChildContext =
-    instance && instance.__reactInternalMemoizedMergedChildContext;
-  memoizedMergedChildContext = memoizedMergedChildContext || emptyContextObject;
-
-  // Remember the parent context so we can merge with it later.
-  // Inherit the parent's did-perform-work value to avoid inadvertently blocking updates.
-  previousContext = contextStackCursor.current;
-  push(contextStackCursor, memoizedMergedChildContext, workInProgress);
-  const didPerformWork = didPerformWorkStackCursor.current;
-  push(didPerformWorkStackCursor, didPerformWork, workInProgress);
-
-  return true;
 }
 
 export function invalidateContextProvider(workInProgress, type, didChange) {
@@ -238,27 +244,28 @@ export function invalidateContextProvider(workInProgress, type, didChange) {
 export function findCurrentUnmaskedContext(fiber) {
   if (disableLegacyContext) {
     return emptyContextObject;
-  }
-  // Currently this is only used with renderSubtreeIntoContainer; not sure if it
-  // makes sense elsewhere
-  let node = fiber;
-  do {
-    switch (node.tag) {
-      case HostRoot:
-        return node.stateNode.context;
-      case ClassComponent: {
-        const component = node.type;
-        if (isContextProvider(component)) {
-          return node.stateNode.__reactInternalMemoizedMergedChildContext;
+  } else {
+    // Currently this is only used with renderSubtreeIntoContainer; not sure if it
+    // makes sense elsewhere
+    let node = fiber;
+    do {
+      switch (node.tag) {
+        case HostRoot:
+          return node.stateNode.context;
+        case ClassComponent: {
+          const component = node.type;
+          if (isContextProvider(component)) {
+            return node.stateNode.__reactInternalMemoizedMergedChildContext;
+          }
         }
       }
-    }
-    node = node.return;
-  } while (node != null);
+      node = node.return;
+    } while (node != null);
 
-  throw new Error(
-    'Found unexpected detached subtree parent. ' +
-      'This error is likely caused by a bug in React. Please file an issue.',
-  );
+    throw new Error(
+      'Found unexpected detached subtree parent. ' +
+        'This error is likely caused by a bug in React. Please file an issue.',
+    );
+  }
 }
 //# sourceMappingURL=ReactFiberLegacyContext.js.map

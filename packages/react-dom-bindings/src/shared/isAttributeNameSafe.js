@@ -15,7 +15,6 @@ export const ATTRIBUTE_NAME_CHAR =
 
 const VALID_ATTRIBUTE_NAME_REGEX = new RegExp(
   '^[' + ATTRIBUTE_NAME_START_CHAR + '][' + ATTRIBUTE_NAME_CHAR + ']*$',
-  '',
 );
 
 const illegalAttributeNameCache = {};
