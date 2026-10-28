@@ -87,6 +87,8 @@ pub mod react_dom_null_input_value_prop_hook;
 pub mod react_dom_option;
 #[path = "src/shared/ReactDOMResourceValidation.rs"]
 pub mod react_dom_resource_validation;
+#[path = "src/client/ReactDOMSelect.rs"]
+pub mod react_dom_select;
 #[path = "src/client/ReactDOMSrcObject.rs"]
 pub mod react_dom_src_object;
 #[path = "src/client/ReactDOMTextarea.rs"]
