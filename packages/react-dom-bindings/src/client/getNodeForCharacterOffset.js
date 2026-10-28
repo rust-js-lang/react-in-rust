@@ -15,7 +15,7 @@ import {TEXT_NODE} from './HTMLNodeType.js';
  */
 function getLeafNode(node) {
   let firstChild;
-  while ((firstChild = node?.firstChild)) {
+  while ((firstChild = node?.firstChild) != null) {
     node = firstChild;
   }
   return node;
@@ -29,9 +29,9 @@ function getLeafNode(node) {
  * @return {?DOMElement|DOMTextNode}
  */
 function getSiblingNode(node) {
-  while (node) {
+  while (node != null) {
     const nextSibling = node.nextSibling;
-    if (nextSibling) {
+    if (nextSibling != null) {
       return nextSibling;
     }
     node = node.parentNode;
@@ -49,7 +49,7 @@ function getNodeForCharacterOffset(root, offset) {
   let node = getLeafNode(root);
   let nodeStart = 0;
 
-  while (node) {
+  while (node != null) {
     if (node.nodeType === TEXT_NODE) {
       const nodeEnd = nodeStart + (node.textContent ?? '').length;
 

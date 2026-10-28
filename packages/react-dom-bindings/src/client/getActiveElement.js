@@ -7,7 +7,7 @@
 
 export default function getActiveElement(doc) {
   doc ??= typeof document !== 'undefined' ? document : undefined;
-  if (!doc) {
+  if (doc == null) {
     return null;
   }
   try {

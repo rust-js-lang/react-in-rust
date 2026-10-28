@@ -11,7 +11,7 @@
 let currentReplayingEvent = null;
 
 export function setReplayingEvent(event) {
-  if (__DEV__ && currentReplayingEvent) {
+  if (__DEV__ && currentReplayingEvent != null) {
     console.error(
       'Expected currently replaying event to be null. This error ' +
         'is likely caused by a bug in React. Please file an issue.',
@@ -21,7 +21,7 @@ export function setReplayingEvent(event) {
 }
 
 export function resetReplayingEvent() {
-  if (__DEV__ && !currentReplayingEvent) {
+  if (__DEV__ && currentReplayingEvent == null) {
     console.error(
       'Expected currently replaying event to not be null. This error ' +
         'is likely caused by a bug in React. Please file an issue.',

@@ -16,7 +16,7 @@ export function setSrcObject(domElement, tag, value) {
     // browser and it won't refer to it by the URL anymore so we can now revoke it.
     URL.revokeObjectURL(url);
     const cleanUp = cleanUpListener;
-    if (cleanUp) {
+    if (cleanUp != null) {
       domElement.removeEventListener(loadEvent, cleanUp);
       domElement.removeEventListener('error', cleanUp);
     }
