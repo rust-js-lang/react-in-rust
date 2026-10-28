@@ -116,6 +116,8 @@ function getCurrentDebugTask() {
   return null;
 }
 
+/** What warns that a child in a list has no key. */
+
 let didWarnAboutMaps = false;
 let didWarnAboutGenerators = false;
 const ownerHasKeyUseWarning = {};
@@ -657,13 +659,12 @@ function createChildReconciler(shouldTrackSideEffects) {
     if (typeof newChild === 'object' && newChild != null) {
       switch (newChild.$$typeof) {
         case REACT_ELEMENT_TYPE: {
-          const element = newChild;
           const created = createFiberFromElement(
-            element,
+            newChild,
             returnFiber.mode,
             lanes,
           );
-          coerceRef(created, element);
+          coerceRef(created, newChild);
           created.return = returnFiber;
           if (__DEV__) {
             const prevDebugInfo = pushDebugInfo(newChild._debugInfo);
@@ -788,18 +789,17 @@ function createChildReconciler(shouldTrackSideEffects) {
 
     if (typeof newChild === 'object' && newChild != null) {
       switch (newChild.$$typeof) {
-        case REACT_ELEMENT_TYPE: {
-          const element = newChild;
+        case REACT_ELEMENT_TYPE:
           // If the old child was an optimisticKey, then we'd normally consider that a match,
           // but instead, we'll bail to return null from the slot which will bail to slow path.
           // That's to ensure that if the new key has a match elsewhere in the list, then that
           // takes precedence over assuming the identity of an optimistic slot.
-          if ((element.key ?? null) === (key ?? null)) {
+          if ((newChild.key ?? null) === (key ?? null)) {
             const prevDebugInfo = pushDebugInfo(newChild._debugInfo);
             const updated = updateElement(
               returnFiber,
               oldFiber,
-              element,
+              newChild,
               lanes,
             );
             currentDebugInfo = prevDebugInfo;
@@ -807,19 +807,16 @@ function createChildReconciler(shouldTrackSideEffects) {
           } else {
             return null;
           }
-        }
-        case REACT_PORTAL_TYPE: {
-          const portal = newChild;
+        case REACT_PORTAL_TYPE:
           // If the old child was an optimisticKey, then we'd normally consider that a match,
           // but instead, we'll bail to return null from the slot which will bail to slow path.
           // That's to ensure that if the new key has a match elsewhere in the list, then that
           // takes precedence over assuming the identity of an optimistic slot.
-          if ((portal.key ?? null) === (key ?? null)) {
-            return updatePortal(returnFiber, oldFiber, portal, lanes);
+          if ((newChild.key ?? null) === (key ?? null)) {
+            return updatePortal(returnFiber, oldFiber, newChild, lanes);
           } else {
             return null;
           }
-        }
         case REACT_LAZY_TYPE: {
           const prevDebugInfo = pushDebugInfo(newChild._debugInfo);
           const resolvedChild = resolveLazy(newChild);
@@ -924,7 +921,6 @@ function createChildReconciler(shouldTrackSideEffects) {
     if (typeof newChild === 'object' && newChild != null) {
       switch (newChild.$$typeof) {
         case REACT_ELEMENT_TYPE: {
-          const element = newChild;
           function fallback() {
             // If the existing child was an optimistic key, we may still match on the index.
             if (enableOptimisticKey) {
@@ -932,21 +928,20 @@ function createChildReconciler(shouldTrackSideEffects) {
             }
           }
           const matchedFiber =
-            (element.key == null
+            (newChild.key == null
               ? existingChildren.get(newIdx)
-              : existingChildren.get(element.key)) ?? fallback();
+              : existingChildren.get(newChild.key)) ?? fallback();
           const prevDebugInfo = pushDebugInfo(newChild._debugInfo);
           const updated = updateElement(
             returnFiber,
             matchedFiber,
-            element,
+            newChild,
             lanes,
           );
           currentDebugInfo = prevDebugInfo;
           return updated;
         }
         case REACT_PORTAL_TYPE: {
-          const portal = newChild;
           function fallback() {
             // If the existing child was an optimistic key, we may still match on the index.
             if (enableOptimisticKey) {
@@ -954,10 +949,10 @@ function createChildReconciler(shouldTrackSideEffects) {
             }
           }
           const matchedFiber =
-            (portal.key == null
+            (newChild.key == null
               ? existingChildren.get(newIdx)
-              : existingChildren.get(portal.key)) ?? fallback();
-          return updatePortal(returnFiber, matchedFiber, portal, lanes);
+              : existingChildren.get(newChild.key)) ?? fallback();
+          return updatePortal(returnFiber, matchedFiber, newChild, lanes);
         }
         case REACT_LAZY_TYPE: {
           const prevDebugInfo = pushDebugInfo(newChild._debugInfo);

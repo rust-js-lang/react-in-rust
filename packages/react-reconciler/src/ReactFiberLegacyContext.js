@@ -10,6 +10,11 @@ import {createCursor, pop, push} from './ReactFiberStack.js';
 import {ClassComponent, HostRoot} from './ReactWorkTags.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 
+/**
+ * A legacy context: the values a provider's `getChildContext` gives, by
+ * their names.
+ */
+
 let warnedAboutMissingGetChildContext;
 if (__DEV__) {
   warnedAboutMissingGetChildContext = {};

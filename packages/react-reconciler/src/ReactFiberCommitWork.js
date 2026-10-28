@@ -254,6 +254,8 @@ import {
 } from './ReactWorkTags.js';
 import {$index, $unwrap} from '@rust-js/runtime';
 
+// shared/ReactTypes' `Wakeable`.
+
 const NoLayoutEffectTraversalFlags = /*        */ 0b00;
 const IncludeWorkInProgressEffects = /*       */ 0b01;
 const IncludeHostSingletons = /*              */ 0b10;
@@ -301,10 +303,11 @@ function isHydratingParent(current, finishedWork) {
       (nextState == null || nextState.dehydrated == null)
     );
   } else {
-    return finishedWork.tag === HostRoot
-      ? current.memoizedState.isDehydrated &&
-          (finishedWork.flags & ForceClientRender) === NoFlags
-      : false;
+    return (
+      finishedWork.tag === HostRoot &&
+      current.memoizedState.isDehydrated &&
+      (finishedWork.flags & ForceClientRender) === NoFlags
+    );
   }
 }
 
@@ -1787,6 +1790,11 @@ function commitSuspenseHydrationCallbacks(finishedRoot, finishedWork) {
   }
 }
 
+/**
+ * shared/ReactTypes' `Wakeable`s a boundary already listens to: a `WeakSet`
+ * where the host has one, a `Set` where it hasn't.
+ */
+
 function getRetryCache(finishedWork) {
   // TODO: Unify the interface for the retry cache so we don't have to switch
   // on the tag like this.
@@ -1825,10 +1833,9 @@ function attachSuspenseRetryListeners(finishedWork, wakeables) {
   // attempts to re-render the boundary in the primary (pre-timeout) state.
   const retryCache = getRetryCache(finishedWork);
   wakeables.forEach(wakeable => {
-    const wakeableObject = wakeable;
     // Memoize using the boundary fiber to prevent redundant listeners.
-    if (!retryCache.has(wakeableObject)) {
-      retryCache.add(wakeableObject);
+    if (!retryCache.has(wakeable)) {
+      retryCache.add(wakeable);
 
       if (enableUpdaterTracking && isDevToolsPresent) {
         if (inProgressLanes != null && inProgressRoot != null) {
@@ -2181,11 +2188,12 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
 
         recursivelyTraverseMutationEffects(root, finishedWork, lanes);
         currentHoistableRoot = previousHoistableRoot;
+
+        commitReconciliationEffects(finishedWork, lanes);
       } else {
         recursivelyTraverseMutationEffects(root, finishedWork, lanes);
+        commitReconciliationEffects(finishedWork, lanes);
       }
-
-      commitReconciliationEffects(finishedWork, lanes);
 
       if (flags & Update) {
         if (supportsMutation && supportsHydration && current != null) {
@@ -3306,6 +3314,8 @@ function recursivelyTraverseReappearLayoutEffects(
     child = child.sibling;
   }
 }
+
+/** What the work loop committed: the transitions of this render, if any. */
 
 function commitOffscreenPassiveMountEffects(current, finishedWork, instance) {
   let previousCache = null;

@@ -375,6 +375,8 @@ import {
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {$unwrap} from '@rust-js/runtime';
 
+/** A root's ping cache: the lanes each wakeable has a ping listener for. */
+
 const PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map;
 
 export const NoContext = /*             */ 0b000;
@@ -644,6 +646,11 @@ const PENDING_SPAWNED_WORK = 4;
 const PENDING_PASSIVE_PHASE = 5;
 const PENDING_GESTURE_MUTATION_PHASE = 6;
 const PENDING_GESTURE_ANIMATION_PHASE = 7;
+
+/**
+ * A callback a `<ViewTransition>` scheduled for the commit, bound to its
+ * instance: given the transition's types, it may return a cleanup.
+ */
 
 let pendingEffectsStatus = 0;
 let pendingEffectsRoot = null;
@@ -2307,13 +2314,13 @@ function handleThrow(root, thrownValue) {
         // handle this currently.
         break;
       case SuspendedOnHydration:
+      // This is conceptually like a suspend, but it's not associated with
+      // a particular wakeable. DevTools doesn't seem to care about this case,
+      // currently. It's similar to if the component were interrupted, which
+      // we don't mark with a special function.
     }
   }
 }
-// This is conceptually like a suspend, but it's not associated with
-// a particular wakeable. DevTools doesn't seem to care about this case,
-// currently. It's similar to if the component were interrupted, which
-// we don't mark with a special function.
 
 export function shouldRemainOnPreviousScreen() {
   // This is asking whether it's better to suspend the transition and remain

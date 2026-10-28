@@ -16,6 +16,11 @@ function shim() {
   );
 }
 
+/**
+ * What this module gives for each function the renderer hasn't: it
+ * throws, whatever it's given.
+ */
+
 // Test selectors (when unsupported)
 export const supportsTestSelectors = false;
 export const findFiberRoot = shim;

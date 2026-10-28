@@ -482,28 +482,32 @@ function findFragmentInstanceOrTextInstanceSiblings(
   state,
 ) {
   while (child != null) {
-    if (child === this$) {
+    const current = child;
+    if (current === this$) {
       // Shared across recursive calls so ancestors can keep scanning for
       // following host siblings after a nested empty fragment.
       state.foundSelf = true;
-    } else if (
-      child.tag === HostComponent ||
-      child.tag === HostSingleton ||
-      child.tag === HostText
+      child = current.sibling;
+      continue;
+    }
+    if (
+      current.tag === HostComponent ||
+      current.tag === HostSingleton ||
+      current.tag === HostText
     ) {
       if (state.foundSelf) {
-        result[1] = child;
+        result[1] = current;
         return true;
       } else {
-        result[0] = child;
+        result[0] = current;
       }
     } else if (
-      child.tag === OffscreenComponent &&
-      child.memoizedState != null
+      current.tag === OffscreenComponent &&
+      current.memoizedState != null
     ) {
       // Skip hidden subtrees
     } else {
-      const grandchild = child.child;
+      const grandchild = current.child;
       if (
         findFragmentInstanceOrTextInstanceSiblings(
           result,
@@ -515,7 +519,7 @@ function findFragmentInstanceOrTextInstanceSiblings(
         return true;
       }
     }
-    child = child.sibling;
+    child = current.sibling;
   }
   return false;
 }

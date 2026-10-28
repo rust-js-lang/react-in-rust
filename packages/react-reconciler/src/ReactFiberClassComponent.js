@@ -65,6 +65,11 @@ import {
 } from './ReactTypeOfMode.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 
+/**
+ * A class's static `getDerivedStateFromProps`: the state its props derive,
+ * given its previous state.
+ */
+
 const fakeInternalInstance = {};
 
 const didWarnAboutStateAssignmentForComponent = new Set();

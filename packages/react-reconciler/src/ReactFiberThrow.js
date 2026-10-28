@@ -560,6 +560,7 @@ export function throwException(
           createCapturedValueAtFiber(wrapperError, sourceFiber),
         );
       }
+      return false;
     } else {
       if (value !== HydrationMismatchException) {
         const wrapperError = new Error(
@@ -586,8 +587,8 @@ export function throwException(
       );
       enqueueCapturedUpdate(workInProgress, update);
       renderDidError();
+      return false;
     }
-    return false;
   } else {
     // Otherwise, fall through to the error path.
   }

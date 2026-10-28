@@ -294,24 +294,27 @@ export function enqueueCapturedUpdate(workInProgress, capturedUpdate) {
           };
           if (newLast == null) {
             newFirst = clone;
+            newLast = clone;
           } else {
             newLast.next = clone;
+            newLast = clone;
           }
-          newLast = clone;
           update = update.next;
         } while (update != null);
 
         // Append the captured update the end of the cloned list.
         if (newLast == null) {
           newFirst = capturedUpdate;
+          newLast = capturedUpdate;
         } else {
           newLast.next = capturedUpdate;
+          newLast = capturedUpdate;
         }
       } else {
         // There are no base updates.
         newFirst = capturedUpdate;
+        newLast = capturedUpdate;
       }
-      newLast = capturedUpdate;
       const queue$1 = {
         baseState: currentQueue.baseState,
         firstBaseUpdate: newFirst ?? null,

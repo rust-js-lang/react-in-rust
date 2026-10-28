@@ -478,18 +478,18 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
 
 function describeSiblingFiber(fiber, indent) {
   const type = describeFiberType(fiber);
-  if (type != null) {
-    return indentation(indent) + '<' + type + '>' + '\n';
+  if (type == null) {
+    // Skip this type of fiber. We currently treat this as a fragment
+    // so it's just part of the parent's children.
+    let flatContent = '';
+    let childFiber = fiber.child;
+    while (childFiber != null) {
+      flatContent += describeSiblingFiber(childFiber, indent);
+      childFiber = childFiber.sibling;
+    }
+    return flatContent;
   }
-  // Skip this type of fiber. We currently treat this as a fragment
-  // so it's just part of the parent's children.
-  let flatContent = '';
-  let childFiber = fiber.child;
-  while (childFiber != null) {
-    flatContent += describeSiblingFiber(childFiber, indent);
-    childFiber = childFiber.sibling;
-  }
-  return flatContent;
+  return indentation(indent) + '<' + type + '>' + '\n';
 }
 
 function describeNode(node, indent) {

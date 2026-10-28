@@ -63,9 +63,9 @@ export function act(callback) {
         ReactSharedInternals.didScheduleLegacyUpdate = false;
       }
       result = callback();
-      const didScheduleLegacyUpdate = !disableLegacyMode
-        ? $unwrap(ReactSharedInternals.didScheduleLegacyUpdate)
-        : false;
+      const didScheduleLegacyUpdate =
+        !disableLegacyMode &&
+        $unwrap(ReactSharedInternals.didScheduleLegacyUpdate);
 
       // Replicate behavior of original `act` implementation in legacy mode,
       // which flushed updates immediately after the scope function exits, even

@@ -7,10 +7,6 @@
 
 import {getHighestPriorityLane, includesNonIdleWork} from './ReactFiberLane.js';
 
-function eventPriorityFromI32_from(lane) {
-  return lane;
-}
-
 export const NoEventPriority = 0;
 export const DiscreteEventPriority = 2;
 export const ContinuousEventPriority = 8;

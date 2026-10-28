@@ -415,6 +415,8 @@ function updateForwardRef(
   return workInProgress.child;
 }
 
+/** What a `memo`'s `compare` is: whether its props are equal enough to bail out. */
+
 function updateMemoComponent(
   current,
   workInProgress,
@@ -497,6 +499,7 @@ function updateSimpleMemoComponent(
     if (
       shallowEqual(prevProps, nextProps) &&
       current.ref === workInProgress.ref &&
+      // Prevent bailout if the implementation changed due to hot reload.
       (__DEV__ ? workInProgress.type === current.type : true)
     ) {
       didReceiveUpdate = false;
@@ -1313,13 +1316,16 @@ function markRef(current, workInProgress) {
       // Schedule a Ref effect
       workInProgress.flags |= Ref | RefStatic;
     }
-  } else if (typeof ref !== 'function' && typeof ref !== 'object') {
-    throw new Error(
-      'Expected ref to be a function, an object returned by React.createRef(), or undefined/null.',
-    );
-  } else if (current == null || current.ref !== ref) {
-    // Schedule a Ref effect
-    workInProgress.flags |= Ref | RefStatic;
+  } else {
+    if (typeof ref !== 'function' && typeof ref !== 'object') {
+      throw new Error(
+        'Expected ref to be a function, an object returned by React.createRef(), or undefined/null.',
+      );
+    }
+    if (current == null || current.ref !== ref) {
+      // Schedule a Ref effect
+      workInProgress.flags |= Ref | RefStatic;
+    }
   }
 }
 
@@ -1772,8 +1778,7 @@ function updateHostRoot(current, workInProgress, renderLanes) {
         nextChildren,
         renderLanes,
       );
-    }
-    if (nextChildren !== prevChildren) {
+    } else if (nextChildren !== prevChildren) {
       const recoverableError = createCapturedValueAtFiber(
         new Error(
           'This root received an early update, before anything was able ' +
@@ -4008,7 +4013,8 @@ export function beginWork(current, workInProgress, renderLanes) {
     if (
       oldProps !== newProps ||
       hasLegacyContextChanged() ||
-      (__DEV__ ? workInProgress.type !== current.type : false)
+      // Force a re-render if the implementation changed due to hot reload:
+      (__DEV__ && workInProgress.type !== current.type)
     ) {
       // If props or context changed, mark the fiber as having performed work.
       // This may be unset if the props are determined to be equal later (memo).

@@ -12,6 +12,8 @@ import {
 import {DidCapture, NoFlags} from './ReactFiberFlags.js';
 import {SuspenseComponent, SuspenseListComponent} from './ReactWorkTags.js';
 
+// shared/ReactTypes' `Wakeable`s.
+
 export function findFirstSuspended(row) {
   let node = row;
   while (true) {

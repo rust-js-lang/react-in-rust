@@ -151,6 +151,10 @@ export function popSuspenseHandler(fiber) {
   pop(suspenseStackCursor, fiber);
 }
 
+// SuspenseList context
+// TODO: Move to a separate module? We may change the SuspenseList
+// implementation to hide/show in the commit phase, anyway.
+
 const DefaultSuspenseContext = 0b00;
 
 const SubtreeSuspenseContextMask = 0b01;

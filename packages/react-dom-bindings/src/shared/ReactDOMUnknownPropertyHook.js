@@ -232,36 +232,37 @@ function validateProperty(tagName, name, value, eventRegistry) {
             return true;
           default: {
             const prefix = name.toLowerCase().slice(0, 5);
-            if (prefix !== 'data-' && prefix !== 'aria-') {
-              if (value) {
-                console.error(
-                  'Received `%s` for a non-boolean attribute `%s`.\n\n' +
-                    'If you want to write it to the DOM, pass a string instead: ' +
-                    '%s="%s" or %s={value.toString()}.',
-                  value,
-                  name,
-                  name,
-                  value,
-                  name,
-                );
-              } else {
-                console.error(
-                  'Received `%s` for a non-boolean attribute `%s`.\n\n' +
-                    'If you want to write it to the DOM, pass a string instead: ' +
-                    '%s="%s" or %s={value.toString()}.\n\n' +
-                    'If you used to conditionally omit it with %s={condition && value}, ' +
-                    'pass %s={condition ? value : undefined} instead.',
-                  value,
-                  name,
-                  name,
-                  value,
-                  name,
-                  name,
-                  name,
-                );
-              }
-              warnedProperties[name] = true;
+            if (prefix === 'data-' || prefix === 'aria-') {
+              return true;
             }
+            if (value) {
+              console.error(
+                'Received `%s` for a non-boolean attribute `%s`.\n\n' +
+                  'If you want to write it to the DOM, pass a string instead: ' +
+                  '%s="%s" or %s={value.toString()}.',
+                value,
+                name,
+                name,
+                value,
+                name,
+              );
+            } else {
+              console.error(
+                'Received `%s` for a non-boolean attribute `%s`.\n\n' +
+                  'If you want to write it to the DOM, pass a string instead: ' +
+                  '%s="%s" or %s={value.toString()}.\n\n' +
+                  'If you used to conditionally omit it with %s={condition && value}, ' +
+                  'pass %s={condition ? value : undefined} instead.',
+                value,
+                name,
+                name,
+                value,
+                name,
+                name,
+                name,
+              );
+            }
+            warnedProperties[name] = true;
             return true;
           }
         }
@@ -302,23 +303,24 @@ function validateProperty(tagName, name, value, eventRegistry) {
             case 'seamless':
             case 'itemScope':
             case 'inert':
-              console.error(
-                'Received the string `%s` for the boolean attribute `%s`. ' +
-                  '%s ' +
-                  'Did you mean %s={%s}?',
-                value,
-                name,
-                value === 'false'
-                  ? 'The browser will interpret it as a truthy value.'
-                  : 'Although this works, it will not work as expected if you pass the string "false".',
-                name,
-                value,
-              );
-              warnedProperties[name] = true;
-              return true;
+              break;
             default:
               return true;
           }
+          console.error(
+            'Received the string `%s` for the boolean attribute `%s`. ' +
+              '%s ' +
+              'Did you mean %s={%s}?',
+            value,
+            name,
+            value === 'false'
+              ? 'The browser will interpret it as a truthy value.'
+              : 'Although this works, it will not work as expected if you pass the string "false".',
+            name,
+            value,
+          );
+          warnedProperties[name] = true;
+          return true;
         }
     }
     return true;

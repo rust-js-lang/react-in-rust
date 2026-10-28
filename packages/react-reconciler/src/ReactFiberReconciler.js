@@ -157,10 +157,10 @@ export function findHostInstance(component) {
     }
   }
   const hostFiber = findCurrentHostFiber(fiber);
-  if (hostFiber != null) {
-    return getPublicInstance(hostFiber.stateNode);
+  if (hostFiber == null) {
+    return null;
   }
-  return null;
+  return getPublicInstance(hostFiber.stateNode);
 }
 
 export function findHostInstanceWithWarning(component, methodName) {
@@ -177,50 +177,50 @@ export function findHostInstanceWithWarning(component, methodName) {
       }
     }
     const hostFiber = findCurrentHostFiber(fiber);
-    if (hostFiber != null) {
-      if (hostFiber.mode & StrictLegacyMode) {
-        const componentName = getComponentNameFromFiber(fiber) || 'Component';
-        const didWarnAboutFindNodeInStrictMode$1 = $unwrap(
-          didWarnAboutFindNodeInStrictMode,
-        );
-        if (!didWarnAboutFindNodeInStrictMode$1[componentName]) {
-          didWarnAboutFindNodeInStrictMode$1[componentName] = true;
-          runWithFiberInDEV(
-            hostFiber,
-            (fiber, methodName, componentName) => {
-              if (fiber.mode & StrictLegacyMode) {
-                console.error(
-                  '%s is deprecated in StrictMode. ' +
-                    '%s was passed an instance of %s which is inside StrictMode. ' +
-                    'Instead, add a ref directly to the element you want to reference. ' +
-                    'Learn more about using refs safely here: ' +
-                    'https://react.dev/link/strict-mode-find-node',
-                  methodName,
-                  methodName,
-                  componentName,
-                );
-              } else {
-                console.error(
-                  '%s is deprecated in StrictMode. ' +
-                    '%s was passed an instance of %s which renders StrictMode children. ' +
-                    'Instead, add a ref directly to the element you want to reference. ' +
-                    'Learn more about using refs safely here: ' +
-                    'https://react.dev/link/strict-mode-find-node',
-                  methodName,
-                  methodName,
-                  componentName,
-                );
-              }
-            },
-            fiber,
-            methodName,
-            componentName,
-          );
-        }
-      }
-      return getPublicInstance(hostFiber.stateNode);
+    if (hostFiber == null) {
+      return null;
     }
-    return null;
+    if (hostFiber.mode & StrictLegacyMode) {
+      const componentName = getComponentNameFromFiber(fiber) || 'Component';
+      const didWarnAboutFindNodeInStrictMode$1 = $unwrap(
+        didWarnAboutFindNodeInStrictMode,
+      );
+      if (!didWarnAboutFindNodeInStrictMode$1[componentName]) {
+        didWarnAboutFindNodeInStrictMode$1[componentName] = true;
+        runWithFiberInDEV(
+          hostFiber,
+          (fiber, methodName, componentName) => {
+            if (fiber.mode & StrictLegacyMode) {
+              console.error(
+                '%s is deprecated in StrictMode. ' +
+                  '%s was passed an instance of %s which is inside StrictMode. ' +
+                  'Instead, add a ref directly to the element you want to reference. ' +
+                  'Learn more about using refs safely here: ' +
+                  'https://react.dev/link/strict-mode-find-node',
+                methodName,
+                methodName,
+                componentName,
+              );
+            } else {
+              console.error(
+                '%s is deprecated in StrictMode. ' +
+                  '%s was passed an instance of %s which renders StrictMode children. ' +
+                  'Instead, add a ref directly to the element you want to reference. ' +
+                  'Learn more about using refs safely here: ' +
+                  'https://react.dev/link/strict-mode-find-node',
+                methodName,
+                methodName,
+                componentName,
+              );
+            }
+          },
+          fiber,
+          methodName,
+          componentName,
+        );
+      }
+    }
+    return getPublicInstance(hostFiber.stateNode);
   }
   return findHostInstance(component);
 }
@@ -526,11 +526,17 @@ export function attemptHydrationAtCurrentPriority(fiber) {
 // ReactFiberConfig's `PublicInstance`, if any.
 export function findHostInstanceWithNoPortals(fiber) {
   const hostFiber = findCurrentHostFiberWithNoPortals(fiber);
-  if (hostFiber != null) {
-    return getPublicInstance(hostFiber.stateNode);
+  if (hostFiber == null) {
+    return null;
   }
-  return null;
+  return getPublicInstance(hostFiber.stateNode);
 }
+
+/**
+ * What DevTools decides of a boundary: to force it to error (`true`), to
+ * stop forcing it (`false`), or neither.
+ * What DevTools decides of a boundary: to force it to suspend.
+ */
 
 let shouldErrorImpl = fiber => null;
 
@@ -539,6 +545,11 @@ export function shouldError(fiber) {
 }
 
 export let shouldSuspend = fiber => false;
+
+/**
+ * A path DevTools edits a value at: each key, a property's name or an
+ * array's index.
+ */
 
 let overrideHookState = null;
 let overrideHookStateDeletePath = null;

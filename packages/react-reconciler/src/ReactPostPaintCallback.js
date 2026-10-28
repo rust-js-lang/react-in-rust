@@ -7,6 +7,8 @@
 
 import {requestPostPaintCallback} from './ReactFiberConfig.js';
 
+/** A callback given the time the frame was painted at. */
+
 let postPaintCallbackScheduled = false;
 let callbacks = [];
 

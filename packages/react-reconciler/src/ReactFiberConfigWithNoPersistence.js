@@ -16,6 +16,11 @@ function shim() {
   );
 }
 
+/**
+ * What this module gives for each function the renderer hasn't: it
+ * throws, whatever it's given.
+ */
+
 // Persistence (when unsupported)
 export const supportsPersistence = false;
 export const cloneInstance = shim;

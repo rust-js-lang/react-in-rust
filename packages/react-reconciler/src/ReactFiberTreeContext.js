@@ -63,6 +63,8 @@ import {getIsHydrating} from './ReactFiberHydrationContext.js';
 import {clz32} from './clz32.js';
 import {$pad, $unwrap} from '@rust-js/runtime';
 
+// A pushed id: its tree context's id, overflow and provider.
+
 // TODO: Use the unified fiber stack module instead of this local one?
 // Intentionally not using it yet to derisk the initial implementation, because
 // the way we push/pop these values is a bit unusual. If there's a mistake, I'd

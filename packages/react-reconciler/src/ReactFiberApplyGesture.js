@@ -182,7 +182,7 @@ function trackDeletedPairViewTransitions(deletion) {
               }
             }
             if (pairs.size === 0) {
-              return;
+              break;
             }
           }
         }

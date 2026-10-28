@@ -227,7 +227,7 @@ function appendAllChildren(
         appendInitialChild(parent, current.stateNode);
       } else if (
         current.tag === HostPortal ||
-        (supportsSingletons ? current.tag === HostSingleton : false)
+        (supportsSingletons && current.tag === HostSingleton)
       ) {
         // If we have a portal child, then we don't want to traverse
         // down its children. Instead, we'll get insertions from each child in
@@ -798,6 +798,8 @@ function bubbleProperties(completedWork) {
         child = child.sibling;
       }
     }
+
+    completedWork.subtreeFlags |= subtreeFlags;
   } else {
     // Bubble up the earliest expiration time.
     if (enableProfilerTimer && (completedWork.mode & ProfileMode) !== NoMode) {
@@ -848,9 +850,9 @@ function bubbleProperties(completedWork) {
         child = child.sibling;
       }
     }
-  }
 
-  completedWork.subtreeFlags |= subtreeFlags;
+    completedWork.subtreeFlags |= subtreeFlags;
+  }
 
   completedWork.childLanes = newChildLanes;
 
@@ -1464,11 +1466,12 @@ export function completeWork(current, workInProgress, renderLanes) {
             // Special case. There were remaining unhydrated nodes. We treat
             // this as a mismatch. Revert to client rendering.
             return workInProgress;
+          } else {
+            popSuspenseHandler(workInProgress);
+            // Did not finish hydrating, either because this is the initial
+            // render or because something suspended.
+            return null;
           }
-          popSuspenseHandler(workInProgress);
-          // Did not finish hydrating, either because this is the initial
-          // render or because something suspended.
-          return null;
         }
 
         if ((workInProgress.flags & DidCapture) !== NoFlags) {
@@ -1510,11 +1513,12 @@ export function completeWork(current, workInProgress, renderLanes) {
             // Special case. There were remaining unhydrated nodes. We treat
             // this as a mismatch. Revert to client rendering.
             return workInProgress;
+          } else {
+            popSuspenseHandler(workInProgress);
+            // Did not finish hydrating, either because this is the initial
+            // render or because something suspended.
+            return null;
           }
-          popSuspenseHandler(workInProgress);
-          // Did not finish hydrating, either because this is the initial
-          // render or because something suspended.
-          return null;
         }
       }
 

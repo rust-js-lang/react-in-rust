@@ -2005,10 +2005,9 @@ fn attach_suspense_retry_listeners(finished_work: &Rc<Fiber>, wakeables: &RetryQ
     // attempts to re-render the boundary in the primary (pre-timeout) state.
     let retry_cache = get_retry_cache(finished_work);
     wakeables.for_each(|wakeable| {
-        let wakeable_object: &'static JsObject = unsafe { js::cast(Some(wakeable)) };
         // Memoize using the boundary fiber to prevent redundant listeners.
-        if !retry_cache.has(wakeable_object) {
-            retry_cache.add(wakeable_object);
+        if !retry_cache.has(unsafe { js::cast(Some(wakeable)) }) {
+            retry_cache.add(unsafe { js::cast(Some(wakeable)) });
 
             if ENABLE_UPDATER_TRACKING.with(|&enabled| enabled)
                 && IS_DEV_TOOLS_PRESENT.with(|&present| present)

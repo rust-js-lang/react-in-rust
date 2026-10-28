@@ -159,9 +159,8 @@ fn map_into_array(
             "object" => match SymbolFor::from_value(js::get(children, "$$typeof")) {
                 Some(REACT_ELEMENT_TYPE | REACT_PORTAL_TYPE) => invoke_callback = true,
                 Some(REACT_LAZY_TYPE) => {
-                    let lazy: &LazyComponent = unsafe { js::cast(children) };
-                    let payload = &lazy.payload;
-                    let init = lazy.init;
+                    let payload = &unsafe { js::cast::<&LazyComponent>(children) }.payload;
+                    let init = unsafe { js::cast::<&LazyComponent>(children) }.init;
                     return map_into_array(
                         init(payload),
                         array,

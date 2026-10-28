@@ -782,10 +782,12 @@ fn create_child_reconciler(should_track_side_effects: bool) -> Box<ChildReconcil
         {
             match SymbolFor::from_value(js::get(child, "$$typeof")) {
                 Some(REACT_ELEMENT_TYPE) => {
-                    let element: &ReactElement = unsafe { js::cast(new_child) };
-                    let created =
-                        create_fiber_from_element(element, return_fiber.mode.get(), lanes);
-                    coerce_ref(&created, element);
+                    let created = create_fiber_from_element(
+                        unsafe { js::cast(new_child) },
+                        return_fiber.mode.get(),
+                        lanes,
+                    );
+                    coerce_ref(&created, unsafe { js::cast(new_child) });
                     created.r#return.replace(Some(Rc::clone(return_fiber)));
                     if __DEV__ {
                         let prev_debug_info = push_debug_info(js::get(child, "_debugInfo"));
@@ -919,14 +921,18 @@ fn create_child_reconciler(should_track_side_effects: bool) -> Box<ChildReconcil
         {
             match SymbolFor::from_value(js::get(child, "$$typeof")) {
                 Some(REACT_ELEMENT_TYPE) => {
-                    let element: &'static ReactElement = unsafe { js::cast(new_child) };
                     // If the old child was an optimisticKey, then we'd normally consider that a match,
                     // but instead, we'll bail to return null from the slot which will bail to slow path.
                     // That's to ensure that if the new key has a match elsewhere in the list, then that
                     // takes precedence over assuming the identity of an optimistic slot.
-                    if element.key == key {
+                    if unsafe { js::cast::<&ReactElement>(new_child) }.key == key {
                         let prev_debug_info = push_debug_info(js::get(child, "_debugInfo"));
-                        let updated = update_element(return_fiber, old_fiber, element, lanes);
+                        let updated = update_element(
+                            return_fiber,
+                            old_fiber,
+                            unsafe { js::cast(new_child) },
+                            lanes,
+                        );
                         CURRENT_DEBUG_INFO.set(prev_debug_info);
                         return Some(updated);
                     } else {
@@ -934,13 +940,17 @@ fn create_child_reconciler(should_track_side_effects: bool) -> Box<ChildReconcil
                     }
                 }
                 Some(REACT_PORTAL_TYPE) => {
-                    let portal: &'static ReactPortal = unsafe { js::cast(new_child) };
                     // If the old child was an optimisticKey, then we'd normally consider that a match,
                     // but instead, we'll bail to return null from the slot which will bail to slow path.
                     // That's to ensure that if the new key has a match elsewhere in the list, then that
                     // takes precedence over assuming the identity of an optimistic slot.
-                    if portal.key == key {
-                        return Some(update_portal(return_fiber, old_fiber, portal, lanes));
+                    if unsafe { js::cast::<&ReactPortal>(new_child) }.key == key {
+                        return Some(update_portal(
+                            return_fiber,
+                            old_fiber,
+                            unsafe { js::cast(new_child) },
+                            lanes,
+                        ));
                     } else {
                         return None;
                     }
@@ -1045,28 +1055,31 @@ fn create_child_reconciler(should_track_side_effects: bool) -> Box<ChildReconcil
         {
             match SymbolFor::from_value(js::get(child, "$$typeof")) {
                 Some(REACT_ELEMENT_TYPE) => {
-                    let element: &'static ReactElement = unsafe { js::cast(new_child) };
-                    let matched_fiber = match &element.key {
-                        None => existing_children.get(js::unknown(&new_idx)),
-                        Some(key) => existing_children.get(js::unknown(key)),
-                    }
-                    .or_else(|| {
-                        // If the existing child was an optimistic key, we may still match on the index.
-                        if ENABLE_OPTIMISTIC_KEY.with(|&enabled| enabled) {
-                            existing_children.get(js::unknown(&(-(new_idx as f64) - 1.0)))
-                        } else {
-                            None
+                    let matched_fiber =
+                        match &unsafe { js::cast::<&ReactElement>(new_child) }.key {
+                            None => existing_children.get(js::unknown(&new_idx)),
+                            Some(key) => existing_children.get(js::unknown(key)),
                         }
-                    });
+                        .or_else(|| {
+                            // If the existing child was an optimistic key, we may still match on the index.
+                            if ENABLE_OPTIMISTIC_KEY.with(|&enabled| enabled) {
+                                existing_children.get(js::unknown(&(-(new_idx as f64) - 1.0)))
+                            } else {
+                                None
+                            }
+                        });
                     let prev_debug_info = push_debug_info(js::get(child, "_debugInfo"));
-                    let updated =
-                        update_element(return_fiber, matched_fiber.as_ref(), element, lanes);
+                    let updated = update_element(
+                        return_fiber,
+                        matched_fiber.as_ref(),
+                        unsafe { js::cast(new_child) },
+                        lanes,
+                    );
                     CURRENT_DEBUG_INFO.set(prev_debug_info);
                     return Some(updated);
                 }
                 Some(REACT_PORTAL_TYPE) => {
-                    let portal: &'static ReactPortal = unsafe { js::cast(new_child) };
-                    let matched_fiber = match &portal.key {
+                    let matched_fiber = match &unsafe { js::cast::<&ReactPortal>(new_child) }.key {
                         None => existing_children.get(js::unknown(&new_idx)),
                         Some(key) => existing_children.get(js::unknown(key)),
                     }
@@ -1081,7 +1094,7 @@ fn create_child_reconciler(should_track_side_effects: bool) -> Box<ChildReconcil
                     return Some(update_portal(
                         return_fiber,
                         matched_fiber.as_ref(),
-                        portal,
+                        unsafe { js::cast(new_child) },
                         lanes,
                     ));
                 }

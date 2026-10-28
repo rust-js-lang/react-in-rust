@@ -115,12 +115,11 @@ export function ensureRootIsScheduled(root) {
   // Add the root to the schedule
   if (lastScheduledRoot === root || root.next != null) {
     // Fast path. This root is already scheduled.
+  } else if (lastScheduledRoot == null) {
+    firstScheduledRoot = root;
+    lastScheduledRoot = root;
   } else {
-    if (lastScheduledRoot == null) {
-      firstScheduledRoot = root;
-    } else {
-      lastScheduledRoot.next = root;
-    }
+    lastScheduledRoot.next = root;
     lastScheduledRoot = root;
   }
 
