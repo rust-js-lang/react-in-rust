@@ -12,7 +12,7 @@ export interface NodeAndOffset {
 }
 
 declare function getNodeForCharacterOffset(
-  root: Element,
+  root: Node,
   offset: number,
 ): NodeAndOffset | null | undefined;
 

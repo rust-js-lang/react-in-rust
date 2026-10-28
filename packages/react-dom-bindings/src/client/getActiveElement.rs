@@ -9,7 +9,7 @@ use webapi::{Document, Element};
 
 js::export_default! {
     #[cfg_attr(rust_js, rust_js::nullable)]
-    fn get_active_element(doc: Option<&'static Document>) -> Option<&'static Element> {
+    pub fn get_active_element(doc: Option<&'static Document>) -> Option<&'static Element> {
         let doc = doc.or_else(|| js::is_defined(webapi::document).then_some(webapi::document))?;
         match catch_unwind(AssertUnwindSafe(|| {
             doc.active_element()

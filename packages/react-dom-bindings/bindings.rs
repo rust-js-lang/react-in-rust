@@ -25,6 +25,14 @@ pub mod is_custom_element;
 pub mod is_unitless_number;
 #[path = "src/shared/ReactDOMNullInputValuePropHook.rs"]
 pub mod react_dom_null_input_value_prop_hook;
+#[path = "src/shared/ReactDOMResourceValidation.rs"]
+pub mod react_dom_resource_validation;
+#[path = "src/client/ReactDOMSelection.rs"]
+pub mod react_dom_selection;
+#[path = "src/client/ReactDOMSrcObject.rs"]
+pub mod react_dom_src_object;
+#[path = "src/client/ReactInputSelection.rs"]
+pub mod react_input_selection;
 #[path = "src/shared/sanitizeURL.rs"]
 pub mod sanitize_url;
 #[path = "src/client/setTextContent.rs"]

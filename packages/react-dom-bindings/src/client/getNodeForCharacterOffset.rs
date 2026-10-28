@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use webapi::{Element, Node};
+use webapi::Node;
 
 use crate::html_node_type::TEXT_NODE;
 
@@ -44,7 +44,7 @@ pub struct NodeAndOffset {
 /// @param {DOMElement|DOMTextNode} root
 /// @param {number} offset
 /// @return {?object}
-fn get_node_for_character_offset(root: &'static Element, offset: f64) -> Option<NodeAndOffset> {
+pub fn get_node_for_character_offset(root: &'static Node, offset: f64) -> Option<NodeAndOffset> {
     let mut node = get_leaf_node(Some(root));
     let mut node_start = 0.0;
     let mut node_end;
