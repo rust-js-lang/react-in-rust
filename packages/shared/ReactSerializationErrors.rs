@@ -35,12 +35,12 @@ fn is_object_prototype(object: Option<&Unknown>) -> bool {
     // It might be an object from a different Realm which is
     // still just a plain simple object.
     if GET_PROTOTYPE_OF
-        .with(|get_prototype_of| get_prototype_of(object))
+        .with(|get_prototype_of| get_prototype_of(Some(object)))
         .is_some()
     {
         return false;
     }
-    let names = js::object::get_own_property_names(object);
+    let names = js::object::get_own_property_names(Some(object));
     for name in &names {
         if !js::has(object_prototype, name) {
             return false;
@@ -55,9 +55,9 @@ pub fn is_getter(object: Option<&Unknown>, name: &str) -> bool {
         Some(object) if object != object_prototype => object,
         _ => return false,
     };
-    let Some(descriptor) = js::object::get_own_property_descriptor(object, name) else {
+    let Some(descriptor) = js::object::get_own_property_descriptor(Some(object), name) else {
         return is_getter(
-            GET_PROTOTYPE_OF.with(|get_prototype_of| get_prototype_of(object)),
+            GET_PROTOTYPE_OF.with(|get_prototype_of| get_prototype_of(Some(object))),
             name,
         );
     };
@@ -65,12 +65,14 @@ pub fn is_getter(object: Option<&Unknown>, name: &str) -> bool {
 }
 
 pub fn is_simple_object(object: &Unknown) -> bool {
-    if !is_object_prototype(GET_PROTOTYPE_OF.with(|get_prototype_of| get_prototype_of(object))) {
+    if !is_object_prototype(
+        GET_PROTOTYPE_OF.with(|get_prototype_of| get_prototype_of(Some(object))),
+    ) {
         return false;
     }
-    let names = js::object::get_own_property_names(object);
+    let names = js::object::get_own_property_names(Some(object));
     for name in &names {
-        let Some(descriptor) = js::object::get_own_property_descriptor(object, name) else {
+        let Some(descriptor) = js::object::get_own_property_descriptor(Some(object), name) else {
             return false;
         };
         if !descriptor.enumerable.unwrap_or_default() {

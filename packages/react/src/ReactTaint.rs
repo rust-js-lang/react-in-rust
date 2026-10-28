@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use std::rc::Rc;
 
 use js::{
-    ArrayBufferView, FinalizationRegistry, Kind, Map, Unknown, WeakMap, finalization_registry,
+    ArrayBufferView, FinalizationRegistry, Kind, Map, Set, Unknown, WeakMap, finalization_registry,
 };
 use shared::react_feature_flags::ENABLE_TAINT;
 
@@ -27,8 +27,8 @@ thread_local! {
     static TAINT_REGISTRY_VALUES: Cell<Option<&'static Map<EntryValue, Rc<TaintEntry>>>> =
         const { Cell::new(None) };
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryByteLengths")]
-    static TAINT_REGISTRY_BYTE_LENGTHS: RefCell<Option<Rc<RefCell<HashSet<u32>>>>> =
-        const { RefCell::new(None) };
+    static TAINT_REGISTRY_BYTE_LENGTHS: Cell<Option<&'static Set<f64>>> =
+        const { Cell::new(None) };
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryPendingRequests")]
     static TAINT_REGISTRY_PENDING_REQUESTS: RefCell<Option<Rc<RefCell<HashSet<&'static RequestCleanupQueue>>>>> =
         const { RefCell::new(None) };
@@ -42,8 +42,7 @@ js::on_load! {
     REACT_SHARED_INTERNALS.with(|internals| {
         TAINT_REGISTRY_OBJECTS.set(internals.taint_registry_objects.get());
         TAINT_REGISTRY_VALUES.set(internals.taint_registry_values.get());
-        let taint_registry_byte_lengths = internals.taint_registry_byte_lengths.borrow().clone();
-        TAINT_REGISTRY_BYTE_LENGTHS.set(taint_registry_byte_lengths);
+        TAINT_REGISTRY_BYTE_LENGTHS.set(internals.taint_registry_byte_lengths.get());
         let taint_registry_pending_requests =
             internals.taint_registry_pending_requests.borrow().clone();
         TAINT_REGISTRY_PENDING_REQUESTS.set(taint_registry_pending_requests);
@@ -51,7 +50,7 @@ js::on_load! {
 
     TYPED_ARRAY_CONSTRUCTOR.set(js::get(
         GET_PROTOTYPE_OF.with(|get_prototype_of| {
-            get_prototype_of(js::unknown(js::uint32_array::prototype()))
+            get_prototype_of(Some(js::unknown(js::uint32_array::prototype())))
         }),
         "constructor",
     ));
@@ -128,13 +127,10 @@ pub fn taint_unique_value(
         // hashing in the Map implementation. It doesn't really matter what form the string
         // take as long as it's the same when we look it up.
         // We're not too worried about collisions since this should be a high entropy value.
-        TAINT_REGISTRY_BYTE_LENGTHS.with_borrow(|byte_lengths| {
-            byte_lengths
-                .as_ref()
-                .unwrap()
-                .borrow_mut()
-                .insert(value.byte_length());
-        });
+        TAINT_REGISTRY_BYTE_LENGTHS
+            .get()
+            .unwrap()
+            .add(&value.byte_length());
         entry_value = EntryValue::String(binary_to_comparable_string(value));
     } else {
         // $FlowFixMe[invalid-compare]

@@ -51,10 +51,10 @@ export function isGetter(object, name) {
     return false;
   }
   const descriptor = Object.getOwnPropertyDescriptor(object, name);
-  if (!descriptor) {
+  if (descriptor == null) {
     return isGetter(getPrototypeOf(object), name);
   }
-  return !!descriptor.get;
+  return descriptor.get != null;
 }
 
 export function isSimpleObject(object) {
@@ -64,11 +64,11 @@ export function isSimpleObject(object) {
   const names = Object.getOwnPropertyNames(object);
   for (const name of names) {
     const descriptor = Object.getOwnPropertyDescriptor(object, name);
-    if (!descriptor) {
+    if (descriptor == null) {
       return false;
     }
     if (!descriptor.enumerable) {
-      if ((name === 'key' || name === 'ref') && descriptor.get) {
+      if ((name === 'key' || name === 'ref') && descriptor.get != null) {
         // React adds key and ref getters to props objects to issue warnings.
         // Those getters will not be transferred to the client, but that's ok,
         // so we'll special case them.

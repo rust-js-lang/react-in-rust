@@ -38,7 +38,7 @@ export function describeBuiltInComponentFrame(name) {
 }
 
 export function describeDebugInfoFrame(name, env, location) {
-  if (location) {
+  if (location != null) {
     // If we have a location, it's the child's owner stack. Treat the bottom most frame as
     // the location of this function.
     const childStack = formatOwnerStack(location);
@@ -119,7 +119,7 @@ function DetermineComponentFrameRoot(fn, construct) {
         try {
           new fn();
         } finally {
-          if (prevProps) {
+          if (prevProps != null) {
             Object.defineProperty(prototype, 'props', prevProps);
           } else {
             delete prototype.props;
@@ -147,7 +147,7 @@ function DetermineComponentFrameRoot(fn, construct) {
     }
   } catch (sample) {
     // This is inlined manually because closure doesn't do it for us.
-    if (control) {
+    if (control != null) {
       const sampleStack = sample.stack;
       if (sampleStack != null) {
         return [sampleStack, control.stack];
@@ -201,7 +201,7 @@ export function describeNativeComponentFrame(fn, construct) {
       'name',
     );
     // Before ES6, the `name` property was not configurable.
-    if (namePropDescriptor && namePropDescriptor.configurable) {
+    if (namePropDescriptor != null && namePropDescriptor.configurable) {
       // V8 utilizes a function's `name` property when generating a stack trace.
       Object.defineProperty(
         DetermineComponentFrameRoot,
@@ -280,7 +280,7 @@ export function describeNativeComponentFrame(fn, construct) {
                   frame = frame.replace('<anonymous>', fn.displayName);
                 }
 
-                if (__DEV__ && componentFrameCache) {
+                if (__DEV__ && componentFrameCache != null) {
                   componentFrameCache.set(fn, frame);
                 }
                 // Return the line we found.
@@ -308,7 +308,7 @@ export function describeNativeComponentFrame(fn, construct) {
   // Fallback to just using the name if we couldn't make it throw.
   const name = fn.displayName || fn.name;
   const syntheticFrame = name ? describeBuiltInComponentFrame(name) : '';
-  if (__DEV__ && componentFrameCache) {
+  if (__DEV__ && componentFrameCache != null) {
     componentFrameCache.set(fn, syntheticFrame);
   }
   return syntheticFrame;

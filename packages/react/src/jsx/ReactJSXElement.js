@@ -30,10 +30,11 @@ function noTask(name) {
 // eslint-disable-next-line react-internal/no-production-logging
 const createTask$1 = __DEV__ ? console.createTask : undefined;
 
-const createTask = createTask$1
-  ? // eslint-disable-next-line react-internal/no-production-logging
-    name => createTask$1(name)
-  : noTask;
+const createTask =
+  createTask$1 != null
+    ? // eslint-disable-next-line react-internal/no-production-logging
+      name => createTask$1(name)
+    : noTask;
 
 function getTaskName(type) {
   if (type === REACT_FRAGMENT_TYPE) {
@@ -59,7 +60,7 @@ function getTaskName(type) {
 function getOwner() {
   if (__DEV__) {
     const dispatcher = ReactSharedInternals.A;
-    if (!dispatcher) {
+    if (dispatcher == null) {
       return null;
     }
     return dispatcher.getOwner();
@@ -103,7 +104,7 @@ if (__DEV__) {
 function hasValidRef(config) {
   if (__DEV__ && hasOwnProperty.call(config, 'ref')) {
     const getter = $unwrap(Object.getOwnPropertyDescriptor(config, 'ref')).get;
-    if (getter && getter.isReactWarning) {
+    if (getter != null && getter.isReactWarning) {
       return false;
     }
   }
@@ -113,7 +114,7 @@ function hasValidRef(config) {
 function hasValidKey(config) {
   if (__DEV__ && hasOwnProperty.call(config, 'key')) {
     const getter = $unwrap(Object.getOwnPropertyDescriptor(config, 'key')).get;
-    if (getter && getter.isReactWarning) {
+    if (getter != null && getter.isReactWarning) {
       return false;
     }
   }

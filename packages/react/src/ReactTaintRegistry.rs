@@ -9,7 +9,7 @@ use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::rc::Rc;
 
-use js::{JsObject, Map, WeakKey, WeakMap};
+use js::{JsObject, Map, Set, WeakKey, WeakMap};
 
 /// What a taint holds on to: an object, or a function, the value's
 /// lifetime or the tainted object itself.
@@ -44,7 +44,7 @@ thread_local! {
     // Byte lengths of all binary values we've ever seen. We don't both refcounting this.
     // We expect to see only a few lengths here such as the length of token.
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryByteLengths")]
-    pub static TAINT_REGISTRY_BYTE_LENGTHS: Rc<RefCell<HashSet<u32>>> = Rc::new(RefCell::new(HashSet::new()));
+    pub static TAINT_REGISTRY_BYTE_LENGTHS: &'static Set<f64> = js::set::new(None);
 }
 
 /// `RequestCleanupQueue`: the values a request still has a handle on,

@@ -159,7 +159,7 @@ js::on_load! {
 
 fn has_valid_ref(config: &Unknown) -> bool {
     if __DEV__ && HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(config, "ref")) {
-        let getter = object::get_own_property_descriptor(config, "ref")
+        let getter = object::get_own_property_descriptor(Some(config), "ref")
             .unwrap()
             .get;
         if let Some(getter) = getter
@@ -173,7 +173,7 @@ fn has_valid_ref(config: &Unknown) -> bool {
 
 fn has_valid_key(config: &Unknown) -> bool {
     if __DEV__ && HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(config, "key")) {
-        let getter = object::get_own_property_descriptor(config, "key")
+        let getter = object::get_own_property_descriptor(Some(config), "key")
             .unwrap()
             .get;
         if let Some(getter) = getter

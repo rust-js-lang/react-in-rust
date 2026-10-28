@@ -281,7 +281,7 @@ pub fn add_value_to_properties(
                 return;
             }
             if object_name == "Object"
-                && let Some(proto) = js::object::get_prototype_of(value)
+                && let Some(proto) = js::object::get_prototype_of(Some(value))
                 && let Kind::Function(constructor) = js::classify(js::get(proto, "constructor"))
             {
                 object_name = function::name(constructor);

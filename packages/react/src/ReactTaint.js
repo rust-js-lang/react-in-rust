@@ -104,7 +104,7 @@ export function taintUniqueValue(message, lifetime, value) {
   } else {
     existingEntry.count = (existingEntry.count + 1) >>> 0;
   }
-  if (finalizationRegistry) {
+  if (finalizationRegistry != null) {
     finalizationRegistry.register(lifetime, entryValue);
   }
 }

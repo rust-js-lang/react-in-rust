@@ -7,7 +7,7 @@ use std::cell::{Cell, RefCell};
 use std::collections::HashSet;
 use std::rc::Rc;
 
-use js::{Map, WeakMap};
+use js::{Map, Set, WeakMap};
 use shared::environment::__DEV__;
 use shared::react_feature_flags::ENABLE_TAINT;
 use shared::react_shared_internals::{AsyncDispatcher, Dispatcher};
@@ -36,7 +36,7 @@ pub struct SharedStateServer {
     pub taint_registry_values: Cell<Option<&'static Map<EntryValue, Rc<TaintEntry>>>>,
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryByteLengths")]
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub taint_registry_byte_lengths: RefCell<Option<Rc<RefCell<HashSet<u32>>>>>,
+    pub taint_registry_byte_lengths: Cell<Option<&'static Set<f64>>>,
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryPendingRequests")]
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub taint_registry_pending_requests:
@@ -60,7 +60,7 @@ thread_local! {
         a: Cell::new(None),
         taint_registry_objects: Cell::new(None),
         taint_registry_values: Cell::new(None),
-        taint_registry_byte_lengths: RefCell::new(None),
+        taint_registry_byte_lengths: Cell::new(None),
         taint_registry_pending_requests: RefCell::new(None),
         get_current_stack: Cell::new(None),
         recently_created_owner_stacks: Cell::new(None),
@@ -78,7 +78,7 @@ js::on_load! {
                 .set(Some(TAINT_REGISTRY_VALUES.with(|&values| values)));
             react_shared_internals
                 .taint_registry_byte_lengths
-                .replace(Some(TAINT_REGISTRY_BYTE_LENGTHS.with(Rc::clone)));
+                .set(Some(TAINT_REGISTRY_BYTE_LENGTHS.with(|&byte_lengths| byte_lengths)));
             react_shared_internals
                 .taint_registry_pending_requests
                 .replace(Some(TAINT_REGISTRY_PENDING_REQUESTS.with(Rc::clone)));

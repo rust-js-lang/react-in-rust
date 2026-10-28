@@ -6,7 +6,7 @@
 use js::Unknown;
 
 thread_local! {
-    pub static GET_PROTOTYPE_OF: fn(&Unknown) -> Option<&'static Unknown> = js::object::get_prototype_of;
+    pub static GET_PROTOTYPE_OF: fn(Option<&Unknown>) -> Option<&'static Unknown> = js::object::get_prototype_of;
 }
 
 js::export_default!(GET_PROTOTYPE_OF);

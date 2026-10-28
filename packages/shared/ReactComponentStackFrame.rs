@@ -177,7 +177,7 @@ fn determine_component_frame_root(
 
                 let prototype: &'static Unknown =
                     unsafe { js::cast(js::get(js::unknown(r#fn), "prototype")) };
-                let prev_props = object::get_own_property_descriptor(prototype, "props");
+                let prev_props = object::get_own_property_descriptor(Some(prototype), "props");
                 object::define_property(
                     prototype,
                     "props",
@@ -275,7 +275,7 @@ pub fn describe_native_component_frame(
             "DetermineComponentFrameRoot",
         );
         let name_prop_descriptor = object::get_own_property_descriptor(
-            js::unknown(&determine_component_frame_root),
+            Some(js::unknown(&determine_component_frame_root)),
             "name",
         );
         // Before ES6, the `name` property was not configurable.
