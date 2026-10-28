@@ -35,7 +35,7 @@ function collectScopedNodes(node, fn, scopedNodes) {
       const stateNode = node.stateNode;
       const instance = getPublicInstance(stateNode);
       if (
-        instance != null &&
+        instance !== null &&
         fn(type, memoizedProps || emptyObject, instance) === true
       ) {
         scopedNodes.push(instance);
@@ -59,7 +59,7 @@ function collectFirstScopedNode(node, fn) {
       const memoizedProps = node.memoizedProps;
       const stateNode = node.stateNode;
       const instance = getPublicInstance(stateNode);
-      if (instance != null && fn(type, memoizedProps, instance) === true) {
+      if (instance !== null && fn(type, memoizedProps, instance) === true) {
         return instance;
       }
     }
@@ -162,7 +162,7 @@ function containsNode(node) {
 
 function getChildContextValues(context) {
   const currentFiber = getInstanceFromScope(this);
-  if (currentFiber == null) {
+  if (currentFiber === null) {
     return [];
   }
   const child = currentFiber.child;

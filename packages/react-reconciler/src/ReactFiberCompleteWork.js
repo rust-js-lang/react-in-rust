@@ -386,11 +386,10 @@ function appendAllChildrenToContainer(
       }
       while (current.sibling == null) {
         const returnFiber = current.return;
-        if (returnFiber != null && returnFiber !== workInProgress) {
-          current = returnFiber;
-          continue;
+        if (returnFiber == null || returnFiber === workInProgress) {
+          return hasOffscreenComponentChild;
         }
-        return hasOffscreenComponentChild;
+        current = returnFiber;
       }
       const sibling = current.sibling;
       const returnFiber = current.return;

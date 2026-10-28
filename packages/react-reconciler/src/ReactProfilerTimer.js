@@ -34,7 +34,7 @@ const now = Scheduler.unstable_now;
 const createTask$1 = __DEV__ ? console.createTask : undefined;
 
 const createTask =
-  createTask$1 != null
+  createTask$1 !== undefined
     ? // eslint-disable-next-line react-internal/no-production-logging
       name => createTask$1(name)
     : noTask;
@@ -149,7 +149,7 @@ export function startUpdateTimerByLane(lane, method, fiber) {
         newEventType != blockingEventType
       ) {
         blockingEventRepeatTime = -1.1;
-      } else if (newEventType != null) {
+      } else if (newEventType !== null) {
         // If this is a second update in the same event, we treat it as a spawned update.
         // This might be a microtask spawned from useEffect, multiple flushSync or
         // a setState in a microtask spawned after the first setState. Regardless it's bad.
@@ -199,7 +199,7 @@ export function startHostActionTimer(fiber) {
       newEventType != blockingEventType
     ) {
       blockingEventRepeatTime = -1.1;
-    } else if (newEventType != null) {
+    } else if (newEventType !== null) {
       // If this is a second update in the same event, we treat it as a spawned update.
       // This might be a microtask spawned from useEffect, multiple flushSync or
       // a setState in a microtask spawned after the first setState. Regardless it's bad.

@@ -83,7 +83,7 @@ export function createTestNameSelector(id) {
 
 function findFiberRootForHostRoot(hostRoot) {
   const maybeFiber = getInstanceFromNode(hostRoot);
-  if (maybeFiber != null) {
+  if (maybeFiber !== null) {
     if (typeof maybeFiber.memoizedProps['data-testname'] !== 'string') {
       throw new Error(
         'Invalid host root specified. Should be either a React container or a node with a testname attribute.',
@@ -94,7 +94,7 @@ function findFiberRootForHostRoot(hostRoot) {
   } else {
     const fiberRoot = findFiberRoot(hostRoot);
 
-    if (fiberRoot == null) {
+    if (fiberRoot === null) {
       throw new Error(
         'Could not find React container within specified host subtree.',
       );
@@ -136,7 +136,7 @@ function matchSelector(fiber, selector) {
         tag === HostSingleton
       ) {
         const textContent = getTextContent(fiber);
-        if (textContent != null && textContent.includes(selector.value)) {
+        if (textContent !== null && textContent.includes(selector.value)) {
           return true;
         }
       }

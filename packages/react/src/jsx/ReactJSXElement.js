@@ -31,7 +31,7 @@ function noTask(name) {
 const createTask$1 = __DEV__ ? console.createTask : undefined;
 
 const createTask =
-  createTask$1 != null
+  createTask$1 !== undefined
     ? // eslint-disable-next-line react-internal/no-production-logging
       name => createTask$1(name)
     : noTask;

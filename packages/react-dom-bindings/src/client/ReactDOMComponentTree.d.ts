@@ -35,7 +35,9 @@ export function isContainerMarkedAsRoot(node: unknown): boolean;
 // pass the Container node as the targetNode, you will not actually get the
 // HostRoot back. To get to the HostRoot, you need to pass a child of it.
 // The same thing applies to Suspense and Activity boundaries.
-export function getClosestInstanceFromNode(targetNode: Node): Fiber | null;
+export function getClosestInstanceFromNode(
+  targetNode: EventTarget,
+): Fiber | null;
 
 /**
  * Given a DOM node, return the ReactDOMComponent or ReactDOMTextComponent

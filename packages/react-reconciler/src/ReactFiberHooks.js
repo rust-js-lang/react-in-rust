@@ -1916,7 +1916,7 @@ function dispatchActionState(
   // Check if we're inside a transition. If so, we'll need to restore the
   // transition context when the action is run.
   const prevTransition = ReactSharedInternals.T;
-  if (prevTransition != null) {
+  if (prevTransition !== null) {
     // Optimistically update the pending state, similar to useTransition.
     // This will be reverted automatically when all actions are finished.
     setPendingState(true, undefined);
@@ -1985,7 +1985,7 @@ function runActionStateAction(actionQueue, node) {
     try {
       const returnValue = action(prevState, payload);
       const onStartTransitionFinish = ReactSharedInternals.S;
-      if (onStartTransitionFinish != null) {
+      if (onStartTransitionFinish !== null) {
         onStartTransitionFinish(currentTransition, returnValue);
       }
       handleActionReturnValue(actionQueue, node, returnValue);
@@ -2826,7 +2826,7 @@ function startTransition(
   try {
     const returnValue = callback();
     const onStartTransitionFinish = ReactSharedInternals.S;
-    if (onStartTransitionFinish != null) {
+    if (onStartTransitionFinish !== null) {
       onStartTransitionFinish(currentTransition, returnValue);
     }
 

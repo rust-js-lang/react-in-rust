@@ -46,7 +46,7 @@ export function startTransition(scope, options) {
   try {
     const returnValue = scope();
     const onStartTransitionFinish = ReactSharedInternals.S;
-    if (onStartTransitionFinish != null) {
+    if (onStartTransitionFinish !== null) {
       onStartTransitionFinish(currentTransition, returnValue);
     }
     if (

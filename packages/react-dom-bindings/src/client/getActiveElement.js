@@ -14,7 +14,7 @@ export default function getActiveElement(doc) {
     const activeElement = doc.activeElement ?? doc.body;
     return activeElement ?? null;
   } catch {
-    return doc.body ?? null;
+    return doc.body;
   }
 }
 //# sourceMappingURL=getActiveElement.js.map

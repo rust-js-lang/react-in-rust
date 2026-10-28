@@ -647,7 +647,7 @@ pub fn throw_exception(
             if !HYDRATION_MISMATCH_EXCEPTION.with(|exception| js::strict_equals(value, *exception))
             {
                 let wrapper_error = js::new(
-                    js::unknown(js::class::<Error>()),
+                    js::class::<Error>(),
                     (
                         concat!(
                             "There was an error while hydrating but React was able to recover by ",
@@ -666,7 +666,7 @@ pub fn throw_exception(
             if !HYDRATION_MISMATCH_EXCEPTION.with(|exception| js::strict_equals(value, *exception))
             {
                 let wrapper_error = js::new(
-                    js::unknown(js::class::<Error>()),
+                    js::class::<Error>(),
                     (
                         concat!(
                             "There was an error while hydrating but React was able to recover by ",
@@ -706,7 +706,7 @@ pub fn throw_exception(
     }
 
     let wrapper_error = js::new(
-        js::unknown(js::class::<Error>()),
+        js::class::<Error>(),
         (
             concat!(
                 "There was an error during concurrent rendering but React was able to recover by ",

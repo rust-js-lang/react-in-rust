@@ -6,7 +6,9 @@
 use std::cell::{Cell, RefCell};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use js::{JsError, JsObject, Kind, Promise, PropertyDescriptor, Unknown, WeakMap, object, reflect};
+use js::{
+    Class, JsError, JsObject, Kind, Promise, PropertyDescriptor, Unknown, WeakMap, object, reflect,
+};
 use node::js_error::{self, PrepareStackTrace};
 
 use crate::console_patching_dev::{disable_logs, reenable_logs};
@@ -152,7 +154,7 @@ fn determine_component_frame_root(
             }
             // $FlowFixMe[prop-missing]
             object::define_property(
-                unsafe { js::cast::<&Unknown>(js::get(js::unknown(&fake), "prototype")) },
+                Class::of(&fake).prototype(),
                 "props",
                 &PropertyDescriptor {
                     set: Some(&|_| {
@@ -175,8 +177,7 @@ fn determine_component_frame_root(
                     control = x.downcast_ref::<&'static JsError>().copied();
                 }
 
-                let prototype: &'static Unknown =
-                    unsafe { js::cast(js::get(js::unknown(r#fn), "prototype")) };
+                let prototype = Class::of(r#fn).prototype();
                 let prev_props = object::get_own_property_descriptor(Some(prototype), "props");
                 object::define_property(
                     prototype,
@@ -192,7 +193,7 @@ fn determine_component_frame_root(
                     prev_props,
                 };
 
-                js::new(js::unknown(r#fn), ());
+                js::new(Class::of(r#fn), ());
             }
         } else {
             let Err(x) = catch_unwind(|| panic!(""));

@@ -37,7 +37,7 @@ export function processTransitionCallbacks(
           // TODO: Clone the suspense object so users can't modify it
           const pending =
             markerInstance.pendingBoundaries != null
-              ? markerInstance.pendingBoundaries.values().toArray()
+              ? Array.from(markerInstance.pendingBoundaries.values())
               : [];
           markerInstance.transitions.forEach(transition => {
             if (transition.name != null) {
@@ -118,7 +118,7 @@ export function processTransitionCallbacks(
             transition.name,
             value,
             endTime,
-            pending.values().toArray(),
+            Array.from(pending.values()),
           );
         }
       });

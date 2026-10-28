@@ -144,7 +144,7 @@ export function ensureRootIsScheduled(root) {
 export function ensureScheduleIsScheduled() {
   // At the end of the current event, go through each of the roots and ensure
   // there's a task scheduled for each one at the correct priority.
-  if (__DEV__ && ReactSharedInternals.actQueue != null) {
+  if (__DEV__ && ReactSharedInternals.actQueue !== null) {
     // We're inside an `act` scope.
     if (!didScheduleMicrotask_act) {
       didScheduleMicrotask_act = true;
@@ -454,7 +454,7 @@ function scheduleTaskForRootDuringMicrotask(root, currentTime) {
     // on the `act` queue.
     !(
       __DEV__ &&
-      ReactSharedInternals.actQueue != null &&
+      ReactSharedInternals.actQueue !== null &&
       existingCallbackNode !== fakeActCallbackNode
     )
   ) {
@@ -599,7 +599,7 @@ const fakeActCallbackNode = {};
 function scheduleCallback(priorityLevel, callback) {
   if (__DEV__) {
     const actQueue = ReactSharedInternals.actQueue;
-    if (actQueue != null) {
+    if (actQueue !== null) {
       // Special case: We're inside an `act` scope (a testing utility).
       // Instead of scheduling work in the host environment, add it to a
       // fake internal queue that's managed by the `act` implementation.
@@ -622,7 +622,7 @@ function cancelCallback(callbackNode) {
 function scheduleImmediateRootScheduleTask() {
   if (__DEV__) {
     const actQueue = ReactSharedInternals.actQueue;
-    if (actQueue != null) {
+    if (actQueue !== null) {
       // Special case: Inside an `act` scope, we push microtasks to the fake `act`
       // callback queue. This is because we currently support calling `act`
       // without awaiting the result. The plan is to deprecate that, and require

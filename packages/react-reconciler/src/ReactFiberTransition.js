@@ -133,7 +133,7 @@ if (enableGestureTransition) {
   const prevOnStartGestureTransitionFinish = ReactSharedInternals.G;
   ReactSharedInternals.G = (transition, provider, options) => {
     let cancel;
-    if (prevOnStartGestureTransitionFinish != null) {
+    if (prevOnStartGestureTransitionFinish !== null) {
       cancel = prevOnStartGestureTransitionFinish(
         transition,
         provider,

@@ -714,7 +714,7 @@ function updateOffscreenComponent(
         // be added to the stack to get added to any Offscreen/suspense children
         const instance = workInProgress.stateNode;
         if (instance != null && instance._transitions != null) {
-          transitions = instance._transitions.values().toArray();
+          transitions = Array.from(instance._transitions.values());
         }
       }
 
@@ -1916,7 +1916,7 @@ function updateHostHoistable(current, workInProgress, renderLanes) {
       workInProgress.pendingProps,
       null,
     );
-    if (resource != null) {
+    if (resource !== null) {
       workInProgress.memoizedState = resource;
     } else if (!getIsHydrating()) {
       // This is not a Resource Hoistable and we aren't hydrating so we construct the instance.

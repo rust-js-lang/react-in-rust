@@ -638,9 +638,9 @@ export function constructClassInstance(workInProgress, ctor, props) {
         foundWillUpdateName = 'UNSAFE_componentWillUpdate';
       }
       if (
-        foundWillMountName != null ||
-        foundWillReceivePropsName != null ||
-        foundWillUpdateName != null
+        foundWillMountName !== undefined ||
+        foundWillReceivePropsName !== undefined ||
+        foundWillUpdateName !== undefined
       ) {
         const componentName = getComponentNameFromType(ctor) || 'Component';
         const newApiName =
@@ -656,11 +656,13 @@ export function constructClassInstance(workInProgress, ctor, props) {
               'https://react.dev/link/unsafe-component-lifecycles',
             componentName,
             newApiName,
-            foundWillMountName != null ? `\n  ${foundWillMountName}` : '',
-            foundWillReceivePropsName != null
+            foundWillMountName !== undefined ? `\n  ${foundWillMountName}` : '',
+            foundWillReceivePropsName !== undefined
               ? `\n  ${foundWillReceivePropsName}`
               : '',
-            foundWillUpdateName != null ? `\n  ${foundWillUpdateName}` : '',
+            foundWillUpdateName !== undefined
+              ? `\n  ${foundWillUpdateName}`
+              : '',
           );
         }
       }

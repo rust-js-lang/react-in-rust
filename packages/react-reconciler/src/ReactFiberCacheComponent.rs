@@ -140,7 +140,7 @@ pub fn create_cache() -> Rc<Cache> {
     Rc::new(Cache {
         controller: unsafe {
             js::cast(Some(ABORT_CONTROLLER_LOCAL.with(
-                |abort_controller_local| js::new(js::unknown(*abort_controller_local), ()),
+                |abort_controller_local| js::new(*abort_controller_local, ()),
             )))
         },
         data: js::map::new(None),

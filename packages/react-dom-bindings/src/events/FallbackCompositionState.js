@@ -68,6 +68,6 @@ export function getText() {
   if ('value' in root$1) {
     return root$1.value;
   }
-  return root$1.textContent ?? null;
+  return root$1.textContent;
 }
 //# sourceMappingURL=FallbackCompositionState.js.map

@@ -87,7 +87,7 @@ export function trackUsedThenable(
   index,
   fiber, // DEV-only
 ) {
-  if (__DEV__ && ReactSharedInternals.actQueue != null) {
+  if (__DEV__ && ReactSharedInternals.actQueue !== null) {
     ReactSharedInternals.didUsePromise = true;
   }
   const trackedThenables = thenableState.thenables;

@@ -6,7 +6,7 @@
 use std::cell::Cell;
 
 use js::Unknown;
-use react_isomorphic::react_client::CHILDREN;
+use react_isomorphic::CHILDREN;
 use shared::environment::__DEV__;
 use webapi::{Element, console};
 

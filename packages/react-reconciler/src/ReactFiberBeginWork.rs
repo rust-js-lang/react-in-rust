@@ -366,7 +366,7 @@ fn update_forward_ref(
         // the props object. This used to happen in the JSX runtime, but now we do
         // it here.
         props_without_ref = Some(js::unknown(js::dict::new::<()>()));
-        for key in js::keys_in(unsafe { js::cast(next_props) }) {
+        for key in js::keys_in(next_props) {
             // Since `ref` should only appear in props via the JSX transform, we can
             // assume that this is a plain object. So we don't need a
             // hasOwnProperty check.
@@ -1685,7 +1685,7 @@ fn update_class_component(
                 // TODO This way of resetting the error boundary state is a hack.
                 // Is there a better way to do this?
                 let temp_instance = js::new(
-                    unsafe { js::cast(ctor) },
+                    unsafe { js::cast::<&Unknown>(ctor) },
                     (
                         work_in_progress.memoized_props.get(),
                         js::get(instance, "context"),

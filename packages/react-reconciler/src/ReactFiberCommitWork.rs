@@ -1962,12 +1962,8 @@ fn get_retry_cache(finished_work: &Fiber) -> &'static RetryCache {
             let mut retry_cache: Option<&'static RetryCache> =
                 unsafe { js::cast(finished_work.state_node.get()) };
             if retry_cache.is_none() {
-                let new_retry_cache: &'static RetryCache = unsafe {
-                    js::cast(Some(js::new(
-                        js::unknown(POSSIBLY_WEAK_SET.with(|c| *c)),
-                        (),
-                    )))
-                };
+                let new_retry_cache: &'static RetryCache =
+                    unsafe { js::cast(Some(js::new(POSSIBLY_WEAK_SET.with(|c| *c), ()))) };
                 finished_work
                     .state_node
                     .set(Some(js::unknown(new_retry_cache)));
@@ -1979,12 +1975,8 @@ fn get_retry_cache(finished_work: &Fiber) -> &'static RetryCache {
             let instance: &OffscreenInstance = unsafe { js::cast(finished_work.state_node.get()) };
             let mut retry_cache = instance.retry_cache.get();
             if retry_cache.is_none() {
-                let new_retry_cache: &'static RetryCache = unsafe {
-                    js::cast(Some(js::new(
-                        js::unknown(POSSIBLY_WEAK_SET.with(|c| *c)),
-                        (),
-                    )))
-                };
+                let new_retry_cache: &'static RetryCache =
+                    unsafe { js::cast(Some(js::new(POSSIBLY_WEAK_SET.with(|c| *c), ()))) };
                 instance.retry_cache.set(Some(new_retry_cache));
                 retry_cache = Some(new_retry_cache);
             }

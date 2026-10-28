@@ -939,7 +939,7 @@ export function scheduleUpdateOnFiber(root, fiber, lane) {
 
     if (enableTransitionTracing) {
       const transition = ReactSharedInternals.T;
-      if (transition != null && transition.name != null) {
+      if (transition !== null && transition.name != null) {
         if (transition.startTime === -1) {
           transition.startTime = now();
         }
@@ -1540,7 +1540,7 @@ function completeRootWhenReady(
       newSuspendedState,
       timeoutOffset,
     );
-    if (schedulePendingCommit != null) {
+    if (schedulePendingCommit !== null) {
       // NOTE: waitForCommitToBeReady returns a subscribe function so that we
       // only allocate a function if the commit isn't ready yet. The other
       // pattern would be to always pass a callback to waitForCommitToBeReady.
@@ -2870,7 +2870,7 @@ function renderRootConcurrent(root, lanes) {
           }
         }
 
-        if (__DEV__ && ReactSharedInternals.actQueue != null) {
+        if (__DEV__ && ReactSharedInternals.actQueue !== null) {
           // `act` special case: If we're inside an `act` scope, don't consult
           // `shouldYield`. Always keep working until the render is complete.
           // This is not just an optimization: in a unit test environment, we
@@ -5387,7 +5387,7 @@ function scheduleCallback(priorityLevel, callback) {
     // If we're currently inside an `act` scope, bypass Scheduler and push to
     // the `act` queue instead.
     const actQueue = ReactSharedInternals.actQueue;
-    if (actQueue != null) {
+    if (actQueue !== null) {
       actQueue.push(callback);
       return fakeActCallbackNode;
     } else {
@@ -5401,7 +5401,7 @@ function scheduleCallback(priorityLevel, callback) {
 
 function shouldForceFlushFallbacksInDEV() {
   // Never force flush in production. This function should get stripped out.
-  return __DEV__ && ReactSharedInternals.actQueue != null;
+  return __DEV__ && ReactSharedInternals.actQueue !== null;
 }
 
 function warnIfUpdatesNotWrappedWithActDEV(fiber) {
@@ -5433,7 +5433,7 @@ function warnIfUpdatesNotWrappedWithActDEV(fiber) {
       }
     }
 
-    if (ReactSharedInternals.actQueue == null) {
+    if (ReactSharedInternals.actQueue === null) {
       runWithFiberInDEV(
         fiber,
         fiber => {
@@ -5453,7 +5453,7 @@ function warnIfSuspenseResolutionNotWrappedWithActDEV(root) {
     __DEV__ &&
     (disableLegacyMode || root.tag !== LegacyRoot) &&
     isConcurrentActEnvironment() &&
-    ReactSharedInternals.actQueue == null
+    ReactSharedInternals.actQueue === null
   ) {
     console.error(
       "A suspended resource finished loading inside a test, but the event was not wrapped in act(...).\n\nWhen testing, code that resolves suspended data should be wrapped into act(...):\n\nact(() => {\n  /* finish loading suspended data */\n});\n/* assert on the output */\n\nThis ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act",

@@ -66,9 +66,9 @@ thread_local! {
         js::class::<Map<Unknown, ()>>()
     };
     static INTERNAL_INSTANCE_MAP: &'static Map<Unknown, Rc<Fiber>> =
-        unsafe { js::cast(Some(js::new(js::unknown(POSSIBLY_WEAK_MAP.with(|c| *c)), ()))) };
+        unsafe { js::cast(Some(js::new(POSSIBLY_WEAK_MAP.with(|c| *c), ()))) };
     static INTERNAL_PROPS_MAP: &'static Map<Unknown, &'static Unknown> =
-        unsafe { js::cast(Some(js::new(js::unknown(POSSIBLY_WEAK_MAP.with(|c| *c)), ()))) };
+        unsafe { js::cast(Some(js::new(POSSIBLY_WEAK_MAP.with(|c| *c), ()))) };
 }
 
 pub fn detach_deleted_instance(node: &Element) {
@@ -126,7 +126,7 @@ pub fn is_container_marked_as_root(node: &Unknown) -> bool {
 // HostRoot back. To get to the HostRoot, you need to pass a child of it.
 // The same thing applies to Suspense and Activity boundaries.
 #[cfg_attr(rust_js, rust_js::nullable)]
-pub fn get_closest_instance_from_node(mut target_node: &'static Node) -> Option<Rc<Fiber>> {
+pub fn get_closest_instance_from_node(mut target_node: &'static EventTarget) -> Option<Rc<Fiber>> {
     let mut target_inst = if ENABLE_INTERNAL_INSTANCE_MAP {
         INTERNAL_INSTANCE_MAP.with(|map| map.get(js::unknown(target_node)))
     } else {
@@ -139,7 +139,8 @@ pub fn get_closest_instance_from_node(mut target_node: &'static Node) -> Option<
     }
     // If the direct event target isn't a React owned DOM node, we need to look
     // to see if one of its parents is a React owned DOM node.
-    let mut parent_node = target_node.parent_node();
+    let mut parent_node: Option<&'static EventTarget> =
+        unsafe { js::cast(js::get(target_node, "parentNode")) };
     while let Some(parent) = parent_node {
         // We'll check if this is a container root that could include
         // React nodes in the future. We need to check this first because
@@ -219,7 +220,7 @@ pub fn get_closest_instance_from_node(mut target_node: &'static Node) -> Option<
             return Some(target_inst);
         }
         target_node = parent;
-        parent_node = target_node.parent_node();
+        parent_node = unsafe { js::cast(js::get(target_node, "parentNode")) };
     }
     None
 }

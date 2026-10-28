@@ -299,7 +299,7 @@ export function describeObjectForErrorMessage(objectOrArray, expandedName) {
   if (expandedName == null) {
     return str;
   }
-  if (start != null && length > 0) {
+  if (start !== undefined && length > 0) {
     const highlight = ' '.repeat(start) + '^'.repeat(length);
     return '\n  ' + str + '\n  ' + highlight;
   }

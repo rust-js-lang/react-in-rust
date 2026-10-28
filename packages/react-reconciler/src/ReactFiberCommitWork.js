@@ -1716,7 +1716,7 @@ function commitSuspenseCallback(finishedWork) {
     if (typeof suspenseCallback === 'function') {
       const retryQueue = finishedWork.updateQueue;
       if (retryQueue != null) {
-        suspenseCallback(new Set(retryQueue.values().toArray()));
+        suspenseCallback(new Set(Array.from(retryQueue.values())));
       }
     } else if (__DEV__ && suspenseCallback !== undefined) {
       console.error('Unexpected type for suspenseCallback.');
@@ -3329,10 +3329,10 @@ function commitOffscreenPassiveMountEffects(current, finishedWork, instance) {
   // when the content is suspended/hidden, the retain/release occurs
   // via the parent Suspense component (see case above).
   if (nextCache !== previousCache) {
-    if (nextCache != null) {
+    if (nextCache !== null) {
       retainCache(nextCache);
     }
-    if (previousCache != null) {
+    if (previousCache !== null) {
       releaseCache(previousCache);
     }
   }
@@ -3409,7 +3409,7 @@ function commitCachePassiveMountEffect(current, finishedWork) {
   // always retain/release.
   if (nextCache !== previousCache) {
     retainCache(nextCache);
-    if (previousCache != null) {
+    if (previousCache !== null) {
       releaseCache(previousCache);
     }
   }
@@ -3670,7 +3670,7 @@ function commitPassiveMountOnFiber(
         // here, such that previous/next caches are retained correctly.
         if (nextCache !== previousCache) {
           retainCache(nextCache);
-          if (previousCache != null) {
+          if (previousCache !== null) {
             releaseCache(previousCache);
           }
         }

@@ -237,7 +237,7 @@ function tryHydrateInstance(fiber, nextInstance, hostContext) {
     fiber.pendingProps,
     rootOrSingletonContext,
   );
-  if (instance != null) {
+  if (instance !== null) {
     fiber.stateNode = instance;
 
     if (__DEV__ && !didSuspendOrErrorDEV) {
@@ -247,7 +247,7 @@ function tryHydrateInstance(fiber, nextInstance, hostContext) {
         fiber.pendingProps,
         hostContext,
       );
-      if (differences != null) {
+      if (differences !== null) {
         const diffNode = buildHydrationDiffNode(fiber, 0);
         diffNode.serverProps = differences;
       }
@@ -269,7 +269,7 @@ function tryHydrateText(fiber, nextInstance) {
     text,
     rootOrSingletonContext,
   );
-  if (textInstance != null) {
+  if (textInstance !== null) {
     fiber.stateNode = textInstance;
     hydrationParentFiber = fiber;
     // Text Instances don't have children so there's nothing to hydrate.
@@ -286,7 +286,7 @@ function tryHydrateActivity(fiber, nextInstance) {
     nextInstance,
     rootOrSingletonContext,
   );
-  if (activityInstance != null) {
+  if (activityInstance !== null) {
     const activityState = {
       dehydrated: activityInstance,
       treeContext: getSuspendedTreeContext(),
@@ -317,7 +317,7 @@ function tryHydrateSuspense(fiber, nextInstance) {
     nextInstance,
     rootOrSingletonContext,
   );
-  if (suspenseInstance != null) {
+  if (suspenseInstance !== null) {
     const suspenseState = {
       dehydrated: suspenseInstance,
       treeContext: getSuspendedTreeContext(),
@@ -397,7 +397,7 @@ export function claimHydratableSingleton(fiber) {
         fiber.pendingProps,
         currentHostContext,
       );
-      if (differences != null) {
+      if (differences !== null) {
         const diffNode = buildHydrationDiffNode(fiber, 0);
         diffNode.serverProps = differences;
       }
@@ -493,7 +493,7 @@ export function tryToClaimNextHydratableFormMarkerInstance(fiber) {
       nextHydratableInstance,
       rootOrSingletonContext,
     );
-    if (markerInstance != null) {
+    if (markerInstance !== null) {
       // Found the marker instance.
       nextHydratableInstance = getNextHydratableSibling(markerInstance);
       // Return true if this marker instance should use the state passed
@@ -555,7 +555,7 @@ export function prepareToHydrateHostTextInstance(fiber) {
             textContent,
             parentProps,
           );
-          if (difference != null) {
+          if (difference !== null) {
             const diffNode = buildHydrationDiffNode(fiber, 0);
             diffNode.serverProps = difference;
           }
@@ -570,7 +570,7 @@ export function prepareToHydrateHostTextInstance(fiber) {
             textContent,
             parentProps,
           );
-          if (difference != null) {
+          if (difference !== null) {
             const diffNode = buildHydrationDiffNode(fiber, 0);
             diffNode.serverProps = difference;
           }

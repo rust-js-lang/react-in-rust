@@ -5441,12 +5441,8 @@ pub fn attach_ping_listener(root: &Rc<FiberRoot>, wakeable: &'static Wakeable, l
     let thread_ids;
     match ping_cache {
         None => {
-            let ping_cache: &'static PingCache = unsafe {
-                js::cast(Some(js::new(
-                    js::unknown(POSSIBLY_WEAK_MAP.with(|c| *c)),
-                    (),
-                )))
-            };
+            let ping_cache: &'static PingCache =
+                unsafe { js::cast(Some(js::new(POSSIBLY_WEAK_MAP.with(|c| *c), ()))) };
             root.ping_cache.set(Some(ping_cache));
             thread_ids = js::set::new(None);
             ping_cache.set(wakeable, thread_ids);
