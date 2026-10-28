@@ -4,9 +4,10 @@
 // LICENSE file in the root directory of this source tree.
 
 use std::cell::{Cell, RefCell};
+use std::marker::PhantomData;
 use std::rc::Rc;
 
-use js::{Set, Unknown};
+use js::{JsObject, Set, Unknown};
 
 use crate::react_fiber_flags::{DID_CAPTURE, NO_FLAGS};
 use crate::react_fiber_hydration_context::HydrationErrors;
@@ -86,7 +87,23 @@ pub struct SuspenseListRenderState {
     // Tail insertions setting.
     pub tail_mode: Cell<Option<SuspenseListTailMode>>,
     // Keep track of total number of forks during multiple passes
-    pub tree_fork_count: Cell<u32>,
+    pub tree_fork_count: Cell<i32>,
+}
+
+unsafe impl js::Defined for SuspenseListRenderState {}
+
+/// shared/ReactTypes' `Wakeable`: what resolves, calling back what waits on
+/// it with nothing.
+pub struct Wakeable(PhantomData<JsObject>);
+
+unsafe impl js::Defined for Wakeable {}
+
+impl Wakeable {
+    #[cfg_attr(rust_js, rust_js::link_name = "then")]
+    pub fn then(&self, on_fulfill: &dyn Fn(), on_reject: &dyn Fn()) {
+        let _ = (on_fulfill, on_reject);
+        unreachable!()
+    }
 }
 
 // shared/ReactTypes' `Wakeable`s.

@@ -242,7 +242,7 @@ export function findCurrentUnmaskedContext(fiber) {
   // Currently this is only used with renderSubtreeIntoContainer; not sure if it
   // makes sense elsewhere
   let node = fiber;
-  while (true) {
+  do {
     switch (node.tag) {
       case HostRoot:
         return node.stateNode.context;
@@ -253,12 +253,8 @@ export function findCurrentUnmaskedContext(fiber) {
         }
       }
     }
-    const parent = node.return;
-    if (parent == null) {
-      break;
-    }
-    node = parent;
-  }
+    node = node.return;
+  } while (node != null);
 
   throw new Error(
     'Found unexpected detached subtree parent. ' +

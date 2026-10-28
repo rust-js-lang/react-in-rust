@@ -49,7 +49,7 @@ import {
 } from './ReactFiberConcurrentUpdates.js';
 import {
   HostTransitionContext,
-  NotPendingTransition,
+  NotPendingTransition as NoPendingHostTransition,
   getCurrentUpdatePriority,
   setCurrentUpdatePriority,
 } from './ReactFiberConfig.js';
@@ -809,15 +809,13 @@ export function resetHooksOnUnwind(workInProgress) {
     // Only reset the updates from the queue if it has a clone. If it does
     // not have a clone, that means it wasn't processed, and the updates were
     // scheduled before we entered the render phase.
-    for (
-      let hook = workInProgress.memoizedState;
-      hook != null;
-      hook = hook.next
-    ) {
+    let hook = workInProgress.memoizedState;
+    while (hook != null) {
       const queue = hook.queue;
       if (queue) {
         queue.pending = null;
       }
+      hook = hook.next;
     }
     didScheduleRenderPhaseUpdate = false;
   }
@@ -1238,7 +1236,7 @@ function updateReducerImpl(hook, current, reducer) {
     let update = first;
     let didReadFromEntangledAsyncAction = false;
     const renderingFiber = $unwrap(currentlyRenderingFiber);
-    while (true) {
+    do {
       // An extra OffscreenLane bit is added to updates that were made to
       // a hidden tree, so that we can distinguish them from updates that were
       // already there when the tree was hidden.
@@ -1260,11 +1258,8 @@ function updateReducerImpl(hook, current, reducer) {
         if (scheduledGesture != null) {
           if (scheduledGesture.count === 0 && !scheduledGesture.committing) {
             // This gesture has already been cancelled. We can clean up this update.
-            if (update.next != null && update.next !== first) {
-              update = update.next;
-              continue;
-            }
-            break;
+            update = update.next;
+            continue;
           }
           if (!isGestureRender(renderLanes)) {
             shouldSkipUpdate = true;
@@ -1355,12 +1350,8 @@ function updateReducerImpl(hook, current, reducer) {
             if (revertLane === peekEntangledActionLane()) {
               didReadFromEntangledAsyncAction = true;
             }
-            const next = update.next;
-            if (next != null && next !== first) {
-              update = next;
-              continue;
-            }
-            break;
+            update = update.next;
+            continue;
           } else {
             const clone = {
               // Once we commit an optimistic update, we shouldn't uncommit it
@@ -1405,13 +1396,9 @@ function updateReducerImpl(hook, current, reducer) {
             update.eagerState
           : reducer(newState, action);
       }
-      const next = update.next;
       // $FlowFixMe[invalid-compare]
-      if (next == null || next === first) {
-        break;
-      }
-      update = next;
-    }
+      update = update.next;
+    } while (update != null && update !== first);
     if (newBaseQueueLast == null) {
       newBaseState = newState;
     } else {
@@ -2957,7 +2944,7 @@ export function startHostTransition(formFiber, pendingState, action, formData) {
     formFiber,
     queue,
     pendingState,
-    NotPendingTransition,
+    NoPendingHostTransition,
     callback,
   );
 }
@@ -2982,12 +2969,12 @@ function ensureFormComponentIsStateful(formFiber) {
     // method, because we can call it directly in startTransition.
     dispatch: null,
     lastRenderedReducer: basicStateReducer,
-    lastRenderedState: NotPendingTransition,
+    lastRenderedState: NoPendingHostTransition,
   };
 
   const stateHook = {
-    memoizedState: NotPendingTransition,
-    baseState: NotPendingTransition,
+    memoizedState: NoPendingHostTransition,
+    baseState: NoPendingHostTransition,
     baseQueue: null,
     queue: newQueue,
     next: null,
@@ -3178,11 +3165,8 @@ function refreshCache(fiber, seedKey, seedValue) {
   // TODO: Does Cache work in legacy mode? Should decide and write a test.
   // TODO: Consider warning if the refresh is at discrete priority, or if we
   // otherwise suspect that it wasn't batched properly.
-  for (
-    let provider = fiber.return;
-    provider != null;
-    provider = provider.return
-  ) {
+  let provider = fiber.return;
+  while (provider != null) {
     switch (provider.tag) {
       case CacheComponent:
       case HostRoot: {
@@ -3219,6 +3203,7 @@ function refreshCache(fiber, seedKey, seedValue) {
         return;
       }
     }
+    provider = provider.return;
   }
 }
 

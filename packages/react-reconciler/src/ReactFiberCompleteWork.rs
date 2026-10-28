@@ -2028,7 +2028,7 @@ pub fn complete_work(
                                         // Re-apply tree fork since we popped the tree fork context in the beginning of this function.
                                         push_tree_fork(
                                             work_in_progress,
-                                            render_state.tree_fork_count.get() as i32,
+                                            render_state.tree_fork_count.get(),
                                         );
                                     }
                                     // Don't bubble properties in this case.
@@ -2196,7 +2196,7 @@ pub fn complete_work(
                 // Do a pass over the next row.
                 if get_is_hydrating() {
                     // Re-apply tree fork since we popped the tree fork context in the beginning of this function.
-                    push_tree_fork(work_in_progress, render_state.tree_fork_count.get() as i32);
+                    push_tree_fork(work_in_progress, render_state.tree_fork_count.get());
                 }
                 // Don't bubble properties in this case.
                 return Some(next);

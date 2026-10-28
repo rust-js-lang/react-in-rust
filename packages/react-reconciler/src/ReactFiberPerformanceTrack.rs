@@ -5,7 +5,7 @@
 
 // eslint-disable react-internal/no-production-logging
 
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::{Kind, Unknown, function};
@@ -30,7 +30,8 @@ use crate::react_fiber_lane::{
 use crate::react_internal_types::Fiber;
 use crate::react_work_tags::SUSPENSE_COMPONENT;
 
-type CapturedValues = [Rc<CapturedValue<Option<&'static Unknown>>>];
+/// What a phase captured: shared arrays, as upstream's live ones.
+type CapturedValues = RefCell<Vec<Rc<CapturedValue<Option<&'static Unknown>>>>>;
 
 /// What DevTools' performance panel reads of a measure's `detail.devtools`:
 /// the entry's track, its color, and what its tooltip shows.
@@ -396,7 +397,9 @@ pub fn log_component_errored(
         if __DEV__ {
             let mut debug_task: Option<&ConsoleTask> = js::null();
             let mut properties: Vec<(String, String)> = Vec::new();
-            for captured_value in errors {
+            let mut i = 0;
+            while i < errors.borrow().len() {
+                let captured_value = Rc::clone(&errors.borrow()[i]);
                 if debug_task.is_none()
                     && let Some(source) = &captured_value.source
                 {
@@ -418,6 +421,7 @@ pub fn log_component_errored(
                     js::string(error)
                 };
                 properties.push(("Error".to_string(), message));
+                i += 1;
             }
             let key = fiber.key.borrow().clone();
             if let Some(key) = key {
@@ -493,7 +497,9 @@ fn log_component_effect_errored(
         };
         if __DEV__ {
             let mut properties: Vec<(String, String)> = Vec::new();
-            for captured_value in errors {
+            let mut i = 0;
+            while i < errors.borrow().len() {
+                let captured_value = Rc::clone(&errors.borrow()[i]);
                 let error = captured_value.value;
                 let message = if let Kind::Object(_) | Kind::Array(_) = js::classify(error)
                     && js::type_of(js::get(error, "message")) == "string"
@@ -505,6 +511,7 @@ fn log_component_effect_errored(
                     js::string(error)
                 };
                 properties.push(("Error".to_string(), message));
+                i += 1;
             }
             let key = fiber.key.borrow().clone();
             if let Some(key) = key {
@@ -1376,7 +1383,9 @@ pub fn log_recovered_render_phase(
         }
         if __DEV__ {
             let mut properties: Vec<(String, String)> = Vec::new();
-            for captured_value in recoverable_errors {
+            let mut i = 0;
+            while i < recoverable_errors.borrow().len() {
+                let captured_value = Rc::clone(&recoverable_errors.borrow()[i]);
                 let error = captured_value.value;
                 let message = if let Kind::Object(_) | Kind::Array(_) = js::classify(error)
                     && js::type_of(js::get(error, "message")) == "string"
@@ -1388,6 +1397,7 @@ pub fn log_recovered_render_phase(
                     js::string(error)
                 };
                 properties.push(("Recoverable Error".to_string(), message));
+                i += 1;
             }
             let options = PerformanceMeasureOptions {
                 start: Some(start_time.into()),
@@ -1602,7 +1612,9 @@ pub fn log_commit_errored(
         }
         if __DEV__ {
             let mut properties: Vec<(String, String)> = Vec::new();
-            for captured_value in errors {
+            let mut i = 0;
+            while i < errors.borrow().len() {
+                let captured_value = Rc::clone(&errors.borrow()[i]);
                 let error = captured_value.value;
                 let message = if let Kind::Object(_) | Kind::Array(_) = js::classify(error)
                     && js::type_of(js::get(error, "message")) == "string"
@@ -1614,6 +1626,7 @@ pub fn log_commit_errored(
                     js::string(error)
                 };
                 properties.push(("Error".to_string(), message));
+                i += 1;
             }
             let options = PerformanceMeasureOptions {
                 start: Some(start_time.into()),

@@ -103,6 +103,11 @@ pub struct SpawnedCachePool {
     pub pool: Rc<Cache>,
 }
 
+// Safety: each is a JS object: a CacheComponent's state, and a pool a
+// boundary spawned.
+unsafe impl js::Defined for CacheComponentState {}
+unsafe impl js::Defined for SpawnedCachePool {}
+
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "CacheContext")]
     pub static CACHE_CONTEXT: Rc<ReactContext<Option<Rc<Cache>>>> = Rc::new(ReactContext {

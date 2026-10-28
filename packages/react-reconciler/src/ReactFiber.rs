@@ -969,7 +969,7 @@ pub fn create_fiber_from_tracing_marker(
         transitions: Cell::new(None),
         pending_boundaries: Cell::new(None),
         aborts: RefCell::new(None),
-        name: unsafe { js::cast(js::get(pending_props, "name")) },
+        name: RefCell::new(unsafe { js::cast(js::get(pending_props, "name")) }),
     };
     fiber
         .state_node

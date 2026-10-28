@@ -76,17 +76,21 @@ function collectFirstScopedNode(node, fn) {
 }
 
 function collectScopedNodesFromChildren(startingChild, fn, scopedNodes) {
-  for (let child = startingChild; child != null; child = child.sibling) {
+  let child = startingChild;
+  while (child != null) {
     collectScopedNodes(child, fn, scopedNodes);
+    child = child.sibling;
   }
 }
 
 function collectFirstScopedNodeFromChildren(startingChild, fn) {
-  for (let child = startingChild; child != null; child = child.sibling) {
+  let child = startingChild;
+  while (child != null) {
     const scopedNode = collectFirstScopedNode(child, fn);
     if (scopedNode != null) {
       return scopedNode;
     }
+    child = child.sibling;
   }
   return null;
 }
@@ -113,8 +117,10 @@ function collectNearestChildContextValues(
   context,
   childContextValues,
 ) {
-  for (let child = startingChild; child != null; child = child.sibling) {
+  let child = startingChild;
+  while (child != null) {
     collectNearestContextValues(child, context, childContextValues);
+    child = child.sibling;
   }
 }
 
@@ -144,14 +150,12 @@ function DO_NOT_USE_queryFirstNode(fn) {
 }
 
 function containsNode(node) {
-  for (
-    let fiber = getInstanceFromNode(node);
-    fiber != null;
-    fiber = fiber.return
-  ) {
+  let fiber = getInstanceFromNode(node);
+  while (fiber != null) {
     if (fiber.tag === ScopeComponent && fiber.stateNode === this) {
       return true;
     }
+    fiber = fiber.return;
   }
   return false;
 }

@@ -181,8 +181,10 @@ export function logComponentRender(
     const alternate = fiber.alternate;
     let selfTime = $unwrap(fiber.actualDuration);
     if (alternate == null || alternate.child != fiber.child) {
-      for (let child = fiber.child; child != null; child = child.sibling) {
+      let child = fiber.child;
+      while (child != null) {
         selfTime -= $unwrap(child.actualDuration);
+        child = child.sibling;
       }
     }
     let color;
@@ -324,7 +326,8 @@ export function logComponentErrored(fiber, startTime, endTime, errors) {
     if (__DEV__) {
       let debugTask = null;
       const properties = [];
-      for (const capturedValue of errors) {
+      for (let i = 0; i < errors.length; i++) {
+        const capturedValue = errors[i];
         if (!debugTask && capturedValue.source != null) {
           // If the captured value has a source Fiber, use its debugTask for
           // the stack instead of the error boundary's stack. So you can find
@@ -402,7 +405,8 @@ function logComponentEffectErrored(fiber, startTime, endTime, errors) {
     }
     if (__DEV__) {
       const properties = [];
-      for (const capturedValue of errors) {
+      for (let i = 0; i < errors.length; i++) {
+        const capturedValue = errors[i];
         const error = capturedValue.value;
         const message =
           typeof error === 'object' &&
@@ -1129,7 +1133,8 @@ export function logRecoveredRenderPhase(
     }
     if (__DEV__) {
       const properties = [];
-      for (const capturedValue of recoverableErrors) {
+      for (let i = 0; i < recoverableErrors.length; i++) {
+        const capturedValue = recoverableErrors[i];
         const error = capturedValue.value;
         const message =
           typeof error === 'object' &&
@@ -1321,7 +1326,8 @@ export function logCommitErrored(
     }
     if (__DEV__) {
       const properties = [];
-      for (const capturedValue of errors) {
+      for (let i = 0; i < errors.length; i++) {
+        const capturedValue = errors[i];
         const error = capturedValue.value;
         const message =
           typeof error === 'object' &&

@@ -40,7 +40,8 @@ export function commitNewChildToFragmentInstances(
 }
 
 export function commitFragmentInstanceInsertionEffects(fiber) {
-  for (let parent = fiber.return; parent != null; parent = parent.return) {
+  let parent = fiber.return;
+  while (parent != null) {
     if (isFragmentInstanceParent(parent)) {
       // ReactFiberConfig's `FragmentInstanceType`.
       const fragmentInstance = parent.stateNode;
@@ -50,11 +51,14 @@ export function commitFragmentInstanceInsertionEffects(fiber) {
     if (isFragmentInstanceHostBoundary(parent)) {
       return;
     }
+
+    parent = parent.return;
   }
 }
 
 export function commitFragmentInstanceDeletionEffects(fiber) {
-  for (let parent = fiber.return; parent != null; parent = parent.return) {
+  let parent = fiber.return;
+  while (parent != null) {
     if (isFragmentInstanceParent(parent)) {
       // ReactFiberConfig's `FragmentInstanceType`.
       const fragmentInstance = parent.stateNode;
@@ -64,12 +68,15 @@ export function commitFragmentInstanceDeletionEffects(fiber) {
     if (isFragmentInstanceHostBoundary(parent)) {
       return;
     }
+
+    parent = parent.return;
   }
 }
 
 export function getParentFragmentInstances(fiber) {
   let parentFragmentInstances = null;
-  for (let parent = fiber.return; parent != null; parent = parent.return) {
+  let parent = fiber.return;
+  while (parent != null) {
     if (isFragmentInstanceParent(parent)) {
       // ReactFiberConfig's `FragmentInstanceType`.
       const fragmentInstance = parent.stateNode;
@@ -82,6 +89,7 @@ export function getParentFragmentInstances(fiber) {
     if (isFragmentInstanceHostBoundary(parent)) {
       break;
     }
+    parent = parent.return;
   }
   return parentFragmentInstances;
 }

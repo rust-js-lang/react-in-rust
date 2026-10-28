@@ -84,6 +84,12 @@ export type Ref =
   | ((value: unknown | null | undefined) => unknown | null | undefined)
   | unknown;
 
+/**
+ * A fiber's deletions: a shared array, as upstream's live one, which
+ * deletion work reads while it may grow.
+ */
+export type Deletions = Fiber[];
+
 // A Fiber is work on a Component that needs to be done or was done. There can
 // be more than one per component.
 export interface Fiber {

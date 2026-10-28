@@ -213,33 +213,32 @@ function validateFragmentProps(element, fiber, returnFiber) {
   if (__DEV__) {
     const keys = Object.keys(element.props);
     for (const key of keys) {
-      if (key === 'children' || key === 'key' || key === 'ref') {
-        continue;
-      }
-      let fiber$1;
-      if (fiber != null) {
-        fiber$1 = fiber;
-      } else {
-        // For unkeyed root fragments without refs, there's no Fiber.
-        // We create a fake one just for error stack handling.
-        fiber$1 = createFiberFromElement(element, returnFiber.mode, 0);
-        if (__DEV__) {
-          fiber$1._debugInfo = currentDebugInfo;
+      if (key !== 'children' && key !== 'key' && key !== 'ref') {
+        let fiber$1;
+        if (fiber != null) {
+          fiber$1 = fiber;
+        } else {
+          // For unkeyed root fragments without refs, there's no Fiber.
+          // We create a fake one just for error stack handling.
+          fiber$1 = createFiberFromElement(element, returnFiber.mode, 0);
+          if (__DEV__) {
+            fiber$1._debugInfo = currentDebugInfo;
+          }
+          fiber$1.return = returnFiber;
         }
-        fiber$1.return = returnFiber;
+        runWithFiberInDEV(
+          fiber$1,
+          erroredKey => {
+            console.error(
+              'Invalid prop `%s` supplied to `React.Fragment`. ' +
+                'React.Fragment can only have `key`, `ref`, and `children` props.',
+              erroredKey,
+            );
+          },
+          key,
+        );
+        break;
       }
-      runWithFiberInDEV(
-        fiber$1,
-        erroredKey => {
-          console.error(
-            'Invalid prop `%s` supplied to `React.Fragment`. ' +
-              'React.Fragment can only have `key`, `ref`, and `children` props.',
-            erroredKey,
-          );
-        },
-        key,
-      );
-      break;
     }
   }
 }
@@ -386,11 +385,11 @@ function createChildReconciler(shouldTrackSideEffects) {
       // Noop.
       return;
     }
-    if (!returnFiber.deletions) {
+    const deletions = returnFiber.deletions;
+    if (deletions == null) {
       returnFiber.deletions = [childToDelete];
       returnFiber.flags |= ChildDeletion;
     } else {
-      const deletions = returnFiber.deletions;
       deletions.push(childToDelete);
     }
   }
@@ -407,12 +406,10 @@ function createChildReconciler(shouldTrackSideEffects) {
 
     // TODO: For the shouldClone case, this could be micro-optimized a bit by
     // assuming that after the first child we've already added everything.
-    for (
-      let childToDelete = currentFirstChild;
-      childToDelete != null;
-      childToDelete = childToDelete.sibling
-    ) {
+    let childToDelete = currentFirstChild;
+    while (childToDelete != null) {
       deleteChild(shouldTrackSideEffects, returnFiber, childToDelete);
+      childToDelete = childToDelete.sibling;
     }
     return null;
   }
@@ -423,11 +420,8 @@ function createChildReconciler(shouldTrackSideEffects) {
     // instead.
     const existingChildren = new Map();
 
-    for (
-      let existingChild = currentFirstChild;
-      existingChild != null;
-      existingChild = existingChild.sibling
-    ) {
+    let existingChild = currentFirstChild;
+    while (existingChild != null) {
       const borrow = $borrow($fieldCell(existingChild, 'key'), true);
       const key = borrow.value;
       $unborrow(borrow);
@@ -445,6 +439,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       } else {
         existingChildren.set(key, existingChild);
       }
+      existingChild = existingChild.sibling;
     }
     return existingChildren;
   }
@@ -2161,8 +2156,10 @@ export function cloneChildFibers(current, workInProgress) {
 
 // Reset a workInProgress child set to prepare it for a second pass.
 export function resetChildFibers(workInProgress, lanes) {
-  for (let child = workInProgress.child; child != null; child = child.sibling) {
+  let child = workInProgress.child;
+  while (child != null) {
     resetWorkInProgress(child, lanes);
+    child = child.sibling;
   }
 }
 

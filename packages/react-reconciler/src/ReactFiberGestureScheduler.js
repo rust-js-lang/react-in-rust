@@ -66,7 +66,8 @@ export function startScheduledGesture(
   const rangeStart =
     gestureOptions?.rangeStart ?? getCurrentGestureOffset(gestureTimeline);
   const rangeEnd = gestureOptions?.rangeEnd ?? (rangeStart < 50 ? 100 : 0);
-  for (let prev = root.pendingGestures; prev != null; prev = prev.next) {
+  let prev = root.pendingGestures;
+  while (prev != null) {
     if (prev.provider === gestureTimeline) {
       // Existing instance found.
       prev.count = (prev.count + 1) | 0;
@@ -88,6 +89,7 @@ export function startScheduledGesture(
     if (prev.next == null) {
       break;
     }
+    prev = prev.next;
   }
   // No scheduled gestures. It must mean nothing for this renderer updated but
   // some other renderer might have updated.

@@ -24,7 +24,7 @@ export interface MarkerProgress {
 
 /** Why a tracing marker didn't complete, and its transitions. */
 export interface MarkerIncomplete {
-  aborts: TransitionAbort[];
+  aborts: TransitionAborts;
   transitions: Set<Transition>;
 }
 
@@ -43,10 +43,16 @@ export interface TracingMarkerInstance {
   transitions?: Set<Transition> | null | undefined;
   pendingBoundaries?: Map<OffscreenInstance, SuspenseInfo> | null | undefined;
   aborts?: TransitionAbort[] | null | undefined;
-  name?: string | null | undefined;
+  name: string | null | undefined;
 }
 
 export type TransitionAbortReason = 'error' | 'unknown' | 'marker' | 'suspense';
+
+/**
+ * A tracing marker's or a root's aborts: shared with the pending
+ * marker-incomplete callback, which sees later aborts too.
+ */
+export type TransitionAborts = TransitionAbort[];
 
 export interface TransitionAbort {
   reason: TransitionAbortReason;

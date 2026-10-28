@@ -150,6 +150,13 @@ pub enum Ref {
     Object(&'static Unknown),
 }
 
+// Safety: a ref is a function or an object, never `undefined` nor `null`.
+unsafe impl js::Defined for Ref {}
+
+/// A fiber's deletions: a shared array, as upstream's live one, which
+/// deletion work reads while it may grow.
+pub type Deletions = Rc<RefCell<Vec<Rc<Fiber>>>>;
+
 // A Fiber is work on a Component that needs to be done or was done. There can
 // be more than one per component.
 pub struct Fiber {
@@ -232,7 +239,7 @@ pub struct Fiber {
     pub flags: Cell<Flags>,
     pub subtree_flags: Cell<Flags>,
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub deletions: RefCell<Option<Vec<Rc<Fiber>>>>,
+    pub deletions: RefCell<Option<Deletions>>,
 
     pub lanes: Cell<Lanes>,
     pub child_lanes: Cell<Lanes>,

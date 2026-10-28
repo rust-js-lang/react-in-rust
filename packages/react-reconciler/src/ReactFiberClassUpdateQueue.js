@@ -279,7 +279,7 @@ export function enqueueCapturedUpdate(workInProgress, capturedUpdate) {
       if (queue.firstBaseUpdate != null) {
         // Loop through the updates and clone them.
         let update = queue.firstBaseUpdate;
-        while (true) {
+        do {
           const clone = {
             lane: update.lane,
 
@@ -297,12 +297,8 @@ export function enqueueCapturedUpdate(workInProgress, capturedUpdate) {
             newLast.next = clone;
           }
           newLast = clone;
-          const next = update.next;
-          if (next == null) {
-            break;
-          }
-          update = next;
-        }
+          update = update.next;
+        } while (update != null);
 
         // Append the captured update the end of the cloned list.
         if (newLast == null) {

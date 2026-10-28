@@ -56,7 +56,8 @@ fn unstable_now() -> f64 {
 /// ReactFiberWorkLoop's `SuspendedReason`: why the work loop yielded.
 pub type SuspendedReason = u8;
 
-type CaptureErrors = Vec<Rc<CapturedValue<Option<&'static js::Unknown>>>>;
+/// The errors a phase captured: shared arrays, as upstream's live ones.
+pub type CaptureErrors = Rc<RefCell<Vec<Rc<CapturedValue<Option<&'static js::Unknown>>>>>>;
 
 /// What `console.createTask` is: given a name, the task DevTools shows the
 /// stack of where it was made, or `None` where it makes none.
@@ -746,12 +747,14 @@ pub fn record_effect_error(error_info: &Rc<CapturedValue<Option<&'static js::Unk
     }
     COMPONENT_EFFECT_ERRORS.with_borrow_mut(|component_effect_errors| {
         component_effect_errors
-            .get_or_insert_with(Vec::new)
+            .get_or_insert_with(|| Rc::new(RefCell::new(Vec::new())))
+            .borrow_mut()
             .push(Rc::clone(error_info));
     });
     COMMIT_ERRORS.with_borrow_mut(|commit_errors| {
         commit_errors
-            .get_or_insert_with(Vec::new)
+            .get_or_insert_with(|| Rc::new(RefCell::new(Vec::new())))
+            .borrow_mut()
             .push(Rc::clone(error_info));
     });
 }

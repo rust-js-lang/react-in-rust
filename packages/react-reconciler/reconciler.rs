@@ -22,6 +22,8 @@ pub mod react_fiber_activity_component;
 pub mod react_fiber_async_action;
 #[path = "src/ReactFiberAsyncDispatcher.rs"]
 pub mod react_fiber_async_dispatcher;
+#[path = "src/ReactFiberBeginWork.rs"]
+pub mod react_fiber_begin_work;
 #[path = "src/ReactFiberCacheComponent.rs"]
 pub mod react_fiber_cache_component;
 #[path = "src/ReactFiberCallUserSpace.rs"]
@@ -94,6 +96,8 @@ pub mod react_fiber_suspense_component;
 pub mod react_fiber_suspense_context;
 #[path = "src/ReactFiberThenable.rs"]
 pub mod react_fiber_thenable;
+#[path = "src/ReactFiberThrow.rs"]
+pub mod react_fiber_throw;
 #[path = "src/ReactFiberTracingMarkerComponent.rs"]
 pub mod react_fiber_tracing_marker_component;
 #[path = "src/ReactFiberTransition.rs"]

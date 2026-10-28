@@ -17,6 +17,7 @@ use webapi::console;
 use crate::get_component_name_from_fiber::get_component_name_from_fiber;
 use crate::react_current_fiber::run_with_fiber_in_dev;
 use crate::react_fiber::ViewTransitionState;
+use crate::react_fiber_begin_work::DID_WARN_ABOUT_REASSIGNING_PROPS;
 use crate::react_fiber_call_user_space::{
     CALL_COMPONENT_DID_MOUNT_IN_DEV, CALL_COMPONENT_DID_UPDATE_IN_DEV,
     CALL_COMPONENT_WILL_UNMOUNT_IN_DEV, CALL_CREATE_IN_DEV, CALL_DESTROY_IN_DEV, ClassInstance,
@@ -52,11 +53,6 @@ use crate::react_work_tags::{
     CLASS_COMPONENT, FRAGMENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_SINGLETON,
     VIEW_TRANSITION_COMPONENT,
 };
-
-unsafe extern "Rust" {
-    #[link_name = "./src/ReactFiberBeginWork.js#didWarnAboutReassigningProps"]
-    safe static DID_WARN_ABOUT_REASSIGNING_PROPS: bool;
-}
 
 // ReactFiberConfig's `Instance`'s public instance.
 #[cfg_attr(
@@ -375,7 +371,7 @@ pub fn commit_class_layout_lifecycles(finished_work: &Rc<Fiber>, current: Option
             if __DEV__
                 && !js::truthy(js::get(finished_work.r#type.get(), "defaultProps"))
                 && !js::has(finished_work.memoized_props.get(), "ref")
-                && !DID_WARN_ABOUT_REASSIGNING_PROPS
+                && !DID_WARN_ABOUT_REASSIGNING_PROPS.get()
             {
                 if !js::strict_equals(
                     js::get(instance, "props"),
@@ -498,7 +494,7 @@ pub fn commit_class_layout_lifecycles(finished_work: &Rc<Fiber>, current: Option
             if __DEV__
                 && !js::truthy(js::get(finished_work.r#type.get(), "defaultProps"))
                 && !js::has(finished_work.memoized_props.get(), "ref")
-                && !DID_WARN_ABOUT_REASSIGNING_PROPS
+                && !DID_WARN_ABOUT_REASSIGNING_PROPS.get()
             {
                 if !js::strict_equals(
                     js::get(instance, "props"),
@@ -663,7 +659,7 @@ pub fn commit_class_callbacks(finished_work: &Rc<Fiber>) {
         if __DEV__
             && !js::truthy(js::get(finished_work.r#type.get(), "defaultProps"))
             && !js::has(finished_work.memoized_props.get(), "ref")
-            && !DID_WARN_ABOUT_REASSIGNING_PROPS
+            && !DID_WARN_ABOUT_REASSIGNING_PROPS.get()
         {
             if !js::strict_equals(
                 js::get(instance, "props"),
@@ -829,7 +825,7 @@ pub fn commit_class_snapshot(finished_work: &Rc<Fiber>, current: &Fiber) {
     if __DEV__
         && !js::truthy(js::get(finished_work.r#type.get(), "defaultProps"))
         && !js::has(finished_work.memoized_props.get(), "ref")
-        && !DID_WARN_ABOUT_REASSIGNING_PROPS
+        && !DID_WARN_ABOUT_REASSIGNING_PROPS.get()
     {
         if !js::strict_equals(
             js::get(instance, "props"),

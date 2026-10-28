@@ -41,7 +41,7 @@ pub struct MarkerProgress {
 
 /// Why a tracing marker didn't complete, and its transitions.
 pub struct MarkerIncomplete {
-    pub aborts: Vec<TransitionAbort>,
+    pub aborts: TransitionAborts,
     pub transitions: &'static Set<Transition>,
 }
 
@@ -68,8 +68,8 @@ pub struct TracingMarkerInstance {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub pending_boundaries: Cell<Option<&'static PendingBoundaries>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub aborts: RefCell<Option<Vec<TransitionAbort>>>,
-    pub name: Option<String>,
+    pub aborts: RefCell<Option<TransitionAborts>>,
+    pub name: RefCell<Option<String>>,
 }
 
 unsafe impl js::Defined for TracingMarkerInstance {}
@@ -85,6 +85,10 @@ pub enum TransitionAbortReason {
     #[cfg_attr(rust_js, rust_js::name = "suspense")]
     Suspense,
 }
+
+/// A tracing marker's or a root's aborts: shared with the pending
+/// marker-incomplete callback, which sees later aborts too.
+pub type TransitionAborts = Rc<RefCell<Vec<Rc<TransitionAbort>>>>;
 
 pub struct TransitionAbort {
     pub reason: TransitionAbortReason,
@@ -177,7 +181,7 @@ pub fn process_transition_callbacks(
                  marker_name| {
                     transitions.for_each(|transition| {
                         let mut filtered_aborts = Vec::new();
-                        aborts.iter().for_each(|abort| match abort.reason {
+                        aborts.borrow().iter().for_each(|abort| match abort.reason {
                             TransitionAbortReason::Marker => {
                                 filtered_aborts.push(TransitionTracingDeletion {
                                     r#type: "marker".to_string(),
@@ -273,7 +277,7 @@ pub fn push_root_marker_instance(work_in_progress: &Rc<Fiber>) {
                         transitions: Cell::new(Some(js::set::new(Some(&[*transition])))),
                         pending_boundaries: Cell::new(None),
                         aborts: RefCell::new(None),
-                        name: js::null(),
+                        name: RefCell::new(js::null()),
                     });
                     root.incomplete_transitions.set(transition, marker_instance);
                 }

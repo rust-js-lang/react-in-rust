@@ -41,10 +41,12 @@ const didWarnAboutLegacyContext = new Set();
 function findStrictRoot(fiber) {
   let maybeStrictRoot = null;
 
-  for (let node = fiber; node != null; node = node.return) {
+  let node = fiber;
+  while (node != null) {
     if ((node.mode & StrictLegacyMode) !== NoMode) {
       maybeStrictRoot = node;
     }
+    node = node.return;
   }
 
   return maybeStrictRoot;

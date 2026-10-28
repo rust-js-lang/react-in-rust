@@ -196,7 +196,8 @@ function doesRequireClone(current, completedWork) {
 
   // TODO: If we move the `doesRequireClone` call after `bubbleProperties`
   // then we only have to check the `completedWork.subtreeFlags`.
-  for (let child = completedWork.child; child != null; child = child.sibling) {
+  let child = completedWork.child;
+  while (child != null) {
     const checkedFlags = Cloned | Visibility | Placement | ChildDeletion;
     if (
       (child.flags & checkedFlags) !== NoFlags ||
@@ -204,6 +205,7 @@ function doesRequireClone(current, completedWork) {
     ) {
       return true;
     }
+    child = child.sibling;
   }
   return false;
 }
@@ -724,10 +726,12 @@ function cutOffTailIfNeeded(renderState, hasRenderedATailFallback) {
 }
 
 function isOnlyNewMounts(tail) {
-  for (let fiber = tail; fiber != null; fiber = fiber.sibling) {
+  let fiber = tail;
+  while (fiber != null) {
     if (fiber.alternate != null) {
       return false;
     }
+    fiber = fiber.sibling;
   }
   return true;
 }
@@ -748,11 +752,8 @@ function bubbleProperties(completedWork) {
       let actualDuration = $unwrap(completedWork.actualDuration);
       let treeBaseDuration = $unwrap(completedWork.selfBaseDuration);
 
-      for (
-        let child = completedWork.child;
-        child != null;
-        child = child.sibling
-      ) {
+      let child = completedWork.child;
+      while (child != null) {
         newChildLanes = mergeLanes(
           newChildLanes,
           mergeLanes(child.lanes, child.childLanes),
@@ -773,16 +774,14 @@ function bubbleProperties(completedWork) {
 
         // $FlowFixMe[unsafe-addition] addition with possible null/undefined value
         treeBaseDuration += $unwrap(child.treeBaseDuration);
+        child = child.sibling;
       }
 
       completedWork.actualDuration = actualDuration;
       completedWork.treeBaseDuration = treeBaseDuration;
     } else {
-      for (
-        let child = completedWork.child;
-        child != null;
-        child = child.sibling
-      ) {
+      let child = completedWork.child;
+      while (child != null) {
         newChildLanes = mergeLanes(
           newChildLanes,
           mergeLanes(child.lanes, child.childLanes),
@@ -795,6 +794,8 @@ function bubbleProperties(completedWork) {
         // smell because it assumes the commit phase is never concurrent with
         // the render phase. Will address during refactor to alternate model.
         child.return = completedWork;
+
+        child = child.sibling;
       }
     }
   } else {
@@ -804,11 +805,8 @@ function bubbleProperties(completedWork) {
       // profiler durations.
       let treeBaseDuration = $unwrap(completedWork.selfBaseDuration);
 
-      for (
-        let child = completedWork.child;
-        child != null;
-        child = child.sibling
-      ) {
+      let child = completedWork.child;
+      while (child != null) {
         newChildLanes = mergeLanes(
           newChildLanes,
           mergeLanes(child.lanes, child.childLanes),
@@ -823,15 +821,13 @@ function bubbleProperties(completedWork) {
 
         // $FlowFixMe[unsafe-addition] addition with possible null/undefined value
         treeBaseDuration += $unwrap(child.treeBaseDuration);
+        child = child.sibling;
       }
 
       completedWork.treeBaseDuration = treeBaseDuration;
     } else {
-      for (
-        let child = completedWork.child;
-        child != null;
-        child = child.sibling
-      ) {
+      let child = completedWork.child;
+      while (child != null) {
         newChildLanes = mergeLanes(
           newChildLanes,
           mergeLanes(child.lanes, child.childLanes),
@@ -848,6 +844,8 @@ function bubbleProperties(completedWork) {
         // smell because it assumes the commit phase is never concurrent with
         // the render phase. Will address during refactor to alternate model.
         child.return = completedWork;
+
+        child = child.sibling;
       }
     }
   }
@@ -1663,11 +1661,8 @@ export function completeWork(current, workInProgress, renderLanes) {
             renderHasNotSuspendedYet() &&
             (current == null || (current.flags & DidCapture) === NoFlags);
           if (!cannotBeSuspended) {
-            for (
-              let row = workInProgress.child;
-              row != null;
-              row = row.sibling
-            ) {
+            let row = workInProgress.child;
+            while (row != null) {
               const suspended = findFirstSuspended(row);
               if (suspended != null) {
                 workInProgress.flags |= DidCapture;
@@ -1707,11 +1702,12 @@ export function completeWork(current, workInProgress, renderLanes) {
                 );
                 if (getIsHydrating()) {
                   // Re-apply tree fork since we popped the tree fork context in the beginning of this function.
-                  pushTreeFork(workInProgress, renderState.treeForkCount | 0);
+                  pushTreeFork(workInProgress, renderState.treeForkCount);
                 }
                 // Don't bubble properties in this case.
                 return workInProgress.child;
               }
+              row = row.sibling;
             }
           }
 
@@ -1851,7 +1847,7 @@ export function completeWork(current, workInProgress, renderLanes) {
         // Do a pass over the next row.
         if (getIsHydrating()) {
           // Re-apply tree fork since we popped the tree fork context in the beginning of this function.
-          pushTreeFork(workInProgress, renderState.treeForkCount | 0);
+          pushTreeFork(workInProgress, renderState.treeForkCount);
         }
         // Don't bubble properties in this case.
         return tail;

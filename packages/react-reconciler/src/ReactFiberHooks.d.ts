@@ -16,15 +16,6 @@ interface EffectInstance {
   destroy: Destroy;
 }
 
-interface EventFunctionPayload {
-  ref: EventFunctionRef;
-  nextImpl: EventFunctionImpl;
-}
-
-interface EventFunctionRef {
-  impl: EventFunctionImpl;
-}
-
 interface StoreConsistencyCheck {
   value?: unknown;
   getSnapshot: GetSnapshot;
@@ -130,6 +121,16 @@ export type GetSnapshot = () => unknown | null | undefined;
  * store changes, it gives what unsubscribes.
  */
 export type Subscribe = (value: () => void) => unknown | null | undefined;
+
+/** What a `useEffectEvent` function calls: what the component last gave. */
+export interface EventFunctionRef {
+  impl: EventFunctionImpl;
+}
+
+export interface EventFunctionPayload {
+  ref: EventFunctionRef;
+  nextImpl: EventFunctionImpl;
+}
 
 export interface FunctionComponentUpdateQueue {
   lastEffect?: Effect | null | undefined;

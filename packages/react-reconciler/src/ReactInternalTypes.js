@@ -4,11 +4,4 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
-
-export const HookType = {
-  /** The hook's name, as React's warnings print it. */
-  name(hookType) {
-    return hookType;
-  },
-};
 //# sourceMappingURL=ReactInternalTypes.js.map

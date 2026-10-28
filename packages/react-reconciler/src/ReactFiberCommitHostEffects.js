@@ -403,17 +403,15 @@ function insertOrAppendPlacementNodeIntoContainer(
       parent,
       parentFragmentInstances,
     );
-    for (
-      let sibling = child.sibling;
-      sibling != null;
-      sibling = sibling.sibling
-    ) {
+    let sibling = child.sibling;
+    while (sibling != null) {
       insertOrAppendPlacementNodeIntoContainer(
         sibling,
         before,
         parent,
         parentFragmentInstances,
       );
+      sibling = sibling.sibling;
     }
   }
 }
@@ -459,17 +457,15 @@ function insertOrAppendPlacementNode(
   const child = node.child;
   if (child != null) {
     insertOrAppendPlacementNode(child, before, parent, parentFragmentInstances);
-    for (
-      let sibling = child.sibling;
-      sibling != null;
-      sibling = sibling.sibling
-    ) {
+    let sibling = child.sibling;
+    while (sibling != null) {
       insertOrAppendPlacementNode(
         sibling,
         before,
         parent,
         parentFragmentInstances,
       );
+      sibling = sibling.sibling;
     }
   }
 }
@@ -477,15 +473,13 @@ function insertOrAppendPlacementNode(
 function commitPlacement(finishedWork) {
   // Recursively insert all host nodes into the parent.
   let hostParentFiber;
-  for (
-    let parentFiber = finishedWork.return;
-    parentFiber != null;
-    parentFiber = parentFiber.return
-  ) {
+  let parentFiber = finishedWork.return;
+  while (parentFiber != null) {
     if (isHostParent(parentFiber)) {
       hostParentFiber = parentFiber;
       break;
     }
+    parentFiber = parentFiber.return;
   }
   // Fragment ancestry is collected separately so portals remain placement
   // parents while fragment bookkeeping still walks past them to ancestors.
@@ -591,15 +585,13 @@ function commitImmutablePlacementNodeToFragmentInstances(
       child,
       parentFragmentInstances,
     );
-    for (
-      let sibling = child.sibling;
-      sibling != null;
-      sibling = sibling.sibling
-    ) {
+    let sibling = child.sibling;
+    while (sibling != null) {
       commitImmutablePlacementNodeToFragmentInstances(
         sibling,
         parentFragmentInstances,
       );
+      sibling = sibling.sibling;
     }
   }
 }

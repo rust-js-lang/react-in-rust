@@ -479,11 +479,8 @@ export function checkIfContextChanged(currentDependencies) {
   // relatively uncommon path, except at the root of a changed subtree.
   // Alternatively, we could move these comparisons into `readContext`, but
   // that's a much hotter path, so I think this is an appropriate trade off.
-  for (
-    let dependency = currentDependencies.firstContext;
-    dependency != null;
-    dependency = dependency.next
-  ) {
+  let dependency = currentDependencies.firstContext;
+  while (dependency != null) {
     const context = dependency.context;
     const newValue = isPrimaryRenderer
       ? context._currentValue
@@ -492,6 +489,7 @@ export function checkIfContextChanged(currentDependencies) {
     if (!is(newValue, oldValue)) {
       return true;
     }
+    dependency = dependency.next;
   }
   return false;
 }

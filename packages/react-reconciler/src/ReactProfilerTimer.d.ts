@@ -12,6 +12,9 @@ import type {Fiber} from './ReactInternalTypes.js';
 /** ReactFiberWorkLoop's `SuspendedReason`: why the work loop yielded. */
 export type SuspendedReason = number;
 
+/** The errors a phase captured: shared arrays, as upstream's live ones. */
+export type CaptureErrors = CapturedValue<unknown | null | undefined>[];
+
 export type UpdateType = number;
 
 export const REGULAR_UPDATE: UpdateType;
@@ -26,7 +29,7 @@ export let commitStartTime: number;
 
 export let commitEndTime: number;
 
-export let commitErrors: CapturedValue<unknown | null | undefined>[] | null;
+export let commitErrors: CaptureErrors | null;
 
 export let profilerStartTime: number;
 
@@ -38,9 +41,7 @@ export let componentEffectStartTime: number;
 
 export let componentEffectEndTime: number;
 
-export let componentEffectErrors:
-  | CapturedValue<unknown | null | undefined>[]
-  | null;
+export let componentEffectErrors: CaptureErrors | null;
 
 export let componentEffectSpawnedUpdate: boolean;
 
@@ -183,12 +184,10 @@ export function pushComponentEffectDuration(): number;
 
 export function popComponentEffectDuration(prevEffectDuration: number): void;
 
-export function pushComponentEffectErrors():
-  | CapturedValue<unknown | null | undefined>[]
-  | null;
+export function pushComponentEffectErrors(): CaptureErrors | null;
 
 export function popComponentEffectErrors(
-  prevErrors: CapturedValue<unknown | null | undefined>[] | null,
+  prevErrors: CaptureErrors | null,
 ): void;
 
 export function pushComponentEffectDidSpawnUpdate(): boolean;

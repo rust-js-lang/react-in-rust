@@ -459,15 +459,19 @@ fn create_child_reconciler(should_track_side_effects: bool) -> Box<ChildReconcil
             // Noop.
             return;
         }
-        let mut deletions = return_fiber.deletions.borrow_mut();
-        match &mut *deletions {
+        let deletions = return_fiber.deletions.borrow().clone();
+        match deletions {
             None => {
-                *deletions = Some(vec![Rc::clone(child_to_delete)]);
+                return_fiber
+                    .deletions
+                    .replace(Some(Rc::new(RefCell::new(vec![Rc::clone(
+                        child_to_delete,
+                    )]))));
                 return_fiber
                     .flags
                     .set(return_fiber.flags.get() | CHILD_DELETION);
             }
-            Some(deletions) => deletions.push(Rc::clone(child_to_delete)),
+            Some(deletions) => deletions.borrow_mut().push(Rc::clone(child_to_delete)),
         }
     }
 

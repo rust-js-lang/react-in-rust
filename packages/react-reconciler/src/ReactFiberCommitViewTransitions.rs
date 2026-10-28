@@ -161,7 +161,7 @@ pub fn track_enter_view_transitions(placement: &Fiber) {
 
 /// What a ViewTransition's children that may be canceled are, tupled: each
 /// entry's ReactFiberConfig `Instance`, its old name, and its `Props`.
-pub type CancelableChildren = Vec<Option<&'static Unknown>>;
+pub type CancelableChildren = Rc<RefCell<Vec<Option<&'static Unknown>>>>;
 
 thread_local! {
     // We can't cancel view transition children until we know that their parent also
@@ -1050,7 +1050,8 @@ fn measure_view_transition_host_instances_recursive(
                 VIEW_TRANSITION_CANCELABLE_CHILDREN.with_borrow_mut(
                     |view_transition_cancelable_children| {
                         view_transition_cancelable_children
-                            .get_or_insert_with(Vec::new)
+                            .get_or_insert_with(|| Rc::new(RefCell::new(Vec::new())))
+                            .borrow_mut()
                             .extend([
                                 instance,
                                 Some(js::unknown_of(

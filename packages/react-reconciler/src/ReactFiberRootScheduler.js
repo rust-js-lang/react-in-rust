@@ -188,7 +188,8 @@ function flushSyncWorkAcrossRoots_impl(syncTransitionLanes, onlyLegacy) {
   isFlushingWork = true;
   while (true) {
     let didPerformSomeWork = false;
-    for (let root = firstScheduledRoot; root != null; root = root.next) {
+    let root = firstScheduledRoot;
+    while (root != null) {
       if (onlyLegacy && (disableLegacyMode || root.tag !== LegacyRoot)) {
         // Skip non-legacy roots.
       } else if (syncTransitionLanes !== NoLanes) {
@@ -220,6 +221,7 @@ function flushSyncWorkAcrossRoots_impl(syncTransitionLanes, onlyLegacy) {
           }
         }
       }
+      root = root.next;
     }
     if (!didPerformSomeWork) {
       isFlushingWork = false;

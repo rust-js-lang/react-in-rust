@@ -209,8 +209,10 @@ function findPaths(root, selectors) {
     if (selectorIndex === selectors.length) {
       matchingFibers.push(fiber);
     } else {
-      for (let child = fiber.child; child != null; child = child.sibling) {
+      let child = fiber.child;
+      while (child != null) {
         stack.push([child, selectorIndex]);
+        child = child.sibling;
       }
     }
   }
@@ -245,8 +247,10 @@ function hasMatchingPaths(root, selectors) {
     if (selectorIndex === selectors.length) {
       return true;
     }
-    for (let child = fiber.child; child != null; child = child.sibling) {
+    let child = fiber.child;
+    while (child != null) {
       stack.push([child, selectorIndex]);
+      child = child.sibling;
     }
   }
 
@@ -277,8 +281,10 @@ export function findAllNodes(hostRoot, selectors) {
         instanceRoots.push(node.stateNode);
       }
     } else {
-      for (let child = node.child; child != null; child = child.sibling) {
+      let child = node.child;
+      while (child != null) {
         stack.push(child);
+        child = child.sibling;
       }
     }
   }
@@ -324,8 +330,10 @@ export function getFindAllNodesFailureDescription(hostRoot, selectors) {
     }
 
     if (selectorIndex < selectors.length) {
-      for (let child = fiber.child; child != null; child = child.sibling) {
+      let child = fiber.child;
+      while (child != null) {
         stack.push([child, selectorIndex]);
+        child = child.sibling;
       }
     }
   }
@@ -462,8 +470,10 @@ export function focusWithin(hostRoot, selectors) {
         return true;
       }
     }
-    for (let child = fiber.child; child != null; child = child.sibling) {
+    let child = fiber.child;
+    while (child != null) {
       stack.push(child);
+      child = child.sibling;
     }
   }
 

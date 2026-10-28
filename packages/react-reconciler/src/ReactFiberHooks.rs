@@ -36,6 +36,9 @@ use crate::react_event_priorities::{
 use crate::react_fiber_async_action::{
     chain_thenable_value, peek_entangled_action_lane, peek_entangled_action_thenable,
 };
+use crate::react_fiber_begin_work::{
+    check_if_work_in_progress_received_update, mark_work_in_progress_received_update,
+};
 use crate::react_fiber_cache_component::{Cache, create_cache};
 use crate::react_fiber_call_user_space::{CALL_COMPONENT_IN_DEV, Component, Destroy};
 use crate::react_fiber_class_update_queue::{
@@ -187,22 +190,6 @@ fn is_invalid_execution_context_for_event_function() -> bool {
     unreachable!()
 }
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberBeginWork.js#markWorkInProgressReceivedUpdate"
-)]
-fn mark_work_in_progress_received_update() {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberBeginWork.js#checkIfWorkInProgressReceivedUpdate"
-)]
-fn check_if_work_in_progress_received_update() -> bool {
-    unreachable!()
-}
-
 pub struct Update {
     pub lane: Cell<Lane>,
     pub revert_lane: Cell<Lane>,
@@ -326,20 +313,20 @@ pub type GetSnapshot = dyn Fn() -> Option<&'static Unknown>;
 pub type Subscribe = dyn Fn(Rc<dyn Fn()>) -> Destroy;
 
 /// What a `useEffectEvent` function calls: what the component last gave.
-struct EventFunctionRef {
-    r#impl: Cell<&'static EventFunctionImpl>,
+pub struct EventFunctionRef {
+    pub r#impl: Cell<&'static EventFunctionImpl>,
 }
 
-struct EventFunctionPayload {
-    r#ref: Rc<EventFunctionRef>,
-    next_impl: &'static EventFunctionImpl,
+pub struct EventFunctionPayload {
+    pub r#ref: Rc<EventFunctionRef>,
+    pub next_impl: &'static EventFunctionImpl,
 }
 
 pub struct FunctionComponentUpdateQueue {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub last_effect: RefCell<Option<Rc<Effect>>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
-    events: RefCell<Option<Vec<EventFunctionPayload>>>,
+    pub events: RefCell<Option<Vec<EventFunctionPayload>>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     stores: RefCell<Option<Vec<StoreConsistencyCheck>>>,
     #[cfg_attr(rust_js, rust_js::nullable)]

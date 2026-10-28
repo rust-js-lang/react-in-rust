@@ -657,7 +657,8 @@ export function transferActualDuration(fiber) {
   // Transfer time spent rendering these children so we don't lose it
   // after we rerender. This is used as a helper in special cases
   // where we should count the work of multiple passes.
-  for (let child = fiber.child; child != null; child = child.sibling) {
+  let child = fiber.child;
+  while (child != null) {
     const actualDuration = fiber.actualDuration;
     if (actualDuration != null) {
       const childDuration = child.actualDuration;
@@ -665,6 +666,7 @@ export function transferActualDuration(fiber) {
         fiber.actualDuration = actualDuration + childDuration;
       }
     }
+    child = child.sibling;
   }
 }
 

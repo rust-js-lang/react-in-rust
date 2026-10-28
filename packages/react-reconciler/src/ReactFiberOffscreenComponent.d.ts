@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {Transition} from '../../react/src/ReactStartTransition.js';
 import type {Lanes} from './ReactFiberLane.js';
 import type {TracingMarkerInstance} from './ReactFiberTracingMarkerComponent.js';
 
@@ -43,8 +44,7 @@ export interface OffscreenState {
 }
 
 export interface OffscreenQueue {
-  // react/src/ReactStartTransition's `Transition`s.
-  transitions?: unknown[] | null | undefined;
+  transitions?: Transition[] | null | undefined;
   markerInstances?: TracingMarkerInstance[] | null | undefined;
   retryQueue?: Set<unknown> | null | undefined;
 }
@@ -58,8 +58,7 @@ export const OffscreenPassiveEffectsConnected: OffscreenVisibility;
 export interface OffscreenInstance {
   _visibility: OffscreenVisibility;
   _pendingMarkers?: Set<TracingMarkerInstance> | null | undefined;
-  // react/src/ReactStartTransition's `Transition`s.
-  _transitions?: Set<unknown> | null | undefined;
+  _transitions?: Set<Transition> | null | undefined;
   // shared/ReactTypes' `Wakeable`s: a `WeakSet` where the host has one, a
   // `Set` where it hasn't.
   _retryCache?: WeakSet<object> | null | undefined;

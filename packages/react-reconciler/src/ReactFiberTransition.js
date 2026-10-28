@@ -89,8 +89,10 @@ function onStartTransitionFinishForReconciler(transition, returnValue) {
       const entangledTransitionTypes$1 = entangledTransitionTypes.slice();
       // If we scheduled work on any new roots, we need to add any entangled async
       // transition types to those roots too.
-      for (let root = firstScheduledRoot; root != null; root = root.next) {
+      let root = firstScheduledRoot;
+      while (root != null) {
         queueTransitionTypes(root, entangledTransitionTypes$1);
+        root = root.next;
       }
     }
     const transitionTypes = transition.types;
@@ -99,8 +101,10 @@ function onStartTransitionFinishForReconciler(transition, returnValue) {
       // Within this Transition we should've now scheduled any roots we have updates
       // to work on. If there are no updates on a root, then the Transition type won't
       // be applied to that root.
-      for (let root = firstScheduledRoot; root != null; root = root.next) {
+      let root = firstScheduledRoot;
+      while (root != null) {
         queueTransitionTypes(root, transitionTypes$1);
+        root = root.next;
       }
       if (peekEntangledActionLane() !== NoLane) {
         // If we have entangled, async actions going on, the update associated with
@@ -144,7 +148,8 @@ if (enableGestureTransition) {
     // same provider, but it doesn't update in this callback, then we still update
     // its options and retain it until this cancellation releases. The idea being
     // that it's conceptually started globally.
-    for (let root = firstScheduledRoot; root != null; root = root.next) {
+    let root = firstScheduledRoot;
+    while (root != null) {
       const transitionTypes = transition.types;
       const scheduledGesture = startScheduledGesture(
         root,
@@ -155,6 +160,7 @@ if (enableGestureTransition) {
       if (scheduledGesture != null) {
         cancel = chainGestureCancellation(root, scheduledGesture, cancel);
       }
+      root = root.next;
     }
     if (cancel != null) {
       return cancel;
