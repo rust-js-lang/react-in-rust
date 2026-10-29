@@ -28,7 +28,7 @@ thread_local! {
 }
 
 js::export_default! {
-    fn is_text_input_element(elem: Option<&HTMLElement>) -> bool {
+    pub fn is_text_input_element(elem: Option<&HTMLElement>) -> bool {
         let node_name = elem
             .map(|elem| elem.node_name())
             .filter(|node_name| !node_name.is_empty())

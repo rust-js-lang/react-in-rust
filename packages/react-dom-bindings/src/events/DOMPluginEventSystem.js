@@ -60,14 +60,17 @@ import {
 } from './plugins/EnterLeaveEventPlugin.js';
 import * as FormActionEventPlugin from './plugins/FormActionEventPlugin.js';
 import * as ScrollEndEventPlugin from './plugins/ScrollEndEventPlugin.js';
-import * as SelectEventPlugin from './plugins/SelectEventPlugin.js';
+import {
+  extractEvents as extractEvents$2,
+  registerEvents as registerEvents$1,
+} from './plugins/SelectEventPlugin.js';
 import * as SimpleEventPlugin from './plugins/SimpleEventPlugin.js';
 
 // TODO: remove top-level side effect.
 SimpleEventPlugin.registerEvents();
 registerEvents();
 ChangeEventPlugin.registerEvents();
-SelectEventPlugin.registerEvents();
+registerEvents$1();
 BeforeInputEventPlugin.registerEvents();
 if (enableScrollEndPolyfill) {
   ScrollEndEventPlugin.registerEvents();
@@ -135,10 +138,10 @@ function extractEvents(
       eventSystemFlags,
       targetContainer,
     );
-    SelectEventPlugin.extractEvents(
+    extractEvents$2(
       dispatchQueue,
       domEventName,
-      targetInst ?? null,
+      targetInst,
       nativeEvent,
       nativeEventTarget,
       eventSystemFlags,

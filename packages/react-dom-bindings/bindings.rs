@@ -115,6 +115,8 @@ pub mod react_dom_update_priority;
 pub mod react_synthetic_event_type;
 #[path = "src/shared/sanitizeURL.rs"]
 pub mod sanitize_url;
+#[path = "src/events/plugins/SelectEventPlugin.rs"]
+pub mod select_event_plugin;
 #[path = "src/client/setTextContent.rs"]
 pub mod set_text_content;
 #[path = "src/events/SyntheticEvent.rs"]

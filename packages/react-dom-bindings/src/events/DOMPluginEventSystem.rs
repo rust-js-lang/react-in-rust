@@ -47,6 +47,7 @@ use crate::react_dom_component_tree::{
 use crate::react_dom_event_listener::create_event_listener_wrapper_with_priority;
 use crate::react_dom_update_batching::batched_updates;
 use crate::react_synthetic_event_type::{KnownReactSyntheticEvent, ReactSyntheticEvent};
+use crate::select_event_plugin;
 
 #[cfg_attr(
     rust_js,
@@ -118,40 +119,6 @@ fn change_register_events() {
 )]
 #[cfg_attr(rust_js, rust_js::nullable(target_inst, native_event_target))]
 fn change_extract_events(
-    dispatch_queue: &mut DispatchQueue,
-    dom_event_name: &str,
-    target_inst: Option<Rc<Fiber>>,
-    native_event: &'static AnyNativeEvent,
-    native_event_target: Option<&'static EventTarget>,
-    event_system_flags: EventSystemFlags,
-    target_container: &'static EventTarget,
-) {
-    let _ = (
-        dispatch_queue,
-        dom_event_name,
-        target_inst,
-        native_event,
-        native_event_target,
-        event_system_flags,
-        target_container,
-    );
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/plugins/SelectEventPlugin.js#* as SelectEventPlugin.registerEvents"
-)]
-fn select_register_events() {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/plugins/SelectEventPlugin.js#* as SelectEventPlugin.extractEvents"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(target_inst, native_event_target))]
-fn select_extract_events(
     dispatch_queue: &mut DispatchQueue,
     dom_event_name: &str,
     target_inst: Option<Rc<Fiber>>,
@@ -271,7 +238,7 @@ js::on_load! {
     simple_register_events();
     enter_leave_event_plugin::register_events();
     change_register_events();
-    select_register_events();
+    select_event_plugin::register_events();
     before_input_register_events();
     if ENABLE_SCROLL_END_POLYFILL.with(|enable_scroll_end_polyfill| *enable_scroll_end_polyfill) {
         scroll_end_register_events();
@@ -341,7 +308,7 @@ fn extract_events(
             event_system_flags,
             target_container,
         );
-        select_extract_events(
+        select_event_plugin::extract_events(
             dispatch_queue,
             dom_event_name,
             target_inst.clone(),
