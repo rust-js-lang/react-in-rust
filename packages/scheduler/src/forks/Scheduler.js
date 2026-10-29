@@ -182,13 +182,12 @@ function workLoop(initialTime) {
   let currentTime = initialTime;
   advanceTimers(currentTime);
   currentTask = peek(taskQueue);
-  while (true) {
+  while (currentTask != null) {
     const currentTask$1 = currentTask;
     if (
-      currentTask$1 == null ||
-      (!enableAlwaysYieldScheduler &&
-        currentTask$1.expirationTime > currentTime &&
-        shouldYieldToHost())
+      !enableAlwaysYieldScheduler &&
+      currentTask$1.expirationTime > currentTime &&
+      shouldYieldToHost()
     ) {
       // This currentTask hasn't expired, and we've reached the deadline.
       break;

@@ -467,6 +467,9 @@ function scheduleTaskForRootDuringMicrotask(root, currentTime) {
   const value = lanesToEventPriority(nextLanes);
   let schedulerPriorityLevel;
   if (value === DiscreteEventPriority || value === ContinuousEventPriority) {
+    // Scheduler does have an "ImmediatePriority", but now that we use
+    // microtasks for sync work we no longer use that. Any sync work that
+    // reaches this path is meant to be time sliced.
     schedulerPriorityLevel = UserBlockingSchedulerPriority;
   } else if (value === DefaultEventPriority) {
     schedulerPriorityLevel = NormalSchedulerPriority;

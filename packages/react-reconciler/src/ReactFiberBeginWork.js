@@ -3324,7 +3324,6 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
     // use make it a noop by treating it as the default revealOrder.
     workInProgress.memoizedState = null;
   } else {
-    // The default is now forwards.
     switch (revealOrder) {
       case 'backwards': {
         // We're going to find the first row that has existing content.
@@ -3406,6 +3405,7 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
         workInProgress.memoizedState = null;
         break;
       default: {
+        // The default is now forwards.
         const child = workInProgress.child;
         const lastContentRow = findLastContentRow(child);
         let tail;

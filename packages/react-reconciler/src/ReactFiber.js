@@ -504,7 +504,6 @@ export function createFiberFromTypeAndProps(
       // Fall through
       default: {
         if (typeof resolvedType === 'object' && resolvedType != null) {
-          // Fall through
           switch (resolvedType.$$typeof) {
             case REACT_CONTEXT_TYPE:
               fiberTag = ContextProvider;
@@ -513,6 +512,7 @@ export function createFiberFromTypeAndProps(
               fiberTag = ContextConsumer;
               break getTag;
             case REACT_FORWARD_REF_TYPE:
+              // Fall through
               fiberTag = ForwardRef;
               break getTag;
             case REACT_MEMO_TYPE:

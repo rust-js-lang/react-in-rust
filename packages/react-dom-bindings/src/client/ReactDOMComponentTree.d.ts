@@ -84,9 +84,14 @@ export function isMarkedHoistable(node: Node): boolean;
 
 export function markNodeAsHoistable(node: Node): void;
 
-export function getScrollEndTimer(node: EventTarget): any | null | undefined;
+export function getScrollEndTimer(
+  node: EventTarget,
+): (number | object) | null | undefined;
 
-export function setScrollEndTimer(node: EventTarget, timer: any): void;
+export function setScrollEndTimer(
+  node: EventTarget,
+  timer: number | object,
+): void;
 
 export function clearScrollEndTimer(node: EventTarget): void;
 

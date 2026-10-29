@@ -187,7 +187,6 @@ function validateProperty(tagName, name, value, eventRegistry) {
 
     switch (typeof value) {
       case 'boolean':
-        // fallthrough
         switch (name) {
           case 'autoFocus':
           case 'checked':
@@ -231,6 +230,7 @@ function validateProperty(tagName, name, value, eventRegistry) {
             // Boolean properties can accept boolean values
             return true;
           default: {
+            // fallthrough
             const prefix = name.toLowerCase().slice(0, 5);
             if (prefix === 'data-' || prefix === 'aria-') {
               return true;

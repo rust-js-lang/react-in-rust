@@ -4197,12 +4197,6 @@ export function reconnectPassiveEffects(
   }
 
   const flags = finishedWork.flags;
-  // Unlike commitPassiveMountOnFiber, we don't need to handle HostRoot
-  // because this function only visits nodes that are inside an
-  // Offscreen fiber.
-  // case HostRoot: {
-  //  ...
-  // }
   switch (finishedWork.tag) {
     case FunctionComponent:
     case ForwardRef:
@@ -4219,6 +4213,12 @@ export function reconnectPassiveEffects(
       commitHookPassiveMountEffects(finishedWork, HookPassive);
       break;
     case LegacyHiddenComponent:
+      // Unlike commitPassiveMountOnFiber, we don't need to handle HostRoot
+      // because this function only visits nodes that are inside an
+      // Offscreen fiber.
+      // case HostRoot: {
+      //  ...
+      // }
       if (enableLegacyHidden) {
         recursivelyTraverseReconnectPassiveEffects(
           finishedRoot,
@@ -4641,6 +4641,7 @@ function accumulateSuspenseyCommitOnFiber(
     }
     recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState);
   } else {
+    // Fallthrough
     recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState);
   }
 }

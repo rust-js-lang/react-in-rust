@@ -319,11 +319,12 @@ export function queueExplicitHydrationTarget(target) {
     priority: updatePriority,
   };
   let i = 0;
-  while (true) {
-    const queuedExplicitHydrationTarget = queuedExplicitHydrationTargets[i];
+  let queuedExplicitHydrationTarget;
+  while (
+    (queuedExplicitHydrationTarget = queuedExplicitHydrationTargets[i]) != null
+  ) {
+    // Stop once we hit the first target with lower priority than
     if (
-      queuedExplicitHydrationTarget == null ||
-      // Stop once we hit the first target with lower priority than
       !isHigherEventPriority(
         updatePriority,
         queuedExplicitHydrationTarget.priority,
@@ -553,9 +554,9 @@ export function retryIfBlockedOn(unblocked) {
     }
   }
 
-  while (true) {
-    const nextExplicitTarget = queuedExplicitHydrationTargets[0];
-    if (nextExplicitTarget == null || nextExplicitTarget.blockedOn != null) {
+  let nextExplicitTarget;
+  while ((nextExplicitTarget = queuedExplicitHydrationTargets[0]) != null) {
+    if (nextExplicitTarget.blockedOn != null) {
       // We're still blocked.
       break;
     }

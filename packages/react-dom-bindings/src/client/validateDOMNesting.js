@@ -294,7 +294,6 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
   // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intbody
   // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intable
   // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inhead
-  // https://html.spec.whatwg.org/multipage/semantics.html#the-html-element
   switch (parentTag) {
     case 'tr':
       return (
@@ -342,6 +341,7 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
         tag === 'template'
       );
     case 'html':
+      // https://html.spec.whatwg.org/multipage/semantics.html#the-html-element
       if (implicitRootScope) {
         // When our parent tag is html and we're in the root scope we will actually
         // insert most tags into the body so we need to fall through to validating
@@ -365,10 +365,6 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
   // Probably in the "in body" parsing mode, so we outlaw only tag combos
   // where the parsing rules cause implicit opens or closes to be added.
   // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inbody
-  // These tags are only valid with a few parents that have special child
-  // parsing rules -- if we're down here, then none of those matched and
-  // so we allow it only if we don't know what the parent is, as all other
-  // cases are invalid.
   // We support rendering <html> in the root when the container is
   // #document
   // We support rendering <body> in the root when the container is
@@ -406,6 +402,10 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
     case 'th':
     case 'thead':
     case 'tr':
+      // These tags are only valid with a few parents that have special child
+      // parsing rules -- if we're down here, then none of those matched and
+      // so we allow it only if we don't know what the parent is, as all other
+      // cases are invalid.
       return parentTag == null;
     case 'head':
       // We support rendering <head> in the root when the container is
