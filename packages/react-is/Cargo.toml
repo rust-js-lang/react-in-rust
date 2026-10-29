@@ -1,0 +1,18 @@
+[package]
+name = "react-is"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# Brand checking of React Elements, `react-is`. Its module is its file,
+# beside the JS rust-js writes from it; its root declares it and writes no
+# JS of its own.
+[lib]
+path = "react_is.rs"
+
+[dependencies]
+js.workspace = true
+shared.workspace = true
+
+[lints]
+workspace = true

@@ -15,6 +15,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "react-is"
+version = "0.0.0"
+dependencies = [
+ "rust-js-builtins",
+ "shared",
+]
+
+[[package]]
 name = "react-isomorphic"
 version = "0.0.0"
 dependencies = [
