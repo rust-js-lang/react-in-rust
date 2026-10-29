@@ -50,6 +50,7 @@ use crate::react_dom_event_listener::create_event_listener_wrapper_with_priority
 use crate::react_dom_update_batching::batched_updates;
 use crate::react_synthetic_event_type::{KnownReactSyntheticEvent, ReactSyntheticEvent};
 use crate::select_event_plugin;
+use crate::simple_event_plugin;
 
 #[cfg_attr(
     rust_js,
@@ -109,40 +110,6 @@ fn change_extract_events(
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/events/plugins/SimpleEventPlugin.js#* as SimpleEventPlugin.registerEvents"
-)]
-fn simple_register_events() {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/plugins/SimpleEventPlugin.js#* as SimpleEventPlugin.extractEvents"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(target_inst, native_event_target))]
-fn simple_extract_events(
-    dispatch_queue: &mut DispatchQueue,
-    dom_event_name: &str,
-    target_inst: Option<Rc<Fiber>>,
-    native_event: &'static AnyNativeEvent,
-    native_event_target: Option<&'static EventTarget>,
-    event_system_flags: EventSystemFlags,
-    target_container: &'static EventTarget,
-) {
-    let _ = (
-        dispatch_queue,
-        dom_event_name,
-        target_inst,
-        native_event,
-        native_event_target,
-        event_system_flags,
-        target_container,
-    );
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
     rust_js::link_name = "./src/events/plugins/ScrollEndEventPlugin.js#* as ScrollEndEventPlugin.registerEvents"
 )]
 fn scroll_end_register_events() {
@@ -177,7 +144,7 @@ fn scroll_end_extract_events(
 
 // TODO: remove top-level side effect.
 js::on_load! {
-    simple_register_events();
+    simple_event_plugin::register_events();
     enter_leave_event_plugin::register_events();
     change_register_events();
     select_event_plugin::register_events();
@@ -203,7 +170,7 @@ fn extract_events(
     // should probably be inlined somewhere and have its logic
     // be core the to event system. This would potentially allow
     // us to ship builds of React without the polyfilled plugins below.
-    simple_extract_events(
+    simple_event_plugin::extract_events(
         dispatch_queue,
         dom_event_name,
         target_inst.clone(),

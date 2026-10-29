@@ -123,6 +123,8 @@ pub mod sanitize_url;
 pub mod select_event_plugin;
 #[path = "src/client/setTextContent.rs"]
 pub mod set_text_content;
+#[path = "src/events/plugins/SimpleEventPlugin.rs"]
+pub mod simple_event_plugin;
 #[path = "src/events/SyntheticEvent.rs"]
 pub mod synthetic_event;
 #[path = "src/client/ToStringValue.rs"]
