@@ -54,7 +54,10 @@ import getEventTarget from './getEventTarget.js';
 import getListener from './getListener.js';
 import * as BeforeInputEventPlugin from './plugins/BeforeInputEventPlugin.js';
 import * as ChangeEventPlugin from './plugins/ChangeEventPlugin.js';
-import * as EnterLeaveEventPlugin from './plugins/EnterLeaveEventPlugin.js';
+import {
+  extractEvents as extractEvents$1,
+  registerEvents,
+} from './plugins/EnterLeaveEventPlugin.js';
 import * as FormActionEventPlugin from './plugins/FormActionEventPlugin.js';
 import * as ScrollEndEventPlugin from './plugins/ScrollEndEventPlugin.js';
 import * as SelectEventPlugin from './plugins/SelectEventPlugin.js';
@@ -63,7 +66,7 @@ import {$some, $someValue} from '@rust-js/runtime';
 
 // TODO: remove top-level side effect.
 SimpleEventPlugin.registerEvents();
-EnterLeaveEventPlugin.registerEvents();
+registerEvents();
 ChangeEventPlugin.registerEvents();
 SelectEventPlugin.registerEvents();
 BeforeInputEventPlugin.registerEvents();
@@ -115,10 +118,10 @@ function extractEvents(
   // that might cause other unknown side-effects that we
   // can't foresee right now.
   if (shouldProcessPolyfillPlugins) {
-    EnterLeaveEventPlugin.extractEvents(
+    extractEvents$1(
       dispatchQueue,
       domEventName,
-      targetInst ?? null,
+      targetInst,
       nativeEvent,
       nativeEventTarget,
       eventSystemFlags,

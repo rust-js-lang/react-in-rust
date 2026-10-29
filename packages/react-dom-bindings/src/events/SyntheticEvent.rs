@@ -36,8 +36,8 @@ fn function_that_returns_false() -> bool {
 /// A constructor of synthetic events, of an interface's.
 pub type SyntheticEventClass = Class<
     fn(
-        Option<&'static str>,
-        &'static str,
+        Option<String>,
+        String,
         Option<Rc<Fiber>>,
         &'static Event,
         Option<&'static EventTarget>,
@@ -91,16 +91,16 @@ fn create_synthetic_event(
                 native_event,
                 native_event_target,
             ): (
-                Option<&'static str>,
-                &'static str,
+                Option<String>,
+                String,
                 Option<Rc<Fiber>>,
                 &'static Event,
                 Option<&'static EventTarget>,
             )| {
                 let this: &'static ReactSyntheticEvent = unsafe { js::cast(this) };
-                this.react_name.set(react_name);
+                *this.react_name.borrow_mut() = react_name;
                 *this.target_inst.borrow_mut() = target_inst;
-                this.r#type.set(react_event_type);
+                *this.r#type.borrow_mut() = react_event_type;
                 this.native_event.set(Some(native_event));
                 this.target.set(native_event_target.map(js::unknown));
                 this.current_target.set(None);

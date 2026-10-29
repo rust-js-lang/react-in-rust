@@ -44,14 +44,13 @@ pub struct ReactSyntheticEvent {
     #[cfg_attr(rust_js, rust_js::name = "_targetInst", rust_js::nullable)]
     pub target_inst: RefCell<Option<Rc<Fiber>>>,
     pub native_event: Cell<Option<&'static Event>>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub target: Cell<Option<&'static Unknown>>,
     pub related_target: Cell<Option<&'static Unknown>>,
-    pub r#type: Cell<&'static str>,
+    pub r#type: RefCell<String>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub current_target: Cell<Option<&'static EventTarget>>,
     #[cfg_attr(rust_js, rust_js::name = "_reactName", rust_js::nullable)]
-    pub react_name: Cell<Option<&'static str>>,
+    pub react_name: RefCell<Option<String>>,
 }
 
 unsafe impl js::Defined for ReactSyntheticEvent {}

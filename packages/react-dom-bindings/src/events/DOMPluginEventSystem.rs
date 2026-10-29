@@ -25,6 +25,7 @@ use shared::report_global_error::REPORT_GLOBAL_ERROR;
 use webapi::{Element, Event, EventTarget, Node, console, node};
 
 use crate::current_replaying_event::is_replaying_event;
+use crate::enter_leave_event_plugin;
 use crate::event_listener::{
     add_event_bubble_listener, add_event_bubble_listener_with_passive_flag,
     add_event_capture_listener, add_event_capture_listener_with_passive_flag,
@@ -117,40 +118,6 @@ fn change_register_events() {
 )]
 #[cfg_attr(rust_js, rust_js::nullable(target_inst, native_event_target))]
 fn change_extract_events(
-    dispatch_queue: &mut DispatchQueue,
-    dom_event_name: &str,
-    target_inst: Option<Rc<Fiber>>,
-    native_event: &'static AnyNativeEvent,
-    native_event_target: Option<&'static EventTarget>,
-    event_system_flags: EventSystemFlags,
-    target_container: &'static EventTarget,
-) {
-    let _ = (
-        dispatch_queue,
-        dom_event_name,
-        target_inst,
-        native_event,
-        native_event_target,
-        event_system_flags,
-        target_container,
-    );
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/plugins/EnterLeaveEventPlugin.js#* as EnterLeaveEventPlugin.registerEvents"
-)]
-fn enter_leave_register_events() {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/plugins/EnterLeaveEventPlugin.js#* as EnterLeaveEventPlugin.extractEvents"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(target_inst, native_event_target))]
-fn enter_leave_extract_events(
     dispatch_queue: &mut DispatchQueue,
     dom_event_name: &str,
     target_inst: Option<Rc<Fiber>>,
@@ -302,7 +269,7 @@ fn scroll_end_extract_events(
 // TODO: remove top-level side effect.
 js::on_load! {
     simple_register_events();
-    enter_leave_register_events();
+    enter_leave_event_plugin::register_events();
     change_register_events();
     select_register_events();
     before_input_register_events();
@@ -356,7 +323,7 @@ fn extract_events(
     // that might cause other unknown side-effects that we
     // can't foresee right now.
     if should_process_polyfill_plugins {
-        enter_leave_extract_events(
+        enter_leave_event_plugin::extract_events(
             dispatch_queue,
             dom_event_name,
             target_inst.clone(),
@@ -1173,7 +1140,8 @@ fn accumulate_enter_leave_listeners_for_event(
     common: Option<&Rc<Fiber>>,
     in_capture_phase: bool,
 ) {
-    let registration_name: &str = unsafe { js::cast(event.react_name.get().map(js::unknown)) };
+    let registration_name: &str =
+        unsafe { js::cast(event.react_name.borrow().as_deref().map(js::unknown)) };
     let mut listeners: Vec<DispatchListener> = vec![];
 
     let mut instance = Some(target);

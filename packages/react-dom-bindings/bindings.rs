@@ -21,6 +21,8 @@ pub mod dom_namespaces;
 pub mod dom_plugin_event_system;
 #[path = "src/client/DOMPropertyOperations.rs"]
 pub mod dom_property_operations;
+#[path = "src/events/plugins/EnterLeaveEventPlugin.rs"]
+pub mod enter_leave_event_plugin;
 #[path = "src/client/escapeSelectorAttributeValueInsideDoubleQuotes.rs"]
 pub mod escape_selector_attribute_value_inside_double_quotes;
 #[path = "src/server/escapeTextForBrowser.rs"]

@@ -37,7 +37,7 @@ export interface ReactSyntheticEvent {
   _dispatchListeners?: unknown;
   _targetInst?: Fiber | null | undefined;
   nativeEvent: Event | null | undefined;
-  target?: unknown | null | undefined;
+  target: unknown | null | undefined;
   relatedTarget: unknown | null | undefined;
   type: string;
   currentTarget?: EventTarget | null | undefined;
