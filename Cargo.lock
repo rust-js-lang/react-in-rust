@@ -43,6 +43,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "react-server"
+version = "0.0.0"
+dependencies = [
+ "rust-js-builtins",
+]
+
+[[package]]
 name = "rust-js-builtins"
 version = "0.0.2"
 

@@ -1,0 +1,17 @@
+[package]
+name = "react-server"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# React's server renderers' shared code, `react-server`. Its modules are its
+# files, each beside the JS rust-js writes from it; its root declares them
+# and writes no JS of its own.
+[lib]
+path = "server.rs"
+
+[dependencies]
+js.workspace = true
+
+[lints]
+workspace = true
