@@ -565,22 +565,18 @@ export function unstable_flushAllWithoutAsserting() {
   const cb = scheduledCallback;
   if (cb != null) {
     isFlushing = true;
-    while (true) {
-      let hasMoreWork;
-      try {
-        hasMoreWork = cb(true, currentMockTime);
-      } catch (error) {
-        isFlushing = false;
-        throw error;
-      }
-      if (!hasMoreWork) {
+    try {
+      while (true) {
+        const hasMoreWork = cb(true, currentMockTime);
         if (!hasMoreWork) {
-          scheduledCallback = null;
+          if (!hasMoreWork) {
+            scheduledCallback = null;
+          }
+          return true;
         }
-        const result = true;
-        isFlushing = false;
-        return result;
       }
+    } finally {
+      isFlushing = false;
     }
   } else {
     return false;
