@@ -256,7 +256,6 @@ function validateShorthandPropertyCollisionInDev(prevStyles, nextStyles) {
         }
       }
     }
-    return;
   }
 }
 //# sourceMappingURL=CSSPropertyOperations.js.map

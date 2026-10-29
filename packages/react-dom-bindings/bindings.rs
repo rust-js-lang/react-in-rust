@@ -117,5 +117,7 @@ pub mod to_string_value;
 pub mod top_level_event_types;
 #[path = "src/shared/validAriaProperties.rs"]
 pub mod valid_aria_properties;
+#[path = "src/client/validateDOMNesting.rs"]
+pub mod validate_dom_nesting;
 #[path = "src/shared/warnValidStyle.rs"]
 pub mod warn_valid_style;

@@ -123,7 +123,7 @@ pub fn update_input(
         if __DEV__ {
             check_attribute_string_coercion(r#type, "type");
         }
-        js::set(node, "type", r#type);
+        node.set_type(r#type);
     } else {
         node.remove_attribute("type");
     }
@@ -224,7 +224,7 @@ pub fn update_input(
         if __DEV__ {
             check_attribute_string_coercion(name, "name");
         }
-        node.set_name(&to_string(get_to_string_value(name)));
+        node.set_name(to_string(get_to_string_value(name)));
     } else {
         node.remove_attribute("name");
     }
@@ -251,7 +251,7 @@ pub fn init_input(
         if __DEV__ {
             check_attribute_string_coercion(r#type, "type");
         }
-        js::set(node, "type", r#type);
+        node.set_type(r#type);
     }
 
     if value.is_some() || default_value.is_some() {
@@ -372,7 +372,7 @@ pub fn init_input(
         if __DEV__ {
             check_attribute_string_coercion(name, "name");
         }
-        js::set(node, "name", name);
+        node.set_name(name);
     }
     track(html_input_element::unchecked_from(element));
 }

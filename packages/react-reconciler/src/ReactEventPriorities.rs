@@ -20,6 +20,13 @@ impl From<Lane> for EventPriority {
     }
 }
 
+/// The lane an event priority is, as `ReactDOMSharedInternals.p` stores it.
+impl From<EventPriority> for Lane {
+    fn from(priority: EventPriority) -> Self {
+        priority.0
+    }
+}
+
 #[cfg_attr(rust_js, rust_js::name = "NoEventPriority")]
 pub const NO_EVENT_PRIORITY: EventPriority = EventPriority(NO_LANE);
 #[cfg_attr(rust_js, rust_js::name = "DiscreteEventPriority")]

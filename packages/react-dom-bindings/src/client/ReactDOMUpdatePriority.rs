@@ -6,7 +6,7 @@
 use std::convert::Infallible;
 
 use react_reconciler::react_event_priorities::{
-    DEFAULT_EVENT_PRIORITY, EventPriority, NO_EVENT_PRIORITY, event_priority_to_lane,
+    DEFAULT_EVENT_PRIORITY, EventPriority, NO_EVENT_PRIORITY,
 };
 use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS;
 use webapi::window;
@@ -22,7 +22,7 @@ pub fn set_current_update_priority(
     #[cfg_attr(rust_js, rust_js::name = "IntentionallyUnusedArgument")]
     _intentionally_unused_argument: Option<Infallible>,
 ) {
-    REACT_DOM_SHARED_INTERNALS.set_p(event_priority_to_lane(new_priority)); /* currentUpdatePriority */
+    REACT_DOM_SHARED_INTERNALS.set_p(i32::from(new_priority)); /* currentUpdatePriority */
 }
 
 pub fn get_current_update_priority() -> EventPriority {

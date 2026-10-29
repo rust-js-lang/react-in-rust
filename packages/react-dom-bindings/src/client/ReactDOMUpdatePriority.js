@@ -8,7 +8,6 @@
 import {
   DefaultEventPriority,
   NoEventPriority,
-  eventPriorityToLane,
 } from '../../../react-reconciler/src/ReactEventPriorities.js';
 import ReactDOMSharedInternals from '../../../shared/ReactDOMSharedInternals.js';
 import {getEventPriority} from '../events/ReactDOMEventListener.js';
@@ -21,8 +20,7 @@ export function setCurrentUpdatePriority(
   // is much longer. I hope this is consistent enough to rely on across builds
   IntentionallyUnusedArgument,
 ) {
-  ReactDOMSharedInternals.p =
-    eventPriorityToLane(newPriority); /* currentUpdatePriority */
+  ReactDOMSharedInternals.p = newPriority; /* currentUpdatePriority */
 }
 
 export function getCurrentUpdatePriority() {

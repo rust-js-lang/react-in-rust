@@ -77,52 +77,63 @@ fn create_synthetic_event(
     // normalizing browser quirks. Subclasses do not necessarily have to implement a
     // DOM interface; custom application-specific events can also subclass this.
     #[cfg_attr(rust_js, rust_js::name = "SyntheticBaseEvent")]
-    let synthetic_base_event = Class::of(function::with_this(
-        move |this,
-              (react_name, react_event_type, target_inst, native_event, native_event_target): (
-            Option<&'static str>,
-            &'static str,
-            Option<Rc<Fiber>>,
-            &'static Event,
-            Option<&'static EventTarget>,
-        )| {
-            let this: &'static ReactSyntheticEvent = unsafe { js::cast(this) };
-            this.react_name.set(react_name);
-            *this.target_inst.borrow_mut() = target_inst;
-            this.r#type.set(react_event_type);
-            this.native_event.set(Some(native_event));
-            this.target.set(native_event_target.map(js::unknown));
-            this.current_target.set(None);
+    let synthetic_base_event =
+        Class::of(function::with_this(
+            move |this,
+                  #[cfg_attr(
+                rust_js,
+                rust_js::nullable(react_name, target_inst, native_event_target)
+            )]
+                  (
+                react_name,
+                react_event_type,
+                target_inst,
+                native_event,
+                native_event_target,
+            ): (
+                Option<&'static str>,
+                &'static str,
+                Option<Rc<Fiber>>,
+                &'static Event,
+                Option<&'static EventTarget>,
+            )| {
+                let this: &'static ReactSyntheticEvent = unsafe { js::cast(this) };
+                this.react_name.set(react_name);
+                *this.target_inst.borrow_mut() = target_inst;
+                this.r#type.set(react_event_type);
+                this.native_event.set(Some(native_event));
+                this.target.set(native_event_target.map(js::unknown));
+                this.current_target.set(None);
 
-            for prop_name in js::keys_in(interface) {
-                if !js::unknown(interface).has_own_property(&prop_name) {
-                    continue;
+                for prop_name in js::keys_in(interface) {
+                    if !js::unknown(interface).has_own_property(&prop_name) {
+                        continue;
+                    }
+                    let normalize = dict::get(interface, &prop_name);
+                    if let Some(Normalize::Made(normalize)) = normalize {
+                        js::set(this, &prop_name, normalize(js::unknown(native_event)));
+                    } else {
+                        js::set(this, &prop_name, js::get(native_event, &prop_name));
+                    }
                 }
-                let normalize = dict::get(interface, &prop_name);
-                if let Some(Normalize::Made(normalize)) = normalize {
-                    js::set(this, &prop_name, normalize(js::unknown(native_event)));
+
+                let default_prevented = if js::get(native_event, "defaultPrevented").is_some() {
+                    js::get(native_event, "defaultPrevented")
                 } else {
-                    js::set(this, &prop_name, js::get(native_event, &prop_name));
+                    Some(js::unknown_of(js::strict_equals(
+                        js::get(native_event, "returnValue"),
+                        false,
+                    )))
+                };
+                if js::truthy(default_prevented) {
+                    this.is_default_prevented.set(function_that_returns_true);
+                } else {
+                    this.is_default_prevented.set(function_that_returns_false);
                 }
-            }
-
-            let default_prevented = if js::get(native_event, "defaultPrevented").is_some() {
-                js::get(native_event, "defaultPrevented")
-            } else {
-                Some(js::unknown_of(js::strict_equals(
-                    js::get(native_event, "returnValue"),
-                    false,
-                )))
-            };
-            if js::truthy(default_prevented) {
-                this.is_default_prevented.set(function_that_returns_true);
-            } else {
-                this.is_default_prevented.set(function_that_returns_false);
-            }
-            this.is_propagation_stopped.set(function_that_returns_false);
-            this
-        },
-    ));
+                this.is_propagation_stopped.set(function_that_returns_false);
+                this
+            },
+        ));
 
     assign(
         synthetic_base_event.prototype(),

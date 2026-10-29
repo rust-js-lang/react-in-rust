@@ -38,8 +38,8 @@ function createSyntheticEvent(Interface) {
     nativeEvent,
     nativeEventTarget,
   ) {
-    this._reactName = reactName ?? null;
-    this._targetInst = targetInst ?? null;
+    this._reactName = reactName;
+    this._targetInst = targetInst;
     this.type = reactEventType;
     this.nativeEvent = nativeEvent;
     this.target = nativeEventTarget ?? null;
@@ -106,10 +106,20 @@ function createSyntheticEvent(Interface) {
       this.isPropagationStopped = functionThatReturnsTrue;
     },
 
+    /**
+     * We release all dispatched `SyntheticEvent`s after each event loop, adding
+     * them back into the pool. This allows a way to hold onto a reference that
+     * won't be added back into the pool.
+     */
     persist: function () {
       // Modern event system doesn't use pooling.
     },
 
+    /**
+     * Checks if this event should be released back into the pool.
+     *
+     * @return {boolean} True if this should not be released, false otherwise.
+     */
     isPersistent: functionThatReturnsTrue,
   });
   return SyntheticBaseEvent;

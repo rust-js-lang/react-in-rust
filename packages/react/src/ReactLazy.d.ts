@@ -12,7 +12,7 @@ export interface ReactIOInfo {
   name: string;
   start: number;
   end: number;
-  value?: any | null | undefined;
+  value?: Promise<unknown | null | undefined> | null | undefined;
   owner?: unknown | null | undefined;
   debugStack: Error;
   debugTask?:

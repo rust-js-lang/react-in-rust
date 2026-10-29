@@ -25,12 +25,12 @@ import {
   SuspenseComponent,
 } from '../../../react-reconciler/src/ReactWorkTags.js';
 import {
-  IdlePriority as IDLE_SCHEDULER_PRIORITY,
-  ImmediatePriority as IMMEDIATE_SCHEDULER_PRIORITY,
-  LowPriority as LOW_SCHEDULER_PRIORITY,
-  NormalPriority as NORMAL_SCHEDULER_PRIORITY,
-  UserBlockingPriority as USER_BLOCKING_SCHEDULER_PRIORITY,
-  getCurrentPriorityLevel as GET_CURRENT_SCHEDULER_PRIORITY_LEVEL,
+  IdlePriority as IdleSchedulerPriority,
+  ImmediatePriority as ImmediateSchedulerPriority,
+  LowPriority as LowSchedulerPriority,
+  NormalPriority as NormalSchedulerPriority,
+  UserBlockingPriority as UserBlockingSchedulerPriority,
+  getCurrentPriorityLevel as getCurrentSchedulerPriorityLevel,
 } from '../../../react-reconciler/src/Scheduler.js';
 import ReactSharedInternals from '../../../shared/ReactSharedInternals.js';
 import {
@@ -374,16 +374,16 @@ export function getEventPriority(domEventName) {
       // We might be in the Scheduler callback.
       // Eventually this mechanism will be replaced by a check
       // of the current priority on the native scheduler.
-      const schedulerPriority = GET_CURRENT_SCHEDULER_PRIORITY_LEVEL();
-      return schedulerPriority === IMMEDIATE_SCHEDULER_PRIORITY
+      const schedulerPriority = getCurrentSchedulerPriorityLevel();
+      return schedulerPriority === ImmediateSchedulerPriority
         ? DiscreteEventPriority
-        : schedulerPriority === USER_BLOCKING_SCHEDULER_PRIORITY
+        : schedulerPriority === UserBlockingSchedulerPriority
           ? ContinuousEventPriority
-          : schedulerPriority === NORMAL_SCHEDULER_PRIORITY ||
-              schedulerPriority === LOW_SCHEDULER_PRIORITY
+          : schedulerPriority === NormalSchedulerPriority ||
+              schedulerPriority === LowSchedulerPriority
             ? // TODO: Handle LowSchedulerPriority, somehow. Maybe the same lane as hydration.
               DefaultEventPriority
-            : schedulerPriority === IDLE_SCHEDULER_PRIORITY
+            : schedulerPriority === IdleSchedulerPriority
               ? IdleEventPriority
               : DefaultEventPriority;
     }

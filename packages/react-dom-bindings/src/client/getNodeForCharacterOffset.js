@@ -15,7 +15,7 @@ import {TEXT_NODE} from './HTMLNodeType.js';
  */
 function getLeafNode(node) {
   let firstChild;
-  while ((firstChild = node != null ? node.firstChild : null) != null) {
+  while ((firstChild = node?.firstChild) != null) {
     node = firstChild;
   }
   return node;
