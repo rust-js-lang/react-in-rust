@@ -107,6 +107,8 @@ pub mod react_dom_option;
 pub mod react_dom_resource_validation;
 #[path = "src/client/ReactDOMSelect.rs"]
 pub mod react_dom_select;
+#[path = "src/client/ReactDOMSelection.rs"]
+pub mod react_dom_selection;
 #[path = "src/client/ReactDOMSrcObject.rs"]
 pub mod react_dom_src_object;
 #[path = "src/client/ReactDOMTextarea.rs"]
@@ -117,6 +119,8 @@ pub mod react_dom_unknown_property_hook;
 pub mod react_dom_update_batching;
 #[path = "src/client/ReactDOMUpdatePriority.rs"]
 pub mod react_dom_update_priority;
+#[path = "src/client/ReactInputSelection.rs"]
+pub mod react_input_selection;
 #[path = "src/events/ReactSyntheticEventType.rs"]
 pub mod react_synthetic_event_type;
 #[path = "src/shared/sanitizeURL.rs"]

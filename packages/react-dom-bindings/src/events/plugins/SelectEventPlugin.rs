@@ -22,18 +22,9 @@ use crate::html_node_type::DOCUMENT_NODE;
 use crate::is_text_input_element::is_text_input_element;
 use crate::plugin_module_type::AnyNativeEvent;
 use crate::react_dom_component_tree::get_node_from_instance;
+use crate::react_input_selection::has_selection_capabilities;
 use crate::react_synthetic_event_type::ReactSyntheticEvent;
 use crate::synthetic_event::SYNTHETIC_EVENT;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/client/ReactInputSelection.js#hasSelectionCapabilities"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(elem))]
-fn has_selection_capabilities(elem: Option<&Element>) -> bool {
-    let _ = elem;
-    unreachable!()
-}
 
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "skipSelectionChangeEvent")]
