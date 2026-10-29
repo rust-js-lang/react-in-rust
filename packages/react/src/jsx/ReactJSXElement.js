@@ -27,14 +27,14 @@ function noTask(name) {
   return null;
 }
 
-// eslint-disable-next-line react-internal/no-production-logging
-const createTask$1 = __DEV__ ? console.createTask : undefined;
-
-const createTask =
-  createTask$1 !== undefined
+const createTask = (() => {
+  // eslint-disable-next-line react-internal/no-production-logging
+  const createTask = __DEV__ ? console.createTask : undefined;
+  return createTask !== undefined
     ? // eslint-disable-next-line react-internal/no-production-logging
-      name => createTask$1(name)
+      name => createTask(name)
     : noTask;
+})();
 
 function getTaskName(type) {
   if (type === REACT_FRAGMENT_TYPE) {

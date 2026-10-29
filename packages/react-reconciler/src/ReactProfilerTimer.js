@@ -30,14 +30,14 @@ function noTask(name) {
 
 const now = Scheduler.unstable_now;
 
-// eslint-disable-next-line react-internal/no-production-logging
-const createTask$1 = __DEV__ ? console.createTask : undefined;
-
-const createTask =
-  createTask$1 !== undefined
+const createTask = (() => {
+  // eslint-disable-next-line react-internal/no-production-logging
+  const createTask = __DEV__ ? console.createTask : undefined;
+  return createTask !== undefined
     ? // eslint-disable-next-line react-internal/no-production-logging
-      name => createTask$1(name)
+      name => createTask(name)
     : noTask;
+})();
 
 export const REGULAR_UPDATE = 0;
 export const SPAWNED_UPDATE = 1;

@@ -160,8 +160,7 @@ export function updateValueIfChanged(node) {
 export function stopTracking(node) {
   const tracker = getTracker(node);
   if (tracker != null) {
-    const stopTracking = tracker.stopTracking;
-    stopTracking();
+    tracker.stopTracking();
   }
 }
 //# sourceMappingURL=inputValueTracking.js.map
