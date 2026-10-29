@@ -1,0 +1,17 @@
+react-dom/src/events
+ReactDOMInput
+ReactDOMTextarea
+ReactDOMSelect
+ReactDOMSelection
+ReactDOMComponentTree
+ReactDOMFloat
+ReactDOMOption
+ReactDOMForm
+ReactDOMFizzForm
+ReactDOMServerIntegrationSelect
+ReactDOMServerIntegrationInput
+ReactDOMServerIntegrationTextarea
+inputValueTracking
+CSSPropertyOperations
+DOMPropertyOperations
+ReactDOMComponent-test
