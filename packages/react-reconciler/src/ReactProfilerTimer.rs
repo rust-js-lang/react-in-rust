@@ -41,7 +41,7 @@ fn resolve_event_time_stamp() -> f64 {
 
 // Intentionally not named imports because Rollup would use dynamic dispatch for
 // CommonJS interop named imports.
-#[cfg_attr(rust_js, rust_js::link_name = "scheduler#* as Scheduler.unstable_now")]
+#[cfg_attr(rust_js, rust_js::link_name = "scheduler#*.unstable_now")]
 fn unstable_now() -> f64 {
     unreachable!()
 }

@@ -17,16 +17,13 @@ use crate::react_internal_types::Fiber;
 
 // Intentionally not named imports because Rollup would
 // use dynamic dispatch for CommonJS interop named imports.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "scheduler#* as Scheduler.unstable_scheduleCallback"
-)]
+#[cfg_attr(rust_js, rust_js::link_name = "scheduler#*.unstable_scheduleCallback")]
 fn schedule_callback(priority_level: u8, callback: Box<dyn FnOnce()>) {
     unreachable!()
 }
 
 unsafe extern "Rust" {
-    #[link_name = "scheduler#* as Scheduler.unstable_NormalPriority"]
+    #[link_name = "scheduler#*.unstable_NormalPriority"]
     safe static NORMAL_PRIORITY: u8;
 }
 

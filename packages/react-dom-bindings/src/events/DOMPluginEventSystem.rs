@@ -76,7 +76,7 @@ pub struct DispatchEntry {
 pub type DispatchQueue = Vec<DispatchEntry>;
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/events/plugins/ChangeEventPlugin.js#* as ChangeEventPlugin.registerEvents"
+    rust_js::link_name = "./src/events/plugins/ChangeEventPlugin.js#*.registerEvents"
 )]
 fn change_register_events() {
     unreachable!()
@@ -84,7 +84,7 @@ fn change_register_events() {
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/events/plugins/ChangeEventPlugin.js#* as ChangeEventPlugin.extractEvents"
+    rust_js::link_name = "./src/events/plugins/ChangeEventPlugin.js#*.extractEvents"
 )]
 #[cfg_attr(rust_js, rust_js::nullable(target_inst, native_event_target))]
 fn change_extract_events(
@@ -110,7 +110,7 @@ fn change_extract_events(
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/events/plugins/ScrollEndEventPlugin.js#* as ScrollEndEventPlugin.registerEvents"
+    rust_js::link_name = "./src/events/plugins/ScrollEndEventPlugin.js#*.registerEvents"
 )]
 fn scroll_end_register_events() {
     unreachable!()
@@ -118,7 +118,7 @@ fn scroll_end_register_events() {
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/events/plugins/ScrollEndEventPlugin.js#* as ScrollEndEventPlugin.extractEvents"
+    rust_js::link_name = "./src/events/plugins/ScrollEndEventPlugin.js#*.extractEvents"
 )]
 #[cfg_attr(rust_js, rust_js::nullable(target_inst, native_event_target))]
 fn scroll_end_extract_events(

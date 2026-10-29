@@ -36,10 +36,7 @@ pub type ScheduleCallback =
 /// SchedulerMock's `log`: what a test logs, any value.
 pub type Log = dyn Fn(Option<&'static Unknown>);
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "scheduler#* as Scheduler.unstable_scheduleCallback"
-)]
+#[cfg_attr(rust_js, rust_js::link_name = "scheduler#*.unstable_scheduleCallback")]
 fn unstable_schedule_callback(
     priority_level: PriorityLevel,
     callback: SchedulerCallback,
@@ -48,59 +45,50 @@ fn unstable_schedule_callback(
     unreachable!()
 }
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "scheduler#* as Scheduler.unstable_cancelCallback"
-)]
+#[cfg_attr(rust_js, rust_js::link_name = "scheduler#*.unstable_cancelCallback")]
 fn unstable_cancel_callback(task: &Task) {
     unreachable!()
 }
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "scheduler#* as Scheduler.unstable_shouldYield"
-)]
+#[cfg_attr(rust_js, rust_js::link_name = "scheduler#*.unstable_shouldYield")]
 fn unstable_should_yield() -> bool {
     unreachable!()
 }
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "scheduler#* as Scheduler.unstable_requestPaint"
-)]
+#[cfg_attr(rust_js, rust_js::link_name = "scheduler#*.unstable_requestPaint")]
 fn unstable_request_paint() {
     unreachable!()
 }
 
-#[cfg_attr(rust_js, rust_js::link_name = "scheduler#* as Scheduler.unstable_now")]
+#[cfg_attr(rust_js, rust_js::link_name = "scheduler#*.unstable_now")]
 fn unstable_now() -> f64 {
     unreachable!()
 }
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "scheduler#* as Scheduler.unstable_getCurrentPriorityLevel"
+    rust_js::link_name = "scheduler#*.unstable_getCurrentPriorityLevel"
 )]
 fn unstable_get_current_priority_level() -> PriorityLevel {
     unreachable!()
 }
 
 unsafe extern "Rust" {
-    #[link_name = "scheduler#* as Scheduler.unstable_ImmediatePriority"]
+    #[link_name = "scheduler#*.unstable_ImmediatePriority"]
     safe static UNSTABLE_IMMEDIATE_PRIORITY: PriorityLevel;
-    #[link_name = "scheduler#* as Scheduler.unstable_UserBlockingPriority"]
+    #[link_name = "scheduler#*.unstable_UserBlockingPriority"]
     safe static UNSTABLE_USER_BLOCKING_PRIORITY: PriorityLevel;
-    #[link_name = "scheduler#* as Scheduler.unstable_NormalPriority"]
+    #[link_name = "scheduler#*.unstable_NormalPriority"]
     safe static UNSTABLE_NORMAL_PRIORITY: PriorityLevel;
-    #[link_name = "scheduler#* as Scheduler.unstable_LowPriority"]
+    #[link_name = "scheduler#*.unstable_LowPriority"]
     safe static UNSTABLE_LOW_PRIORITY: PriorityLevel;
-    #[link_name = "scheduler#* as Scheduler.unstable_IdlePriority"]
+    #[link_name = "scheduler#*.unstable_IdlePriority"]
     safe static UNSTABLE_IDLE_PRIORITY: PriorityLevel;
 
     // SchedulerMock's alone.
-    #[link_name = "scheduler#* as Scheduler.log"]
+    #[link_name = "scheduler#*.log"]
     safe static SCHEDULER_LOG: Option<&'static Log>;
-    #[link_name = "scheduler#* as Scheduler.unstable_setDisableYieldValue"]
+    #[link_name = "scheduler#*.unstable_setDisableYieldValue"]
     safe static SCHEDULER_SET_DISABLE_YIELD_VALUE: Option<&'static dyn Fn(bool)>;
 }
 
