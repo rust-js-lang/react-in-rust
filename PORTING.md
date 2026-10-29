@@ -239,6 +239,8 @@ These differences from upstream's output are accepted:
   where upstream tests truth.
 - **rd33**: warnValidStyle converts with `String(value)` before `test` and
   `replace`.
+- **rd39**: getVendorPrefixedEventName's three statements where upstream
+  writes `return (prefixedEventNames[eventName] = prefixMap[styleProp])`.
 - **rd51 and rd120**: thread-locals, exported and private, are made when
   the module loads, like upstream's `const x = f();`. One whose initializer
   panics throws at load. In an import cycle whose order can't be decided, a
@@ -251,6 +253,12 @@ These differences from upstream's output are accepted:
 - **rd87**: the hoisted `const value = ..` of a DOM getter.
 - **rd114 alias**: `let Selected = ui::Empty;` prints
   `import * as Ui; const Selected = Ui.Empty;`.
+- **rd153**: upstream's `export * from '..'` is written `pub use m::*;`,
+  which prints `export {..each name..} from '..'`.
+- **rd183**: `stack.push(...current.children)` is written
+  `stack.extend(webapi::html_collection::iter(current.children()))`, which
+  prints `$extend(stack, Iterator.from(current.children))`; Rust's
+  never-throwing `extend` is kept.
 
 These forms are decided:
 
@@ -287,6 +295,10 @@ These forms are decided:
 - **rd128**: on* setters take `Option<&'static dyn Fn(&E)>`. The port writes
   a one-parameter noop (`function noop(event) {}`) and compares with
   `ptr::eq`.
+- **rd185**: webapi's EventTarget has one `add_event_listener`, of a
+  union of the listener (a Rust closure, or the JS listener a caller gives,
+  its identity kept for removal) and its options as given. Every closure
+  given to it annotates its parameter: `|e: &PointerEvent| ..`.
 - **rd10**: `js::set_timeout`, the global, is the one timer API, and it can
   be held as a value.
 - **webapi PartialEq**: webapi references compare by identity (`==` prints
