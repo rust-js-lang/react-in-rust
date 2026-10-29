@@ -126,7 +126,7 @@ function extractEvents(
     ChangeEventPlugin.extractEvents(
       dispatchQueue,
       domEventName,
-      targetInst ?? null,
+      targetInst,
       nativeEvent,
       nativeEventTarget,
       eventSystemFlags,
