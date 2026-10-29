@@ -10,19 +10,11 @@ use react_reconciler::react_current_fiber::get_current_fiber_owner_name_in_dev_o
 use shared::environment::__DEV__;
 use shared::is_array::is_array;
 use shared::react_feature_flags::DISABLE_TEXTAREA_CHILDREN;
-use webapi::{Element, EventTarget, console, html_input_element, html_text_area_element};
+use webapi::{Element, console, html_input_element, html_text_area_element};
 
 use crate::input_value_tracking::{track, track_hydrated};
+use crate::react_dom_event_replaying::queue_change_event;
 use crate::to_string_value::{get_to_string_value, to_string};
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/ReactDOMEventReplaying.js#queueChangeEvent"
-)]
-fn queue_change_event(target: &'static EventTarget) {
-    let _ = target;
-    unreachable!()
-}
 
 thread_local! {
     static DID_WARN_VAL_DEFAULT_VAL: Cell<bool> = const { Cell::new(false) };

@@ -10,18 +10,10 @@ use js::{Dict, Unknown, dict};
 use react_reconciler::react_current_fiber::get_current_fiber_owner_name_in_dev_or_null;
 use shared::environment::__DEV__;
 use shared::is_array::is_array;
-use webapi::{Element, EventTarget, HTMLSelectElement, console, html_select_element};
+use webapi::{Element, HTMLSelectElement, console, html_select_element};
 
+use crate::react_dom_event_replaying::queue_change_event;
 use crate::to_string_value::{get_to_string_value, to_string};
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/ReactDOMEventReplaying.js#queueChangeEvent"
-)]
-fn queue_change_event(target: &'static EventTarget) {
-    let _ = target;
-    unreachable!()
-}
 
 thread_local! {
     static DID_WARN_VALUE_DEFAULT_VALUE: Cell<bool> = const { Cell::new(false) };

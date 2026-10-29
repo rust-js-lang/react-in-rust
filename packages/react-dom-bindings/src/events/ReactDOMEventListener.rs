@@ -29,73 +29,15 @@ use react_reconciler::scheduler::{
 use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use webapi::{EventTarget, Node};
 
+use crate::dom_plugin_event_system::dispatch_event_for_plugin_event_system;
 use crate::event_system_flags::{EventSystemFlags, IS_CAPTURE_PHASE};
 use crate::get_event_target::get_event_target;
 use crate::plugin_module_type::AnyNativeEvent;
 use crate::react_dom_component_tree::{get_closest_instance_from_node, get_instance_from_node};
+use crate::react_dom_event_replaying::{
+    clear_if_continuous_event, is_discrete_event_that_requires_hydration, queue_if_continuous_event,
+};
 use crate::react_dom_update_priority::{get_current_update_priority, set_current_update_priority};
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/ReactDOMEventReplaying.js#isDiscreteEventThatRequiresHydration"
-)]
-fn is_discrete_event_that_requires_hydration(event_type: &str) -> bool {
-    let _ = event_type;
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/ReactDOMEventReplaying.js#clearIfContinuousEvent"
-)]
-fn clear_if_continuous_event(dom_event_name: &str, native_event: &AnyNativeEvent) {
-    let _ = (dom_event_name, native_event);
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/ReactDOMEventReplaying.js#queueIfContinuousEvent"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(blocked_on))]
-fn queue_if_continuous_event(
-    blocked_on: Option<&Unknown>,
-    dom_event_name: &str,
-    event_system_flags: EventSystemFlags,
-    target_container: &EventTarget,
-    native_event: &AnyNativeEvent,
-) -> bool {
-    let _ = (
-        blocked_on,
-        dom_event_name,
-        event_system_flags,
-        target_container,
-        native_event,
-    );
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/DOMPluginEventSystem.js#dispatchEventForPluginEventSystem"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(target_inst))]
-fn dispatch_event_for_plugin_event_system(
-    dom_event_name: &str,
-    event_system_flags: EventSystemFlags,
-    native_event: &AnyNativeEvent,
-    target_inst: Option<Rc<Fiber>>,
-    target_container: &EventTarget,
-) {
-    let _ = (
-        dom_event_name,
-        event_system_flags,
-        native_event,
-        target_inst,
-        target_container,
-    );
-    unreachable!()
-}
 
 thread_local! {
     // TODO: can we stop exporting these?
@@ -127,21 +69,29 @@ pub fn create_event_listener_wrapper(
 
 pub fn create_event_listener_wrapper_with_priority(
     target_container: &'static EventTarget,
-    dom_event_name: &'static str,
+    dom_event_name: &str,
     event_system_flags: EventSystemFlags,
-) -> Box<dyn Fn(&'static AnyNativeEvent)> {
+) -> &'static dyn Fn(&AnyNativeEvent) {
     let event_priority = get_event_priority(dom_event_name);
-    let listener_wrapper: fn(&str, EventSystemFlags, &EventTarget, &AnyNativeEvent) =
-        match event_priority {
-            DISCRETE_EVENT_PRIORITY => dispatch_discrete_event,
-            CONTINUOUS_EVENT_PRIORITY => dispatch_continuous_event,
-            _ => dispatch_event,
-        };
-    function::bind(
-        listener_wrapper,
-        Some(&Kind::Null),
-        (dom_event_name, event_system_flags, target_container),
-    )
+    let listener_wrapper: fn(
+        &str,
+        EventSystemFlags,
+        &'static EventTarget,
+        &'static AnyNativeEvent,
+    ) = match event_priority {
+        DISCRETE_EVENT_PRIORITY => dispatch_discrete_event,
+        CONTINUOUS_EVENT_PRIORITY => dispatch_continuous_event,
+        _ => dispatch_event,
+    };
+    let dom_event_name = dom_event_name.to_owned();
+    webapi::listener(move |native_event: &AnyNativeEvent| {
+        listener_wrapper(
+            &dom_event_name,
+            event_system_flags,
+            target_container,
+            unsafe { js::cast(Some(js::unknown(native_event))) },
+        )
+    })
 }
 
 /// What a discrete or continuous dispatch restores when it's done, as
@@ -161,8 +111,8 @@ impl Drop for RestorePriority {
 fn dispatch_discrete_event(
     dom_event_name: &str,
     event_system_flags: EventSystemFlags,
-    container: &EventTarget,
-    native_event: &AnyNativeEvent,
+    container: &'static EventTarget,
+    native_event: &'static AnyNativeEvent,
 ) {
     let prev_transition = t(REACT_SHARED_INTERNALS);
     set_t(REACT_SHARED_INTERNALS, None);
@@ -178,8 +128,8 @@ fn dispatch_discrete_event(
 fn dispatch_continuous_event(
     dom_event_name: &str,
     event_system_flags: EventSystemFlags,
-    container: &EventTarget,
-    native_event: &AnyNativeEvent,
+    container: &'static EventTarget,
+    native_event: &'static AnyNativeEvent,
 ) {
     let prev_transition = t(REACT_SHARED_INTERNALS);
     set_t(REACT_SHARED_INTERNALS, None);
@@ -195,8 +145,8 @@ fn dispatch_continuous_event(
 pub fn dispatch_event(
     dom_event_name: &str,
     event_system_flags: EventSystemFlags,
-    target_container: &EventTarget,
-    native_event: &AnyNativeEvent,
+    target_container: &'static EventTarget,
+    native_event: &'static AnyNativeEvent,
 ) {
     if !ENABLED.get() {
         return;

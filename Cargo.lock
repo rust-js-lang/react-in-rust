@@ -10,6 +10,7 @@ dependencies = [
  "react-reconciler",
  "rust-js-builtins",
  "rust-js-webapi",
+ "scheduler",
  "shared",
 ]
 

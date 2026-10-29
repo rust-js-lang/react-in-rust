@@ -17,6 +17,8 @@ pub mod dom_event_names;
 pub mod dom_event_properties;
 #[path = "src/client/DOMNamespaces.rs"]
 pub mod dom_namespaces;
+#[path = "src/events/DOMPluginEventSystem.rs"]
+pub mod dom_plugin_event_system;
 #[path = "src/client/DOMPropertyOperations.rs"]
 pub mod dom_property_operations;
 #[path = "src/client/escapeSelectorAttributeValueInsideDoubleQuotes.rs"]
@@ -81,6 +83,8 @@ pub mod react_dom_event_handle;
 pub mod react_dom_event_handle_types;
 #[path = "src/events/ReactDOMEventListener.rs"]
 pub mod react_dom_event_listener;
+#[path = "src/events/ReactDOMEventReplaying.rs"]
+pub mod react_dom_event_replaying;
 #[path = "src/shared/ReactDOMFormActions.rs"]
 pub mod react_dom_form_actions;
 #[path = "src/client/ReactDOMInput.rs"]

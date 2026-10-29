@@ -93,12 +93,14 @@ export function createEventListenerWrapperWithPriority(
     default:
       listenerWrapper = dispatchEvent;
   }
-  return listenerWrapper.bind(
-    null,
-    domEventName,
-    eventSystemFlags,
-    targetContainer,
-  );
+  return nativeEvent => {
+    listenerWrapper(
+      domEventName,
+      eventSystemFlags,
+      targetContainer,
+      nativeEvent,
+    );
+  };
 }
 
 function dispatchDiscreteEvent(
@@ -162,7 +164,7 @@ export function dispatchEvent(
 
   if (
     queueIfContinuousEvent(
-      blockedOn ?? null,
+      blockedOn,
       domEventName,
       eventSystemFlags,
       targetContainer,

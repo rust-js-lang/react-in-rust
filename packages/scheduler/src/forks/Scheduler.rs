@@ -39,7 +39,7 @@ use scheduler_profiling::{
 /// A task's work: given whether it timed out, it does some, and gives
 /// what's left of it, or nothing where it's done.
 #[repr(transparent)]
-pub struct Callback(Box<dyn FnMut(bool) -> Option<Callback>>);
+pub struct Callback(pub Box<dyn FnMut(bool) -> Option<Callback>>);
 
 pub struct Task {
     pub id: f64,
