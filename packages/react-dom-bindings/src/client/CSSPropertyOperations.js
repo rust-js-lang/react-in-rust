@@ -45,11 +45,7 @@ export function createDangerousStringForStyles(styles) {
             !isUnitlessNumber(styleName)
           ) {
             serialized +=
-              delimiter +
-              hyphenateStyleName(styleName) +
-              ':' +
-              ('' + value) +
-              'px';
+              delimiter + hyphenateStyleName(styleName) + ':' + value + 'px';
           } else {
             if (__DEV__) {
               checkCSSPropertyStringCoercion(value, styleName);

@@ -62,7 +62,6 @@ import * as FormActionEventPlugin from './plugins/FormActionEventPlugin.js';
 import * as ScrollEndEventPlugin from './plugins/ScrollEndEventPlugin.js';
 import * as SelectEventPlugin from './plugins/SelectEventPlugin.js';
 import * as SimpleEventPlugin from './plugins/SimpleEventPlugin.js';
-import {$some, $someValue} from '@rust-js/runtime';
 
 // TODO: remove top-level side effect.
 SimpleEventPlugin.registerEvents();
@@ -239,13 +238,7 @@ function processDispatchQueueItemsInOrder(
   if (inCapturePhase) {
     for (let i = dispatchListeners.length - 1; i >= 0; i--) {
       const {instance, currentTarget, listener} = dispatchListeners[i];
-      const right = $some(instance);
-      if (
-        !(previousInstance == null || right == null
-          ? previousInstance == right
-          : $someValue(previousInstance) == $someValue(right)) &&
-        event.isPropagationStopped()
-      ) {
+      if (instance !== previousInstance && event.isPropagationStopped()) {
         return;
       }
       if (__DEV__ && instance != null) {
@@ -259,17 +252,11 @@ function processDispatchQueueItemsInOrder(
       } else {
         executeDispatch(event, listener, currentTarget);
       }
-      previousInstance = $some(instance);
+      previousInstance = instance;
     }
   } else {
     for (const {instance, currentTarget, listener} of dispatchListeners) {
-      const right = $some(instance);
-      if (
-        !(previousInstance == null || right == null
-          ? previousInstance == right
-          : $someValue(previousInstance) == $someValue(right)) &&
-        event.isPropagationStopped()
-      ) {
+      if (instance !== previousInstance && event.isPropagationStopped()) {
         return;
       }
       if (__DEV__ && instance != null) {
@@ -283,7 +270,7 @@ function processDispatchQueueItemsInOrder(
       } else {
         executeDispatch(event, listener, currentTarget);
       }
-      previousInstance = $some(instance);
+      previousInstance = instance;
     }
   }
 }

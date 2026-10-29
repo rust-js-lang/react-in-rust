@@ -187,7 +187,7 @@ fn accumulate_or_create_continuous_queued_replayable_event(
     native_event: &'static AnyNativeEvent,
 ) -> Rc<QueuedReplayableEvent> {
     if let Some(existing_queued_event) = existing_queued_event
-        && js::strict_equals(existing_queued_event.native_event, native_event)
+        && existing_queued_event.native_event == native_event
     {
         // If we have already queued this exact event, then it's because
         // the different event systems have different DOM event listeners.
@@ -197,10 +197,7 @@ fn accumulate_or_create_continuous_queued_replayable_event(
             .event_system_flags
             .set(existing_queued_event.event_system_flags.get() | event_system_flags);
         let mut target_containers = existing_queued_event.target_containers.borrow_mut();
-        if !target_containers
-            .iter()
-            .any(|existing| js::strict_equals(*existing, target_container))
-        {
+        if !target_containers.contains(&target_container) {
             target_containers.push(target_container);
         }
         drop(target_containers);

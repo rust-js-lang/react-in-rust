@@ -206,7 +206,7 @@ function describeValue(value, maxLength) {
         return '{' + properties + '}';
       } else {
         if ((name === 'Blob' || name === 'File') && enableSrcObject) {
-          return name + ':' + ('' + value.type);
+          return name + ':' + value.type;
         }
         return name;
       }

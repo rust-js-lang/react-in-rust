@@ -158,7 +158,7 @@ function accumulateOrCreateContinuousQueuedReplayableEvent(
     // store a single event to be replayed.
     existingQueuedEvent.eventSystemFlags |= eventSystemFlags;
     const targetContainers = existingQueuedEvent.targetContainers;
-    if (!targetContainers.some(existing => existing === targetContainer)) {
+    if (!targetContainers.includes(targetContainer)) {
       targetContainers.push(targetContainer);
     }
     return existingQueuedEvent;
@@ -295,6 +295,8 @@ function attemptExplicitHydrationTarget(queuedTarget) {
           attemptHydrationAtPriority(queuedTarget.priority, () => {
             attemptHydrationAtCurrentPriority(nearestMounted);
           });
+          // We don't currently have a way to increase the priority of
+          // a root other than sync.
           return;
         }
       } else if (tag === HostRoot) {

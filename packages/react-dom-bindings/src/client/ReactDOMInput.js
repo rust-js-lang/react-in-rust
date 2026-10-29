@@ -432,7 +432,7 @@ export function restoreControlledInputState(element, props) {
       if (otherNode === rootNode) {
         continue;
       }
-      if (otherNode.form !== rootNode.form) {
+      if (otherNode.form != rootNode.form) {
         continue;
       }
       // This will throw if radio buttons rendered by different copies of React

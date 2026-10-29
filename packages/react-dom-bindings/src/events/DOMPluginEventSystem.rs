@@ -470,7 +470,7 @@ fn process_dispatch_queue_items_in_order(
             listener,
         } in dispatch_listeners.iter().rev()
         {
-            if previous_instance != Some(instance) && (event.is_propagation_stopped.get())() {
+            if Some(instance) != previous_instance && (event.is_propagation_stopped.get())() {
                 return;
             }
             if __DEV__ && instance.is_some() {
@@ -497,7 +497,7 @@ fn process_dispatch_queue_items_in_order(
             listener,
         } in dispatch_listeners
         {
-            if previous_instance != Some(instance) && (event.is_propagation_stopped.get())() {
+            if Some(instance) != previous_instance && (event.is_propagation_stopped.get())() {
                 return;
             }
             if __DEV__ && instance.is_some() {
@@ -805,10 +805,10 @@ fn defer_click_to_document_for_legacy_fb_support(
 }
 
 fn is_matching_root_container(grand_container: &Node, target_container: &Node) -> bool {
-    js::strict_equals(grand_container, target_container)
+    grand_container == target_container
         || (!DISABLE_COMMENTS_AS_DOM_CONTAINERS
             && grand_container.node_type() == COMMENT_NODE
-            && js::strict_equals(grand_container.parent_node(), target_container))
+            && grand_container.parent_node() == Some(target_container))
 }
 
 #[cfg_attr(rust_js, rust_js::nullable(target_inst))]

@@ -104,9 +104,8 @@ export function createEventHandle(type, options) {
       );
       let targetListeners = getEventHandlerListeners(target);
       if (targetListeners == null) {
-        const targetListeners$1 = new Set();
-        setEventHandlerListeners(target, targetListeners$1);
-        targetListeners = targetListeners$1;
+        targetListeners = new Set();
+        setEventHandlerListeners(target, targetListeners);
       }
       targetListeners.add(listener);
       return () => {

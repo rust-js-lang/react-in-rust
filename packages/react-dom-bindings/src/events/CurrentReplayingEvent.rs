@@ -37,5 +37,5 @@ pub fn reset_replaying_event() {
 }
 
 pub fn is_replaying_event(event: &Event) -> bool {
-    js::strict_equals(event, CURRENT_REPLAYING_EVENT.get())
+    Some(event) == CURRENT_REPLAYING_EVENT.get()
 }

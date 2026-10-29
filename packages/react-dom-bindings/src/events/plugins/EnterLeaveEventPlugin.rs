@@ -53,10 +53,9 @@ pub fn extract_events(
     target_inst: Option<Rc<Fiber>>,
     native_event: &'static AnyNativeEvent,
     native_event_target: Option<&'static EventTarget>,
-    event_system_flags: EventSystemFlags,
-    target_container: &'static EventTarget,
+    _event_system_flags: EventSystemFlags,
+    _target_container: &'static EventTarget,
 ) {
-    let _ = (event_system_flags, target_container);
     let is_over_event = dom_event_name == "mouseover" || dom_event_name == "pointerover";
     let is_out_event = dom_event_name == "mouseout" || dom_event_name == "pointerout";
 

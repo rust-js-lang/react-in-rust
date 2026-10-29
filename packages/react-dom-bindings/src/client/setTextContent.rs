@@ -19,9 +19,7 @@ fn set_text_content(node: &Element, text: &str) {
         let first_child = node.first_child();
 
         if let Some(first_child) = first_child
-            && node
-                .last_child()
-                .is_some_and(|last_child| std::ptr::eq(first_child, last_child))
+            && Some(first_child) == node.last_child()
             && first_child.node_type() == TEXT_NODE
         {
             first_child.set_node_value(text);

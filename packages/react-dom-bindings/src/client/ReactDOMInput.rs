@@ -451,9 +451,7 @@ pub fn restore_controlled_input_state(element: &Element, props: &Unknown) {
 
         for i in 0..group.length() as usize {
             let other_node = html_input_element::unchecked_from(&group[i]);
-            if std::ptr::eq(other_node, root_node)
-                || !js::strict_equals(other_node.form(), root_node.form())
-            {
+            if other_node == root_node || other_node.form() != root_node.form() {
                 continue;
             }
             // This will throw if radio buttons rendered by different copies of React
