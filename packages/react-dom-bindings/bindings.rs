@@ -1,6 +1,8 @@
 //! React DOM's implementation details, `react-dom-bindings`: its modules,
 //! each its file's.
 
+#[path = "src/events/plugins/BeforeInputEventPlugin.rs"]
+pub mod before_input_event_plugin;
 #[path = "src/shared/crossOriginStrings.rs"]
 pub mod cross_origin_strings;
 #[path = "src/client/CSSPropertyOperations.rs"]

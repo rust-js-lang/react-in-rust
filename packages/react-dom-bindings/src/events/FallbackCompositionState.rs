@@ -25,8 +25,8 @@ thread_local! {
     static FALLBACK_TEXT: RefCell<Option<String>> = const { RefCell::new(None) };
 }
 
-pub fn initialize(native_event_target: &'static EventTarget) -> bool {
-    ROOT.set(Some(native_event_target));
+pub fn initialize(native_event_target: Option<&'static EventTarget>) -> bool {
+    ROOT.set(native_event_target);
     START_TEXT.set(get_text());
     true
 }

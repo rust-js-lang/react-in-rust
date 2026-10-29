@@ -24,6 +24,7 @@ use shared::react_feature_flags::{
 use shared::report_global_error::REPORT_GLOBAL_ERROR;
 use webapi::{Element, Event, EventTarget, Node, console, node};
 
+use crate::before_input_event_plugin;
 use crate::current_replaying_event::is_replaying_event;
 use crate::enter_leave_event_plugin;
 use crate::event_listener::{
@@ -72,40 +73,6 @@ pub struct DispatchEntry {
 }
 
 pub type DispatchQueue = Vec<DispatchEntry>;
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/plugins/BeforeInputEventPlugin.js#* as BeforeInputEventPlugin.registerEvents"
-)]
-fn before_input_register_events() {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/plugins/BeforeInputEventPlugin.js#* as BeforeInputEventPlugin.extractEvents"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(target_inst, native_event_target))]
-fn before_input_extract_events(
-    dispatch_queue: &mut DispatchQueue,
-    dom_event_name: &str,
-    target_inst: Option<Rc<Fiber>>,
-    native_event: &'static AnyNativeEvent,
-    native_event_target: Option<&'static EventTarget>,
-    event_system_flags: EventSystemFlags,
-    target_container: &'static EventTarget,
-) {
-    let _ = (
-        dispatch_queue,
-        dom_event_name,
-        target_inst,
-        native_event,
-        native_event_target,
-        event_system_flags,
-        target_container,
-    );
-    unreachable!()
-}
-
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/events/plugins/ChangeEventPlugin.js#* as ChangeEventPlugin.registerEvents"
@@ -214,7 +181,7 @@ js::on_load! {
     enter_leave_event_plugin::register_events();
     change_register_events();
     select_event_plugin::register_events();
-    before_input_register_events();
+    before_input_event_plugin::register_events();
     if ENABLE_SCROLL_END_POLYFILL.with(|enable_scroll_end_polyfill| *enable_scroll_end_polyfill) {
         scroll_end_register_events();
     }
@@ -292,7 +259,7 @@ fn extract_events(
             event_system_flags,
             target_container,
         );
-        before_input_extract_events(
+        before_input_event_plugin::extract_events(
             dispatch_queue,
             dom_event_name,
             target_inst.clone(),

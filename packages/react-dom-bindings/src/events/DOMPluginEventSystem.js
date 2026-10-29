@@ -52,26 +52,29 @@ import {batchedUpdates} from './ReactDOMUpdateBatching.js';
 import {passiveBrowserEventsSupported} from './checkPassiveEvents.js';
 import getEventTarget from './getEventTarget.js';
 import getListener from './getListener.js';
-import * as BeforeInputEventPlugin from './plugins/BeforeInputEventPlugin.js';
-import * as ChangeEventPlugin from './plugins/ChangeEventPlugin.js';
 import {
   extractEvents as extractEvents$1,
   registerEvents,
+} from './plugins/BeforeInputEventPlugin.js';
+import * as ChangeEventPlugin from './plugins/ChangeEventPlugin.js';
+import {
+  extractEvents as extractEvents$2,
+  registerEvents as registerEvents$1,
 } from './plugins/EnterLeaveEventPlugin.js';
-import {extractEvents as extractEvents$2} from './plugins/FormActionEventPlugin.js';
+import {extractEvents as extractEvents$3} from './plugins/FormActionEventPlugin.js';
 import * as ScrollEndEventPlugin from './plugins/ScrollEndEventPlugin.js';
 import {
-  extractEvents as extractEvents$3,
-  registerEvents as registerEvents$1,
+  extractEvents as extractEvents$4,
+  registerEvents as registerEvents$2,
 } from './plugins/SelectEventPlugin.js';
 import * as SimpleEventPlugin from './plugins/SimpleEventPlugin.js';
 
 // TODO: remove top-level side effect.
 SimpleEventPlugin.registerEvents();
-registerEvents();
-ChangeEventPlugin.registerEvents();
 registerEvents$1();
-BeforeInputEventPlugin.registerEvents();
+ChangeEventPlugin.registerEvents();
+registerEvents$2();
+registerEvents();
 if (enableScrollEndPolyfill) {
   ScrollEndEventPlugin.registerEvents();
 }
@@ -120,7 +123,7 @@ function extractEvents(
   // that might cause other unknown side-effects that we
   // can't foresee right now.
   if (shouldProcessPolyfillPlugins) {
-    extractEvents$1(
+    extractEvents$2(
       dispatchQueue,
       domEventName,
       targetInst,
@@ -138,7 +141,7 @@ function extractEvents(
       eventSystemFlags,
       targetContainer,
     );
-    extractEvents$3(
+    extractEvents$4(
       dispatchQueue,
       domEventName,
       targetInst,
@@ -147,16 +150,16 @@ function extractEvents(
       eventSystemFlags,
       targetContainer,
     );
-    BeforeInputEventPlugin.extractEvents(
+    extractEvents$1(
       dispatchQueue,
       domEventName,
-      targetInst ?? null,
+      targetInst,
       nativeEvent,
       nativeEventTarget,
       eventSystemFlags,
       targetContainer,
     );
-    extractEvents$2(
+    extractEvents$3(
       dispatchQueue,
       domEventName,
       targetInst,
