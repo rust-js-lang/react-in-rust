@@ -5,6 +5,8 @@
 pub mod before_input_event_plugin;
 #[path = "src/events/plugins/ChangeEventPlugin.rs"]
 pub mod change_event_plugin;
+#[path = "src/events/checkPassiveEvents.rs"]
+pub mod check_passive_events;
 #[path = "src/shared/crossOriginStrings.rs"]
 pub mod cross_origin_strings;
 #[path = "src/client/CSSPropertyOperations.rs"]

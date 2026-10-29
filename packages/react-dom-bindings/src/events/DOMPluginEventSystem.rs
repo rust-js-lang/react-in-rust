@@ -26,6 +26,7 @@ use webapi::{Element, Event, EventTarget, Node, console, node};
 
 use crate::before_input_event_plugin;
 use crate::change_event_plugin;
+use crate::check_passive_events::PASSIVE_BROWSER_EVENTS_SUPPORTED;
 use crate::current_replaying_event::is_replaying_event;
 use crate::enter_leave_event_plugin;
 use crate::event_listener::{
@@ -53,15 +54,6 @@ use crate::react_synthetic_event_type::{KnownReactSyntheticEvent, ReactSynthetic
 use crate::scroll_end_event_plugin;
 use crate::select_event_plugin;
 use crate::simple_event_plugin;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "get ./src/events/checkPassiveEvents.js#passiveBrowserEventsSupported",
-    rust_js::runs_nothing
-)]
-fn passive_browser_events_supported() -> bool {
-    unreachable!()
-}
 
 pub struct DispatchListener {
     #[cfg_attr(rust_js, rust_js::nullable)]
@@ -508,7 +500,7 @@ fn add_trapped_event_listener(
     // If passive option is not supported, then the event will be
     // active and not passive.
     let mut is_passive_listener = None;
-    if passive_browser_events_supported() {
+    if PASSIVE_BROWSER_EVENTS_SUPPORTED.get() {
         // Browsers introduced an intervention, making these events
         // passive by default on document. React doesn't bind them
         // to document anymore, but changing this now would undo
