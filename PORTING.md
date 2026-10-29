@@ -264,10 +264,16 @@ These differences from upstream's output are accepted:
   so FragmentInstance's methods keep `const fragmentFiber =
   this._fragmentFiber;` (`let fragment_fiber = Rc::clone(&self.fragment_fiber.borrow());`,
   which ends the borrow before the traversal calls back).
-- **rd221** (6412fc19d): a struct no Rust code builds (one JS gave:
-  memoizedProps, a host config's result, `getOwnPropertyDescriptor`'s) is
-  read as often as the Rust reads it, so inputValueTracking's
-  `descriptor.get` and `.set` are read once, into `get` and `set`.
+- **rd221** (6412fc19d): a struct the program builds is its own data, so
+  its fields read in place. A struct JS gave (memoizedProps, a host config's
+  result) is read as often as the Rust reads it.
+
+Known gap, not accepted: inputValueTracking's `getOwnPropertyDescriptor`
+result is read once per field, into `get` and `set`, with the guard split
+into nested ifs (54 -> 134 differing lines on rust-js d9a541549). The user
+decided that #411 adds a "fresh plain data" binding attribute for
+`getOwnPropertyDescriptor` and `JSON.parse` results, which puts those reads
+back in place. List it as a readability gap until then.
 
 These forms are decided:
 
