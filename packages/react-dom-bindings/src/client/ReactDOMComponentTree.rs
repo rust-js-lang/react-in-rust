@@ -329,7 +329,7 @@ pub fn get_event_handler_listeners(
     INTERNAL_EVENT_HANDLER_LISTENERS_KEY.with(|key| unsafe { js::cast(js::get(scope, key)) })
 }
 
-pub fn add_event_handle_to_target(target: &Unknown, event_handle: &'static ReactDOMEventHandle) {
+pub fn add_event_handle_to_target(target: &Unknown, event_handle: &ReactDOMEventHandle) {
     let event_handles: Option<&'static Set<ReactDOMEventHandle>> =
         INTERNAL_EVENT_HANDLES_SET_KEY.with(|key| unsafe { js::cast(js::get(target, key)) });
     let event_handles = match event_handles {
@@ -343,10 +343,7 @@ pub fn add_event_handle_to_target(target: &Unknown, event_handle: &'static React
     event_handles.add(event_handle);
 }
 
-pub fn does_target_have_event_handle(
-    target: &Unknown,
-    event_handle: &'static ReactDOMEventHandle,
-) -> bool {
+pub fn does_target_have_event_handle(target: &Unknown, event_handle: &ReactDOMEventHandle) -> bool {
     let event_handles: Option<&'static Set<ReactDOMEventHandle>> =
         INTERNAL_EVENT_HANDLES_SET_KEY.with(|key| unsafe { js::cast(js::get(target, key)) });
     let Some(event_handles) = event_handles else {

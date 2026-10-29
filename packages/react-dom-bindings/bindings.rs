@@ -75,6 +75,8 @@ pub mod react_dom_component_tree;
 pub mod react_dom_container;
 #[path = "src/events/ReactDOMControlledComponent.rs"]
 pub mod react_dom_controlled_component;
+#[path = "src/client/ReactDOMEventHandle.rs"]
+pub mod react_dom_event_handle;
 #[path = "src/client/ReactDOMEventHandleTypes.rs"]
 pub mod react_dom_event_handle_types;
 #[path = "src/events/ReactDOMEventListener.rs"]

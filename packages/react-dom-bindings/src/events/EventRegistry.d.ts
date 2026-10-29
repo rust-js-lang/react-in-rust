@@ -7,7 +7,7 @@
 
 import type {DOMEventName} from './DOMEventNames.js';
 
-export const allNativeEvents: Set<DOMEventName>;
+export const allNativeEvents: Set<string>;
 
 /** Mapping from registration name to event name */
 export const registrationNameDependencies: {

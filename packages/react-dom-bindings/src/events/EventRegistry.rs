@@ -3,11 +3,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use std::cell::RefCell;
-use std::collections::HashSet;
 use std::rc::Rc;
 
-use js::{Dict, dict};
+use js::{Dict, Set, dict};
 use shared::environment::__DEV__;
 use shared::react_feature_flags::ENABLE_CREATE_EVENT_HANDLE_API;
 use webapi::console;
@@ -15,14 +13,14 @@ use webapi::console;
 use crate::dom_event_names::DOMEventName;
 
 thread_local! {
-    pub static ALL_NATIVE_EVENTS: RefCell<HashSet<DOMEventName>> = RefCell::new(HashSet::new());
+    pub static ALL_NATIVE_EVENTS: &'static Set<str> = js::set::new(None);
 }
 
 js::on_load! {
     if ENABLE_CREATE_EVENT_HANDLE_API {
-        ALL_NATIVE_EVENTS.with_borrow_mut(|all_native_events| {
-            all_native_events.insert("beforeblur".to_owned());
-            all_native_events.insert("afterblur".to_owned());
+        ALL_NATIVE_EVENTS.with(|all_native_events| {
+            all_native_events.add("beforeblur");
+            all_native_events.add("afterblur");
         });
     }
 }
@@ -86,9 +84,9 @@ pub fn register_direct_event(registration_name: &str, dependencies: Rc<Vec<DOMEv
         }
     }
 
-    ALL_NATIVE_EVENTS.with_borrow_mut(|all_native_events| {
+    ALL_NATIVE_EVENTS.with(|all_native_events| {
         for dependency in dependencies.iter() {
-            all_native_events.insert(dependency.clone());
+            all_native_events.add(dependency);
         }
     });
 }

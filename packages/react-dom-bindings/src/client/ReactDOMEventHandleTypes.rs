@@ -10,8 +10,7 @@ use crate::react_synthetic_event_type::ReactSyntheticEvent;
 
 /// What `createEventHandle` gives: given an `EventTarget` or a
 /// `ReactScopeInstance`, and a callback, what removes the listener.
-pub type ReactDOMEventHandle =
-    dyn Fn(&'static Unknown, &'static dyn Fn(&ReactSyntheticEvent)) -> Box<dyn Fn()>;
+pub type ReactDOMEventHandle = dyn Fn(&'static Unknown, &'static Unknown) -> Box<dyn Fn()>;
 
 pub struct ReactDOMEventHandleListener {
     pub callback: &'static dyn Fn(&ReactSyntheticEvent),

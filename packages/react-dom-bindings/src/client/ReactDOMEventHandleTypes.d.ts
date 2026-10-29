@@ -14,7 +14,7 @@ import type {ReactSyntheticEvent} from '../events/ReactSyntheticEventType.js';
  */
 export type ReactDOMEventHandle = (
   value: unknown,
-  value2: (event: ReactSyntheticEvent) => void,
+  value2: unknown,
 ) => () => void;
 
 export interface ReactDOMEventHandleListener {
