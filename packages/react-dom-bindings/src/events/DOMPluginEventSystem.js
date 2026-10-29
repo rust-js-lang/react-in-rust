@@ -52,29 +52,20 @@ import {batchedUpdates} from './ReactDOMUpdateBatching.js';
 import {passiveBrowserEventsSupported} from './checkPassiveEvents.js';
 import getEventTarget from './getEventTarget.js';
 import getListener from './getListener.js';
-import {
-  extractEvents as extractEvents$1,
-  registerEvents,
-} from './plugins/BeforeInputEventPlugin.js';
+import * as BeforeInputEventPlugin from './plugins/BeforeInputEventPlugin.js';
 import * as ChangeEventPlugin from './plugins/ChangeEventPlugin.js';
-import {
-  extractEvents as extractEvents$2,
-  registerEvents as registerEvents$1,
-} from './plugins/EnterLeaveEventPlugin.js';
-import {extractEvents as extractEvents$3} from './plugins/FormActionEventPlugin.js';
+import * as EnterLeaveEventPlugin from './plugins/EnterLeaveEventPlugin.js';
+import * as FormActionEventPlugin from './plugins/FormActionEventPlugin.js';
 import * as ScrollEndEventPlugin from './plugins/ScrollEndEventPlugin.js';
-import {
-  extractEvents as extractEvents$4,
-  registerEvents as registerEvents$2,
-} from './plugins/SelectEventPlugin.js';
+import * as SelectEventPlugin from './plugins/SelectEventPlugin.js';
 import * as SimpleEventPlugin from './plugins/SimpleEventPlugin.js';
 
 // TODO: remove top-level side effect.
 SimpleEventPlugin.registerEvents();
-registerEvents$1();
+EnterLeaveEventPlugin.registerEvents();
 ChangeEventPlugin.registerEvents();
-registerEvents$2();
-registerEvents();
+SelectEventPlugin.registerEvents();
+BeforeInputEventPlugin.registerEvents();
 if (enableScrollEndPolyfill) {
   ScrollEndEventPlugin.registerEvents();
 }
@@ -123,7 +114,7 @@ function extractEvents(
   // that might cause other unknown side-effects that we
   // can't foresee right now.
   if (shouldProcessPolyfillPlugins) {
-    extractEvents$2(
+    EnterLeaveEventPlugin.extractEvents(
       dispatchQueue,
       domEventName,
       targetInst,
@@ -141,7 +132,7 @@ function extractEvents(
       eventSystemFlags,
       targetContainer,
     );
-    extractEvents$4(
+    SelectEventPlugin.extractEvents(
       dispatchQueue,
       domEventName,
       targetInst,
@@ -150,7 +141,7 @@ function extractEvents(
       eventSystemFlags,
       targetContainer,
     );
-    extractEvents$1(
+    BeforeInputEventPlugin.extractEvents(
       dispatchQueue,
       domEventName,
       targetInst,
@@ -159,7 +150,7 @@ function extractEvents(
       eventSystemFlags,
       targetContainer,
     );
-    extractEvents$3(
+    FormActionEventPlugin.extractEvents(
       dispatchQueue,
       domEventName,
       targetInst,
