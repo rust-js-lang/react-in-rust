@@ -2101,17 +2101,13 @@ function createChildReconciler(shouldTrackSideEffects) {
           throwFiber._debugTask = returnFiber._debugTask;
           if (debugInfo != null) {
             const iter = $iter(debugInfo.toReversed());
-            while (true) {
-              const info = $next(iter);
-              if (info != null) {
-                if (typeof info.stack === 'string') {
-                  throwFiber._debugOwner = info;
-                  throwFiber._debugTask = info.debugTask ?? null;
-                } else {
-                  continue;
-                }
+            let info;
+            while ((info = $next(iter)) != null) {
+              if (typeof info.stack === 'string') {
+                throwFiber._debugOwner = info;
+                throwFiber._debugTask = info.debugTask ?? null;
+                break;
               }
-              break;
             }
           }
         }
