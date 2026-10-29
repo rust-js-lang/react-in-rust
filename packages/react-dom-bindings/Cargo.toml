@@ -12,8 +12,10 @@ path = "bindings.rs"
 
 [dependencies]
 js.workspace = true
+node.workspace = true
 react-isomorphic = { path = "../react" }
 react-reconciler = { path = "../react-reconciler" }
+react-server = { path = "../react-server" }
 scheduler = { path = "../scheduler" }
 shared.workspace = true
 webapi.workspace = true

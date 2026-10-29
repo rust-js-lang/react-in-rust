@@ -147,3 +147,7 @@ pub mod valid_aria_properties;
 pub mod validate_dom_nesting;
 #[path = "src/shared/warnValidStyle.rs"]
 pub mod warn_valid_style;
+
+// The server side's modules (m6-wife's).
+#[path = "src/server/ReactDOMLegacyServerStreamConfig.rs"]
+pub mod react_dom_legacy_server_stream_config;
