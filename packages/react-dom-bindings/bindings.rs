@@ -79,6 +79,8 @@ pub mod plugin_module_type;
 pub mod possible_standard_names;
 #[path = "src/shared/ReactControlledValuePropTypes.rs"]
 pub mod react_controlled_value_prop_types;
+#[path = "src/client/ReactDOMComponent.rs"]
+pub mod react_dom_component;
 #[path = "src/client/ReactDOMComponentTree.rs"]
 pub mod react_dom_component_tree;
 #[path = "src/client/ReactDOMContainer.rs"]

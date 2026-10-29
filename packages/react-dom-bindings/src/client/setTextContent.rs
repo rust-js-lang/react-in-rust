@@ -14,7 +14,7 @@ use crate::html_node_type::TEXT_NODE;
 /// @param {DOMElement} node
 /// @param {string} text
 /// @internal
-fn set_text_content(node: &Element, text: &str) {
+pub fn set_text_content(node: &Element, text: &str) {
     if !text.is_empty() {
         let first_child = node.first_child();
 

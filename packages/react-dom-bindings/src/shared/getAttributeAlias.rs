@@ -93,7 +93,7 @@ thread_local! {
 }
 
 js::export_default! {
-    fn get_attribute_alias(name: &str) -> &str {
+    pub fn get_attribute_alias(name: &str) -> &str {
         ALIASES.with(|aliases| aliases
             .get(name)
             .copied()
