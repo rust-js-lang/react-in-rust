@@ -216,15 +216,15 @@ function extractCompositionEvent(
       nativeEventTarget,
     );
     dispatchQueue.push({event, listeners});
-    if (!fallbackData) {
+    if (fallbackData) {
+      // Inject data generated from fallback path into the synthetic event.
+      // This matches the property of native CompositionEventInterface.
+      event.data = fallbackData;
+    } else {
       const customData = getDataFromCustomEvent(nativeEvent);
       if (customData !== null) {
         event.data = customData;
       }
-    } else {
-      // Inject data generated from fallback path into the synthetic event.
-      // This matches the property of native CompositionEventInterface.
-      event.data = fallbackData;
     }
   }
 }

@@ -237,20 +237,20 @@ function validateShorthandPropertyCollisionInDev(prevStyles, nextStyles) {
       const correctOriginalKey = expandedStyles[key];
       if (correctOriginalKey && originalKey !== correctOriginalKey) {
         const warningKey = originalKey + ',' + correctOriginalKey;
-        if (!warnedAbout[warningKey]) {
-          warnedAbout[warningKey] = true;
-          console.error(
-            '%s a style property during rerender (%s) when a ' +
-              'conflicting property is set (%s) can lead to styling bugs. To ' +
-              "avoid this, don't mix shorthand and non-shorthand properties " +
-              'for the same value; instead, replace the shorthand with ' +
-              'separate values.',
-            isValueEmpty(nextStyles[originalKey]) ? 'Removing' : 'Updating',
-            originalKey,
-            correctOriginalKey,
-          );
+        if (warnedAbout[warningKey]) {
           continue;
         }
+        warnedAbout[warningKey] = true;
+        console.error(
+          '%s a style property during rerender (%s) when a ' +
+            'conflicting property is set (%s) can lead to styling bugs. To ' +
+            "avoid this, don't mix shorthand and non-shorthand properties " +
+            'for the same value; instead, replace the shorthand with ' +
+            'separate values.',
+          isValueEmpty(nextStyles[originalKey]) ? 'Removing' : 'Updating',
+          originalKey,
+          correctOriginalKey,
+        );
       }
     }
   }

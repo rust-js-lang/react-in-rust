@@ -128,7 +128,7 @@ struct FakeCallStack {
 fn unknown_owner() -> &'static Error {
     #[inline(never)]
     fn react_stack_top_frame() -> &'static Error {
-        js::error::new("react-stack-top-frame")
+        js::error::new("react-stack-top-frame", None)
     }
     react_stack_top_frame()
 }
@@ -520,7 +520,7 @@ pub fn jsx_prod_signature_running_in_dev_with_dynamic_children(
             if track_actual_owner {
                 let previous_stack_trace_limit = js_error::stack_trace_limit();
                 js_error::set_stack_trace_limit(OWNER_STACK_TRACE_LIMIT);
-                debug_stack_dev = Some(js::error::new("react-stack-top-frame"));
+                debug_stack_dev = Some(js::error::new("react-stack-top-frame", None));
                 js_error::set_stack_trace_limit(previous_stack_trace_limit);
             } else {
                 debug_stack_dev = UNKNOWN_OWNER_DEBUG_STACK.get();
@@ -566,7 +566,7 @@ pub fn jsx_prod_signature_running_in_dev_with_static_children(
             if track_actual_owner {
                 let previous_stack_trace_limit = js_error::stack_trace_limit();
                 js_error::set_stack_trace_limit(OWNER_STACK_TRACE_LIMIT);
-                debug_stack_dev = Some(js::error::new("react-stack-top-frame"));
+                debug_stack_dev = Some(js::error::new("react-stack-top-frame", None));
                 js_error::set_stack_trace_limit(previous_stack_trace_limit);
             } else {
                 debug_stack_dev = UNKNOWN_OWNER_DEBUG_STACK.get();
@@ -618,7 +618,7 @@ pub fn jsx_dev(
         if track_actual_owner {
             let previous_stack_trace_limit = js_error::stack_trace_limit();
             js_error::set_stack_trace_limit(OWNER_STACK_TRACE_LIMIT);
-            debug_stack_dev = Some(js::error::new("react-stack-top-frame"));
+            debug_stack_dev = Some(js::error::new("react-stack-top-frame", None));
             js_error::set_stack_trace_limit(previous_stack_trace_limit);
         } else {
             debug_stack_dev = UNKNOWN_OWNER_DEBUG_STACK.get();
@@ -940,7 +940,7 @@ pub fn create_element(
         if track_actual_owner {
             let previous_stack_trace_limit = js_error::stack_trace_limit();
             js_error::set_stack_trace_limit(OWNER_STACK_TRACE_LIMIT);
-            debug_stack_dev = Some(js::error::new("react-stack-top-frame"));
+            debug_stack_dev = Some(js::error::new("react-stack-top-frame", None));
             js_error::set_stack_trace_limit(previous_stack_trace_limit);
         } else {
             debug_stack_dev = UNKNOWN_OWNER_DEBUG_STACK.get();

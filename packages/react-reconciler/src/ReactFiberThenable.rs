@@ -43,13 +43,13 @@ thread_local! {
         "unexpected behavior.\n\n",
         "To handle async errors, wrap your component in an error boundary, or ",
         "call the promise's `.catch` method and pass the result to `use`."
-    ));
+    ), None);
 
     #[cfg_attr(rust_js, rust_js::name = "SuspenseyCommitException")]
     pub static SUSPENSEY_COMMIT_EXCEPTION: &'static Error = js::error::new(concat!(
         "Suspense Exception: This is not a real error, and should not leak into ",
         "userspace. If you're seeing this, it's likely a bug in React."
-    ));
+    ), None);
 
     #[cfg_attr(rust_js, rust_js::name = "SuspenseActionException")]
     pub static SUSPENSE_ACTION_EXCEPTION: &'static Error = js::error::new(concat!(
@@ -59,7 +59,7 @@ thread_local! {
         "`try/catch` block. Capturing without rethrowing will lead to ",
         "unexpected behavior.\n\n",
         "To handle async errors, wrap your component in an error boundary."
-    ));
+    ), None);
 }
 
 /// A thenable that's never listened to: `then` is only a warning.
@@ -348,7 +348,7 @@ pub fn track_used_thenable(
                         "This library called use() to suspend in a previous render but ",
                         "did not call use() when it finished. This indicates an incorrect use of use(). ",
                         "Learn more: https://react.dev/warnings/conditional-use-of-use"
-                    ))));
+                    ), None)));
                 }
             }
             SUSPENSE_EXCEPTION.with(|exception| js::throw(exception.as_unknown()))

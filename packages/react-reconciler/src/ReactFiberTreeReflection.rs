@@ -20,7 +20,7 @@ use crate::react_work_tags::{
 
 /// What a fragment's traversal calls of each host instance or text it
 /// visits, given what it was given: whether it's done.
-pub type Visit<A, B, C> = dyn Fn(&Rc<Fiber>, &A, &B, &C) -> bool;
+pub type Visit<'a, A, B, C> = dyn Fn(&Rc<Fiber>, &A, &B, &C) -> bool + 'a;
 
 /// What gives an instance's parent, as `getLowestCommonAncestor` climbs.
 pub type GetParent = dyn Fn(Option<Rc<Fiber>>) -> Option<Rc<Fiber>>;
@@ -351,7 +351,7 @@ pub fn does_fiber_contain(parent_fiber: &Rc<Fiber>, child_fiber: &Rc<Fiber>) -> 
 
 pub fn traverse_fragment_instances_and_text_instances<A, B, C>(
     fragment_fiber: &Fiber,
-    r#fn: &Visit<A, B, C>,
+    r#fn: &Visit<'_, A, B, C>,
     a: &A,
     b: &B,
     c: &C,
@@ -362,7 +362,7 @@ pub fn traverse_fragment_instances_and_text_instances<A, B, C>(
 
 pub fn traverse_fragment_instances_and_text_instances_deeply<A, B, C>(
     fragment_fiber: &Fiber,
-    r#fn: &Visit<A, B, C>,
+    r#fn: &Visit<'_, A, B, C>,
     a: &A,
     b: &B,
     c: &C,
@@ -374,7 +374,7 @@ pub fn traverse_fragment_instances_and_text_instances_deeply<A, B, C>(
 fn traverse_visible_instances_and_text_instances<A, B, C>(
     mut child: Option<Rc<Fiber>>,
     search_within_hosts: bool,
-    r#fn: &Visit<A, B, C>,
+    r#fn: &Visit<'_, A, B, C>,
     a: &A,
     b: &B,
     c: &C,

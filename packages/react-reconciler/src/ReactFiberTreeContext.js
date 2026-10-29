@@ -112,6 +112,7 @@ export function pushTreeFork(workInProgress, totalChildren) {
   // make this module simpler.
 
   warnIfNotHydrating();
+
   forkStack.push([treeForkCount, treeForkProvider]);
 
   treeForkProvider = workInProgress;
@@ -120,6 +121,7 @@ export function pushTreeFork(workInProgress, totalChildren) {
 
 export function pushTreeId(workInProgress, totalChildren, index) {
   warnIfNotHydrating();
+
   idStack.push([treeContextId, treeContextOverflow, treeContextProvider]);
 
   treeContextProvider = workInProgress;
@@ -252,6 +254,7 @@ export function getSuspendedTreeContext() {
 
 export function restoreSuspendedTreeContext(workInProgress, suspendedContext) {
   warnIfNotHydrating();
+
   idStack.push([treeContextId, treeContextOverflow, treeContextProvider]);
 
   treeContextId = suspendedContext.id;

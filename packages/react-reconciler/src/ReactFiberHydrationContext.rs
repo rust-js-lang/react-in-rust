@@ -649,7 +649,7 @@ thread_local! {
     pub static HYDRATION_MISMATCH_EXCEPTION: &'static Error = js::error::new(concat!(
         "Hydration Mismatch Exception: This is not a real error, and should not leak into ",
         "userspace. If you're seeing this, it's likely a bug in React."
-    ));
+    ), None);
 }
 
 fn throw_on_hydration_mismatch(fiber: &Rc<Fiber>, from_text: bool) -> ! {
@@ -662,23 +662,26 @@ fn throw_on_hydration_mismatch(fiber: &Rc<Fiber>, from_text: bool) -> ! {
             diff = describe_diff(&diff_root);
         }
     }
-    let error = js::error::new(&format!(
-        concat!(
-            "Hydration failed because the server rendered {} didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n",
-            "\n",
-            "- A server/client branch `if (typeof window !== 'undefined')`.\n",
-            "- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n",
-            "- Date formatting in a user's locale which doesn't match the server.\n",
-            "- External changing data without sending a snapshot of it along with the HTML.\n",
-            "- Invalid HTML tag nesting.\n",
-            "\n",
-            "It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n",
-            "\n",
-            "https://react.dev/link/hydration-mismatch{}"
+    let error = js::error::new(
+        &format!(
+            concat!(
+                "Hydration failed because the server rendered {} didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n",
+                "\n",
+                "- A server/client branch `if (typeof window !== 'undefined')`.\n",
+                "- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n",
+                "- Date formatting in a user's locale which doesn't match the server.\n",
+                "- External changing data without sending a snapshot of it along with the HTML.\n",
+                "- Invalid HTML tag nesting.\n",
+                "\n",
+                "It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n",
+                "\n",
+                "https://react.dev/link/hydration-mismatch{}"
+            ),
+            if from_text { "text" } else { "HTML" },
+            diff
         ),
-        if from_text { "text" } else { "HTML" },
-        diff
-    ));
+        None,
+    );
     queue_hydration_error(create_captured_value_at_fiber(error.as_unknown(), fiber));
     HYDRATION_MISMATCH_EXCEPTION.with(|exception| js::throw(exception.as_unknown()))
 }

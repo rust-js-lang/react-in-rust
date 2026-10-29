@@ -295,7 +295,7 @@ pub fn lazy(ctor: &'static dyn Fn() -> &'static Thenable) -> LazyComponent {
             end: Cell::new(-1.0),
             value: Cell::new(None),
             owner,
-            debug_stack: js::error::new("react-stack-top-frame"),
+            debug_stack: js::error::new("react-stack-top-frame", None),
             // eslint-disable-next-line react-internal/no-production-logging
             debug_task: console::create_task().map(|create_task| create_task("lazy()")),
         });

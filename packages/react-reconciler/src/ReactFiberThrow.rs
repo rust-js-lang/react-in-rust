@@ -600,12 +600,15 @@ pub fn throw_exception(
                 return false;
             } else {
                 // In a legacy root, suspending without a boundary is always an error.
-                let uncaught_suspense_error = js::error::new(concat!(
-                    "A component suspended while responding to synchronous input. This ",
-                    "will cause the UI to be replaced with a loading indicator. To ",
-                    "fix, updates that suspend should be wrapped ",
-                    "with startTransition."
-                ));
+                let uncaught_suspense_error = js::error::new(
+                    concat!(
+                        "A component suspended while responding to synchronous input. This ",
+                        "will cause the UI to be replaced with a loading indicator. To ",
+                        "fix, updates that suspend should be wrapped ",
+                        "with startTransition."
+                    ),
+                    None,
+                );
                 value = uncaught_suspense_error.as_unknown();
             }
         }

@@ -707,8 +707,8 @@ function setProp(domElement, tag, key, value, props, prevValue) {
         domElement.removeAttribute(key);
       }
       break;
-    case 'inert':
     // Boolean
+    case 'inert':
     // Fallthrough for boolean props that don't have a warning for empty strings.
     case 'allowFullScreen':
     case 'async':
@@ -751,8 +751,8 @@ function setProp(domElement, tag, key, value, props, prevValue) {
         domElement.removeAttribute(key);
       }
       break;
-    case 'capture':
     // Overloaded Boolean
+    case 'capture':
     case 'download':
       // An attribute that can be used as a flag as well as with a value.
       // When true, it should be present (set either to an empty string or its name).
@@ -2282,8 +2282,8 @@ function diffHydratedCustomComponent(
           );
         }
         break;
-      case 'suppressContentEditableWarning':
       // Checked above already
+      case 'suppressContentEditableWarning':
       case 'suppressHydrationWarning':
       case 'defaultValue':
       case 'defaultChecked':
@@ -2415,8 +2415,8 @@ function diffHydratedGenericElement(
           );
         }
         break;
-      case 'suppressContentEditableWarning':
       // Checked above already
+      case 'suppressContentEditableWarning':
       case 'suppressHydrationWarning':
       case 'value': // Controlled attributes are not validated
       case 'checked': // TODO: Only ignore them on controlled tags.

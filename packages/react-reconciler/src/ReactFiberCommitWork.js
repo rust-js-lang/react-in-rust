@@ -3059,13 +3059,13 @@ function reappearLayoutEffects(
       // TODO: Check flags & RefStatic
       safelyAttachRef(finishedWork, returnFiber);
       break;
-    case HostSingleton:
     // Unlike commitLayoutEffectsOnFiber, we don't need to handle HostRoot
     // because this function only visits nodes that are inside an
     // Offscreen fiber.
     // case HostRoot: {
     //  ...
     // }
+    case HostSingleton:
     case HostComponent:
       if (finishedWork.tag === HostSingleton && supportsSingletons) {
         const includeHostSingletons =
@@ -5001,7 +5001,6 @@ function commitPassiveUnmountInsideDeletedTreeOnFiber(
         HookPassive,
       );
       break;
-    case LegacyHiddenComponent:
     // TODO: run passive unmount effects when unmounting a root.
     // Because passive unmount effects are not currently run,
     // the cache instance owned by the root will never be freed.
@@ -5011,6 +5010,7 @@ function commitPassiveUnmountInsideDeletedTreeOnFiber(
     //   releaseCache(cache);
     //   break;
     // }
+    case LegacyHiddenComponent:
     case OffscreenComponent: {
       const memoizedState = current.memoizedState;
       if (memoizedState != null && memoizedState.cachePool != null) {

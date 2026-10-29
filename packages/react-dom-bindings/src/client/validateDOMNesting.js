@@ -302,8 +302,8 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
         tag === 'script' ||
         tag === 'template'
       );
-    case 'tbody':
     // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intbody
+    case 'tbody':
     case 'thead':
     case 'tfoot':
       return (
@@ -384,8 +384,8 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
         }
       }
       return false;
-    case 'rp':
 
+    case 'rp':
     case 'rt':
       // $FlowFixMe[incompatible-type]
       return !(parentTag != null && IMPLIED_END_TAGS.includes(parentTag));
@@ -395,11 +395,11 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
     case 'input':
       // <input> causes open <select> tags to close.
       return parentTag !== 'select';
-    case 'frameset':
     // These tags are only valid with a few parents that have special child
     // parsing rules -- if we're down here, then none of those matched and
     // so we allow it only if we don't know what the parent is, as all other
     // cases are invalid.
+    case 'frameset':
     case 'frame':
     case 'tbody':
     case 'td':

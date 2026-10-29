@@ -1113,81 +1113,79 @@ function createChildReconciler(shouldTrackSideEffects) {
     let oldFiber = currentFirstChild;
     let lastPlacedIndex = 0;
     let newIdx = 0;
-    while (true) {
-      if (oldFiber != null && newIdx < newChildren.length) {
-        let nextOldFiber;
-        if (oldFiber.index > newIdx) {
-          nextOldFiber = oldFiber;
-          oldFiber = undefined;
-        } else {
-          nextOldFiber = oldFiber.sibling;
-        }
-        const newFiber = updateSlot(
-          returnFiber,
-          oldFiber,
-          newChildren[newIdx],
-          lanes,
-        );
-        if (newFiber != null) {
-          if (__DEV__) {
-            knownKeys = warnOnInvalidKey(
-              returnFiber,
-              newFiber,
-              newChildren[newIdx],
-              knownKeys,
-            );
-          }
-
-          if (
-            shouldTrackSideEffects &&
-            oldFiber != null &&
-            newFiber.alternate == null
-          ) {
-            // We matched the slot, but we didn't reuse the existing fiber, so we
-            // need to delete the existing child.
-            deleteChild(shouldTrackSideEffects, returnFiber, oldFiber);
-          }
-          lastPlacedIndex = placeChild(
-            shouldTrackSideEffects,
-            newFiber,
-            lastPlacedIndex,
-            newIdx,
-          );
-          if (previousNewFiber == null) {
-            // TODO: Move out of the loop. This only happens for the first run.
-            resultingFirstChild = newFiber;
-          } else {
-            // TODO: Defer siblings if we're not at the right index for this slot.
-            // I.e. if we had null values before, then we want to defer this
-            // for each null value. However, we also don't want to call updateSlot
-            // with the previous one.
-            previousNewFiber.sibling = newFiber;
-          }
-          previousNewFiber = newFiber;
-          oldFiber = nextOldFiber;
-          newIdx++;
-          continue;
-        }
+    while (oldFiber != null && newIdx < newChildren.length) {
+      let nextOldFiber;
+      if (oldFiber.index > newIdx) {
+        nextOldFiber = oldFiber;
+        oldFiber = undefined;
+      } else {
+        nextOldFiber = oldFiber.sibling;
+      }
+      const newFiber = updateSlot(
+        returnFiber,
+        oldFiber,
+        newChildren[newIdx],
+        lanes,
+      );
+      if (newFiber == null) {
         // TODO: This breaks on empty slots like null children. That's
         // unfortunate because it triggers the slow path all the time. We need
         // a better way to communicate whether this was a miss or null,
         // boolean, undefined, etc.
         oldFiber ??= nextOldFiber;
-      }
-
-      if (newIdx === newChildren.length) {
-        // We've reached the end of the new children. We can delete the rest.
-        deleteRemainingChildren(shouldTrackSideEffects, returnFiber, oldFiber);
-        if (getIsHydrating()) {
-          const numberOfForks = newIdx;
-          pushTreeFork(returnFiber, numberOfForks);
-        }
-        return resultingFirstChild;
-      }
-
-      if (oldFiber != null) {
         break;
       }
+
+      if (__DEV__) {
+        knownKeys = warnOnInvalidKey(
+          returnFiber,
+          newFiber,
+          newChildren[newIdx],
+          knownKeys,
+        );
+      }
+
+      if (
+        shouldTrackSideEffects &&
+        oldFiber != null &&
+        newFiber.alternate == null
+      ) {
+        // We matched the slot, but we didn't reuse the existing fiber, so we
+        // need to delete the existing child.
+        deleteChild(shouldTrackSideEffects, returnFiber, oldFiber);
+      }
+      lastPlacedIndex = placeChild(
+        shouldTrackSideEffects,
+        newFiber,
+        lastPlacedIndex,
+        newIdx,
+      );
+      if (previousNewFiber == null) {
+        // TODO: Move out of the loop. This only happens for the first run.
+        resultingFirstChild = newFiber;
+      } else {
+        // TODO: Defer siblings if we're not at the right index for this slot.
+        // I.e. if we had null values before, then we want to defer this
+        // for each null value. However, we also don't want to call updateSlot
+        // with the previous one.
+        previousNewFiber.sibling = newFiber;
+      }
+      previousNewFiber = newFiber;
+      oldFiber = nextOldFiber;
+      newIdx++;
+    }
+
+    if (newIdx === newChildren.length) {
+      // We've reached the end of the new children. We can delete the rest.
+      deleteRemainingChildren(shouldTrackSideEffects, returnFiber, oldFiber);
+      if (getIsHydrating()) {
+        const numberOfForks = newIdx;
+        pushTreeFork(returnFiber, numberOfForks);
+      }
+      return resultingFirstChild;
+    }
+
+    if (oldFiber == null) {
       // If we don't have any more existing children we can choose a fast path
       // since the rest will all be insertions.
       while (newIdx < newChildren.length) {
@@ -1445,77 +1443,75 @@ function createChildReconciler(shouldTrackSideEffects) {
     let knownKeys;
 
     let step = newChildren.next();
-    while (true) {
-      if (oldFiber != null && !step.done) {
-        let nextOldFiber;
-        if (oldFiber.index > newIdx) {
-          nextOldFiber = oldFiber;
-          oldFiber = undefined;
-        } else {
-          nextOldFiber = oldFiber.sibling;
-        }
-        const newFiber = updateSlot(returnFiber, oldFiber, step.value, lanes);
-        if (newFiber != null) {
-          if (__DEV__) {
-            knownKeys = warnOnInvalidKey(
-              returnFiber,
-              newFiber,
-              step.value,
-              knownKeys,
-            );
-          }
-
-          if (
-            shouldTrackSideEffects &&
-            oldFiber != null &&
-            newFiber.alternate == null
-          ) {
-            // We matched the slot, but we didn't reuse the existing fiber, so we
-            // need to delete the existing child.
-            deleteChild(shouldTrackSideEffects, returnFiber, oldFiber);
-          }
-          lastPlacedIndex = placeChild(
-            shouldTrackSideEffects,
-            newFiber,
-            lastPlacedIndex,
-            newIdx,
-          );
-          if (previousNewFiber == null) {
-            // TODO: Move out of the loop. This only happens for the first run.
-            resultingFirstChild = newFiber;
-          } else {
-            // TODO: Defer siblings if we're not at the right index for this slot.
-            // I.e. if we had null values before, then we want to defer this
-            // for each null value. However, we also don't want to call updateSlot
-            // with the previous one.
-            previousNewFiber.sibling = newFiber;
-          }
-          previousNewFiber = newFiber;
-          oldFiber = nextOldFiber;
-          newIdx = (newIdx + 1) >>> 0;
-          step = newChildren.next();
-          continue;
-        }
+    while (oldFiber != null && !step.done) {
+      let nextOldFiber;
+      if (oldFiber.index > newIdx) {
+        nextOldFiber = oldFiber;
+        oldFiber = undefined;
+      } else {
+        nextOldFiber = oldFiber.sibling;
+      }
+      const newFiber = updateSlot(returnFiber, oldFiber, step.value, lanes);
+      if (newFiber == null) {
         // TODO: This breaks on empty slots like null children. That's
         // unfortunate because it triggers the slow path all the time. We need
         // a better way to communicate whether this was a miss or null,
         // boolean, undefined, etc.
         oldFiber ??= nextOldFiber;
-      }
-
-      if (step.done) {
-        // We've reached the end of the new children. We can delete the rest.
-        deleteRemainingChildren(shouldTrackSideEffects, returnFiber, oldFiber);
-        if (getIsHydrating()) {
-          const numberOfForks = newIdx;
-          pushTreeFork(returnFiber, numberOfForks | 0);
-        }
-        return resultingFirstChild;
-      }
-
-      if (oldFiber != null) {
         break;
       }
+
+      if (__DEV__) {
+        knownKeys = warnOnInvalidKey(
+          returnFiber,
+          newFiber,
+          step.value,
+          knownKeys,
+        );
+      }
+
+      if (
+        shouldTrackSideEffects &&
+        oldFiber != null &&
+        newFiber.alternate == null
+      ) {
+        // We matched the slot, but we didn't reuse the existing fiber, so we
+        // need to delete the existing child.
+        deleteChild(shouldTrackSideEffects, returnFiber, oldFiber);
+      }
+      lastPlacedIndex = placeChild(
+        shouldTrackSideEffects,
+        newFiber,
+        lastPlacedIndex,
+        newIdx,
+      );
+      if (previousNewFiber == null) {
+        // TODO: Move out of the loop. This only happens for the first run.
+        resultingFirstChild = newFiber;
+      } else {
+        // TODO: Defer siblings if we're not at the right index for this slot.
+        // I.e. if we had null values before, then we want to defer this
+        // for each null value. However, we also don't want to call updateSlot
+        // with the previous one.
+        previousNewFiber.sibling = newFiber;
+      }
+      previousNewFiber = newFiber;
+      oldFiber = nextOldFiber;
+      newIdx = (newIdx + 1) >>> 0;
+      step = newChildren.next();
+    }
+
+    if (step.done) {
+      // We've reached the end of the new children. We can delete the rest.
+      deleteRemainingChildren(shouldTrackSideEffects, returnFiber, oldFiber);
+      if (getIsHydrating()) {
+        const numberOfForks = newIdx;
+        pushTreeFork(returnFiber, numberOfForks | 0);
+      }
+      return resultingFirstChild;
+    }
+
+    if (oldFiber == null) {
       // If we don't have any more existing children we can choose a fast path
       // since the rest will all be insertions.
       while (!step.done) {

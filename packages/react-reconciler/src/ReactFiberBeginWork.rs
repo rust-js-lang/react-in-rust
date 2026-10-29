@@ -250,7 +250,7 @@ thread_local! {
         "This is not a real error. It's an implementation detail of React's ",
         "selective hydration feature. If this leaks into userspace, it's a bug in ",
         "React. Please file an issue."
-    ));
+    ), None);
 
     static DID_RECEIVE_UPDATE: Cell<bool> = const { Cell::new(false) };
 
@@ -1705,7 +1705,7 @@ fn update_class_component(
                     .flags
                     .set(work_in_progress.flags.get() | SHOULD_CAPTURE);
                 // eslint-disable-next-line react-internal/prod-error-codes
-                let error = js::error::new("Simulated error coming from DevTools");
+                let error = js::error::new("Simulated error coming from DevTools", None);
                 let lane = pick_arbitrary_lane(render_lanes);
                 work_in_progress
                     .lanes
@@ -1984,10 +1984,13 @@ fn update_host_root(
             );
         } else if !js::strict_equals(next_children, prev_children) {
             let recoverable_error = create_captured_value_at_fiber(
-                js::error::new(concat!(
-                    "This root received an early update, before anything was able ",
-                    "hydrate. Switched the entire root to client rendering."
-                ))
+                js::error::new(
+                    concat!(
+                        "This root received an early update, before anything was able ",
+                        "hydrate. Switched the entire root to client rendering."
+                    ),
+                    None,
+                )
                 .as_unknown(),
                 work_in_progress,
             );
@@ -3254,13 +3257,16 @@ fn update_dehydrated_suspense_component(
                     && !message.is_empty()
                 {
                     // eslint-disable-next-line react-internal/prod-error-codes
-                    error = js::error::new(message);
+                    error = js::error::new(message, None);
                 } else {
-                    error = js::error::new(concat!(
-                        "The server could not finish this Suspense boundary, likely ",
-                        "due to an error during server rendering. ",
-                        "Switched to client rendering."
-                    ));
+                    error = js::error::new(
+                        concat!(
+                            "The server could not finish this Suspense boundary, likely ",
+                            "due to an error during server rendering. ",
+                            "Switched to client rendering."
+                        ),
+                        None,
+                    );
                 }
                 // Replace the stack with the server stack
                 js::set(

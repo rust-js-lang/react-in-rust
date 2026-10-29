@@ -293,8 +293,8 @@ export function findInstanceBlockingTarget(targetNode) {
 
 export function getEventPriority(domEventName) {
   switch (domEventName) {
-    case 'beforetoggle':
     // Used by SimpleEventPlugin:
+    case 'beforetoggle':
     case 'cancel':
     case 'click':
     case 'close':

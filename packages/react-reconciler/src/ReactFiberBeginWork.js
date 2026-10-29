@@ -2842,17 +2842,15 @@ function updateDehydratedSuspenseComponent(
 
       // This is unreachable in renderers that do not support hydration.
       if (digest !== '') {
-        let error;
-        if (__DEV__ && message) {
-          // eslint-disable-next-line react-internal/prod-error-codes
-          error = new Error(message);
-        } else {
-          error = new Error(
-            'The server could not finish this Suspense boundary, likely ' +
-              'due to an error during server rendering. ' +
-              'Switched to client rendering.',
-          );
-        }
+        const error =
+          __DEV__ && message
+            ? // eslint-disable-next-line react-internal/prod-error-codes
+              new Error(message)
+            : new Error(
+                'The server could not finish this Suspense boundary, likely ' +
+                  'due to an error during server rendering. ' +
+                  'Switched to client rendering.',
+              );
         // Replace the stack with the server stack
         error.stack = __DEV__ && stack ? stack : '';
         error.digest = digest;

@@ -39,6 +39,7 @@ export function registerDirectEvent(registrationName, dependencies) {
       registrationName,
     );
   }
+
   registrationNameDependencies[registrationName] = dependencies;
 
   if (__DEV__ && possibleRegistrationNames != null) {
@@ -49,6 +50,7 @@ export function registerDirectEvent(registrationName, dependencies) {
       possibleRegistrationNames.ondblclick = registrationName;
     }
   }
+
   for (const dependency of dependencies) {
     allNativeEvents.add(dependency);
   }

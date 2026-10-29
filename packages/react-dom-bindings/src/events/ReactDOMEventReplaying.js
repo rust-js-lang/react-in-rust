@@ -549,6 +549,7 @@ export function retryIfBlockedOn(unblocked) {
     scheduleCallbackIfUnblocked(queuedEvent, unblocked);
   queuedPointers.forEach(unblock);
   queuedPointerCaptures.forEach(unblock);
+
   for (const queuedTarget of queuedExplicitHydrationTargets) {
     if (queuedTarget.blockedOn === unblocked) {
       queuedTarget.blockedOn = null;

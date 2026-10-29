@@ -2178,6 +2178,7 @@ function prepareFreshStack(root, lanes) {
 
   if (__DEV__) {
     resetOwnerStackLimit();
+
     ReactStrictModeWarnings.discardPendingWarnings();
   }
 

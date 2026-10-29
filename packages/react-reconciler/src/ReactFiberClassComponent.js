@@ -780,6 +780,7 @@ export function mountClassInstance(
         instance,
       );
     }
+
     ReactStrictModeWarnings.recordUnsafeLifecycleWarnings(
       workInProgress,
       instance,

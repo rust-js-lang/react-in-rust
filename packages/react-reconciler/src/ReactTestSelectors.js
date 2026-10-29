@@ -281,10 +281,10 @@ export function findAllNodes(hostRoot, selectors) {
       tag === HostHoistable ||
       tag === HostSingleton
     ) {
-      if (!isHiddenSubtree(node)) {
-        instanceRoots.push(node.stateNode);
+      if (isHiddenSubtree(node)) {
         continue;
       }
+      instanceRoots.push(node.stateNode);
     } else {
       let child = node.child;
       while (child != null) {
