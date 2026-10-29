@@ -259,6 +259,15 @@ These differences from upstream's output are accepted:
   `stack.extend(webapi::html_collection::iter(current.children()))`, which
   prints `$extend(stack, Iterator.from(current.children))`; Rust's
   never-throwing `extend` is kept.
+- **A written let stays** (rd189 reverted, a95591661): a `let` the program
+  wrote prints as a `const` even where upstream reads the field in place,
+  so FragmentInstance's methods keep `const fragmentFiber =
+  this._fragmentFiber;` (`let fragment_fiber = Rc::clone(&self.fragment_fiber.borrow());`,
+  which ends the borrow before the traversal calls back).
+- **rd221** (6412fc19d): a struct no Rust code builds (one JS gave:
+  memoizedProps, a host config's result, `getOwnPropertyDescriptor`'s) is
+  read as often as the Rust reads it, so inputValueTracking's
+  `descriptor.get` and `.set` are read once, into `get` and `set`.
 
 These forms are decided:
 
