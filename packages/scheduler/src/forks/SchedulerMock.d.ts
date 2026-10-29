@@ -73,7 +73,7 @@ declare function requestPaint(): void;
 /** What starts and stops logging the scheduler's profiling events. */
 export interface Profiling {
   startLoggingProfilingEvents: () => void;
-  stopLoggingProfilingEvents: () => any | null | undefined;
+  stopLoggingProfilingEvents: () => ArrayBuffer | null | undefined;
 }
 
 export const unstable_Profiling: Profiling | null;

@@ -9,7 +9,7 @@ import type {Task} from './forks/Scheduler.js';
 
 export function startLoggingProfilingEvents(): void;
 
-export function stopLoggingProfilingEvents(): any | null;
+export function stopLoggingProfilingEvents(): ArrayBuffer | null;
 
 export function markTaskStart(task: Task, ms: number): void;
 
