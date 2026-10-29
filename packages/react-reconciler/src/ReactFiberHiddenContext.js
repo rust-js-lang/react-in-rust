@@ -36,11 +36,8 @@ export function reuseHiddenContextOnStack(fiber) {
   // to the render lanes. But we still need to push something to avoid a
   // context mismatch. Reuse the existing context on the stack.
   push(prevEntangledRenderLanesCursor, getEntangledRenderLanes(), fiber);
-  push(
-    currentTreeHiddenStackCursor,
-    currentTreeHiddenStackCursor.current,
-    fiber,
-  );
+  const current = currentTreeHiddenStackCursor.current;
+  push(currentTreeHiddenStackCursor, current, fiber);
 }
 
 export function popHiddenContext(fiber) {

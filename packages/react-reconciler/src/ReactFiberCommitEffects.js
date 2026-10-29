@@ -225,7 +225,8 @@ export function commitHookEffectListMount(flags, finishedWork) {
       }
     }
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -280,7 +281,8 @@ export function commitHookEffectListUnmount(
       }
     }
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -365,7 +367,8 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
         try {
           instance.componentDidMount();
         } catch (error) {
-          captureCommitPhaseError(finishedWork, finishedWork.return, error);
+          const returnFiber = finishedWork.return;
+          captureCommitPhaseError(finishedWork, returnFiber, error);
         }
       }
       recordEffectDuration(finishedWork);
@@ -382,7 +385,8 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
       try {
         instance.componentDidMount();
       } catch (error) {
-        captureCommitPhaseError(finishedWork, finishedWork.return, error);
+        const returnFiber = finishedWork.return;
+        captureCommitPhaseError(finishedWork, returnFiber, error);
       }
     }
   } else {
@@ -450,7 +454,8 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
             instance.__reactInternalSnapshotBeforeUpdate,
           );
         } catch (error) {
-          captureCommitPhaseError(finishedWork, finishedWork.return, error);
+          const returnFiber = finishedWork.return;
+          captureCommitPhaseError(finishedWork, returnFiber, error);
         }
       }
       recordEffectDuration(finishedWork);
@@ -480,7 +485,8 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
           instance.__reactInternalSnapshotBeforeUpdate,
         );
       } catch (error) {
-        captureCommitPhaseError(finishedWork, finishedWork.return, error);
+        const returnFiber = finishedWork.return;
+        captureCommitPhaseError(finishedWork, returnFiber, error);
       }
     }
   }
@@ -503,7 +509,8 @@ export function commitClassDidMount(finishedWork) {
       try {
         instance.componentDidMount();
       } catch (error) {
-        captureCommitPhaseError(finishedWork, finishedWork.return, error);
+        const returnFiber = finishedWork.return;
+        captureCommitPhaseError(finishedWork, returnFiber, error);
       }
     }
   }
@@ -553,7 +560,8 @@ export function commitClassCallbacks(finishedWork) {
         commitCallbacks(updateQueue, instance);
       }
     } catch (error) {
-      captureCommitPhaseError(finishedWork, finishedWork.return, error);
+      const returnFiber = finishedWork.return;
+      captureCommitPhaseError(finishedWork, returnFiber, error);
     }
   }
 }
@@ -576,7 +584,8 @@ export function commitClassHiddenCallbacks(finishedWork) {
         commitHiddenCallbacks(updateQueue, instance);
       }
     } catch (error) {
-      captureCommitPhaseError(finishedWork, finishedWork.return, error);
+      const returnFiber = finishedWork.return;
+      captureCommitPhaseError(finishedWork, returnFiber, error);
     }
   }
 }
@@ -605,7 +614,8 @@ export function commitRootCallbacks(finishedWork) {
         commitCallbacks(updateQueue, instance);
       }
     } catch (error) {
-      captureCommitPhaseError(finishedWork, finishedWork.return, error);
+      const returnFiber = finishedWork.return;
+      captureCommitPhaseError(finishedWork, returnFiber, error);
     }
   }
 }
@@ -684,7 +694,8 @@ export function commitClassSnapshot(finishedWork, current) {
     }
     instance.__reactInternalSnapshotBeforeUpdate = snapshot;
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -966,7 +977,8 @@ export function commitProfilerUpdate(
         commitProfiler(finishedWork, current, commitStartTime, effectDuration);
       }
     } catch (error) {
-      captureCommitPhaseError(finishedWork, finishedWork.return, error);
+      const returnFiber = finishedWork.return;
+      captureCommitPhaseError(finishedWork, returnFiber, error);
     }
   }
 }
@@ -1015,7 +1027,8 @@ export function commitProfilerPostCommit(
       );
     }
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 //# sourceMappingURL=ReactFiberCommitEffects.js.map

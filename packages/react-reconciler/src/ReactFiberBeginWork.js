@@ -871,7 +871,8 @@ function retryActivityComponentWithoutHydrating(
   // likely won't observe anything wrong with the UI.
 
   // This will add the old fiber to the deletion list
-  reconcileChildFibers(workInProgress, current.child, null, renderLanes);
+  const currentChild = current.child;
+  reconcileChildFibers(workInProgress, currentChild, null, renderLanes);
 
   // We're now not suspended nor dehydrated.
   const nextProps = workInProgress.pendingProps;
@@ -2452,7 +2453,8 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
         renderLanes,
       );
       workInProgress.memoizedState = SUSPENDED_MARKER;
-      return bailoutOffscreenComponent(current.child, primaryChildFragment);
+      const currentChild = current.child;
+      return bailoutOffscreenComponent(currentChild, primaryChildFragment);
     } else {
       if (
         prevState != null &&
@@ -2712,7 +2714,8 @@ function retrySuspenseComponentWithoutHydrating(
   // likely won't observe anything wrong with the UI.
 
   // This will add the old fiber to the deletion list
-  reconcileChildFibers(workInProgress, current.child, null, renderLanes);
+  const currentChild = current.child;
+  reconcileChildFibers(workInProgress, currentChild, null, renderLanes);
 
   // We're now not suspended nor dehydrated.
   const nextProps = workInProgress.pendingProps;
@@ -2765,7 +2768,8 @@ function mountSuspenseFallbackAfterRetryWithoutHydrating(
   if (disableLegacyMode || (workInProgress.mode & ConcurrentMode) !== NoMode) {
     // We will have dropped the effect list which contains the
     // deletion. We need to reconcile to delete the current child.
-    reconcileChildFibers(workInProgress, current.child, null, renderLanes);
+    const currentChild = current.child;
+    reconcileChildFibers(workInProgress, currentChild, null, renderLanes);
   }
 
   return fallbackChildFragment;
@@ -2828,12 +2832,16 @@ function updateDehydratedSuspenseComponent(
       let componentStack = null;
       let digest;
       if (__DEV__) {
-        const suspenseInstanceFallbackErrorDetails =
-          getSuspenseInstanceFallbackErrorDetails(suspenseInstance);
-        digest = suspenseInstanceFallbackErrorDetails.digest;
-        message = suspenseInstanceFallbackErrorDetails.message;
-        stack = suspenseInstanceFallbackErrorDetails.stack;
-        componentStack = suspenseInstanceFallbackErrorDetails.componentStack;
+        const {
+          digest: _32,
+          message: _33,
+          stack: _34,
+          componentStack: _35,
+        } = getSuspenseInstanceFallbackErrorDetails(suspenseInstance);
+        digest = _32;
+        message = _33;
+        stack = _34;
+        componentStack = _35;
       } else {
         digest =
           getSuspenseInstanceFallbackErrorDetails(suspenseInstance).digest;
@@ -3313,11 +3321,8 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
       // If we previously forced a fallback, we need to schedule work
       // on any nested boundaries to let them know to try to render
       // again. This is the same as context updating.
-      propagateSuspenseContextChange(
-        workInProgress,
-        workInProgress.child,
-        renderLanes,
-      );
+      const child = workInProgress.child;
+      propagateSuspenseContextChange(workInProgress, child, renderLanes);
     }
   }
 
@@ -3326,7 +3331,6 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
     // use make it a noop by treating it as the default revealOrder.
     workInProgress.memoizedState = null;
   } else {
-    // The default is now forwards.
     switch (revealOrder) {
       case 'backwards': {
         // We're going to find the first row that has existing content.
@@ -3334,7 +3338,8 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
         // since we want to actually render them backwards from the reconciled set.
         // The tail is left in order, because it'll be added to the front as we
         // complete each item.
-        const lastContentRow = findLastContentRow(workInProgress.child);
+        const child = workInProgress.child;
+        const lastContentRow = findLastContentRow(child);
         let tail;
         if (lastContentRow == null) {
           // The whole list is part of the tail.
@@ -3407,7 +3412,9 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
         workInProgress.memoizedState = null;
         break;
       default: {
-        const lastContentRow = findLastContentRow(workInProgress.child);
+        // The default is now forwards.
+        const child = workInProgress.child;
+        const lastContentRow = findLastContentRow(child);
         let tail;
         if (lastContentRow == null) {
           // The whole list is part of the tail.
@@ -3448,7 +3455,8 @@ function updateViewTransition(current, workInProgress, renderLanes) {
   }
 
   const pendingProps = workInProgress.pendingProps;
-  if (pendingProps.name != null && pendingProps.name !== 'auto') {
+  const name = pendingProps.name;
+  if (name != null && name !== 'auto') {
     // Explicitly named boundary. We track it so that we can pair it up with another explicit
     // boundary if we get deleted.
     workInProgress.flags |=

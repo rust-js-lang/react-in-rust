@@ -73,7 +73,8 @@ export function commitHostMount(finishedWork) {
       commitMount(instance, type, props, finishedWork);
     }
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -98,7 +99,8 @@ export function commitHostHydratedInstance(finishedWork) {
       commitHydratedInstance(instance, type, props, finishedWork);
     }
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -127,7 +129,8 @@ export function commitHostUpdate(finishedWork, newProps, oldProps) {
       );
     }
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -150,7 +153,8 @@ export function commitHostTextUpdate(finishedWork, newText, oldText) {
     }
     trackHostMutation();
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -171,7 +175,8 @@ export function commitHostResetTextContent(finishedWork) {
     }
     trackHostMutation();
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -202,7 +207,8 @@ export function commitShowHideSuspenseBoundary(node, isHidden) {
       unhideDehydratedBoundary(node.stateNode);
     }
   } catch (error) {
-    captureCommitPhaseError(node, node.return, error);
+    const returnFiber = node.return;
+    captureCommitPhaseError(node, returnFiber, error);
   }
 }
 
@@ -234,7 +240,8 @@ export function commitShowHideHostInstance(node, isHidden) {
       unhideInstance(node.stateNode, node.memoizedProps);
     }
   } catch (error) {
-    captureCommitPhaseError(node, node.return, error);
+    const returnFiber = node.return;
+    captureCommitPhaseError(node, returnFiber, error);
   }
 }
 
@@ -267,7 +274,8 @@ export function commitShowHideHostTextInstance(node, isHidden) {
     }
     trackHostMutation();
   } catch (error) {
-    captureCommitPhaseError(node, node.return, error);
+    const returnFiber = node.return;
+    captureCommitPhaseError(node, returnFiber, error);
   }
 }
 
@@ -596,7 +604,8 @@ export function commitHostPlacement(finishedWork) {
       commitPlacement(finishedWork);
     }
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -668,7 +677,8 @@ export function commitHostRootContainerChildren(root, finishedWork) {
     }
     trackHostMutation();
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -692,7 +702,8 @@ export function commitHostPortalContainerChildren(
       replaceContainerChildren(containerInfo, pendingChildren);
     }
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -710,7 +721,8 @@ export function commitHostHydratedContainer(root, finishedWork) {
       commitHydratedContainer(root.containerInfo);
     }
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -728,7 +740,8 @@ export function commitHostHydratedActivity(activityInstance, finishedWork) {
       commitHydratedActivityInstance(activityInstance);
     }
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -746,7 +759,8 @@ export function commitHostHydratedSuspense(suspenseInstance, finishedWork) {
       commitHydratedSuspenseInstance(suspenseInstance);
     }
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 
@@ -781,7 +795,8 @@ export function commitHostSingletonAcquisition(finishedWork) {
       );
     }
   } catch (error) {
-    captureCommitPhaseError(finishedWork, finishedWork.return, error);
+    const returnFiber = finishedWork.return;
+    captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
 

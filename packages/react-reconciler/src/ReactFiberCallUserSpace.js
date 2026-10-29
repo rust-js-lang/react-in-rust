@@ -47,7 +47,8 @@ const callComponentDidMount = {
     try {
       instance.componentDidMount();
     } catch (error) {
-      captureCommitPhaseError(finishedWork, finishedWork.return, error);
+      const returnFiber = finishedWork.return;
+      captureCommitPhaseError(finishedWork, returnFiber, error);
     }
   },
 };
@@ -68,7 +69,8 @@ const callComponentDidUpdate = {
     try {
       instance.componentDidUpdate(prevProps, prevState, snapshot);
     } catch (error) {
-      captureCommitPhaseError(finishedWork, finishedWork.return, error);
+      const returnFiber = finishedWork.return;
+      captureCommitPhaseError(finishedWork, returnFiber, error);
     }
   },
 };

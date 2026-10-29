@@ -2145,7 +2145,8 @@ function prepareFreshStack(root, lanes) {
 
   resetWorkInProgressStack();
   workInProgressRoot = root;
-  const rootWorkInProgress = createWorkInProgress(root.current, null);
+  const current = root.current;
+  const rootWorkInProgress = createWorkInProgress(current, null);
   workInProgress = rootWorkInProgress;
   workInProgressRootRenderLanes = lanes;
   workInProgressSuspendedReason = NotSuspended;
@@ -3527,11 +3528,11 @@ function completeRoot(
           finishedWork,
           recoverableErrors,
           suspendedState,
-          !enableProfilerTimer
-            ? 0
-            : suspendedCommitReason == null
+          enableProfilerTimer
+            ? suspendedCommitReason == null
               ? completedRenderEndTime
-              : commitStartTime,
+              : commitStartTime
+            : 0,
         );
       } else {
         // If we already have a gesture running, we don't update it in place

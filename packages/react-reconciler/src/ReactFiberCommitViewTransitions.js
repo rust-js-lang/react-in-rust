@@ -102,8 +102,9 @@ function applyViewTransitionToHostInstances(
   stopAtNestedViewTransitions,
 ) {
   viewTransitionHostInstanceIdx = 0;
+  const child = fiber.child;
   const inViewport = applyViewTransitionToHostInstancesRecursive(
-    fiber.child,
+    child,
     name,
     className,
     collectMeasurements,
@@ -277,10 +278,8 @@ function commitAppearingPairViewTransitions(placement) {
         const instance = child.stateNode;
         if (instance.paired != null) {
           const props = child.memoizedProps;
-          const name =
-            props.name != null && props.name !== 'auto'
-              ? props.name
-              : undefined;
+          const option = props.name;
+          const name = option != null && option !== 'auto' ? option : undefined;
           if (name == null) {
             throw new Error(
               'Found a pair with an auto name. This is a bug in React.',
@@ -481,7 +480,8 @@ export function commitEnterViewTransitions(placement, gesture) {
         // TODO: If this was part of a pair we will still run the onShare callback.
         // Revert the transition names. This boundary is not in the viewport
         // so we won't bother animating it.
-        restoreViewTransitionOnHostInstances(placement.child, false);
+        const child = placement.child;
+        restoreViewTransitionOnHostInstances(child, false);
         // TODO: Should we still visit the children in case a named one was in the viewport?
       } else {
         commitAppearingPairViewTransitions(placement);
@@ -601,7 +601,8 @@ export function commitExitViewTransitions(deletion) {
       if (!inViewport) {
         // Revert the transition names. This boundary is not in the viewport
         // so we won't bother animating it.
-        restoreViewTransitionOnHostInstances(deletion.child, false);
+        const child = deletion.child;
+        restoreViewTransitionOnHostInstances(child, false);
         // TODO: Should we still visit the children in case a named one was in the viewport?
       } else if (pair != null) {
         // We found a new appearing view transition with the same name as this deletion.
@@ -748,7 +749,8 @@ export function restoreEnterOrExitViewTransitions(fiber) {
   if (fiber.tag === ViewTransitionComponent) {
     const instance = fiber.stateNode;
     instance.paired = null;
-    restoreViewTransitionOnHostInstances(fiber.child, false);
+    const child = fiber.child;
+    restoreViewTransitionOnHostInstances(child, false);
     if (enableViewTransitionParentEnterExit) {
       restoreParentEnterOrExitViewTransitions(fiber);
     }
@@ -765,14 +767,17 @@ export function restoreEnterOrExitViewTransitions(fiber) {
 }
 
 export function restoreUpdateViewTransition(current, finishedWork) {
-  restoreViewTransitionOnHostInstances(current.child, true);
-  restoreViewTransitionOnHostInstances(finishedWork.child, true);
+  const currentChild = current.child;
+  restoreViewTransitionOnHostInstances(currentChild, true);
+  const finishedChild = finishedWork.child;
+  restoreViewTransitionOnHostInstances(finishedChild, true);
 }
 
 export function restoreUpdateViewTransitionForGesture(current, finishedWork) {
   // For gestures we don't need to reset "finishedWork" because those would
   // have all been clones that got deleted.
-  restoreViewTransitionOnHostInstances(current.child, true);
+  const child = current.child;
+  restoreViewTransitionOnHostInstances(child, true);
 }
 
 export function restoreNestedViewTransitions(changedParent) {

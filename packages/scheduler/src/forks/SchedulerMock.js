@@ -323,12 +323,8 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
   const currentTime = getCurrentTime();
 
   const delay = options?.delay;
-  let startTime;
-  if (delay == null || !(delay > 0)) {
-    startTime = currentTime;
-  } else {
-    startTime = currentTime + delay;
-  }
+  const startTime =
+    delay != null && delay > 0 ? currentTime + delay : currentTime;
 
   let timeout;
   switch (priorityLevel) {
@@ -478,26 +474,21 @@ export function unstable_flushNumberOfYields(count) {
   if (cb != null) {
     expectedNumberOfYields = count;
     isFlushing = true;
-    while (true) {
-      let hasMoreWork;
-      try {
-        hasMoreWork = cb(true, currentMockTime);
-      } catch (error) {
-        expectedNumberOfYields = -1;
-        didStop = false;
-        isFlushing = false;
-        throw error;
+    try {
+      while (true) {
+        const hasMoreWork = cb(true, currentMockTime);
+        if (hasMoreWork && !didStop) {
+          continue;
+        }
+        if (!hasMoreWork) {
+          scheduledCallback = null;
+        }
+        return;
       }
-      if (hasMoreWork && !didStop) {
-        continue;
-      }
-      if (!hasMoreWork) {
-        scheduledCallback = null;
-      }
+    } finally {
       expectedNumberOfYields = -1;
       didStop = false;
       isFlushing = false;
-      return;
     }
   }
 }
@@ -511,26 +502,21 @@ export function unstable_flushUntilNextPaint() {
     shouldYieldForPaint = true;
     needsPaint = false;
     isFlushing = true;
-    while (true) {
-      let hasMoreWork;
-      try {
-        hasMoreWork = cb(true, currentMockTime);
-      } catch (error) {
-        shouldYieldForPaint = false;
-        didStop = false;
-        isFlushing = false;
-        throw error;
+    try {
+      while (true) {
+        const hasMoreWork = cb(true, currentMockTime);
+        if (hasMoreWork && !didStop) {
+          continue;
+        }
+        if (!hasMoreWork) {
+          scheduledCallback = null;
+        }
+        break;
       }
-      if (hasMoreWork && !didStop) {
-        continue;
-      }
-      if (!hasMoreWork) {
-        scheduledCallback = null;
-      }
+    } finally {
       shouldYieldForPaint = false;
       didStop = false;
       isFlushing = false;
-      break;
     }
   }
   return false;

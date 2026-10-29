@@ -1639,11 +1639,8 @@ function createChildReconciler(shouldTrackSideEffects) {
     if (currentFirstChild != null && currentFirstChild.tag === HostText) {
       // We already have an existing node so let's just update it and delete
       // the rest.
-      deleteRemainingChildren(
-        shouldTrackSideEffects,
-        returnFiber,
-        currentFirstChild.sibling,
-      );
+      const sibling = currentFirstChild.sibling;
+      deleteRemainingChildren(shouldTrackSideEffects, returnFiber, sibling);
       const existing = useFiber(currentFirstChild, textContent);
       existing.return = returnFiber;
       return existing;
@@ -1850,17 +1847,12 @@ function createChildReconciler(shouldTrackSideEffects) {
     // We treat the ambiguous cases above the same.
     // We don't use recursion here because a fragment inside a fragment
     // is no longer considered "top level" for these purposes.
-    let isUnkeyedUnrefedTopLevelFragment;
-    if (
-      typeof newChild !== 'object' ||
-      newChild == null ||
-      newChild.type !== REACT_FRAGMENT_TYPE ||
-      newChild.key !== null
-    ) {
-      isUnkeyedUnrefedTopLevelFragment = false;
-    } else {
-      isUnkeyedUnrefedTopLevelFragment = newChild.props.ref === undefined;
-    }
+    const isUnkeyedUnrefedTopLevelFragment =
+      typeof newChild === 'object' &&
+      newChild != null &&
+      newChild.type === REACT_FRAGMENT_TYPE &&
+      newChild.key === null &&
+      newChild.props.ref === undefined;
 
     if (isUnkeyedUnrefedTopLevelFragment) {
       validateFragmentProps(newChild, undefined, returnFiber);

@@ -315,12 +315,8 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
   const currentTime = getCurrentTime();
 
   const delay = options?.delay;
-  let startTime;
-  if (delay == null || !(delay > 0)) {
-    startTime = currentTime;
-  } else {
-    startTime = currentTime + delay;
-  }
+  const startTime =
+    delay != null && delay > 0 ? currentTime + delay : currentTime;
 
   let timeout;
   switch (priorityLevel) {

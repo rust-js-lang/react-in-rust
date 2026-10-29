@@ -251,8 +251,8 @@ function applyAppearingPairViewTransition(child) {
     // the clones then.
     if (state.paired != null) {
       const props = child.memoizedProps;
-      const name =
-        props.name != null && props.name !== 'auto' ? props.name : undefined;
+      const option = props.name;
+      const name = option != null && option !== 'auto' ? option : undefined;
       if (name == null) {
         throw new Error(
           'Found a pair with an auto name. This is a bug in React.',
@@ -995,7 +995,8 @@ function measureExitViewTransitions(placement) {
   if (placement.tag === ViewTransitionComponent) {
     // const state: ViewTransitionState = placement.stateNode;
     const props = placement.memoizedProps;
-    if (props.name != null && props.name !== 'auto') {
+    const name = props.name;
+    if (name != null && name !== 'auto') {
       // TODO: Find a pair
     }
   } else if ((placement.subtreeFlags & ViewTransitionStatic) !== NoFlags) {

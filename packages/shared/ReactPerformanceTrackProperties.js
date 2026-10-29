@@ -271,7 +271,7 @@ export function addValueToProperties(
         }
         properties.push([
           prefix + '\xa0\xa0'.repeat(indent) + propertyName,
-          objectName !== 'Object' ? objectName : indent < 3 ? '' : '…',
+          objectName === 'Object' ? (indent < 3 ? '' : '…') : objectName,
         ]);
         if (indent < 3) {
           addObjectToProperties(value, properties, indent + 1, prefix);

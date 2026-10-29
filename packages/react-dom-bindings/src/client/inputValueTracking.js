@@ -53,51 +53,55 @@ function trackValueOnNode(node, valueField, currentValue) {
   if (node.hasOwnProperty(valueField)) {
     return;
   }
-  if (descriptor == null || descriptor.get == null || descriptor.set == null) {
-    return;
-  }
-  const get = descriptor.get;
-  const set = descriptor.set;
-  Object.defineProperty(node, valueField, {
-    configurable: true,
-    // $FlowFixMe[missing-this-annot]
-    get: function () {
-      return get.call(this);
-    },
-    // $FlowFixMe[missing-local-annot]
-    // $FlowFixMe[missing-this-annot]
-    set: function (value) {
-      if (__DEV__) {
-        checkFormFieldValueStringCoercion(value);
-      }
-      currentValue = '' + value;
-      set.call(this, value);
-    },
-  });
-  // We could've passed this the first time
-  // but it triggers a bug in IE11 and Edge 14/15.
-  // Calling defineProperty() again should be equivalent.
-  // https://github.com/react/react/issues/11768
-  Object.defineProperty(node, valueField, {
-    enumerable: descriptor.enumerable,
-  });
+  if (descriptor != null) {
+    const get = descriptor.get;
+    const set = descriptor.set;
+    if (get != null) {
+      if (set != null) {
+        let currentValue$1 = currentValue;
+        Object.defineProperty(node, valueField, {
+          configurable: true,
+          // $FlowFixMe[missing-this-annot]
+          get: function () {
+            return get.call(this);
+          },
+          // $FlowFixMe[missing-local-annot]
+          // $FlowFixMe[missing-this-annot]
+          set: function (value) {
+            if (__DEV__) {
+              checkFormFieldValueStringCoercion(value);
+            }
+            currentValue$1 = '' + value;
+            set.call(this, value);
+          },
+        });
+        // We could've passed this the first time
+        // but it triggers a bug in IE11 and Edge 14/15.
+        // Calling defineProperty() again should be equivalent.
+        // https://github.com/react/react/issues/11768
+        Object.defineProperty(node, valueField, {
+          enumerable: descriptor.enumerable,
+        });
 
-  const tracker = {
-    getValue() {
-      return currentValue;
-    },
-    setValue(value) {
-      if (__DEV__) {
-        checkFormFieldValueStringCoercion(value);
+        const tracker = {
+          getValue() {
+            return currentValue$1;
+          },
+          setValue(value) {
+            if (__DEV__) {
+              checkFormFieldValueStringCoercion(value);
+            }
+            currentValue$1 = '' + value;
+          },
+          stopTracking() {
+            detachTracker(node);
+            delete node[valueField];
+          },
+        };
+        return tracker;
       }
-      currentValue = '' + value;
-    },
-    stopTracking() {
-      detachTracker(node);
-      delete node[valueField];
-    },
-  };
-  return tracker;
+    }
+  }
 }
 
 export function track(node) {

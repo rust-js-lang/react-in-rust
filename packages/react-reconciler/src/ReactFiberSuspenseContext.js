@@ -68,11 +68,10 @@ export function pushPrimaryTreeSuspenseHandler(handler) {
       // still considered part of the shell. So we intentionally don't assign
       // to `shellBoundary`.
     } else {
-      push(
-        suspenseHandlerStackCursor,
-        suspenseHandlerStackCursor.current,
-        handler,
-      );
+      // There's already a parent Suspense boundary that can provide a desirable
+      // fallback state. Prefer that one.
+      const handlerOnStack = suspenseHandlerStackCursor.current;
+      push(suspenseHandlerStackCursor, handlerOnStack, handler);
     }
     return;
   }
@@ -179,7 +178,10 @@ export function setShallowSuspenseListContext(parentContext, shallowContext) {
 }
 
 export function pushSuspenseListContext(fiber, newContext) {
-  push(suspenseHandlerStackCursor, suspenseHandlerStackCursor.current, fiber);
+  // Push the current handler in this case since we're not catching at the SuspenseList
+  // for typical rows.
+  const handlerOnStack = suspenseHandlerStackCursor.current;
+  push(suspenseHandlerStackCursor, handlerOnStack, fiber);
   push(suspenseStackCursor, newContext, fiber);
 }
 

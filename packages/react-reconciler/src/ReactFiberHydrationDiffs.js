@@ -590,30 +590,67 @@ function describeNode(node, indent) {
   if (node.serverProps === null) {
     indent = (indent - 1) | 0;
   }
+  let iter;
   try {
-    const iter = $iter(serverTail);
-    let tailNode;
-    while ((tailNode = $next(iter)) != null) {
-      if (typeof tailNode === 'string') {
-        // Removed text node
-        childContent +=
-          removed(indent) +
-          describeTextNode(tailNode, maxRowLength - indent * 2) +
-          '\n';
-      } else {
-        // Removed element
-        childContent += describeExpandedElement(
-          tailNode.type,
-          tailNode.props,
-          removed(indent),
-        );
-      }
-    }
-
-    return parentContent + selfContent + childContent;
-  } finally {
+    iter = $iter(serverTail);
+  } catch (error) {
     $unborrow(serverTail);
+    throw error;
   }
+  while (true) {
+    let serverTailNode;
+    try {
+      serverTailNode = $next(iter);
+    } catch (error) {
+      $unborrow(serverTail);
+      throw error;
+    }
+    if (serverTailNode == null) {
+      break;
+    }
+    const tailNode = serverTailNode;
+    if (typeof tailNode === 'string') {
+      // Removed text node
+      let tmp;
+      try {
+        tmp = removed(indent);
+      } catch (error) {
+        $unborrow(serverTail);
+        throw error;
+      }
+      let tmp$1;
+      try {
+        tmp$1 = describeTextNode(tailNode, maxRowLength - indent * 2);
+      } catch (error) {
+        $unborrow(serverTail);
+        throw error;
+      }
+      childContent += tmp + tmp$1 + '\n';
+    } else {
+      // Removed element
+      const value = tailNode.type;
+      const props = tailNode.props;
+      let tmp;
+      try {
+        tmp = removed(indent);
+      } catch (error) {
+        $unborrow(serverTail);
+        throw error;
+      }
+      let tmp$1;
+      try {
+        tmp$1 = describeExpandedElement(value, props, tmp);
+      } catch (error) {
+        $unborrow(serverTail);
+        throw error;
+      }
+      childContent += tmp$1;
+    }
+  }
+
+  const result = parentContent + selfContent + childContent;
+  $unborrow(serverTail);
+  return result;
 }
 
 export function describeDiff(rootNode) {

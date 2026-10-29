@@ -7,7 +7,7 @@ use std::cell::Cell;
 use std::panic::catch_unwind;
 
 use js::{Unknown, function};
-use webapi::console;
+use webapi::{MessageEvent, console};
 
 use crate::environment::__DEV__;
 
@@ -60,7 +60,7 @@ js::export_default! {
                     }
                 }
                 let channel = webapi::message_channel::new();
-                channel.port1().set_onmessage(Some(webapi::listener(move |_| callback())));
+                channel.port1().set_onmessage(Some(&webapi::listener(move |_: &MessageEvent| callback())));
                 channel.port2().post_message((), None);
             }));
         }

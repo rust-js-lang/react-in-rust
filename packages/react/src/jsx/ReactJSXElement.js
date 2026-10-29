@@ -395,11 +395,11 @@ export function jsxProdSignatureRunningInDevWithDynamicChildren(
       maybeKey,
       isStaticChildren,
       debugStackDev,
-      !__DEV__
-        ? undefined
-        : trackActualOwner
+      __DEV__
+        ? trackActualOwner
           ? createTask(getTaskName(type))
-          : unknownOwnerDebugTask,
+          : unknownOwnerDebugTask
+        : undefined,
     );
   }
 }
@@ -433,11 +433,11 @@ export function jsxProdSignatureRunningInDevWithStaticChildren(
       maybeKey,
       isStaticChildren,
       debugStackDev,
-      !__DEV__
-        ? undefined
-        : trackActualOwner
+      __DEV__
+        ? trackActualOwner
           ? createTask(getTaskName(type))
-          : unknownOwnerDebugTask,
+          : unknownOwnerDebugTask
+        : undefined,
     );
   }
 }
@@ -478,11 +478,11 @@ export function jsxDEV(type, config, maybeKey, isStaticChildren) {
     maybeKey,
     isStaticChildren,
     debugStackDev,
-    !__DEV__
-      ? undefined
-      : trackActualOwner
+    __DEV__
+      ? trackActualOwner
         ? createTask(getTaskName(type))
-        : unknownOwnerDebugTask,
+        : unknownOwnerDebugTask
+      : undefined,
   );
 }
 
@@ -754,11 +754,11 @@ export function createElement(type, config, ...children) {
     props,
     getOwner(),
     debugStackDev,
-    !__DEV__
-      ? undefined
-      : trackActualOwner
+    __DEV__
+      ? trackActualOwner
         ? createTask(getTaskName(type))
-        : unknownOwnerDebugTask,
+        : unknownOwnerDebugTask
+      : undefined,
   );
 }
 

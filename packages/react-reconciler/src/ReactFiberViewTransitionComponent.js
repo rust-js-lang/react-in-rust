@@ -13,8 +13,9 @@ import {
 let globalClientIdCounter = 0;
 
 export function getViewTransitionName(props, instance) {
-  if (props.name != null && props.name !== 'auto') {
-    return props.name;
+  let name = props.name;
+  if (name != null && name !== 'auto') {
+    return name;
   }
   if (instance.autoName != null) {
     return instance.autoName;
@@ -24,8 +25,7 @@ export function getViewTransitionName(props, instance) {
   const root = getCommittingRoot();
   const identifierPrefix = root.identifierPrefix;
   const globalClientId = globalClientIdCounter++;
-  const name =
-    '_' + identifierPrefix + 't_' + globalClientId.toString(32) + '_';
+  name = '_' + identifierPrefix + 't_' + globalClientId.toString(32) + '_';
   instance.autoName = name;
   return name;
 }

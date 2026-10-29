@@ -334,14 +334,8 @@ export function traverseFragmentInstancesAndTextInstances(
   b,
   c,
 ) {
-  traverseVisibleInstancesAndTextInstances(
-    fragmentFiber.child,
-    false,
-    fn,
-    a,
-    b,
-    c,
-  );
+  const child = fragmentFiber.child;
+  traverseVisibleInstancesAndTextInstances(child, false, fn, a, b, c);
 }
 
 export function traverseFragmentInstancesAndTextInstancesDeeply(
@@ -351,14 +345,8 @@ export function traverseFragmentInstancesAndTextInstancesDeeply(
   b,
   c,
 ) {
-  traverseVisibleInstancesAndTextInstances(
-    fragmentFiber.child,
-    true,
-    fn,
-    a,
-    b,
-    c,
-  );
+  const child = fragmentFiber.child;
+  traverseVisibleInstancesAndTextInstances(child, true, fn, a, b, c);
 }
 
 function traverseVisibleInstancesAndTextInstances(
@@ -569,12 +557,9 @@ function popSearchBoundary() {
 }
 
 export function getNextSiblingInstanceOrTextInstanceFiber(fiber) {
-  traverseVisibleInstancesAndTextInstances(
-    fiber.sibling,
-    false,
-    findNextSibling,
-  );
-  const sibling = popSearchTarget();
+  let sibling = fiber.sibling;
+  traverseVisibleInstancesAndTextInstances(sibling, false, findNextSibling);
+  sibling = popSearchTarget();
   pushSearchTarget(null);
   return sibling;
 }
