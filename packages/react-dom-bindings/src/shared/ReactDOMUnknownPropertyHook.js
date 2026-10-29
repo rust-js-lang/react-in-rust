@@ -167,13 +167,13 @@ function validateProperty(tagName, name, value, eventRegistry) {
 
     // Now that we've validated casing, do not validate
     // data types for reserved props
-    // Reserved
     switch (name) {
       case 'dangerouslySetInnerHTML':
       case 'children':
       case 'style':
       case 'suppressContentEditableWarning':
       case 'suppressHydrationWarning':
+      // Reserved
       case 'defaultValue':
       case 'defaultChecked':
       case 'innerHTML':

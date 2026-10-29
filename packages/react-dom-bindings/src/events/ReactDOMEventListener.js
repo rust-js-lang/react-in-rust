@@ -294,6 +294,7 @@ export function findInstanceBlockingTarget(targetNode) {
 export function getEventPriority(domEventName) {
   switch (domEventName) {
     case 'beforetoggle':
+    // Used by SimpleEventPlugin:
     case 'cancel':
     case 'click':
     case 'close':
@@ -329,14 +330,17 @@ export function getEventPriority(domEventName) {
     case 'touchend':
     case 'touchstart':
     case 'volumechange':
+    // Used by polyfills: (fall through)
     case 'change':
     case 'selectionchange':
     case 'textInput':
     case 'compositionstart':
     case 'compositionend':
     case 'compositionupdate':
+    // Only enableCreateEventHandleAPI: (fall through)
     case 'beforeblur':
     case 'afterblur':
+    // Not used by React but could be by user code: (fall through)
     case 'beforeinput':
     case 'blur':
     case 'fullscreenchange':
@@ -346,10 +350,6 @@ export function getEventPriority(domEventName) {
     case 'popstate':
     case 'select':
     case 'selectstart':
-      // Used by SimpleEventPlugin:
-      // Used by polyfills: (fall through)
-      // Only enableCreateEventHandleAPI: (fall through)
-      // Not used by React but could be by user code: (fall through)
       return DiscreteEventPriority;
     case 'drag':
     case 'dragenter':
@@ -366,11 +366,11 @@ export function getEventPriority(domEventName) {
     case 'scroll':
     case 'touchmove':
     case 'wheel':
+    // Not used by React but could be by user code: (fall through)
     case 'mouseenter':
     case 'mouseleave':
     case 'pointerenter':
     case 'pointerleave':
-      // Not used by React but could be by user code: (fall through)
       return ContinuousEventPriority;
     case 'message': {
       // We might be in the Scheduler callback.

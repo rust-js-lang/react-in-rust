@@ -487,8 +487,6 @@ function replayUnblockedFormActions(formReplayingQueue) {
     lastScheduledReplayQueue = null;
   }
   let i = 0;
-  // We're blocked on something in this React instance. We'll retry later.
-  // Continue without incrementing the index.
   while (i < formReplayingQueue.length) {
     const form = formReplayingQueue[i];
     const submitterOrAction = formReplayingQueue[i + 1];
@@ -497,12 +495,14 @@ function replayUnblockedFormActions(formReplayingQueue) {
       // This action is not hydrated yet. This might be because it's blocked on
       // a different React instance or higher up our tree.
       const blockedOn = findInstanceBlockingTarget(submitterOrAction || form);
-      if (blockedOn != null) {
+      if (blockedOn == null) {
+        // We're not blocked but we don't have an action. This must mean that
+        // this is in another React instance. We'll just skip past it.
+        i += 3;
+      } else {
+        // We're blocked on something in this React instance. We'll retry later.
         return;
       }
-      // We're not blocked but we don't have an action. This must mean that
-      // this is in another React instance. We'll just skip past it.
-      i += 3;
     } else {
       const formInst = getInstanceFromNode(form);
       if (formInst != null) {
@@ -510,6 +510,7 @@ function replayUnblockedFormActions(formReplayingQueue) {
         // We're ready to replay this. Let's delete it from the queue.
         formReplayingQueue.splice(i, 3);
         dispatchReplayedFormAction(formInst, form, submitterOrAction, formData);
+        // Continue without incrementing the index.
       } else {
         // This form must've been part of a different React instance.
         // If we want to preserve ordering between React instances on the same root

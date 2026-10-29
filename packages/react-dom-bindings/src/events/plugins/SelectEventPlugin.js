@@ -52,7 +52,7 @@ function getSelection(node) {
       end: node.selectionEnd,
     };
   } else {
-    const win = node.ownerDocument?.defaultView ?? window;
+    const win = node.ownerDocument.defaultView ?? window;
     const selection = $unwrap(win.getSelection());
     return {
       anchorNode: selection.anchorNode,

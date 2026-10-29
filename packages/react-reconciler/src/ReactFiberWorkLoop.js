@@ -2178,9 +2178,7 @@ function prepareFreshStack(root, lanes) {
 
   if (__DEV__) {
     resetOwnerStackLimit();
-    const discardPendingWarnings =
-      ReactStrictModeWarnings.discardPendingWarnings;
-    discardPendingWarnings();
+    ReactStrictModeWarnings.discardPendingWarnings();
   }
 
   return rootWorkInProgress;
@@ -5108,12 +5106,8 @@ export function throwIfInfiniteUpdateLoopDetected(
 
 function flushRenderPhaseStrictModeWarningsInDEV() {
   if (__DEV__) {
-    const flushLegacyContextWarning =
-      ReactStrictModeWarnings.flushLegacyContextWarning;
-    flushLegacyContextWarning();
-    const flushPendingUnsafeLifecycleWarnings =
-      ReactStrictModeWarnings.flushPendingUnsafeLifecycleWarnings;
-    flushPendingUnsafeLifecycleWarnings();
+    ReactStrictModeWarnings.flushLegacyContextWarning();
+    ReactStrictModeWarnings.flushPendingUnsafeLifecycleWarnings();
   }
 }
 

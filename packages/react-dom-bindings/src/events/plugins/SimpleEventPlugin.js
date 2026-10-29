@@ -103,10 +103,10 @@ export function extractEvents(
       case 'mousedown':
       case 'mousemove':
       case 'mouseup':
+      // TODO: Disabled elements should not respond to mouse events
       case 'mouseout':
       case 'mouseover':
       case 'contextmenu':
-        // TODO: Disabled elements should not respond to mouse events
         SyntheticEventCtor = SyntheticMouseEvent;
         break;
       case 'drag':
@@ -165,8 +165,8 @@ export function extractEvents(
         SyntheticEventCtor = SyntheticToggleEvent;
         break;
       default:
+      // Unknown event. This is used by createEventHandle.
     }
-    // Unknown event. This is used by createEventHandle.
 
     const inCapturePhase = (eventSystemFlags & IS_CAPTURE_PHASE) !== 0;
     if (

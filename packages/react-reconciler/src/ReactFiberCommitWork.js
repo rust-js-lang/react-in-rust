@@ -3028,12 +3028,6 @@ function reappearLayoutEffects(
     (layoutEffectTraversalFlags & IncludeWorkInProgressEffects) !==
     NoLayoutEffectTraversalFlags;
   const returnFiber = finishedWork.return;
-  // Unlike commitLayoutEffectsOnFiber, we don't need to handle HostRoot
-  // because this function only visits nodes that are inside an
-  // Offscreen fiber.
-  // case HostRoot: {
-  //  ...
-  // }
   switch (finishedWork.tag) {
     case FunctionComponent:
     case ForwardRef:
@@ -3066,6 +3060,12 @@ function reappearLayoutEffects(
       safelyAttachRef(finishedWork, returnFiber);
       break;
     case HostSingleton:
+    // Unlike commitLayoutEffectsOnFiber, we don't need to handle HostRoot
+    // because this function only visits nodes that are inside an
+    // Offscreen fiber.
+    // case HostRoot: {
+    //  ...
+    // }
     case HostComponent:
       if (finishedWork.tag === HostSingleton && supportsSingletons) {
         const includeHostSingletons =
@@ -4990,15 +4990,7 @@ function commitPassiveUnmountInsideDeletedTreeOnFiber(
   const prevEffectDuration = pushComponentEffectDuration();
   const prevEffectErrors = pushComponentEffectErrors();
   const prevEffectDidSpawnUpdate = pushComponentEffectDidSpawnUpdate();
-  // TODO: run passive unmount effects when unmounting a root.
-  // Because passive unmount effects are not currently run,
-  // the cache instance owned by the root will never be freed.
-  // When effects are run, the cache should be freed here:
-  // case HostRoot: {
-  //   const cache = current.memoizedState.cache;
-  //   releaseCache(cache);
-  //   break;
-  // }
+
   switch (current.tag) {
     case FunctionComponent:
     case ForwardRef:
@@ -5010,6 +5002,15 @@ function commitPassiveUnmountInsideDeletedTreeOnFiber(
       );
       break;
     case LegacyHiddenComponent:
+    // TODO: run passive unmount effects when unmounting a root.
+    // Because passive unmount effects are not currently run,
+    // the cache instance owned by the root will never be freed.
+    // When effects are run, the cache should be freed here:
+    // case HostRoot: {
+    //   const cache = current.memoizedState.cache;
+    //   releaseCache(cache);
+    //   break;
+    // }
     case OffscreenComponent: {
       const memoizedState = current.memoizedState;
       if (memoizedState != null && memoizedState.cachePool != null) {

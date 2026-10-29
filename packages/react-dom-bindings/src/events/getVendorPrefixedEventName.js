@@ -6,7 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 import {canUseDOM} from 'shared/ExecutionEnvironment';
-import {$local} from '@rust-js/runtime';
 
 /**
  * Generate a mapping of standard vendor prefixes using the defined style property and event name.
@@ -25,7 +24,7 @@ function makePrefixMap(styleProp, eventName) {
 }
 
 /** A list of event names to a configurable list of vendor prefixes. */
-const vendorPrefixes = $local(() => ({
+const vendorPrefixes = {
   animationcancel: makePrefixMap('Animation', 'AnimationCancel'),
   animationend: makePrefixMap('Animation', 'AnimationEnd'),
   animationiteration: makePrefixMap('Animation', 'AnimationIteration'),
@@ -34,7 +33,7 @@ const vendorPrefixes = $local(() => ({
   transitionstart: makePrefixMap('Transition', 'TransitionStart'),
   transitioncancel: makePrefixMap('Transition', 'TransitionCancel'),
   transitionend: makePrefixMap('Transition', 'TransitionEnd'),
-}));
+};
 
 /** Event names that have already been detected and prefixed (if applicable). */
 const prefixedEventNames = {};
@@ -51,17 +50,15 @@ if (canUseDOM) {
   // style object but the events that fire will still be prefixed, so we need
   // to check if the un-prefixed events are usable, and if not remove them from the map.
   if (!('AnimationEvent' in window)) {
-    const vendorPrefixes$1 = vendorPrefixes();
-    delete vendorPrefixes$1.animationcancel.animation;
-    delete vendorPrefixes$1.animationend.animation;
-    delete vendorPrefixes$1.animationiteration.animation;
-    delete vendorPrefixes$1.animationstart.animation;
+    delete vendorPrefixes.animationcancel.animation;
+    delete vendorPrefixes.animationend.animation;
+    delete vendorPrefixes.animationiteration.animation;
+    delete vendorPrefixes.animationstart.animation;
   }
 
   // Same as above
   if (!('TransitionEvent' in window)) {
-    const vendorPrefixes$1 = vendorPrefixes();
-    delete vendorPrefixes$1.transitionend.transition;
+    delete vendorPrefixes.transitionend.transition;
   }
 }
 
@@ -76,7 +73,7 @@ export default function getVendorPrefixedEventName(eventName) {
   if (prefixedEventName != null) {
     return prefixedEventName;
   }
-  const prefixMap = vendorPrefixes()[eventName];
+  const prefixMap = vendorPrefixes[eventName];
   if (prefixMap == null) {
     return eventName;
   }

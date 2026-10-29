@@ -32,8 +32,6 @@ pub struct DispatchConfig {
 /// where its `_reactName` is a string, an `UnknownReactSyntheticEvent` where
 /// it's `null`. SyntheticEvent's constructors make it.
 pub struct ReactSyntheticEvent {
-    pub is_persistent: fn() -> bool,
-    pub prevent_default: Box<dyn Fn()>,
     pub is_propagation_stopped: Cell<fn() -> bool>,
     pub is_default_prevented: Cell<fn() -> bool>,
     // `null`, a fiber, or an array of fibers or `null`s.
@@ -55,6 +53,29 @@ pub struct ReactSyntheticEvent {
 }
 
 unsafe impl js::Defined for ReactSyntheticEvent {}
+
+/// The methods SyntheticEvent's constructors' prototypes give each event.
+impl ReactSyntheticEvent {
+    #[cfg_attr(rust_js, rust_js::link_name = "preventDefault")]
+    pub fn prevent_default(&self) {
+        unreachable!()
+    }
+
+    #[cfg_attr(rust_js, rust_js::link_name = "stopPropagation")]
+    pub fn stop_propagation(&self) {
+        unreachable!()
+    }
+
+    #[cfg_attr(rust_js, rust_js::link_name = "persist")]
+    pub fn persist(&self) {
+        unreachable!()
+    }
+
+    #[cfg_attr(rust_js, rust_js::link_name = "isPersistent")]
+    pub fn is_persistent(&self) -> bool {
+        unreachable!()
+    }
+}
 
 pub type KnownReactSyntheticEvent = ReactSyntheticEvent;
 pub type UnknownReactSyntheticEvent = ReactSyntheticEvent;

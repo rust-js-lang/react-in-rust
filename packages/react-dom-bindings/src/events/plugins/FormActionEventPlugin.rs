@@ -138,7 +138,7 @@ pub fn extract_events(
             }
         } else if js::type_of(action) == "function" {
             // A form action was provided. Prevent native navigation.
-            (event.prevent_default)();
+            event.prevent_default();
 
             // Dispatch the action and set a pending form status.
             let form_data = form_data::new(Some(form), submitter);

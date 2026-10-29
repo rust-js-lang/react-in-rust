@@ -31,7 +31,6 @@ import {
   getEventListenerSet,
 } from '../client/ReactDOMComponentTree.js';
 import {isReplayingEvent} from './CurrentReplayingEvent.js';
-import {registerSimpleEvents} from './DOMEventProperties.js';
 import {
   addEventBubbleListener,
   addEventBubbleListenerWithPassiveFlag,
@@ -62,7 +61,7 @@ import * as SelectEventPlugin from './plugins/SelectEventPlugin.js';
 import * as SimpleEventPlugin from './plugins/SimpleEventPlugin.js';
 
 // TODO: remove top-level side effect.
-registerSimpleEvents();
+SimpleEventPlugin.registerEvents();
 EnterLeaveEventPlugin.registerEvents();
 ChangeEventPlugin.registerEvents();
 SelectEventPlugin.registerEvents();

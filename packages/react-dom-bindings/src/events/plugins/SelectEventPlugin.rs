@@ -10,7 +10,7 @@ use js::Unknown;
 use react_reconciler::react_internal_types::Fiber;
 use shared::execution_environment::CAN_USE_DOM;
 use shared::shallow_equal::shallow_equal;
-use webapi::{Document, Element, EventTarget, Node, document, window};
+use webapi::{Element, EventTarget, Node, document, window};
 
 use crate::dom_plugin_event_system::{
     DispatchEntry, DispatchQueue, accumulate_two_phase_listeners,
@@ -98,10 +98,7 @@ fn get_selection(node: &'static Element) -> &'static Unknown {
             end: js::get(node, "selectionEnd"),
         })
     } else {
-        let win = node
-            .owner_document()
-            .and_then(Document::default_view)
-            .unwrap_or(window);
+        let win = node.owner_document().default_view().unwrap_or(window);
         let selection = win.get_selection().unwrap();
         js::unknown_of(DocumentSelection {
             anchor_node: selection.anchor_node(),

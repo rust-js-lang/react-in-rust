@@ -291,7 +291,6 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
   // all except special table nodes which cause bad parsing behavior anyway.
 
   // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intr
-  // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intbody
   // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intable
   // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inhead
   switch (parentTag) {
@@ -304,6 +303,7 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
         tag === 'template'
       );
     case 'tbody':
+    // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intbody
     case 'thead':
     case 'tfoot':
       return (
@@ -385,6 +385,7 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
       }
       return false;
     case 'rp':
+
     case 'rt':
       // $FlowFixMe[incompatible-type]
       return !(parentTag != null && IMPLIED_END_TAGS.includes(parentTag));
@@ -395,6 +396,10 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
       // <input> causes open <select> tags to close.
       return parentTag !== 'select';
     case 'frameset':
+    // These tags are only valid with a few parents that have special child
+    // parsing rules -- if we're down here, then none of those matched and
+    // so we allow it only if we don't know what the parent is, as all other
+    // cases are invalid.
     case 'frame':
     case 'tbody':
     case 'td':
@@ -402,10 +407,6 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
     case 'th':
     case 'thead':
     case 'tr':
-      // These tags are only valid with a few parents that have special child
-      // parsing rules -- if we're down here, then none of those matched and
-      // so we allow it only if we don't know what the parent is, as all other
-      // cases are invalid.
       return parentTag == null;
     case 'head':
       // We support rendering <head> in the root when the container is
