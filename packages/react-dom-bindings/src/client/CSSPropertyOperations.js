@@ -249,6 +249,7 @@ function validateShorthandPropertyCollisionInDev(prevStyles, nextStyles) {
             originalKey,
             correctOriginalKey,
           );
+          continue;
         }
       }
     }

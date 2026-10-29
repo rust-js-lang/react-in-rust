@@ -516,7 +516,7 @@ if (localSetImmediate != null) {
   // We prefer MessageChannel because of the 4ms setTimeout clamping.
   const channel = new MessageChannel();
   const port = channel.port2;
-  channel.port1.onmessage = () => performWorkUntilDeadline();
+  channel.port1.onmessage = performWorkUntilDeadline;
   schedulePerformWorkUntilDeadline = () => port.postMessage(undefined);
 } else {
   // We should only fallback here in non-browser environments.

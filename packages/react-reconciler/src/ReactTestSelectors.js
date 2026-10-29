@@ -283,6 +283,7 @@ export function findAllNodes(hostRoot, selectors) {
     ) {
       if (!isHiddenSubtree(node)) {
         instanceRoots.push(node.stateNode);
+        continue;
       }
     } else {
       let child = node.child;

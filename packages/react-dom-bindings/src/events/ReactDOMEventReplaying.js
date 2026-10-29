@@ -499,26 +499,26 @@ function replayUnblockedFormActions(formReplayingQueue) {
         // We're not blocked but we don't have an action. This must mean that
         // this is in another React instance. We'll just skip past it.
         i += 3;
+        continue;
       } else {
         // We're blocked on something in this React instance. We'll retry later.
-        return;
-      }
-    } else {
-      const formInst = getInstanceFromNode(form);
-      if (formInst != null) {
-        // This is part of our instance.
-        // We're ready to replay this. Let's delete it from the queue.
-        formReplayingQueue.splice(i, 3);
-        dispatchReplayedFormAction(formInst, form, submitterOrAction, formData);
-        // Continue without incrementing the index.
-      } else {
-        // This form must've been part of a different React instance.
-        // If we want to preserve ordering between React instances on the same root
-        // we'd need some way for the other instance to ping us when it's done.
-        // We'll just skip this and let the other instance execute it.
-        i += 3;
+        break;
       }
     }
+    const formInst = getInstanceFromNode(form);
+    if (formInst != null) {
+      // This is part of our instance.
+      // We're ready to replay this. Let's delete it from the queue.
+      formReplayingQueue.splice(i, 3);
+      dispatchReplayedFormAction(formInst, form, submitterOrAction, formData);
+      // Continue without incrementing the index.
+      continue;
+    }
+    // This form must've been part of a different React instance.
+    // If we want to preserve ordering between React instances on the same root
+    // we'd need some way for the other instance to ping us when it's done.
+    // We'll just skip this and let the other instance execute it.
+    i += 3;
   }
 }
 

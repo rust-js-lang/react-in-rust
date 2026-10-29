@@ -546,7 +546,7 @@ thread_local! {
         // We prefer MessageChannel because of the 4ms setTimeout clamping.
         let channel = webapi::message_channel::new();
         let port = channel.port2();
-        channel.port1().set_onmessage(Some(Box::new(|_| perform_work_until_deadline())));
+        channel.port1().set_onmessage(Some(&|_| perform_work_until_deadline()));
         Box::new(move || port.post_message(None::<u8>, None))
     } else {
         // We should only fallback here in non-browser environments.

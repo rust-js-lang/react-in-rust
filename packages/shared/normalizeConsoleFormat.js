@@ -16,28 +16,28 @@ export default function normalizeConsoleFormat(formatString, args, firstArg) {
   while (i + 1 < formatString.length) {
     if (formatString.charCodeAt(i) !== 37 /* "%" */) {
       i++;
-    } else {
-      i++;
-      switch (formatString.charCodeAt(i)) {
-        case 79 /* "O" */:
-        case 99 /* "c" */:
-        case 100 /* "d" */:
-        case 102 /* "f" */:
-        case 105 /* "i" */:
-        case 111 /* "o" */:
-        case 115 /* "s" */:
-          if (j < args.length) {
-            // We have a matching argument.
-            j++;
-          } else {
-            // We have more format specifiers than arguments.
-            // So we need to escape this to print the literal.
-            normalizedString += formatString.slice(last, i) + '%';
-            last = i;
-          }
-      }
-      i++;
+      continue;
     }
+    i++;
+    switch (formatString.charCodeAt(i)) {
+      case 79 /* "O" */:
+      case 99 /* "c" */:
+      case 100 /* "d" */:
+      case 102 /* "f" */:
+      case 105 /* "i" */:
+      case 111 /* "o" */:
+      case 115 /* "s" */:
+        if (j < args.length) {
+          // We have a matching argument.
+          j++;
+        } else {
+          // We have more format specifiers than arguments.
+          // So we need to escape this to print the literal.
+          normalizedString += formatString.slice(last, i) + '%';
+          last = i;
+        }
+    }
+    i++;
   }
   normalizedString += formatString.slice(last, formatString.length);
   // Pad with extra format specifiers for the rest.
