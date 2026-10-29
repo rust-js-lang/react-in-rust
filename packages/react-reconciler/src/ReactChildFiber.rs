@@ -1469,8 +1469,9 @@ fn create_child_reconciler(should_track_side_effects: bool) -> Box<ChildReconcil
         if should_track_side_effects {
             // Any existing children that weren't consumed above were deleted. We need
             // to add them to the deletion list.
-            existing_children
-                .for_each(|child, _| delete_child(should_track_side_effects, return_fiber, &child));
+            existing_children.for_each(|child, _, _| {
+                delete_child(should_track_side_effects, return_fiber, &child)
+            });
         }
 
         if get_is_hydrating() {
@@ -1824,8 +1825,9 @@ fn create_child_reconciler(should_track_side_effects: bool) -> Box<ChildReconcil
         if should_track_side_effects {
             // Any existing children that weren't consumed above were deleted. We need
             // to add them to the deletion list.
-            existing_children
-                .for_each(|child, _| delete_child(should_track_side_effects, return_fiber, &child));
+            existing_children.for_each(|child, _, _| {
+                delete_child(should_track_side_effects, return_fiber, &child)
+            });
         }
 
         if get_is_hydrating() {

@@ -1716,7 +1716,7 @@ function commitSuspenseCallback(finishedWork) {
     if (typeof suspenseCallback === 'function') {
       const retryQueue = finishedWork.updateQueue;
       if (retryQueue != null) {
-        suspenseCallback(new Set(Array.from(retryQueue)));
+        suspenseCallback(new Set(retryQueue));
       }
     } else if (__DEV__ && suspenseCallback !== undefined) {
       console.error('Unexpected type for suspenseCallback.');
@@ -4580,77 +4580,18 @@ function accumulateSuspenseyCommitOnFiber(
         suspendInstance(suspendedState, instance, type, props);
       }
     }
-  } else {
-    if (tag === HostRoot || tag === HostPortal) {
-      if (supportsResources) {
-        const previousHoistableRoot = currentHoistableRoot;
-        // ReactFiberConfig's `Container`.
-        const container = fiber.stateNode.containerInfo;
-        currentHoistableRoot = getHoistableRoot(container);
-        recursivelyAccumulateSuspenseyCommit(
-          fiber,
-          committedLanes,
-          suspendedState,
-        );
-        currentHoistableRoot = previousHoistableRoot;
-        // Don't suspend in hidden trees
-        return;
-      } else {
-        recursivelyAccumulateSuspenseyCommit(
-          fiber,
-          committedLanes,
-          suspendedState,
-        );
-        return;
-      }
-    }
-    if (tag === OffscreenComponent) {
-      const isHidden = fiber.memoizedState != null;
-      if (isHidden) {
-        return;
-      } else {
-        const current = fiber.alternate;
-        const wasHidden = current != null && current.memoizedState != null;
-        if (wasHidden) {
-          // This tree is being revealed. Visit all newly visible suspensey
-          // instances, even if they're in the current tree.
-          const prevFlags = suspenseyCommitFlag;
-          suspenseyCommitFlag = MaySuspendCommit;
-          recursivelyAccumulateSuspenseyCommit(
-            fiber,
-            committedLanes,
-            suspendedState,
-          );
-          suspenseyCommitFlag = prevFlags;
-        } else {
-          recursivelyAccumulateSuspenseyCommit(
-            fiber,
-            committedLanes,
-            suspendedState,
-          );
-        }
-        return;
-      }
-    }
-    if (tag === ViewTransitionComponent && enableViewTransition) {
-      if ((fiber.flags & suspenseyCommitFlag) !== NoFlags) {
-        const props = fiber.memoizedProps;
-        const name = props.name;
-        if (name != null && name !== 'auto') {
-          // This is a named ViewTransition being mounted or reappearing. Let's add it to
-          // the map so we can match it with deletions later.
-          const state = fiber.stateNode;
-          // Reset the pair in case we didn't end up restoring the instance in previous commits.
-          // This shouldn't really happen anymore but just in case. We could maybe add an invariant.
-          state.paired = null;
-          trackAppearingViewTransition(name, state);
-        }
-      }
+  } else if (tag === HostRoot || tag === HostPortal) {
+    if (supportsResources) {
+      const previousHoistableRoot = currentHoistableRoot;
+      // ReactFiberConfig's `Container`.
+      const container = fiber.stateNode.containerInfo;
+      currentHoistableRoot = getHoistableRoot(container);
       recursivelyAccumulateSuspenseyCommit(
         fiber,
         committedLanes,
         suspendedState,
       );
+      currentHoistableRoot = previousHoistableRoot;
     } else {
       recursivelyAccumulateSuspenseyCommit(
         fiber,
@@ -4658,6 +4599,49 @@ function accumulateSuspenseyCommitOnFiber(
         suspendedState,
       );
     }
+  } else if (tag === OffscreenComponent) {
+    const isHidden = fiber.memoizedState != null;
+    if (isHidden) {
+      // Don't suspend in hidden trees
+    } else {
+      const current = fiber.alternate;
+      const wasHidden = current != null && current.memoizedState != null;
+      if (wasHidden) {
+        // This tree is being revealed. Visit all newly visible suspensey
+        // instances, even if they're in the current tree.
+        const prevFlags = suspenseyCommitFlag;
+        suspenseyCommitFlag = MaySuspendCommit;
+        recursivelyAccumulateSuspenseyCommit(
+          fiber,
+          committedLanes,
+          suspendedState,
+        );
+        suspenseyCommitFlag = prevFlags;
+      } else {
+        recursivelyAccumulateSuspenseyCommit(
+          fiber,
+          committedLanes,
+          suspendedState,
+        );
+      }
+    }
+  } else if (tag === ViewTransitionComponent && enableViewTransition) {
+    if ((fiber.flags & suspenseyCommitFlag) !== NoFlags) {
+      const props = fiber.memoizedProps;
+      const name = props.name;
+      if (name != null && name !== 'auto') {
+        // This is a named ViewTransition being mounted or reappearing. Let's add it to
+        // the map so we can match it with deletions later.
+        const state = fiber.stateNode;
+        // Reset the pair in case we didn't end up restoring the instance in previous commits.
+        // This shouldn't really happen anymore but just in case. We could maybe add an invariant.
+        state.paired = null;
+        trackAppearingViewTransition(name, state);
+      }
+    }
+    recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState);
+  } else {
+    recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState);
   }
 }
 

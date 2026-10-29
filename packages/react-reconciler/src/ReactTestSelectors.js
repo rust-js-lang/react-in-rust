@@ -401,7 +401,7 @@ export function findBoundingRects(hostRoot, selectors) {
           targetBottom <= otherBottom
         ) {
           // Complete overlapping rects; remove the inner one.
-          $removeAt(boundingRects, i);
+          boundingRects.splice(i, 1);
           break;
         } else if (
           targetLeft === otherLeft &&
@@ -418,7 +418,7 @@ export function findBoundingRects(hostRoot, selectors) {
             otherRect.height = targetBottom - otherTop;
           }
 
-          $removeAt(boundingRects, i);
+          boundingRects.splice(i, 1);
           break;
         } else if (
           targetTop === otherTop &&
@@ -435,7 +435,7 @@ export function findBoundingRects(hostRoot, selectors) {
             otherRect.width = targetRight - otherLeft;
           }
 
-          $removeAt(boundingRects, i);
+          boundingRects.splice(i, 1);
           break;
         }
       }
@@ -510,7 +510,7 @@ export function observeVisibleRects(hostRoot, selectors, callback, options) {
   );
 
   // When React mutates the host environment, we may need to change what we're listening to.
-  function commitHook() {
+  const commitHook = () => {
     const nextInstanceRoots = findAllNodes(hostRoot, selectors);
 
     instanceRoots.forEach(target => {
@@ -524,7 +524,7 @@ export function observeVisibleRects(hostRoot, selectors, callback, options) {
         observe(target);
       }
     });
-  }
+  };
 
   $withBorrowMut(
     commitHooks,

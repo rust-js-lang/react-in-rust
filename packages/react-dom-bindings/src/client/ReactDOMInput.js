@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+// TODO: direct imports like some-package/src/* are bad. Fix me.
 import {getCurrentFiberOwnerNameInDevOrNull} from '../../../react-reconciler/src/ReactCurrentFiber.js';
 import {checkAttributeStringCoercion} from '../../../shared/CheckStringCoercion.js';
 import {

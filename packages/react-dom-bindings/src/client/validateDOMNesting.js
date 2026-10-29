@@ -307,14 +307,12 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
     case 'tbody':
     case 'thead':
     case 'tfoot':
-      if (tag !== 'tr') {
-        if (tag !== 'style') {
-          if (tag !== 'script') {
-            return tag === 'template';
-          }
-        }
-      }
-      return true;
+      return (
+        tag === 'tr' ||
+        tag === 'style' ||
+        tag === 'script' ||
+        tag === 'template'
+      );
     case 'colgroup':
       // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-incolgroup
       return tag === 'col' || tag === 'template';
@@ -414,19 +412,15 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
       // #document, <html>, or <body>.
       return implicitRootScope || parentTag == null;
     case 'html':
-      if (implicitRootScope) {
-        if (parentTag === '#document') {
-          return true;
-        }
-      }
-      return parentTag == null;
+      return (
+        (implicitRootScope && parentTag === '#document') || parentTag == null
+      );
     case 'body':
-      if (implicitRootScope) {
-        if (parentTag === '#document' || parentTag === 'html') {
-          return true;
-        }
-      }
-      return parentTag == null;
+      return (
+        (implicitRootScope &&
+          (parentTag === '#document' || parentTag === 'html')) ||
+        parentTag == null
+      );
   }
 
   return true;

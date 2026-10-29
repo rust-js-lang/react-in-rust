@@ -42,7 +42,7 @@ function createSyntheticEvent(Interface) {
     this._targetInst = targetInst;
     this.type = reactEventType;
     this.nativeEvent = nativeEvent;
-    this.target = nativeEventTarget ?? null;
+    this.target = nativeEventTarget;
     this.currentTarget = null;
 
     for (const propName in Interface) {

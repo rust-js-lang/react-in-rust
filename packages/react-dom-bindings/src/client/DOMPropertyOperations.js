@@ -33,10 +33,7 @@ export function getValueForAttribute(node, name, expected) {
           }
         }
       }
-      if (expected === undefined) {
-        return;
-      }
-      return null;
+      return expected === undefined ? undefined : null;
     }
     // When CSP is enabled, browsers hide the nonce attribute
     // so we need to access the nonce property directly
@@ -72,10 +69,7 @@ export function getValueForAttributeOnCustomComponent(node, name, expected) {
       } else if (expected === false) {
         return expected;
       }
-      if (expected === undefined) {
-        return;
-      }
-      return null;
+      return expected === undefined ? undefined : null;
     }
     // When CSP is enabled, browsers hide the nonce attribute
     // so we need to access the nonce property directly

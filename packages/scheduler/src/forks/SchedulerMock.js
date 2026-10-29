@@ -7,6 +7,7 @@
 
 import {enableProfiling} from '../SchedulerFeatureFlags.js';
 import {peek, pop, push} from '../SchedulerMinHeap.js';
+// TODO: Use symbols?
 import {
   IdlePriority,
   ImmediatePriority,

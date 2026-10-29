@@ -258,23 +258,23 @@ export function addValueToProperties(
             '\xa0\xa0'.repeat(indent) + propertyName,
             'Promise',
           ]);
-        } else {
-          if (objectName === 'Object') {
-            const proto = Object.getPrototypeOf(value);
-            if (proto != null) {
-              const constructor = proto.constructor;
-              if (typeof constructor === 'function') {
-                objectName = constructor.name;
-              }
+          return;
+        }
+        if (objectName === 'Object') {
+          const proto = Object.getPrototypeOf(value);
+          if (proto != null) {
+            const constructor = proto.constructor;
+            if (typeof constructor === 'function') {
+              objectName = constructor.name;
             }
           }
-          properties.push([
-            prefix + '\xa0\xa0'.repeat(indent) + propertyName,
-            objectName !== 'Object' ? objectName : indent < 3 ? '' : '…',
-          ]);
-          if (indent < 3) {
-            addObjectToProperties(value, properties, indent + 1, prefix);
-          }
+        }
+        properties.push([
+          prefix + '\xa0\xa0'.repeat(indent) + propertyName,
+          objectName !== 'Object' ? objectName : indent < 3 ? '' : '…',
+        ]);
+        if (indent < 3) {
+          addObjectToProperties(value, properties, indent + 1, prefix);
         }
         return;
       }

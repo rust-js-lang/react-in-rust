@@ -32,6 +32,11 @@
 //
 // @flow
 
+// code copied and modified from escape-html
+/**
+ * Module variables.
+ * @private
+ */
 import {checkHtmlStringCoercion} from '../../../shared/CheckStringCoercion.js';
 
 const matchHtmlRegExp = /["'&<>]/;

@@ -119,7 +119,7 @@ pub fn process_transition_callbacks(
         if let Some(on_marker_progress) = on_marker_progress
             && let Some(marker_progress) = marker_progress
         {
-            marker_progress.for_each(|marker_instance, marker_name| {
+            marker_progress.for_each(|marker_instance, marker_name, _| {
                 if let Some(transitions) = marker_instance.transitions {
                     // TODO: Clone the suspense object so users can't modify it
                     let pending: Vec<SuspenseInfo> = match marker_instance.pending_boundaries {
@@ -146,7 +146,7 @@ pub fn process_transition_callbacks(
         if let Some(marker_complete) = marker_complete
             && let Some(on_marker_complete) = on_marker_complete
         {
-            marker_complete.for_each(|transitions, marker_name| {
+            marker_complete.for_each(|transitions, marker_name, _| {
                 transitions.for_each(|transition| {
                     if let Some(name) = &transition.name {
                         on_marker_complete(
@@ -170,7 +170,8 @@ pub fn process_transition_callbacks(
                      transitions,
                      aborts,
                  },
-                 marker_name| {
+                 marker_name,
+                 _| {
                     transitions.for_each(|transition| {
                         let mut filtered_aborts = Vec::new();
                         aborts.borrow().iter().for_each(|abort| match abort.reason {
@@ -211,7 +212,7 @@ pub fn process_transition_callbacks(
         if let Some(on_transition_progress) = on_transition_progress
             && let Some(transition_progress) = transition_progress
         {
-            transition_progress.for_each(|pending, transition| {
+            transition_progress.for_each(|pending, transition, _| {
                 if let Some(name) = &transition.name {
                     on_transition_progress(
                         name,
@@ -280,9 +281,10 @@ pub fn push_root_marker_instance(work_in_progress: &Rc<Fiber>) {
         // For ever transition on the suspense boundary, we push the transition
         // along with its map of pending suspense boundaries onto the marker
         // instance stack.
-        root.incomplete_transitions.for_each(|marker_instance, _| {
-            marker_instances.push(marker_instance);
-        });
+        root.incomplete_transitions
+            .for_each(|marker_instance, _, _| {
+                marker_instances.push(marker_instance);
+            });
         MARKER_INSTANCE_STACK.with(|marker_instance_stack| {
             push(
                 marker_instance_stack,

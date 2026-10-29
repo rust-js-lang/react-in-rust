@@ -292,7 +292,9 @@ export function trackUsedThenable(
           );
         }
       }
-      throw SuspenseException;
+      return (exception => {
+        throw exception;
+      })(SuspenseException);
   }
 }
 

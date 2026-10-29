@@ -2697,7 +2697,7 @@ function renderRootConcurrent(root, lanes) {
             // The work loop is suspended. We need to either unwind the stack or
             // replay the suspended component.
             const thrownValue = workInProgressThrownValue;
-            resumeOrUnwind: switch (workInProgressSuspendedReason) {
+            switch (workInProgressSuspendedReason) {
               case SuspendedOnError:
                 // Unwind then continue with the normal work loop.
                 workInProgressSuspendedReason = NotSuspended;
@@ -2708,7 +2708,7 @@ function renderRootConcurrent(root, lanes) {
                   thrownValue,
                   SuspendedOnError,
                 );
-                break resumeOrUnwind;
+                break;
               case SuspendedOnData:
               case SuspendedOnAction: {
                 const thenable = thrownValue;
@@ -2717,7 +2717,6 @@ function renderRootConcurrent(root, lanes) {
                   workInProgressSuspendedReason = NotSuspended;
                   workInProgressThrownValue = null;
                   replaySuspendedUnitOfWork(unitOfWork);
-                  break resumeOrUnwind;
                 } else {
                   // The work loop is suspended on data. We should wait for it to
                   // resolve before continuing to render.
@@ -2743,8 +2742,9 @@ function renderRootConcurrent(root, lanes) {
                     ensureRootIsScheduled(root$1);
                   }
                   thenable.then(onResolution, onResolution);
+                  return;
                 }
-                return;
+                break;
               }
               case SuspendedOnImmediate:
                 // If this fiber just suspended, it's possible the data is already
@@ -2774,7 +2774,7 @@ function renderRootConcurrent(root, lanes) {
                     SuspendedAndReadyToContinue,
                   );
                 }
-                break resumeOrUnwind;
+                break;
               }
               case SuspendedOnInstanceAndReadyToContinue: {
                 // ReactFiberConfig's `Resource`.
@@ -2819,7 +2819,7 @@ function renderRootConcurrent(root, lanes) {
                         workInProgress = null;
                       }
                     }
-                    break resumeOrUnwind;
+                    break;
                   }
                 } else {
                   // This will fail gracefully but it's not correct, so log a
@@ -2839,7 +2839,7 @@ function renderRootConcurrent(root, lanes) {
                   thrownValue,
                   SuspendedOnInstanceAndReadyToContinue,
                 );
-                break resumeOrUnwind;
+                break;
               }
               case SuspendedOnDeprecatedThrowPromise:
                 // Suspended by an old implementation that uses the `throw promise`
@@ -2854,7 +2854,7 @@ function renderRootConcurrent(root, lanes) {
                   thrownValue,
                   SuspendedOnDeprecatedThrowPromise,
                 );
-                break resumeOrUnwind;
+                break;
               case SuspendedOnHydration:
                 // Selective hydration. An update flowed into a dehydrated tree.
                 // Interrupt the current render so the work loop can switch to the
@@ -3234,7 +3234,7 @@ function completeUnitOfWork(unitOfWork) {
   // Attempt to complete the current unit of work, then move to the next
   // sibling. If there are no more siblings, return to the parent fiber.
   let completedWork = unitOfWork;
-  while (true) {
+  do {
     if ((completedWork.flags & Incomplete) !== NoFlags) {
       // This fiber did not complete, because one of its children did not
       // complete. Switch to unwinding the stack instead of completing it.
@@ -3244,52 +3244,46 @@ function completeUnitOfWork(unitOfWork) {
       // they will be replaced by a fallback.
       const skipSiblings = workInProgressRootDidSkipSuspendedSiblings;
       unwindUnitOfWork(completedWork, skipSiblings);
-    } else {
-      // The current, flushed, state of this fiber is the alternate. Ideally
-      // nothing should rely on this, but relying on it here means that we don't
-      // need an additional field on the work in progress.
-      const current = completedWork.alternate;
-      const returnFiber = completedWork.return;
-
-      startProfilerTimer(completedWork);
-      const next = __DEV__
-        ? runWithFiberInDEV(
-            completedWork,
-            completeWork,
-            current,
-            completedWork,
-            entangledRenderLanes,
-          )
-        : completeWork(current, completedWork, entangledRenderLanes);
-      if (
-        enableProfilerTimer &&
-        (completedWork.mode & ProfileMode) !== NoMode
-      ) {
-        // Update render duration assuming we didn't error.
-        stopProfilerTimerIfRunningAndRecordIncompleteDuration(completedWork);
-      }
-      if (next != null) {
-        // Completing this fiber spawned new work. Work on that next.
-        workInProgress = next;
-      } else {
-        const siblingFiber = completedWork.sibling;
-        if (siblingFiber != null) {
-          // If there is more work to do in this returnFiber, do that next.
-          workInProgress = siblingFiber;
-        } else {
-          // Otherwise, return to the parent
-          // Update the next thing we're working on in case something throws.
-          workInProgress = returnFiber;
-          if (returnFiber == null) {
-            break;
-          }
-          completedWork = returnFiber;
-          continue;
-        }
-      }
+      return;
     }
-    return;
-  }
+
+    // The current, flushed, state of this fiber is the alternate. Ideally
+    // nothing should rely on this, but relying on it here means that we don't
+    // need an additional field on the work in progress.
+    const current = completedWork.alternate;
+    const returnFiber = completedWork.return;
+
+    startProfilerTimer(completedWork);
+    const next = __DEV__
+      ? runWithFiberInDEV(
+          completedWork,
+          completeWork,
+          current,
+          completedWork,
+          entangledRenderLanes,
+        )
+      : completeWork(current, completedWork, entangledRenderLanes);
+    if (enableProfilerTimer && (completedWork.mode & ProfileMode) !== NoMode) {
+      // Update render duration assuming we didn't error.
+      stopProfilerTimerIfRunningAndRecordIncompleteDuration(completedWork);
+    }
+    if (next != null) {
+      // Completing this fiber spawned new work. Work on that next.
+      workInProgress = next;
+      return;
+    }
+
+    const siblingFiber = completedWork.sibling;
+    if (siblingFiber != null) {
+      // If there is more work to do in this returnFiber, do that next.
+      workInProgress = siblingFiber;
+      return;
+    }
+    // Otherwise, return to the parent
+    // Update the next thing we're working on in case something throws.
+    workInProgress = returnFiber;
+    completedWork = returnFiber;
+  } while (completedWork != null);
 
   // We've reached the root.
   if (workInProgressRootExitStatus === RootInProgress) {
@@ -4772,36 +4766,32 @@ export function captureCommitPhaseError(
 
   let fiber = nearestMountedAncestor;
   while (fiber != null) {
-    const node = fiber;
-    if (node.tag === HostRoot) {
-      captureCommitPhaseErrorOnRoot(node, sourceFiber, error);
-    } else {
-      if (node.tag === ClassComponent) {
-        const ctor = node.type;
-        const instance = node.stateNode;
-        if (
-          typeof ctor.getDerivedStateFromError === 'function' ||
-          (typeof instance.componentDidCatch === 'function' &&
-            !isAlreadyFailedLegacyErrorBoundary(instance))
-        ) {
-          const errorInfo = createCapturedValueAtFiber(error, sourceFiber);
-          if (enableProfilerTimer && enableComponentPerformanceTrack) {
-            recordEffectError(errorInfo);
-          }
-          const update = createClassErrorUpdate(SyncLane);
-          const root = enqueueUpdate(node, update, SyncLane);
-          if (root != null) {
-            initializeClassErrorUpdate(update, root, node, errorInfo);
-            markRootUpdated(root, SyncLane);
-            ensureRootIsScheduled(root);
-          }
-          return;
+    if (fiber.tag === HostRoot) {
+      captureCommitPhaseErrorOnRoot(fiber, sourceFiber, error);
+      return;
+    } else if (fiber.tag === ClassComponent) {
+      const ctor = fiber.type;
+      const instance = fiber.stateNode;
+      if (
+        typeof ctor.getDerivedStateFromError === 'function' ||
+        (typeof instance.componentDidCatch === 'function' &&
+          !isAlreadyFailedLegacyErrorBoundary(instance))
+      ) {
+        const errorInfo = createCapturedValueAtFiber(error, sourceFiber);
+        if (enableProfilerTimer && enableComponentPerformanceTrack) {
+          recordEffectError(errorInfo);
         }
+        const update = createClassErrorUpdate(SyncLane);
+        const root = enqueueUpdate(fiber, update, SyncLane);
+        if (root != null) {
+          initializeClassErrorUpdate(update, root, fiber, errorInfo);
+          markRootUpdated(root, SyncLane);
+          ensureRootIsScheduled(root);
+        }
+        return;
       }
-      fiber = node.return;
-      continue;
     }
-    return;
+    fiber = fiber.return;
   }
 
   if (__DEV__) {

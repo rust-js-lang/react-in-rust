@@ -1337,7 +1337,7 @@ fn update_tracing_marker_component(
             if let Some(current_transitions) = current_transitions {
                 let marker_instance = Rc::new(TracingMarkerInstance {
                     tag: Some(TRANSITION_TRACING_MARKER),
-                    transitions: Cell::new(Some(js::set::new(Some(&current_transitions[..])))),
+                    transitions: Cell::new(Some(js::set::new(Some(&*current_transitions)))),
                     pending_boundaries: Cell::new(js::null()),
                     name: RefCell::new(unsafe { js::cast(js::get(next_props, "name")) }),
                     aborts: RefCell::new(js::null()),

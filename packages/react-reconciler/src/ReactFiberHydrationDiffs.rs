@@ -514,7 +514,7 @@ fn describe_element_diff(
             }
         }
 
-        server_prop_names.for_each(|prop_name, _| {
+        server_prop_names.for_each(|prop_name, _, _| {
             if prop_name == "children" {
                 // Handled below.
                 return;

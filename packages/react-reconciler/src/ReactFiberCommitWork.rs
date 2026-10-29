@@ -1862,9 +1862,7 @@ fn commit_suspense_callback(finished_work: &Fiber) {
             if let Some(retry_queue) = retry_queue {
                 let suspense_callback: &dyn Fn(&'static RetryQueue) =
                     unsafe { js::cast(suspense_callback) };
-                suspense_callback(js::set::new(Some(
-                    &retry_queue.values().collect::<Vec<_>>(),
-                )));
+                suspense_callback(js::set::new(Some(retry_queue)));
             }
         } else if __DEV__ && !matches!(js::classify(suspense_callback), Kind::Undefined) {
             console::error(("Unexpected type for suspenseCallback.",));
@@ -4024,7 +4022,7 @@ fn commit_passive_mount_on_fiber(
                         clear_transitions_for_lanes(finished_root, committed_lanes);
                     }
 
-                    incomplete_transitions.for_each(|marker_instance, transition| {
+                    incomplete_transitions.for_each(|marker_instance, transition, _| {
                         let pending_boundaries = marker_instance.pending_boundaries.get();
                         if pending_boundaries
                             .is_none_or(|pending_boundaries| pending_boundaries.size() == 0)
