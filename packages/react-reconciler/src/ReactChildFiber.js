@@ -1639,8 +1639,11 @@ function createChildReconciler(shouldTrackSideEffects) {
     if (currentFirstChild != null && currentFirstChild.tag === HostText) {
       // We already have an existing node so let's just update it and delete
       // the rest.
-      const sibling = currentFirstChild.sibling;
-      deleteRemainingChildren(shouldTrackSideEffects, returnFiber, sibling);
+      deleteRemainingChildren(
+        shouldTrackSideEffects,
+        returnFiber,
+        currentFirstChild.sibling,
+      );
       const existing = useFiber(currentFirstChild, textContent);
       existing.return = returnFiber;
       return existing;

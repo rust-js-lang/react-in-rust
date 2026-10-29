@@ -871,8 +871,7 @@ function retryActivityComponentWithoutHydrating(
   // likely won't observe anything wrong with the UI.
 
   // This will add the old fiber to the deletion list
-  const currentChild = current.child;
-  reconcileChildFibers(workInProgress, currentChild, null, renderLanes);
+  reconcileChildFibers(workInProgress, current.child, null, renderLanes);
 
   // We're now not suspended nor dehydrated.
   const nextProps = workInProgress.pendingProps;
@@ -2161,15 +2160,18 @@ function updateSuspenseOffscreenState(prevOffscreenState, renderLanes) {
         ? CacheContext._currentValue
         : CacheContext._currentValue2,
     );
-    cachePool =
-      prevCachePool.parent !== parentCache
-        ? // Detected a refresh in the parent. This overrides any previously
-          // suspended cache.
-          {
-            parent: parentCache,
-            pool: parentCache,
-          }
-        : prevCachePool;
+    if (prevCachePool.parent !== parentCache) {
+      // Detected a refresh in the parent. This overrides any previously
+      // suspended cache.
+      cachePool = {
+        parent: parentCache,
+        pool: parentCache,
+      };
+    } else {
+      // We can reuse the cache from last time. The only thing that would have
+      // overridden it is a parent refresh, which we checked for above.
+      cachePool = prevCachePool;
+    }
   } else {
     // If there's no previous cache pool, grab the current one.
     cachePool = getSuspendedCache();
@@ -2450,8 +2452,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
         renderLanes,
       );
       workInProgress.memoizedState = SUSPENDED_MARKER;
-      const currentChild = current.child;
-      return bailoutOffscreenComponent(currentChild, primaryChildFragment);
+      return bailoutOffscreenComponent(current.child, primaryChildFragment);
     } else {
       if (
         prevState != null &&
@@ -2711,8 +2712,7 @@ function retrySuspenseComponentWithoutHydrating(
   // likely won't observe anything wrong with the UI.
 
   // This will add the old fiber to the deletion list
-  const currentChild = current.child;
-  reconcileChildFibers(workInProgress, currentChild, null, renderLanes);
+  reconcileChildFibers(workInProgress, current.child, null, renderLanes);
 
   // We're now not suspended nor dehydrated.
   const nextProps = workInProgress.pendingProps;
@@ -2765,8 +2765,7 @@ function mountSuspenseFallbackAfterRetryWithoutHydrating(
   if (disableLegacyMode || (workInProgress.mode & ConcurrentMode) !== NoMode) {
     // We will have dropped the effect list which contains the
     // deletion. We need to reconcile to delete the current child.
-    const currentChild = current.child;
-    reconcileChildFibers(workInProgress, currentChild, null, renderLanes);
+    reconcileChildFibers(workInProgress, current.child, null, renderLanes);
   }
 
   return fallbackChildFragment;
@@ -2842,15 +2841,17 @@ function updateDehydratedSuspenseComponent(
 
       // This is unreachable in renderers that do not support hydration.
       if (digest !== '') {
-        const error =
-          __DEV__ && message
-            ? // eslint-disable-next-line react-internal/prod-error-codes
-              new Error(message)
-            : new Error(
-                'The server could not finish this Suspense boundary, likely ' +
-                  'due to an error during server rendering. ' +
-                  'Switched to client rendering.',
-              );
+        let error;
+        if (__DEV__ && message) {
+          // eslint-disable-next-line react-internal/prod-error-codes
+          error = new Error(message);
+        } else {
+          error = new Error(
+            'The server could not finish this Suspense boundary, likely ' +
+              'due to an error during server rendering. ' +
+              'Switched to client rendering.',
+          );
+        }
         // Replace the stack with the server stack
         error.stack = __DEV__ && stack ? stack : '';
         error.digest = digest;
@@ -3312,8 +3313,11 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
       // If we previously forced a fallback, we need to schedule work
       // on any nested boundaries to let them know to try to render
       // again. This is the same as context updating.
-      const child = workInProgress.child;
-      propagateSuspenseContextChange(workInProgress, child, renderLanes);
+      propagateSuspenseContextChange(
+        workInProgress,
+        workInProgress.child,
+        renderLanes,
+      );
     }
   }
 
@@ -3322,6 +3326,7 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
     // use make it a noop by treating it as the default revealOrder.
     workInProgress.memoizedState = null;
   } else {
+    // The default is now forwards.
     switch (revealOrder) {
       case 'backwards': {
         // We're going to find the first row that has existing content.
@@ -3329,8 +3334,7 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
         // since we want to actually render them backwards from the reconciled set.
         // The tail is left in order, because it'll be added to the front as we
         // complete each item.
-        const child = workInProgress.child;
-        const lastContentRow = findLastContentRow(child);
+        const lastContentRow = findLastContentRow(workInProgress.child);
         let tail;
         if (lastContentRow == null) {
           // The whole list is part of the tail.
@@ -3403,9 +3407,7 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
         workInProgress.memoizedState = null;
         break;
       default: {
-        // The default is now forwards.
-        const child = workInProgress.child;
-        const lastContentRow = findLastContentRow(child);
+        const lastContentRow = findLastContentRow(workInProgress.child);
         let tail;
         if (lastContentRow == null) {
           // The whole list is part of the tail.

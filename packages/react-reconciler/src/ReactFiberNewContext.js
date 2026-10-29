@@ -301,7 +301,11 @@ function propagateContextChanges(
       //
       // Skip the primary (hidden) subtree and jump to the fallback.
       const primaryChildFragment = fiber.child;
-      nextFiber = primaryChildFragment?.sibling;
+      if (primaryChildFragment != null) {
+        nextFiber = primaryChildFragment.sibling;
+      } else {
+        nextFiber = undefined;
+      }
     } else {
       // Traverse down.
       nextFiber = fiber.child;

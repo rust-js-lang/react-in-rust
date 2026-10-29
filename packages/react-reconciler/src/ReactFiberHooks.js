@@ -1386,11 +1386,13 @@ function updateReducerImpl(hook, current, reducer) {
         if (shouldDoubleInvokeUserFnsInHooksDEV) {
           reducer(newState, action);
         }
-        newState = update.hasEagerState
-          ? // If this update is a state update (not a reducer) and was processed eagerly,
-            // we can use the eagerly computed state
-            update.eagerState
-          : reducer(newState, action);
+        if (update.hasEagerState) {
+          // If this update is a state update (not a reducer) and was processed eagerly,
+          // we can use the eagerly computed state
+          newState = update.eagerState;
+        } else {
+          newState = reducer(newState, action);
+        }
       }
       // $FlowFixMe[invalid-compare]
       update = update.next;

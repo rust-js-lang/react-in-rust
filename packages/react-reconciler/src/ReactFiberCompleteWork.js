@@ -1835,12 +1835,15 @@ export function completeWork(current, workInProgress, renderLanes) {
         // TODO: We can probably just avoid popping it instead and only
         // setting it the first time we go from not suspended to suspended.
         let suspenseContext = suspenseStackCursor.current;
-        suspenseContext = didSuspendAlready
-          ? setShallowSuspenseListContext(
-              suspenseContext,
-              ForceSuspenseFallback,
-            )
-          : setDefaultShallowSuspenseListContext(suspenseContext);
+        if (didSuspendAlready) {
+          suspenseContext = setShallowSuspenseListContext(
+            suspenseContext,
+            ForceSuspenseFallback,
+          );
+        } else {
+          suspenseContext =
+            setDefaultShallowSuspenseListContext(suspenseContext);
+        }
         if (
           renderState.tailMode === 'visible' ||
           renderState.tailMode === 'collapsed' ||

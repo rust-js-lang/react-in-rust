@@ -433,10 +433,12 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
         '\n';
     });
 
-    content = !content
-      ? // No properties
-        indentation(indent) + '<' + type + '>\n'
-      : // Had properties
+    if (!content) {
+      // No properties
+      content = indentation(indent) + '<' + type + '>\n';
+    } else {
+      // Had properties
+      content =
         indentation(indent) +
         '<' +
         type +
@@ -444,6 +446,7 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
         content +
         indentation(indent) +
         '>\n';
+    }
   }
 
   const serverChildren = serverProps.children;

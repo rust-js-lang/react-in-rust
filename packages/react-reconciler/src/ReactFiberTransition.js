@@ -150,12 +150,11 @@ if (enableGestureTransition) {
     // that it's conceptually started globally.
     let root = firstScheduledRoot;
     while (root != null) {
-      const transitionTypes = transition.types;
       const scheduledGesture = startScheduledGesture(
         root,
         provider,
         options,
-        transitionTypes,
+        transition.types,
       );
       if (scheduledGesture != null) {
         cancel = chainGestureCancellation(root, scheduledGesture, cancel);
@@ -247,8 +246,7 @@ export function pushTransition(
   newTransitions,
 ) {
   if (prevCachePool == null) {
-    const current = resumedCache.current;
-    push(resumedCache, current, offscreenWorkInProgress);
+    push(resumedCache, resumedCache.current, offscreenWorkInProgress);
   } else {
     push(resumedCache, prevCachePool.pool, offscreenWorkInProgress);
   }

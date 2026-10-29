@@ -149,9 +149,8 @@ export function scheduleRefresh(root, update) {
     }
     const {staleFamilies, updatedFamilies} = update;
     flushPendingEffects();
-    const current = root.current;
     scheduleFibersWithFamiliesRecursively(
-      current,
+      root.current,
       updatedFamilies,
       staleFamilies,
     );

@@ -354,9 +354,8 @@ export function updateContainerSync(
   if (!disableLegacyMode && container.tag === LegacyRoot) {
     flushPendingEffects();
   }
-  const current = container.current;
   updateContainerImpl(
-    current,
+    container.current,
     SyncLane,
     element,
     container,

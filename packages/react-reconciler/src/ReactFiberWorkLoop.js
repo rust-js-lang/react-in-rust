@@ -2145,8 +2145,7 @@ function prepareFreshStack(root, lanes) {
 
   resetWorkInProgressStack();
   workInProgressRoot = root;
-  const current = root.current;
-  const rootWorkInProgress = createWorkInProgress(current, null);
+  const rootWorkInProgress = createWorkInProgress(root.current, null);
   workInProgress = rootWorkInProgress;
   workInProgressRootRenderLanes = lanes;
   workInProgressSuspendedReason = NotSuspended;
@@ -2958,26 +2957,28 @@ function performUnitOfWork(unitOfWork) {
   let next;
   if (enableProfilerTimer && (unitOfWork.mode & ProfileMode) !== NoMode) {
     startProfilerTimer(unitOfWork);
-    next = __DEV__
-      ? runWithFiberInDEV(
-          unitOfWork,
-          beginWork,
-          current,
-          unitOfWork,
-          entangledRenderLanes,
-        )
-      : beginWork(current, unitOfWork, entangledRenderLanes);
+    if (__DEV__) {
+      next = runWithFiberInDEV(
+        unitOfWork,
+        beginWork,
+        current,
+        unitOfWork,
+        entangledRenderLanes,
+      );
+    } else {
+      next = beginWork(current, unitOfWork, entangledRenderLanes);
+    }
     stopProfilerTimerIfRunningAndRecordDuration(unitOfWork);
+  } else if (__DEV__) {
+    next = runWithFiberInDEV(
+      unitOfWork,
+      beginWork,
+      current,
+      unitOfWork,
+      entangledRenderLanes,
+    );
   } else {
-    next = __DEV__
-      ? runWithFiberInDEV(
-          unitOfWork,
-          beginWork,
-          current,
-          unitOfWork,
-          entangledRenderLanes,
-        )
-      : beginWork(current, unitOfWork, entangledRenderLanes);
+    next = beginWork(current, unitOfWork, entangledRenderLanes);
   }
 
   unitOfWork.memoizedProps = unitOfWork.pendingProps;

@@ -578,8 +578,7 @@ function commitLayoutEffectOnFiber(
       }
 
       if (flags & Ref) {
-        const returnFiber = finishedWork.return;
-        safelyAttachRef(finishedWork, returnFiber);
+        safelyAttachRef(finishedWork, finishedWork.return);
       }
       break;
     case HostRoot: {
@@ -635,8 +634,7 @@ function commitLayoutEffectOnFiber(
       }
 
       if (flags & Ref) {
-        const returnFiber = finishedWork.return;
-        safelyAttachRef(finishedWork, returnFiber);
+        safelyAttachRef(finishedWork, finishedWork.return);
       }
       break;
     case Profiler:
@@ -737,9 +735,12 @@ function commitLayoutEffectOnFiber(
             // traversing the layout effects, we must also re-mount layout
             // effects that were unmounted when the Offscreen subtree was
             // hidden. So this is a superset of the normal commitLayoutEffects.
-            let layoutEffectTraversalFlags = supportsSingletons
-              ? IncludeHostSingletons
-              : NoLayoutEffectTraversalFlags;
+            let layoutEffectTraversalFlags;
+            if (supportsSingletons) {
+              layoutEffectTraversalFlags = IncludeHostSingletons;
+            } else {
+              layoutEffectTraversalFlags = NoLayoutEffectTraversalFlags;
+            }
             if ((finishedWork.subtreeFlags & LayoutMask) !== NoFlags) {
               layoutEffectTraversalFlags |= IncludeWorkInProgressEffects;
             }
@@ -793,15 +794,13 @@ function commitLayoutEffectOnFiber(
           committedLanes,
         );
         if (flags & Ref) {
-          const returnFiber = finishedWork.return;
-          safelyAttachRef(finishedWork, returnFiber);
+          safelyAttachRef(finishedWork, finishedWork.return);
         }
       }
       break;
     default:
       if (finishedWork.tag === Fragment && flags & Ref) {
-        const returnFiber = finishedWork.return;
-        safelyAttachRef(finishedWork, returnFiber);
+        safelyAttachRef(finishedWork, finishedWork.return);
       }
       // Fallthrough
       recursivelyTraverseLayoutEffects(
@@ -1747,8 +1746,7 @@ function commitActivityHydrationCallbacks(finishedRoot, finishedWork) {
               }
             }
           } catch (error) {
-            const returnFiber = finishedWork.return;
-            captureCommitPhaseError(finishedWork, returnFiber, error);
+            captureCommitPhaseError(finishedWork, finishedWork.return, error);
           }
         }
       }
@@ -1780,8 +1778,7 @@ function commitSuspenseHydrationCallbacks(finishedRoot, finishedWork) {
                 }
               }
             } catch (error) {
-              const returnFiber = finishedWork.return;
-              captureCommitPhaseError(finishedWork, returnFiber, error);
+              captureCommitPhaseError(finishedWork, finishedWork.return, error);
             }
           }
         }
@@ -1934,18 +1931,16 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
       commitReconciliationEffects(finishedWork, lanes);
 
       if (flags & Update) {
-        let returnFiber = finishedWork.return;
         commitHookEffectListUnmount(
           HookInsertion | HookHasEffect,
           finishedWork,
-          returnFiber,
+          finishedWork.return,
         );
         // TODO: Use a commitHookInsertionUnmountEffects wrapper to record timings.
         commitHookEffectListMount(HookInsertion | HookHasEffect, finishedWork);
-        returnFiber = finishedWork.return;
         commitHookLayoutUnmountEffects(
           finishedWork,
-          returnFiber,
+          finishedWork.return,
           HookLayout | HookHasEffect,
         );
       }
@@ -2342,8 +2337,7 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
         try {
           commitSuspenseCallback(finishedWork);
         } catch (error) {
-          const returnFiber = finishedWork.return;
-          captureCommitPhaseError(finishedWork, returnFiber, error);
+          captureCommitPhaseError(finishedWork, finishedWork.return, error);
         }
         const retryQueue = finishedWork.updateQueue;
         if (retryQueue != null) {
@@ -2809,8 +2803,12 @@ export function commitLayoutEffects(finishedWork, root, committedLanes) {
 
   resetComponentEffectTimers();
 
-  const current = finishedWork.alternate;
-  commitLayoutEffectOnFiber(root, current, finishedWork, committedLanes);
+  commitLayoutEffectOnFiber(
+    root,
+    finishedWork.alternate,
+    finishedWork,
+    committedLanes,
+  );
 
   inProgressLanes = null;
   inProgressRoot = null;
@@ -4012,8 +4010,7 @@ function commitPassiveMountOnFiber(
       );
       if (flags & Passive) {
         // TODO: Pass `current` as argument to this function
-        const current = finishedWork.alternate;
-        commitCachePassiveMountEffect(current, finishedWork);
+        commitCachePassiveMountEffect(finishedWork.alternate, finishedWork);
       }
       break;
     case ViewTransitionComponent:
@@ -4297,8 +4294,11 @@ export function reconnectPassiveEffects(
       }
       if (includeWorkInProgressEffects && flags & Passive) {
         // TODO: Pass `current` as argument to this function
-        const current = finishedWork.alternate;
-        commitOffscreenPassiveMountEffects(current, finishedWork, instance);
+        commitOffscreenPassiveMountEffects(
+          finishedWork.alternate,
+          finishedWork,
+          instance,
+        );
       }
       break;
     }
@@ -4313,8 +4313,7 @@ export function reconnectPassiveEffects(
       );
       if (includeWorkInProgressEffects && flags & Passive) {
         // TODO: Pass `current` as argument to this function
-        const current = finishedWork.alternate;
-        commitCachePassiveMountEffect(current, finishedWork);
+        commitCachePassiveMountEffect(finishedWork.alternate, finishedWork);
       }
       break;
     case TracingMarkerComponent:
@@ -4470,8 +4469,7 @@ function commitAtomicPassiveEffects(
       );
       if (flags & Passive) {
         // TODO: Pass `current` as argument to this function
-        const current = finishedWork.alternate;
-        commitCachePassiveMountEffect(current, finishedWork);
+        commitCachePassiveMountEffect(finishedWork.alternate, finishedWork);
       }
       break;
     default:
@@ -4728,10 +4726,9 @@ function commitPassiveUnmountOnFiber(finishedWork) {
     case SimpleMemoComponent:
       recursivelyTraversePassiveUnmountEffects(finishedWork);
       if (finishedWork.flags & Passive) {
-        const returnFiber = finishedWork.return;
         commitHookPassiveUnmountEffects(
           finishedWork,
-          returnFiber,
+          finishedWork.return,
           HookPassive | HookHasEffect,
         );
       }
@@ -4884,15 +4881,17 @@ export function disconnectPassiveEffect(finishedWork) {
   switch (finishedWork.tag) {
     case FunctionComponent:
     case ForwardRef:
-    case SimpleMemoComponent: {
+    case SimpleMemoComponent:
       // TODO: Check PassiveStatic flag
-      const returnFiber = finishedWork.return;
-      commitHookPassiveUnmountEffects(finishedWork, returnFiber, HookPassive);
+      commitHookPassiveUnmountEffects(
+        finishedWork,
+        finishedWork.return,
+        HookPassive,
+      );
       // When disconnecting passive effects, we fire the effects in the same
       // order as during a deletiong: parent before child
       recursivelyTraverseDisconnectPassiveEffects(finishedWork);
       break;
-    }
     case OffscreenComponent: {
       const instance = finishedWork.stateNode;
       if (instance._visibility & OffscreenPassiveEffectsConnected) {
@@ -5151,20 +5150,17 @@ export function invokeLayoutEffectUnmountInDEV(fiber) {
     switch (fiber.tag) {
       case FunctionComponent:
       case ForwardRef:
-      case SimpleMemoComponent: {
-        const returnFiber = fiber.return;
+      case SimpleMemoComponent:
         commitHookEffectListUnmount(
           HookLayout | HookHasEffect,
           fiber,
-          returnFiber,
+          fiber.return,
         );
         break;
-      }
       case ClassComponent: {
         const instance = fiber.stateNode;
         if (typeof instance.componentWillUnmount === 'function') {
-          const returnFiber = fiber.return;
-          safelyCallComponentWillUnmount(fiber, returnFiber, instance);
+          safelyCallComponentWillUnmount(fiber, fiber.return, instance);
         }
       }
     }
@@ -5178,14 +5174,12 @@ export function invokePassiveEffectUnmountInDEV(fiber) {
     switch (fiber.tag) {
       case FunctionComponent:
       case ForwardRef:
-      case SimpleMemoComponent: {
-        const returnFiber = fiber.return;
+      case SimpleMemoComponent:
         commitHookEffectListUnmount(
           HookPassive | HookHasEffect,
           fiber,
-          returnFiber,
+          fiber.return,
         );
-      }
     }
   }
 }
