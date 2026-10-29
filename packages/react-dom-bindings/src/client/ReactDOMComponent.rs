@@ -734,7 +734,7 @@ fn set_prop(
                     check_attribute_string_coercion(value, key);
                 }
                 let sanitized_value = sanitize_url(value);
-                dom_element.set_attribute_ns(XLINK_NAMESPACE, "xlink:href", sanitized_value);
+                dom_element.set_attribute_ns(Some(XLINK_NAMESPACE), "xlink:href", sanitized_value);
             }
         }
         "contentEditable"

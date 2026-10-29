@@ -9,7 +9,7 @@ import {enableTaint} from '../../shared/ReactFeatureFlags.js';
 import binaryToComparableString from '../../shared/binaryToComparableString.js';
 import getPrototypeOf from '../../shared/getPrototypeOf.js';
 import ReactSharedInternals from './ReactSharedInternalsServer.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$local, $unwrap} from '@rust-js/runtime';
 
 let TaintRegistryObjects;
 let TaintRegistryValues;
@@ -48,10 +48,11 @@ function cleanup(entryValue) {
 
 // If FinalizationRegistry doesn't exist, we assume that objects life forever.
 // E.g. the whole VM is just the lifetime of a request.
-const finalizationRegistry =
+const finalizationRegistry = $local(() =>
   typeof FinalizationRegistry !== 'undefined'
     ? new FinalizationRegistry(cleanup)
-    : undefined;
+    : undefined,
+);
 
 export function taintUniqueValue(message, lifetime, value) {
   if (!enableTaint) {
@@ -104,8 +105,8 @@ export function taintUniqueValue(message, lifetime, value) {
   } else {
     existingEntry.count = (existingEntry.count + 1) >>> 0;
   }
-  if (finalizationRegistry != null) {
-    finalizationRegistry.register(lifetime, entryValue);
+  if (finalizationRegistry() != null) {
+    finalizationRegistry().register(lifetime, entryValue);
   }
 }
 

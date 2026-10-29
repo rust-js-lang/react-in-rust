@@ -29,7 +29,7 @@ fn contains_node(outer_node: Option<&Node>, inner_node: Option<&Node>) -> bool {
     } else if is_text_node(Some(inner_node)) {
         contains_node(Some(outer_node), inner_node.parent_node())
     } else if js::has(outer_node, "contains") {
-        outer_node.contains(inner_node)
+        outer_node.contains(Some(inner_node))
     } else if js::is_function((outer_node, Node::compare_document_position)) {
         outer_node.compare_document_position(inner_node) as u32 & 16 != 0
     } else {

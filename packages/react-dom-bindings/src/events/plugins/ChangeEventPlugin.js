@@ -113,7 +113,8 @@ function getTargetInstForChangeEvent(domEventName, targetInst) {
 // IE9 claims to support the input event but fails to trigger it when
 // deleting text, so we ignore its input events.
 const isInputEventSupported =
-  !!(canUseDOM && isEventSupported('input')) &&
+  canUseDOM &&
+  isEventSupported('input') &&
   (!document.documentMode || document.documentMode > 9);
 
 /**
@@ -132,11 +133,10 @@ function startWatchingForValueChange(target, targetInst) {
  * if any exists.
  */
 function stopWatchingForValueChange() {
-  const activeElement$1 = activeElement;
-  if (activeElement$1 == null) {
+  if (activeElement == null) {
     return;
   }
-  activeElement$1.detachEvent('onpropertychange', handlePropertyChange);
+  activeElement.detachEvent('onpropertychange', handlePropertyChange);
   activeElement = null;
   activeElementInst = null;
 }

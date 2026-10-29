@@ -916,7 +916,7 @@ export function resumeMountClassInstance(
   }
 
   const shouldUpdate =
-    !!checkHasForceUpdateAfterProcessing() ||
+    checkHasForceUpdateAfterProcessing() ||
     checkShouldComponentUpdate(
       workInProgress,
       ctor,
@@ -1071,17 +1071,15 @@ export function updateClassInstance(
   }
 
   const shouldUpdate =
-    !!(
-      checkHasForceUpdateAfterProcessing() ||
-      checkShouldComponentUpdate(
-        workInProgress,
-        ctor,
-        oldProps,
-        newProps,
-        oldState,
-        newState,
-        nextContext,
-      )
+    checkHasForceUpdateAfterProcessing() ||
+    checkShouldComponentUpdate(
+      workInProgress,
+      ctor,
+      oldProps,
+      newProps,
+      oldState,
+      newState,
+      nextContext,
     ) ||
     (currentDependencies != null && checkIfContextChanged(currentDependencies));
 

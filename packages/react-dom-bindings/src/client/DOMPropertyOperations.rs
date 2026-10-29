@@ -183,7 +183,7 @@ pub fn set_value_for_namespaced_attribute(
     if __DEV__ {
         check_attribute_string_coercion(value, name);
     }
-    node.set_attribute_ns(namespace, name, value);
+    node.set_attribute_ns(Some(namespace), name, value);
 }
 
 pub fn set_value_for_property_on_custom_component(

@@ -3522,9 +3522,9 @@ function commitPassiveMountOnFiber(
   const prevEffectDidSpawnUpdate = pushComponentEffectDidSpawnUpdate();
   const prevDeepEquality = pushDeepEquality();
 
-  const isViewTransitionEligible = enableViewTransition
-    ? includesOnlyViewTransitionEligibleLanes(committedLanes)
-    : false;
+  const isViewTransitionEligible =
+    enableViewTransition &&
+    includesOnlyViewTransitionEligibleLanes(committedLanes);
 
   if (
     isViewTransitionEligible &&

@@ -3431,7 +3431,8 @@ function completeRoot(
           return rootState.isDehydrated;
         }
         return (
-          !!(finishedWork.alternate != null && holds(finishedWork.alternate)) &&
+          finishedWork.alternate != null &&
+          holds(finishedWork.alternate) &&
           (finishedWork.flags & ForceClientRender) !== NoFlags
         );
       }

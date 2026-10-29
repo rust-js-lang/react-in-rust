@@ -41,6 +41,10 @@ export interface ReactSyntheticEvent {
   type: string;
   currentTarget?: EventTarget | null | undefined;
   _reactName?: string | null | undefined;
+  preventDefault(): void;
+  stopPropagation(): void;
+  persist(): void;
+  isPersistent(): boolean;
 }
 
 export type KnownReactSyntheticEvent = ReactSyntheticEvent;
