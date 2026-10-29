@@ -33,6 +33,7 @@ pub struct DispatchConfig {
 /// it's `null`. SyntheticEvent's constructors make it.
 pub struct ReactSyntheticEvent {
     pub is_persistent: fn() -> bool,
+    pub prevent_default: Box<dyn Fn()>,
     pub is_propagation_stopped: Cell<fn() -> bool>,
     pub is_default_prevented: Cell<fn() -> bool>,
     // `null`, a fiber, or an array of fibers or `null`s.

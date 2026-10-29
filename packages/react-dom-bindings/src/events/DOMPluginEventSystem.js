@@ -58,10 +58,10 @@ import {
   extractEvents as extractEvents$1,
   registerEvents,
 } from './plugins/EnterLeaveEventPlugin.js';
-import * as FormActionEventPlugin from './plugins/FormActionEventPlugin.js';
+import {extractEvents as extractEvents$2} from './plugins/FormActionEventPlugin.js';
 import * as ScrollEndEventPlugin from './plugins/ScrollEndEventPlugin.js';
 import {
-  extractEvents as extractEvents$2,
+  extractEvents as extractEvents$3,
   registerEvents as registerEvents$1,
 } from './plugins/SelectEventPlugin.js';
 import * as SimpleEventPlugin from './plugins/SimpleEventPlugin.js';
@@ -138,7 +138,7 @@ function extractEvents(
       eventSystemFlags,
       targetContainer,
     );
-    extractEvents$2(
+    extractEvents$3(
       dispatchQueue,
       domEventName,
       targetInst,
@@ -156,10 +156,10 @@ function extractEvents(
       eventSystemFlags,
       targetContainer,
     );
-    FormActionEventPlugin.extractEvents(
+    extractEvents$2(
       dispatchQueue,
       domEventName,
-      targetInst ?? null,
+      targetInst,
       nativeEvent,
       nativeEventTarget,
       eventSystemFlags,

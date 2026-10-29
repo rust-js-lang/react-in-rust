@@ -18,11 +18,13 @@ pub struct FormStatus {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub data: Option<&'static FormData>,
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub method: Option<&'static str>,
+    pub method: Option<String>,
     // A URL, or a function of the form's data.
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub action: Option<&'static Unknown>,
 }
+
+unsafe impl js::Defined for FormStatus {}
 
 // Since the "not pending" value is always the same, we can reuse the
 // same object across all transitions.

@@ -37,6 +37,8 @@ pub mod event_registry;
 pub mod event_system_flags;
 #[path = "src/events/FallbackCompositionState.rs"]
 pub mod fallback_composition_state;
+#[path = "src/events/plugins/FormActionEventPlugin.rs"]
+pub mod form_action_event_plugin;
 #[path = "src/client/getActiveElement.rs"]
 pub mod get_active_element;
 #[path = "src/shared/getAttributeAlias.rs"]

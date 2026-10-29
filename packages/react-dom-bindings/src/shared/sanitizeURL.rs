@@ -22,7 +22,7 @@ thread_local! {
 }
 
 #[cfg_attr(rust_js, rust_js::name = "sanitizeURL")]
-fn sanitize_url(url: Option<&'static Unknown>) -> Option<&'static Unknown> {
+pub fn sanitize_url(url: Option<&'static Unknown>) -> Option<&'static Unknown> {
     // We should never have symbols here because they get filtered out elsewhere.
     // eslint-disable-next-line react-internal/safe-string-coercion
     if IS_JAVA_SCRIPT_PROTOCOL.with(|is_java_script_protocol| {

@@ -37,6 +37,7 @@ use crate::event_system_flags::{
     IS_LEGACY_FB_SUPPORT_MODE, IS_NON_DELEGATED, SHOULD_NOT_DEFER_CLICK_FOR_FB_SUPPORT_MODE,
     SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS,
 };
+use crate::form_action_event_plugin;
 use crate::get_event_target::get_event_target;
 use crate::get_listener::get_listener;
 use crate::html_node_type::{COMMENT_NODE, DOCUMENT_NODE};
@@ -153,32 +154,6 @@ fn simple_register_events() {
 )]
 #[cfg_attr(rust_js, rust_js::nullable(target_inst, native_event_target))]
 fn simple_extract_events(
-    dispatch_queue: &mut DispatchQueue,
-    dom_event_name: &str,
-    target_inst: Option<Rc<Fiber>>,
-    native_event: &'static AnyNativeEvent,
-    native_event_target: Option<&'static EventTarget>,
-    event_system_flags: EventSystemFlags,
-    target_container: &'static EventTarget,
-) {
-    let _ = (
-        dispatch_queue,
-        dom_event_name,
-        target_inst,
-        native_event,
-        native_event_target,
-        event_system_flags,
-        target_container,
-    );
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/plugins/FormActionEventPlugin.js#* as FormActionEventPlugin.extractEvents"
-)]
-#[cfg_attr(rust_js, rust_js::nullable(target_inst, native_event_target))]
-fn form_action_extract_events(
     dispatch_queue: &mut DispatchQueue,
     dom_event_name: &str,
     target_inst: Option<Rc<Fiber>>,
@@ -326,7 +301,7 @@ fn extract_events(
             event_system_flags,
             target_container,
         );
-        form_action_extract_events(
+        form_action_event_plugin::extract_events(
             dispatch_queue,
             dom_event_name,
             target_inst.clone(),

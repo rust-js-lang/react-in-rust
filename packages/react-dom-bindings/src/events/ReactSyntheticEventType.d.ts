@@ -29,6 +29,7 @@ export interface DispatchConfig {
  */
 export interface ReactSyntheticEvent {
   isPersistent: () => boolean;
+  preventDefault: () => void;
   isPropagationStopped: () => boolean;
   isDefaultPrevented: () => boolean;
   // `null`, a fiber, or an array of fibers or `null`s.

@@ -16,7 +16,7 @@ use react_reconciler::react_fiber_tree_reflection::{
     get_activity_instance_from_fiber, get_container_from_fiber, get_nearest_mounted_fiber,
     get_suspense_instance_from_fiber,
 };
-use react_reconciler::react_internal_types::{Fiber, FiberRoot};
+use react_reconciler::react_internal_types::FiberRoot;
 use react_reconciler::react_work_tags::{ACTIVITY_COMPONENT, HOST_ROOT, SUSPENSE_COMPONENT};
 use scheduler::{
     Callback, UNSTABLE_NORMAL_PRIORITY as NORMAL_PRIORITY,
@@ -31,6 +31,7 @@ use webapi::{
 use crate::current_replaying_event::{reset_replaying_event, set_replaying_event};
 use crate::dom_event_names::DOMEventName;
 use crate::event_system_flags::EventSystemFlags;
+use crate::form_action_event_plugin::dispatch_replayed_form_action;
 use crate::plugin_module_type::AnyNativeEvent;
 use crate::react_dom_component_tree::{
     get_closest_instance_from_node, get_fiber_current_props_from_node, get_instance_from_node,
@@ -41,20 +42,6 @@ use crate::react_dom_event_listener::{
 use crate::react_dom_update_priority::{
     resolve_update_priority, run_with_priority as attempt_hydration_at_priority,
 };
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/events/plugins/FormActionEventPlugin.js#dispatchReplayedFormAction"
-)]
-fn dispatch_replayed_form_action(
-    form_inst: &Rc<Fiber>,
-    form: Option<&Unknown>,
-    action: Option<&Unknown>,
-    form_data: Option<&Unknown>,
-) {
-    let _ = (form_inst, form, action, form_data);
-    unreachable!()
-}
 
 // TODO: Upgrade this definition once we're on a newer version of Flow that
 // has this definition built-in.
@@ -617,7 +604,12 @@ fn replay_unblocked_form_actions(form_replaying_queue: &'static Unknown) {
             // This is part of our instance.
             // We're ready to replay this. Let's delete it from the queue.
             js::array::splice(form_replaying_queue, i, 3.0);
-            dispatch_replayed_form_action(&form_inst, form, submitter_or_action, form_data);
+            dispatch_replayed_form_action(
+                &form_inst,
+                unsafe { js::cast(form) },
+                unsafe { js::cast(submitter_or_action) },
+                unsafe { js::cast(form_data) },
+            );
             // Continue without incrementing the index.
             continue;
         }
