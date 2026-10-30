@@ -267,13 +267,26 @@ These differences from upstream's output are accepted:
 - **rd221** (6412fc19d): a struct the program builds is its own data, so
   its fields read in place. A struct JS gave (memoizedProps, a host config's
   result) is read as often as the Rust reads it.
+- **A value match prints as a conditional** (the user): the scheduler's
+  `let start_time = match options.and_then(|options| options.delay) {
+  Some(delay) if delay > 0.0 => current_time + delay, _ => current_time };`
+  prints `const startTime = delay != null && delay > 0 ? currentTime + delay
+  : currentTime;`, where upstream declares `var startTime;` and assigns it
+  in nested ifs.
+- **rd226** (the user): a `let` the program wrote stays, but a binding that
+  only a pattern makes, `if let Some(x) = s.field`, is read in place. So
+  prepareForCommit (`focusedElem`) and createTextInstance (the ancestor)
+  read the field twice where upstream names it once.
 
-Known gap, not accepted: inputValueTracking's `getOwnPropertyDescriptor`
-result is read once per field, into `get` and `set`, with the guard split
-into nested ifs (54 -> 134 differing lines on rust-js d9a541549). The user
-decided that #411 adds a "fresh plain data" binding attribute for
-`getOwnPropertyDescriptor` and `JSON.parse` results, which puts those reads
-back in place. List it as a readability gap until then.
+- **gives_plain_data** (#411, 77029cdc4): a binding whose result is a fresh
+  object of data properties that JS builds says so with
+  `#[cfg_attr(rust_js, rust_js::gives_plain_data)]`, and the struct's fields
+  are read in place. The js crate's `getOwnPropertyDescriptor` says it, so
+  inputValueTracking tests `descriptor == null || descriptor.get == null ||
+  descriptor.set == null` as upstream does. The reconciler's host-config
+  bindings getSuspenseInstanceFallbackErrorDetails,
+  describeHydratableInstanceForDevWarnings, getBoundingRect and
+  setupIntersectionObserver say it too.
 
 These forms are decided:
 
@@ -327,6 +340,13 @@ These forms are decided:
   upstream passes null to a typed class constructor; None stays undefined.
 - **rd96**: a closure that refers to itself is written with `Rc::new_cyclic`
   and `Weak`.
+- **A function JS makes is `&'static dyn Fn`** (rd209; f3bdcf0e8 and
+  2ace44dd3): `function::with_this(..)` and `function::bind(f, this, args)`
+  give the JS function itself. Hold it as `&'static dyn Fn(..)`
+  (wrapCallback, SyntheticEvent's prototype functions, the hooks'
+  dispatches, a retry or ping given to `then`), never as a `Box`. Where one
+  field holds Rust closures too, as an effect's `Rc<Create>` does, write
+  `Rc::from(function::bind(..))`.
 - **Props**, by use: a `js::Defined` struct where code reads named
   Flow-declared members, and `&'static Unknown` with `js::get` where code
   iterates all keys (ReactDOMComponent).
