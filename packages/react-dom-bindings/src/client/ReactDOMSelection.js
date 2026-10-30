@@ -104,47 +104,51 @@ export function getModernOffsetsFromPoints(
       parentNode = node;
       node = next;
     }
-    // If `outerNode` has children, this is always the second time visiting
-    // it. If it has no children, this is still the first loop, and the only
-    // valid selection is anchorNode and focusNode both equal to this node
-    // and both offsets 0, in which case we will have handled above.
+
+    let next;
     while (true) {
-      if (node !== outerNode) {
-        if (parentNode == anchorNode) {
-          indexWithinAnchor++;
-          if (indexWithinAnchor === anchorOffset) {
-            start = length;
-          }
-        }
-        if (parentNode == focusNode) {
-          indexWithinFocus++;
-          if (indexWithinFocus === focusOffset) {
-            end = length;
-          }
-        }
-        const next = node.nextSibling;
-        if (next !== null) {
-          // Moving from `node` to its next sibling `next`.
-          node = next;
-          continue outer;
-        }
-        node = $unwrap(parentNode);
-        parentNode = node.parentNode;
-        continue;
+      if (node === outerNode) {
+        // If `outerNode` has children, this is always the second time visiting
+        // it. If it has no children, this is still the first loop, and the only
+        // valid selection is anchorNode and focusNode both equal to this node
+        // and both offsets 0, in which case we will have handled above.
+        break outer;
       }
-
-      if (start === -1 || end === -1) {
-        // This should never happen. (Would happen if the anchor/focus nodes aren't
-        // actually inside the passed-in node.)
-        return null;
+      if (parentNode == anchorNode) {
+        indexWithinAnchor++;
+        if (indexWithinAnchor === anchorOffset) {
+          start = length;
+        }
       }
-
-      return {
-        start,
-        end: $some(end),
-      };
+      if (parentNode == focusNode) {
+        indexWithinFocus++;
+        if (indexWithinFocus === focusOffset) {
+          end = length;
+        }
+      }
+      const nextSibling = node.nextSibling;
+      if (nextSibling !== null) {
+        next = nextSibling;
+        break;
+      }
+      node = $unwrap(parentNode);
+      parentNode = node.parentNode;
     }
+
+    // Moving from `node` to its next sibling `next`.
+    node = next;
   }
+
+  if (start === -1 || end === -1) {
+    // This should never happen. (Would happen if the anchor/focus nodes aren't
+    // actually inside the passed-in node.)
+    return null;
+  }
+
+  return {
+    start,
+    end: $some(end),
+  };
 }
 
 /**
