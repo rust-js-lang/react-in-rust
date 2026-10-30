@@ -277,6 +277,10 @@ These differences from upstream's output are accepted:
   only a pattern makes, `if let Some(x) = s.field`, is read in place. So
   prepareForCommit (`focusedElem`) and createTextInstance (the ancestor)
   read the field twice where upstream names it once.
+- **rd243** (the user): a struct literal's field given a variable of its
+  name is the shorthand, `{ crossOrigin }`, which clippy's
+  `redundant_field_names` asks of the Rust, where upstream writes
+  `crossOrigin: crossOrigin` (ReactFlightServerConfigDOM's processImg).
 
 - **gives_plain_data** (#411, 77029cdc4): a binding whose result is a fresh
   object of data properties that JS builds says so with
