@@ -157,7 +157,8 @@ fn diff_hydrated_props_for_dev_warnings(
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#describeHydratableInstanceForDevWarnings"
+    rust_js::link_name = "./src/ReactFiberConfig.js#describeHydratableInstanceForDevWarnings",
+    rust_js::gives_plain_data
 )]
 fn describe_hydratable_instance_for_dev_warnings(instance: &'static Unknown) -> ServerTailNode {
     unreachable!()

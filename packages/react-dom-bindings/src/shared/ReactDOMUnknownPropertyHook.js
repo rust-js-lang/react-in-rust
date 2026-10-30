@@ -229,8 +229,8 @@ function validateProperty(tagName, name, value, eventRegistry) {
           case 'inert':
             // Boolean properties can accept boolean values
             return true;
+          // fallthrough
           default: {
-            // fallthrough
             const prefix = name.toLowerCase().slice(0, 5);
             if (prefix === 'data-' || prefix === 'aria-') {
               return true;

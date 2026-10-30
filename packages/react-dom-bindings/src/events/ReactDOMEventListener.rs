@@ -59,7 +59,7 @@ pub fn create_event_listener_wrapper(
     target_container: &'static EventTarget,
     dom_event_name: &'static str,
     event_system_flags: EventSystemFlags,
-) -> Box<dyn Fn(&'static AnyNativeEvent)> {
+) -> &'static dyn Fn(&'static AnyNativeEvent) {
     function::bind(
         dispatch_event,
         Some(&Kind::Null),

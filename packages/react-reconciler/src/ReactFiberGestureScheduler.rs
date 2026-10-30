@@ -48,7 +48,7 @@ pub struct ScheduledGesture {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub running: Cell<Option<&'static Unknown>>, // Used to cancel the running transition after we're done.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub commit: RefCell<Option<Box<dyn Fn()>>>, // Callback to run to commit if there's a pending commit.
+    pub commit: RefCell<Option<&'static dyn Fn()>>, // Callback to run to commit if there's a pending commit.
     pub committing: Cell<bool>, // If the gesture was released in a committed state and should actually commit.
     pub revert_lane: Cell<Lane>, // The Lane that we'll use to schedule the revert.
     #[cfg_attr(rust_js, rust_js::nullable)]
@@ -283,7 +283,7 @@ pub fn stop_committed_gesture(root: &FiberRoot) {
 
 pub fn schedule_gesture_commit(
     gesture: &Rc<ScheduledGesture>,
-    callback: Box<dyn Fn()>,
+    callback: &'static dyn Fn(),
 ) -> Box<dyn Fn()> {
     gesture.commit.replace(Some(callback));
     let gesture = Rc::clone(gesture);

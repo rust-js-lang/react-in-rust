@@ -195,24 +195,13 @@ export function describeNativeComponentFrame(fn, construct) {
 
   // $FlowFixMe[prop-missing]
   DetermineComponentFrameRoot.displayName = 'DetermineComponentFrameRoot';
-  let namePropDescriptor;
-  // Before ES6, the `name` property was not configurable.
   try {
-    namePropDescriptor = Object.getOwnPropertyDescriptor(
+    const namePropDescriptor = Object.getOwnPropertyDescriptor(
       DetermineComponentFrameRoot,
       'name',
     );
-  } catch (error) {
-    reentry = false;
-    if (__DEV__) {
-      ReactSharedInternals.H = previousDispatcher ?? null;
-      reenableLogs();
-    }
-    Error.prepareStackTrace = previousPrepareStackTrace;
-    throw error;
-  }
-  if (namePropDescriptor != null && namePropDescriptor.configurable) {
-    try {
+    // Before ES6, the `name` property was not configurable.
+    if (namePropDescriptor != null && namePropDescriptor.configurable) {
       // V8 utilizes a function's `name` property when generating a stack trace.
       Object.defineProperty(
         DetermineComponentFrameRoot,
@@ -224,18 +213,8 @@ export function describeNativeComponentFrame(fn, construct) {
           value: 'DetermineComponentFrameRoot',
         },
       );
-    } catch (error) {
-      reentry = false;
-      if (__DEV__) {
-        ReactSharedInternals.H = previousDispatcher ?? null;
-        reenableLogs();
-      }
-      Error.prepareStackTrace = previousPrepareStackTrace;
-      throw error;
     }
-  }
 
-  try {
     const [sampleStack, controlStack] = DetermineComponentFrameRoot(
       fn,
       construct,

@@ -52,6 +52,7 @@ export function useFormState(action, initialState, permalink) {
 }
 
 export function requestFormReset(form) {
-  ReactDOMSharedInternals.d.r(form /* requestFormReset */);
+  ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */
+    .r(/* requestFormReset */ form);
 }
 //# sourceMappingURL=ReactDOMFormActions.js.map

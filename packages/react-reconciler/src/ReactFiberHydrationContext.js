@@ -54,7 +54,7 @@ import {
   HostSingleton,
   SuspenseComponent,
 } from './ReactWorkTags.js';
-import {$borrowMut, $index, $unborrow} from '@rust-js/runtime';
+import {$borrowMut, $index} from '@rust-js/runtime';
 
 // The deepest Fiber on the stack involved in a hydration context.
 // This may have been an insertion or a hydration.
@@ -218,12 +218,7 @@ function warnNonHydratedInstance(fiber, rejectedCandidate) {
     if (rejectedCandidate != null) {
       const description =
         describeHydratableInstanceForDevWarnings(rejectedCandidate);
-      const borrowMut = $borrowMut(diffNode.serverTail, true);
-      try {
-        borrowMut.push(description);
-      } finally {
-        $unborrow(borrowMut);
-      }
+      $borrowMut(diffNode.serverTail).push(description);
     }
   }
 }
@@ -769,12 +764,7 @@ function warnIfUnhydratedTailNodes(fiber) {
         describeHydratableInstanceForDevWarnings(nextInstance);
       const isSuspense =
         typeof description !== 'string' && description.type === 'Suspense';
-      const borrowMut = $borrowMut(diffNode.serverTail, true);
-      try {
-        borrowMut.push(description);
-      } finally {
-        $unborrow(borrowMut);
-      }
+      $borrowMut(diffNode.serverTail).push(description);
       if (isSuspense) {
         // ReactFiberConfig's `SuspenseInstance`.
         const suspenseInstance = nextInstance;

@@ -79,12 +79,12 @@ fn track_value_on_node(
         &PropertyDescriptor {
             configurable: Some(true),
             // $FlowFixMe[missing-this-annot]
-            get: Some(&*function::with_this(move |this, ()| {
+            get: Some(function::with_this(move |this, ()| {
                 function::call(get, this.map(|this| this as &dyn IntoUnknown), ())
             })),
             // $FlowFixMe[missing-local-annot]
             // $FlowFixMe[missing-this-annot]
-            set: Some(&*function::with_this(
+            set: Some(function::with_this(
                 move |this, (value,): (Option<&'static Unknown>,)| {
                     if __DEV__ {
                         check_form_field_value_string_coercion(value);

@@ -46,12 +46,12 @@ pub type SyntheticEventClass = Class<
 
 /// What each constructor's prototype is given.
 struct SyntheticEventPrototype {
-    prevent_default: Box<dyn Fn()>,
-    stop_propagation: Box<dyn Fn()>,
+    prevent_default: &'static dyn Fn(),
+    stop_propagation: &'static dyn Fn(),
     /// We release all dispatched `SyntheticEvent`s after each event loop, adding
     /// them back into the pool. This allows a way to hold onto a reference that
     /// won't be added back into the pool.
-    persist: Box<dyn Fn()>,
+    persist: &'static dyn Fn(),
     /// Checks if this event should be released back into the pool.
     ///
     /// @return {boolean} True if this should not be released, false otherwise.

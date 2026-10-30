@@ -352,7 +352,7 @@ fn reset_form_instance(form: Option<&'static Unknown>) {
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#registerSuspenseInstanceRetry"
 )]
-fn register_suspense_instance_retry(instance: &'static Unknown, callback: Box<dyn Fn()>) {
+fn register_suspense_instance_retry(instance: &'static Unknown, callback: &'static dyn Fn()) {
     unreachable!()
 }
 
@@ -2018,7 +2018,7 @@ fn attach_suspense_retry_listeners(finished_work: &Rc<Fiber>, wakeables: &RetryQ
                 (Rc::clone(finished_work), wakeable),
             );
             let wakeable: &Wakeable = unsafe { js::cast(Some(wakeable)) };
-            wakeable.then(&*retry, &*retry);
+            wakeable.then(retry, retry);
         }
     });
 }

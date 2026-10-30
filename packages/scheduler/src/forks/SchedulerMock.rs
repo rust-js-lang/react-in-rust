@@ -299,7 +299,7 @@ pub fn unstable_next<T>(event_handler: impl FnOnce() -> T) -> T {
 #[cfg_attr(rust_js, rust_js::name = "unstable_wrapCallback")]
 pub fn unstable_wrap_callback(
     callback: &'static dyn Fn(&dyn Rest<dyn IntoUnknown>) -> Option<&'static Unknown>,
-) -> Box<dyn Fn(&'static dyn Rest<dyn IntoUnknown>) -> Option<&'static Unknown>> {
+) -> &'static dyn Fn(&'static dyn Rest<dyn IntoUnknown>) -> Option<&'static Unknown> {
     let parent_priority_level = CURRENT_PRIORITY_LEVEL.get();
     function::with_this(
         move |this, (args,): (&'static dyn Rest<dyn IntoUnknown>,)| {

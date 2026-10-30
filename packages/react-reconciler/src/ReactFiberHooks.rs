@@ -175,18 +175,18 @@ pub type Dispatch = dyn Fn(Option<&'static Unknown>, Option<&'static Unknown>);
 pub type ActionDispatch = dyn Fn(Option<&'static Unknown>);
 
 /// What a state hook gives: its state, and what updates it.
-pub type StateAndDispatch = (Option<&'static Unknown>, Option<Rc<Dispatch>>);
+pub type StateAndDispatch = (Option<&'static Unknown>, Option<&'static Dispatch>);
 
 /// What `useActionState` gives: its state, what dispatches the action, and
 /// whether it's pending.
-pub type ActionStateAndDispatch = (Option<&'static Unknown>, Rc<ActionDispatch>, bool);
+pub type ActionStateAndDispatch = (Option<&'static Unknown>, &'static ActionDispatch, bool);
 
 pub struct UpdateQueue {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub pending: RefCell<Option<Rc<Update>>>,
     pub lanes: Cell<Lanes>,
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub dispatch: RefCell<Option<Rc<Dispatch>>>,
+    pub dispatch: Cell<Option<&'static Dispatch>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub last_rendered_reducer: Cell<Option<&'static Reducer>>,
     pub last_rendered_state: Cell<Option<&'static Unknown>>,
@@ -1477,20 +1477,20 @@ fn mount_reducer(
     let queue = Rc::new(UpdateQueue {
         pending: RefCell::new(None),
         lanes: Cell::new(NO_LANES),
-        dispatch: RefCell::new(None),
+        dispatch: Cell::new(None),
         last_rendered_reducer: Cell::new(Some(reducer)),
         last_rendered_state: Cell::new(initial_state),
     });
     hook.queue.set(Some(js::unknown_of(Rc::clone(&queue))));
-    let dispatch: Rc<Dispatch> = Rc::from(function::bind(
+    let dispatch: &'static Dispatch = function::bind(
         dispatch_reducer_action,
         Some(&Kind::Null),
         (
             CURRENTLY_RENDERING_FIBER.with_borrow(Clone::clone).unwrap(),
             Rc::clone(&queue),
         ),
-    ));
-    queue.dispatch.replace(Some(Rc::clone(&dispatch)));
+    );
+    queue.dispatch.set(Some(dispatch));
     (hook.memoized_state.get(), Some(dispatch))
 }
 
@@ -1809,7 +1809,7 @@ fn update_reducer_impl(
         queue.lanes.set(NO_LANES);
     }
 
-    let dispatch = queue.dispatch.borrow().clone();
+    let dispatch = queue.dispatch.get();
     (hook.memoized_state.get(), dispatch)
 }
 
@@ -1832,7 +1832,7 @@ fn rerender_reducer(
 
     // This is a re-render. Apply the new render phase updates to the previous
     // work-in-progress hook.
-    let dispatch = queue.dispatch.borrow().clone();
+    let dispatch = queue.dispatch.get();
     let last_render_phase_update = queue.pending.borrow().clone();
     let mut new_state = hook.memoized_state.get();
     if let Some(last_render_phase_update) = last_render_phase_update {
@@ -2212,7 +2212,7 @@ fn mount_state_impl(initial_state: Option<&'static Unknown>) -> Rc<Hook> {
     let queue = Rc::new(UpdateQueue {
         pending: RefCell::new(None),
         lanes: Cell::new(NO_LANES),
-        dispatch: RefCell::new(None),
+        dispatch: Cell::new(None),
         last_rendered_reducer: Cell::new(Some(&basic_state_reducer)),
         last_rendered_state: Cell::new(initial_state),
     });
@@ -2223,15 +2223,15 @@ fn mount_state_impl(initial_state: Option<&'static Unknown>) -> Rc<Hook> {
 fn mount_state(initial_state: Option<&'static Unknown>) -> StateAndDispatch {
     let hook = mount_state_impl(initial_state);
     let queue: Rc<UpdateQueue> = unsafe { js::cast(hook.queue.get()) };
-    let dispatch: Rc<Dispatch> = Rc::from(function::bind(
+    let dispatch: &'static Dispatch = function::bind(
         dispatch_set_state,
         Some(&Kind::Null),
         (
             CURRENTLY_RENDERING_FIBER.with_borrow(Clone::clone).unwrap(),
             Rc::clone(&queue),
         ),
-    ));
-    queue.dispatch.replace(Some(Rc::clone(&dispatch)));
+    );
+    queue.dispatch.set(Some(dispatch));
     (hook.memoized_state.get(), Some(dispatch))
 }
 
@@ -2253,14 +2253,14 @@ fn mount_optimistic(
     let queue = Rc::new(UpdateQueue {
         pending: RefCell::new(None),
         lanes: Cell::new(NO_LANES),
-        dispatch: RefCell::new(None),
+        dispatch: Cell::new(None),
         // Optimistic state does not use the eager update optimization.
         last_rendered_reducer: Cell::new(None),
         last_rendered_state: Cell::new(js::null()),
     });
     hook.queue.set(Some(js::unknown_of(Rc::clone(&queue))));
     // This is different than the normal setState function.
-    let dispatch: Rc<Dispatch> = Rc::from(function::bind(
+    let dispatch: &'static Dispatch = function::bind(
         dispatch_optimistic_set_state,
         Some(&Kind::Null),
         (
@@ -2268,8 +2268,8 @@ fn mount_optimistic(
             true,
             Rc::clone(&queue),
         ),
-    ));
-    queue.dispatch.replace(Some(Rc::clone(&dispatch)));
+    );
+    queue.dispatch.set(Some(dispatch));
     (passthrough, Some(dispatch))
 }
 
@@ -2331,7 +2331,7 @@ fn rerender_optimistic(
     // on top of this.
     hook.base_state.set(passthrough);
     let queue: &UpdateQueue = unsafe { js::cast(hook.queue.get()) };
-    let dispatch = queue.dispatch.borrow().clone();
+    let dispatch = queue.dispatch.get();
     (passthrough, dispatch)
 }
 
@@ -2346,7 +2346,7 @@ struct ActionStateQueue {
     // soon as the action finishes running.
     state: Cell<Option<&'static Unknown>>,
     // A stable dispatch method, passed to the user.
-    dispatch: RefCell<Option<Rc<ActionDispatch>>>,
+    dispatch: Cell<Option<&'static ActionDispatch>>,
     // This is the most recent action function that was rendered. It's updated
     // during the commit phase.
     // If it's null, it means the action queue errored and subsequent actions
@@ -2398,8 +2398,8 @@ impl ActionStateQueueNode {
 fn dispatch_action_state(
     fiber: &Rc<Fiber>,
     action_queue: &Rc<ActionStateQueue>,
-    set_pending_state: &Rc<Dispatch>,
-    set_state: &Rc<Dispatch>,
+    set_pending_state: &Dispatch,
+    set_state: &Dispatch,
     payload: Option<&'static Unknown>,
 ) {
     if is_render_phase_update(fiber) {
@@ -2750,30 +2750,30 @@ fn mount_action_state(
     let state_queue = Rc::new(UpdateQueue {
         pending: RefCell::new(None),
         lanes: Cell::new(NO_LANES),
-        dispatch: RefCell::new(js::null()),
+        dispatch: Cell::new(js::null()),
         last_rendered_reducer: Cell::new(Some(&action_state_reducer)),
         last_rendered_state: Cell::new(initial_state),
     });
     state_hook
         .queue
         .set(Some(js::unknown_of(Rc::clone(&state_queue))));
-    let set_state: Rc<Dispatch> = Rc::from(function::bind(
+    let set_state: &'static Dispatch = function::bind(
         dispatch_set_state,
         Some(&Kind::Null),
         (Rc::clone(&rendering_fiber), Rc::clone(&state_queue)),
-    ));
-    state_queue.dispatch.replace(Some(Rc::clone(&set_state)));
+    );
+    state_queue.dispatch.set(Some(set_state));
 
     // Pending state. This is used to store the pending state of the action.
     // Tracked optimistically, like a transition pending state.
     let pending_state_hook = mount_state_impl(Some(js::unknown(&false)));
-    let set_pending_state: Rc<Dispatch> = Rc::from(function::bind(
+    let set_pending_state: &'static Dispatch = function::bind(
         dispatch_optimistic_set_state,
         Some(&Kind::Null),
         (Rc::clone(&rendering_fiber), false, unsafe {
             js::cast::<Rc<UpdateQueue>>(pending_state_hook.queue.get())
         }),
-    ));
+    );
 
     // Action queue hook. This is used to queue pending actions. The queue is
     // shared between all instances of the hook. Similar to a regular state queue,
@@ -2782,14 +2782,14 @@ fn mount_action_state(
     let action_queue_hook = mount_work_in_progress_hook();
     let action_queue = Rc::new(ActionStateQueue {
         state: Cell::new(initial_state),
-        dispatch: RefCell::new(js::null()), // circular
+        dispatch: Cell::new(js::null()), // circular
         action: Cell::new(Some(action)),
         pending: RefCell::new(None),
     });
     action_queue_hook
         .queue
         .set(Some(js::unknown_of(Rc::clone(&action_queue))));
-    let dispatch: Rc<ActionDispatch> = Rc::from(function::bind(
+    let dispatch: &'static ActionDispatch = function::bind(
         dispatch_action_state,
         Some(&Kind::Null),
         (
@@ -2798,8 +2798,8 @@ fn mount_action_state(
             set_pending_state,
             set_state,
         ),
-    ));
-    action_queue.dispatch.replace(Some(Rc::clone(&dispatch)));
+    );
+    action_queue.dispatch.set(Some(dispatch));
 
     // Stash the action function on the memoized state of the hook. We'll use this
     // to detect when the action function changes so we can update it in
@@ -2870,7 +2870,7 @@ fn update_action_state_impl(
 
     let action_queue_hook = update_work_in_progress_hook();
     let action_queue: Rc<ActionStateQueue> = unsafe { js::cast(action_queue_hook.queue.get()) };
-    let dispatch = action_queue.dispatch.borrow().clone().unwrap();
+    let dispatch = action_queue.dispatch.get().unwrap();
 
     // Check if a new action was passed. If so, update it in an effect.
     let prev_action = action_queue_hook.memoized_state.get();
@@ -2930,7 +2930,7 @@ fn rerender_action_state(
 
     let action_queue_hook = update_work_in_progress_hook();
     let action_queue: &ActionStateQueue = unsafe { js::cast(action_queue_hook.queue.get()) };
-    let dispatch = action_queue.dispatch.borrow().clone().unwrap();
+    let dispatch = action_queue.dispatch.get().unwrap();
 
     // This may have changed during the rerender.
     action_queue_hook
@@ -3806,7 +3806,7 @@ fn ensure_form_component_is_stateful(form_fiber: &Fiber) -> Rc<Hook> {
         lanes: Cell::new(NO_LANES),
         // We're going to cheat and intentionally not create a bound dispatch
         // method, because we can call it directly in startTransition.
-        dispatch: RefCell::new(js::null()),
+        dispatch: Cell::new(js::null()),
         last_rendered_reducer: Cell::new(Some(&basic_state_reducer)),
         last_rendered_state: Cell::new(NO_PENDING_HOST_TRANSITION),
     });
@@ -3829,7 +3829,7 @@ fn ensure_form_component_is_stateful(form_fiber: &Fiber) -> Rc<Hook> {
         lanes: Cell::new(NO_LANES),
         // We're going to cheat and intentionally not create a bound dispatch
         // method, because we can call it directly in startTransition.
-        dispatch: RefCell::new(js::null()),
+        dispatch: Cell::new(js::null()),
         last_rendered_reducer: Cell::new(Some(&basic_state_reducer)),
         last_rendered_state: Cell::new(initial_reset_state),
     });
@@ -4021,19 +4021,18 @@ fn update_id() -> String {
 /// its next value, and the value it seeds it with.
 pub type CacheRefresh = dyn Fn(Option<&'static Unknown>, Option<&'static Unknown>);
 
-fn mount_refresh() -> Rc<CacheRefresh> {
+fn mount_refresh() -> &'static CacheRefresh {
     let hook = mount_work_in_progress_hook();
-    let refresh: Rc<CacheRefresh> = Rc::from(function::bind(
+    let refresh: &'static CacheRefresh = function::bind(
         refresh_cache,
         Some(&Kind::Null),
         (CURRENTLY_RENDERING_FIBER.with_borrow(Clone::clone).unwrap(),),
-    ));
-    hook.memoized_state
-        .set(Some(js::unknown_of(Rc::clone(&refresh))));
+    );
+    hook.memoized_state.set(Some(js::unknown_of(refresh)));
     refresh
 }
 
-fn update_refresh() -> Rc<CacheRefresh> {
+fn update_refresh() -> &'static CacheRefresh {
     let hook = update_work_in_progress_hook();
     unsafe { js::cast(hook.memoized_state.get()) }
 }

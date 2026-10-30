@@ -200,7 +200,8 @@ struct SuspenseInstanceFallbackErrorDetails {
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#getSuspenseInstanceFallbackErrorDetails"
+    rust_js::link_name = "./src/ReactFiberConfig.js#getSuspenseInstanceFallbackErrorDetails",
+    rust_js::gives_plain_data
 )]
 fn get_suspense_instance_fallback_error_details(
     instance: &Unknown,

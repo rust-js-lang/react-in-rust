@@ -31,7 +31,8 @@ fn find_fiber_root(node: &'static Unknown) -> Option<Rc<Fiber>> {
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#getBoundingRect"
+    rust_js::link_name = "./src/ReactFiberConfig.js#getBoundingRect",
+    rust_js::gives_plain_data
 )]
 fn get_bounding_rect(node: &'static Unknown) -> BoundingRect {
     unreachable!()
@@ -81,7 +82,8 @@ fn set_focus_if_focusable(node: Option<&'static Unknown>) -> bool {
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#setupIntersectionObserver"
+    rust_js::link_name = "./src/ReactFiberConfig.js#setupIntersectionObserver",
+    rust_js::gives_plain_data
 )]
 fn setup_intersection_observer(
     targets: &[&'static Unknown],

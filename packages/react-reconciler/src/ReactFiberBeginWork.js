@@ -2832,16 +2832,12 @@ function updateDehydratedSuspenseComponent(
       let componentStack = null;
       let digest;
       if (__DEV__) {
-        const {
-          digest: _32,
-          message: _33,
-          stack: _34,
-          componentStack: _35,
-        } = getSuspenseInstanceFallbackErrorDetails(suspenseInstance);
-        digest = _32;
-        message = _33;
-        stack = _34;
-        componentStack = _35;
+        const suspenseInstanceFallbackErrorDetails =
+          getSuspenseInstanceFallbackErrorDetails(suspenseInstance);
+        digest = suspenseInstanceFallbackErrorDetails.digest;
+        message = suspenseInstanceFallbackErrorDetails.message;
+        stack = suspenseInstanceFallbackErrorDetails.stack;
+        componentStack = suspenseInstanceFallbackErrorDetails.componentStack;
       } else {
         digest =
           getSuspenseInstanceFallbackErrorDetails(suspenseInstance).digest;
@@ -3411,8 +3407,8 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
         // a boundary.
         workInProgress.memoizedState = null;
         break;
+      // The default is now forwards.
       default: {
-        // The default is now forwards.
         const child = workInProgress.child;
         const lastContentRow = findLastContentRow(child);
         let tail;

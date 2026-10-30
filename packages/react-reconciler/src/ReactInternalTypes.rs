@@ -535,7 +535,7 @@ pub struct Dispatcher {
         Option<&'static Unknown>,
     ) -> Option<&'static Unknown>,
     pub use_id: fn() -> String,
-    pub use_cache_refresh: fn() -> Rc<CacheRefresh>,
+    pub use_cache_refresh: fn() -> &'static CacheRefresh,
     pub use_memo_cache: fn(usize) -> MemoCacheArray,
     // ReactFiberConfig's `TransitionStatus`.
     pub use_host_transition_status: fn() -> Option<&'static Unknown>,

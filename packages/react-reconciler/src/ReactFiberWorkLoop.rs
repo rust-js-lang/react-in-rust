@@ -219,7 +219,7 @@ fn reset_after_commit(container_info: &'static Unknown) {
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#scheduleTimeout"
 )]
-fn schedule_timeout(handler: Box<dyn Fn()>, timeout: f64) -> &'static Unknown {
+fn schedule_timeout(handler: &'static dyn Fn(), timeout: f64) -> &'static Unknown {
     unreachable!()
 }
 
@@ -257,7 +257,7 @@ fn suspend_on_active_view_transition(state: &'static Unknown, root_container: &'
 
 /// What `waitForCommitToBeReady` gives where the commit isn't ready: it's
 /// given the commit, and gives what cancels it.
-type SchedulePendingCommit = dyn Fn(Box<dyn Fn()>) -> Box<dyn Fn()>;
+type SchedulePendingCommit = dyn Fn(&'static dyn Fn()) -> Box<dyn Fn()>;
 
 #[cfg_attr(
     rust_js,
@@ -357,7 +357,7 @@ fn start_view_transition(
     passive_callback: fn() -> bool,
     error_callback: fn(Option<&'static Unknown>),
     blocked_callback: Option<fn(&'static str)>, // Profiling-only
-    finished_animation: Option<Box<dyn Fn()>>,  // Profiling-only
+    finished_animation: Option<&'static dyn Fn()>, // Profiling-only
 ) -> Option<&'static Unknown> {
     unreachable!()
 }
@@ -378,7 +378,7 @@ fn start_gesture_transition(
     mutation_callback: fn(),
     animate_callback: fn(),
     error_callback: fn(Option<&'static Unknown>),
-    finished_animation: Option<Box<dyn Fn()>>, // Profiling-only
+    finished_animation: Option<&'static dyn Fn()>, // Profiling-only
 ) -> Option<&'static Unknown> {
     unreachable!()
 }
@@ -5471,7 +5471,7 @@ pub fn attach_ping_listener(root: &Rc<FiberRoot>, wakeable: &'static Wakeable, l
             // If we have pending work still, restore the original updaters
             restore_pending_updaters(root, lanes);
         }
-        wakeable.then(&ping, &ping);
+        wakeable.then(ping, ping);
     }
 }
 

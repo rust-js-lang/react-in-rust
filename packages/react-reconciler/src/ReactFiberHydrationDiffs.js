@@ -30,22 +30,16 @@ const maxRowLength = 120;
 const idealDepth = 15;
 
 function findNotableNode(node, indent) {
-  if (node.serverProps === undefined) {
-    const borrow = $borrow(node.serverTail, true);
-    if (borrow.length === 0) {
-      $unborrow(borrow);
-      if (
-        node.children.length === 1 &&
-        node.distanceFromLeaf > 3 &&
-        node.distanceFromLeaf > ((idealDepth - indent) | 0)
-      ) {
-        // This is not an interesting node for contextual purposes so we can skip it.
-        const child = $index(node.children, 0);
-        return findNotableNode(child, indent);
-      }
-    } else {
-      $unborrow(borrow);
-    }
+  if (
+    node.serverProps === undefined &&
+    $borrow(node.serverTail).length === 0 &&
+    node.children.length === 1 &&
+    node.distanceFromLeaf > 3 &&
+    node.distanceFromLeaf > ((idealDepth - indent) | 0)
+  ) {
+    // This is not an interesting node for contextual purposes so we can skip it.
+    const child = $index(node.children, 0);
+    return findNotableNode(child, indent);
   }
   return node;
 }
@@ -590,67 +584,30 @@ function describeNode(node, indent) {
   if (node.serverProps === null) {
     indent = (indent - 1) | 0;
   }
-  let iter;
   try {
-    iter = $iter(serverTail);
-  } catch (error) {
-    $unborrow(serverTail);
-    throw error;
-  }
-  while (true) {
-    let serverTailNode;
-    try {
-      serverTailNode = $next(iter);
-    } catch (error) {
-      $unborrow(serverTail);
-      throw error;
+    const iter = $iter(serverTail);
+    let tailNode;
+    while ((tailNode = $next(iter)) != null) {
+      if (typeof tailNode === 'string') {
+        // Removed text node
+        childContent +=
+          removed(indent) +
+          describeTextNode(tailNode, maxRowLength - indent * 2) +
+          '\n';
+      } else {
+        // Removed element
+        childContent += describeExpandedElement(
+          tailNode.type,
+          tailNode.props,
+          removed(indent),
+        );
+      }
     }
-    if (serverTailNode == null) {
-      break;
-    }
-    const tailNode = serverTailNode;
-    if (typeof tailNode === 'string') {
-      // Removed text node
-      let tmp;
-      try {
-        tmp = removed(indent);
-      } catch (error) {
-        $unborrow(serverTail);
-        throw error;
-      }
-      let tmp$1;
-      try {
-        tmp$1 = describeTextNode(tailNode, maxRowLength - indent * 2);
-      } catch (error) {
-        $unborrow(serverTail);
-        throw error;
-      }
-      childContent += tmp + tmp$1 + '\n';
-    } else {
-      // Removed element
-      const value = tailNode.type;
-      const props = tailNode.props;
-      let tmp;
-      try {
-        tmp = removed(indent);
-      } catch (error) {
-        $unborrow(serverTail);
-        throw error;
-      }
-      let tmp$1;
-      try {
-        tmp$1 = describeExpandedElement(value, props, tmp);
-      } catch (error) {
-        $unborrow(serverTail);
-        throw error;
-      }
-      childContent += tmp$1;
-    }
-  }
 
-  const result = parentContent + selfContent + childContent;
-  $unborrow(serverTail);
-  return result;
+    return parentContent + selfContent + childContent;
+  } finally {
+    $unborrow(serverTail);
+  }
 }
 
 export function describeDiff(rootNode) {

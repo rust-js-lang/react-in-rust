@@ -1016,8 +1016,8 @@ function setPropOnCustomElement(domElement, tag, key, value, props, prevValue) {
     case 'innerText': // Properties
     case 'textContent':
       return;
+    // Fall through
     default:
-      // Fall through
       if (registrationNameDependencies.hasOwnProperty(key)) {
         if (__DEV__ && value != null && typeof value !== 'function') {
           warnForInvalidEventListener(key, value);
