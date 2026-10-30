@@ -151,9 +151,29 @@ pub mod validate_dom_nesting;
 pub mod warn_valid_style;
 
 // The server side's modules (m6-wife's).
+#[path = "src/server/fizz-instruction-set/ReactDOMFizzInlineClientRenderBoundary.rs"]
+pub mod react_dom_fizz_inline_client_render_boundary;
+#[path = "src/server/fizz-instruction-set/ReactDOMFizzInlineCompleteBoundary.rs"]
+pub mod react_dom_fizz_inline_complete_boundary;
+#[path = "src/server/fizz-instruction-set/ReactDOMFizzInlineCompleteBoundaryUpgradeToViewTransitions.rs"]
+pub mod react_dom_fizz_inline_complete_boundary_upgrade_to_view_transitions;
+#[path = "src/server/fizz-instruction-set/ReactDOMFizzInlineCompleteBoundaryWithStyles.rs"]
+pub mod react_dom_fizz_inline_complete_boundary_with_styles;
+#[path = "src/server/fizz-instruction-set/ReactDOMFizzInlineCompleteSegment.rs"]
+pub mod react_dom_fizz_inline_complete_segment;
+#[path = "src/server/fizz-instruction-set/ReactDOMFizzInlineFormReplaying.rs"]
+pub mod react_dom_fizz_inline_form_replaying;
+#[path = "src/server/fizz-instruction-set/ReactDOMFizzInlineShellTime.rs"]
+pub mod react_dom_fizz_inline_shell_time;
+#[path = "src/server/fizz-instruction-set/ReactDOMFizzInstructionSetExternalRuntime.rs"]
+pub mod react_dom_fizz_instruction_set_external_runtime;
 #[path = "src/server/fizz-instruction-set/ReactDOMFizzInstructionSetInlineCodeStrings.rs"]
 pub mod react_dom_fizz_instruction_set_inline_code_strings;
+#[path = "src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs"]
+pub mod react_dom_fizz_instruction_set_shared;
 #[path = "src/server/ReactDOMLegacyServerStreamConfig.rs"]
 pub mod react_dom_legacy_server_stream_config;
+#[path = "src/server/ReactDOMServerExternalRuntime.rs"]
+pub mod react_dom_server_external_runtime;
 #[path = "src/server/ReactFlightServerConfigDOM.rs"]
 pub mod react_flight_server_config_dom;

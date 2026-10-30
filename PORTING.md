@@ -281,6 +281,19 @@ These differences from upstream's output are accepted:
   name is the shorthand, `{ crossOrigin }`, which clippy's
   `redundant_field_names` asks of the Rust, where upstream writes
   `crossOrigin: crossOrigin` (ReactFlightServerConfigDOM's processImg).
+- **The Fizz instruction set's forms** (the user, rd264 and h03 aside):
+  ReactDOMFizzInstructionSetShared's restore queue is a `Vec` of tuples,
+  `[element, name, class]` each, where upstream pushes three flat values;
+  `suspenseyImages.push.apply(..)` is `extend`, `$extend(..)` (rd267, as
+  rd183); camelCase parameters, `suspenseBoundaryId`, where upstream writes
+  `suspenseBoundaryID` (rd272); `Promise.resolve(clientHeight)` in the
+  blocking promises, a typed `Vec`; `cleanupWith(cb, _event)`, an
+  `onload` handler's event; `form.ownerDocument` without `|| form`, an
+  element's never null (rd207's kind). completeBoundaryWithStyles's one
+  `while (true)` of a `sheetMode` flag is two loops, its stylesheets' and
+  its `<style>` tags', and an `insertResource` helper of what both insert,
+  as Rust writes a loop of two modes. Upstream's restore reads
+  `previousClassName` from the name's slot, which the port keeps.
 
 - **gives_plain_data** (#411, 77029cdc4): a binding whose result is a fresh
   object of data properties that JS builds says so with
