@@ -277,9 +277,10 @@ export function enqueueCapturedUpdate(workInProgress, capturedUpdate) {
       // skipped over the parent when we bailed out.
       let newFirst;
       let newLast;
-      if (queue.firstBaseUpdate != null) {
+      const firstBaseUpdate = queue.firstBaseUpdate;
+      if (firstBaseUpdate != null) {
         // Loop through the updates and clone them.
-        let update = queue.firstBaseUpdate;
+        let update = firstBaseUpdate;
         do {
           const clone = {
             lane: update.lane,
@@ -605,8 +606,9 @@ export function processUpdateQueue(
           }
         }
       }
-      if (update.next != null) {
-        update = update.next;
+      const next = update.next;
+      if (next != null) {
+        update = next;
       } else {
         pendingQueue = queue.shared.pending;
         if (pendingQueue == null) {

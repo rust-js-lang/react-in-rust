@@ -29,11 +29,12 @@ export function scheduleGesture(root, provider) {
       // Existing instance found.
       return prev;
     }
+    const next = prev.next;
     // $FlowFixMe[invalid-compare]
-    if (prev.next == null) {
+    if (next == null) {
       break;
     }
-    prev = prev.next;
+    prev = next;
   }
   const gesture = {
     provider,
@@ -85,11 +86,12 @@ export function startScheduledGesture(
       }
       return prev ?? null;
     }
+    const next = prev.next;
     // $FlowFixMe[invalid-compare]
-    if (prev.next == null) {
+    if (next == null) {
       break;
     }
-    prev = prev.next;
+    prev = next;
   }
   // No scheduled gestures. It must mean nothing for this renderer updated but
   // some other renderer might have updated.

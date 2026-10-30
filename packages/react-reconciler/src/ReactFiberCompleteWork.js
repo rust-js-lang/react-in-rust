@@ -291,11 +291,11 @@ function appendAllChildren(
         if (child != null) {
           child.return = current;
         }
-        /* isHidden */
         appendAllChildren(
           parent /* needsVisibilityToggle */,
           current,
           true,
+          /* isHidden */
           true,
         );
       } else if (child != null) {
@@ -371,9 +371,14 @@ function appendAllChildrenToContainer(
         if (child != null) {
           child.return = current;
         }
-        /* needsVisibilityToggle */
-        /* isHidden */
-        appendAllChildrenToContainer(containerChildSet, current, true, true);
+        appendAllChildrenToContainer(
+          containerChildSet,
+          current,
+          /* needsVisibilityToggle */
+          true,
+          /* isHidden */
+          true,
+        );
 
         hasOffscreenComponentChild = true;
       } else if (child != null) {
@@ -407,9 +412,14 @@ function updateHostContainer(current, workInProgress) {
     const container = portalOrRoot.containerInfo;
     const newChildSet = createContainerChildSet();
     // If children might have changed, we have to add them all to the set.
-    /* needsVisibilityToggle */
-    /* isHidden */
-    appendAllChildrenToContainer(newChildSet, workInProgress, false, false);
+    appendAllChildrenToContainer(
+      newChildSet,
+      workInProgress,
+      /* needsVisibilityToggle */
+      false,
+      /* isHidden */
+      false,
+    );
     portalOrRoot.pendingChildren = newChildSet;
     // Schedule an update on the container to swap out the container.
     markUpdate(workInProgress);
@@ -456,12 +466,12 @@ function updateHostComponent(
       const childSet = createContainerChildSet();
       newChildSet = childSet;
       // If children might have changed, we have to add them all to the set.
-      /* needsVisibilityToggle */
-      /* isHidden */
       hasOffscreenComponentChild = appendAllChildrenToContainer(
         childSet,
         workInProgress,
+        /* needsVisibilityToggle */
         false,
+        /* isHidden */
         false,
       );
     }
@@ -497,9 +507,14 @@ function updateHostComponent(
       (!passChildrenWhenCloningPersistedNodes || hasOffscreenComponentChild)
     ) {
       // If children have changed, we have to add them all to the set.
-      /* needsVisibilityToggle */
-      /* isHidden */
-      appendAllChildren(newInstance, workInProgress, false, false);
+      appendAllChildren(
+        newInstance,
+        workInProgress,
+        /* needsVisibilityToggle */
+        false,
+        /* isHidden */
+        false,
+      );
     }
   }
 }
@@ -1040,8 +1055,6 @@ export function completeWork(current, workInProgress, renderLanes) {
   // for hydration.
   popTreeContext(workInProgress);
 
-  // Continue with the normal Activity path.
-
   // Continue with the normal Suspense path.
   // Next we're going to render the tail.
   // We don't cut it if we're hydrating.
@@ -1482,6 +1495,8 @@ export function completeWork(current, workInProgress, renderLanes) {
             'Client rendering an Activity suspended it again. This is a bug in React.',
           );
         }
+
+        // Continue with the normal Activity path.
       }
 
       bubbleProperties(workInProgress);

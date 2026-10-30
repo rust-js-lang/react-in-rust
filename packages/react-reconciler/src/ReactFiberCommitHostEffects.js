@@ -105,7 +105,6 @@ export function commitHostHydratedInstance(finishedWork) {
 }
 
 export function commitHostUpdate(finishedWork, newProps, oldProps) {
-  // Mutations are tracked manually from within commitUpdate.
   try {
     if (__DEV__) {
       runWithFiberInDEV(
@@ -128,6 +127,7 @@ export function commitHostUpdate(finishedWork, newProps, oldProps) {
         finishedWork,
       );
     }
+    // Mutations are tracked manually from within commitUpdate.
   } catch (error) {
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);

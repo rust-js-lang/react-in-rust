@@ -70,11 +70,8 @@ export function startTransition(scope, options) {
     if (prevTransition != null && currentTypes != null) {
       // If we created a new types set in the inner transition, we transfer it to the parent
       // since they should share the same set. They're conceptually entangled.
-      if (
-        __DEV__ &&
-        prevTransition.types != null &&
-        prevTransition.types !== currentTypes
-      ) {
+      const prevTypes = prevTransition.types;
+      if (__DEV__ && prevTypes != null && prevTypes !== currentTypes) {
         // Just assert that assumption holds that we're not overriding anything.
         console.error(
           'We expected inner Transitions to have transferred the outer types set and ' +

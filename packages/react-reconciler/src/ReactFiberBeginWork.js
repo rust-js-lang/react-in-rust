@@ -3352,7 +3352,7 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
         // TODO: If workInProgress.child is null, we can continue on the tail immediately.
         initSuspenseListRenderState(
           workInProgress,
-          true,
+          true, // isBackwards
           tail,
           null, // last
           tailMode,
@@ -3384,7 +3384,7 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
         // TODO: If workInProgress.child is null, we can continue on the tail immediately.
         initSuspenseListRenderState(
           workInProgress,
-          true,
+          true, // isBackwards
           tail,
           null, // last
           tailMode,
@@ -3395,7 +3395,7 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
       case 'together':
         initSuspenseListRenderState(
           workInProgress,
-          false,
+          false, // isBackwards
           null, // tail
           null, // last
           undefined,
@@ -3425,7 +3425,7 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
         }
         initSuspenseListRenderState(
           workInProgress,
-          false,
+          false, // isBackwards
           tail,
           lastContentRow,
           tailMode,

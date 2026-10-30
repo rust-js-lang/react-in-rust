@@ -576,8 +576,6 @@ export function retryIfBlockedOn(unblocked) {
   const formReplayingQueue = root.$$reactFormReplay;
   if (formReplayingQueue != null) {
     let i = 0;
-    // The submitter must have been a part of a different React instance.
-    // Except the form isn't. We don't dispatch actions in this scenario.
     while (i < formReplayingQueue.length) {
       const form = formReplayingQueue[i];
       const submitterOrAction = formReplayingQueue[i + 1];
@@ -611,6 +609,8 @@ export function retryIfBlockedOn(unblocked) {
               i += 3;
               continue;
             }
+            // The submitter must have been a part of a different React instance.
+            // Except the form isn't. We don't dispatch actions in this scenario.
           }
         } else {
           action = formProps.action;

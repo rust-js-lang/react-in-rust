@@ -1200,8 +1200,8 @@ export function performWorkOnRoot(root, lanes, forceSync) {
         lanes,
         renderEndTime,
       );
-      break;
     }
+    break;
   }
 
   ensureRootIsScheduled(root);
@@ -2809,8 +2809,9 @@ function renderRootConcurrent(root, lanes) {
                     // already completed.
                     workInProgressSuspendedReason = NotSuspended;
                     workInProgressThrownValue = null;
-                    if (hostFiber.sibling != null) {
-                      workInProgress = hostFiber.sibling;
+                    const sibling = hostFiber.sibling;
+                    if (sibling != null) {
+                      workInProgress = sibling;
                     } else {
                       const returnFiber = hostFiber.return;
                       if (returnFiber != null) {
@@ -5257,8 +5258,9 @@ function invokeEffectsInDev(firstChild, fiberFlags, invokeEffectFn) {
         invokeEffectFn(current);
       }
 
-      if (current.sibling != null) {
-        current = current.sibling;
+      const sibling = current.sibling;
+      if (sibling != null) {
+        current = sibling;
       } else {
         subtreeRoot = current.return;
         current = subtreeRoot;
