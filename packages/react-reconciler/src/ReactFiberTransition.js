@@ -257,16 +257,16 @@ export function pushTransition(
     const current = transitionStack.current;
     if (current == null) {
       push(transitionStack, newTransitions, offscreenWorkInProgress);
-    } else if (newTransitions != null) {
+    } else if (newTransitions == null) {
+      const current$1 = current;
+      push(transitionStack, current$1, offscreenWorkInProgress);
+    } else {
       const current$1 = current;
       push(
         transitionStack,
         [...current$1, ...newTransitions],
         offscreenWorkInProgress,
       );
-    } else {
-      const current$1 = current;
-      push(transitionStack, current$1, offscreenWorkInProgress);
     }
   }
 }

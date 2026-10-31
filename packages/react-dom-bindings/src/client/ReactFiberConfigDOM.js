@@ -3296,13 +3296,13 @@ function getAttachOptions(opts) {
 }
 
 function normalizeListenerOptions(opts) {
-  if (opts != null) {
-    if (typeof opts === 'boolean') {
-      return `c=${opts ? '1' : '0'}`;
-    }
-    return `c=${opts.capture ? '1' : '0'}`;
+  if (opts == null) {
+    return 'c=0';
   }
-  return 'c=0';
+  if (typeof opts === 'boolean') {
+    return `c=${opts ? '1' : '0'}`;
+  }
+  return `c=${opts.capture ? '1' : '0'}`;
 }
 
 function indexOfEventListener(
