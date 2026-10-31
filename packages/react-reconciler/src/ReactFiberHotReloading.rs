@@ -12,7 +12,7 @@ use shared::react_symbols::{REACT_FORWARD_REF_TYPE, REACT_LAZY_TYPE, REACT_MEMO_
 
 use crate::react_fiber_concurrent_updates::enqueue_concurrent_render_for_lane;
 use crate::react_fiber_lane::SYNC_LANE;
-use crate::react_fiber_reconciler::update_container_sync;
+use crate::react_fiber_reconciler::ReactFiberReconciler;
 use crate::react_fiber_work_loop::{
     flush_pending_effects, flush_sync_work, schedule_update_on_fiber,
 };
@@ -203,7 +203,7 @@ pub fn schedule_root(root: &FiberRoot, element: Option<&'static Unknown>) {
             // Just ignore. We'll delete this with _renderSubtree code path later.
             return;
         }
-        update_container_sync(element, root, None, None);
+        ReactFiberReconciler.update_container_sync(element, root, None, None);
         flush_sync_work();
     }
 }

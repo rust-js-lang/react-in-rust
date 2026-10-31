@@ -12,7 +12,7 @@ use react_reconciler::react_event_priorities::{
     CONTINUOUS_EVENT_PRIORITY, DEFAULT_EVENT_PRIORITY, DISCRETE_EVENT_PRIORITY, EventPriority,
     IDLE_EVENT_PRIORITY,
 };
-use react_reconciler::react_fiber_reconciler::attempt_synchronous_hydration;
+use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
 use react_reconciler::react_fiber_shell_hydration::is_root_dehydrated;
 use react_reconciler::react_fiber_tree_reflection::{
     get_activity_instance_from_fiber, get_container_from_fiber, get_nearest_mounted_fiber,
@@ -185,7 +185,7 @@ pub fn dispatch_event(
         while blocked_on.is_some() {
             let fiber = get_instance_from_node(unsafe { js::cast(blocked_on) });
             if let Some(fiber) = &fiber {
-                attempt_synchronous_hydration(fiber);
+                ReactFiberReconciler.attempt_synchronous_hydration(fiber);
             }
             let next_blocked_on = find_instance_blocking_event(native_event);
             if next_blocked_on.is_none() {

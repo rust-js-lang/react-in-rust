@@ -100,7 +100,7 @@ use crate::react_fiber_offscreen_component::{
     LegacyHiddenProps, OFFSCREEN_VISIBLE, OffscreenInstance, OffscreenMode, OffscreenProps,
     OffscreenQueue, OffscreenState,
 };
-use crate::react_fiber_reconciler::{should_error, should_suspend};
+use crate::react_fiber_reconciler::ReactFiberReconciler;
 use crate::react_fiber_root::RootState;
 use crate::react_fiber_suspense_component::{
     SuspenseListRenderState, SuspenseListTailMode, SuspenseState, find_first_suspended,
@@ -1676,7 +1676,7 @@ fn update_class_component(
 ) -> Option<Rc<Fiber>> {
     if __DEV__ {
         // This is used by DevTools to force a boundary to error.
-        match should_error(work_in_progress) {
+        match ReactFiberReconciler.should_error(work_in_progress) {
             Some(false) => {
                 // We previously simulated an error on this boundary
                 // so the instance must have been constructed in a previous
@@ -2523,7 +2523,7 @@ fn update_suspense_component(
     let next_props = work_in_progress.pending_props.get();
 
     // This is used by DevTools to force a boundary to suspend.
-    if __DEV__ && should_suspend(work_in_progress) {
+    if __DEV__ && ReactFiberReconciler.should_suspend(work_in_progress) {
         work_in_progress
             .flags
             .set(work_in_progress.flags.get() | DID_CAPTURE);

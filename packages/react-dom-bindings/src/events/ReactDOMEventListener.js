@@ -12,6 +12,7 @@ import {
   IdleEventPriority,
 } from '../../../react-reconciler/src/ReactEventPriorities.js';
 import {attemptSynchronousHydration} from '../../../react-reconciler/src/ReactFiberReconciler.js';
+import * as ReactFiberReconciler from '../../../react-reconciler/src/ReactFiberReconciler.js';
 import {isRootDehydrated} from '../../../react-reconciler/src/ReactFiberShellHydration.js';
 import {
   getActivityInstanceFromFiber,

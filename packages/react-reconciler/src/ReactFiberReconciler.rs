@@ -100,6 +100,14 @@ fn get_public_instance(instance: Option<&'static Unknown>) -> Option<&'static Un
 
 type OpaqueRoot = FiberRoot;
 
+/// The reconciler's API: its methods are this module's functions, which
+/// React DOM imports, and its value the module's namespace, which a
+/// renderer such as the noop one is given and calls through.
+#[cfg_attr(rust_js, rust_js::namespace)]
+pub struct ReactFiberReconciler;
+
+unsafe impl js::Defined for ReactFiberReconciler {}
+
 thread_local! {
     static DID_WARN_ABOUT_NESTED_UPDATES: Cell<Option<bool>> = const { Cell::new(None) };
     static DID_WARN_ABOUT_FIND_NODE_IN_STRICT_MODE: Cell<Option<&'static Dict<bool>>> =
@@ -134,28 +142,10 @@ fn get_context_for_subtree(parent_component: Option<&'static Unknown>) -> &'stat
     parent_context
 }
 
-#[cfg_attr(rust_js, rust_js::nullable)]
-pub fn find_host_instance(component: &'static Unknown) -> Option<&'static Unknown> {
-    let fiber: Option<Rc<Fiber>> = unsafe { js::cast(get_instance(component)) };
-    let Some(fiber) = fiber else {
-        if js::type_of(js::get(component, "render")) == "function" {
-            panic!("Unable to find node on an unmounted component.");
-        } else {
-            let keys = js::object::keys(component).join(",");
-            panic!("Argument appears to not be a ReactComponent. Keys: {keys}");
-        }
-    };
-    let host_fiber = find_current_host_fiber(&fiber);
-    let host_fiber = host_fiber?;
-    get_public_instance(host_fiber.state_node.get())
-}
-
-#[cfg_attr(rust_js, rust_js::nullable)]
-pub fn find_host_instance_with_warning(
-    component: &'static Unknown,
-    method_name: &str,
-) -> Option<&'static Unknown> {
-    if __DEV__ {
+#[cfg_attr(rust_js, rust_js::namespace)]
+impl ReactFiberReconciler {
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub fn find_host_instance(&self, component: &'static Unknown) -> Option<&'static Unknown> {
         let fiber: Option<Rc<Fiber>> = unsafe { js::cast(get_instance(component)) };
         let Some(fiber) = fiber else {
             if js::type_of(js::get(component, "render")) == "function" {
@@ -167,211 +157,237 @@ pub fn find_host_instance_with_warning(
         };
         let host_fiber = find_current_host_fiber(&fiber);
         let host_fiber = host_fiber?;
-        if (host_fiber.mode.get() & STRICT_LEGACY_MODE) != 0 {
-            let component_name = get_component_name_from_fiber(&fiber)
-                .filter(|name| !name.is_empty())
-                .unwrap_or_else(|| "Component".to_string());
-            let did_warn_about_find_node_in_strict_mode =
-                DID_WARN_ABOUT_FIND_NODE_IN_STRICT_MODE.get().unwrap();
-            if !js::dict::get(did_warn_about_find_node_in_strict_mode, &component_name)
-                .is_some_and(|&did_warn| did_warn)
-            {
-                js::dict::set(
-                    did_warn_about_find_node_in_strict_mode,
-                    &component_name,
-                    true,
-                );
-                run_with_fiber_in_dev(
-                    Some(Rc::clone(&host_fiber)),
-                    |fiber: &Fiber, method_name: &str, component_name: &str, _: (), _: ()| {
-                        if (fiber.mode.get() & STRICT_LEGACY_MODE) != 0 {
-                            console::error((
-                                concat!(
-                                    "%s is deprecated in StrictMode. ",
-                                    "%s was passed an instance of %s which is inside StrictMode. ",
-                                    "Instead, add a ref directly to the element you want to reference. ",
-                                    "Learn more about using refs safely here: ",
-                                    "https://react.dev/link/strict-mode-find-node"
-                                ),
-                                method_name,
-                                method_name,
-                                component_name,
-                            ));
-                        } else {
-                            console::error((
-                                concat!(
-                                    "%s is deprecated in StrictMode. ",
-                                    "%s was passed an instance of %s which renders StrictMode children. ",
-                                    "Instead, add a ref directly to the element you want to reference. ",
-                                    "Learn more about using refs safely here: ",
-                                    "https://react.dev/link/strict-mode-find-node"
-                                ),
-                                method_name,
-                                method_name,
-                                component_name,
-                            ));
-                        }
-                    },
-                    &*fiber,
-                    method_name,
-                    component_name.as_str(),
-                    (),
-                    (),
-                );
+        get_public_instance(host_fiber.state_node.get())
+    }
+
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub fn find_host_instance_with_warning(
+        &self,
+        component: &'static Unknown,
+        method_name: &str,
+    ) -> Option<&'static Unknown> {
+        if __DEV__ {
+            let fiber: Option<Rc<Fiber>> = unsafe { js::cast(get_instance(component)) };
+            let Some(fiber) = fiber else {
+                if js::type_of(js::get(component, "render")) == "function" {
+                    panic!("Unable to find node on an unmounted component.");
+                } else {
+                    let keys = js::object::keys(component).join(",");
+                    panic!("Argument appears to not be a ReactComponent. Keys: {keys}");
+                }
+            };
+            let host_fiber = find_current_host_fiber(&fiber);
+            let host_fiber = host_fiber?;
+            if (host_fiber.mode.get() & STRICT_LEGACY_MODE) != 0 {
+                let component_name = get_component_name_from_fiber(&fiber)
+                    .filter(|name| !name.is_empty())
+                    .unwrap_or_else(|| "Component".to_string());
+                let did_warn_about_find_node_in_strict_mode =
+                    DID_WARN_ABOUT_FIND_NODE_IN_STRICT_MODE.get().unwrap();
+                if !js::dict::get(did_warn_about_find_node_in_strict_mode, &component_name)
+                    .is_some_and(|&did_warn| did_warn)
+                {
+                    js::dict::set(
+                        did_warn_about_find_node_in_strict_mode,
+                        &component_name,
+                        true,
+                    );
+                    run_with_fiber_in_dev(
+                        Some(Rc::clone(&host_fiber)),
+                        |fiber: &Fiber, method_name: &str, component_name: &str, _: (), _: ()| {
+                            if (fiber.mode.get() & STRICT_LEGACY_MODE) != 0 {
+                                console::error((
+                                    concat!(
+                                        "%s is deprecated in StrictMode. ",
+                                        "%s was passed an instance of %s which is inside StrictMode. ",
+                                        "Instead, add a ref directly to the element you want to reference. ",
+                                        "Learn more about using refs safely here: ",
+                                        "https://react.dev/link/strict-mode-find-node"
+                                    ),
+                                    method_name,
+                                    method_name,
+                                    component_name,
+                                ));
+                            } else {
+                                console::error((
+                                    concat!(
+                                        "%s is deprecated in StrictMode. ",
+                                        "%s was passed an instance of %s which renders StrictMode children. ",
+                                        "Instead, add a ref directly to the element you want to reference. ",
+                                        "Learn more about using refs safely here: ",
+                                        "https://react.dev/link/strict-mode-find-node"
+                                    ),
+                                    method_name,
+                                    method_name,
+                                    component_name,
+                                ));
+                            }
+                        },
+                        &*fiber,
+                        method_name,
+                        component_name.as_str(),
+                        (),
+                        (),
+                    );
+                }
             }
+            return get_public_instance(host_fiber.state_node.get());
         }
-        return get_public_instance(host_fiber.state_node.get());
+        self.find_host_instance(component)
     }
-    find_host_instance(component)
-}
 
-#[cfg_attr(rust_js, rust_js::nullable(hydration_callbacks))]
-#[cfg_attr(rust_js, rust_js::nullable(transition_callbacks))]
-pub fn create_container(
-    // ReactFiberConfig's `Container`.
-    container_info: &'static Unknown,
-    tag: RootTag,
-    hydration_callbacks: Option<&'static SuspenseHydrationCallbacks>,
-    is_strict_mode: bool,
-    // TODO: Remove `concurrentUpdatesByDefaultOverride`. It is now ignored.
-    _concurrent_updates_by_default_override: Option<bool>,
-    identifier_prefix: String,
-    on_uncaught_error: &'static OnError,
-    on_caught_error: &'static OnCaughtError,
-    on_recoverable_error: &'static OnError,
-    on_default_transition_indicator: &'static OnDefaultTransitionIndicator,
-    transition_callbacks: Option<&'static TransitionTracingCallbacks>,
-) -> Rc<OpaqueRoot> {
-    let hydrate = false;
-    let initial_children = js::null();
-    let root = create_fiber_root(
-        container_info,
-        tag,
-        hydrate,
-        initial_children,
-        hydration_callbacks,
-        is_strict_mode,
-        identifier_prefix,
-        js::null(),
-        on_uncaught_error,
-        on_caught_error,
-        on_recoverable_error,
-        on_default_transition_indicator,
-        transition_callbacks,
-    );
-    register_default_indicator(on_default_transition_indicator);
-    root
-}
-
-#[cfg_attr(rust_js, rust_js::nullable(hydration_callbacks))]
-#[cfg_attr(rust_js, rust_js::nullable(transition_callbacks, form_state))]
-pub fn create_hydration_container(
-    // shared/ReactTypes' `ReactNodeList`.
-    initial_children: Option<&'static Unknown>,
-    // TODO: Remove `callback` when we delete legacy mode.
-    callback: Option<&'static Unknown>,
-    // ReactFiberConfig's `Container`.
-    container_info: &'static Unknown,
-    tag: RootTag,
-    hydration_callbacks: Option<&'static SuspenseHydrationCallbacks>,
-    is_strict_mode: bool,
-    // TODO: Remove `concurrentUpdatesByDefaultOverride`. It is now ignored.
-    _concurrent_updates_by_default_override: Option<bool>,
-    identifier_prefix: String,
-    on_uncaught_error: &'static OnError,
-    on_caught_error: &'static OnCaughtError,
-    on_recoverable_error: &'static OnError,
-    on_default_transition_indicator: &'static OnDefaultTransitionIndicator,
-    transition_callbacks: Option<&'static TransitionTracingCallbacks>,
-    // shared/ReactTypes' `ReactFormState<any, any>`.
-    form_state: Option<&'static Unknown>,
-) -> Rc<OpaqueRoot> {
-    let hydrate = true;
-    let root = create_fiber_root(
-        container_info,
-        tag,
-        hydrate,
-        initial_children,
-        hydration_callbacks,
-        is_strict_mode,
-        identifier_prefix,
-        form_state,
-        on_uncaught_error,
-        on_caught_error,
-        on_recoverable_error,
-        on_default_transition_indicator,
-        transition_callbacks,
-    );
-
-    register_default_indicator(on_default_transition_indicator);
-
-    // TODO: Move this to FiberRoot constructor
-    root.context.set(Some(unsafe {
-        js::cast(Some(js::unknown(get_context_for_subtree(js::null()))))
-    }));
-
-    // Schedule the initial render. In a hydration root, this is different from
-    // a regular update because the initial render must match was was rendered
-    // on the server.
-    // NOTE: This update intentionally doesn't have a payload. We're only using
-    // the update to schedule work on the root fiber (and, for legacy roots, to
-    // enqueue the callback if one is provided).
-    let current = root.current.borrow().clone();
-    let mut lane = request_update_lane(&current);
-    lane = get_bumped_lane_for_hydration_by_lane(lane);
-    let update = create_update(lane);
-    update.callback.set(callback);
-    enqueue_update(&current, &update, lane);
-    start_update_timer_by_lane(lane, "hydrateRoot()", None);
-    schedule_initial_hydration_on_root(&root, lane);
-
-    root
-}
-
-#[cfg_attr(rust_js, rust_js::nullable(parent_component, callback))]
-pub fn update_container(
-    // shared/ReactTypes' `ReactNodeList`.
-    element: Option<&'static Unknown>,
-    container: &OpaqueRoot,
-    // A class component, if any.
-    parent_component: Option<&'static Unknown>,
-    callback: Option<&'static Unknown>,
-) -> Lane {
-    let current = container.current.borrow().clone();
-    let lane = request_update_lane(&current);
-    update_container_impl(
-        &current,
-        lane,
-        element,
-        container,
-        parent_component,
-        callback,
-    );
-    lane
-}
-
-#[cfg_attr(rust_js, rust_js::nullable(parent_component, callback))]
-pub fn update_container_sync(
-    // shared/ReactTypes' `ReactNodeList`.
-    element: Option<&'static Unknown>,
-    container: &OpaqueRoot,
-    // A class component, if any.
-    parent_component: Option<&'static Unknown>,
-    callback: Option<&'static Unknown>,
-) -> Lane {
-    if !DISABLE_LEGACY_MODE && container.tag == LEGACY_ROOT {
-        flush_pending_effects();
+    #[cfg_attr(rust_js, rust_js::nullable(hydration_callbacks))]
+    #[cfg_attr(rust_js, rust_js::nullable(transition_callbacks))]
+    pub fn create_container(
+        &self,
+        // ReactFiberConfig's `Container`.
+        container_info: &'static Unknown,
+        tag: RootTag,
+        hydration_callbacks: Option<&'static SuspenseHydrationCallbacks>,
+        is_strict_mode: bool,
+        // TODO: Remove `concurrentUpdatesByDefaultOverride`. It is now ignored.
+        _concurrent_updates_by_default_override: Option<bool>,
+        identifier_prefix: String,
+        on_uncaught_error: &'static OnError,
+        on_caught_error: &'static OnCaughtError,
+        on_recoverable_error: &'static OnError,
+        on_default_transition_indicator: &'static OnDefaultTransitionIndicator,
+        transition_callbacks: Option<&'static TransitionTracingCallbacks>,
+    ) -> Rc<OpaqueRoot> {
+        let hydrate = false;
+        let initial_children = js::null();
+        let root = create_fiber_root(
+            container_info,
+            tag,
+            hydrate,
+            initial_children,
+            hydration_callbacks,
+            is_strict_mode,
+            identifier_prefix,
+            js::null(),
+            on_uncaught_error,
+            on_caught_error,
+            on_recoverable_error,
+            on_default_transition_indicator,
+            transition_callbacks,
+        );
+        register_default_indicator(on_default_transition_indicator);
+        root
     }
-    let current = container.current.borrow().clone();
-    update_container_impl(
-        &current,
-        SYNC_LANE,
-        element,
-        container,
-        parent_component,
-        callback,
-    );
-    SYNC_LANE
+
+    #[cfg_attr(rust_js, rust_js::nullable(hydration_callbacks))]
+    #[cfg_attr(rust_js, rust_js::nullable(transition_callbacks, form_state))]
+    pub fn create_hydration_container(
+        &self,
+        // shared/ReactTypes' `ReactNodeList`.
+        initial_children: Option<&'static Unknown>,
+        // TODO: Remove `callback` when we delete legacy mode.
+        callback: Option<&'static Unknown>,
+        // ReactFiberConfig's `Container`.
+        container_info: &'static Unknown,
+        tag: RootTag,
+        hydration_callbacks: Option<&'static SuspenseHydrationCallbacks>,
+        is_strict_mode: bool,
+        // TODO: Remove `concurrentUpdatesByDefaultOverride`. It is now ignored.
+        _concurrent_updates_by_default_override: Option<bool>,
+        identifier_prefix: String,
+        on_uncaught_error: &'static OnError,
+        on_caught_error: &'static OnCaughtError,
+        on_recoverable_error: &'static OnError,
+        on_default_transition_indicator: &'static OnDefaultTransitionIndicator,
+        transition_callbacks: Option<&'static TransitionTracingCallbacks>,
+        // shared/ReactTypes' `ReactFormState<any, any>`.
+        form_state: Option<&'static Unknown>,
+    ) -> Rc<OpaqueRoot> {
+        let hydrate = true;
+        let root = create_fiber_root(
+            container_info,
+            tag,
+            hydrate,
+            initial_children,
+            hydration_callbacks,
+            is_strict_mode,
+            identifier_prefix,
+            form_state,
+            on_uncaught_error,
+            on_caught_error,
+            on_recoverable_error,
+            on_default_transition_indicator,
+            transition_callbacks,
+        );
+
+        register_default_indicator(on_default_transition_indicator);
+
+        // TODO: Move this to FiberRoot constructor
+        root.context.set(Some(unsafe {
+            js::cast(Some(js::unknown(get_context_for_subtree(js::null()))))
+        }));
+
+        // Schedule the initial render. In a hydration root, this is different from
+        // a regular update because the initial render must match was was rendered
+        // on the server.
+        // NOTE: This update intentionally doesn't have a payload. We're only using
+        // the update to schedule work on the root fiber (and, for legacy roots, to
+        // enqueue the callback if one is provided).
+        let current = root.current.borrow().clone();
+        let mut lane = request_update_lane(&current);
+        lane = get_bumped_lane_for_hydration_by_lane(lane);
+        let update = create_update(lane);
+        update.callback.set(callback);
+        enqueue_update(&current, &update, lane);
+        start_update_timer_by_lane(lane, "hydrateRoot()", None);
+        schedule_initial_hydration_on_root(&root, lane);
+
+        root
+    }
+
+    #[cfg_attr(rust_js, rust_js::nullable(parent_component, callback))]
+    pub fn update_container(
+        &self,
+        // shared/ReactTypes' `ReactNodeList`.
+        element: Option<&'static Unknown>,
+        container: &OpaqueRoot,
+        // A class component, if any.
+        parent_component: Option<&'static Unknown>,
+        callback: Option<&'static Unknown>,
+    ) -> Lane {
+        let current = container.current.borrow().clone();
+        let lane = request_update_lane(&current);
+        update_container_impl(
+            &current,
+            lane,
+            element,
+            container,
+            parent_component,
+            callback,
+        );
+        lane
+    }
+
+    #[cfg_attr(rust_js, rust_js::nullable(parent_component, callback))]
+    pub fn update_container_sync(
+        &self,
+        // shared/ReactTypes' `ReactNodeList`.
+        element: Option<&'static Unknown>,
+        container: &OpaqueRoot,
+        // A class component, if any.
+        parent_component: Option<&'static Unknown>,
+        callback: Option<&'static Unknown>,
+    ) -> Lane {
+        if !DISABLE_LEGACY_MODE && container.tag == LEGACY_ROOT {
+            flush_pending_effects();
+        }
+        let current = container.current.borrow().clone();
+        update_container_impl(
+            &current,
+            SYNC_LANE,
+            element,
+            container,
+            parent_component,
+            callback,
+        );
+        SYNC_LANE
+    }
 }
 
 /// The payload of a root's update: the element it renders.
@@ -467,40 +483,43 @@ pub use crate::react_fiber_work_loop::{
     is_already_rendering,
 };
 
-// A class component's instance, or ReactFiberConfig's `PublicInstance`, if any.
-#[cfg_attr(rust_js, rust_js::nullable)]
-pub fn get_public_root_instance(container: &OpaqueRoot) -> Option<&'static Unknown> {
-    let container_fiber = container.current.borrow().clone();
-    let child = container_fiber.child.borrow().clone()?;
-    match child.tag.get() {
-        HOST_SINGLETON | HOST_COMPONENT => get_public_instance(child.state_node.get()),
-        _ => child.state_node.get(),
+#[cfg_attr(rust_js, rust_js::namespace)]
+impl ReactFiberReconciler {
+    // A class component's instance, or ReactFiberConfig's `PublicInstance`, if any.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub fn get_public_root_instance(&self, container: &OpaqueRoot) -> Option<&'static Unknown> {
+        let container_fiber = container.current.borrow().clone();
+        let child = container_fiber.child.borrow().clone()?;
+        match child.tag.get() {
+            HOST_SINGLETON | HOST_COMPONENT => get_public_instance(child.state_node.get()),
+            _ => child.state_node.get(),
+        }
     }
-}
 
-pub fn attempt_synchronous_hydration(fiber: &Rc<Fiber>) {
-    match fiber.tag.get() {
-        HOST_ROOT => {
-            let root: Rc<FiberRoot> = unsafe { js::cast(fiber.state_node.get()) };
-            if is_root_dehydrated(&root) {
-                // Flush the first scheduled "update".
-                let lanes = get_highest_priority_pending_lanes(&root);
-                flush_root(&root, lanes);
+    pub fn attempt_synchronous_hydration(&self, fiber: &Rc<Fiber>) {
+        match fiber.tag.get() {
+            HOST_ROOT => {
+                let root: Rc<FiberRoot> = unsafe { js::cast(fiber.state_node.get()) };
+                if is_root_dehydrated(&root) {
+                    // Flush the first scheduled "update".
+                    let lanes = get_highest_priority_pending_lanes(&root);
+                    flush_root(&root, lanes);
+                }
             }
-        }
-        ACTIVITY_COMPONENT | SUSPENSE_COMPONENT => {
-            let root = enqueue_concurrent_render_for_lane(fiber, SYNC_LANE);
-            if let Some(root) = root {
-                schedule_update_on_fiber(&root, fiber, SYNC_LANE);
+            ACTIVITY_COMPONENT | SUSPENSE_COMPONENT => {
+                let root = enqueue_concurrent_render_for_lane(fiber, SYNC_LANE);
+                if let Some(root) = root {
+                    schedule_update_on_fiber(&root, fiber, SYNC_LANE);
+                }
+                flush_sync_work();
+                // If we're still blocked after this, we need to increase
+                // the priority of any promises resolving within this
+                // boundary so that they next attempt also has higher pri.
+                let retry_lane = SYNC_LANE;
+                mark_retry_lane_if_not_hydrated(fiber, retry_lane);
             }
-            flush_sync_work();
-            // If we're still blocked after this, we need to increase
-            // the priority of any promises resolving within this
-            // boundary so that they next attempt also has higher pri.
-            let retry_lane = SYNC_LANE;
-            mark_retry_lane_if_not_hydrated(fiber, retry_lane);
+            _ => {}
         }
-        _ => {}
     }
 }
 
@@ -526,43 +545,49 @@ fn mark_retry_lane_if_not_hydrated(fiber: &Fiber, retry_lane: Lane) {
     }
 }
 
-pub fn attempt_continuous_hydration(fiber: &Rc<Fiber>) {
-    if fiber.tag.get() != SUSPENSE_COMPONENT && fiber.tag.get() != ACTIVITY_COMPONENT {
-        // We ignore HostRoots here because we can't increase
-        // their priority and they should not suspend on I/O,
-        // since you have to wrap anything that might suspend in
-        // Suspense.
-        return;
+#[cfg_attr(rust_js, rust_js::namespace)]
+impl ReactFiberReconciler {
+    pub fn attempt_continuous_hydration(&self, fiber: &Rc<Fiber>) {
+        if fiber.tag.get() != SUSPENSE_COMPONENT && fiber.tag.get() != ACTIVITY_COMPONENT {
+            // We ignore HostRoots here because we can't increase
+            // their priority and they should not suspend on I/O,
+            // since you have to wrap anything that might suspend in
+            // Suspense.
+            return;
+        }
+        let lane = SELECTIVE_HYDRATION_LANE;
+        let root = enqueue_concurrent_render_for_lane(fiber, lane);
+        if let Some(root) = root {
+            schedule_update_on_fiber(&root, fiber, lane);
+        }
+        mark_retry_lane_if_not_hydrated(fiber, lane);
     }
-    let lane = SELECTIVE_HYDRATION_LANE;
-    let root = enqueue_concurrent_render_for_lane(fiber, lane);
-    if let Some(root) = root {
-        schedule_update_on_fiber(&root, fiber, lane);
-    }
-    mark_retry_lane_if_not_hydrated(fiber, lane);
-}
 
-pub fn attempt_hydration_at_current_priority(fiber: &Rc<Fiber>) {
-    if fiber.tag.get() != SUSPENSE_COMPONENT && fiber.tag.get() != ACTIVITY_COMPONENT {
-        // We ignore HostRoots here because we can't increase
-        // their priority other than synchronously flush it.
-        return;
+    pub fn attempt_hydration_at_current_priority(&self, fiber: &Rc<Fiber>) {
+        if fiber.tag.get() != SUSPENSE_COMPONENT && fiber.tag.get() != ACTIVITY_COMPONENT {
+            // We ignore HostRoots here because we can't increase
+            // their priority other than synchronously flush it.
+            return;
+        }
+        let mut lane = request_update_lane(fiber);
+        lane = get_bumped_lane_for_hydration_by_lane(lane);
+        let root = enqueue_concurrent_render_for_lane(fiber, lane);
+        if let Some(root) = root {
+            schedule_update_on_fiber(&root, fiber, lane);
+        }
+        mark_retry_lane_if_not_hydrated(fiber, lane);
     }
-    let mut lane = request_update_lane(fiber);
-    lane = get_bumped_lane_for_hydration_by_lane(lane);
-    let root = enqueue_concurrent_render_for_lane(fiber, lane);
-    if let Some(root) = root {
-        schedule_update_on_fiber(&root, fiber, lane);
-    }
-    mark_retry_lane_if_not_hydrated(fiber, lane);
-}
 
-// ReactFiberConfig's `PublicInstance`, if any.
-#[cfg_attr(rust_js, rust_js::nullable)]
-pub fn find_host_instance_with_no_portals(fiber: &Rc<Fiber>) -> Option<&'static Unknown> {
-    let host_fiber = find_current_host_fiber_with_no_portals(fiber);
-    let host_fiber = host_fiber?;
-    get_public_instance(host_fiber.state_node.get())
+    // ReactFiberConfig's `PublicInstance`, if any.
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub fn find_host_instance_with_no_portals(
+        &self,
+        fiber: &Rc<Fiber>,
+    ) -> Option<&'static Unknown> {
+        let host_fiber = find_current_host_fiber_with_no_portals(fiber);
+        let host_fiber = host_fiber?;
+        get_public_instance(host_fiber.state_node.get())
+    }
 }
 
 /// What DevTools decides of a boundary: to force it to error (`true`), to
@@ -575,17 +600,23 @@ thread_local! {
     static SHOULD_ERROR_IMPL: Cell<&'static ShouldErrorImpl> = Cell::new(&|_fiber| js::null());
 }
 
-#[cfg_attr(rust_js, rust_js::nullable)]
-pub fn should_error(fiber: &Fiber) -> Option<bool> {
-    SHOULD_ERROR_IMPL.get()(fiber)
+#[cfg_attr(rust_js, rust_js::namespace)]
+impl ReactFiberReconciler {
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub fn should_error(&self, fiber: &Fiber) -> Option<bool> {
+        SHOULD_ERROR_IMPL.get()(fiber)
+    }
 }
 
 thread_local! {
     static SHOULD_SUSPEND_IMPL: Cell<&'static ShouldSuspendImpl> = Cell::new(&|_fiber| false);
 }
 
-pub fn should_suspend(fiber: &Fiber) -> bool {
-    SHOULD_SUSPEND_IMPL.get()(fiber)
+#[cfg_attr(rust_js, rust_js::namespace)]
+impl ReactFiberReconciler {
+    pub fn should_suspend(&self, fiber: &Fiber) -> bool {
+        SHOULD_SUSPEND_IMPL.get()(fiber)
+    }
 }
 
 /// A path DevTools edits a value at: each key, a property's name or an
@@ -919,79 +950,82 @@ struct DevToolsInternals {
 
 unsafe impl js::Defined for DevToolsInternals {}
 
-pub fn inject_into_dev_tools() -> bool {
-    let internals = js::unknown_of(DevToolsInternals {
-        bundle_type: if __DEV__ { 1 } else { 0 }, // Might add PROFILE later.
-        version: RENDERER_VERSION,
-        renderer_package_name: RENDERER_PACKAGE_NAME,
-        current_dispatcher_ref: REACT_SHARED_INTERNALS,
-        // Enables DevTools to detect reconciler version rather than renderer version
-        // which may not match for third party renderers.
-        reconciler_version: REACT_VERSION,
-    });
-    if EXTRA_DEV_TOOLS_CONFIG.is_some() {
-        js::set(internals, "rendererConfig", EXTRA_DEV_TOOLS_CONFIG);
+#[cfg_attr(rust_js, rust_js::namespace)]
+impl ReactFiberReconciler {
+    pub fn inject_into_dev_tools(&self) -> bool {
+        let internals = js::unknown_of(DevToolsInternals {
+            bundle_type: if __DEV__ { 1 } else { 0 }, // Might add PROFILE later.
+            version: RENDERER_VERSION,
+            renderer_package_name: RENDERER_PACKAGE_NAME,
+            current_dispatcher_ref: REACT_SHARED_INTERNALS,
+            // Enables DevTools to detect reconciler version rather than renderer version
+            // which may not match for third party renderers.
+            reconciler_version: REACT_VERSION,
+        });
+        if EXTRA_DEV_TOOLS_CONFIG.is_some() {
+            js::set(internals, "rendererConfig", EXTRA_DEV_TOOLS_CONFIG);
+        }
+        if __DEV__ {
+            js::set(internals, "overrideHookState", OVERRIDE_HOOK_STATE.get());
+            js::set(
+                internals,
+                "overrideHookStateDeletePath",
+                OVERRIDE_HOOK_STATE_DELETE_PATH.get(),
+            );
+            js::set(
+                internals,
+                "overrideHookStateRenamePath",
+                OVERRIDE_HOOK_STATE_RENAME_PATH.get(),
+            );
+            js::set(internals, "overrideProps", OVERRIDE_PROPS.get());
+            js::set(
+                internals,
+                "overridePropsDeletePath",
+                OVERRIDE_PROPS_DELETE_PATH.get(),
+            );
+            js::set(
+                internals,
+                "overridePropsRenamePath",
+                OVERRIDE_PROPS_RENAME_PATH.get(),
+            );
+            js::set(internals, "scheduleUpdate", SCHEDULE_UPDATE.get());
+            js::set(internals, "scheduleRetry", SCHEDULE_RETRY.get());
+            js::set(internals, "setErrorHandler", SET_ERROR_HANDLER.get());
+            js::set(internals, "setSuspenseHandler", SET_SUSPENSE_HANDLER.get());
+            // React Refresh
+            js::set(
+                internals,
+                "scheduleRefresh",
+                schedule_refresh as ScheduleRefresh,
+            );
+            js::set(internals, "scheduleRoot", schedule_root as ScheduleRoot);
+            js::set(
+                internals,
+                "setRefreshHandler",
+                set_refresh_handler as SetRefreshHandler,
+            );
+            // Enables DevTools to append owner stacks to error messages in DEV mode.
+            js::set(
+                internals,
+                "getCurrentFiber",
+                get_current_fiber_for_dev_tools as fn() -> Option<Rc<Fiber>>,
+            );
+        }
+        if ENABLE_SCHEDULING_PROFILER.with(|&enabled| enabled) {
+            // Conditionally inject these hooks only if Timeline profiler is supported by this build.
+            // This gives DevTools a way to feature detect that isn't tied to version number
+            // (since profiling and timeline are controlled by different feature flags).
+            js::set(
+                internals,
+                "getLaneLabelMap",
+                get_lane_label_map as fn() -> Option<HashMap<Lane, Option<&'static str>>>,
+            );
+            js::set(
+                internals,
+                "injectProfilingHooks",
+                inject_profiling_hooks as fn(&'static _),
+            );
+        }
+        inject_internals(internals)
     }
-    if __DEV__ {
-        js::set(internals, "overrideHookState", OVERRIDE_HOOK_STATE.get());
-        js::set(
-            internals,
-            "overrideHookStateDeletePath",
-            OVERRIDE_HOOK_STATE_DELETE_PATH.get(),
-        );
-        js::set(
-            internals,
-            "overrideHookStateRenamePath",
-            OVERRIDE_HOOK_STATE_RENAME_PATH.get(),
-        );
-        js::set(internals, "overrideProps", OVERRIDE_PROPS.get());
-        js::set(
-            internals,
-            "overridePropsDeletePath",
-            OVERRIDE_PROPS_DELETE_PATH.get(),
-        );
-        js::set(
-            internals,
-            "overridePropsRenamePath",
-            OVERRIDE_PROPS_RENAME_PATH.get(),
-        );
-        js::set(internals, "scheduleUpdate", SCHEDULE_UPDATE.get());
-        js::set(internals, "scheduleRetry", SCHEDULE_RETRY.get());
-        js::set(internals, "setErrorHandler", SET_ERROR_HANDLER.get());
-        js::set(internals, "setSuspenseHandler", SET_SUSPENSE_HANDLER.get());
-        // React Refresh
-        js::set(
-            internals,
-            "scheduleRefresh",
-            schedule_refresh as ScheduleRefresh,
-        );
-        js::set(internals, "scheduleRoot", schedule_root as ScheduleRoot);
-        js::set(
-            internals,
-            "setRefreshHandler",
-            set_refresh_handler as SetRefreshHandler,
-        );
-        // Enables DevTools to append owner stacks to error messages in DEV mode.
-        js::set(
-            internals,
-            "getCurrentFiber",
-            get_current_fiber_for_dev_tools as fn() -> Option<Rc<Fiber>>,
-        );
-    }
-    if ENABLE_SCHEDULING_PROFILER.with(|&enabled| enabled) {
-        // Conditionally inject these hooks only if Timeline profiler is supported by this build.
-        // This gives DevTools a way to feature detect that isn't tied to version number
-        // (since profiling and timeline are controlled by different feature flags).
-        js::set(
-            internals,
-            "getLaneLabelMap",
-            get_lane_label_map as fn() -> Option<HashMap<Lane, Option<&'static str>>>,
-        );
-        js::set(
-            internals,
-            "injectProfilingHooks",
-            inject_profiling_hooks as fn(&'static _),
-        );
-    }
-    inject_internals(internals)
 }

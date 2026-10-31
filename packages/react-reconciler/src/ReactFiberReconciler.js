@@ -226,12 +226,10 @@ export function findHostInstanceWithWarning(component, methodName) {
 }
 
 export function createContainer(
-  // ReactFiberConfig's `Container`.
   containerInfo,
   tag,
   hydrationCallbacks,
   isStrictMode,
-  // TODO: Remove `concurrentUpdatesByDefaultOverride`. It is now ignored.
   concurrentUpdatesByDefaultOverride,
   identifierPrefix,
   onUncaughtError,
@@ -262,16 +260,12 @@ export function createContainer(
 }
 
 export function createHydrationContainer(
-  // shared/ReactTypes' `ReactNodeList`.
   initialChildren,
-  // TODO: Remove `callback` when we delete legacy mode.
   callback,
-  // ReactFiberConfig's `Container`.
   containerInfo,
   tag,
   hydrationCallbacks,
   isStrictMode,
-  // TODO: Remove `concurrentUpdatesByDefaultOverride`. It is now ignored.
   concurrentUpdatesByDefaultOverride,
   identifierPrefix,
   onUncaughtError,
@@ -279,7 +273,6 @@ export function createHydrationContainer(
   onRecoverableError,
   onDefaultTransitionIndicator,
   transitionCallbacks,
-  // shared/ReactTypes' `ReactFormState<any, any>`.
   formState,
 ) {
   const hydrate = true;
@@ -322,14 +315,7 @@ export function createHydrationContainer(
   return root;
 }
 
-export function updateContainer(
-  // shared/ReactTypes' `ReactNodeList`.
-  element,
-  container,
-  // A class component, if any.
-  parentComponent,
-  callback,
-) {
+export function updateContainer(element, container, parentComponent, callback) {
   const current = container.current;
   const lane = requestUpdateLane(current);
   updateContainerImpl(
@@ -344,10 +330,8 @@ export function updateContainer(
 }
 
 export function updateContainerSync(
-  // shared/ReactTypes' `ReactNodeList`.
   element,
   container,
-  // A class component, if any.
   parentComponent,
   callback,
 ) {

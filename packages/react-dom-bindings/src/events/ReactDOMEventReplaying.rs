@@ -8,9 +8,7 @@ use std::rc::Rc;
 
 use js::{Class, Map, Unknown};
 use react_reconciler::react_event_priorities::{EventPriority, is_higher_event_priority};
-use react_reconciler::react_fiber_reconciler::{
-    attempt_continuous_hydration, attempt_hydration_at_current_priority,
-};
+use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
 use react_reconciler::react_fiber_shell_hydration::is_root_dehydrated;
 use react_reconciler::react_fiber_tree_reflection::{
     get_activity_instance_from_fiber, get_container_from_fiber, get_nearest_mounted_fiber,
@@ -201,7 +199,7 @@ fn accumulate_or_create_continuous_queued_replayable_event(
         let fiber = get_instance_from_node(unsafe { js::cast(Some(blocked_on)) });
         if let Some(fiber) = fiber {
             // Attempt to increase the priority of this target.
-            attempt_continuous_hydration(&fiber);
+            ReactFiberReconciler.attempt_continuous_hydration(&fiber);
         }
     }
     queued_event
@@ -318,7 +316,8 @@ fn attempt_explicit_hydration_target(queued_target: &QueuedHydrationTarget) {
                     // Increase its priority.
                     queued_target.blocked_on.set(instance);
                     attempt_hydration_at_priority(queued_target.priority, || {
-                        attempt_hydration_at_current_priority(&nearest_mounted);
+                        ReactFiberReconciler
+                            .attempt_hydration_at_current_priority(&nearest_mounted);
                     });
 
                     return;
@@ -330,7 +329,8 @@ fn attempt_explicit_hydration_target(queued_target: &QueuedHydrationTarget) {
                     // Increase its priority.
                     queued_target.blocked_on.set(instance);
                     attempt_hydration_at_priority(queued_target.priority, || {
-                        attempt_hydration_at_current_priority(&nearest_mounted);
+                        ReactFiberReconciler
+                            .attempt_hydration_at_current_priority(&nearest_mounted);
                     });
 
                     return;
@@ -401,7 +401,7 @@ fn attempt_replay_continuous_queued_event(queued_event: &QueuedReplayableEvent) 
             // We're still blocked. Try again later.
             let fiber = get_instance_from_node(unsafe { js::cast(next_blocked_on) });
             if let Some(fiber) = fiber {
-                attempt_continuous_hydration(&fiber);
+                ReactFiberReconciler.attempt_continuous_hydration(&fiber);
             }
             queued_event.blocked_on.set(next_blocked_on);
             return false;
