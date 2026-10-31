@@ -321,6 +321,16 @@ These differences from upstream's output are accepted:
   its `<style>` tags', and an `insertResource` helper of what both insert,
   as Rust writes a loop of two modes. Upstream's restore reads
   `previousClassName` from the name's slot, which the port keeps.
+- **A closure that only forwards to a function is that function** (the
+  user's extended forwarding rule, rd158's, rd196's and rd212's kind): a
+  closure that passes its parameters on, as given and in order, to one
+  function or a namespace's method read through a value is that function,
+  `batchedUpdates: move |f, a| noop_renderer.batched_updates(f, a)` printed
+  `batchedUpdates: NoopRenderer.batchedUpdates`, and `Rc::new(move |e, i|
+  noop_renderer.default_on_uncaught_error(e, i))` printed
+  `NoopRenderer.defaultOnUncaughtError`. Its `length` and identity are the
+  function's, as rd196's are. (Pending in rust-js; until it lands such a
+  closure prints an arrow.)
 - **rd158** (the user; rust-js's guide, difference 32): a closure that
   captures nothing, held as a `fn`, and only calls one host function with
   what it's given (its optional parameters `None`) is that function:
@@ -376,6 +386,14 @@ These differences from upstream's output are accepted:
   object, `ReactNoop.getOrCreateRootContainer(..)`. A test that replaces
   `ReactNoop.renderToRootWithID` no longer reaches the other methods; none
   does.
+
+- **createReactNoop's createRoot** (the user, 2026-10-31): its error
+  handlers are `options?.onUncaughtError ?? NoopRenderer.defaultOnUncaughtError`
+  (and `onCaughtError`), where upstream tests truth, `options &&
+  options.onUncaughtError ? options.onUncaughtError : ..`; only a falsy
+  handler that isn't a function, outside the option's type, tells them
+  apart. Its roots pass `isStrictMode` as `false`, the reconciler's `bool`,
+  where upstream passes `null`, which the reconciler only tests by truth.
 
 - **gives_plain_data** (#411, 77029cdc4): a binding whose result is a fresh
   object of data properties that JS builds says so with
@@ -446,6 +464,21 @@ These forms are decided:
   dispatches, a retry or ping given to `then`), never as a `Box`. Where one
   field holds Rust closures too, as an effect's `Rc<Create>` does, write
   `Rc::from(function::bind(..))`.
+- **A root's error handlers are `Rc`s** (rd308, the user): the reconciler's
+  createContainer, createHydrationContainer and FiberRoot take and hold
+  `Rc<OnError>` and `Rc<OnCaughtError>` (onUncaughtError, onCaughtError,
+  onRecoverableError), owned callbacks a renderer may make by capturing,
+  `Rc::new(move |e, i| noop_renderer.default_on_uncaught_error(e, i))`.
+  ReactDOMRoot gives `Rc::new(default_on_uncaught_error)` or
+  `Rc::new(on_error)` of the option JS gave, printed as before. The reader
+  borrows it, `let on_uncaught_error = &root.on_uncaught_error;`.
+  onDefaultTransitionIndicator stays `&'static`, a nullable `Cell` field
+  every renderer fills with a plain function.
+- **`=== true` of an option JS gives** (the user): React's
+  `options.unstable_strictMode === true` is `js::strict_equals(
+  options.unstable_strict_mode, true)`. `== Some(true)` of an
+  `Option<bool>` prints the value's truth (rust-js's ADR 0298), so a truthy
+  value that isn't `true` would turn strict mode on.
 - **Props**, by use: a `js::Defined` struct where code reads named
   Flow-declared members, and `&'static Unknown` with `js::get` where code
   iterates all keys (ReactDOMComponent).
@@ -482,9 +515,11 @@ The port is split between sessions by package:
   listener for `navigatesuccess` and `navigateerror`), and ReactDOMRoot
   reaches it through a JS-path binding meanwhile.
   createReactNoop (a draft) waits on the reconciler's re-exports becoming
-  forwarding methods printed as `export {..} from` (rd292b), on a form for
-  `NoopRenderer.defaultOnUncaughtError` as a `&'static dyn Fn` (rd308), and on
-  calling another crate's generic namespace method through a value (rd311).
+  forwarding methods printed as `export {..} from` (rd292b), on the
+  forwarding rule above, and on calling another crate's generic namespace
+  method through a value (rd311). rd308 is decided: the reconciler holds its
+  error handlers as `Rc`s. ReactNoop.js and ReactNoopPersistent.js stay JS
+  until rd293.
 - **The second session** has react-server, react-client, react-server-dom-*
   and react-dom-bindings/src/server.
 
