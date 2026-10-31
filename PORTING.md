@@ -346,8 +346,9 @@ These differences from upstream's output are accepted:
   plain function is that function only where rd158, rd196 or rd212 says so.
   rust-js keeps a closure an `Rc` is made of as an arrow (its pointer is
   what `Rc::ptr_eq` compares), so the `Rc` handlers still print
-  `(error, errorInfo) => { NoopRenderer.defaultOnUncaughtError(..); }`
-  (rd313).
+  `(error, errorInfo) => { NoopRenderer.defaultOnUncaughtError(..); }`.
+  rd313, pending in rust-js, treats an `Rc` whose pointer the crate never
+  compares like a `Box`.
 - **rd158** (the user; rust-js's guide, difference 32): a closure that
   captures nothing, held as a `fn`, and only calls one host function with
   what it's given (its optional parameters `None`) is that function:
@@ -527,15 +528,15 @@ The port is split between sessions by package:
 - **The first session** has scheduler, shared, react, react-reconciler, and
   react-dom-bindings' client and events modules. react-dom-bindings' client
   side is fully ported, ReactFiberConfigDOM included. react-dom's
-  src/shared, ReactDOMSharedInternals, ReactDOMRoot and ReactDOMClient are
-  Rust; ReactDOMDefaultTransitionIndicator waits on rd284b, and ReactDOMRoot
-  reaches it through a JS-path binding meanwhile. Its listeners are one per
-  event, `let on_success = webapi::listener(move |_: &Event|
-  handle_navigate_complete());`, each given to both `add_event_listener` and
-  `remove_event_listener`. rust-js's rd284 prints such a listener as the
-  function it calls only when that function is a `fn`, and
-  handleNavigateComplete is a local function JS makes (`function::with_this`),
-  so it still prints `function onSuccess() { handleNavigateComplete(); }`.
+  src/shared, ReactDOMSharedInternals, ReactDOMRoot, ReactDOMClient and
+  ReactDOMDefaultTransitionIndicator are Rust. The indicator's listeners
+  are one per event, `let on_success = webapi::listener(move |_: &Event|
+  handle_navigate_complete());`, each given to both `add_event_listener`
+  and `remove_event_listener`. Until rd284b (a readability gap, not a hold)
+  they print `function onSuccess() { handleNavigateComplete(); }`: rust-js's
+  rd284 prints such a listener as the function it calls only when that
+  function is a `fn`, and handleNavigateComplete is a local function JS
+  makes (`function::with_this`).
   createReactNoop (a draft) waits on calling another crate's generic namespace
   method through a value (rd311). rd308 is decided: the reconciler holds its
   error handlers as `Rc`s. ReactNoop.js and ReactNoopPersistent.js stay JS
