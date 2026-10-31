@@ -240,7 +240,8 @@ commit message.
   into), `ReactScopeInstance` (ReactFiberScope's object, whose methods it
   implements) and react's `GestureTransitionOptions` (upstream's inline
   `GestureOptions & StartTransitionOptions`). `ReactDebugInfoEntry` is
-  `Unknown`: an untagged enum can't tell its four kinds apart (rd291).
+  `Unknown`: an untagged enum can't tell its four kinds apart (rd291). These
+  four exceptions are accepted (the user, 2026-10-31).
   **m6-wife:** your server crates had no local copies, so nothing of yours
   moved; a server type of shared/ReactTypes' (`ReactComponentInfo`,
   `ReactDebugInfo`, `ReactErrorInfo`, `ReactStackTrace`, `Thenable`, ..) is
@@ -437,6 +438,15 @@ These differences from upstream's output are accepted:
   handler that isn't a function, outside the option's type, tells them
   apart. Its roots pass `isStrictMode` as `false`, the reconciler's `bool`,
   where upstream passes `null`, which the reconciler only tests by truth.
+
+- **rw2** (the user, 2026-10-31): react-is's typeOf braces each `case` that
+  declares a name, `case REACT_ELEMENT_TYPE: { const type = object.type; .. }`,
+  as rust-js braces every case that declares one, where upstream declares
+  them unbraced.
+
+- **rw5** (the user, 2026-10-31): typeOf ends without upstream's trailing
+  `return undefined;`; a function that falls off its end gives `undefined`
+  too.
 
 - **gives_plain_data** (#411, 77029cdc4): a binding whose result is a fresh
   object of data properties that JS builds says so with
