@@ -49,7 +49,7 @@ function cleanup(entryValue) {
 // If FinalizationRegistry doesn't exist, we assume that objects life forever.
 // E.g. the whole VM is just the lifetime of a request.
 const finalizationRegistry =
-  typeof FinalizationRegistry !== 'undefined'
+  typeof FinalizationRegistry === 'function'
     ? new FinalizationRegistry(cleanup)
     : undefined;
 

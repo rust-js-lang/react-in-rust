@@ -18,7 +18,7 @@ let actScopeDepth = 0;
 let didWarnNoAwaitAct = false;
 
 function aggregateErrors(errors) {
-  if (errors.length > 1 && typeof AggregateError !== 'undefined') {
+  if (errors.length > 1 && typeof AggregateError === 'function') {
     return new AggregateError(errors);
   }
   return errors[0];
@@ -354,7 +354,7 @@ function flushActQueue(queue) {
 // A macrotask would also work (and is the fallback) but depending on the test
 // environment it may cause the warning to fire too late.
 const queueSeveralMicrotasks =
-  typeof queueMicrotask !== 'undefined'
+  typeof queueMicrotask === 'function'
     ? callback => {
         queueMicrotask(() => queueMicrotask(callback));
       }

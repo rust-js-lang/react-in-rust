@@ -10,10 +10,7 @@ import ReactSharedInternals from './ReactSharedInternals.js';
 let lastResetTime = 0;
 
 let getCurrentTime;
-if (
-  typeof performance !== 'undefined' &&
-  typeof performance.now !== 'undefined'
-) {
+if (typeof performance === 'object' && typeof performance.now === 'function') {
   const localPerformance = performance;
   getCurrentTime = () => localPerformance.now();
 } else {

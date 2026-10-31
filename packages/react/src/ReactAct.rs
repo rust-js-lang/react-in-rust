@@ -28,7 +28,7 @@ thread_local! {
 }
 
 fn aggregate_errors(errors: &[Option<&'static Unknown>]) -> Option<&'static Unknown> {
-    if errors.len() > 1 && js::is_defined(aggregate_error::new) {
+    if errors.len() > 1 && js::is_function(aggregate_error::new) {
         return aggregate_error::new(errors, None).as_unknown();
     }
     errors.first().copied().flatten()
@@ -595,7 +595,7 @@ fn flush_act_queue(queue: &RefCell<Vec<RendererTask>>) {
 // environment it may cause the warning to fire too late.
 thread_local! {
     static QUEUE_SEVERAL_MICROTASKS: fn(Box<dyn Fn()>) =
-        if js::is_defined(webapi::global::queue_microtask) {
+        if js::is_function(webapi::global::queue_microtask) {
             |callback| {
                 webapi::global::queue_microtask(Box::new(move || {
                     webapi::global::queue_microtask(callback)

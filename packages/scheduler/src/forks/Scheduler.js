@@ -45,10 +45,7 @@ export {
 } from '../SchedulerPriorities.js';
 
 let getCurrentTime;
-if (
-  typeof performance !== 'undefined' &&
-  typeof performance.now !== 'undefined'
-) {
+if (typeof performance === 'object' && typeof performance.now === 'function') {
   const localPerformance = performance;
   getCurrentTime = () => localPerformance.now();
 } else {
@@ -486,9 +483,9 @@ function performWorkUntilDeadline() {
 
 // Capture local references to native APIs, in case a polyfill overrides them.
 const localSetTimeout =
-  typeof setTimeout !== 'undefined' ? setTimeout : undefined;
+  typeof setTimeout === 'function' ? setTimeout : undefined;
 const localClearTimeout =
-  typeof clearTimeout !== 'undefined' ? clearTimeout : undefined;
+  typeof clearTimeout === 'function' ? clearTimeout : undefined;
 const localSetImmediate =
   typeof setImmediate !== 'undefined' ? setImmediate : undefined; // IE and Node.js + jsdom
 

@@ -15,8 +15,7 @@
 
 function typeName(value) {
   // toStringTag is needed for namespaced types like Temporal.Instant
-  const hasToStringTag =
-    typeof Symbol !== 'undefined' && typeof Symbol.toStringTag !== 'undefined';
+  const hasToStringTag = typeof Symbol === 'function' && !!Symbol.toStringTag;
   const type =
     (hasToStringTag && value?.[Symbol.toStringTag]) ||
     value?.constructor?.name ||

@@ -18,7 +18,8 @@ use crate::environment::__DEV__;
 
 fn type_name(value: Option<&Unknown>) -> String {
     // toStringTag is needed for namespaced types like Temporal.Instant
-    let has_to_string_tag = js::is_defined(js::symbol::to_string_tag);
+    let has_to_string_tag = js::is_function(js::symbol::new)
+        && js::truthy(Some(js::unknown(js::symbol::to_string_tag)));
     let r#type = value
         .filter(|_| has_to_string_tag)
         .and_then(|value| js::get(value, js::symbol::to_string_tag))

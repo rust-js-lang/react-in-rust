@@ -88,7 +88,7 @@ fn cleanup(entry_value: EntryValue) {
 // E.g. the whole VM is just the lifetime of a request.
 thread_local! {
     static FINALIZATION_REGISTRY: Option<&'static FinalizationRegistry<EntryValue>> =
-        js::is_defined(finalization_registry::new::<EntryValue>)
+        js::is_function(finalization_registry::new::<EntryValue>)
             .then(|| finalization_registry::new(Box::new(cleanup)));
 }
 

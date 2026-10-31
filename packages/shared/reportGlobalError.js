@@ -6,14 +6,14 @@
 // LICENSE file in the root directory of this source tree.
 
 const reportGlobalError =
-  typeof reportError !== 'undefined'
+  typeof reportError === 'function'
     ? // In modern browsers, reportError will dispatch an error event,
       // emulating an uncaught JavaScript error.
       reportError
     : error => {
         if (
-          typeof window !== 'undefined' &&
-          typeof window.ErrorEvent !== 'undefined'
+          typeof window === 'object' &&
+          typeof window.ErrorEvent === 'function'
         ) {
           // Browser Polyfill
           const message$1 = error?.message;

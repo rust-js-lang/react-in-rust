@@ -60,7 +60,7 @@ pub struct Options {
 }
 
 thread_local! {
-    static GET_CURRENT_TIME: Box<dyn Fn() -> f64> = if js::is_defined(webapi::Performance::now) {
+    static GET_CURRENT_TIME: Box<dyn Fn() -> f64> = if js::is_object(webapi::performance) && js::is_function(webapi::Performance::now) {
         let local_performance = webapi::performance;
         Box::new(move || local_performance.now())
     } else {
@@ -520,9 +520,9 @@ type SetImmediate = fn(Box<dyn FnOnce()>) -> &'static js::Immediate;
 thread_local! {
     // Capture local references to native APIs, in case a polyfill overrides them.
     static LOCAL_SET_TIMEOUT: Option<SetTimeout> =
-        js::is_defined(js::set_timeout::<Box<dyn FnOnce()>>).then_some(js::set_timeout);
+        js::is_function(js::set_timeout::<Box<dyn FnOnce()>>).then_some(js::set_timeout);
     static LOCAL_CLEAR_TIMEOUT: Option<ClearTimeout> =
-        js::is_defined(js::clear_timeout).then_some(js::clear_timeout);
+        js::is_function(js::clear_timeout).then_some(js::clear_timeout);
     static LOCAL_SET_IMMEDIATE: Option<SetImmediate> =
         js::is_defined(js::set_immediate).then_some(js::set_immediate); // IE and Node.js + jsdom
 }

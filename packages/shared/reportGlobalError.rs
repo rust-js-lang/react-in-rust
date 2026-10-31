@@ -7,13 +7,13 @@ use js::{Kind, Unknown};
 use webapi::{ErrorEventInit, Window, console, window};
 
 thread_local! {
-    pub static REPORT_GLOBAL_ERROR: fn(Option<&'static Unknown>) = if js::is_defined(webapi::global::report_error::<Option<&Unknown>>) {
+    pub static REPORT_GLOBAL_ERROR: fn(Option<&'static Unknown>) = if js::is_function(webapi::global::report_error::<Option<&Unknown>>) {
         // In modern browsers, reportError will dispatch an error event,
         // emulating an uncaught JavaScript error.
         webapi::global::report_error
     } else {
         |error| {
-            if js::is_defined(Window::new_error_event) {
+            if js::is_object(window) && js::is_function(Window::new_error_event) {
                 // Browser Polyfill
                 let message = match js::classify(error.and_then(|error| js::get(error, "message"))) {
                     Kind::String(message) => message.to_string(),
