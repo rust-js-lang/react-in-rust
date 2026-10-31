@@ -14,10 +14,10 @@ use react_dom_bindings::react_dom_component_tree::{
 };
 use react_dom_bindings::react_dom_container::is_valid_container;
 use react_dom_bindings::react_dom_event_replaying::queue_explicit_hydration_target;
-use react_reconciler::react_fiber_reconciler::{
-    ReactFiberReconciler, default_on_caught_error, default_on_recoverable_error,
-    default_on_uncaught_error, flush_sync_work, is_already_rendering,
+use react_reconciler::react_fiber_error_logger::{
+    default_on_caught_error, default_on_recoverable_error, default_on_uncaught_error,
 };
+use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
 use react_reconciler::react_internal_types::{
     FiberRoot, OnCaughtError, OnDefaultTransitionIndicator, OnError, TransitionTracingCallbacks,
 };
@@ -92,7 +92,7 @@ pub trait RootType {
         if let Some(root) = root {
             self.internal_root().replace(None);
             let container = root.container_info;
-            if __DEV__ && is_already_rendering() {
+            if __DEV__ && ReactFiberReconciler.is_already_rendering() {
                 console::error((concat!(
                     "Attempted to synchronously unmount a root while React was already ",
                     "rendering. React cannot finish unmounting the root until the ",
@@ -100,7 +100,7 @@ pub trait RootType {
                 ),));
             }
             ReactFiberReconciler.update_container_sync(js::null(), &root, None, None);
-            flush_sync_work();
+            ReactFiberReconciler.flush_sync_work();
             unmark_container_as_root(container);
         }
     }

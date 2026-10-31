@@ -28,6 +28,7 @@ use crate::react_fiber_concurrent_updates::enqueue_concurrent_render_for_lane;
 use crate::react_fiber_dev_tools_hook::{
     inject_internals, inject_profiling_hooks, mark_render_scheduled, on_schedule_root,
 };
+use crate::react_fiber_hooks::FormAction;
 use crate::react_fiber_hooks::Hook;
 use crate::react_fiber_hot_reloading::{
     ScheduleRefresh, ScheduleRoot, SetRefreshHandler, schedule_refresh, schedule_root,
@@ -49,34 +50,144 @@ use crate::react_fiber_tree_reflection::{
     find_current_host_fiber, find_current_host_fiber_with_no_portals,
 };
 use crate::react_fiber_work_loop::{
-    flush_pending_effects, flush_root, request_update_lane, schedule_initial_hydration_on_root,
-    schedule_update_on_fiber,
+    flush_pending_effects, flush_root, flush_sync_work, request_update_lane,
+    schedule_initial_hydration_on_root, schedule_update_on_fiber,
 };
 use crate::react_internal_types::{
-    Fiber, FiberRoot, OnCaughtError, OnDefaultTransitionIndicator, OnError,
-    SuspenseHydrationCallbacks, TransitionTracingCallbacks,
+    CaughtErrorInfo, ErrorInfo, Fiber, FiberRoot, OnCaughtError, OnDefaultTransitionIndicator,
+    OnError, SuspenseHydrationCallbacks, TransitionTracingCallbacks,
 };
+use crate::react_portal::ReactPortal;
 use crate::react_profiler_timer::start_update_timer_by_lane;
 use crate::react_root_tags::{LEGACY_ROOT, RootTag};
+use crate::react_test_selectors::{
+    BoundingRect, IntersectionObserverOptions, ObserveVisibleRectsCallback, Selector,
+    VisibleRectsObserver,
+};
 use crate::react_type_of_mode::STRICT_LEGACY_MODE;
 use crate::react_work_tags::{
     ACTIVITY_COMPONENT, CLASS_COMPONENT, HOST_COMPONENT, HOST_ROOT, HOST_SINGLETON,
     SUSPENSE_COMPONENT,
 };
-
-pub use crate::react_portal::create_portal;
-
-pub use crate::react_test_selectors::{
-    create_component_selector, create_has_pseudo_class_selector, create_role_selector,
-    create_test_name_selector, create_text_selector, find_all_nodes, find_bounding_rects,
-    focus_within, get_find_all_nodes_failure_description, observe_visible_rects,
+use crate::{
+    react_fiber_error_logger, react_fiber_hooks, react_fiber_work_loop, react_portal,
+    react_test_selectors,
 };
 
-pub use crate::react_fiber_hooks::start_host_transition;
+#[cfg_attr(rust_js, rust_js::namespace)]
+impl ReactFiberReconciler {
+    pub fn create_portal(
+        &self,
+        children: Option<&'static Unknown>,
+        container_info: Option<&'static Unknown>,
+        implementation: Option<&'static Unknown>,
+        key: Option<&'static Unknown>,
+    ) -> ReactPortal {
+        react_portal::create_portal(children, container_info, implementation, key)
+    }
+}
 
-pub use crate::react_fiber_error_logger::{
-    default_on_caught_error, default_on_recoverable_error, default_on_uncaught_error,
-};
+#[cfg_attr(rust_js, rust_js::namespace)]
+impl ReactFiberReconciler {
+    pub fn create_component_selector(&self, component: &'static Unknown) -> Selector {
+        react_test_selectors::create_component_selector(component)
+    }
+
+    pub fn create_has_pseudo_class_selector(&self, selectors: Vec<Selector>) -> Selector {
+        react_test_selectors::create_has_pseudo_class_selector(selectors)
+    }
+
+    pub fn create_role_selector(&self, role: String) -> Selector {
+        react_test_selectors::create_role_selector(role)
+    }
+
+    pub fn create_test_name_selector(&self, id: String) -> Selector {
+        react_test_selectors::create_test_name_selector(id)
+    }
+
+    pub fn create_text_selector(&self, text: String) -> Selector {
+        react_test_selectors::create_text_selector(text)
+    }
+
+    pub fn find_all_nodes(
+        &self,
+        host_root: &'static Unknown,
+        selectors: &[Selector],
+    ) -> Vec<&'static Unknown> {
+        react_test_selectors::find_all_nodes(host_root, selectors)
+    }
+
+    pub fn find_bounding_rects(
+        &self,
+        host_root: &'static Unknown,
+        selectors: &[Selector],
+    ) -> Vec<BoundingRect> {
+        react_test_selectors::find_bounding_rects(host_root, selectors)
+    }
+
+    pub fn focus_within(&self, host_root: &'static Unknown, selectors: &[Selector]) -> bool {
+        react_test_selectors::focus_within(host_root, selectors)
+    }
+
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub fn get_find_all_nodes_failure_description(
+        &self,
+        host_root: &'static Unknown,
+        selectors: &[Selector],
+    ) -> Option<String> {
+        react_test_selectors::get_find_all_nodes_failure_description(host_root, selectors)
+    }
+
+    pub fn observe_visible_rects(
+        &self,
+        host_root: &'static Unknown,
+        selectors: Vec<Selector>,
+        callback: &'static ObserveVisibleRectsCallback,
+        options: Option<&'static IntersectionObserverOptions>,
+    ) -> VisibleRectsObserver {
+        react_test_selectors::observe_visible_rects(host_root, selectors, callback, options)
+    }
+}
+
+#[cfg_attr(rust_js, rust_js::namespace)]
+impl ReactFiberReconciler {
+    pub fn start_host_transition(
+        &self,
+        form_fiber: &Rc<Fiber>,
+        pending_state: Option<&'static Unknown>,
+        action: Option<&'static FormAction>,
+        form_data: Option<&'static Unknown>,
+    ) {
+        react_fiber_hooks::start_host_transition(form_fiber, pending_state, action, form_data)
+    }
+}
+
+#[cfg_attr(rust_js, rust_js::namespace)]
+impl ReactFiberReconciler {
+    pub fn default_on_caught_error(
+        &self,
+        error: Option<&'static Unknown>,
+        error_info: &CaughtErrorInfo,
+    ) {
+        react_fiber_error_logger::default_on_caught_error(error, error_info)
+    }
+
+    pub fn default_on_recoverable_error(
+        &self,
+        error: Option<&'static Unknown>,
+        error_info: &ErrorInfo,
+    ) {
+        react_fiber_error_logger::default_on_recoverable_error(error, error_info)
+    }
+
+    pub fn default_on_uncaught_error(
+        &self,
+        error: Option<&'static Unknown>,
+        error_info: &ErrorInfo,
+    ) {
+        react_fiber_error_logger::default_on_uncaught_error(error, error_info)
+    }
+}
 
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFiberConfig.js#rendererVersion"]
@@ -477,11 +588,43 @@ fn update_container_impl(
     }
 }
 
-pub use crate::react_fiber_work_loop::{
-    batched_updates, deferred_updates, discrete_updates,
-    flush_pending_effects as flush_passive_effects, flush_sync_from_reconciler, flush_sync_work,
-    is_already_rendering,
-};
+#[cfg_attr(rust_js, rust_js::namespace)]
+impl ReactFiberReconciler {
+    pub fn batched_updates<A, R>(&self, f: impl FnOnce(A) -> R, a: A) -> R {
+        react_fiber_work_loop::batched_updates(f, a)
+    }
+
+    pub fn deferred_updates<A>(&self, f: impl FnOnce() -> A) -> A {
+        react_fiber_work_loop::deferred_updates(f)
+    }
+
+    pub fn discrete_updates<A, B, C, D, R>(
+        &self,
+        f: impl FnOnce(A, B, C, D) -> R,
+        a: A,
+        b: B,
+        c: C,
+        d: D,
+    ) -> R {
+        react_fiber_work_loop::discrete_updates(f, a, b, c, d)
+    }
+
+    pub fn flush_passive_effects(&self) -> bool {
+        react_fiber_work_loop::flush_pending_effects()
+    }
+
+    pub fn flush_sync_from_reconciler<R>(&self, f: Option<impl FnOnce() -> R>) -> Option<R> {
+        react_fiber_work_loop::flush_sync_from_reconciler(f)
+    }
+
+    pub fn flush_sync_work(&self) -> bool {
+        react_fiber_work_loop::flush_sync_work()
+    }
+
+    pub fn is_already_rendering(&self) -> bool {
+        react_fiber_work_loop::is_already_rendering()
+    }
+}
 
 #[cfg_attr(rust_js, rust_js::namespace)]
 impl ReactFiberReconciler {

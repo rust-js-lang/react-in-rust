@@ -5,7 +5,7 @@
 
 use std::cell::Cell;
 
-use react_reconciler::react_fiber_reconciler::{
+use react_reconciler::react_fiber_work_loop::{
     batched_updates as batched_updates_impl, discrete_updates as discrete_updates_impl,
     flush_sync_work,
 };
