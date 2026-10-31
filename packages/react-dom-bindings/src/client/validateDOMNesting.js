@@ -340,8 +340,8 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
         tag === 'script' ||
         tag === 'template'
       );
+    // https://html.spec.whatwg.org/multipage/semantics.html#the-html-element
     case 'html':
-      // https://html.spec.whatwg.org/multipage/semantics.html#the-html-element
       if (implicitRootScope) {
         // When our parent tag is html and we're in the root scope we will actually
         // insert most tags into the body so we need to fall through to validating
@@ -468,6 +468,7 @@ function findInvalidAncestorForTag(tag, ancestorInfo) {
     case 'h5':
     case 'h6':
       return ancestorInfo.pTagInButtonScope;
+
     case 'form':
       return ancestorInfo.formTag ?? ancestorInfo.pTagInButtonScope;
     case 'li':

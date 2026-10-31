@@ -639,9 +639,9 @@ function setProp(domElement, tag, key, value, props, prevValue) {
         break;
       }
       break;
+    // Note: `option.selected` is not updated if `select.multiple` is
+    // disabled with `removeAttribute`. We have special logic for handling this.
     case 'multiple':
-      // Note: `option.selected` is not updated if `select.multiple` is
-      // disabled with `removeAttribute`. We have special logic for handling this.
       domElement.multiple =
         value && typeof value !== 'symbol' && typeof value !== 'function';
       break;
@@ -1051,11 +1051,11 @@ export function setInitialProperties(domElement, tag, props) {
     case 'li':
       // Fast track the most common tag types
       break;
+    // img tags previously were implemented as void elements with non delegated events however Safari (and possibly Firefox)
+    // begin fetching the image as soon as the `src` or `srcSet` property is set and if we set these before other properties
+    // that can modify the request (such as crossorigin) or the resource fetch (such as sizes) then the browser will load
+    // the wrong thing or load more than one thing. This implementation ensures src and srcSet are set on the instance last
     case 'img': {
-      // img tags previously were implemented as void elements with non delegated events however Safari (and possibly Firefox)
-      // begin fetching the image as soon as the `src` or `srcSet` property is set and if we set these before other properties
-      // that can modify the request (such as crossorigin) or the resource fetch (such as sizes) then the browser will load
-      // the wrong thing or load more than one thing. This implementation ensures src and srcSet are set on the instance last
       listenToNonDelegatedEvent('error', domElement);
       listenToNonDelegatedEvent('load', domElement);
       // Mostly a port of Void Element logic with special casing to ensure srcset and src are set last
@@ -2327,8 +2327,8 @@ function diffHydratedCustomComponent(
           );
         }
         break;
+      // Fall through
       case 'className': {
-        // Fall through
         // className is a special cased property on the server to render as an attribute.
         extraAttributes.delete('class');
         const serverValue = getValueForAttributeOnCustomComponent(

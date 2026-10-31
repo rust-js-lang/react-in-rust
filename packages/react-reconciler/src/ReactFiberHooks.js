@@ -1617,8 +1617,7 @@ function updateSyncExternalStore(
       }
     }
   }
-  const item = currentHook ?? hook;
-  const prevSnapshot = item.memoizedState;
+  const prevSnapshot = (currentHook ?? hook).memoizedState;
   const snapshotChanged = !is(prevSnapshot, nextSnapshot);
   if (snapshotChanged) {
     hook.memoizedState = nextSnapshot;

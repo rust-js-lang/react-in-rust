@@ -848,8 +848,7 @@ export function scheduleViewTransitionEvent(fiber, callback) {
 
 export function scheduleGestureTransitionEvent(fiber, callback) {
   if (enableGestureTransition && callback != null) {
-    const item = $unwrap(pendingEffectsRoot);
-    const applyingGesture = item.pendingGestures;
+    const applyingGesture = $unwrap(pendingEffectsRoot).pendingGestures;
     if (applyingGesture != null) {
       const state = fiber.stateNode;
       let instance = state.ref;

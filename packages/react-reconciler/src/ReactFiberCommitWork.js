@@ -4057,7 +4057,7 @@ function commitPassiveMountOnFiber(
         }
         break;
       }
-    // Intentional fallthrough to next branch
+    // Fallthrough
     default:
       recursivelyTraversePassiveMountEffects(
         finishedRoot,
@@ -4215,13 +4215,13 @@ export function reconnectPassiveEffects(
       // TODO: Check for PassiveStatic flag
       commitHookPassiveMountEffects(finishedWork, HookPassive);
       break;
+    // Unlike commitPassiveMountOnFiber, we don't need to handle HostRoot
+    // because this function only visits nodes that are inside an
+    // Offscreen fiber.
+    // case HostRoot: {
+    //  ...
+    // }
     case LegacyHiddenComponent:
-      // Unlike commitPassiveMountOnFiber, we don't need to handle HostRoot
-      // because this function only visits nodes that are inside an
-      // Offscreen fiber.
-      // case HostRoot: {
-      //  ...
-      // }
       if (enableLegacyHidden) {
         recursivelyTraverseReconnectPassiveEffects(
           finishedRoot,
@@ -4335,7 +4335,7 @@ export function reconnectPassiveEffects(
         }
         break;
       }
-    // Intentional fallthrough to next branch
+    // Fallthrough
     default:
       recursivelyTraverseReconnectPassiveEffects(
         finishedRoot,

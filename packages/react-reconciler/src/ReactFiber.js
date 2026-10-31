@@ -511,8 +511,8 @@ export function createFiberFromTypeAndProps(
             case REACT_CONSUMER_TYPE:
               fiberTag = ContextConsumer;
               break getTag;
+            // Fall through
             case REACT_FORWARD_REF_TYPE:
-              // Fall through
               fiberTag = ForwardRef;
               break getTag;
             case REACT_MEMO_TYPE:

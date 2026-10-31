@@ -20,9 +20,7 @@ import {
 import {$unwrap} from '@rust-js/runtime';
 
 function getSuspenseFallbackChild(fiber) {
-  const item = $unwrap(fiber.child);
-  const item$1 = $unwrap(item.sibling);
-  return item$1.child;
+  return $unwrap($unwrap(fiber.child).sibling).child;
 }
 
 const emptyObject = {};

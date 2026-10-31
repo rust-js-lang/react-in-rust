@@ -2410,8 +2410,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
         renderLanes,
       );
       const primaryChildFragment = $unwrap(workInProgress.child);
-      const item = $unwrap(current.child);
-      const prevOffscreenState = item.memoizedState;
+      const prevOffscreenState = $unwrap(current.child).memoizedState;
       primaryChildFragment.memoizedState =
         prevOffscreenState == null
           ? mountSuspenseOffscreenState(renderLanes)

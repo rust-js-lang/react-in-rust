@@ -3773,10 +3773,10 @@ export function canHydrateInstance(instance, type, props, inRootOrSingleton) {
       // using high entropy attributes for certain types. This technique will fail for strange insertions like
       // extension prepending <div> in the <body> but that already breaks before and that is an edge case.
       switch (type) {
+        // case 'title':
+        //We assume all titles are matchable. You should only have one in the Document, at least in a hoistable scope
+        // and if you are a HostComponent with type title we must either be in an <svg> context or this title must have an `itemProp` prop.
         case 'meta':
-          // case 'title':
-          //We assume all titles are matchable. You should only have one in the Document, at least in a hoistable scope
-          // and if you are a HostComponent with type title we must either be in an <svg> context or this title must have an `itemProp` prop.
           // The only way to opt out of hoisting meta tags is to give it an itemprop attribute. We assume there will be
           // not 3rd party meta tags that are prepended, accepting the cases where this isn't true because meta tags
           // are usually only functional for SSR so even in a rare case where we did bind to an injected tag the runtime
@@ -5529,15 +5529,15 @@ export function acquireResource(hoistableRoot, resource, props) {
     // `suspendResource` and `acquireResource` work together. The idea is that
     // `suspendResource` does all the same stuff as `acquireResource` except
     // for the insertion.
-    if (resource.type === 'stylesheet') {
-      const item = $unwrap(resource.state);
-      if ((item.loading & Inserted) === NotLoaded) {
-        const qualifiedProps = props;
-        const instance = $unwrap(resource.instance);
-        const state = $unwrap(resource.state);
-        state.loading |= Inserted;
-        insertStylesheet(instance, qualifiedProps.precedence, hoistableRoot);
-      }
+    if (
+      resource.type === 'stylesheet' &&
+      ($unwrap(resource.state).loading & Inserted) === NotLoaded
+    ) {
+      const qualifiedProps = props;
+      const instance = $unwrap(resource.instance);
+      const state = $unwrap(resource.state);
+      state.loading |= Inserted;
+      insertStylesheet(instance, qualifiedProps.precedence, hoistableRoot);
     }
     return resource.instance;
   }
@@ -5962,11 +5962,10 @@ export function maySuspendCommitInSyncRender(type, props) {
 }
 
 export function mayResourceSuspendCommit(resource) {
-  if (resource.type !== 'stylesheet') {
-    return false;
-  }
-  const item = $unwrap(resource.state);
-  return (item.loading & Inserted) === NotLoaded;
+  return (
+    resource.type === 'stylesheet' &&
+    ($unwrap(resource.state).loading & Inserted) === NotLoaded
+  );
 }
 
 export function preloadInstance(instance, type, props) {
@@ -5979,12 +5978,12 @@ export function preloadInstance(instance, type, props) {
 }
 
 export function preloadResource(resource) {
-  if (resource.type === 'stylesheet') {
-    const item = $unwrap(resource.state);
-    if ((item.loading & Settled) === NotLoaded) {
-      // Return false to indicate this resource should suspend
-      return false;
-    }
+  if (
+    resource.type === 'stylesheet' &&
+    ($unwrap(resource.state).loading & Settled) === NotLoaded
+  ) {
+    // Return false to indicate this resource should suspend
+    return false;
   }
 
   // Return true to indicate this resource should not suspend
@@ -6053,8 +6052,7 @@ export function suspendResource(state, hoistableRoot, resource, props) {
         return;
       }
     }
-    const item = $unwrap(resource.state);
-    if ((item.loading & Inserted) === NotLoaded) {
+    if (($unwrap(resource.state).loading & Inserted) === NotLoaded) {
       if (resource.instance == null) {
         const qualifiedProps = props;
         const key = getStyleKey(qualifiedProps.href);
@@ -6113,16 +6111,15 @@ export function suspendResource(state, hoistableRoot, resource, props) {
       state.stylesheets ??= new Map();
       $unwrap(state.stylesheets).set(resource, hoistableRoot);
 
-      const item = $unwrap(resource.state);
-      const preloadEl = item.preload;
-      if (preloadEl != null) {
-        const item = $unwrap(resource.state);
-        if ((item.loading & Settled) === NotLoaded) {
-          state.count++;
-          const ping = onUnsuspend.bind(state);
-          preloadEl.addEventListener('load', ping);
-          preloadEl.addEventListener('error', ping);
-        }
+      const preloadEl = $unwrap(resource.state).preload;
+      if (
+        preloadEl != null &&
+        ($unwrap(resource.state).loading & Settled) === NotLoaded
+      ) {
+        state.count++;
+        const ping = onUnsuspend.bind(state);
+        preloadEl.addEventListener('load', ping);
+        preloadEl.addEventListener('error', ping);
       }
     }
   }
@@ -6307,8 +6304,7 @@ function insertSuspendedStylesheets(state, resources) {
 }
 
 function insertStylesheetIntoRoot(state, root, resource, map) {
-  const item = $unwrap(resource.state);
-  if (item.loading & Inserted) {
+  if ($unwrap(resource.state).loading & Inserted) {
     // This resource was inserted by another root committing. we don't need to insert it again
     return;
   }
