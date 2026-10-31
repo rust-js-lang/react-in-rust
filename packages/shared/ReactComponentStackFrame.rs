@@ -6,9 +6,7 @@
 use std::cell::{Cell, RefCell};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use js::{
-    Class, JsError, JsObject, Kind, Promise, PropertyDescriptor, Unknown, WeakMap, object, reflect,
-};
+use js::{Class, JsError, Kind, Promise, PropertyDescriptor, Unknown, WeakMap, object, reflect};
 use node::js_error::{self, PrepareStackTrace};
 
 use crate::console_patching_dev::{disable_logs, reenable_logs};
@@ -78,18 +76,22 @@ pub fn describe_debug_info_frame(
     })
 }
 
+/// A component function, the frame cache's key.
+type FrameKey = dyn Fn() -> Option<&'static Unknown>;
+
 thread_local! {
     static REENTRY: Cell<bool> = const { Cell::new(false) };
-    static COMPONENT_FRAME_CACHE: Option<&'static WeakMap<dyn Fn() -> Option<&'static Unknown>, String>> =
-        if __DEV__ {
-            Some(if js::is_defined(js::weak_map::new::<JsObject, String>) {
-                js::weak_map::new()
-            } else {
-                js::map::new(None)
-            })
+    static COMPONENT_FRAME_CACHE: Option<&'static WeakMap<FrameKey, String>> = if __DEV__ {
+        #[cfg_attr(rust_js, rust_js::name = "PossiblyWeakMap")]
+        let possibly_weak_map = if js::is_function(js::class::<WeakMap<FrameKey, String>>) {
+            js::class::<WeakMap<FrameKey, String>>()
         } else {
-            None
+            js::class::<js::Map<FrameKey, String>>()
         };
+        Some(possibly_weak_map.call_static(js::weak_map::new, ()))
+    } else {
+        None
+    };
 }
 
 /// What `describe_native_component_frame`'s `finally` puts back.

@@ -55,11 +55,11 @@ export function describeDebugInfoFrame(name, env, location) {
 }
 
 let reentry = false;
-const componentFrameCache = __DEV__
-  ? typeof WeakMap !== 'undefined'
-    ? new WeakMap()
-    : new Map()
-  : undefined;
+let componentFrameCache;
+if (__DEV__) {
+  const PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map;
+  componentFrameCache = new PossiblyWeakMap();
+}
 
 /**
  * Finding a common stack frame between sample and control errors can be
