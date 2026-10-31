@@ -248,6 +248,18 @@ createReactNoop's `rootID` is the decided case: upstream's
 both mean the default root, as `rootID ??= DEFAULT_ROOT_ID` would (the user,
 2026-10-31).
 
+Two more are decided the same way (the user, 2026-10-31):
+
+- **ReactDOMRoot's options** are `Option` fields tested `!= null` where
+  upstream tests `!== undefined`: identifierPrefix, onUncaughtError,
+  onCaughtError, onRecoverableError, onDefaultTransitionIndicator,
+  unstable_transitionCallbacks and formState. An option given as `null`
+  keeps its default, where upstream passes the `null` on.
+- **ReactDOMRoot's render and unmount** test `root == null` and
+  `root != null` where upstream tests `=== null` and `!== null`.
+  `_internalRoot` is a root or `null`, so only a method called with a
+  foreign `this` tells them apart.
+
 ## Accepted differences and forms
 
 The user decided each of these. Name the id in a commit where one applies.
@@ -329,8 +341,13 @@ These differences from upstream's output are accepted:
   `batchedUpdates: NoopRenderer.batchedUpdates`, and `Rc::new(move |e, i|
   noop_renderer.default_on_uncaught_error(e, i))` printed
   `NoopRenderer.defaultOnUncaughtError`. Its `length` and identity are the
-  function's, as rd196's are. (Pending in rust-js; until it lands such a
-  closure prints an arrow.)
+  function's, as rd196's are (rust-js 2e20abe4d). Its scope is only a
+  namespace's function called through a value: a closure that forwards to a
+  plain function is that function only where rd158, rd196 or rd212 says so.
+  rust-js keeps a closure an `Rc` is made of as an arrow (its pointer is
+  what `Rc::ptr_eq` compares), so the `Rc` handlers still print
+  `(error, errorInfo) => { NoopRenderer.defaultOnUncaughtError(..); }`
+  (rd313).
 - **rd158** (the user; rust-js's guide, difference 32): a closure that
   captures nothing, held as a `fn`, and only calls one host function with
   what it's given (its optional parameters `None`) is that function:
@@ -511,12 +528,15 @@ The port is split between sessions by package:
   react-dom-bindings' client and events modules. react-dom-bindings' client
   side is fully ported, ReactFiberConfigDOM included. react-dom's
   src/shared, ReactDOMSharedInternals, ReactDOMRoot and ReactDOMClient are
-  Rust; ReactDOMDefaultTransitionIndicator waits on rust-js's rd284 (one
-  listener for `navigatesuccess` and `navigateerror`), and ReactDOMRoot
-  reaches it through a JS-path binding meanwhile.
-  createReactNoop (a draft) waits on the reconciler's re-exports becoming
-  forwarding methods printed as `export {..} from` (rd292b), on the
-  forwarding rule above, and on calling another crate's generic namespace
+  Rust; ReactDOMDefaultTransitionIndicator waits on rd284b, and ReactDOMRoot
+  reaches it through a JS-path binding meanwhile. Its listeners are one per
+  event, `let on_success = webapi::listener(move |_: &Event|
+  handle_navigate_complete());`, each given to both `add_event_listener` and
+  `remove_event_listener`. rust-js's rd284 prints such a listener as the
+  function it calls only when that function is a `fn`, and
+  handleNavigateComplete is a local function JS makes (`function::with_this`),
+  so it still prints `function onSuccess() { handleNavigateComplete(); }`.
+  createReactNoop (a draft) waits on calling another crate's generic namespace
   method through a value (rd311). rd308 is decided: the reconciler holds its
   error handlers as `Rc`s. ReactNoop.js and ReactNoopPersistent.js stay JS
   until rd293.
