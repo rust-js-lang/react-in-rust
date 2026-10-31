@@ -468,8 +468,10 @@ The port is split between sessions by package:
 - **The first session** has scheduler, shared, react, react-reconciler, and
   react-dom-bindings' client and events modules. react-dom-bindings' client
   side is fully ported, ReactFiberConfigDOM included. react-dom's
-  src/shared and ReactDOMSharedInternals are Rust; ReactDOMRoot, ReactDOMClient
-  and ReactDOMDefaultTransitionIndicator wait on rust-js (rd282-rd284).
+  src/shared and ReactDOMSharedInternals are Rust; ReactDOMRoot and
+  ReactDOMClient wait on rust-js's rd304 (a trait of classes' default can't
+  borrow the field its impl lends), and ReactDOMDefaultTransitionIndicator
+  on rd284 (one listener for `navigatesuccess` and `navigateerror`).
 - **The second session** has react-server, react-client, react-server-dom-*
   and react-dom-bindings/src/server.
 
