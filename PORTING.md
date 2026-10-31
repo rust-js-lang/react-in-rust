@@ -250,8 +250,16 @@ commit message.
   is `js::is_function(binding)`, `typeof X !== 'undefined'` is
   `js::is_defined(binding)`, and `typeof performance === 'object' && typeof
   performance.now === 'function'` is `js::is_object(webapi::performance) &&
-  js::is_function(webapi::Performance::now)`. Never `js::is_function` of a
-  path alone: it doesn't ask whether the path's first part is there (rd320).
+  js::is_function(webapi::Performance::now)`. `js::is_function` of a path
+  alone asks for its first part too, `typeof performance !== 'undefined' &&
+  typeof performance.getEntriesByType === 'function'` (rd320, rust-js
+  2f8ab2e73), so a host without the global gives `false` where upstream's
+  bare `typeof performance.getEntriesByType` throws (estimateBandwidth).
+- **Read a global as upstream does.** A bare global is its webapi binding;
+  one upstream reads as the global object's property, `global.scheduler`,
+  is `webapi::global_this.scheduler()`, `globalThis.scheduler` (rd319). A
+  global no binding declares, `global.IS_REACT_NATIVE_TEST_ENVIRONMENT`, is
+  a global-path static, `#[link_name = "global.IS_REACT_NATIVE_TEST_ENVIRONMENT"]`.
 - **Port type-only modules as Rust and their `.d.ts`**, and remove
   upstream's Flow `.js` (the user, 2026-10-28). A package's entry,
   `index.js`, keeps only plain JS re-exports, and its Flow types move to
