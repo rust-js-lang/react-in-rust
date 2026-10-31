@@ -222,6 +222,23 @@ commit message.
   `index.js`, keeps only plain JS re-exports, and its Flow types move to
   `index.d.ts` (rd55).
 
+## Null and undefined
+
+rust-js's rule (the user, 2026-10-31): **`None` is absent. On write, the
+destination's TypeScript type picks `undefined` or `null`; on read, both are
+`None`. Where a program must tell them apart, it takes `&Unknown`.**
+
+So an `Option` parameter or field reads JS `null` and `undefined` alike, and
+the port writes `Option<T>` wherever upstream treats the two the same. Where
+upstream's behavior depends on which one it was given, the value is
+`&Unknown`, tested with `js::classify` (`Kind::Null`, `Kind::Undefined`).
+
+createReactNoop's `rootID` is the decided case: upstream's
+`getChildren(rootID: string = DEFAULT_ROOT_ID)` defaults only for
+`undefined`, and the port takes `Option<&str>`, so JS `null` and `undefined`
+both mean the default root, as `rootID ??= DEFAULT_ROOT_ID` would (the user,
+2026-10-31).
+
 ## Accepted differences and forms
 
 The user decided each of these. Name the id in a commit where one applies.
@@ -331,6 +348,26 @@ These differences from upstream's output are accepted:
   name.clone(); }` and the later `let name = "_".to_owned() + ..;`, print as
   one reassigned JS `let name = props.name;`, where upstream reads
   `props.name` and declares `const name` after.
+
+- **rd271** (the user; ADR 0262's rare and harmless, rust-js 21f8572f6, ADR
+  0443): a trailing `None` given to a function value (a `dyn Fn`, a
+  pointer, a closure or one `function::bind` makes) is no argument,
+  `callback()` of `callback(None)`, as a binding's is. Only a callee that
+  counts its arguments (`arguments.length`) can tell.
+
+- **rd285** (the user; ADR 0262's rare and harmless, once rust-js lands it): a
+  dispatcher call whose arguments need statements hoists the receiver as
+  React does, `const d = ReactDOMSharedInternals.d; ..; d.L(href, as, {..})`,
+  so the call keeps its `this`. Until it lands, React DOM's Float prints
+  `const L = ReactDOMSharedInternals.d.L; .. L(..)` (a readability gap: no
+  React dispatcher reads `this`).
+
+- **createReactNoop's own functions** (the user, 2026-10-31):
+  getOrCreateRootContainer and renderToRootWithID are plain Rust functions
+  the ReactNoop object's methods call, where upstream calls them through the
+  object, `ReactNoop.getOrCreateRootContainer(..)`. A test that replaces
+  `ReactNoop.renderToRootWithID` no longer reaches the other methods; none
+  does.
 
 - **gives_plain_data** (#411, 77029cdc4): a binding whose result is a fresh
   object of data properties that JS builds says so with
