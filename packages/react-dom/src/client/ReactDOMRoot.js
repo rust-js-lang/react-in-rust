@@ -136,7 +136,7 @@ export function createRoot(
         );
       }
     }
-    if (options.unstable_strictMode) {
+    if (options.unstable_strictMode === true) {
       isStrictMode = true;
     }
     if (options.identifierPrefix != null) {
@@ -196,7 +196,7 @@ ReactDOMHydrationRoot.prototype.unstable_scheduleHydration = function (target) {
 };
 
 function scheduleHydration(target) {
-  if (target != null) {
+  if (target) {
     queueExplicitHydrationTarget(target);
   }
 }
@@ -223,7 +223,7 @@ export function hydrateRoot(
 
   // For now we reuse the whole bag of options since they contain
   // the hydration callbacks.
-  const hydrationCallbacks = options;
+  const hydrationCallbacks = options ?? null;
 
   const concurrentUpdatesByDefaultOverride = false;
   let isStrictMode = false;
@@ -235,7 +235,7 @@ export function hydrateRoot(
   let transitionCallbacks = null;
   let formState = null;
   if (options != null) {
-    if (options.unstable_strictMode) {
+    if (options.unstable_strictMode === true) {
       isStrictMode = true;
     }
     if (options.identifierPrefix != null) {

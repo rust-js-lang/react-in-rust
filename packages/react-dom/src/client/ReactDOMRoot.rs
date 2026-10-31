@@ -203,7 +203,7 @@ pub fn create_root(
                 ),));
             }
         }
-        if options.unstable_strict_mode == Some(true) {
+        if js::strict_equals(options.unstable_strict_mode, true) {
             is_strict_mode = true;
         }
         if let Some(prefix) = &options.identifier_prefix {
@@ -285,7 +285,9 @@ impl RootType for ReactDOMHydrationRoot {
 }
 
 fn schedule_hydration(target: Option<&'static Node>) {
-    if let Some(target) = target {
+    if let Some(target) = target
+        && js::truthy(Some(target))
+    {
         queue_explicit_hydration_target(target);
     }
 }
@@ -312,7 +314,10 @@ pub fn hydrate_root(
 
     // For now we reuse the whole bag of options since they contain
     // the hydration callbacks.
-    let hydration_callbacks = unsafe { js::cast(options.map(js::unknown)) };
+    let hydration_callbacks = match options {
+        Some(options) => unsafe { js::cast(Some(js::unknown(options))) },
+        None => js::null(),
+    };
 
     let concurrent_updates_by_default_override = false;
     let mut is_strict_mode = false;
@@ -325,7 +330,7 @@ pub fn hydrate_root(
     let mut transition_callbacks = js::null();
     let mut form_state = js::null();
     if let Some(options) = options {
-        if options.unstable_strict_mode == Some(true) {
+        if js::strict_equals(options.unstable_strict_mode, true) {
             is_strict_mode = true;
         }
         if let Some(prefix) = &options.identifier_prefix {
