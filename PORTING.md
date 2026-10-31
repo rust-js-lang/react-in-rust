@@ -355,12 +355,11 @@ These differences from upstream's output are accepted:
   `callback()` of `callback(None)`, as a binding's is. Only a callee that
   counts its arguments (`arguments.length`) can tell.
 
-- **rd285** (the user; ADR 0262's rare and harmless, once rust-js lands it): a
-  dispatcher call whose arguments need statements hoists the receiver as
-  React does, `const d = ReactDOMSharedInternals.d; ..; d.L(href, as, {..})`,
-  so the call keeps its `this`. Until it lands, React DOM's Float prints
-  `const L = ReactDOMSharedInternals.d.L; .. L(..)` (a readability gap: no
-  React dispatcher reads `this`).
+- **rd285** (the user; ADR 0262's rare and harmless, rust-js 15fac97c2, ADR
+  1034): a dispatcher call whose arguments need statements hoists the
+  receiver as React does, `const d = ReactDOMSharedInternals.d; ..;
+  d.L(href, as, {..})`, so the call keeps its `this`; the dispatcher field
+  is read after the argument statements, where upstream reads it before.
 
 - **createReactNoop's own functions** (the user, 2026-10-31):
   getOrCreateRootContainer and renderToRootWithID are plain Rust functions
