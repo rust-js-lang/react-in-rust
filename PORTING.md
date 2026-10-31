@@ -214,6 +214,15 @@ commit message.
   `#[cfg_attr(rust_js, rust_js::link_name = "./src/client/ReactFiberConfigDOM.js#name")]`,
   where the path starts at the crate's directory. When that module becomes
   Rust, the binding becomes a `use`.
+- **A module JS hands around as a value is a namespace** (rust-js's ADR
+  1037, rd292). ReactFiberReconciler is `#[cfg_attr(rust_js,
+  rust_js::namespace)] pub struct ReactFiberReconciler;` and its exported
+  functions are `&self` methods in namespace impls, kept in the file's order
+  between its private items. Callers name it,
+  `ReactFiberReconciler.should_error(fiber)`, which prints
+  `shouldError(fiber)` with its named import; a renderer given the namespace
+  calls through the value, `noop_renderer.create_container(..)`, printed
+  `NoopRenderer.createContainer(..)`.
 - **Port fallbacks too** (the user, 2026-10-22). A polyfill, or a branch
   for a host without `Object.is` or `performance.now`, is the program's to
   express, whatever hosts rust-js targets.
@@ -472,6 +481,10 @@ The port is split between sessions by package:
   ReactDOMClient wait on rust-js's rd304 (a trait of classes' default can't
   borrow the field its impl lends), and ReactDOMDefaultTransitionIndicator
   on rd284 (one listener for `navigatesuccess` and `navigateerror`).
+  createReactNoop (a draft) waits on the reconciler's re-exports becoming
+  forwarding methods printed as `export {..} from` (rd292b), on a form for
+  `NoopRenderer.defaultOnUncaughtError` as a `&'static dyn Fn` (rd308), and on
+  calling another crate's generic namespace method through a value (rd311).
 - **The second session** has react-server, react-client, react-server-dom-*
   and react-dom-bindings/src/server.
 
