@@ -45,14 +45,10 @@ use crate::react_dom_textarea::{
 use crate::react_dom_unknown_property_hook::{
     EventRegistry, validate_properties as validate_unknown_properties,
 };
+use crate::react_fiber_config_dom::HOST_CONTEXT_NAMESPACE_NONE;
 use crate::sanitize_url::sanitize_url;
 use crate::set_text_content::set_text_content;
 use crate::validate_dom_nesting::validate_text_nesting;
-
-unsafe extern "Rust" {
-    #[link_name = "./src/client/ReactFiberConfigDOM.js#HostContextNamespaceNone"]
-    safe static HOST_CONTEXT_NAMESPACE_NONE: u8;
-}
 
 thread_local! {
     static DID_WARN_CONTROLLED_TO_UNCONTROLLED: Cell<bool> = const { Cell::new(false) };

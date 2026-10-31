@@ -14,7 +14,7 @@ fn is_likely_static_resource(initiator_type: &str) -> bool {
 }
 
 js::export_default! {
-    fn estimate_bandwidth() -> f64 {
+    pub fn estimate_bandwidth() -> f64 {
         // Estimate the current bandwidth for downloading static resources given resources already
         // loaded.
         // $FlowFixMe[method-unbinding]

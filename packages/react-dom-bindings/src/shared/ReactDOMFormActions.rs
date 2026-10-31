@@ -80,7 +80,7 @@ pub fn use_form_state(
 }
 
 pub fn request_form_reset(form: &HTMLFormElement) {
-    REACT_DOM_SHARED_INTERNALS
+    (REACT_DOM_SHARED_INTERNALS
         .d() /* ReactDOMCurrentDispatcher */
-        .r(/* requestFormReset */ form);
+        .r)(/* requestFormReset */ form);
 }

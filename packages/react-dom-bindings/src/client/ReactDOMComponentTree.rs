@@ -16,22 +16,7 @@ use shared::react_feature_flags::{ENABLE_INTERNAL_INSTANCE_MAP, ENABLE_SCOPE_API
 use webapi::{Element, EventTarget, Node};
 
 use crate::react_dom_event_handle_types::{ReactDOMEventHandle, ReactDOMEventHandleListener};
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/client/ReactFiberConfigDOM.js#getParentHydrationBoundary",
-    rust_js::nullable
-)]
-fn get_parent_hydration_boundary(target_instance: &Unknown) -> Option<&'static Unknown> {
-    let _ = target_instance;
-    unreachable!()
-}
-
-/// A root's hoistable resources, ReactFiberConfigDOM's `RootResources`.
-pub struct RootResources {
-    pub hoistable_styles: &'static Map<String, &'static Unknown>,
-    pub hoistable_scripts: &'static Map<String, &'static Unknown>,
-}
+use crate::react_fiber_config_dom::{RootResources, get_parent_hydration_boundary};
 
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "randomKey")]
@@ -188,7 +173,7 @@ pub fn get_closest_instance_from_node(mut target_node: &'static EventTarget) -> 
                 // Next we need to figure out if the node that skipped past is
                 // nested within a dehydrated boundary and if so, which one.
                 let mut hydration_instance =
-                    get_parent_hydration_boundary(js::unknown(target_node));
+                    get_parent_hydration_boundary(webapi::node::unchecked_from(target_node));
                 while let Some(instance) = hydration_instance {
                     // We found a suspense instance. That means that we haven't
                     // hydrated it yet. Even though we leave the comments in the
@@ -199,7 +184,7 @@ pub fn get_closest_instance_from_node(mut target_node: &'static EventTarget) -> 
                     // Let's get the fiber associated with the SuspenseComponent
                     // as the deepest instance.
                     let target_fiber = if ENABLE_INTERNAL_INSTANCE_MAP {
-                        INTERNAL_INSTANCE_MAP.with(|map| map.get(instance))
+                        INTERNAL_INSTANCE_MAP.with(|map| map.get(js::unknown(instance)))
                     } else {
                         INTERNAL_INSTANCE_KEY
                             .with(|key| unsafe { js::cast(js::get(instance, key)) })

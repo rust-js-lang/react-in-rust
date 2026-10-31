@@ -10,12 +10,7 @@ import type {
   ReactDOMEventHandle,
   ReactDOMEventHandleListener,
 } from './ReactDOMEventHandleTypes.js';
-
-/** A root's hoistable resources, ReactFiberConfigDOM's `RootResources`. */
-export interface RootResources {
-  hoistableStyles: Map<string, unknown>;
-  hoistableScripts: Map<string, unknown>;
-}
+import type {RootResources} from './ReactFiberConfigDOM.js';
 
 export function detachDeletedInstance(node: Element): void;
 

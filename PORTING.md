@@ -423,8 +423,9 @@ These forms are decided:
 The port is split between sessions by package:
 
 - **The first session** has scheduler, shared, react, react-reconciler, and
-  react-dom-bindings' client and events modules. ReactFiberConfigDOM is
-  next.
+  react-dom-bindings' client and events modules. react-dom-bindings' client
+  side is fully ported, ReactFiberConfigDOM included; react-dom's client
+  side (ReactDOMRoot, ReactDOMClient, react-dom/src/shared) is next.
 - **The second session** has react-server, react-client, react-server-dom-*
   and react-dom-bindings/src/server.
 

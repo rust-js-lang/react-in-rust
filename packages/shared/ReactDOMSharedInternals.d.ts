@@ -5,6 +5,46 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+/**
+ * `preinitStyle(href, precedence, options)`: the precedence and options are
+ * what the caller gave.
+ */
+export type PreinitStyle = (
+  value: string,
+  value2: unknown | null | undefined,
+  value3: unknown | null | undefined,
+) => void;
+
+/**
+ * React DOM's `HostDispatcher`, `ReactDOMSharedInternals.d`: what
+ * `flushSync`, a form's reset and the resource hints call, the current
+ * renderer's, which calls the one it replaced.
+ */
+export interface HostDispatcher {
+  /** `flushSyncWork`: whether any root was rendering. */
+  f: () => boolean;
+  /** `requestFormReset`. */
+  r: (element: HTMLFormElement) => void;
+  /** `prefetchDNS(href)`. */
+  D: (value: string) => void;
+  /** `preconnect(href, crossOrigin)`. */
+  C: (value: string, value2: unknown | null | undefined) => void;
+  /** `preload(href, as, options)`. */
+  L: (
+    value: string,
+    value2: string,
+    value3: unknown | null | undefined,
+  ) => void;
+  /** `preloadModule(href, options)`. */
+  m: (value: string, value2: unknown | null | undefined) => void;
+  /** `preinitScript(src, options)`. */
+  X: (value: string, value2: unknown | null | undefined) => void;
+  /** `preinitStyle(href, precedence, options)`. */
+  S: PreinitStyle;
+  /** `preinitModuleScript(src, options)`. */
+  M: (value: string, value2: unknown | null | undefined) => void;
+}
+
 declare const ReactDOMSharedInternals: any;
 
 export default ReactDOMSharedInternals;

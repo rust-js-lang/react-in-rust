@@ -138,7 +138,7 @@ export function getClosestInstanceFromNode(targetNode) {
         // Next we need to figure out if the node that skipped past is
         // nested within a dehydrated boundary and if so, which one.
         let hydrationInstance = getParentHydrationBoundary(targetNode);
-        while (hydrationInstance !== null) {
+        while (hydrationInstance != null) {
           // We found a suspense instance. That means that we haven't
           // hydrated it yet. Even though we leave the comments in the
           // DOM after hydrating, and there are boundaries in the DOM
