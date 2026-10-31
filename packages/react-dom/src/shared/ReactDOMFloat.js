@@ -112,7 +112,7 @@ export function preload(href, options) {
     const as = options.as;
     if (typeof as === 'string') {
       const crossOrigin = getCrossOriginStringAs(as, options.crossOrigin);
-      const L = ReactDOMSharedInternals.d.L;
+      const d = ReactDOMSharedInternals.d;
       const integrity = options.integrity;
       const nonce = options.nonce;
       const type = options.type;
@@ -121,7 +121,7 @@ export function preload(href, options) {
       const imageSrcSet = options.imageSrcSet;
       const imageSizes = options.imageSizes;
       const media = options.media;
-      L(
+      d.L(
         /* ReactDOMCurrentDispatcher */
         href,
         as,
@@ -170,12 +170,12 @@ export function preloadModule(href, options) {
         typeof as === 'string' ? as : undefined,
         options.crossOrigin,
       );
-      const m = ReactDOMSharedInternals.d.m;
+      const d = ReactDOMSharedInternals.d;
       as = options.as;
       const integrity = options.integrity;
       const nonce = options.nonce;
       const fetchPriority = options.fetchPriority;
-      m(
+      d.m(
         /* ReactDOMCurrentDispatcher */
         href,
         /* preloadModule */
@@ -231,9 +231,9 @@ export function preinit(href, options) {
         typeof fetchPriority$1 === 'string' ? fetchPriority$1 : undefined;
       if (as === 'style') {
         /* preinitStyle */
-        const S = ReactDOMSharedInternals.d.S;
+        const d = ReactDOMSharedInternals.d;
         const precedence = options.precedence;
-        S(
+        d.S(
           href,
           typeof precedence === 'string' /* ReactDOMCurrentDispatcher */
             ? precedence
@@ -245,9 +245,9 @@ export function preinit(href, options) {
           },
         );
       } else if (as === 'script') {
-        const X = ReactDOMSharedInternals.d.X;
+        const value = ReactDOMSharedInternals.d;
         const nonce = options.nonce;
-        X(
+        value.X(
           /* ReactDOMCurrentDispatcher */
           href,
           /* preinitScript */
@@ -304,11 +304,11 @@ export function preinitModule(href, options) {
           typeof as === 'string' ? as : undefined,
           options.crossOrigin,
         );
-        const M = ReactDOMSharedInternals.d.M;
+        const d = ReactDOMSharedInternals.d;
         const integrity = options.integrity;
         const nonce = options.nonce;
         const fetchPriority = options.fetchPriority;
-        M(
+        d.M(
           /* ReactDOMCurrentDispatcher */
           href,
           /* preinitModuleScript */
