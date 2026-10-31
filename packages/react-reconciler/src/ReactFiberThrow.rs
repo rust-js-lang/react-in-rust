@@ -6,7 +6,7 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use js::{Error, Unknown, function};
+use js::{ErrorOptions, Unknown, function};
 use shared::environment::__DEV__;
 use shared::react_feature_flags::{DISABLE_LEGACY_MODE, ENABLE_UPDATER_TRACKING};
 use webapi::console;
@@ -52,13 +52,6 @@ use crate::react_work_tags::{
     INCOMPLETE_CLASS_COMPONENT, INCOMPLETE_FUNCTION_COMPONENT, OFFSCREEN_COMPONENT,
     SIMPLE_MEMO_COMPONENT, SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT,
 };
-
-/// What `new Error(message, options)` is given: what caused the error.
-struct ErrorOptions {
-    cause: Option<&'static Unknown>,
-}
-
-unsafe impl js::Defined for ErrorOptions {}
 
 /// The payload of a root's error update: the element it renders, none.
 struct RootErrorPayload {
@@ -649,18 +642,17 @@ pub fn throw_exception(
             // still log it so it can be fixed.
             if !HYDRATION_MISMATCH_EXCEPTION.with(|exception| js::strict_equals(value, *exception))
             {
-                let wrapper_error = js::new(
-                    js::class::<Error>(),
-                    (
-                        concat!(
-                            "There was an error while hydrating but React was able to recover by ",
-                            "instead client rendering from the nearest Suspense boundary."
-                        ),
-                        &ErrorOptions { cause: value },
+                let wrapper_error = js::error::new(
+                    concat!(
+                        "There was an error while hydrating but React was able to recover by ",
+                        "instead client rendering from the nearest Suspense boundary."
                     ),
+                    Some(&ErrorOptions {
+                        cause: Some(&value),
+                    }),
                 );
                 queue_hydration_error(create_captured_value_at_fiber(
-                    Some(wrapper_error),
+                    wrapper_error.as_unknown(),
                     source_fiber,
                 ));
             }
@@ -668,18 +660,17 @@ pub fn throw_exception(
         } else {
             if !HYDRATION_MISMATCH_EXCEPTION.with(|exception| js::strict_equals(value, *exception))
             {
-                let wrapper_error = js::new(
-                    js::class::<Error>(),
-                    (
-                        concat!(
-                            "There was an error while hydrating but React was able to recover by ",
-                            "instead client rendering the entire root."
-                        ),
-                        &ErrorOptions { cause: value },
+                let wrapper_error = js::error::new(
+                    concat!(
+                        "There was an error while hydrating but React was able to recover by ",
+                        "instead client rendering the entire root."
                     ),
+                    Some(&ErrorOptions {
+                        cause: Some(&value),
+                    }),
                 );
                 queue_hydration_error(create_captured_value_at_fiber(
-                    Some(wrapper_error),
+                    wrapper_error.as_unknown(),
                     source_fiber,
                 ));
             }
@@ -708,18 +699,17 @@ pub fn throw_exception(
         // Otherwise, fall through to the error path.
     }
 
-    let wrapper_error = js::new(
-        js::class::<Error>(),
-        (
-            concat!(
-                "There was an error during concurrent rendering but React was able to recover by ",
-                "instead synchronously rendering the entire root."
-            ),
-            &ErrorOptions { cause: value },
+    let wrapper_error = js::error::new(
+        concat!(
+            "There was an error during concurrent rendering but React was able to recover by ",
+            "instead synchronously rendering the entire root."
         ),
+        Some(&ErrorOptions {
+            cause: Some(&value),
+        }),
     );
     queue_concurrent_error(create_captured_value_at_fiber(
-        Some(wrapper_error),
+        wrapper_error.as_unknown(),
         source_fiber,
     ));
     render_did_error();

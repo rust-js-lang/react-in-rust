@@ -434,18 +434,16 @@ fn replay_change_event(target: &'static EventTarget) {
             } else {
                 js::class::<Event>()
             };
-            target.dispatch_event(unsafe {
-                js::cast(Some(js::new(
-                    event_ctr,
-                    (
-                        "click",
-                        &EventInit {
-                            bubbles: Some(true),
-                            ..Default::default()
-                        },
-                    ),
-                )))
-            });
+            target.dispatch_event(event_ctr.call_static(
+                event::new,
+                (
+                    "click",
+                    Some(EventInit {
+                        bubbles: Some(true),
+                        ..Default::default()
+                    }),
+                ),
+            ));
             // For checkboxes the input event uses the Event constructor instead of InputEvent.
             target.dispatch_event(event::new(
                 "input",

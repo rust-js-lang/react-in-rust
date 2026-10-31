@@ -135,11 +135,9 @@ js::on_load! {
 // once it is no longer needed (releaseCache).
 pub fn create_cache() -> Rc<Cache> {
     Rc::new(Cache {
-        controller: unsafe {
-            js::cast(Some(ABORT_CONTROLLER_LOCAL.with(
-                |abort_controller_local| js::new(*abort_controller_local, ()),
-            )))
-        },
+        controller: ABORT_CONTROLLER_LOCAL.with(|abort_controller_local| {
+            abort_controller_local.call_static(webapi::abort_controller::new, ())
+        }),
         data: js::map::new(None),
         ref_count: Cell::new(0),
     })
