@@ -99,6 +99,8 @@ pub mod react_dom_event_listener;
 pub mod react_dom_event_replaying;
 #[path = "src/shared/ReactDOMFormActions.rs"]
 pub mod react_dom_form_actions;
+#[path = "../shared/ReactDOMFragmentRefShared.rs"]
+pub mod react_dom_fragment_ref_shared;
 #[path = "src/client/ReactDOMInput.rs"]
 pub mod react_dom_input;
 #[path = "src/shared/ReactDOMInvalidARIAHook.rs"]

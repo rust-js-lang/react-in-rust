@@ -53,6 +53,7 @@ use webapi::{
 use crate::estimate_bandwidth::estimate_bandwidth;
 use crate::react_dom_component_tree::is_owned_instance;
 use crate::react_dom_form_actions::{FormStatus, NOT_PENDING};
+use crate::react_dom_fragment_ref_shared::compare_document_position_for_empty_fragment;
 use crate::react_dom_resource_validation::validate_link_props_for_style_resource;
 use js::Promise;
 use react_reconciler::react_test_selectors::{Intersection, ObserveVisibleRectsCallback};
@@ -4358,25 +4359,6 @@ pub fn delete_child_from_fragment_instance(
     if let Some(react_fragments) = react_fragments {
         react_fragments.delete(fragment_instance);
     }
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "../shared/ReactDOMFragmentRefShared.js#compareDocumentPositionForEmptyFragment"
-)]
-fn compare_document_position_for_empty_fragment(
-    fragment_fiber: &Fiber,
-    parent_host_instance: &Node,
-    other_node: &Node,
-    get_public_instance: &dyn Fn(&Fiber) -> &'static Unknown,
-) -> f64 {
-    let _ = (
-        fragment_fiber,
-        parent_host_instance,
-        other_node,
-        get_public_instance,
-    );
-    unreachable!()
 }
 
 pub fn clear_container(container: &'static Container) {

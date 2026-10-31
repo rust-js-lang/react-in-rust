@@ -561,6 +561,11 @@ The port is split between sessions by package:
   Fn()` is `function::with_this(move |_, ()| ..)`. They print upstream's
   `navigation.addEventListener('navigatesuccess', handleNavigateComplete)`
   (rd284b, rust-js c66569bdf).
+  shared/ReactDOMFragmentRefShared is react-dom-bindings' module, declared
+  in its root as `#[path = "../shared/ReactDOMFragmentRefShared.rs"] pub mod
+  react_dom_fragment_ref_shared;` (it reads the reconciler, which `shared`
+  can't), its JS beside its `.rs` where React Native's Fabric config imports
+  it.
   react-noop-renderer's createReactNoop and ReactFiberConfigNoop are Rust.
   bindToConsole binds the console's method to its arguments,
   `function::bind(method, Some(&console), args)`, printed
