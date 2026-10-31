@@ -6,10 +6,14 @@ pub mod ensure_correct_isomorphic_react_version;
 pub mod react_dom;
 #[path = "src/shared/ReactDOMBrowser.rs"]
 pub mod react_dom_browser;
+#[path = "src/client/ReactDOMClient.rs"]
+pub mod react_dom_client;
 #[path = "src/shared/ReactDOMFloat.rs"]
 pub mod react_dom_float;
 #[path = "src/shared/ReactDOMFlushSync.rs"]
 pub mod react_dom_flush_sync;
+#[path = "src/client/ReactDOMRoot.rs"]
+pub mod react_dom_root;
 #[path = "src/ReactDOMSharedInternals.rs"]
 pub mod react_dom_shared_internals;
 #[path = "src/shared/ReactDOMTypes.rs"]
