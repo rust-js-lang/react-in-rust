@@ -15,6 +15,8 @@ pub mod scheduler_feature_flags;
 pub mod scheduler_min_heap;
 #[path = "SchedulerMock.rs"]
 pub mod scheduler_mock;
+#[path = "SchedulerPostTask.rs"]
+pub mod scheduler_post_task;
 #[path = "../SchedulerPriorities.rs"]
 pub mod scheduler_priorities;
 #[path = "../SchedulerProfiling.rs"]
