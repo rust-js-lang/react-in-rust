@@ -14,3 +14,5 @@ pub mod react_dom_flush_sync;
 pub mod react_dom_shared_internals;
 #[path = "src/shared/ReactDOMTypes.rs"]
 pub mod react_dom_types;
+#[path = "src/test-utils/ReactTestUtils.rs"]
+pub mod react_test_utils;
