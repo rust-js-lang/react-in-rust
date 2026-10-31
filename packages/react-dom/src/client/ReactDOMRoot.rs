@@ -29,14 +29,7 @@ use shared::react_feature_flags::{
 use shared::react_symbols::REACT_ELEMENT_TYPE;
 use webapi::{EventTarget, Node, console};
 
-// ReactDOMDefaultTransitionIndicator's, held as upstream's JS.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/client/ReactDOMDefaultTransitionIndicator.js#defaultOnDefaultTransitionIndicator"
-)]
-fn default_on_default_transition_indicator() -> Option<&'static dyn Fn()> {
-    unreachable!()
-}
+use crate::react_dom_default_transition_indicator::default_on_default_transition_indicator;
 
 /// What `createRoot` and `hydrateRoot` give: a root to render into and
 /// unmount, the same two methods each.
