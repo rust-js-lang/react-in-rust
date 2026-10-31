@@ -325,6 +325,12 @@ These differences from upstream's output are accepted:
   the array and compares it, or watches it change, tells them apart; the
   browser copies `types` into the ViewTransition's set.
 
+- **rd229** (the user): getViewTransitionName's two Rust bindings of one
+  name, `if let Some(name) = &props.name && name != "auto" { return
+  name.clone(); }` and the later `let name = "_".to_owned() + ..;`, print as
+  one reassigned JS `let name = props.name;`, where upstream reads
+  `props.name` and declares `const name` after.
+
 - **gives_plain_data** (#411, 77029cdc4): a binding whose result is a fresh
   object of data properties that JS builds says so with
   `#[cfg_attr(rust_js, rust_js::gives_plain_data)]`, and the struct's fields

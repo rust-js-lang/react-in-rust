@@ -740,7 +740,7 @@ export function renderTransitionAwareHostComponentWithHooks(
 // ReactFiberConfig's `TransitionStatus`.
 export function TransitionAwareHostComponent() {
   const dispatcher = ReactSharedInternals.H;
-  const [maybeThenable] = dispatcher.useState(undefined);
+  const [maybeThenable] = dispatcher.useState();
   let nextState;
   if (typeof maybeThenable.then === 'function') {
     const thenable = maybeThenable;
@@ -751,7 +751,7 @@ export function TransitionAwareHostComponent() {
 
   // The "reset state" is an object. If it changes, that means something
   // requested that we reset the form.
-  const [nextResetState] = dispatcher.useState(undefined);
+  const [nextResetState] = dispatcher.useState();
   const prevResetState = currentHook != null ? currentHook.memoizedState : null;
   if (prevResetState !== nextResetState) {
     // Schedule a form reset
@@ -1466,7 +1466,7 @@ function rerenderReducer(reducer, initialArg, init) {
 
     const firstRenderPhaseUpdate = $unwrap(lastRenderPhaseUpdate.next);
     let update = firstRenderPhaseUpdate;
-    while (true) {
+    do {
       // Process this render phase update. We don't have to check the
       // priority because it will always be the same as the current
       // render's.
@@ -1474,10 +1474,7 @@ function rerenderReducer(reducer, initialArg, init) {
       newState = reducer(newState, action);
       const next = $unwrap(update.next);
       update = next;
-      if (update === firstRenderPhaseUpdate) {
-        break;
-      }
-    }
+    } while (update !== firstRenderPhaseUpdate);
 
     // Mark that the fiber performed work, but only if the new state is
     // different from the current state.
@@ -1919,14 +1916,14 @@ function dispatchActionState(
   if (prevTransition !== null) {
     // Optimistically update the pending state, similar to useTransition.
     // This will be reverted automatically when all actions are finished.
-    setPendingState(true, undefined);
+    setPendingState(true);
     // `actionNode` is a thenable that resolves to the return value of
     // the action.
-    setState(actionNode, undefined);
+    setState(actionNode);
   } else {
     // This is not a transition.
     actionNode.isTransition = false;
-    setState(actionNode, undefined);
+    setState(actionNode);
   }
 
   const last = actionQueue.pending;
@@ -2107,16 +2104,13 @@ function onActionError(actionQueue, actionNode, error) {
   if (last != null) {
     const first = $unwrap(last.next);
     let actionNode$1 = actionNode;
-    while (true) {
+    do {
       actionNode$1.status = 'rejected';
       actionNode$1.reason = error;
       notifyActionListeners(actionNode$1);
       const next = $unwrap(actionNode$1.next);
       actionNode$1 = next;
-      if (actionNode$1 === first) {
-        break;
-      }
-    }
+    } while (actionNode$1 !== first);
   }
 
   // Prevent subsequent actions from being dispatched.

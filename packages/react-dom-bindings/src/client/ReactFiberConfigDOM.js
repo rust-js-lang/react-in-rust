@@ -704,25 +704,21 @@ export const scheduleTimeout =
 export const cancelTimeout =
   typeof clearTimeout === 'function' ? clearTimeout : undefined;
 export const noTimeout = -1;
-let localPromise;
-if (typeof Promise === 'function') {
-  localPromise = Promise;
-}
-
-let localRequestAnimationFrame;
-if (typeof requestAnimationFrame === 'function') {
-  localRequestAnimationFrame = callback => {
-    requestAnimationFrame(time => {
-      callback(time);
-    });
-  };
-} else if (scheduleTimeout != null) {
-  localRequestAnimationFrame = callback => {
-    scheduleTimeout(() => {
-      callback();
-    });
-  };
-}
+const localPromise = typeof Promise === 'function' ? Promise : undefined;
+const localRequestAnimationFrame =
+  typeof requestAnimationFrame === 'function'
+    ? callback => {
+        requestAnimationFrame(time => {
+          callback(time);
+        });
+      }
+    : scheduleTimeout != null
+      ? callback => {
+          scheduleTimeout(() => {
+            callback();
+          });
+        }
+      : undefined;
 
 export function preparePortalMount(portalInstance) {
   listenToAllSupportedEvents(portalInstance);
@@ -2781,9 +2777,7 @@ FragmentInstance.prototype.addEventListener = function (
     }
   }
 
-  if (this._eventListeners == null) {
-    this._eventListeners = [];
-  }
+  this._eventListeners ??= [];
   const listeners = this._eventListeners;
   // Element.addEventListener will only apply uniquely new event listeners by default. Since we
   // need to collect the listeners to apply to appended children, we track them ourselves and use
@@ -3010,9 +3004,7 @@ FragmentInstance.prototype.observeUsing = function (observer) {
       );
     }
   }
-  if (this._observers == null) {
-    this._observers = new Set();
-  }
+  this._observers ??= new Set();
   $unwrap(this._observers).add(observer);
   traverseFragmentInstancesAndTextInstances(
     fragmentFiber,
@@ -6289,16 +6281,14 @@ const LAST_PRECEDENCE = null;
 // Currentlyt his is only during insertSuspendedStylesheet.
 let precedencesByRoot = null;
 
-const onUnsuspend = function () {
-  const state = this;
-  state.count--;
-  checkIfFullyUnsuspended(state);
-};
-const onUnsuspendImg = function () {
-  const state = this;
-  state.imgCount--;
-  checkIfFullyUnsuspended(state);
-};
+function onUnsuspend() {
+  this.count--;
+  checkIfFullyUnsuspended(this);
+}
+function onUnsuspendImg() {
+  this.imgCount--;
+  checkIfFullyUnsuspended(this);
+}
 
 function insertSuspendedStylesheets(state, resources) {
   // We need to clear this out so we don't try to reinsert after the stylesheets have loaded

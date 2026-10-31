@@ -10,10 +10,7 @@ import {createCursor, pop, push} from './ReactFiberStack.js';
 import {ClassComponent, HostRoot} from './ReactWorkTags.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 
-let warnedAboutMissingGetChildContext;
-if (__DEV__) {
-  warnedAboutMissingGetChildContext = {};
-}
+const warnedAboutMissingGetChildContext = __DEV__ ? {} : undefined;
 
 export const emptyContextObject = {};
 

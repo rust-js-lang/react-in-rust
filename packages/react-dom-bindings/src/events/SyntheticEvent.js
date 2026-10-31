@@ -323,15 +323,14 @@ const modifierKeyToProp = {
 // Older browsers (Safari <= 10, iOS Safari <= 10.2) do not support
 // getModifierState. If getModifierState is not supported, we map it to a set of
 // modifier keys exposed by the event. In this case, Lock-keys are not supported.
-const modifierStateGetter = function (keyArg) {
-  const syntheticEvent = this;
-  const nativeEvent = $unwrap(syntheticEvent.nativeEvent);
+function modifierStateGetter(keyArg) {
+  const nativeEvent = $unwrap(this.nativeEvent);
   if (nativeEvent.getModifierState) {
     return nativeEvent.getModifierState(keyArg);
   }
   const keyProp = modifierKeyToProp[keyArg];
   return keyProp != null && !!nativeEvent[keyProp];
-};
+}
 
 /**
  * @interface MouseEvent

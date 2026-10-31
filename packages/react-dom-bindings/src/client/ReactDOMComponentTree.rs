@@ -51,9 +51,9 @@ thread_local! {
         js::class::<Map<Unknown, ()>>()
     };
     static INTERNAL_INSTANCE_MAP: &'static Map<Unknown, Rc<Fiber>> =
-        unsafe { js::cast(Some(js::new(POSSIBLY_WEAK_MAP.with(|c| *c), ()))) };
+        POSSIBLY_WEAK_MAP.with(|class| class.call_static(js::map::new, (None,)));
     static INTERNAL_PROPS_MAP: &'static Map<Unknown, &'static Unknown> =
-        unsafe { js::cast(Some(js::new(POSSIBLY_WEAK_MAP.with(|c| *c), ()))) };
+        POSSIBLY_WEAK_MAP.with(|class| class.call_static(js::map::new, (None,)));
 }
 
 pub fn detach_deleted_instance(node: &Element) {

@@ -21,17 +21,15 @@ import {
   SuspenseComponent,
 } from './ReactWorkTags.js';
 
-// Use this to detect multiple renderers using the same context
-
 const valueCursor = createCursor(null);
 
 const rendererCursorDEV = createCursor(null);
 const renderer2CursorDEV = createCursor(null);
 
-let rendererSigil;
-if (__DEV__) {
-  rendererSigil = {};
-}
+const rendererSigil = __DEV__
+  ? // Use this to detect multiple renderers using the same context
+    {}
+  : undefined;
 
 let currentlyRenderingFiber = null;
 let lastContextDependency = null;
