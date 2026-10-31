@@ -204,10 +204,10 @@ fn work_loop(has_time_remaining: bool, initial_time: f64) -> bool {
             }
             let continuation_callback = callback(did_user_callback_timeout);
             current_time = get_current_time();
-            if let Some(continuation_callback) = continuation_callback {
+            if js::is_function(&continuation_callback) {
                 // If a continuation is returned, immediately yield to the main thread
                 // regardless of how much time is left in the current time slice.
-                current_task.callback.replace(Some(continuation_callback));
+                current_task.callback.replace(continuation_callback);
                 if ENABLE_PROFILING {
                     mark_task_yield(&current_task, current_time);
                 }

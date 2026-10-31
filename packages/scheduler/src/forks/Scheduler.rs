@@ -206,8 +206,9 @@ fn work_loop(initial_time: f64) -> bool {
             // This currentTask hasn't expired, and we've reached the deadline.
             break;
         }
-        let callback = current_task.callback.take();
-        if let Some(Callback(mut callback)) = callback {
+        if js::is_function(&*current_task.callback.borrow())
+            && let Some(Callback(mut callback)) = current_task.callback.take()
+        {
             CURRENT_PRIORITY_LEVEL.set(current_task.priority_level);
             let did_user_callback_timeout = current_task.expiration_time <= current_time;
             if ENABLE_PROFILING {
@@ -215,10 +216,10 @@ fn work_loop(initial_time: f64) -> bool {
             }
             let continuation_callback = callback(did_user_callback_timeout);
             current_time = get_current_time();
-            if let Some(continuation_callback) = continuation_callback {
+            if js::is_function(&continuation_callback) {
                 // If a continuation is returned, immediately yield to the main thread
                 // regardless of how much time is left in the current time slice.
-                current_task.callback.replace(Some(continuation_callback));
+                current_task.callback.replace(continuation_callback);
                 if ENABLE_PROFILING {
                     mark_task_yield(&current_task, current_time);
                 }

@@ -192,7 +192,10 @@ function workLoop(initialTime) {
       // This currentTask hasn't expired, and we've reached the deadline.
       break;
     }
-    if (currentTask$1.callback != null) {
+    if (
+      typeof currentTask$1.callback === 'function' &&
+      currentTask$1.callback != null
+    ) {
       const callback = currentTask$1.callback;
       currentTask$1.callback = null;
       currentPriorityLevel = currentTask$1.priorityLevel;
@@ -203,7 +206,7 @@ function workLoop(initialTime) {
       }
       const continuationCallback = callback(didUserCallbackTimeout);
       currentTime = getCurrentTime();
-      if (continuationCallback != null) {
+      if (typeof continuationCallback === 'function') {
         // If a continuation is returned, immediately yield to the main thread
         // regardless of how much time is left in the current time slice.
         currentTask$1.callback = continuationCallback;

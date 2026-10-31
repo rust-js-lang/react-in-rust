@@ -209,7 +209,7 @@ function workLoop(hasTimeRemaining, initialTime) {
       }
       const continuationCallback = callback(didUserCallbackTimeout);
       currentTime = getCurrentTime();
-      if (continuationCallback != null) {
+      if (typeof continuationCallback === 'function') {
         // If a continuation is returned, immediately yield to the main thread
         // regardless of how much time is left in the current time slice.
         currentTask$1.callback = continuationCallback;
