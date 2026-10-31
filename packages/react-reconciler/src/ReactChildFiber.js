@@ -1047,7 +1047,10 @@ function createChildReconciler(shouldTrackSideEffects) {
               const newKnownKeys = new Set();
               newKnownKeys.add(key);
               knownKeys = newKnownKeys;
-            } else if (knownKeys.has(key)) {
+            } else if (!knownKeys.has(key)) {
+              const knownKeys$1 = knownKeys;
+              knownKeys$1.add(key);
+            } else {
               runWithFiberInDEV(workInProgress, () => {
                 console.error(
                   'Encountered two children with the same key, `%s`. ' +
@@ -1058,9 +1061,6 @@ function createChildReconciler(shouldTrackSideEffects) {
                   key,
                 );
               });
-            } else {
-              const knownKeys$1 = knownKeys;
-              knownKeys$1.add(key);
             }
           }
           break;

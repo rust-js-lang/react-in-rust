@@ -1040,7 +1040,7 @@ export function updateClassInstance(
     oldState === newState &&
     !hasContextChanged() &&
     !checkHasForceUpdateAfterProcessing() &&
-    (currentDependencies == null || !checkIfContextChanged(currentDependencies))
+    !(currentDependencies != null && checkIfContextChanged(currentDependencies))
   ) {
     // If an update was already in progress, we should schedule an Update
     // effect even though we're bailing out, so that cWU/cDU are called.

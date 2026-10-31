@@ -4086,7 +4086,7 @@ export function getFirstHydratableChild(parentInstance) {
 
 export function getFirstHydratableChildWithinContainer(parentContainer) {
   let parentElement;
-  if (9 === parentContainer.nodeType) {
+  if (parentContainer.nodeType === 9) {
     parentElement = $unwrap(parentContainer.body);
   } else if (parentContainer.nodeName === 'HTML') {
     parentElement = $unwrap($unwrap(parentContainer.ownerDocument).body);
@@ -4810,11 +4810,10 @@ function preload(href, as, options) {
   const ownerDocument = getGlobalDocument();
   if (ownerDocument != null) {
     if (!href) {
-      // We already have a script for this key. We don't need to preload it.
+      // We already have a stylesheet for this key. We don't need to preload it.
       return;
     }
     if (!as) {
-      // We already have a stylesheet for this key. We don't need to preload it.
       return;
     }
     let preloadSelector = `link[rel="preload"][as="${escapeSelectorAttributeValueInsideDoubleQuotes(as)}"]`;
@@ -4868,6 +4867,7 @@ function preload(href, as, options) {
         as === 'script' &&
         ownerDocument.querySelector(getScriptSelectorFromKey(key)) !== null
       ) {
+        // We already have a script for this key. We don't need to preload it.
         return;
       }
       const instance = ownerDocument.createElement('link');
