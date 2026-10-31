@@ -230,49 +230,46 @@ pub fn add_value_to_properties(
                 }
             }
             if object_name == "Promise" {
-                match js::classify(js::get(value, "status")) {
-                    Kind::String("fulfilled") => {
-                        // Print the inner value
-                        let idx = properties.len();
-                        add_value_to_properties(
-                            property_name,
-                            js::get(value, "value"),
-                            properties,
-                            indent,
-                            prefix,
-                        );
-                        if properties.len() > idx {
-                            // Wrap the value or type in Promise descriptor.
-                            let inserted_entry = &mut properties[idx];
-                            inserted_entry.1 = "Promise<".to_string()
-                                + if inserted_entry.1.is_empty() {
-                                    "Object"
-                                } else {
-                                    &inserted_entry.1
-                                }
-                                + ">";
-                            return;
-                        }
+                let status = js::classify(js::get(value, "status"));
+                if let Kind::String("fulfilled") = status {
+                    // Print the inner value
+                    let idx = properties.len();
+                    add_value_to_properties(
+                        property_name,
+                        js::get(value, "value"),
+                        properties,
+                        indent,
+                        prefix,
+                    );
+                    if properties.len() > idx {
+                        // Wrap the value or type in Promise descriptor.
+                        let inserted_entry = &mut properties[idx];
+                        inserted_entry.1 = "Promise<".to_string()
+                            + if inserted_entry.1.is_empty() {
+                                "Object"
+                            } else {
+                                &inserted_entry.1
+                            }
+                            + ">";
+                        return;
                     }
-                    Kind::String("rejected") => {
-                        // Print the inner error
-                        let idx = properties.len();
-                        add_value_to_properties(
-                            property_name,
-                            js::get(value, "reason"),
-                            properties,
-                            indent,
-                            prefix,
-                        );
-                        if properties.len() > idx {
-                            // Wrap the value or type in Promise descriptor.
-                            let inserted_entry = &mut properties[idx];
-                            inserted_entry.1 =
-                                "Rejected Promise<".to_string() + &inserted_entry.1 + ">";
-                            return;
-                        }
+                } else if let Kind::String("rejected") = status {
+                    // Print the inner error
+                    let idx = properties.len();
+                    add_value_to_properties(
+                        property_name,
+                        js::get(value, "reason"),
+                        properties,
+                        indent,
+                        prefix,
+                    );
+                    if properties.len() > idx {
+                        // Wrap the value or type in Promise descriptor.
+                        let inserted_entry = &mut properties[idx];
+                        inserted_entry.1 =
+                            "Rejected Promise<".to_string() + &inserted_entry.1 + ">";
+                        return;
                     }
-                    _ => {}
                 }
                 properties.push((
                     "\u{a0}\u{a0}".repeat(indent) + property_name,

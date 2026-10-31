@@ -3391,7 +3391,7 @@ function completeRoot(
 ) {
   root.cancelPendingCommit = null;
 
-  while (true) {
+  do {
     // `flushPassiveEffects` will call `flushSyncUpdateQueue` at the end, which
     // means `flushPassiveEffects` will sometimes result in additional
     // passive effects. So we need to keep flushing in a loop until there are
@@ -3399,10 +3399,7 @@ function completeRoot(
     // TODO: Might be better if `flushPassiveEffects` did not automatically
     // flush synchronous work at the end, to avoid factoring hazards like this.
     flushPendingEffects();
-    if (pendingEffectsStatus === NO_PENDING_EFFECTS) {
-      break;
-    }
-  }
+  } while (pendingEffectsStatus !== NO_PENDING_EFFECTS);
   flushRenderPhaseStrictModeWarningsInDEV();
 
   if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
@@ -5388,11 +5385,11 @@ function scheduleCallback(priorityLevel, callback) {
       actQueue.push(callback);
       return fakeActCallbackNode;
     } else {
-      return Scheduler_scheduleCallback(priorityLevel, callback, undefined);
+      return Scheduler_scheduleCallback(priorityLevel, callback);
     }
   } else {
     // In production, always call Scheduler. This function will be stripped out.
-    return Scheduler_scheduleCallback(priorityLevel, callback, undefined);
+    return Scheduler_scheduleCallback(priorityLevel, callback);
   }
 }
 

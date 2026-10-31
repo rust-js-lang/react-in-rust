@@ -126,9 +126,7 @@ export function getModernOffsetsFromPoints(
           end = length;
         }
       }
-      const nextSibling = node.nextSibling;
-      if (nextSibling !== null) {
-        next = nextSibling;
+      if ((next = node.nextSibling) !== null) {
         break;
       }
       node = $unwrap(parentNode);

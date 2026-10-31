@@ -610,7 +610,7 @@ function scheduleCallback(priorityLevel, callback) {
       return fakeActCallbackNode;
     }
   }
-  return Scheduler_scheduleCallback(priorityLevel, callback, undefined);
+  return Scheduler_scheduleCallback(priorityLevel, callback);
 }
 
 function cancelCallback(callbackNode) {
@@ -654,26 +654,18 @@ function scheduleImmediateRootScheduleTask() {
         // wrong semantically but it prevents an infinite loop. The bug is
         // Safari's, not ours, so we just do our best to not crash even though
         // the behavior isn't completely correct.
-        Scheduler_scheduleCallback(
-          ImmediateSchedulerPriority,
-          () => {
-            processRootScheduleInImmediateTask();
-          },
-          undefined,
-        );
+        Scheduler_scheduleCallback(ImmediateSchedulerPriority, () => {
+          processRootScheduleInImmediateTask();
+        });
         return;
       }
       processRootScheduleInMicrotask();
     });
   } else {
     // If microtasks are not supported, use Scheduler.
-    Scheduler_scheduleCallback(
-      ImmediateSchedulerPriority,
-      () => {
-        processRootScheduleInImmediateTask();
-      },
-      undefined,
-    );
+    Scheduler_scheduleCallback(ImmediateSchedulerPriority, () => {
+      processRootScheduleInImmediateTask();
+    });
   }
 }
 

@@ -826,7 +826,7 @@ function getParent(inst) {
   if (inst == null) {
     return null;
   }
-  while (true) {
+  do {
     // $FlowFixMe[incompatible-use] found when upgrading Flow
     inst = inst != null ? inst.return : null;
     // TODO: If this is a HostRoot we might want to bail out.
@@ -834,14 +834,11 @@ function getParent(inst) {
     // events to their parent. We could also go through parentNode on the
     // host node but that wouldn't work for React Native and doesn't let us
     // do the portal feature.
-    if (
-      inst == null ||
-      inst.tag === HostComponent ||
-      inst.tag === HostSingleton
-    ) {
-      break;
-    }
-  }
+  } while (
+    inst != null &&
+    inst.tag !== HostComponent &&
+    inst.tag !== HostSingleton
+  );
   return inst ?? null;
 }
 

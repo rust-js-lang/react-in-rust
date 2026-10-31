@@ -264,7 +264,7 @@ export function describeNativeComponentFrame(fn, construct) {
           // the control. I.e. before we entered the sample frame. So we ignore this result.
           // This can happen if you passed a class to function component, or non-function.
           if (s !== 1 || c !== 1) {
-            while (true) {
+            do {
               s--;
               c--;
               // We may still have similar intermediate frames from the construct call.
@@ -286,10 +286,7 @@ export function describeNativeComponentFrame(fn, construct) {
                 // Return the line we found.
                 return frame;
               }
-              if (s < 1 || c < 0) {
-                break;
-              }
-            }
+            } while (s >= 1 && c >= 0);
           }
           break;
         }

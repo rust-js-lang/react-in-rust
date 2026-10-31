@@ -116,7 +116,7 @@ function pingEngtangledActionScope() {
       needsIsomorphicIndicator = false;
       for (let i = 0; i < listeners.length; i++) {
         const listener = listeners[i];
-        listener(undefined);
+        listener();
       }
     }
   }
@@ -159,7 +159,7 @@ export function chainThenableValue(thenable, result) {
         // consumer of these promises, and it passes the same listener to both.
         // We also know that it will read the error directly off the
         // `.reason` field.
-        listener(undefined);
+        listener();
       }
     },
   );
