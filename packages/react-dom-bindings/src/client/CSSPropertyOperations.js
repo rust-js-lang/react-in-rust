@@ -219,10 +219,10 @@ function validateShorthandPropertyCollisionInDev(prevStyles, nextStyles) {
       }
     }
     for (const key in nextStyles) {
-      if (nextStyles.hasOwnProperty(key)) {
-        if (prevStyles && prevStyles[key] === nextStyles[key]) {
-          continue;
-        }
+      if (
+        nextStyles.hasOwnProperty(key) &&
+        (!prevStyles || prevStyles[key] !== nextStyles[key])
+      ) {
         const longhands = shorthandToLonghand[key];
         for (const longhand of longhands ?? [key]) {
           expandedUpdates[longhand] = key;

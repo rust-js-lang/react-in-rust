@@ -17,21 +17,22 @@ function isInteractive(tag) {
 }
 
 function shouldPreventMouseEvent(name, type, props) {
-  return (
-    (name === 'onClick' ||
-      name === 'onClickCapture' ||
-      name === 'onDoubleClick' ||
-      name === 'onDoubleClickCapture' ||
-      name === 'onMouseDown' ||
-      name === 'onMouseDownCapture' ||
-      name === 'onMouseMove' ||
-      name === 'onMouseMoveCapture' ||
-      name === 'onMouseUp' ||
-      name === 'onMouseUpCapture' ||
-      name === 'onMouseEnter') &&
-    !!props.disabled &&
-    isInteractive(type)
-  );
+  switch (name) {
+    case 'onClick':
+    case 'onClickCapture':
+    case 'onDoubleClick':
+    case 'onDoubleClickCapture':
+    case 'onMouseDown':
+    case 'onMouseDownCapture':
+    case 'onMouseMove':
+    case 'onMouseMoveCapture':
+    case 'onMouseUp':
+    case 'onMouseUpCapture':
+    case 'onMouseEnter':
+      return !!props.disabled && isInteractive(type);
+    default:
+      return false;
+  }
 }
 
 /**

@@ -572,15 +572,17 @@ export function appendInitialChild(parentInstance, child) {
 
 export function finalizeInitialChildren(domElement, type, props, hostContext) {
   setInitialProperties(domElement, type, props);
-  if (
-    type === 'button' ||
-    type === 'input' ||
-    type === 'select' ||
-    type === 'textarea'
-  ) {
-    return !!props.autoFocus;
+  switch (type) {
+    case 'button':
+    case 'input':
+    case 'select':
+    case 'textarea':
+      return !!props.autoFocus;
+    case 'img':
+      return true;
+    default:
+      return false;
   }
-  return type === 'img';
 }
 
 export function finalizeHydratedChildren(domElement, type, props, hostContext) {

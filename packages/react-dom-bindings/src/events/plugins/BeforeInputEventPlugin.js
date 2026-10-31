@@ -120,21 +120,24 @@ function isFallbackCompositionStart(domEventName, nativeEvent) {
 
 /** Does our fallback mode think that this event is the end of composition? */
 function isFallbackCompositionEnd(domEventName, nativeEvent) {
-  if (domEventName === 'keyup') {
-    // Command keys insert or clear IME input.
-    const item = nativeEvent.keyCode;
-    return END_KEYCODES.indexOf(item) >= 0;
+  switch (domEventName) {
+    case 'keyup': {
+      // Command keys insert or clear IME input.
+      const item = nativeEvent.keyCode;
+      return END_KEYCODES.indexOf(item) >= 0;
+    }
+    case 'keydown':
+      // Expect IME keyCode on each keydown. If we get any other
+      // code we must have exited earlier.
+      return nativeEvent.keyCode !== START_KEYCODE;
+    case 'keypress':
+    case 'mousedown':
+    case 'focusout':
+      // Events are not possible without cancelling IME.
+      return true;
+    default:
+      return false;
   }
-  if (domEventName === 'keydown') {
-    // Expect IME keyCode on each keydown. If we get any other
-    // code we must have exited earlier.
-    return nativeEvent.keyCode !== START_KEYCODE;
-  }
-  return (
-    domEventName === 'keypress' ||
-    domEventName === 'mousedown' ||
-    domEventName === 'focusout'
-  );
 }
 
 /**
