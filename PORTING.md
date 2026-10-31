@@ -537,8 +537,10 @@ The port is split between sessions by package:
   rd284 prints such a listener as the function it calls only when that
   function is a `fn`, and handleNavigateComplete is a local function JS
   makes (`function::with_this`).
-  createReactNoop (a draft) waits on calling another crate's generic namespace
-  method through a value (rd311). rd308 is decided: the reconciler holds its
+  createReactNoop (a draft) passes every gate but `client`, where seven
+  ReactFlight tests reach bindToConsole, a `todo!()` until rust-js binds a
+  function to a slice of arguments (rd294, P1); rd311, calling another
+  crate's namespace method through a value, landed. rd308 is decided: the reconciler holds its
   error handlers as `Rc`s. ReactNoop.js and ReactNoopPersistent.js stay JS
   until rd293.
 - **The second session** has react-server, react-client, react-server-dom-*
