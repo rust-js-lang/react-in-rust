@@ -477,10 +477,10 @@ The port is split between sessions by package:
 - **The first session** has scheduler, shared, react, react-reconciler, and
   react-dom-bindings' client and events modules. react-dom-bindings' client
   side is fully ported, ReactFiberConfigDOM included. react-dom's
-  src/shared and ReactDOMSharedInternals are Rust; ReactDOMRoot and
-  ReactDOMClient wait on rust-js's rd304 (a trait of classes' default can't
-  borrow the field its impl lends), and ReactDOMDefaultTransitionIndicator
-  on rd284 (one listener for `navigatesuccess` and `navigateerror`).
+  src/shared, ReactDOMSharedInternals, ReactDOMRoot and ReactDOMClient are
+  Rust; ReactDOMDefaultTransitionIndicator waits on rust-js's rd284 (one
+  listener for `navigatesuccess` and `navigateerror`), and ReactDOMRoot
+  reaches it through a JS-path binding meanwhile.
   createReactNoop (a draft) waits on the reconciler's re-exports becoming
   forwarding methods printed as `export {..} from` (rd292b), on a form for
   `NoopRenderer.defaultOnUncaughtError` as a `&'static dyn Fn` (rd308), and on
