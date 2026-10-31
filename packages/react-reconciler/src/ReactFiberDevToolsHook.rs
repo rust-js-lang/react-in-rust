@@ -9,6 +9,7 @@ use std::marker::PhantomData;
 use js::{JsError, JsObject, Unknown};
 use shared::environment::__DEV__;
 use shared::react_feature_flags::{ENABLE_PROFILER_TIMER, ENABLE_SCHEDULING_PROFILER};
+use shared::react_types::ReactNodeList;
 use webapi::console;
 
 use crate::react_event_priorities::{
@@ -327,11 +328,7 @@ pub fn inject_internals(internals: &'static Unknown) -> bool {
     js::truthy(js::get(hook, "checkDCE"))
 }
 
-pub fn on_schedule_root(
-    root: &FiberRoot,
-    // shared/ReactTypes' `ReactNodeList`.
-    children: Option<&'static Unknown>,
-) {
+pub fn on_schedule_root(root: &FiberRoot, children: Option<&'static ReactNodeList>) {
     if __DEV__
         && let Some(injected_hook) = INJECTED_HOOK.get()
         && js::type_of(js::get(injected_hook, "onScheduleFiberRoot")) == "function"

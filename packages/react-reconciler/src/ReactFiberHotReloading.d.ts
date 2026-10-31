@@ -31,7 +31,6 @@ export type SetRefreshHandler = (
 
 export type ScheduleRefresh = (root: FiberRoot, update: RefreshUpdate) => void;
 
-// shared/ReactTypes' `ReactNodeList`.
 export type ScheduleRoot = (
   root: FiberRoot,
   value: unknown | null | undefined,
@@ -53,7 +52,6 @@ export function markFailedErrorBoundaryForHotReloading(fiber: Fiber): void;
 
 export function scheduleRefresh(root: FiberRoot, update: RefreshUpdate): void;
 
-// shared/ReactTypes' `ReactNodeList`.
 export function scheduleRoot(
   root: FiberRoot,
   element?: unknown | null | undefined,

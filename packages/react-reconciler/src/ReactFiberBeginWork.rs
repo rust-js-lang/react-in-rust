@@ -7,7 +7,6 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::{Dict, Error, Kind, SymbolFor, Unknown};
-use react_isomorphic::react_context::ReactContext;
 use react_isomorphic::react_lazy::LazyComponent;
 use shared::environment::__DEV__;
 use shared::get_component_name_from_type::get_component_name_from_type;
@@ -21,6 +20,7 @@ use shared::react_recoverable::REACT_RECOVERABLE_DIGEST;
 use shared::react_symbols::{
     REACT_CONTEXT_TYPE, REACT_FORWARD_REF_TYPE, REACT_LAZY_TYPE, REACT_MEMO_TYPE,
 };
+use shared::react_types::{ReactContext, ReactNodeList, SuspenseListTailMode, ViewTransitionProps};
 use shared::shallow_equal::shallow_equal;
 use webapi::console;
 
@@ -103,7 +103,7 @@ use crate::react_fiber_offscreen_component::{
 use crate::react_fiber_reconciler::ReactFiberReconciler;
 use crate::react_fiber_root::RootState;
 use crate::react_fiber_suspense_component::{
-    SuspenseListRenderState, SuspenseListTailMode, SuspenseState, find_first_suspended,
+    SuspenseListRenderState, SuspenseState, find_first_suspended,
 };
 use crate::react_fiber_suspense_context::{
     FORCE_SUSPENSE_FALLBACK, SUSPENSE_STACK_CURSOR, SuspenseContext, has_suspense_list_context,
@@ -126,7 +126,6 @@ use crate::react_fiber_transition::{
 use crate::react_fiber_tree_context::{
     get_forks_at_level, is_forked_child, push_materialized_tree_id, push_tree_id,
 };
-use crate::react_fiber_view_transition_component::ViewTransitionProps;
 use crate::react_fiber_work_loop::{
     get_work_in_progress_root, mark_render_derived_cause, mark_skipped_update_lanes,
     peek_deferred_lane, render_did_suspend_delay_if_possible, schedule_update_on_fiber,
@@ -237,8 +236,7 @@ fn create_hoistable_instance(
 struct ActivityProps {
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     mode: Option<OffscreenMode>,
-    // shared/ReactTypes' `ReactNodeList`.
-    children: Option<&'static Unknown>,
+    children: Option<&'static ReactNodeList>,
 }
 
 unsafe impl js::Defined for ActivityProps {}

@@ -11,9 +11,9 @@ use js::{JsError, Unknown, aggregate_error};
 use shared::enqueue_task::enqueue_task as queue_macrotask;
 use shared::environment::__DEV__;
 use shared::react_feature_flags::DISABLE_LEGACY_MODE;
+use shared::react_types::Thenable;
 use webapi::console;
 
-use crate::react_lazy::Thenable;
 use crate::react_shared_internals_client::{ActQueue, REACT_SHARED_INTERNALS, RendererTask};
 
 // `act` calls can be nested, so we track the depth. This represents the

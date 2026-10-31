@@ -9,11 +9,9 @@ use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 
 use js::{JsError, JsObject, Map, Set, Unknown, WeakMap};
-use react_isomorphic::react_context::ReactContext;
-use react_isomorphic::react_create_ref::RefObject;
-use react_isomorphic::react_jsx_element::ReactKey;
 use react_isomorphic::react_start_transition::Transition;
 use shared::react_shared_internals::HooksDispatcher;
+use shared::react_types::{ReactContext, ReactKey, RefObject, Wakeable};
 use webapi::ConsoleTask;
 
 pub use shared::react_shared_internals::AsyncDispatcher;
@@ -28,7 +26,6 @@ use crate::react_fiber_hooks::{
     Subscribe,
 };
 use crate::react_fiber_lane::{Lane, LaneMap, Lanes};
-use crate::react_fiber_suspense_component::Wakeable;
 use crate::react_fiber_tracing_marker_component::{SuspenseInfo, TracingMarkerInstance};
 use crate::react_root_tags::RootTag;
 use crate::react_type_of_mode::TypeOfMode;

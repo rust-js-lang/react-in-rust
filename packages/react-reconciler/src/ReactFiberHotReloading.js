@@ -159,7 +159,6 @@ export function scheduleRefresh(root, update) {
   }
 }
 
-// shared/ReactTypes' `ReactNodeList`.
 export function scheduleRoot(root, element) {
   if (__DEV__) {
     if (root.context !== emptyContextObject) {

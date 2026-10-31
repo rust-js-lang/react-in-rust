@@ -33,6 +33,7 @@ use shared::react_feature_flags::{
     ENABLE_HYDRATION_CHANGE_EVENT, ENABLE_MOVE_BEFORE, ENABLE_PROFILER_TIMER, ENABLE_SCOPE_API,
     ENABLE_SRC_OBJECT,
 };
+use shared::react_types::ReactContext;
 use webapi::global;
 use webapi::global::btoa;
 use webapi::window_global::get_computed_style;
@@ -54,7 +55,6 @@ use crate::react_dom_component_tree::is_owned_instance;
 use crate::react_dom_form_actions::{FormStatus, NOT_PENDING};
 use crate::react_dom_resource_validation::validate_link_props_for_style_resource;
 use js::Promise;
-use react_isomorphic::react_context::ReactContext;
 use react_reconciler::react_test_selectors::{Intersection, ObserveVisibleRectsCallback};
 use shared::noop::noop;
 use shared::react_feature_flags::{ENABLE_SUSPENSEY_IMAGES, ENABLE_VIEW_TRANSITION};

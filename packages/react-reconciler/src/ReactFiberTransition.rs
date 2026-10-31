@@ -6,7 +6,6 @@
 use std::rc::Rc;
 
 use js::Unknown;
-use react_isomorphic::react_lazy::Thenable;
 use react_isomorphic::react_start_transition::{
     OnStartTransitionFinish, Transition, g, s, set_g, set_s, t,
 };
@@ -14,6 +13,7 @@ use shared::react_feature_flags::{
     ENABLE_GESTURE_TRANSITION, ENABLE_TRANSITION_TRACING, ENABLE_VIEW_TRANSITION,
 };
 use shared::react_shared_internals::REACT_SHARED_INTERNALS;
+use shared::react_types::Thenable;
 
 use crate::react_fiber_async_action::{entangle_async_action, peek_entangled_action_lane};
 use crate::react_fiber_cache_component::{

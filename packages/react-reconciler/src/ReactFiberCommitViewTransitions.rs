@@ -12,6 +12,7 @@ use shared::react_feature_flags::{
     ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_PROFILER_TIMER,
     ENABLE_VIEW_TRANSITION_FOR_PERSISTENCE_MODE, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
 };
+use shared::react_types::ViewTransitionProps;
 
 use crate::react_fiber::ViewTransitionState;
 use crate::react_fiber_flags::{
@@ -19,7 +20,7 @@ use crate::react_fiber_flags::{
     VIEW_TRANSITION_STATIC_PARENT,
 };
 use crate::react_fiber_view_transition_component::{
-    ViewTransitionProps, get_view_transition_class_name, get_view_transition_name,
+    get_view_transition_class_name, get_view_transition_name,
 };
 use crate::react_fiber_work_loop::{
     schedule_gesture_transition_event, schedule_view_transition_event,

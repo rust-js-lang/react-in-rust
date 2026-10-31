@@ -12,6 +12,7 @@ use react_isomorphic::react_start_transition::Transition;
 use crate::react_fiber_lane::Lanes;
 use crate::react_fiber_suspense_component::RetryQueue;
 use crate::react_fiber_tracing_marker_component::TracingMarkerInstance;
+use shared::react_types::ReactNodeList;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum OffscreenMode {
@@ -26,8 +27,7 @@ pub enum OffscreenMode {
 pub struct LegacyHiddenProps {
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub mode: Option<OffscreenMode>,
-    // shared/ReactTypes' `ReactNodeList`.
-    pub children: Option<&'static Unknown>,
+    pub children: Option<&'static ReactNodeList>,
 }
 
 unsafe impl js::Defined for LegacyHiddenProps {}
@@ -41,8 +41,7 @@ pub struct OffscreenProps {
     // called "Offscreen." Possible alt: <Visibility />?
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub mode: Option<OffscreenMode>,
-    // shared/ReactTypes' `ReactNodeList`.
-    pub children: Option<&'static Unknown>,
+    pub children: Option<&'static ReactNodeList>,
 }
 
 unsafe impl js::Defined for OffscreenProps {}

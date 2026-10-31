@@ -6,16 +6,13 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {Transition} from '../../react/src/ReactStartTransition.js';
+import type {GestureOptionsRequired} from '../../shared/ReactTypes.js';
 import type {CapturedValue} from './ReactCapturedValue.js';
 import type {Lane, Lanes} from './ReactFiberLane.js';
 import type {
   PendingBoundaries,
   TransitionAborts,
 } from './ReactFiberTracingMarkerComponent.js';
-import type {
-  ViewTransitionCallback,
-  ViewTransitionGestureCallback,
-} from './ReactFiberViewTransitionComponent.js';
 import type {Fiber, FiberRoot} from './ReactInternalTypes.js';
 import type {CaptureErrors} from './ReactProfilerTimer.js';
 
@@ -87,12 +84,21 @@ export function requestDeferredLane(): Lane;
 
 export function scheduleViewTransitionEvent(
   fiber: Fiber,
-  callback: ViewTransitionCallback | null,
+  callback:
+    | ((value: unknown, value2: string[]) => (() => void) | null | undefined)
+    | null,
 ): void;
 
 export function scheduleGestureTransitionEvent(
   fiber: Fiber,
-  callback: ViewTransitionGestureCallback | null,
+  callback:
+    | ((
+        value: unknown,
+        required: GestureOptionsRequired,
+        value2: unknown,
+        value3: string[],
+      ) => (() => void) | null | undefined)
+    | null,
 ): void;
 
 export function peekDeferredLane(): Lane;

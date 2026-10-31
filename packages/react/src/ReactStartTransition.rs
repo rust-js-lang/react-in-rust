@@ -17,11 +17,10 @@ use shared::react_feature_flags::{
     ENABLE_GESTURE_TRANSITION, ENABLE_TRANSITION_TRACING, ENABLE_VIEW_TRANSITION,
 };
 use shared::react_shared_internals::{REACT_SHARED_INTERNALS, SharedStateClient};
+use shared::react_types::{GestureProvider, StartTransitionOptions, Thenable};
 use shared::report_global_error::REPORT_GLOBAL_ERROR;
 use webapi::console;
 
-use crate::react_hooks::StartTransitionOptions;
-use crate::react_lazy::Thenable;
 use crate::react_transition_type::TransitionTypes;
 
 /// The reconciler's `Fiber`, `ReactInternalTypes`', which a Transition only
@@ -41,10 +40,6 @@ impl Hash for Fiber {
         std::ptr::hash(self, state);
     }
 }
-
-/// `shared/ReactTypes`' `GestureProvider`: intrinsic, it varies by
-/// environment whether a particular renderer supports it.
-pub type GestureProvider = Unknown;
 
 /// `shared/ReactTypes`' `GestureOptions & StartTransitionOptions`.
 pub struct GestureTransitionOptions {

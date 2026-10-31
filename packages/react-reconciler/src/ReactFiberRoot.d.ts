@@ -17,7 +17,6 @@ import type {
 import type {RootTag} from './ReactRootTags.js';
 
 export interface RootState {
-  // shared/ReactTypes' `ReactNodeList`.
   element?: unknown;
   isDehydrated: boolean;
   cache: Cache;

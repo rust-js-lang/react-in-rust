@@ -5,8 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ReactContext} from './ReactContext.js';
-import type {RefObject} from './ReactCreateRef.js';
+import type {
+  ReactContext,
+  RefObject,
+  StartTransitionOptions,
+} from '../../shared/ReactTypes.js';
 
 /** The next state, or what makes it of the one before. */
 export type BasicStateAction<S> = ((s: S) => S) | S;
@@ -18,11 +21,6 @@ export type Dispatch<A> = (a: A) => void;
 
 /** What an effect gives: the function that cleans it up, or nothing. */
 export type Create = () => (() => void) | null | undefined;
-
-/** `shared/ReactTypes`' `StartTransitionOptions`. */
-export interface StartTransitionOptions {
-  name?: string | undefined;
-}
 
 /**
  * What `useTransition` gives to start a Transition: of the callback to

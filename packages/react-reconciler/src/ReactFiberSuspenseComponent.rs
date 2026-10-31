@@ -4,10 +4,9 @@
 // LICENSE file in the root directory of this source tree.
 
 use std::cell::{Cell, RefCell};
-use std::marker::PhantomData;
 use std::rc::Rc;
 
-use js::{JsObject, Set, Unknown};
+use js::{Set, Unknown};
 
 use crate::react_fiber_flags::{DID_CAPTURE, NO_FLAGS};
 use crate::react_fiber_hydration_context::HydrationErrors;
@@ -15,6 +14,7 @@ use crate::react_fiber_lane::Lane;
 use crate::react_fiber_tree_context::TreeContext;
 use crate::react_internal_types::Fiber;
 use crate::react_work_tags::{SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT};
+use shared::react_types::SuspenseListTailMode;
 
 // ReactFiberConfig's, of its `SuspenseInstance`.
 #[cfg_attr(
@@ -60,17 +60,6 @@ pub struct SuspenseState {
 
 unsafe impl js::Defined for SuspenseState {}
 
-/// shared/ReactTypes' `SuspenseListTailMode`.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum SuspenseListTailMode {
-    #[cfg_attr(rust_js, rust_js::name = "visible")]
-    Visible,
-    #[cfg_attr(rust_js, rust_js::name = "collapsed")]
-    Collapsed,
-    #[cfg_attr(rust_js, rust_js::name = "hidden")]
-    Hidden,
-}
-
 pub struct SuspenseListRenderState {
     pub is_backwards: Cell<bool>,
     // The currently rendering tail row.
@@ -91,22 +80,6 @@ pub struct SuspenseListRenderState {
 }
 
 unsafe impl js::Defined for SuspenseListRenderState {}
-
-/// shared/ReactTypes' `Wakeable`: what resolves, calling back what waits on
-/// it with nothing.
-pub struct Wakeable(PhantomData<JsObject>);
-
-unsafe impl js::Defined for Wakeable {}
-// Safety: a wakeable is an object, a ping cache's key.
-unsafe impl js::WeakKey for Wakeable {}
-
-impl Wakeable {
-    #[cfg_attr(rust_js, rust_js::link_name = "then")]
-    pub fn then(&self, on_fulfill: &dyn Fn(), on_reject: &dyn Fn()) {
-        let _ = (on_fulfill, on_reject);
-        unreachable!()
-    }
-}
 
 // shared/ReactTypes' `Wakeable`s.
 pub type RetryQueue = Set<Unknown>;

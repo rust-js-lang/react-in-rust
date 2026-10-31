@@ -7,6 +7,7 @@ use std::rc::Rc;
 
 use js::{Dict, Unknown};
 use shared::react_feature_flags::ENABLE_SCOPE_API;
+use shared::react_types::ReactScopeQuery;
 
 use crate::react_fiber_tree_reflection::is_fiber_suspense_and_timed_out;
 use crate::react_internal_types::Fiber;
@@ -39,14 +40,6 @@ fn get_instance_from_node(node: &Unknown) -> Option<Rc<Fiber>> {
 fn get_instance_from_scope(scope_instance: &Unknown) -> Option<Rc<Fiber>> {
     unreachable!()
 }
-
-/// shared/ReactTypes' `ReactScopeQuery`: whether a host instance, of its
-/// type and props, is one the query wants.
-pub type ReactScopeQuery = dyn Fn(
-    Option<&'static Unknown>,
-    Option<&'static Unknown>,
-    &'static Unknown,
-) -> Option<&'static Unknown>;
 
 #[cfg_attr(rust_js, rust_js::nullable)]
 fn get_suspense_fallback_child(fiber: &Fiber) -> Option<Rc<Fiber>> {

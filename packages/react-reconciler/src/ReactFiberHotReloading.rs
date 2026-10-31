@@ -9,6 +9,7 @@ use std::rc::Rc;
 use js::{JsObject, Set, SymbolFor, Unknown, WeakSet};
 use shared::environment::__DEV__;
 use shared::react_symbols::{REACT_FORWARD_REF_TYPE, REACT_LAZY_TYPE, REACT_MEMO_TYPE};
+use shared::react_types::ReactNodeList;
 
 use crate::react_fiber_concurrent_updates::enqueue_concurrent_render_for_lane;
 use crate::react_fiber_lane::SYNC_LANE;
@@ -41,8 +42,7 @@ pub type RefreshHandler = dyn Fn(Option<&'static Unknown>) -> Option<&'static Fa
 // Used by React Refresh runtime through DevTools Global Hook.
 pub type SetRefreshHandler = fn(Option<&'static RefreshHandler>);
 pub type ScheduleRefresh = fn(&FiberRoot, &RefreshUpdate);
-// shared/ReactTypes' `ReactNodeList`.
-pub type ScheduleRoot = fn(&FiberRoot, Option<&'static Unknown>);
+pub type ScheduleRoot = fn(&FiberRoot, Option<&'static ReactNodeList>);
 
 // A fiber is an object, held weakly where hot reloading marks an error
 // boundary failed.
@@ -194,8 +194,7 @@ pub fn schedule_refresh(root: &FiberRoot, update: &RefreshUpdate) {
     }
 }
 
-// shared/ReactTypes' `ReactNodeList`.
-pub fn schedule_root(root: &FiberRoot, element: Option<&'static Unknown>) {
+pub fn schedule_root(root: &FiberRoot, element: Option<&'static ReactNodeList>) {
     if __DEV__ {
         if !js::strict_equals(root.context.get(), EMPTY_CONTEXT_OBJECT) {
             // Super edge case: root has a legacy _renderSubtree context

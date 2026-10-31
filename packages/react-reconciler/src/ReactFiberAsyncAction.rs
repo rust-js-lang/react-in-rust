@@ -9,12 +9,12 @@ use std::ptr;
 use std::rc::Rc;
 
 use js::{JsError, Unknown};
-use react_isomorphic::react_lazy::Thenable;
 use react_isomorphic::react_start_transition::Transition;
 use shared::noop::noop;
 use shared::react_feature_flags::{
     ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_DEFAULT_TRANSITION_INDICATOR, ENABLE_PROFILER_TIMER,
 };
+use shared::react_types::Thenable;
 use shared::report_global_error::REPORT_GLOBAL_ERROR;
 
 use crate::react_fiber_lane::{Lane, NO_LANE};

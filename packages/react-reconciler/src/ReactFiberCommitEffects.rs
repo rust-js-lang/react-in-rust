@@ -12,6 +12,7 @@ use shared::react_feature_flags::{
     ENABLE_PROFILER_COMMIT_HOOKS, ENABLE_PROFILER_NESTED_UPDATE_PHASE, ENABLE_PROFILER_TIMER,
     ENABLE_SCHEDULING_PROFILER, ENABLE_VIEW_TRANSITION,
 };
+use shared::react_types::{OnCommit, OnRender, ViewTransitionProps};
 use webapi::console;
 
 use crate::get_component_name_from_fiber::get_component_name_from_fiber;
@@ -34,7 +35,7 @@ use crate::react_fiber_dev_tools_hook::{
     mark_component_passive_effect_unmount_started, mark_component_passive_effect_unmount_stopped,
 };
 use crate::react_fiber_flags::NO_FLAGS;
-use crate::react_fiber_view_transition_component::{ViewTransitionProps, get_view_transition_name};
+use crate::react_fiber_view_transition_component::get_view_transition_name;
 use crate::react_fiber_work_loop::{capture_commit_phase_error, set_is_running_insertion_effect};
 use crate::react_hook_effect_tags::HookFlags;
 #[cfg_attr(rust_js, rust_js::name = "HookInsertion")]
@@ -1223,11 +1224,6 @@ fn safely_call_destroy(
         capture_commit_phase_error(current, nearest_mounted_ancestor, error.as_unknown());
     }
 }
-
-/// shared/ReactTypes' `ProfilerProps`' `onRender`.
-type OnRender = dyn Fn(Option<&'static Unknown>, &str, Option<f64>, Option<f64>, Option<f64>, f64);
-/// shared/ReactTypes' `ProfilerProps`' `onCommit` and `onPostCommit`.
-type OnCommit = dyn Fn(Option<&'static Unknown>, &str, f64, f64);
 
 #[cfg_attr(rust_js, rust_js::nullable(current))]
 fn commit_profiler(

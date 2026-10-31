@@ -7,10 +7,10 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::Unknown;
-use react_isomorphic::react_context::ReactContext;
 use shared::environment::__DEV__;
 #[cfg_attr(rust_js, rust_js::name = "is")]
 use shared::object_is::OBJECT_IS;
+use shared::react_types::ReactContext;
 use webapi::console;
 
 use crate::react_fiber_flags::{DID_PROPAGATE_CONTEXT, NEEDS_PROPAGATION, NO_FLAGS};

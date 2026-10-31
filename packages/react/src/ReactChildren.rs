@@ -14,10 +14,11 @@ use shared::react_feature_flags::ENABLE_OPTIMISTIC_KEY;
 use shared::react_symbols::{
     REACT_ELEMENT_TYPE, REACT_LAZY_TYPE, REACT_OPTIMISTIC_KEY, REACT_PORTAL_TYPE, get_iterator_fn,
 };
+use shared::react_types::{ReactKey, Thenable};
 use webapi::console;
 
-use crate::react_jsx_element::{ReactKey, clone_and_replace_key, is_valid_element};
-use crate::react_lazy::{LazyComponent, Thenable};
+use crate::react_jsx_element::{clone_and_replace_key, is_valid_element};
+use crate::react_lazy::LazyComponent;
 
 const SEPARATOR: &str = ".";
 const SUBSEPARATOR: &str = ":";

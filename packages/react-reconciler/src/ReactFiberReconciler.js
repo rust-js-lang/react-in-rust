@@ -353,7 +353,6 @@ export function updateContainerSync(
 function updateContainerImpl(
   rootFiber,
   lane,
-  // shared/ReactTypes' `ReactNodeList`.
   element,
   container,
   // A class component, if any.

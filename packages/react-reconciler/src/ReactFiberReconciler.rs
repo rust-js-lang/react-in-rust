@@ -12,6 +12,7 @@ use shared::environment::__DEV__;
 use shared::react_feature_flags::{DISABLE_LEGACY_MODE, ENABLE_SCHEDULING_PROFILER};
 use shared::react_instance_map::get as get_instance;
 use shared::react_shared_internals::{REACT_SHARED_INTERNALS, SharedStateClient};
+use shared::react_types::{ReactNodeList, ReactPortal};
 #[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
 use shared::react_version::REACT_VERSION;
 use webapi::console;
@@ -57,7 +58,6 @@ use crate::react_internal_types::{
     CaughtErrorInfo, ErrorInfo, Fiber, FiberRoot, OnCaughtError, OnDefaultTransitionIndicator,
     OnError, SuspenseHydrationCallbacks, TransitionTracingCallbacks,
 };
-use crate::react_portal::ReactPortal;
 use crate::react_profiler_timer::start_update_timer_by_lane;
 use crate::react_root_tags::{LEGACY_ROOT, RootTag};
 use crate::react_test_selectors::{
@@ -390,8 +390,7 @@ impl ReactFiberReconciler {
     #[cfg_attr(rust_js, rust_js::nullable(transition_callbacks, form_state))]
     pub fn create_hydration_container(
         &self,
-        // shared/ReactTypes' `ReactNodeList`.
-        initial_children: Option<&'static Unknown>,
+        initial_children: Option<&'static ReactNodeList>,
         // TODO: Remove `callback` when we delete legacy mode.
         callback: Option<&'static Unknown>,
         // ReactFiberConfig's `Container`.
@@ -455,8 +454,7 @@ impl ReactFiberReconciler {
     #[cfg_attr(rust_js, rust_js::nullable(parent_component, callback))]
     pub fn update_container(
         &self,
-        // shared/ReactTypes' `ReactNodeList`.
-        element: Option<&'static Unknown>,
+        element: Option<&'static ReactNodeList>,
         container: &OpaqueRoot,
         // A class component, if any.
         parent_component: Option<&'static Unknown>,
@@ -478,8 +476,7 @@ impl ReactFiberReconciler {
     #[cfg_attr(rust_js, rust_js::nullable(parent_component, callback))]
     pub fn update_container_sync(
         &self,
-        // shared/ReactTypes' `ReactNodeList`.
-        element: Option<&'static Unknown>,
+        element: Option<&'static ReactNodeList>,
         container: &OpaqueRoot,
         // A class component, if any.
         parent_component: Option<&'static Unknown>,
@@ -514,8 +511,7 @@ unsafe impl js::Defined for RootUpdatePayload {}
 fn update_container_impl(
     root_fiber: &Rc<Fiber>,
     lane: Lane,
-    // shared/ReactTypes' `ReactNodeList`.
-    element: Option<&'static Unknown>,
+    element: Option<&'static ReactNodeList>,
     container: &OpaqueRoot,
     // A class component, if any.
     parent_component: Option<&'static Unknown>,

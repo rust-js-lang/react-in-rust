@@ -5,19 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-type ReactKey = string | symbol;
-
-/** shared/ReactTypes' `ReactPortal`. */
-export interface ReactPortal {
-  // This tag allow us to uniquely identify this as a React Portal
-  $$typeof: symbol;
-  key?: ReactKey | null | undefined;
-  // shared/ReactTypes' `ReactNodeList`.
-  children?: unknown;
-  containerInfo?: unknown;
-  // TODO: figure out the API for cross-renderer implementation.
-  implementation?: unknown;
-}
+import type {ReactPortal} from '../../shared/ReactTypes.js';
 
 export function createPortal(
   children?: unknown | null | undefined,

@@ -12,7 +12,6 @@ use js::{
     Dict, JsError, JsObject, Kind, PropertyDescriptor, Set, SymbolFor, Unknown, WeakMap, WeakSet,
     function, object,
 };
-use react_isomorphic::react_lazy::Thenable;
 use react_isomorphic::react_start_transition::{Transition, set_t, t};
 use react_isomorphic::react_transition_type::TransitionTypes;
 use shared::environment::__DEV__;
@@ -31,6 +30,10 @@ use shared::react_shared_internals::{
     AsyncDispatcher, Dispatcher as SharedDispatcher, REACT_SHARED_INTERNALS,
 };
 use shared::react_symbols::REACT_STRICT_MODE_TYPE;
+use shared::react_types::{
+    GestureOptionsRequired, Thenable, ViewTransitionCallback, ViewTransitionGestureCallback,
+    Wakeable,
+};
 use shared::report_global_error::REPORT_GLOBAL_ERROR;
 use webapi::{ConsoleTask, console};
 
@@ -132,7 +135,7 @@ use crate::react_fiber_root_scheduler::{
     request_transition_lane,
 };
 use crate::react_fiber_shell_hydration::is_root_dehydrated;
-use crate::react_fiber_suspense_component::{SuspenseState, Wakeable};
+use crate::react_fiber_suspense_component::SuspenseState;
 use crate::react_fiber_suspense_context::{get_shell_boundary, get_suspense_handler};
 use crate::react_fiber_thenable::{
     SUSPENSE_ACTION_EXCEPTION, SUSPENSE_EXCEPTION, SUSPENSEY_COMMIT_EXCEPTION, clear_use_warnings,
@@ -149,10 +152,7 @@ use crate::react_fiber_tracing_marker_component::{
 use crate::react_fiber_transition::request_current_transition;
 use crate::react_fiber_transition_types::claim_queued_transition_types;
 use crate::react_fiber_unwind_work::{unwind_interrupted_work, unwind_work};
-use crate::react_fiber_view_transition_component::{
-    GestureOptionsRequired, ViewTransitionCallback, ViewTransitionGestureCallback,
-    get_view_transition_name,
-};
+use crate::react_fiber_view_transition_component::get_view_transition_name;
 use crate::react_internal_types::{ErrorInfo, Fiber, FiberRoot};
 use crate::react_post_paint_callback::schedule_post_paint_callback;
 use crate::react_profiler_timer::{

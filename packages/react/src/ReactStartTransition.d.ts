@@ -5,13 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {StartTransitionOptions} from './ReactHooks.js';
-
-/**
- * `shared/ReactTypes`' `GestureProvider`: intrinsic, it varies by
- * environment whether a particular renderer supports it.
- */
-export type GestureProvider = unknown;
+import type {StartTransitionOptions} from '../../shared/ReactTypes.js';
 
 /** `shared/ReactTypes`' `GestureOptions & StartTransitionOptions`. */
 export interface GestureTransitionOptions {
@@ -24,7 +18,7 @@ export interface Transition {
   // enableViewTransition
   types?: string[] | null | undefined;
   // enableGestureTransition
-  gesture?: GestureProvider | null | undefined;
+  gesture?: unknown | null | undefined;
   // enableTransitionTracing only
   name?: string | null | undefined;
   // enableTransitionTracing only
@@ -55,7 +49,7 @@ export function startTransition(
 ): void;
 
 export function startGestureTransition(
-  provider: GestureProvider | null | undefined,
+  provider: unknown | null | undefined,
   scope: () => unknown | null | undefined,
   options?: GestureTransitionOptions | null | undefined,
 ): () => void;

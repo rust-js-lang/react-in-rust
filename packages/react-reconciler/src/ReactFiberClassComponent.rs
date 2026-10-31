@@ -6,7 +6,6 @@
 use std::rc::Rc;
 
 use js::{Dict, Kind, Set, SymbolFor, Unknown};
-use react_isomorphic::react_context::ReactContext;
 use shared::assign::assign;
 use shared::environment::__DEV__;
 use shared::get_component_name_from_type::get_component_name_from_type;
@@ -14,6 +13,7 @@ use shared::is_array::is_array;
 use shared::react_feature_flags::{DISABLE_LEGACY_CONTEXT, ENABLE_SCHEDULING_PROFILER};
 use shared::react_instance_map::{get as get_instance, set as set_instance};
 use shared::react_symbols::{REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE};
+use shared::react_types::ReactContext;
 use shared::shallow_equal::shallow_equal;
 use webapi::console;
 

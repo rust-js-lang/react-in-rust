@@ -8,7 +8,7 @@ use std::panic::catch_unwind;
 use std::rc::Rc;
 
 use js::{Kind, SymbolFor, Unknown};
-use react_isomorphic::react_jsx_element::{ReactElement, ReactKey};
+use react_isomorphic::react_jsx_element::ReactElement;
 use shared::environment::__DEV__;
 use shared::get_component_name_from_type::get_component_name_from_type;
 use shared::is_array::is_array;
@@ -23,6 +23,7 @@ use shared::react_symbols::{
     REACT_SUSPENSE_LIST_TYPE, REACT_SUSPENSE_TYPE, REACT_TRACING_MARKER_TYPE,
     REACT_VIEW_TRANSITION_TYPE,
 };
+use shared::react_types::{ReactKey, ReactPortal};
 use webapi::console;
 
 use crate::get_component_name_from_fiber::get_component_name_from_owner;
@@ -35,7 +36,6 @@ use crate::react_fiber_tracing_marker_component::{
     TRANSITION_TRACING_MARKER, TracingMarkerInstance,
 };
 use crate::react_internal_types::{Dependencies, Fiber};
-use crate::react_portal::ReactPortal;
 use crate::react_root_tags::{CONCURRENT_ROOT, RootTag};
 use crate::react_type_of_mode::{
     CONCURRENT_MODE, NO_MODE, PROFILE_MODE, STRICT_EFFECTS_MODE, STRICT_LEGACY_MODE,

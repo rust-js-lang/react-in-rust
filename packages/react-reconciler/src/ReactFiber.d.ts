@@ -6,13 +6,13 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {ReactElement} from '../../react/src/jsx/ReactJSXElement.js';
+import type {ReactPortal} from '../../shared/ReactTypes.js';
 import type {Lanes} from './ReactFiberLane.js';
 import type {
   LegacyHiddenProps,
   OffscreenProps,
 } from './ReactFiberOffscreenComponent.js';
 import type {Fiber} from './ReactInternalTypes.js';
-import type {ReactPortal} from './ReactPortal.js';
 import type {RootTag} from './ReactRootTags.js';
 import type {TypeOfMode} from './ReactTypeOfMode.js';
 

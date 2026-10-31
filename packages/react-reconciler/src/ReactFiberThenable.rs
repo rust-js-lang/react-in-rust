@@ -9,11 +9,12 @@ use std::ptr;
 use std::rc::Rc;
 
 use js::{Error, JsError, Kind, Unknown};
-use react_isomorphic::react_lazy::{LazyComponent, Thenable};
+use react_isomorphic::react_lazy::LazyComponent;
 use shared::environment::__DEV__;
 use shared::noop::noop;
 use shared::react_feature_flags::ENABLE_CONDITIONAL_USE_WARNING;
 use shared::react_shared_internals::REACT_SHARED_INTERNALS;
+use shared::react_types::{ReactAsyncInfo, ReactIOInfo, Thenable};
 use webapi::{console, performance};
 
 use crate::react_fiber_call_user_space::CALL_LAZY_INIT_IN_DEV;
@@ -117,20 +118,6 @@ pub fn clear_use_warnings() {
     LAST_SUSPENDED_FIBER.set(None);
 }
 
-/// shared/ReactTypes' `ReactIOInfo`, of the fields React infers of a
-/// thenable that has no debug info.
-struct InferredIOInfo {
-    name: &'static str,
-    start: f64,
-    end: Cell<f64>,
-    value: &'static Thenable,
-}
-
-/// shared/ReactTypes' `ReactAsyncInfo`, of an `InferredIOInfo`.
-struct InferredAsyncInfo {
-    awaited: Rc<InferredIOInfo>,
-}
-
 #[cfg_attr(rust_js, rust_js::nullable(fiber))]
 pub fn track_used_thenable(
     thenable_state: &ThenableState,
@@ -198,14 +185,20 @@ pub fn track_used_thenable(
         // earlier and this could even be a cached Promise. Could be misleading.
         let start_time = performance.now();
         let display_name = thenable.display_name();
-        let io_info = Rc::new(InferredIOInfo {
-            name: match js::classify(display_name) {
+        let io_info = Rc::new(ReactIOInfo {
+            name: Cell::new(match js::classify(display_name) {
                 Kind::String(display_name) => display_name,
                 _ => "Promise",
-            },
-            start: start_time,
+            }),
+            start: Cell::new(start_time),
             end: Cell::new(start_time),
-            value: thenable,
+            byte_size: None,
+            value: Cell::new(Some(unsafe { js::cast(Some(js::unknown(thenable))) })),
+            env: None,
+            owner: None,
+            stack: None,
+            debug_stack: None,
+            debug_task: None,
             // We don't know the requesting owner nor stack.
         });
         // We can infer the await owner/stack lazily from where this promise ends up
@@ -213,8 +206,13 @@ pub fn track_used_thenable(
         js::set(
             thenable,
             "_debugInfo",
-            vec![InferredAsyncInfo {
+            vec![ReactAsyncInfo {
                 awaited: Rc::clone(&io_info),
+                env: None,
+                owner: None,
+                stack: None,
+                debug_stack: None,
+                debug_task: None,
             }],
         );
         // Track when we resolved the Promise as the approximate end time.

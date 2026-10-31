@@ -7,11 +7,8 @@ use js::Unknown;
 use shared::environment::__DEV__;
 use shared::react_shared_internals::{Dispatcher, REACT_SHARED_INTERNALS};
 use shared::react_symbols::REACT_CONSUMER_TYPE;
+use shared::react_types::{ReactContext, RefObject, StartTransitionOptions, Usable};
 use webapi::console;
-
-use crate::react_context::ReactContext;
-use crate::react_create_ref::RefObject;
-use crate::react_lazy::Thenable;
 
 /// The next state, or what makes it of the one before.
 #[cfg_attr(rust_js, rust_js::untagged)]
@@ -34,20 +31,9 @@ pub type Dispatch<A> = dyn Fn(A);
 /// What an effect gives: the function that cleans it up, or nothing.
 pub type Create = dyn Fn() -> Option<&'static dyn Fn()>;
 
-/// `shared/ReactTypes`' `StartTransitionOptions`.
-pub struct StartTransitionOptions {
-    pub name: Option<String>,
-}
-
 /// What `useTransition` gives to start a Transition: of the callback to
 /// call in it.
 pub type StartTransition = dyn Fn(&'static dyn Fn(), Option<&StartTransitionOptions>);
-
-/// What `use` reads, `shared/ReactTypes`' `Usable<T>`: a thenable, or a
-/// context.
-pub trait Usable<T> {}
-impl<T> Usable<T> for &ReactContext<T> {}
-impl<T> Usable<T> for &Thenable {}
 
 /// A ref `useImperativeHandle` sets: an object's `current`, or a function
 /// it calls.

@@ -21,7 +21,6 @@ use react_reconciler::react_internal_types::{
     CaughtErrorInfo, ErrorInfo, FiberRoot, OnCaughtError, OnDefaultTransitionIndicator, OnError,
     TransitionTracingCallbacks,
 };
-use react_reconciler::react_portal::ReactPortal;
 use react_reconciler::react_reconciler_constants::{
     CONCURRENT_ROOT, DEFAULT_EVENT_PRIORITY, DISCRETE_EVENT_PRIORITY, IDLE_EVENT_PRIORITY,
     LEGACY_ROOT, NO_EVENT_PRIORITY,
@@ -33,6 +32,7 @@ use shared::is_array::is_array;
 use shared::react_feature_flags::DISABLE_LEGACY_MODE;
 use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use shared::react_symbols::{REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE};
+use shared::react_types::ReactPortal;
 #[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
 use shared::react_version::REACT_VERSION;
 use webapi::console;

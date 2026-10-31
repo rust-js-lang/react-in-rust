@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {StartTransitionOptions} from '../../react/src/ReactHooks.js';
+import type {StartTransitionOptions} from '../../shared/ReactTypes.js';
 import type {Component, Destroy} from './ReactFiberCallUserSpace.js';
 import type {ScheduledGesture} from './ReactFiberGestureScheduler.js';
 import type {Lane, Lanes} from './ReactFiberLane.js';

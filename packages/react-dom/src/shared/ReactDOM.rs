@@ -5,8 +5,9 @@
 
 use js::{Map, Set, Unknown};
 use react_dom_bindings::react_dom_container::is_valid_container;
-use react_reconciler::react_portal::{ReactPortal, create_portal as create_portal_impl};
+use react_reconciler::react_portal::create_portal as create_portal_impl;
 use shared::environment::__DEV__;
+use shared::react_types::{ReactNodeList, ReactPortal};
 use webapi::console;
 
 #[cfg_attr(rust_js, rust_js::name = "version")]
@@ -53,8 +54,7 @@ pub fn batched_updates<A, R>(r#fn: impl FnOnce(A) -> R, a: A) -> R {
 }
 
 pub fn create_portal(
-    // shared/ReactTypes' `ReactNodeList`.
-    children: Option<&'static Unknown>,
+    children: Option<&'static ReactNodeList>,
     // An `Element` or a `DocumentFragment`.
     container: Option<&'static Unknown>,
     key: Option<&'static Unknown>,

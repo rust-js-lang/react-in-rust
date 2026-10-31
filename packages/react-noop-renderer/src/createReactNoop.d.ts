@@ -18,7 +18,7 @@ import type {
   FiberRoot,
   TransitionTracingCallbacks,
 } from '../../react-reconciler/src/ReactInternalTypes.js';
-import type {ReactPortal} from '../../react-reconciler/src/ReactPortal.js';
+import type {ReactPortal} from '../../shared/ReactTypes.js';
 import type {Child, Container, Instance} from './ReactFiberConfigNoop.js';
 
 /** A host component's props, as JS gives them. */

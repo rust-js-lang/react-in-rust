@@ -8,9 +8,8 @@ use std::panic::{self, AssertUnwindSafe, catch_unwind};
 use std::rc::Rc;
 
 use js::{Dict, Iterator, JsError, Kind, Map, Set, SymbolFor, Unknown};
-use react_isomorphic::react_context::ReactContext;
-use react_isomorphic::react_jsx_element::{ReactElement, ReactKey};
-use react_isomorphic::react_lazy::{LazyComponent, Thenable};
+use react_isomorphic::react_jsx_element::ReactElement;
+use react_isomorphic::react_lazy::LazyComponent;
 use shared::environment::__DEV__;
 use shared::is_array::is_array;
 use shared::react_feature_flags::{
@@ -20,6 +19,7 @@ use shared::react_symbols::{
     ASYNC_ITERATOR, REACT_CONTEXT_TYPE, REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE,
     REACT_LEGACY_ELEMENT_TYPE, REACT_OPTIMISTIC_KEY, REACT_PORTAL_TYPE, get_iterator_fn,
 };
+use shared::react_types::{ReactContext, ReactKey, ReactPortal, Thenable};
 use webapi::{ConsoleTask, console};
 
 use crate::get_component_name_from_fiber::get_component_name_from_fiber;
@@ -40,7 +40,6 @@ use crate::react_fiber_thenable::{
 };
 use crate::react_fiber_tree_context::push_tree_fork;
 use crate::react_internal_types::Fiber;
-use crate::react_portal::ReactPortal;
 use crate::react_type_of_mode::{CONCURRENT_MODE, NO_MODE};
 use crate::react_work_tags::{FRAGMENT, FUNCTION_COMPONENT, HOST_PORTAL, HOST_ROOT, HOST_TEXT};
 

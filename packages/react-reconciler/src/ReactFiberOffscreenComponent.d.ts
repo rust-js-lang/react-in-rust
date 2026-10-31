@@ -16,7 +16,6 @@ export type OffscreenMode =
 
 export interface LegacyHiddenProps {
   mode?: OffscreenMode | null | undefined;
-  // shared/ReactTypes' `ReactNodeList`.
   children?: unknown;
 }
 
@@ -28,7 +27,6 @@ export interface OffscreenProps {
   // Default mode is visible. Kind of a weird default for a component
   // called "Offscreen." Possible alt: <Visibility />?
   mode?: OffscreenMode | null | undefined;
-  // shared/ReactTypes' `ReactNodeList`.
   children?: unknown;
 }
 

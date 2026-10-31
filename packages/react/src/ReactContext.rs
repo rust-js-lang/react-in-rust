@@ -6,42 +6,9 @@
 use std::cell::{Cell, RefCell};
 use std::rc::{Rc, Weak};
 
-use js::{SymbolFor, Unknown};
 use shared::environment::__DEV__;
 use shared::react_symbols::{REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE};
-
-/// A context: the value its provider gives what it renders, and the
-/// consumer that reads it.
-pub struct ReactContext<T: 'static> {
-    #[cfg_attr(rust_js, rust_js::name = "$$typeof")]
-    pub r#typeof: SymbolFor<'static>,
-    #[cfg_attr(rust_js, rust_js::name = "_currentValue")]
-    pub current_value: RefCell<T>,
-    #[cfg_attr(rust_js, rust_js::name = "_currentValue2")]
-    pub current_value2: RefCell<T>,
-    #[cfg_attr(rust_js, rust_js::name = "_threadCount")]
-    pub thread_count: Cell<f64>,
-    #[cfg_attr(rust_js, rust_js::name = "Provider")]
-    pub provider: Cell<Weak<ReactContext<T>>>,
-    #[cfg_attr(rust_js, rust_js::name = "Consumer")]
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub consumer: Cell<Option<Rc<ReactConsumerType<T>>>>,
-    // DEV only
-    #[cfg_attr(rust_js, rust_js::name = "_currentRenderer")]
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub current_renderer: Cell<Option<&'static Unknown>>,
-    #[cfg_attr(rust_js, rust_js::name = "_currentRenderer2")]
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub current_renderer2: Cell<Option<&'static Unknown>>,
-}
-
-/// What reads a context's value.
-pub struct ReactConsumerType<T: 'static> {
-    #[cfg_attr(rust_js, rust_js::name = "$$typeof")]
-    pub r#typeof: SymbolFor<'static>,
-    #[cfg_attr(rust_js, rust_js::name = "_context")]
-    pub context: Weak<ReactContext<T>>,
-}
+use shared::react_types::{ReactConsumerType, ReactContext};
 
 pub fn create_context<T>(default_value: T) -> Rc<ReactContext<T>>
 where

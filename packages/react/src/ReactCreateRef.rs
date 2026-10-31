@@ -5,16 +5,9 @@
 
 use std::cell::Cell;
 
-use js::{Unknown, object};
+use js::object;
 use shared::environment::__DEV__;
-
-/// What a ref holds: `current`, the value it's set to, `null` until then
-/// where `createRef` made it.
-pub struct RefObject {
-    pub current: Cell<Option<&'static Unknown>>,
-}
-
-unsafe impl js::Defined for RefObject {}
+use shared::react_types::RefObject;
 
 // an immutable object with a single mutable value
 pub fn create_ref() -> RefObject {

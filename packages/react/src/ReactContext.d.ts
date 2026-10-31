@@ -5,26 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-/**
- * A context: the value its provider gives what it renders, and the
- * consumer that reads it.
- */
-export interface ReactContext<T> {
-  $$typeof: symbol;
-  _currentValue: T;
-  _currentValue2: T;
-  _threadCount: number;
-  Provider: ReactContext<T> | null;
-  Consumer?: ReactConsumerType<T> | null | undefined;
-  // DEV only
-  _currentRenderer?: unknown | null | undefined;
-  _currentRenderer2?: unknown | null | undefined;
-}
-
-/** What reads a context's value. */
-export interface ReactConsumerType<T> {
-  $$typeof: symbol;
-  _context: ReactContext<T> | null;
-}
+import type {ReactContext} from '../../shared/ReactTypes.js';
 
 export function createContext<T>(defaultValue: T): ReactContext<T>;

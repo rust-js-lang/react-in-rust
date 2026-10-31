@@ -5,13 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-/**
- * What a ref holds: `current`, the value it's set to, `null` until then
- * where `createRef` made it.
- */
-export interface RefObject {
-  current: unknown | null | undefined;
-}
+import type {RefObject} from '../../shared/ReactTypes.js';
 
 // an immutable object with a single mutable value
 export function createRef(): RefObject;

@@ -14,6 +14,7 @@ use shared::react_feature_flags::{
     ENABLE_PROFILER_COMMIT_HOOKS, ENABLE_PROFILER_TIMER, ENABLE_SUSPENSE_CALLBACK,
     ENABLE_TRANSITION_TRACING, ENABLE_UPDATER_TRACKING, ENABLE_VIEW_TRANSITION,
 };
+use shared::react_types::ReactNodeList;
 
 use crate::react_fiber::create_host_root_fiber;
 use crate::react_fiber_cache_component::{Cache, create_cache, retain_cache};
@@ -32,8 +33,7 @@ unsafe extern "Rust" {
 }
 
 pub struct RootState {
-    // shared/ReactTypes' `ReactNodeList`.
-    pub element: Option<&'static Unknown>,
+    pub element: Option<&'static ReactNodeList>,
     pub is_dehydrated: bool,
     pub cache: Rc<Cache>,
 }
@@ -46,8 +46,7 @@ pub fn create_fiber_root(
     container_info: &'static Unknown,
     tag: RootTag,
     hydrate: bool,
-    // shared/ReactTypes' `ReactNodeList`.
-    initial_children: Option<&'static Unknown>,
+    initial_children: Option<&'static ReactNodeList>,
     hydration_callbacks: Option<&'static SuspenseHydrationCallbacks>,
     is_strict_mode: bool,
     // TODO: We have several of these arguments that are conceptually part of the

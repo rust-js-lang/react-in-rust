@@ -3,76 +3,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use std::cell::{Cell, RefCell};
-use std::rc::Rc;
+use std::cell::Cell;
 
-use js::{Dict, Unknown};
+use shared::react_types::{ViewTransitionClass, ViewTransitionProps};
 
 pub use crate::react_fiber::ViewTransitionState;
 use crate::react_fiber_work_loop::{get_committing_root, get_pending_transition_types};
 use crate::react_internal_types::FiberRoot;
-
-// react/src/ReactTransitionType's `TransitionTypes`.
-/// shared/ReactTypes' `ViewTransitionClass`: a class name, `'none'` or
-/// `'auto'` among them, or one for each transition type.
-#[derive(Clone, Copy)]
-#[cfg_attr(rust_js, rust_js::untagged)]
-pub enum ViewTransitionClass {
-    Name(&'static str),
-    // shared/ReactTypes' `ViewTransitionClassPerType`, whose `default` is
-    // the class of a type it has none for.
-    #[cfg_attr(rust_js, rust_js::otherwise)]
-    PerType(&'static Dict<String>),
-}
-
-/// shared/ReactTypes' `GestureOptionsRequired`.
-pub struct GestureOptionsRequired {
-    pub range_start: f64,
-    pub range_end: f64,
-}
-
-/// What a `<ViewTransition>` calls as it animates, given its
-/// ReactFiberConfig's `ViewTransitionInstance` and the transition's types:
-/// what cleans up after it, if anything.
-pub type ViewTransitionCallback =
-    dyn Fn(&'static Unknown, &Rc<RefCell<Vec<String>>>) -> Option<&'static dyn Fn()>;
-
-/// What a `<ViewTransition>` calls as a gesture animates it, given the
-/// ReactFiberConfig's `GestureTimeline` first.
-pub type ViewTransitionGestureCallback = dyn Fn(
-    &'static Unknown,
-    &GestureOptionsRequired,
-    &'static Unknown,
-    &Rc<RefCell<Vec<String>>>,
-) -> Option<&'static dyn Fn()>;
-
-/// shared/ReactTypes' `ViewTransitionProps`.
-pub struct ViewTransitionProps {
-    pub name: Option<String>,
-    // shared/ReactTypes' `ReactNodeList`.
-    pub children: Option<&'static Unknown>,
-    pub default: Option<ViewTransitionClass>,
-    pub enter: Option<ViewTransitionClass>,
-    pub exit: Option<ViewTransitionClass>,
-    pub share: Option<ViewTransitionClass>,
-    pub update: Option<ViewTransitionClass>,
-    pub parent_enter: Option<ViewTransitionClass>,
-    pub parent_exit: Option<ViewTransitionClass>,
-    pub on_enter: Option<&'static ViewTransitionCallback>,
-    pub on_exit: Option<&'static ViewTransitionCallback>,
-    pub on_parent_enter: Option<&'static ViewTransitionCallback>,
-    pub on_parent_exit: Option<&'static ViewTransitionCallback>,
-    pub on_share: Option<&'static ViewTransitionCallback>,
-    pub on_update: Option<&'static ViewTransitionCallback>,
-    pub on_gesture_enter: Option<&'static ViewTransitionGestureCallback>,
-    pub on_gesture_exit: Option<&'static ViewTransitionGestureCallback>,
-    pub on_gesture_parent_enter: Option<&'static ViewTransitionGestureCallback>,
-    pub on_gesture_parent_exit: Option<&'static ViewTransitionGestureCallback>,
-    pub on_gesture_share: Option<&'static ViewTransitionGestureCallback>,
-    pub on_gesture_update: Option<&'static ViewTransitionGestureCallback>,
-}
-
-unsafe impl js::Defined for ViewTransitionProps {}
 
 thread_local! {
     static GLOBAL_CLIENT_ID_COUNTER: Cell<f64> = const { Cell::new(0.0) };

@@ -5,20 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-/** shared/ReactTypes' `ReactRecoverableReason`: a message, or what gives one. */
-export type ReactRecoverableReason =
-  | string
-  | (() => unknown | null | undefined);
+import type {ReactRecoverable} from '../../../shared/ReactTypes.js';
 
-// A recoverable lets an intermediate renderer defer a subtree to a downstream
-// renderer. It does not produce a value: a renderer either continues through
-// it or interrupts the current render so that a later renderer can recover the
-// subtree. The reason is initialized only by a renderer that defers the work.
-/** shared/ReactTypes' `ReactRecoverable`. */
-export interface ReactRecoverable {
-  $$typeof: symbol;
-  _reason?: ReactRecoverableReason | undefined;
-}
+type ReactRecoverableReason = string | (() => unknown | null | undefined);
 
 export function browser(
   reason?: ReactRecoverableReason | null | undefined,

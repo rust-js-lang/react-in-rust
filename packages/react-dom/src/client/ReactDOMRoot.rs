@@ -27,6 +27,7 @@ use shared::react_feature_flags::{
     DISABLE_COMMENTS_AS_DOM_CONTAINERS, ENABLE_DEFAULT_TRANSITION_INDICATOR,
 };
 use shared::react_symbols::REACT_ELEMENT_TYPE;
+use shared::react_types::ReactNodeList;
 use webapi::{EventTarget, Node, console};
 
 use crate::react_dom_default_transition_indicator::default_on_default_transition_indicator;
@@ -39,8 +40,7 @@ pub trait RootType {
 
     fn render(
         &self,
-        // shared/ReactTypes' `ReactNodeList`.
-        children: Option<&'static Unknown>,
+        children: Option<&'static ReactNodeList>,
         #[cfg_attr(rust_js, rust_js::rest)] args: &[Option<&'static Unknown>],
     ) {
         let Some(root) = self.internal_root().borrow().clone() else {
@@ -288,8 +288,7 @@ fn schedule_hydration(target: Option<&'static Node>) {
 pub fn hydrate_root(
     // A `Document` or an `Element`.
     container: &'static Unknown,
-    // shared/ReactTypes' `ReactNodeList`.
-    initial_children: Option<&'static Unknown>,
+    initial_children: Option<&'static ReactNodeList>,
     options: Option<&'static HydrateRootOptions>,
 ) -> ReactDOMHydrationRoot {
     if !is_valid_container(Some(container)) {

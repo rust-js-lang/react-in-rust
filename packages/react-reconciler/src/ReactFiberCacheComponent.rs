@@ -7,9 +7,9 @@ use std::cell::{Cell, RefCell};
 use std::rc::{Rc, Weak};
 
 use js::{Class, Map, Unknown};
-use react_isomorphic::react_context::ReactContext;
 use shared::environment::__DEV__;
 use shared::react_symbols::REACT_CONTEXT_TYPE;
+use shared::react_types::ReactContext;
 use webapi::{AbortController, console};
 
 use crate::react_fiber_new_context::{pop_provider, push_provider};

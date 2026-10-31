@@ -9,10 +9,7 @@ use std::panic::{self, AssertUnwindSafe};
 use std::rc::Rc;
 
 use js::{IntoUnknown, JsError, Kind, Rest, Set, SymbolFor, Unknown, function};
-use react_isomorphic::react_context::ReactContext;
-use react_isomorphic::react_create_ref::RefObject;
-use react_isomorphic::react_hooks::{BasicStateAction, StartTransitionOptions};
-use react_isomorphic::react_lazy::Thenable;
+use react_isomorphic::react_hooks::BasicStateAction;
 use react_isomorphic::react_start_transition::{Transition, s, set_t, t};
 use shared::environment::__DEV__;
 use shared::is_array::is_array;
@@ -26,6 +23,9 @@ use shared::react_feature_flags::{
 use shared::react_shared_internals::{Dispatcher as SharedDispatcher, REACT_SHARED_INTERNALS};
 use shared::react_symbols::{
     REACT_CONTEXT_TYPE, REACT_MEMO_CACHE_SENTINEL, REACT_RECOVERABLE_TYPE,
+};
+use shared::react_types::{
+    ReactContext, RefObject, RejectedThenable, StartTransitionOptions, Thenable,
 };
 use webapi::console;
 
@@ -3610,15 +3610,6 @@ impl Drop for FinishTransition<'_> {
         }
     }
 }
-
-/// shared/ReactTypes' `RejectedThenable`.
-struct RejectedThenable {
-    then: fn(),
-    status: &'static str,
-    reason: Option<&'static Unknown>,
-}
-
-unsafe impl js::Defined for RejectedThenable {}
 
 fn start_transition(
     fiber: &Rc<Fiber>,

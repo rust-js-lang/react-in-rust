@@ -226,6 +226,25 @@ commit message.
 - **Port fallbacks too** (the user, 2026-10-22). A polyfill, or a branch
   for a host without `Object.is` or `performance.now`, is the program's to
   express, whatever hosts rust-js targets.
+- **Use `shared::react_types` for shared/ReactTypes' types** (the user,
+  2026-10-31). `packages/shared/ReactTypes.rs` is their one Rust
+  definition: `ReactKey`, `ReactContext`, `ReactConsumerType`, `ReactPortal`,
+  `RefObject`, `Thenable`, `Wakeable`, `RejectedThenable`, `ReactIOInfo`,
+  `ReactAsyncInfo`, `ReactComponentInfo`, `ViewTransitionProps`,
+  `ViewTransitionClass`, the props types and the rest. Import them from
+  there, never declare a local copy; a value whose type is one of them but
+  that the port reads untyped is written with its alias,
+  `Option<&'static ReactNodeList>`. Three stay where their code is: the
+  reconciler's `ActivityProps` (its `mode` is the reconciler's
+  `OffscreenMode`, which upstream's Flow lets `'hidden' | 'visible'` flow
+  into), `ReactScopeInstance` (ReactFiberScope's object, whose methods it
+  implements) and react's `GestureTransitionOptions` (upstream's inline
+  `GestureOptions & StartTransitionOptions`). `ReactDebugInfoEntry` is
+  `Unknown`: an untagged enum can't tell its four kinds apart (rd291).
+  **m6-wife:** your server crates had no local copies, so nothing of yours
+  moved; a server type of shared/ReactTypes' (`ReactComponentInfo`,
+  `ReactDebugInfo`, `ReactErrorInfo`, `ReactStackTrace`, `Thenable`, ..) is
+  in `shared::react_types` for your ports.
 - **Write a host feature test as upstream does.** `typeof X === 'function'`
   is `js::is_function(binding)`, `typeof X !== 'undefined'` is
   `js::is_defined(binding)`, and `typeof performance === 'object' && typeof

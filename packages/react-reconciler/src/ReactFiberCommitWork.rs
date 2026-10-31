@@ -17,6 +17,7 @@ use shared::react_feature_flags::{
     ENABLE_SUSPENSE_CALLBACK, ENABLE_TRANSITION_TRACING, ENABLE_UPDATER_TRACKING,
     ENABLE_VIEW_TRANSITION,
 };
+use shared::react_types::{ViewTransitionProps, Wakeable};
 use webapi::console;
 
 use crate::react_fiber::{ProfilerStateNode, ViewTransitionState};
@@ -88,15 +89,13 @@ use crate::react_fiber_performance_track::{
 };
 use crate::react_fiber_root::RootState;
 use crate::react_fiber_root_scheduler::mark_indicator_handled;
-use crate::react_fiber_suspense_component::{RetryQueue, SuspenseState, Wakeable};
+use crate::react_fiber_suspense_component::{RetryQueue, SuspenseState};
 use crate::react_fiber_tracing_marker_component::{
     SuspenseInfo, TRANSITION_ROOT, TRANSITION_TRACING_MARKER, TracingMarkerInstance,
     TransitionAbort, TransitionAbortReason, TransitionAborts,
 };
 use crate::react_fiber_tree_reflection::does_fiber_contain;
-use crate::react_fiber_view_transition_component::{
-    ViewTransitionProps, get_view_transition_class_name,
-};
+use crate::react_fiber_view_transition_component::get_view_transition_class_name;
 use crate::react_fiber_work_loop::{
     add_marker_complete_callback_to_pending_transition,
     add_marker_incomplete_callback_to_pending_transition,

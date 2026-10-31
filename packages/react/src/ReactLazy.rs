@@ -4,14 +4,14 @@
 // LICENSE file in the root directory of this source tree.
 
 use std::cell::{Cell, OnceCell, RefCell};
-use std::marker::PhantomData;
 use std::rc::Rc;
 
-use js::{Error, JsObject, Kind, Promise, SymbolFor, Unknown};
+use js::{Kind, Promise, SymbolFor, Unknown};
 use shared::environment::__DEV__;
 use shared::noop::noop;
 use shared::react_symbols::REACT_LAZY_TYPE;
-use webapi::{ConsoleTask, console, performance};
+use shared::react_types::{ReactAsyncInfo, ReactIOInfo, Thenable};
+use webapi::{console, performance};
 
 #[derive(Clone, Copy, PartialEq)]
 #[repr(i8)]
@@ -20,81 +20,6 @@ enum Status {
     Pending = 0,
     Resolved = 1,
     Rejected = 2,
-}
-
-/// A thenable, `shared/ReactTypes`' `Thenable`: what a lazy component's
-/// loader gives, which React makes introspectable as it settles.
-pub struct Thenable(PhantomData<JsObject>);
-
-unsafe impl js::Defined for Thenable {}
-
-impl Thenable {
-    #[cfg_attr(rust_js, rust_js::link_name = "then")]
-    pub fn then(
-        &self,
-        on_fulfill: impl FnOnce(Option<&'static Unknown>) + 'static,
-        on_reject: impl FnOnce(Option<&'static Unknown>) + 'static,
-    ) {
-        let _ = (on_fulfill, on_reject);
-        unreachable!()
-    }
-
-    #[cfg_attr(rust_js, rust_js::link_name = "get status")]
-    pub fn status(&self) -> Option<String> {
-        unreachable!()
-    }
-
-    #[cfg_attr(rust_js, rust_js::link_name = "set status")]
-    pub fn set_status(&self, status: &str) {
-        let _ = status;
-        unreachable!()
-    }
-
-    #[cfg_attr(rust_js, rust_js::link_name = "get value")]
-    pub fn value(&self) -> Option<&'static Unknown> {
-        unreachable!()
-    }
-
-    #[cfg_attr(rust_js, rust_js::link_name = "set value")]
-    pub fn set_value(&self, value: Option<&Unknown>) {
-        let _ = value;
-        unreachable!()
-    }
-
-    #[cfg_attr(rust_js, rust_js::link_name = "get reason")]
-    pub fn reason(&self) -> Option<&'static Unknown> {
-        unreachable!()
-    }
-
-    #[cfg_attr(rust_js, rust_js::link_name = "set reason")]
-    pub fn set_reason(&self, reason: Option<&Unknown>) {
-        let _ = reason;
-        unreachable!()
-    }
-
-    #[cfg_attr(rust_js, rust_js::link_name = "get displayName")]
-    pub fn display_name(&self) -> Option<&'static Unknown> {
-        unreachable!()
-    }
-}
-
-/// `shared/ReactTypes`' `ReactIOInfo`: the I/O a lazy component waits on.
-pub struct ReactIOInfo {
-    pub name: Cell<&'static str>,
-    pub start: Cell<f64>,
-    pub end: Cell<f64>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub value: Cell<Option<Promise<Option<&'static Unknown>>>>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub owner: Option<&'static Unknown>,
-    pub debug_stack: &'static Error,
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub debug_task: Option<&'static ConsoleTask>,
-}
-
-/// `shared/ReactTypes`' `ReactAsyncInfo`: what a lazy component awaited.
-pub struct ReactAsyncInfo {
-    pub awaited: Rc<ReactIOInfo>,
 }
 
 /// Where a lazy component is in loading what it's of: its `_status`, and
@@ -293,18 +218,26 @@ pub fn lazy(ctor: &'static dyn Fn() -> &'static Thenable) -> LazyComponent {
             name: Cell::new("lazy"),
             start: Cell::new(-1.0),
             end: Cell::new(-1.0),
+            byte_size: None,
             value: Cell::new(None),
+            env: None,
             owner,
-            debug_stack: js::error::new("react-stack-top-frame", None),
+            stack: None,
+            debug_stack: Some(js::error::new("react-stack-top-frame", None)),
             // eslint-disable-next-line react-internal/no-production-logging
             debug_task: console::create_task().map(|create_task| create_task("lazy()")),
         });
         let _ = payload.io_info.set(Rc::clone(&io_info));
         // Add debug info to the lazy, but this doesn't have an await stack yet.
         // That will be inferred by later usage.
-        lazy_type
-            .debug_info
-            .replace(Some(vec![ReactAsyncInfo { awaited: io_info }]));
+        lazy_type.debug_info.replace(Some(vec![ReactAsyncInfo {
+            awaited: io_info,
+            env: None,
+            owner: None,
+            stack: None,
+            debug_stack: None,
+            debug_task: None,
+        }]));
     }
 
     lazy_type

@@ -61,6 +61,8 @@ pub mod react_serialization_errors;
 pub mod react_shared_internals;
 #[path = "ReactSymbols.rs"]
 pub mod react_symbols;
+#[path = "ReactTypes.rs"]
+pub mod react_types;
 #[path = "ReactVersion.rs"]
 pub mod react_version;
 #[path = "reportGlobalError.rs"]

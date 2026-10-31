@@ -7,8 +7,10 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::Unknown;
-use react_isomorphic::react_start_transition::{GestureProvider, GestureTransitionOptions};
+use react_isomorphic::react_start_transition::GestureTransitionOptions;
 use react_isomorphic::react_transition_type::TransitionTypes;
+
+use shared::react_types::GestureProvider;
 
 use crate::react_fiber_lane::{
     GESTURE_LANE, Lane, NO_LANE, NO_LANES, mark_root_entangled, mark_root_finished,

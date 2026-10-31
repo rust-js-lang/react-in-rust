@@ -5,10 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ReactContext} from '../../react/src/ReactContext.js';
-import type {RefObject} from '../../react/src/ReactCreateRef.js';
-import type {StartTransitionOptions} from '../../react/src/ReactHooks.js';
 import type {Transition} from '../../react/src/ReactStartTransition.js';
+import type {
+  ReactContext,
+  RefObject,
+  StartTransitionOptions,
+} from '../../shared/ReactTypes.js';
 import type {Cache} from './ReactFiberCacheComponent.js';
 import type {ConcurrentUpdate} from './ReactFiberConcurrentUpdates.js';
 import type {Flags} from './ReactFiberFlags.js';

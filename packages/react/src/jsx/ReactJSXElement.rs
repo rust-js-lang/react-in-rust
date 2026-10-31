@@ -19,18 +19,8 @@ use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use shared::react_symbols::{
     REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE, REACT_OPTIMISTIC_KEY,
 };
+use shared::react_types::ReactKey;
 use webapi::{ConsoleTask, console};
-
-/// `shared/ReactTypes`' `ReactKey`: an element's key, text, or the
-/// optimistic key a renderer gives it later.
-#[cfg_attr(rust_js, rust_js::untagged)]
-#[derive(Clone, PartialEq)]
-pub enum ReactKey {
-    Text(String),
-    Optimistic(SymbolFor<'static>),
-}
-
-unsafe impl js::Defined for ReactKey {}
 
 /// `shared/ReactElementType`'s `ReactElement`.
 pub struct ReactElement {

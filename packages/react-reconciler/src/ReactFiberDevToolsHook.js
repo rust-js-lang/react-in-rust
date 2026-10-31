@@ -74,11 +74,7 @@ export function injectInternals(internals) {
   return !!hook.checkDCE;
 }
 
-export function onScheduleRoot(
-  root,
-  // shared/ReactTypes' `ReactNodeList`.
-  children,
-) {
+export function onScheduleRoot(root, children) {
   if (__DEV__) {
     const injectedHook$1 = injectedHook;
     if (

@@ -6,8 +6,8 @@
 use std::rc::Rc;
 
 use js::Unknown;
-use react_isomorphic::react_context::ReactContext;
 use shared::environment::__DEV__;
+use shared::react_types::ReactContext;
 use webapi::console;
 
 use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};

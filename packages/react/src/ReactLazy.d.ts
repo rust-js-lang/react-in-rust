@@ -5,28 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {
+  ReactAsyncInfo,
+  ReactIOInfo,
+} from '../../shared/ReactTypes.js';
+
 type Status = -1 | 0 | 1 | 2;
-
-/** `shared/ReactTypes`' `ReactIOInfo`: the I/O a lazy component waits on. */
-export interface ReactIOInfo {
-  name: string;
-  start: number;
-  end: number;
-  value?: Promise<unknown | null | undefined> | null | undefined;
-  owner?: unknown | null | undefined;
-  debugStack: Error;
-  debugTask?:
-    | {
-        run<T>(f: () => T): T;
-      }
-    | null
-    | undefined;
-}
-
-/** `shared/ReactTypes`' `ReactAsyncInfo`: what a lazy component awaited. */
-export interface ReactAsyncInfo {
-  awaited: ReactIOInfo;
-}
 
 /**
  * Where a lazy component is in loading what it's of: its `_status`, and

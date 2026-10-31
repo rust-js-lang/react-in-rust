@@ -6,8 +6,8 @@
 use std::rc::Rc;
 
 use js::Unknown;
-use react_isomorphic::react_context::ReactContext;
 use shared::react_feature_flags::{ENABLE_PROFILER_TIMER, ENABLE_TRANSITION_TRACING};
+use shared::react_types::ReactContext;
 
 use crate::react_fiber_activity_component::ActivityState;
 use crate::react_fiber_cache_component::{CacheComponentState, pop_cache_provider};

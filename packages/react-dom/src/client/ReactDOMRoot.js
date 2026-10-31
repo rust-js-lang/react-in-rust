@@ -202,7 +202,6 @@ function scheduleHydration(target) {
 export function hydrateRoot(
   // A `Document` or an `Element`.
   container,
-  // shared/ReactTypes' `ReactNodeList`.
   initialChildren,
   options,
 ) {

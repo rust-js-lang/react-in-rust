@@ -9,10 +9,10 @@ use std::rc::Rc;
 
 use js::Dict;
 use shared::environment::__DEV__;
+use shared::react_types::ViewTransitionProps;
 use webapi::console;
 
 use crate::react_current_fiber::run_with_fiber_in_dev;
-use crate::react_fiber_view_transition_component::ViewTransitionProps;
 use crate::react_internal_types::Fiber;
 
 thread_local! {

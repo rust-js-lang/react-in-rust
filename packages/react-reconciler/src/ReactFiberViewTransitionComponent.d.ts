@@ -5,71 +5,14 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ViewTransitionProps} from '../../shared/ReactTypes.js';
 import type {ViewTransitionState} from './ReactFiber.js';
 
-// react/src/ReactTransitionType's `TransitionTypes`.
-/**
- * shared/ReactTypes' `ViewTransitionClass`: a class name, `'none'` or
- * `'auto'` among them, or one for each transition type.
- */
-export type ViewTransitionClass =
+type ViewTransitionClass =
   | string
   | {
       [key: string]: string;
     };
-
-/** shared/ReactTypes' `GestureOptionsRequired`. */
-export interface GestureOptionsRequired {
-  rangeStart: number;
-  rangeEnd: number;
-}
-
-/**
- * What a `<ViewTransition>` calls as it animates, given its
- * ReactFiberConfig's `ViewTransitionInstance` and the transition's types:
- * what cleans up after it, if anything.
- */
-export type ViewTransitionCallback = (
-  value: unknown,
-  value2: string[],
-) => (() => void) | null | undefined;
-
-/**
- * What a `<ViewTransition>` calls as a gesture animates it, given the
- * ReactFiberConfig's `GestureTimeline` first.
- */
-export type ViewTransitionGestureCallback = (
-  value: unknown,
-  required: GestureOptionsRequired,
-  value2: unknown,
-  value3: string[],
-) => (() => void) | null | undefined;
-
-/** shared/ReactTypes' `ViewTransitionProps`. */
-export interface ViewTransitionProps {
-  name?: string | undefined;
-  // shared/ReactTypes' `ReactNodeList`.
-  children?: unknown;
-  default?: ViewTransitionClass | undefined;
-  enter?: ViewTransitionClass | undefined;
-  exit?: ViewTransitionClass | undefined;
-  share?: ViewTransitionClass | undefined;
-  update?: ViewTransitionClass | undefined;
-  parentEnter?: ViewTransitionClass | undefined;
-  parentExit?: ViewTransitionClass | undefined;
-  onEnter?: ViewTransitionCallback | undefined;
-  onExit?: ViewTransitionCallback | undefined;
-  onParentEnter?: ViewTransitionCallback | undefined;
-  onParentExit?: ViewTransitionCallback | undefined;
-  onShare?: ViewTransitionCallback | undefined;
-  onUpdate?: ViewTransitionCallback | undefined;
-  onGestureEnter?: ViewTransitionGestureCallback | undefined;
-  onGestureExit?: ViewTransitionGestureCallback | undefined;
-  onGestureParentEnter?: ViewTransitionGestureCallback | undefined;
-  onGestureParentExit?: ViewTransitionGestureCallback | undefined;
-  onGestureShare?: ViewTransitionGestureCallback | undefined;
-  onGestureUpdate?: ViewTransitionGestureCallback | undefined;
-}
 
 export function getViewTransitionName(
   props: ViewTransitionProps,

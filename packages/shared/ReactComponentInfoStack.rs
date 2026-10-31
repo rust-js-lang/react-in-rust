@@ -10,15 +10,7 @@ use js::JsError;
 use crate::environment::__DEV__;
 use crate::react_component_stack_frame::describe_built_in_component_frame;
 use crate::react_owner_stack_frames::format_owner_stack;
-
-// GAP: `shared/ReactTypes`' `ReactComponentInfo`, which isn't ported: the
-// fields this module reads, as a Rust struct is the JS object of its fields.
-pub struct ReactComponentInfo {
-    pub name: String,
-    pub owner: Option<&'static ReactComponentInfo>,
-    // Stashed Data for the Specific Execution Environment. Not part of the transport protocol
-    pub debug_stack: Option<&'static JsError>,
-}
+use crate::react_types::ReactComponentInfo;
 
 pub fn get_owner_stack_by_component_info_in_dev(component_info: &ReactComponentInfo) -> String {
     if !__DEV__ {

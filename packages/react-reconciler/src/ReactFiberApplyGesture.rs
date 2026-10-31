@@ -12,6 +12,7 @@ use shared::react_feature_flags::{
     ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_PROFILER_TIMER,
     ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
 };
+use shared::react_types::ViewTransitionProps;
 use webapi::console;
 
 use crate::react_fiber::ViewTransitionState;
@@ -34,7 +35,7 @@ use crate::react_fiber_mutation_tracking::{
     track_host_mutation,
 };
 use crate::react_fiber_view_transition_component::{
-    ViewTransitionProps, get_view_transition_class_name, get_view_transition_name,
+    get_view_transition_class_name, get_view_transition_name,
 };
 use crate::react_fiber_work_loop::schedule_gesture_transition_event;
 #[cfg_attr(rust_js, rust_js::name = "HookHasEffect")]

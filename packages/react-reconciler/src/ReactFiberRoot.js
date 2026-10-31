@@ -34,7 +34,6 @@ export function createFiberRoot(
   containerInfo,
   tag,
   hydrate,
-  // shared/ReactTypes' `ReactNodeList`.
   initialChildren,
   hydrationCallbacks,
   isStrictMode,

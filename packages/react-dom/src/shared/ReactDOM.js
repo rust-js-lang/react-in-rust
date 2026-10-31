@@ -51,7 +51,6 @@ export function unstable_batchedUpdates(fn, a) {
 }
 
 export function createPortal(
-  // shared/ReactTypes' `ReactNodeList`.
   children,
   // An `Element` or a `DocumentFragment`.
   container,

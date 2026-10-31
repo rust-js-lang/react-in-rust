@@ -6,13 +6,13 @@
 use std::rc::Rc;
 
 use js::{Kind, Unknown};
-use react_isomorphic::react_context::ReactContext;
 use shared::react_feature_flags::{
     DISABLE_LEGACY_MODE, ENABLE_LEGACY_HIDDEN, ENABLE_PROFILER_TIMER, ENABLE_SCOPE_API,
     ENABLE_SUSPENSE_CALLBACK, ENABLE_SUSPENSEY_IMAGES, ENABLE_TRANSITION_TRACING,
     ENABLE_VIEW_TRANSITION, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
     PASS_CHILDREN_WHEN_CLONING_PERSISTED_NODES,
 };
+use shared::react_types::{ReactContext, SuspenseListTailMode};
 
 use crate::scheduler::NOW as now;
 
@@ -60,7 +60,7 @@ use crate::react_fiber_offscreen_component::{OffscreenQueue, OffscreenState};
 use crate::react_fiber_root::RootState;
 use crate::react_fiber_scope::create_scope_instance;
 use crate::react_fiber_suspense_component::{
-    RetryQueue, SuspenseListRenderState, SuspenseListTailMode, SuspenseState, find_first_suspended,
+    RetryQueue, SuspenseListRenderState, SuspenseState, find_first_suspended,
 };
 use crate::react_fiber_suspense_context::{
     FORCE_SUSPENSE_FALLBACK, SUSPENSE_STACK_CURSOR, pop_suspense_handler,
