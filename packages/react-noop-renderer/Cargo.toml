@@ -12,6 +12,10 @@ path = "noop.rs"
 
 [dependencies]
 js.workspace = true
+react-isomorphic = { path = "../react" }
+react-reconciler = { path = "../react-reconciler" }
+shared.workspace = true
+webapi.workspace = true
 
 [lints]
 workspace = true

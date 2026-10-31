@@ -50,7 +50,11 @@ dependencies = [
 name = "react-noop-renderer"
 version = "0.0.0"
 dependencies = [
+ "react-isomorphic",
+ "react-reconciler",
  "rust-js-builtins",
+ "rust-js-webapi",
+ "shared",
 ]
 
 [[package]]

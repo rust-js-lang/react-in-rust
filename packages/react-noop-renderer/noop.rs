@@ -1,6 +1,10 @@
 //! React's renderer for testing the reconciler, `react-noop-renderer`: its
 //! modules, each its file's.
 
+#[path = "src/createReactNoop.rs"]
+pub mod create_react_noop;
+#[path = "src/ReactFiberConfigNoop.rs"]
+pub mod react_fiber_config_noop;
 #[path = "src/ReactFiberConfigNoopHydration.rs"]
 pub mod react_fiber_config_noop_hydration;
 #[path = "src/ReactFiberConfigNoopNoMutation.rs"]
