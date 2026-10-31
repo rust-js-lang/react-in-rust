@@ -51,18 +51,15 @@ export function runWithFiberInDEV(
   if (__DEV__) {
     const previousFiber = current;
     setCurrentFiber(fiber);
-    let result;
     try {
       if (fiber != null && fiber._debugTask != null) {
         const debugTask = fiber._debugTask;
-        result = debugTask.run(() => callback(arg0, arg1, arg2, arg3, arg4));
-      } else {
-        result = callback(arg0, arg1, arg2, arg3, arg4);
+        return debugTask.run(() => callback(arg0, arg1, arg2, arg3, arg4));
       }
+      return callback(arg0, arg1, arg2, arg3, arg4);
     } finally {
       setCurrentFiber(previousFiber);
     }
-    return result;
   }
   // These errors should never make it into a build so we don't need to encode them in codes.json
   // eslint-disable-next-line react-internal/prod-error-codes

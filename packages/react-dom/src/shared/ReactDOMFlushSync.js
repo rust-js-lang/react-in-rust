@@ -15,14 +15,11 @@ function flushSyncImpl(fn) {
   const previousUpdatePriority =
     ReactDOMSharedInternals.p; /* ReactDOMCurrentUpdatePriority */
 
-  let result;
   try {
     ReactSharedInternals.T = null;
     ReactDOMSharedInternals.p = DiscreteEventPriority;
     if (fn != null) {
-      result = fn();
-    } else {
-      result = undefined;
+      return fn();
     }
   } finally {
     ReactSharedInternals.T = previousTransition;
@@ -37,7 +34,6 @@ function flushSyncImpl(fn) {
       );
     }
   }
-  return result;
 }
 
 function flushSyncErrorInBuildsThatSupportLegacyMode(fn) {
