@@ -315,6 +315,15 @@ These differences from upstream's output are accepted:
   scheduleTimeout (`SCHEDULE_TIMEOUT`), so a host with neither
   requestAnimationFrame nor setTimeout gets undefined as upstream does, not
   a ReferenceError as the module loads.
+- **rd246** (the user; ADR 0262's rare and harmless): startViewTransition
+  and startGestureTransition give the browser a copy of the transition's
+  types, `transition_types.as_ref().map(|types| types.borrow().clone())`,
+  printed `transitionTypes?.slice()`, where upstream gives the shared array.
+  A borrow held across the call is refused (ADR 0863), rightly: a
+  startViewTransition may call `update` at once, and the commit it runs may
+  borrow the types. Only a replacement of startViewTransition that keeps
+  the array and compares it, or watches it change, tells them apart; the
+  browser copies `types` into the ViewTransition's set.
 
 - **gives_plain_data** (#411, 77029cdc4): a binding whose result is a fresh
   object of data properties that JS builds says so with
