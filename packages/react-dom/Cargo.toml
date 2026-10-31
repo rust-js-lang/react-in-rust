@@ -1,0 +1,22 @@
+[package]
+name = "react-dom"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# React DOM, `react-dom`. Its modules are its files, each beside the JS
+# rust-js writes from it; its root declares them and writes no JS of its
+# own.
+[lib]
+path = "react_dom.rs"
+
+[dependencies]
+js.workspace = true
+react-dom-bindings = { path = "../react-dom-bindings" }
+react-isomorphic = { path = "../react" }
+react-reconciler = { path = "../react-reconciler" }
+shared.workspace = true
+webapi.workspace = true
+
+[lints]
+workspace = true

@@ -19,8 +19,9 @@ pub type PreinitStyle = dyn Fn(&str, Option<&'static Unknown>, Option<&'static U
 /// `flushSync`, a form's reset and the resource hints call, the current
 /// renderer's, which calls the one it replaced.
 pub struct HostDispatcher {
-    /// `flushSyncWork`: whether any root was rendering.
-    pub f: &'static dyn Fn() -> bool,
+    /// `flushSyncWork`: whether any root was rendering, or nothing where no
+    /// renderer is there to say.
+    pub f: &'static dyn Fn() -> Option<bool>,
     /// `requestFormReset`.
     pub r: &'static dyn Fn(&HTMLFormElement),
     /// `prefetchDNS(href)`.
@@ -70,6 +71,17 @@ impl ReactDOMInternals {
     #[cfg_attr(rust_js, rust_js::link_name = "set p")]
     pub fn set_p(&self, current_update_priority: i32) {
         let _ = current_update_priority;
+        unreachable!()
+    }
+
+    /// `findDOMNode = findDOMNode`: the client's, given a class component,
+    /// its host instance, if any.
+    #[cfg_attr(rust_js, rust_js::link_name = "set findDOMNode")]
+    pub fn set_find_dom_node(
+        &self,
+        find_dom_node: Option<&'static dyn Fn(&'static Unknown) -> Option<&'static Unknown>>,
+    ) {
+        let _ = find_dom_node;
         unreachable!()
     }
 }

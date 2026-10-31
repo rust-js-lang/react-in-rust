@@ -4,7 +4,7 @@
 # read the rest. rust-js is a checkout beside this one, built from source.
 [workspace]
 resolver = "3"
-members = ["packages/react", "packages/react-dom-bindings", "packages/react-is", "packages/react-reconciler", "packages/react-server", "packages/scheduler", "packages/shared"]
+members = ["packages/react", "packages/react-dom", "packages/react-dom-bindings", "packages/react-is", "packages/react-reconciler", "packages/react-server", "packages/scheduler", "packages/shared"]
 
 [workspace.package]
 version = "0.0.0"

@@ -45,11 +45,11 @@ Each package's Rust is a crate in the workspace, and the crate's modules are
 the package's files: `packages/scheduler/src/SchedulerMinHeap.rs` compiles
 to `SchedulerMinHeap.js` and `.d.ts` beside it. A crate's root file is
 Cargo.toml's `[lib] path`: `shared.rs`, `src/forks/Scheduler.rs`,
-`react.rs`, `reconciler.rs` or `bindings.rs`. It declares each module as
+`react.rs`, `reconciler.rs`, `bindings.rs` or `react_dom.rs`. It declares each module as
 `#[path = "src/..."] pub mod ..;` and writes no JS of its own.
 
 The crates are `shared`, `scheduler`, `react-isomorphic` (packages/react),
-`react-reconciler` and `react-dom-bindings`. A new package is a new crate,
+`react-reconciler`, `react-dom-bindings` and `react-dom`. A new package is a new crate,
 added to the workspace's `members`. The generated `.js` and `.d.ts` files are
 committed, as upstream's JS was. Source maps are not committed (see
 `.gitignore`).
@@ -430,8 +430,9 @@ The port is split between sessions by package:
 
 - **The first session** has scheduler, shared, react, react-reconciler, and
   react-dom-bindings' client and events modules. react-dom-bindings' client
-  side is fully ported, ReactFiberConfigDOM included; react-dom's client
-  side (ReactDOMRoot, ReactDOMClient, react-dom/src/shared) is next.
+  side is fully ported, ReactFiberConfigDOM included. react-dom's
+  src/shared and ReactDOMSharedInternals are Rust; ReactDOMRoot, ReactDOMClient
+  and ReactDOMDefaultTransitionIndicator wait on rust-js (rd282-rd284).
 - **The second session** has react-server, react-client, react-server-dom-*
   and react-dom-bindings/src/server.
 

@@ -5695,14 +5695,14 @@ js::on_load! {
         });
 }
 
-fn flush_sync_work() -> bool {
+fn flush_sync_work() -> Option<bool> {
     if DISABLE_LEGACY_MODE {
         let previous_was_rendering =
             PREVIOUS_DISPATCHER.with(|previous_dispatcher| (previous_dispatcher.f)()); /* flushSyncWork */
         let was_rendering = flush_sync_work_on_all_roots();
         // Since multiple dispatchers can flush sync work during a single flushSync call
         // we need to return true if any of them were rendering.
-        previous_was_rendering || was_rendering
+        Some(previous_was_rendering == Some(true) || was_rendering)
     } else {
         panic!(
             "flushSyncWork should not be called from builds that support legacy mode. This is a bug in React."

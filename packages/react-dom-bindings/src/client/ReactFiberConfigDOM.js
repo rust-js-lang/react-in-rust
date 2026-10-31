@@ -4717,7 +4717,7 @@ function flushSyncWork() {
     const wasRendering = flushSyncWorkOnAllRoots();
     // Since multiple dispatchers can flush sync work during a single flushSync call
     // we need to return true if any of them were rendering.
-    return previousWasRendering || wasRendering;
+    return !!previousWasRendering || wasRendering;
   } else {
     throw new Error(
       'flushSyncWork should not be called from builds that support legacy mode. This is a bug in React.',

@@ -21,8 +21,11 @@ export type PreinitStyle = (
  * renderer's, which calls the one it replaced.
  */
 export interface HostDispatcher {
-  /** `flushSyncWork`: whether any root was rendering. */
-  f: () => boolean;
+  /**
+   * `flushSyncWork`: whether any root was rendering, or nothing where no
+   * renderer is there to say.
+   */
+  f: () => boolean | null | undefined;
   /** `requestFormReset`. */
   r: (element: HTMLFormElement) => void;
   /** `prefetchDNS(href)`. */

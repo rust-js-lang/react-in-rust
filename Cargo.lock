@@ -3,6 +3,18 @@
 version = 4
 
 [[package]]
+name = "react-dom"
+version = "0.0.0"
+dependencies = [
+ "react-dom-bindings",
+ "react-isomorphic",
+ "react-reconciler",
+ "rust-js-builtins",
+ "rust-js-webapi",
+ "shared",
+]
+
+[[package]]
 name = "react-dom-bindings"
 version = "0.0.0"
 dependencies = [
