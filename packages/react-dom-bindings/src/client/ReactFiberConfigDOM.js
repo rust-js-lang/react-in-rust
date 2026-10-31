@@ -801,18 +801,19 @@ export function commitMount(
       if (newProps.src) {
         const src = $unwrap(newProps.src);
         if (enableSrcObject && typeof src === 'object') {
+          // For object src, we can't just set the src again to the same blob URL because it might have
+          // already revoked if it loaded before this. However, we can create a new blob URL and set that.
+          // This is relatively cheap since the blob is already in memory but this might cause some
+          // duplicated work.
+          // TODO: We could maybe detect if load hasn't fired yet and if so reuse the URL.
           try {
-            // For object src, we can't just set the src again to the same blob URL because it might have
-            // already revoked if it loaded before this. However, we can create a new blob URL and set that.
-            // This is relatively cheap since the blob is already in memory but this might cause some
-            // duplicated work.
-            // TODO: We could maybe detect if load hasn't fired yet and if so reuse the URL.
             setSrcObject(domElement, type, src);
             return;
-          } catch {}
-          // If URL.createObjectURL() errors, it was probably some other object type
-          // that should be toString:ed instead, so we just fall-through to the normal
-          // path.
+          } catch {
+            // If URL.createObjectURL() errors, it was probably some other object type
+            // that should be toString:ed instead, so we just fall-through to the normal
+            // path.
+          }
         }
         domElement.src = src;
       } else if (newProps.srcSet) {
@@ -5228,8 +5229,8 @@ export function getResource(type, currentProps, pendingProps, currentResource) {
       if (
         typeof src === 'string' &&
         async &&
-        typeof async !== 'symbol' &&
-        typeof async !== 'function'
+        typeof async !== 'function' &&
+        typeof async !== 'symbol'
       ) {
         const key = getScriptKey(src);
         const scripts = getResourcesFromRoot(resourceRoot).hoistableScripts;

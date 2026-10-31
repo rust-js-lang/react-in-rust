@@ -21,7 +21,10 @@ export default function estimateBandwidth() {
   // Estimate the current bandwidth for downloading static resources given resources already
   // loaded.
   // $FlowFixMe[method-unbinding]
-  if (typeof performance.getEntriesByType === 'function') {
+  if (
+    typeof performance !== 'undefined' &&
+    typeof performance.getEntriesByType === 'function'
+  ) {
     let count = 0;
     let bits = 0;
     const resourceEntries = performance.getEntriesByType('resource');

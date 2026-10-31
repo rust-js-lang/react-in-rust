@@ -9,7 +9,6 @@ import {
   findHostInstance,
   injectIntoDevTools,
 } from '../../../react-reconciler/src/ReactFiberReconciler.js';
-import * as ReactFiberReconciler from '../../../react-reconciler/src/ReactFiberReconciler.js';
 import {canUseDOM} from '../../../shared/ExecutionEnvironment.js';
 import ReactDOMSharedInternals from '../../../shared/ReactDOMSharedInternals.js';
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';

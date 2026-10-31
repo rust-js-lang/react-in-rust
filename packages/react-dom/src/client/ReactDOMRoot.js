@@ -27,7 +27,6 @@ import {
   updateContainer,
   updateContainerSync,
 } from '../../../react-reconciler/src/ReactFiberReconciler.js';
-import * as ReactFiberReconciler from '../../../react-reconciler/src/ReactFiberReconciler.js';
 import {ConcurrentRoot} from '../../../react-reconciler/src/ReactRootTags.js';
 import {
   disableCommentsAsDOMContainers,

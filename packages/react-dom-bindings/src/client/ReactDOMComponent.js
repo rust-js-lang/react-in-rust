@@ -573,8 +573,8 @@ function setProp(domElement, tag, key, value, props, prevValue) {
         }
         if (
           value == null ||
-          typeof value === 'boolean' ||
-          typeof value === 'symbol'
+          typeof value === 'symbol' ||
+          typeof value === 'boolean'
         ) {
           domElement.removeAttribute(key);
         } else {
@@ -643,11 +643,11 @@ function setProp(domElement, tag, key, value, props, prevValue) {
     // disabled with `removeAttribute`. We have special logic for handling this.
     case 'multiple':
       domElement.multiple =
-        value && typeof value !== 'symbol' && typeof value !== 'function';
+        value && typeof value !== 'function' && typeof value !== 'symbol';
       break;
     case 'muted':
       domElement.muted =
-        value && typeof value !== 'symbol' && typeof value !== 'function';
+        value && typeof value !== 'function' && typeof value !== 'symbol';
       break;
     case 'suppressContentEditableWarning':
     case 'suppressHydrationWarning':
@@ -667,9 +667,9 @@ function setProp(domElement, tag, key, value, props, prevValue) {
     case 'xlinkHref':
       if (
         value == null ||
+        typeof value === 'function' ||
         typeof value === 'boolean' ||
-        typeof value === 'symbol' ||
-        typeof value === 'function'
+        typeof value === 'symbol'
       ) {
         domElement.removeAttribute('xlink:href');
       } else {
@@ -696,8 +696,8 @@ function setProp(domElement, tag, key, value, props, prevValue) {
       // insensitive they also work even though we canonically use lower case.
       if (
         value != null &&
-        typeof value !== 'symbol' &&
-        typeof value !== 'function'
+        typeof value !== 'function' &&
+        typeof value !== 'symbol'
       ) {
         if (__DEV__) {
           checkAttributeStringCoercion(value, key);
@@ -745,7 +745,7 @@ function setProp(domElement, tag, key, value, props, prevValue) {
           );
         }
       }
-      if (value && typeof value !== 'symbol' && typeof value !== 'function') {
+      if (value && typeof value !== 'function' && typeof value !== 'symbol') {
         domElement.setAttribute(key, '');
       } else {
         domElement.removeAttribute(key);
@@ -763,8 +763,8 @@ function setProp(domElement, tag, key, value, props, prevValue) {
       } else if (
         value !== false &&
         value != null &&
-        typeof value !== 'symbol' &&
-        typeof value !== 'function'
+        typeof value !== 'function' &&
+        typeof value !== 'symbol'
       ) {
         if (__DEV__) {
           checkAttributeStringCoercion(value, key);
@@ -781,8 +781,8 @@ function setProp(domElement, tag, key, value, props, prevValue) {
       // These are HTML attributes that must be positive numbers.
       if (
         value != null &&
-        typeof value !== 'symbol' &&
         typeof value !== 'function' &&
+        typeof value !== 'symbol' &&
         !isNaN(value) &&
         value >= 1
       ) {
@@ -799,8 +799,8 @@ function setProp(domElement, tag, key, value, props, prevValue) {
       // These are HTML attributes that must be numbers.
       if (
         value != null &&
-        typeof value !== 'symbol' &&
         typeof value !== 'function' &&
+        typeof value !== 'symbol' &&
         !isNaN(value)
       ) {
         if (__DEV__) {
@@ -2509,8 +2509,9 @@ function diffHydratedGenericElement(
                 serverDifferences,
               );
               continue;
-            } catch {}
-            // If not, just fall through to the normal toString flow.
+            } catch {
+              // If not, just fall through to the normal toString flow.
+            }
           } else if (__DEV__) {
             try {
               // This should always error.

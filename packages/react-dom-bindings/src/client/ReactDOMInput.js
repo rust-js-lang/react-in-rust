@@ -195,14 +195,14 @@ export function updateInput(
     // TODO: Should really update input value tracking for the whole radio
     // button group in an effect or something (similar to #27024)
     node.checked =
-      !!checked && typeof checked !== 'symbol' && typeof checked !== 'function';
+      !!checked && typeof checked !== 'function' && typeof checked !== 'symbol';
   }
 
   if (
     name != null &&
-    typeof name !== 'boolean' &&
+    typeof name !== 'function' &&
     typeof name !== 'symbol' &&
-    typeof name !== 'function'
+    typeof name !== 'boolean'
   ) {
     if (__DEV__) {
       checkAttributeStringCoercion(name, 'name');
@@ -309,8 +309,8 @@ export function initInput(
   // TODO: This 'function' or 'symbol' check isn't replicated in other places
   // so this semantic is inconsistent.
   const initialChecked =
-    typeof checkedOrDefault !== 'symbol' &&
     typeof checkedOrDefault !== 'function' &&
+    typeof checkedOrDefault !== 'symbol' &&
     !!checkedOrDefault;
 
   if (isHydrating && !enableHydrationChangeEvent) {
@@ -342,9 +342,9 @@ export function initInput(
   // Name needs to be set at the end so that it applies atomically to connected radio buttons.
   if (
     name != null &&
-    typeof name !== 'boolean' &&
+    typeof name !== 'function' &&
     typeof name !== 'symbol' &&
-    typeof name !== 'function'
+    typeof name !== 'boolean'
   ) {
     if (__DEV__) {
       checkAttributeStringCoercion(name, 'name');
