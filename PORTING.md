@@ -294,6 +294,27 @@ These differences from upstream's output are accepted:
   its `<style>` tags', and an `insertResource` helper of what both insert,
   as Rust writes a loop of two modes. Upstream's restore reads
   `previousClassName` from the name's slot, which the port keeps.
+- **rd158** (the user; rust-js's guide, difference 32): a closure that
+  captures nothing, held as a `fn`, and only calls one host function with
+  what it's given (its optional parameters `None`) is that function:
+  `|callback| { js::set_timeout(callback, None); }` prints `setTimeout`, as
+  in ReactFiberConfigDOM's scheduleMicrotask. A JS caller of the exported
+  value sees two differences, both accepted: the function gives
+  setTimeout's id where the closure gave undefined, and a delay or other
+  extra arguments it passes reach setTimeout where the closure dropped them.
+- **rd196 and rd212** (the user): a closure whose parameters are all unused
+  and whose body only calls a function with no arguments, a function JS
+  may call with any `this` and arguments it ignores, is that function:
+  `then_with(move |_| ping(), move |_| ping())` prints `then(ping, ping)`,
+  and `move |_| layout_callback()` prints `layoutCallback`. The function's
+  `length` and identity differ from the closure's, seen only by a JS caller
+  of an exported value.
+- **rd236** (the user): localRequestAnimationFrame's callback takes
+  `Option<f64>`, requestAnimationFrame's time as `Some` and nothing, from
+  the setTimeout that stands in for it, as `None`. Its fallback is upstream's
+  scheduleTimeout (`SCHEDULE_TIMEOUT`), so a host with neither
+  requestAnimationFrame nor setTimeout gets undefined as upstream does, not
+  a ReferenceError as the module loads.
 
 - **gives_plain_data** (#411, 77029cdc4): a binding whose result is a fresh
   object of data properties that JS builds says so with
