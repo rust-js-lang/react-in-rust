@@ -1658,7 +1658,7 @@ fn create_child_reconciler(should_track_side_effects: bool) -> Box<ChildReconcil
 
         let mut step = new_children.next();
         while let Some(fiber) = &old_fiber
-            && step.done != Some(true)
+            && !step.done.unwrap_or(false)
         {
             if fiber.index.get() > new_idx {
                 next_old_fiber = old_fiber;
@@ -1717,7 +1717,7 @@ fn create_child_reconciler(should_track_side_effects: bool) -> Box<ChildReconcil
             step = new_children.next();
         }
 
-        if step.done == Some(true) {
+        if step.done.unwrap_or(false) {
             // We've reached the end of the new children. We can delete the rest.
             delete_remaining_children(should_track_side_effects, return_fiber, old_fiber);
             if get_is_hydrating() {
@@ -1730,7 +1730,7 @@ fn create_child_reconciler(should_track_side_effects: bool) -> Box<ChildReconcil
         let Some(old_fiber) = old_fiber else {
             // If we don't have any more existing children we can choose a fast path
             // since the rest will all be insertions.
-            while step.done != Some(true) {
+            while !step.done.unwrap_or(false) {
                 let new_fiber = create_child(return_fiber, step.value, lanes);
                 if let Some(new_fiber) = new_fiber {
                     if __DEV__ {
@@ -1770,7 +1770,7 @@ fn create_child_reconciler(should_track_side_effects: bool) -> Box<ChildReconcil
         let existing_children = map_remaining_children(old_fiber);
 
         // Keep scanning and use the map to restore deleted items as moves.
-        while step.done != Some(true) {
+        while !step.done.unwrap_or(false) {
             let new_fiber =
                 update_from_map(existing_children, return_fiber, new_idx, step.value, lanes);
             if let Some(new_fiber) = new_fiber {
@@ -2459,7 +2459,7 @@ pub fn validate_suspense_list_children(
                 if let Some(children_iterator) = children_iterator {
                     let mut step = children_iterator.next();
                     let mut i = 0;
-                    while step.done != Some(true) {
+                    while !step.done.unwrap_or(false) {
                         if !validate_suspense_list_nested_child(step.value, i) {
                             return;
                         }

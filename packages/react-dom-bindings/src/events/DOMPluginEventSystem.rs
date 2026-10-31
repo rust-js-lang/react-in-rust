@@ -515,18 +515,19 @@ fn add_trapped_event_listener(
         }
     }
 
-    target_container =
-        if ENABLE_LEGACY_FB_SUPPORT && is_deferred_listener_for_legacy_fb_support == Some(true) {
-            // A Document container's ownerDocument is null, so it must be used
-            // as the deferral target itself.
-            if js::strict_equals(js::get(target_container, "nodeType"), DOCUMENT_NODE) {
-                target_container
-            } else {
-                unsafe { js::cast(js::get(target_container, "ownerDocument")) }
-            }
-        } else {
+    target_container = if ENABLE_LEGACY_FB_SUPPORT
+        && is_deferred_listener_for_legacy_fb_support.unwrap_or(false)
+    {
+        // A Document container's ownerDocument is null, so it must be used
+        // as the deferral target itself.
+        if js::strict_equals(js::get(target_container, "nodeType"), DOCUMENT_NODE) {
             target_container
-        };
+        } else {
+            unsafe { js::cast(js::get(target_container, "ownerDocument")) }
+        }
+    } else {
+        target_container
+    };
 
     let unsubscribe_listener = Rc::new(Cell::new(None));
     // When legacyFBSupport is enabled, it's for when we
@@ -540,7 +541,7 @@ fn add_trapped_event_listener(
     // browsers do not support this today, and given this is
     // to support legacy code patterns, it's likely they'll
     // need support for such browsers.
-    if ENABLE_LEGACY_FB_SUPPORT && is_deferred_listener_for_legacy_fb_support == Some(true) {
+    if ENABLE_LEGACY_FB_SUPPORT && is_deferred_listener_for_legacy_fb_support.unwrap_or(false) {
         let original_listener = listener;
         let dom_event_name = dom_event_name.to_owned();
         let unsubscribe_listener = Rc::clone(&unsubscribe_listener);

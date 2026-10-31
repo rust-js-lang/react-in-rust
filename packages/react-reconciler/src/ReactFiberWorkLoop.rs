@@ -6151,7 +6151,7 @@ fn should_force_flush_fallbacks_in_dev() -> bool {
 fn warn_if_updates_not_wrapped_with_act_dev(fiber: &Rc<Fiber>) {
     if __DEV__ {
         if DISABLE_LEGACY_MODE || (fiber.mode.get() & CONCURRENT_MODE) != 0 {
-            if is_concurrent_act_environment() != Some(true) {
+            if !is_concurrent_act_environment().unwrap_or(false) {
                 // Not in an act environment. No need to warn.
                 return;
             }
@@ -6208,7 +6208,7 @@ fn warn_if_updates_not_wrapped_with_act_dev(fiber: &Rc<Fiber>) {
 fn warn_if_suspense_resolution_not_wrapped_with_act_dev(root: &FiberRoot) {
     if __DEV__
         && (DISABLE_LEGACY_MODE || root.tag != LEGACY_ROOT)
-        && is_concurrent_act_environment() == Some(true)
+        && is_concurrent_act_environment().unwrap_or(false)
         && REACT_SHARED_INTERNALS.act_queue().is_none()
     {
         console::error((

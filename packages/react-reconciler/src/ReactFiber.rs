@@ -220,7 +220,7 @@ fn create_fiber(
         fiber.debug_task.set(js::null());
         fiber.debug_needs_remount.set(Some(false));
         fiber.debug_hook_types.replace(js::null());
-        if HAS_BAD_MAP_POLYFILL.get() != Some(true)
+        if !HAS_BAD_MAP_POLYFILL.get().unwrap_or(false)
             && js::is_function(js::object::prevent_extensions::<Fiber>)
         {
             js::object::prevent_extensions(&*fiber);

@@ -283,7 +283,7 @@ pub fn describe_native_component_frame(
         );
         // Before ES6, the `name` property was not configurable.
         if let Some(name_prop_descriptor) = name_prop_descriptor
-            && name_prop_descriptor.configurable == Some(true)
+            && name_prop_descriptor.configurable.unwrap_or(false)
         {
             // V8 utilizes a function's `name` property when generating a stack trace.
             object::define_property(

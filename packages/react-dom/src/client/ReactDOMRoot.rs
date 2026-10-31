@@ -196,7 +196,7 @@ pub fn create_root(
                 ),));
             }
         }
-        if js::strict_equals(options.unstable_strict_mode, true) {
+        if options.unstable_strict_mode == Some(true) {
             is_strict_mode = true;
         }
         if let Some(prefix) = &options.identifier_prefix {
@@ -323,7 +323,7 @@ pub fn hydrate_root(
     let mut transition_callbacks = js::null();
     let mut form_state = js::null();
     if let Some(options) = options {
-        if js::strict_equals(options.unstable_strict_mode, true) {
+        if options.unstable_strict_mode == Some(true) {
             is_strict_mode = true;
         }
         if let Some(prefix) = &options.identifier_prefix {

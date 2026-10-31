@@ -4587,7 +4587,7 @@ pub fn begin_work(
     render_lanes: Lanes,
 ) -> Option<Rc<Fiber>> {
     if __DEV__
-        && work_in_progress.debug_needs_remount.get() == Some(true)
+        && work_in_progress.debug_needs_remount.get().unwrap_or(false)
         && let Some(current) = current
     {
         // This will restart the begin phase with a new fiber.

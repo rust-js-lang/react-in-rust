@@ -29,7 +29,7 @@ impl Drop for RestoreFlushSync {
         let was_in_render = (REACT_DOM_SHARED_INTERNALS /* ReactDOMCurrentDispatcher */
             .d()
             .f)(); /* flushSyncWork */
-        if __DEV__ && was_in_render == Some(true) {
+        if __DEV__ && was_in_render.unwrap_or(false) {
             console::error((concat!(
                 "flushSync was called from inside a lifecycle method. React cannot ",
                 "flush when React is already rendering. Consider moving this call to ",

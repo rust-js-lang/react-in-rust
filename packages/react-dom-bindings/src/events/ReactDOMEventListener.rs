@@ -48,7 +48,7 @@ thread_local! {
 // This is exported in FB builds for use by legacy FB layer infra.
 // We'd like to remove this but it's not clear if this is safe.
 pub fn set_enabled(enabled: Option<bool>) {
-    ENABLED.set(enabled == Some(true));
+    ENABLED.set(enabled.is_some_and(|enabled| enabled));
 }
 
 pub fn is_enabled() -> bool {

@@ -3917,7 +3917,7 @@ fn remove_event_listener_from_child(
 }
 
 fn is_once_option(opts: Option<&EventListenerOptionsOrUseCapture>) -> bool {
-    matches!(opts, Some(AddEventListenerOptionsOrBool::AddEventListenerOptions(opts)) if opts.once == Some(true))
+    matches!(opts, Some(AddEventListenerOptionsOrBool::AddEventListenerOptions(opts)) if opts.once.unwrap_or(false))
 }
 
 fn get_attach_options(
@@ -3927,7 +3927,7 @@ fn get_attach_options(
     match opts {
         None | Some(AddEventListenerOptionsOrBool::Bool(_)) => opts,
         Some(AddEventListenerOptionsOrBool::AddEventListenerOptions(options))
-            if options.once != Some(true)
+            if !options.once.unwrap_or(false)
                 && !js::instance_of(options.signal, js::class::<AbortSignal>()) =>
         {
             opts
@@ -3949,7 +3949,14 @@ fn normalize_listener_options(opts: Option<&EventListenerOptionsOrUseCapture>) -
             format!("c={}", if *opts { "1" } else { "0" })
         }
         Some(AddEventListenerOptionsOrBool::AddEventListenerOptions(opts)) => {
-            format!("c={}", if opts.capture == Some(true) { "1" } else { "0" })
+            format!(
+                "c={}",
+                if opts.capture.unwrap_or(false) {
+                    "1"
+                } else {
+                    "0"
+                }
+            )
         }
     }
 }
@@ -5702,7 +5709,7 @@ fn flush_sync_work() -> Option<bool> {
         let was_rendering = flush_sync_work_on_all_roots();
         // Since multiple dispatchers can flush sync work during a single flushSync call
         // we need to return true if any of them were rendering.
-        Some(previous_was_rendering == Some(true) || was_rendering)
+        Some(previous_was_rendering.unwrap_or(false) || was_rendering)
     } else {
         panic!(
             "flushSyncWork should not be called from builds that support legacy mode. This is a bug in React."

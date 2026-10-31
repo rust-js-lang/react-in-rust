@@ -665,7 +665,7 @@ fn create_react_noop(
                     js::null()
                 }),
                 prop: Cell::new(new_props.prop),
-                hidden: Cell::new(new_props.hidden == Some(true)),
+                hidden: Cell::new(new_props.hidden.is_some_and(|hidden| hidden)),
                 context: instance.context,
                 src: RefCell::new(None),
             };
@@ -880,7 +880,7 @@ fn create_react_noop(
                             js::null()
                         }),
                         prop: Cell::new(props.prop),
-                        hidden: Cell::new(props.hidden == Some(true)),
+                        hidden: Cell::new(props.hidden.is_some_and(|hidden| hidden)),
                         context: host_context,
                         src: RefCell::new(None),
                     };
@@ -1199,7 +1199,9 @@ fn create_react_noop(
                 }
                 host_update_counter.set(host_update_counter.get() + 1.0);
                 instance.prop.set(new_props.prop);
-                instance.hidden.set(new_props.hidden == Some(true));
+                instance
+                    .hidden
+                    .set(new_props.hidden.is_some_and(|hidden| hidden));
 
                 if r#type == "suspensey-thing"
                     && let Kind::String(src) = js::classify(new_props.src)
@@ -1246,7 +1248,7 @@ fn create_react_noop(
         },
 
         unhide_instance: |instance, props| {
-            if props.hidden != Some(true) {
+            if !props.hidden.unwrap_or(false) {
                 instance.hidden.set(false);
             }
         },

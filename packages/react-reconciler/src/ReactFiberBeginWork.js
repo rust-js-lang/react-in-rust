@@ -1498,7 +1498,7 @@ function updateClassComponent(
     // This is used by DevTools to force a boundary to error.
     const value = shouldError(workInProgress);
     if (value != null) {
-      if (!value) {
+      if (value === false) {
         // We previously simulated an error on this boundary
         // so the instance must have been constructed in a previous
         // commit.

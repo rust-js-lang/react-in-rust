@@ -291,7 +291,7 @@ fn map_into_array(
             // $FlowFixMe[incompatible-use] `iteratorFn` might return null according to typing.
             loop {
                 let step = iterator.next();
-                if step.done == Some(true) {
+                if step.done.unwrap_or(false) {
                     break;
                 }
                 let child = step.value;

@@ -393,7 +393,7 @@ pub fn unstable_schedule_callback(
 
 #[cfg_attr(rust_js, rust_js::name = "unstable_cancelCallback")]
 pub fn unstable_cancel_callback(task: &Task) {
-    if ENABLE_PROFILING && task.is_queued.get() == Some(true) {
+    if ENABLE_PROFILING && task.is_queued.get().unwrap_or(false) {
         let current_time = get_current_time();
         mark_task_canceled(task, current_time);
         task.is_queued.set(Some(false));
