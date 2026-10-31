@@ -199,9 +199,9 @@ function ReactElement(type, key, props, owner, debugStack, debugTask) {
       key: key ?? null,
 
       props,
-      _owner: owner ?? null,
 
       // Record the component responsible for creating this element.
+      _owner: owner ?? null,
       ref: null,
     };
     if (ref != null) {
