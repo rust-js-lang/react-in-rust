@@ -4309,7 +4309,7 @@ fn report_view_transition_error(error: Option<&'static Unknown>) {
         return;
     }
     let root = PENDING_EFFECTS_ROOT.with_borrow(Clone::clone).unwrap();
-    let on_recoverable_error = root.on_recoverable_error;
+    let on_recoverable_error = &root.on_recoverable_error;
     on_recoverable_error(error, &make_error_info(js::null()));
 }
 
@@ -4666,7 +4666,7 @@ fn flush_spawned_work() {
         };
         // There were errors during this render, but recovered from them without
         // needing to surface it to the UI. We log them here.
-        let on_recoverable_error = root.on_recoverable_error;
+        let on_recoverable_error = &root.on_recoverable_error;
         let mut i = 0;
         while i < recoverable_errors.borrow().len() {
             let recoverable_error = Rc::clone(&recoverable_errors.borrow()[i]);

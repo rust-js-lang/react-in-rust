@@ -57,9 +57,9 @@ pub fn create_fiber_root(
     identifier_prefix: String,
     // shared/ReactTypes' `ReactFormState<any, any>`.
     form_state: Option<&'static Unknown>,
-    on_uncaught_error: &'static OnError,
-    on_caught_error: &'static OnCaughtError,
-    on_recoverable_error: &'static OnError,
+    on_uncaught_error: Rc<OnError>,
+    on_caught_error: Rc<OnCaughtError>,
+    on_recoverable_error: Rc<OnError>,
     on_default_transition_indicator: &'static OnDefaultTransitionIndicator,
     transition_callbacks: Option<&'static TransitionTracingCallbacks>,
 ) -> Rc<FiberRoot> {

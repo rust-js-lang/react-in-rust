@@ -178,9 +178,9 @@ pub fn create_root(
     let concurrent_updates_by_default_override = false;
     let mut is_strict_mode = false;
     let mut identifier_prefix = String::new();
-    let mut on_uncaught_error: &'static OnError = &default_on_uncaught_error;
-    let mut on_caught_error: &'static OnCaughtError = &default_on_caught_error;
-    let mut on_recoverable_error: &'static OnError = &default_on_recoverable_error;
+    let mut on_uncaught_error: Rc<OnError> = Rc::new(default_on_uncaught_error);
+    let mut on_caught_error: Rc<OnCaughtError> = Rc::new(default_on_caught_error);
+    let mut on_recoverable_error: Rc<OnError> = Rc::new(default_on_recoverable_error);
     let mut on_default_transition_indicator: &'static OnDefaultTransitionIndicator =
         &default_on_default_transition_indicator;
     let mut transition_callbacks = js::null();
@@ -210,13 +210,13 @@ pub fn create_root(
             identifier_prefix = prefix.clone();
         }
         if let Some(on_error) = options.on_uncaught_error {
-            on_uncaught_error = on_error;
+            on_uncaught_error = Rc::new(on_error);
         }
         if let Some(on_error) = options.on_caught_error {
-            on_caught_error = on_error;
+            on_caught_error = Rc::new(on_error);
         }
         if let Some(on_error) = options.on_recoverable_error {
-            on_recoverable_error = on_error;
+            on_recoverable_error = Rc::new(on_error);
         }
         if ENABLE_DEFAULT_TRANSITION_INDICATOR.with(|&enabled| enabled)
             && let Some(indicator) = options.on_default_transition_indicator
@@ -322,9 +322,9 @@ pub fn hydrate_root(
     let concurrent_updates_by_default_override = false;
     let mut is_strict_mode = false;
     let mut identifier_prefix = String::new();
-    let mut on_uncaught_error: &'static OnError = &default_on_uncaught_error;
-    let mut on_caught_error: &'static OnCaughtError = &default_on_caught_error;
-    let mut on_recoverable_error: &'static OnError = &default_on_recoverable_error;
+    let mut on_uncaught_error: Rc<OnError> = Rc::new(default_on_uncaught_error);
+    let mut on_caught_error: Rc<OnCaughtError> = Rc::new(default_on_caught_error);
+    let mut on_recoverable_error: Rc<OnError> = Rc::new(default_on_recoverable_error);
     let mut on_default_transition_indicator: &'static OnDefaultTransitionIndicator =
         &default_on_default_transition_indicator;
     let mut transition_callbacks = js::null();
@@ -337,13 +337,13 @@ pub fn hydrate_root(
             identifier_prefix = prefix.clone();
         }
         if let Some(on_error) = options.on_uncaught_error {
-            on_uncaught_error = on_error;
+            on_uncaught_error = Rc::new(on_error);
         }
         if let Some(on_error) = options.on_caught_error {
-            on_caught_error = on_error;
+            on_caught_error = Rc::new(on_error);
         }
         if let Some(on_error) = options.on_recoverable_error {
-            on_recoverable_error = on_error;
+            on_recoverable_error = Rc::new(on_error);
         }
         if ENABLE_DEFAULT_TRANSITION_INDICATOR.with(|&enabled| enabled)
             && let Some(indicator) = options.on_default_transition_indicator

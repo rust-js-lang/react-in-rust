@@ -443,9 +443,9 @@ pub struct FiberRoot {
     // a reference to.
     pub identifier_prefix: String,
 
-    pub on_uncaught_error: &'static OnError,
-    pub on_caught_error: &'static OnCaughtError,
-    pub on_recoverable_error: &'static OnError,
+    pub on_uncaught_error: Rc<OnError>,
+    pub on_caught_error: Rc<OnCaughtError>,
+    pub on_recoverable_error: Rc<OnError>,
 
     // enableDefaultTransitionIndicator only
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]

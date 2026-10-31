@@ -158,7 +158,7 @@ pub fn log_uncaught_error(root: &FiberRoot, error_info: &CapturedValue<Option<&'
                 .push(error);
             return;
         }
-        let on_uncaught_error = root.on_uncaught_error;
+        let on_uncaught_error = &root.on_uncaught_error;
         on_uncaught_error(
             error,
             &ErrorInfo {
@@ -190,7 +190,7 @@ pub fn log_caught_error(
             ERROR_BOUNDARY_NAME.set(get_component_name_from_fiber(boundary));
         }
         let error = error_info.value;
-        let on_caught_error = root.on_caught_error;
+        let on_caught_error = &root.on_caught_error;
         on_caught_error(
             error,
             &CaughtErrorInfo {
