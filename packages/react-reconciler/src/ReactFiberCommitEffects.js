@@ -220,7 +220,7 @@ export function commitHookEffectListMount(flags, finishedWork) {
         }
         effect = effect.next;
         if (effect === firstEffect) {
-          return;
+          break;
         }
       }
     }
@@ -242,7 +242,7 @@ export function commitHookEffectListUnmount(
     if (lastEffect != null) {
       const firstEffect = lastEffect.next;
       let effect = firstEffect;
-      while (true) {
+      do {
         if ((effect.tag & flags) === flags) {
           // Unmount
           const inst = effect.inst;
@@ -275,10 +275,7 @@ export function commitHookEffectListUnmount(
           }
         }
         effect = effect.next;
-        if (effect === firstEffect) {
-          return;
-        }
-      }
+      } while (effect !== firstEffect);
     }
   } catch (error) {
     const returnFiber = finishedWork.return;

@@ -1290,7 +1290,7 @@ function warnForBlockInsideInline(instance) {
           instance.tagName,
           node.tagName,
         );
-        return;
+        break;
       }
       const firstChild = node.firstChild;
       if (firstChild !== null) {
@@ -1298,7 +1298,7 @@ function warnForBlockInsideInline(instance) {
         continue;
       }
       if (node === instance) {
-        return;
+        break;
       }
       while (node.nextSibling === null) {
         const parentNode = node.parentNode;
