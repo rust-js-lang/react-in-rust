@@ -173,6 +173,7 @@ export function lazy(ctor) {
     // create a lazy inside an owner though since they should be in module scope.
     const owner = null;
     // eslint-disable-next-line react-internal/no-production-logging
+    const error = new Error('react-stack-top-frame');
     const createTask = console.createTask;
     const ioInfo = {
       name: 'lazy',
@@ -180,7 +181,7 @@ export function lazy(ctor) {
       end: -1,
       value: null,
       owner,
-      debugStack: new Error('react-stack-top-frame'),
+      debugStack: error,
       debugTask: createTask != null ? createTask('lazy()') : null,
     };
     payload._ioInfo = ioInfo;

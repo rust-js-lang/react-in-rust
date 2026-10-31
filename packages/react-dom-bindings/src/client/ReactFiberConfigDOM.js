@@ -3793,23 +3793,20 @@ export function canHydrateInstance(instance, type, props, inRootOrSingleton) {
           const rel = element.getAttribute('rel');
           if (rel === 'stylesheet' && element.hasAttribute('data-precedence')) {
             // This is a stylesheet resource
+          } else if (
+            rel !== anyProps.rel ||
+            element.getAttribute('href') !==
+              (anyProps.href == null || anyProps.href === ''
+                ? null
+                : anyProps.href) ||
+            element.getAttribute('crossorigin') !==
+              (anyProps.crossOrigin ?? null) ||
+            element.getAttribute('title') !== (anyProps.title ?? null)
+          ) {
+            // rel + href should usually be enough to uniquely identify a link however crossOrigin can vary for rel preconnect
+            // and title could vary for rel alternate
           } else {
-            if (rel === anyProps.rel) {
-              const unknown =
-                anyProps.href == null || anyProps.href === ''
-                  ? null
-                  : anyProps.href;
-              if (
-                element.getAttribute('href') === unknown &&
-                element.getAttribute('crossorigin') ===
-                  (anyProps.crossOrigin ?? null) &&
-                element.getAttribute('title') === (anyProps.title ?? null)
-              ) {
-                // rel + href should usually be enough to uniquely identify a link however crossOrigin can vary for rel preconnect
-                // and title could vary for rel alternate
-                return element;
-              }
-            }
+            return element;
           }
           break;
         }
