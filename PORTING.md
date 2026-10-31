@@ -226,6 +226,12 @@ commit message.
 - **Port fallbacks too** (the user, 2026-10-22). A polyfill, or a branch
   for a host without `Object.is` or `performance.now`, is the program's to
   express, whatever hosts rust-js targets.
+- **Write a host feature test as upstream does.** `typeof X === 'function'`
+  is `js::is_function(binding)`, `typeof X !== 'undefined'` is
+  `js::is_defined(binding)`, and `typeof performance === 'object' && typeof
+  performance.now === 'function'` is `js::is_object(webapi::performance) &&
+  js::is_function(webapi::Performance::now)`. Never `js::is_function` of a
+  path alone: it doesn't ask whether the path's first part is there (rd320).
 - **Port type-only modules as Rust and their `.d.ts`**, and remove
   upstream's Flow `.js` (the user, 2026-10-28). A package's entry,
   `index.js`, keeps only plain JS re-exports, and its Flow types move to
@@ -532,11 +538,10 @@ The port is split between sessions by package:
   ReactDOMDefaultTransitionIndicator are Rust. The indicator's listeners
   are one per event, `let on_success = webapi::listener(move |_: &Event|
   handle_navigate_complete());`, each given to both `add_event_listener`
-  and `remove_event_listener`. Until rd284b (a readability gap, not a hold)
-  they print `function onSuccess() { handleNavigateComplete(); }`: rust-js's
-  rd284 prints such a listener as the function it calls only when that
-  function is a `fn`, and handleNavigateComplete is a local function JS
-  makes (`function::with_this`).
+  and `remove_event_listener`, where `handle_navigate_complete: &'static dyn
+  Fn()` is `function::with_this(move |_, ()| ..)`. They print upstream's
+  `navigation.addEventListener('navigatesuccess', handleNavigateComplete)`
+  (rd284b, rust-js c66569bdf).
   react-noop-renderer's createReactNoop and ReactFiberConfigNoop are Rust.
   bindToConsole binds the console's method to its arguments,
   `function::bind(method, Some(&console), args)`, printed
