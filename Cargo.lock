@@ -47,6 +47,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "react-noop-renderer"
+version = "0.0.0"
+dependencies = [
+ "rust-js-builtins",
+]
+
+[[package]]
 name = "react-reconciler"
 version = "0.0.0"
 dependencies = [

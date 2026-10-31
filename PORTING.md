@@ -45,11 +45,12 @@ Each package's Rust is a crate in the workspace, and the crate's modules are
 the package's files: `packages/scheduler/src/SchedulerMinHeap.rs` compiles
 to `SchedulerMinHeap.js` and `.d.ts` beside it. A crate's root file is
 Cargo.toml's `[lib] path`: `shared.rs`, `src/forks/Scheduler.rs`,
-`react.rs`, `reconciler.rs`, `bindings.rs` or `react_dom.rs`. It declares each module as
+`react.rs`, `reconciler.rs`, `bindings.rs`, `react_dom.rs` or `noop.rs`. It declares each module as
 `#[path = "src/..."] pub mod ..;` and writes no JS of its own.
 
 The crates are `shared`, `scheduler`, `react-isomorphic` (packages/react),
-`react-reconciler`, `react-dom-bindings` and `react-dom`. A new package is a new crate,
+`react-reconciler`, `react-dom-bindings`, `react-dom` and
+`react-noop-renderer`. A new package is a new crate,
 added to the workspace's `members`. The generated `.js` and `.d.ts` files are
 committed, as upstream's JS was. Source maps are not committed (see
 `.gitignore`).

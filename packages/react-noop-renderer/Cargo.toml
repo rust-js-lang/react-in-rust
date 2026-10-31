@@ -1,0 +1,17 @@
+[package]
+name = "react-noop-renderer"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# React's renderer for testing the reconciler, `react-noop-renderer`. Its
+# modules are its files, each beside the JS rust-js writes from it; its root
+# declares them and writes no JS of its own.
+[lib]
+path = "noop.rs"
+
+[dependencies]
+js.workspace = true
+
+[lints]
+workspace = true

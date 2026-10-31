@@ -64,5 +64,5 @@ fi
 
 # A JS label rust-js made (bb12:, break bb12) holds a module: there must be none.
 grep -rnE 'break bb|^\s*bb[0-9]+:' --include='*.js' packages/react packages/react-reconciler/src \
-  packages/react-dom-bindings/src packages/react-dom/src packages/scheduler/src packages/shared | grep -v node_modules | head -5
+  packages/react-dom-bindings/src packages/react-dom/src packages/react-noop-renderer/src packages/scheduler/src packages/shared | grep -v node_modules | head -5
 echo done
