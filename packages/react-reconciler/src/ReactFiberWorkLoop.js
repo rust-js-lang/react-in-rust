@@ -2937,7 +2937,6 @@ function workLoopConcurrent(nonIdle) {
       performUnitOfWork(workInProgress$1);
       workInProgress$1 = workInProgress;
     } while (workInProgress$1 != null && now() < yieldAfter);
-    return;
   }
 }
 
@@ -3139,71 +3138,73 @@ function throwAndUnwindWorkLoop(
       return;
     }
   }
-  if (!didFatal) {
-    if (unitOfWork.flags & Incomplete) {
-      // Unwind the stack until we reach the nearest boundary.
+  if (didFatal) {
+    return;
+  }
 
-      let skipSiblings;
-      if (
-        // The current algorithm for both hydration and error handling assumes
-        // that the tree is rendered sequentially. So we always skip the siblings.
-        getIsHydrating() ||
-        suspendedReason === SuspendedOnError
-      ) {
-        skipSiblings = true;
-        // We intentionally don't set workInProgressRootDidSkipSuspendedSiblings,
-        // because we don't want to trigger another prerender attempt.
-      } else if (
-        // Check whether this is a prerender
-        !workInProgressRootIsPrerendering &&
-        // Offscreen rendering is also a form of speculative rendering
-        !includesSomeLane(workInProgressRootRenderLanes, OffscreenLane)
-      ) {
-        // This is not a prerender. Skip the siblings during this render. A
-        // separate prerender will be scheduled for later.
-        skipSiblings = true;
-        workInProgressRootDidSkipSuspendedSiblings = true;
+  if (unitOfWork.flags & Incomplete) {
+    // Unwind the stack until we reach the nearest boundary.
 
-        // Because we're skipping the siblings, schedule an immediate retry of
-        // this boundary.
-        //
-        // The reason we do this is because a prerender is only scheduled when
-        // the root is blocked from committing, i.e. RootSuspendedWithDelay.
-        // When the root is not blocked, as in the case when we render a
-        // fallback, the original lane is considered to be finished, and
-        // therefore no longer in need of being prerendered. However, there's
-        // still a pending retry that will happen once the data streams in.
-        // We should start rendering that even before the data streams in so we
-        // can prerender the siblings.
-        if (
-          suspendedReason === SuspendedOnData ||
-          suspendedReason === SuspendedOnAction ||
-          suspendedReason === SuspendedOnImmediate ||
-          suspendedReason === SuspendedOnDeprecatedThrowPromise
-        ) {
-          const boundary = getSuspenseHandler();
-          if (boundary != null && boundary.tag === SuspenseComponent) {
-            boundary.flags |= ScheduleRetry;
-          }
-        }
-      } else {
-        // This is a prerender. Don't skip the siblings.
-        skipSiblings = false;
-      }
+    let skipSiblings;
+    if (
+      // The current algorithm for both hydration and error handling assumes
+      // that the tree is rendered sequentially. So we always skip the siblings.
+      getIsHydrating() ||
+      suspendedReason === SuspendedOnError
+    ) {
+      skipSiblings = true;
+      // We intentionally don't set workInProgressRootDidSkipSuspendedSiblings,
+      // because we don't want to trigger another prerender attempt.
+    } else if (
+      // Check whether this is a prerender
+      !workInProgressRootIsPrerendering &&
+      // Offscreen rendering is also a form of speculative rendering
+      !includesSomeLane(workInProgressRootRenderLanes, OffscreenLane)
+    ) {
+      // This is not a prerender. Skip the siblings during this render. A
+      // separate prerender will be scheduled for later.
+      skipSiblings = true;
+      workInProgressRootDidSkipSuspendedSiblings = true;
 
-      unwindUnitOfWork(unitOfWork, skipSiblings);
-    } else {
-      // Although the fiber suspended, we're intentionally going to commit it in
-      // an inconsistent state. We can do this safely in cases where we know the
-      // inconsistent tree will be hidden.
+      // Because we're skipping the siblings, schedule an immediate retry of
+      // this boundary.
       //
-      // This currently only applies to Legacy Suspense implementation, but we may
-      // port a version of this to concurrent roots, too, when performing a
-      // synchronous render. Because that will allow us to mutate the tree as we
-      // go instead of buffering mutations until the end. Though it's unclear if
-      // this particular path is how that would be implemented.
-      completeUnitOfWork(unitOfWork);
+      // The reason we do this is because a prerender is only scheduled when
+      // the root is blocked from committing, i.e. RootSuspendedWithDelay.
+      // When the root is not blocked, as in the case when we render a
+      // fallback, the original lane is considered to be finished, and
+      // therefore no longer in need of being prerendered. However, there's
+      // still a pending retry that will happen once the data streams in.
+      // We should start rendering that even before the data streams in so we
+      // can prerender the siblings.
+      if (
+        suspendedReason === SuspendedOnData ||
+        suspendedReason === SuspendedOnAction ||
+        suspendedReason === SuspendedOnImmediate ||
+        suspendedReason === SuspendedOnDeprecatedThrowPromise
+      ) {
+        const boundary = getSuspenseHandler();
+        if (boundary != null && boundary.tag === SuspenseComponent) {
+          boundary.flags |= ScheduleRetry;
+        }
+      }
+    } else {
+      // This is a prerender. Don't skip the siblings.
+      skipSiblings = false;
     }
+
+    unwindUnitOfWork(unitOfWork, skipSiblings);
+  } else {
+    // Although the fiber suspended, we're intentionally going to commit it in
+    // an inconsistent state. We can do this safely in cases where we know the
+    // inconsistent tree will be hidden.
+    //
+    // This currently only applies to Legacy Suspense implementation, but we may
+    // port a version of this to concurrent roots, too, when performing a
+    // synchronous render. Because that will allow us to mutate the tree as we
+    // go instead of buffering mutations until the end. Though it's unclear if
+    // this particular path is how that would be implemented.
+    completeUnitOfWork(unitOfWork);
   }
 }
 

@@ -1929,24 +1929,26 @@ function diffHydratedStyles(domElement, value, serverDifferences) {
   }
   const normalizedClientValue = normalizeMarkupForTextOrAttribute(clientValue);
   const normalizedServerValue = normalizeMarkupForTextOrAttribute(serverValue);
-  if (normalizedServerValue !== normalizedClientValue) {
-    if (
-      // Trailing semi-colon means this was regenerated.
-      normalizedServerValue[normalizedServerValue.length - 1] === ';' &&
-      // TODO: Should we just ignore any style if the style as been manipulated?
-      hasViewTransition(domElement)
-    ) {
-      // If this had a view transition we might have applied a view transition
-      // name/class and removed it. If that happens, the style attribute gets
-      // regenerated from the style object. This means we've lost the format
-      // that we sent from the server and is unable to diff it. We just treat
-      // it as passing even if it should be a mismatch in this edge case.
-      return;
-    }
-
-    // Otherwise, we create the object from the DOM for the diff view.
-    serverDifferences.style = getStylesObjectFromElement(domElement);
+  if (normalizedServerValue === normalizedClientValue) {
+    return;
   }
+
+  if (
+    // Trailing semi-colon means this was regenerated.
+    normalizedServerValue[normalizedServerValue.length - 1] === ';' &&
+    // TODO: Should we just ignore any style if the style as been manipulated?
+    hasViewTransition(domElement)
+  ) {
+    // If this had a view transition we might have applied a view transition
+    // name/class and removed it. If that happens, the style attribute gets
+    // regenerated from the style object. This means we've lost the format
+    // that we sent from the server and is unable to diff it. We just treat
+    // it as passing even if it should be a mismatch in this edge case.
+    return;
+  }
+
+  // Otherwise, we create the object from the DOM for the diff view.
+  serverDifferences.style = getStylesObjectFromElement(domElement);
 }
 
 function hydrateAttribute(

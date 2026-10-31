@@ -24,7 +24,7 @@ import {
   SuspenseComponent,
   SuspenseListComponent,
 } from './ReactWorkTags.js';
-import {$borrow, $index, $iter, $next, $unborrow} from '@rust-js/runtime';
+import {$borrow, $index, $unborrow} from '@rust-js/runtime';
 
 const maxRowLength = 120;
 const idealDepth = 15;
@@ -585,9 +585,9 @@ function describeNode(node, indent) {
     indent = (indent - 1) | 0;
   }
   try {
-    const iter = $iter(serverTail);
+    const iter = serverTail.values();
     let tailNode;
-    while ((tailNode = $next(iter)) != null) {
+    while ((tailNode = iter.next().value) != null) {
       if (typeof tailNode === 'string') {
         // Removed text node
         childContent +=

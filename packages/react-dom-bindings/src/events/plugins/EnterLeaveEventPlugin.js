@@ -111,6 +111,7 @@ export function extractEvents(
   }
 
   if (from == to) {
+    // Nothing pertains to our managed components.
     return;
   }
 
