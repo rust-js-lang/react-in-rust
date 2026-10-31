@@ -1169,7 +1169,7 @@ function hideOrUnhideDehydratedBoundary(suspenseInstance, isHidden) {
   let node = suspenseInstance;
   // Unhide all nodes within this suspense boundary.
   let depth = 0;
-  while (true) {
+  do {
     const nextNode = node.nextSibling;
     if (node.nodeType === ELEMENT_NODE) {
       const instance = node;
@@ -1213,11 +1213,8 @@ function hideOrUnhideDehydratedBoundary(suspenseInstance, isHidden) {
       // TODO: Should we hide preamble contribution in this case?
     }
     // $FlowFixMe[incompatible-type] we bail out when we get a null
-    if (nextNode === null) {
-      return;
-    }
     node = nextNode;
-  }
+  } while (node !== null);
 }
 
 export function hideDehydratedBoundary(suspenseInstance) {

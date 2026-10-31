@@ -67,16 +67,9 @@ export function defaultOnDefaultTransitionIndicator() {
     }
   }
 
-  function onSuccess() {
-    handleNavigateComplete();
-  }
-  function onError() {
-    handleNavigateComplete();
-  }
-
   navigation.addEventListener('navigate', handleNavigate);
-  navigation.addEventListener('navigatesuccess', onSuccess);
-  navigation.addEventListener('navigateerror', onError);
+  navigation.addEventListener('navigatesuccess', handleNavigateComplete);
+  navigation.addEventListener('navigateerror', handleNavigateComplete);
 
   // Delay the start a bit in case this is a fast Transition.
   setTimeout(startFakeNavigation, 100);
@@ -84,8 +77,8 @@ export function defaultOnDefaultTransitionIndicator() {
   return function () {
     isCancelled = true;
     navigation.removeEventListener('navigate', handleNavigate);
-    navigation.removeEventListener('navigatesuccess', onSuccess);
-    navigation.removeEventListener('navigateerror', onError);
+    navigation.removeEventListener('navigatesuccess', handleNavigateComplete);
+    navigation.removeEventListener('navigateerror', handleNavigateComplete);
     const resolve = pendingResolve;
     if (resolve != null) {
       resolve();
