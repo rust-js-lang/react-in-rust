@@ -1054,9 +1054,6 @@ export function completeWork(current, workInProgress, renderLanes) {
   // Ideally we would have a special version of the work loop only
   // for hydration.
   popTreeContext(workInProgress);
-
-  // Continue with the normal Suspense path.
-  // Next we're going to render the tail.
   // We don't cut it if we're hydrating.
   switch (workInProgress.tag) {
     case IncompleteFunctionComponent:
@@ -1534,6 +1531,8 @@ export function completeWork(current, workInProgress, renderLanes) {
             return null;
           }
         }
+
+        // Continue with the normal Suspense path.
       }
 
       popSuspenseHandler(workInProgress);
@@ -1765,6 +1764,7 @@ export function completeWork(current, workInProgress, renderLanes) {
         } else {
           cutOffTailIfNeeded(renderState, false);
         }
+        // Next we're going to render the tail.
       } else {
         // Append the rendered row to the child list.
         if (!didSuspendAlready) {

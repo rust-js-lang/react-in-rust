@@ -549,7 +549,6 @@ function commitLayoutEffectOnFiber(
   // When updating this function, also update reappearLayoutEffects, which does
   // most of the same things when an offscreen tree goes from hidden -> visible.
   const flags = finishedWork.flags;
-  // We fall through to the HostComponent case below.
   switch (finishedWork.tag) {
     case FunctionComponent:
     case ForwardRef:
@@ -614,6 +613,7 @@ function commitLayoutEffectOnFiber(
           // Unlike in the reappear path we only acquire on new mount
           commitHostSingletonAcquisition(finishedWork);
         }
+        // We fall through to the HostComponent case below.
       }
       // Fallthrough
       recursivelyTraverseLayoutEffects(

@@ -47,6 +47,9 @@ export function prefetchDNS(href, ...args) {
       /* prefetchDNS */
     );
   }
+  // We don't error because preconnect needs to be resilient to being called in a variety of scopes
+  // and the runtime may not be capable of responding. The function is optimistic and not critical
+  // so we favor silent bailout over warning or erroring.
 }
 
 export function preconnect(href, options) {
@@ -80,6 +83,9 @@ export function preconnect(href, options) {
       /* preconnect */ crossOrigin,
     );
   }
+  // We don't error because preconnect needs to be resilient to being called in a variety of scopes
+  // and the runtime may not be capable of responding. The function is optimistic and not critical
+  // so we favor silent bailout over warning or erroring.
 }
 
 export function preload(href, options) {
@@ -143,6 +149,9 @@ export function preload(href, options) {
       );
     }
   }
+  // We don't error because preload needs to be resilient to being called in a variety of scopes
+  // and the runtime may not be capable of responding. The function is optimistic and not critical
+  // so we favor silent bailout over warning or erroring.
 }
 
 export function preloadModule(href, options) {
@@ -195,6 +204,9 @@ export function preloadModule(href, options) {
       );
     }
   }
+  // We don't error because preload needs to be resilient to being called in a variety of scopes
+  // and the runtime may not be capable of responding. The function is optimistic and not critical
+  // so we favor silent bailout over warning or erroring.
 }
 
 export function preinit(href, options) {
@@ -261,6 +273,9 @@ export function preinit(href, options) {
       }
     }
   }
+  // We don't error because preinit needs to be resilient to being called in a variety of scopes
+  // and the runtime may not be capable of responding. The function is optimistic and not critical
+  // so we favor silent bailout over warning or erroring.
 }
 
 export function preinitModule(href, options) {
@@ -328,6 +343,9 @@ export function preinitModule(href, options) {
       );
     }
   }
+  // We don't error because preinit needs to be resilient to being called in a variety of scopes
+  // and the runtime may not be capable of responding. The function is optimistic and not critical
+  // so we favor silent bailout over warning or erroring.
 }
 
 function getValueDescriptorExpectingObjectForWarning(thing) {

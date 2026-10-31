@@ -370,9 +370,6 @@ const xlinkNamespace = 'http://www.w3.org/1999/xlink';
 const xmlNamespace = 'http://www.w3.org/XML/1998/namespace';
 
 function setProp(domElement, tag, key, value, props, prevValue) {
-  // If URL.createObjectURL() errors, it was probably some other object type
-  // that should be toString:ed instead, so we just fall-through to the normal
-  // path.
   // Properties that should not be allowed on custom elements.
   switch (key) {
     case 'children':
@@ -445,6 +442,9 @@ function setProp(domElement, tag, key, value, props, prevValue) {
             trackHostMutation();
             return;
           }
+          // If URL.createObjectURL() errors, it was probably some other object type
+          // that should be toString:ed instead, so we just fall-through to the normal
+          // path.
         } else if (__DEV__) {
           try {
             // This should always error.
@@ -2405,7 +2405,6 @@ function diffHydratedGenericElement(
       continue;
     }
     // Validate that the properties correspond to their expected values.
-    // If not, just fall through to the normal toString flow.
     switch (propKey) {
       case 'children':
         if (typeof value === 'string' || typeof value === 'number') {
@@ -2511,6 +2510,7 @@ function diffHydratedGenericElement(
               );
               continue;
             } catch {}
+            // If not, just fall through to the normal toString flow.
           } else if (__DEV__) {
             try {
               // This should always error.

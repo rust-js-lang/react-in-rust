@@ -198,9 +198,6 @@ function propagateContextChanges(
       findChangedDep: while (dep != null) {
         // Assigning these to constants to help Flow
         const consumer = fiber;
-
-        // Since we already found a match, we can stop traversing the
-        // dependency list.
         for (const context of contexts) {
           // Check if the context matches.
           if (dep.context === context) {
@@ -231,6 +228,9 @@ function propagateContextChanges(
               // siblings, though
               nextFiber = undefined;
             }
+
+            // Since we already found a match, we can stop traversing the
+            // dependency list.
             break findChangedDep;
           }
         }

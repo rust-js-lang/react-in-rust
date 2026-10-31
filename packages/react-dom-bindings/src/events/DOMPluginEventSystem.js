@@ -853,7 +853,6 @@ function accumulateEnterLeaveListenersForEvent(
   const listeners = [];
 
   let instance = target;
-  // $FlowFixMe[constant-condition]
   while (instance != null) {
     if (instance === common) {
       break;
@@ -877,6 +876,7 @@ function accumulateEnterLeaveListenersForEvent(
             createDispatchListener(instance, captureListener, stateNode),
           );
         }
+        // $FlowFixMe[constant-condition]
       } else if (!inCapturePhase) {
         const bubbleListener = getListener(instance, registrationName);
         if (bubbleListener != null) {

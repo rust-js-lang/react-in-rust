@@ -559,55 +559,52 @@ function describeNode(node, indent) {
   let childContent = '';
   let childFiber = node.fiber.child;
   let diffIdx = 0;
-  while (true) {
-    if (childFiber != null && diffIdx < node.children.length) {
-      const childNode = $index(node.children, diffIdx);
-      if (childNode.fiber === childFiber) {
-        // This was a match in the diff.
-        childContent += describeNode(childNode, indent);
-        diffIdx = (diffIdx + 1) >>> 0;
+  while (childFiber != null && diffIdx < node.children.length) {
+    const childNode = $index(node.children, diffIdx);
+    if (childNode.fiber === childFiber) {
+      // This was a match in the diff.
+      childContent += describeNode(childNode, indent);
+      diffIdx = (diffIdx + 1) >>> 0;
+    } else {
+      // This is an unrelated previous sibling.
+      childContent += describeSiblingFiber(childFiber, indent);
+    }
+    childFiber = childFiber.sibling;
+  }
+
+  if (childFiber != null && node.children.length !== 0) {
+    // If we had any further siblings after the last mismatch, we can't be sure if it's
+    // actually a valid match since it might not have found a match. So we exclude next
+    // siblings to avoid confusion.
+    childContent += indentation(indent) + '...' + '\n';
+  }
+
+  // Deleted tail nodes
+  const serverTail = $borrow(node.serverTail, true);
+  if (node.serverProps === null) {
+    indent = (indent - 1) | 0;
+  }
+  try {
+    for (const tailNode of serverTail) {
+      if (typeof tailNode === 'string') {
+        // Removed text node
+        childContent +=
+          removed(indent) +
+          describeTextNode(tailNode, maxRowLength - indent * 2) +
+          '\n';
       } else {
-        // This is an unrelated previous sibling.
-        childContent += describeSiblingFiber(childFiber, indent);
+        // Removed element
+        childContent += describeExpandedElement(
+          tailNode.type,
+          tailNode.props,
+          removed(indent),
+        );
       }
-      childFiber = childFiber.sibling;
-      continue;
     }
 
-    if (childFiber != null && node.children.length !== 0) {
-      // If we had any further siblings after the last mismatch, we can't be sure if it's
-      // actually a valid match since it might not have found a match. So we exclude next
-      // siblings to avoid confusion.
-      childContent += indentation(indent) + '...' + '\n';
-    }
-
-    // Deleted tail nodes
-    const serverTail = $borrow(node.serverTail, true);
-    if (node.serverProps === null) {
-      indent = (indent - 1) | 0;
-    }
-    try {
-      for (const tailNode of serverTail) {
-        if (typeof tailNode === 'string') {
-          // Removed text node
-          childContent +=
-            removed(indent) +
-            describeTextNode(tailNode, maxRowLength - indent * 2) +
-            '\n';
-        } else {
-          // Removed element
-          childContent += describeExpandedElement(
-            tailNode.type,
-            tailNode.props,
-            removed(indent),
-          );
-        }
-      }
-
-      return parentContent + selfContent + childContent;
-    } finally {
-      $unborrow(serverTail);
-    }
+    return parentContent + selfContent + childContent;
+  } finally {
+    $unborrow(serverTail);
   }
 }
 

@@ -1169,7 +1169,6 @@ function hideOrUnhideDehydratedBoundary(suspenseInstance, isHidden) {
   let node = suspenseInstance;
   // Unhide all nodes within this suspense boundary.
   let depth = 0;
-  // TODO: Should we hide preamble contribution in this case?
   while (true) {
     const nextNode = node.nextSibling;
     if (node.nodeType === ELEMENT_NODE) {
@@ -1211,6 +1210,7 @@ function hideOrUnhideDehydratedBoundary(suspenseInstance, isHidden) {
       ) {
         depth = (depth + 1) | 0;
       }
+      // TODO: Should we hide preamble contribution in this case?
     }
     // $FlowFixMe[incompatible-type] we bail out when we get a null
     if (nextNode === null) {
@@ -3730,7 +3730,6 @@ export function bindInstance(instance, props, internalInstanceHandle) {
 export const supportsHydration = true;
 
 export function canHydrateInstance(instance, type, props, inRootOrSingleton) {
-  // In root or singleton parents we skip past mismatched instances.
   while (instance.nodeType === ELEMENT_NODE) {
     const element = instance;
     const anyProps = props;
@@ -3744,6 +3743,7 @@ export function canHydrateInstance(instance, type, props, inRootOrSingleton) {
           return null;
         }
       }
+      // In root or singleton parents we skip past mismatched instances.
     } else if (!inRootOrSingleton) {
       // Match
       if (type === 'input' && element.type === 'hidden') {
@@ -3772,7 +3772,6 @@ export function canHydrateInstance(instance, type, props, inRootOrSingleton) {
       // we can guess that the node is likely hoisted or was inserted by a 3rd party script or browser extension
       // using high entropy attributes for certain types. This technique will fail for strange insertions like
       // extension prepending <div> in the <body> but that already breaks before and that is an edge case.
-      // This is a style resource
       switch (type) {
         case 'meta':
           // case 'title':
@@ -3820,6 +3819,7 @@ export function canHydrateInstance(instance, type, props, inRootOrSingleton) {
           if (!element.hasAttribute('data-precedence')) {
             return element;
           }
+          // This is a style resource
           break;
         case 'script': {
           // Scripts are a little tricky, we exclude known resources and then similar to links try to use high-entropy attributes
