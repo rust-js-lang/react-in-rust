@@ -4808,14 +4808,7 @@ function preconnect(href, crossOrigin) {
 function preload(href, as, options) {
   previousDispatcher.L(/* preload */ href, as, options);
   const ownerDocument = getGlobalDocument();
-  if (ownerDocument != null) {
-    if (!href) {
-      // We already have a stylesheet for this key. We don't need to preload it.
-      return;
-    }
-    if (!as) {
-      return;
-    }
+  if (ownerDocument != null && href && as) {
     let preloadSelector = `link[rel="preload"][as="${escapeSelectorAttributeValueInsideDoubleQuotes(as)}"]`;
     if (as === 'image') {
       if (options && options.imageSrcSet) {
@@ -4855,32 +4848,33 @@ function preload(href, as, options) {
       );
       preloadPropsMap.set(key, preloadProps);
 
-      if (ownerDocument.querySelector(preloadSelector) !== null) {
-        return;
+      if (ownerDocument.querySelector(preloadSelector) === null) {
+        if (
+          as === 'style' &&
+          ownerDocument.querySelector(getStylesheetSelectorFromKey(key)) !==
+            null
+        ) {
+          // We already have a stylesheet for this key. We don't need to preload it.
+          return;
+        } else if (
+          as === 'script' &&
+          ownerDocument.querySelector(getScriptSelectorFromKey(key)) !== null
+        ) {
+          // We already have a script for this key. We don't need to preload it.
+          return;
+        }
+        const instance = ownerDocument.createElement('link');
+        setInitialProperties(instance, 'link', preloadProps);
+        if (as === 'style') {
+          // Stash a loading state on the preload link. it will clean itself up once settled
+          markNodeAsPendingLoad(instance);
+          const clear = () => clearPendingLoadOnNode(instance);
+          instance.onerror = clear;
+          instance.onload = clear;
+        }
+        markNodeAsHoistable(instance);
+        $unwrap(ownerDocument.head).appendChild(instance);
       }
-      if (
-        as === 'style' &&
-        ownerDocument.querySelector(getStylesheetSelectorFromKey(key)) !== null
-      ) {
-        return;
-      } else if (
-        as === 'script' &&
-        ownerDocument.querySelector(getScriptSelectorFromKey(key)) !== null
-      ) {
-        // We already have a script for this key. We don't need to preload it.
-        return;
-      }
-      const instance = ownerDocument.createElement('link');
-      setInitialProperties(instance, 'link', preloadProps);
-      if (as === 'style') {
-        // Stash a loading state on the preload link. it will clean itself up once settled
-        markNodeAsPendingLoad(instance);
-        const clear = () => clearPendingLoadOnNode(instance);
-        instance.onerror = clear;
-        instance.onload = clear;
-      }
-      markNodeAsHoistable(instance);
-      $unwrap(ownerDocument.head).appendChild(instance);
     }
   }
 }
