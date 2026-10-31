@@ -2197,9 +2197,9 @@ fn create_react_noop(
 
 js::export_default!(create_react_noop);
 
-/// A child `childToJSX` renders: a host child, or a list of them. GAP
-/// rd305: upstream's `Instance | TextInstance | Array<..>`, untagged, is
-/// refused, an untagged enum's variant holding one.
+/// A child `childToJSX` renders: a host child, or a list of them,
+/// upstream's `Instance | TextInstance | Array<Instance | TextInstance>`.
+#[cfg_attr(rust_js, rust_js::untagged)]
 enum JsxChild {
     Child(Child),
     Children(Rc<RefCell<Vec<Child>>>),

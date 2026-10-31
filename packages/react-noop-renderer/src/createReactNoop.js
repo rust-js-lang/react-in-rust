@@ -859,17 +859,15 @@ function createReactNoop(reconciler, useMutation) {
     if (child == null) {
       return null;
     }
-    if (child.TAG === 'Children') {
-      const child$1 = child._0.slice();
+    if (Array.isArray(child)) {
+      const child$1 = child.slice();
       if (child$1.length === 0) {
         return null;
       }
       if (child$1.length === 1) {
-        return childToJSX({TAG: 'Child', _0: child$1[0]}, null);
+        return childToJSX(child$1[0], null);
       }
-      const children = child$1.map(c =>
-        childToJSX({TAG: 'Child', _0: c}, null),
-      );
+      const children = child$1.map(c => childToJSX(c, null));
       if (
         children.every(
           c =>
@@ -882,31 +880,28 @@ function createReactNoop(reconciler, useMutation) {
       }
       return children;
     }
-    if (Array.isArray(child._0.children)) {
+    if (Array.isArray(child.children)) {
       // This is an instance.
-      const children = childToJSX(
-        {TAG: 'Children', _0: child._0.children},
-        child._0.text,
-      );
+      const children = childToJSX(child.children, child.text);
       const props = {
-        prop: child._0.prop,
+        prop: child.prop,
       };
-      if (child._0.hidden) {
+      if (child.hidden) {
         props.hidden = true;
       }
-      if (child._0.src) {
-        props.src = child._0.src;
+      if (child.src) {
+        props.src = child.src;
       }
       if (children != null) {
         props.children = children;
       }
-      return createJSXElementForTestComparison(child._0.type, props);
+      return createJSXElementForTestComparison(child.type, props);
     }
     // This is a text instance
-    if (child._0.hidden) {
+    if (child.hidden) {
       return '';
     }
-    return child._0.text;
+    return child.text;
   }
 
   function getChildren(root) {
@@ -918,11 +913,7 @@ function createReactNoop(reconciler, useMutation) {
   }
 
   function getChildrenAsJSX(root) {
-    const value = getChildren(root);
-    const children = childToJSX(
-      value != null ? {TAG: 'Children', _0: value} : undefined,
-      null,
-    );
+    const children = childToJSX(getChildren(root), null);
     if (children == null) {
       return null;
     }
@@ -933,11 +924,7 @@ function createReactNoop(reconciler, useMutation) {
   }
 
   function getPendingChildrenAsJSX(root) {
-    const value = getChildren(root);
-    const children = childToJSX(
-      value != null ? {TAG: 'Children', _0: value} : undefined,
-      null,
-    );
+    const children = childToJSX(getChildren(root), null);
     if (children == null) {
       return null;
     }
