@@ -303,38 +303,43 @@ pub enum ResumeSlots {
     Indices(Rc<Dict<f64>>),
 }
 
-// GAP rd490: a replay node is an array of 4 items, or a boundary's of 6,
-// which upstream tells apart by its length (`node.length === 4`); an
-// untagged enum of the two tuple structs is the Rust, which rust-js can't
-// tell apart.
-/// `[name, key, children, slots]`.
-pub struct ReplayElement(
+// GAP rd490: a replay node is `[name, key, children, slots]`, or a
+// boundary's `[name, key, children, slots, fallback, rootSegmentID]`, one
+// array that trackPostponedBoundary grows in place to 6 items and
+// untrackBoundary shrinks back (`length = 4`); readers tell them apart by
+// `node.length === 4`. The Rust is one tuple struct whose boundary fields
+// are absent until set (`#[rust_js::optional]`), told apart by
+// `rootSegmentID`'s presence; rust-js has no form of a tuple shrinking back,
+// so an untracked boundary keeps 6 items, `null` and `undefined`, which
+// `JSON.stringify` writes as a boundary's (a wrong answer on resume).
+/// `[name, key, children, slots]`, or a boundary's with its fallback and
+/// root segment's ID.
+pub struct ReplayNode(
     #[cfg_attr(rust_js, rust_js::nullable)] pub Option<String>, /* name */
     pub NodeKey,                                                /* key */
-    pub Rc<RefCell<Vec<ReplayNode>>>,                           /* keyed children */
+    pub RefCell<ReplayNodes>,                                   /* keyed children */
     pub RefCell<ResumeSlots>,                                   /* resumable slots */
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)] pub RefCell<Option<Rc<ReplayNode>>>, /* fallback content */
+    #[cfg_attr(rust_js, rust_js::optional)] pub Cell<Option<f64>>, /* rootSegmentID */
 );
 
-/// `[name, key, content, contentSlots, fallback, rootSegmentID]`.
-pub struct ReplaySuspenseBoundary(
-    #[cfg_attr(rust_js, rust_js::nullable)] pub Option<String>, /* name */
-    pub NodeKey,                                                /* key */
-    pub Rc<RefCell<Vec<ReplayNode>>>,                           /* content keyed children */
-    pub RefCell<ResumeSlots>,                                   /* content resumable slots */
-    #[cfg_attr(rust_js, rust_js::nullable)] pub RefCell<Option<ReplayNode>>, /* fallback content */
-    pub f64,                                                    /* rootSegmentID */
-);
+/// A list of replay nodes, which a replay set shares with its node.
+pub type ReplayNodes = Rc<RefCell<Vec<Rc<ReplayNode>>>>;
 
-#[cfg_attr(rust_js, rust_js::untagged)]
-#[derive(Clone)]
-pub enum ReplayNode {
-    Element(Rc<ReplayElement>),
-    Boundary(Rc<ReplaySuspenseBoundary>),
+fn new_replay_node(name: Option<String>, key: NodeKey, slots: ResumeSlots) -> Rc<ReplayNode> {
+    Rc::new(ReplayNode(
+        name,
+        key,
+        RefCell::new(Rc::new(RefCell::new(vec![]))),
+        RefCell::new(slots),
+        RefCell::new(None),
+        Cell::new(None),
+    ))
 }
 
 struct PostponedHoles {
-    working_map: RefCell<HashMap<Rc<KeyNode>, ReplayNode>>,
-    root_nodes: Rc<RefCell<Vec<ReplayNode>>>,
+    working_map: RefCell<HashMap<Rc<KeyNode>, Rc<ReplayNode>>>,
+    root_nodes: ReplayNodes,
     root_slots: RefCell<ResumeSlots>,
 }
 
@@ -359,7 +364,7 @@ struct Tracked {
     #[cfg_attr(rust_js, rust_js::nullable)]
     content_key_path: RefCell<Option<Rc<KeyNode>>>, // used to track the path for replay nodes
     #[cfg_attr(rust_js, rust_js::nullable)]
-    fallback_node: RefCell<Option<ReplayNode>>, // used to track the fallback for replay nodes
+    fallback_node: RefCell<Option<Rc<ReplayNode>>>, // used to track the fallback for replay nodes
 }
 
 struct SuspenseBoundary {
@@ -397,11 +402,11 @@ struct Ping {
 }
 
 struct ReplaySet {
-    nodes: Rc<RefCell<Vec<ReplayNode>>>, // the possible paths to follow down the replaying
-    slots: RefCell<ResumeSlots>,         // slots to resume
-    pending_tasks: Cell<f64>, // tracks the number of tasks currently tracking this set of nodes
-                              // if pending tasks reach zero but there are still nodes left, it means we couldn't find
-                              // them all in the tree, so we need to abort and client render the boundary.
+    nodes: ReplayNodes,          // the possible paths to follow down the replaying
+    slots: RefCell<ResumeSlots>, // slots to resume
+    pending_tasks: Cell<f64>,    // tracks the number of tasks currently tracking this set of nodes
+                                 // if pending tasks reach zero but there are still nodes left, it means we couldn't find
+                                 // them all in the tree, so we need to abort and client render the boundary.
 }
 
 /// A render task, which writes to its segment, or a replay task, which
@@ -1911,16 +1916,15 @@ fn render_suspense_boundary(
 
         let fallback_key_path = fallback_key_path_of(key_path);
         if let Some(tracked_postpones) = &tracked_postpones {
-            let fallback_replay_node = ReplayNode::Element(Rc::new(ReplayElement(
+            let fallback_replay_node = new_replay_node(
                 fallback_key_path.1.clone(),
                 fallback_key_path.2.clone(),
-                Rc::new(RefCell::new(vec![])),
-                RefCell::new(ResumeSlots::None),
-            )));
-            tracked_postpones
-                .working_map
-                .borrow_mut()
-                .insert(Rc::clone(&fallback_key_path), fallback_replay_node.clone());
+                ResumeSlots::None,
+            );
+            tracked_postpones.working_map.borrow_mut().insert(
+                Rc::clone(&fallback_key_path),
+                Rc::clone(&fallback_replay_node),
+            );
             new_boundary.tracked.replace(Some(Rc::new(Tracked {
                 content_key_path: RefCell::new(Some(Rc::clone(key_path))),
                 // We are rendering the fallback before the boundary content so we keep track of
@@ -2174,9 +2178,9 @@ fn replay_suspense_boundary(
     key_path: &Rc<KeyNode>,
     props: &SuspenseProps,
     id: f64,
-    child_nodes: Rc<RefCell<Vec<ReplayNode>>>,
+    child_nodes: ReplayNodes,
     child_slots: ResumeSlots,
-    fallback_nodes: Rc<RefCell<Vec<ReplayNode>>>,
+    fallback_nodes: ReplayNodes,
     fallback_slots: ResumeSlots,
 ) {
     let prev_key_path = task.key_path.borrow().clone();
@@ -2209,16 +2213,15 @@ fn replay_suspense_boundary(
 
     let fallback_key_path = fallback_key_path_of(key_path);
     if let Some(tracked_postpones) = request.tracked_postpones.borrow().as_ref() {
-        let fallback_replay_node = ReplayNode::Element(Rc::new(ReplayElement(
+        let fallback_replay_node = new_replay_node(
             fallback_key_path.1.clone(),
             fallback_key_path.2.clone(),
-            Rc::new(RefCell::new(vec![])),
-            RefCell::new(ResumeSlots::None),
-        )));
-        tracked_postpones
-            .working_map
-            .borrow_mut()
-            .insert(Rc::clone(&fallback_key_path), fallback_replay_node.clone());
+            ResumeSlots::None,
+        );
+        tracked_postpones.working_map.borrow_mut().insert(
+            Rc::clone(&fallback_key_path),
+            Rc::clone(&fallback_replay_node),
+        );
         resumed_boundary.tracked.replace(Some(Rc::new(Tracked {
             content_key_path: RefCell::new(Some(Rc::clone(key_path))),
             fallback_node: RefCell::new(Some(fallback_replay_node)),
@@ -3778,22 +3781,6 @@ fn render_view_transition(
     task.key_path.replace(prev_key_path);
 }
 
-impl ReplayNode {
-    fn name(&self) -> Option<&str> {
-        match self {
-            ReplayNode::Element(node) => node.0.as_deref(),
-            ReplayNode::Boundary(node) => node.0.as_deref(),
-        }
-    }
-
-    fn key(&self) -> &NodeKey {
-        match self {
-            ReplayNode::Element(node) => &node.1,
-            ReplayNode::Boundary(node) => &node.1,
-        }
-    }
-}
-
 fn render_element(
     request: &Rc<Request>,
     task: &Rc<Task>,
@@ -4025,119 +4012,114 @@ fn replay_element(
     while i < replay_nodes.borrow().len() {
         // Flow doesn't support refinement on tuples so we do it manually here.
         let node = replay_nodes.borrow()[i].clone();
-        if key_or_index != node.key() {
+        if *key_or_index != node.1 {
             i += 1;
             continue;
         }
-        match &node {
-            ReplayNode::Element(element) => {
-                // Matched a replayable path.
-                // Let's double check that the component name matches as a precaution.
-                if let Some(name) = name
-                    && Some(name) != node.name()
-                {
-                    panic!(
-                        "Expected the resume to render <{}> in this slot but instead it rendered <{}>. The tree doesn't match so React will fallback to client rendering.",
-                        js::string(node.name().map(js::unknown)),
-                        name
-                    );
-                }
-                let child_nodes = Rc::clone(&element.2);
-                let child_slots = element.3.borrow().clone();
-                let current_node = task.node.get();
-                let child_replay = Rc::new(ReplaySet {
-                    nodes: Rc::clone(&child_nodes),
-                    slots: RefCell::new(child_slots.clone()),
-                    pending_tasks: Cell::new(1.0),
-                });
-                task.replay.replace(Some(Rc::clone(&child_replay)));
-                let result = catch_unwind(AssertUnwindSafe(|| {
-                    render_element(request, task, key_path, r#type, props, r#ref);
-                    if child_replay.pending_tasks.get() == 1.0
-                        && !child_replay.nodes.borrow().is_empty()
-                    // TODO check remaining slots
-                    {
-                        panic!(concat!(
-                            "Couldn't find all resumable slots by key/index during replaying. ",
-                            "The tree doesn't match so React will fallback to client rendering."
-                        ));
-                    }
-                    child_replay
-                        .pending_tasks
-                        .set(child_replay.pending_tasks.get() - 1.0);
-                }));
-                if let Err(x) = result {
-                    let thrown_value = thrown_value_of(&*x);
-                    if is_suspending(thrown_value) {
-                        // Suspend
-                        if js::strict_equals(task.node.get(), current_node) {
-                            // This same element suspended so we need to pop the replay we just added.
-                            task.replay.replace(Some(Rc::clone(replay)));
-                        } else {
-                            // We finished rendering this node, so now we can consume this slot.
-                            replay_nodes.borrow_mut().remove(i);
-                        }
-                        resume_unwind(x);
-                    }
-                    child_replay
-                        .pending_tasks
-                        .set(child_replay.pending_tasks.get() - 1.0);
-                    // Unlike regular render, we don't terminate the siblings if we error
-                    // during a replay. That's because this component didn't actually error
-                    // in the original prerender. What's unable to complete is the child
-                    // replay nodes which might be Suspense boundaries which are able to
-                    // absorb the error and we can still continue with siblings.
-                    let thrown_info = get_thrown_info(task.component_stack.borrow().clone());
-                    errored_replay(
-                        request,
-                        task.blocked_boundary.borrow().clone(),
-                        if request.aborted.get() {
-                            request.fatal_error.get()
-                        } else {
-                            thrown_value
-                        },
-                        thrown_info,
-                        &child_nodes,
-                        &child_slots,
-                        if __DEV__ { task.debug_task.get() } else { None },
-                    );
-                }
-                task.replay.replace(Some(Rc::clone(replay)));
-            }
-            ReplayNode::Boundary(boundary) => {
-                // Let's double check that the component type matches.
-                if SymbolFor::from_value(r#type) != Some(REACT_SUSPENSE_TYPE) {
-                    let expected_type = "Suspense";
-                    panic!(
-                        "Expected the resume to render <{}> in this slot but instead it rendered <{}>. The tree doesn't match so React will fallback to client rendering.",
-                        expected_type,
-                        get_component_name_from_type(r#type)
-                            .filter(|name| !name.is_empty())
-                            .unwrap_or_else(|| "Unknown".to_owned())
-                    );
-                }
-                // Matched a replayable path.
-                let fallback = boundary.4.borrow().clone();
-                replay_suspense_boundary(
-                    request,
-                    task,
-                    key_path,
-                    unsafe { js::cast(Some(props)) },
-                    boundary.5,
-                    Rc::clone(&boundary.2),
-                    boundary.3.borrow().clone(),
-                    match &fallback {
-                        None => Rc::new(RefCell::new(vec![])),
-                        Some(ReplayNode::Element(fallback)) => Rc::clone(&fallback.2),
-                        Some(ReplayNode::Boundary(fallback)) => Rc::clone(&fallback.2),
-                    },
-                    match &fallback {
-                        None => ResumeSlots::None,
-                        Some(ReplayNode::Element(fallback)) => fallback.3.borrow().clone(),
-                        Some(ReplayNode::Boundary(fallback)) => fallback.3.borrow().clone(),
-                    },
+        if node.5.get().is_none() {
+            // Matched a replayable path.
+            // Let's double check that the component name matches as a precaution.
+            if let Some(name) = name
+                && Some(name) != node.0.as_deref()
+            {
+                panic!(
+                    "Expected the resume to render <{}> in this slot but instead it rendered <{}>. The tree doesn't match so React will fallback to client rendering.",
+                    js::string(node.0.as_deref().map(js::unknown)),
+                    name
                 );
             }
+            let child_nodes = Rc::clone(&node.2.borrow());
+            let child_slots = node.3.borrow().clone();
+            let current_node = task.node.get();
+            let child_replay = Rc::new(ReplaySet {
+                nodes: Rc::clone(&child_nodes),
+                slots: RefCell::new(child_slots.clone()),
+                pending_tasks: Cell::new(1.0),
+            });
+            task.replay.replace(Some(Rc::clone(&child_replay)));
+            let result = catch_unwind(AssertUnwindSafe(|| {
+                render_element(request, task, key_path, r#type, props, r#ref);
+                if child_replay.pending_tasks.get() == 1.0
+                    && !child_replay.nodes.borrow().is_empty()
+                // TODO check remaining slots
+                {
+                    panic!(concat!(
+                        "Couldn't find all resumable slots by key/index during replaying. ",
+                        "The tree doesn't match so React will fallback to client rendering."
+                    ));
+                }
+                child_replay
+                    .pending_tasks
+                    .set(child_replay.pending_tasks.get() - 1.0);
+            }));
+            if let Err(x) = result {
+                let thrown_value = thrown_value_of(&*x);
+                if is_suspending(thrown_value) {
+                    // Suspend
+                    if js::strict_equals(task.node.get(), current_node) {
+                        // This same element suspended so we need to pop the replay we just added.
+                        task.replay.replace(Some(Rc::clone(replay)));
+                    } else {
+                        // We finished rendering this node, so now we can consume this slot.
+                        replay_nodes.borrow_mut().remove(i);
+                    }
+                    resume_unwind(x);
+                }
+                child_replay
+                    .pending_tasks
+                    .set(child_replay.pending_tasks.get() - 1.0);
+                // Unlike regular render, we don't terminate the siblings if we error
+                // during a replay. That's because this component didn't actually error
+                // in the original prerender. What's unable to complete is the child
+                // replay nodes which might be Suspense boundaries which are able to
+                // absorb the error and we can still continue with siblings.
+                let thrown_info = get_thrown_info(task.component_stack.borrow().clone());
+                errored_replay(
+                    request,
+                    task.blocked_boundary.borrow().clone(),
+                    if request.aborted.get() {
+                        request.fatal_error.get()
+                    } else {
+                        thrown_value
+                    },
+                    thrown_info,
+                    &child_nodes,
+                    &child_slots,
+                    if __DEV__ { task.debug_task.get() } else { None },
+                );
+            }
+            task.replay.replace(Some(Rc::clone(replay)));
+        } else {
+            // Let's double check that the component type matches.
+            if SymbolFor::from_value(r#type) != Some(REACT_SUSPENSE_TYPE) {
+                let expected_type = "Suspense";
+                panic!(
+                    "Expected the resume to render <{}> in this slot but instead it rendered <{}>. The tree doesn't match so React will fallback to client rendering.",
+                    expected_type,
+                    get_component_name_from_type(r#type)
+                        .filter(|name| !name.is_empty())
+                        .unwrap_or_else(|| "Unknown".to_owned())
+                );
+            }
+            // Matched a replayable path.
+            let fallback = node.4.borrow().clone();
+            replay_suspense_boundary(
+                request,
+                task,
+                key_path,
+                unsafe { js::cast(Some(props)) },
+                node.5.get().unwrap(),
+                Rc::clone(&node.2.borrow()),
+                node.3.borrow().clone(),
+                match &fallback {
+                    None => Rc::new(RefCell::new(vec![])),
+                    Some(fallback) => Rc::clone(&fallback.2.borrow()),
+                },
+                match &fallback {
+                    None => ResumeSlots::None,
+                    Some(fallback) => fallback.3.borrow().clone(),
+                },
+            );
         }
         // We finished rendering this node, so now we can consume this
         // slot. This must happen after in case we rerender this task.
@@ -4656,15 +4638,13 @@ fn replay_fragment(
     let mut j = 0;
     while j < replay_nodes.borrow().len() {
         let node = replay_nodes.borrow()[j].clone();
-        if *node.key() != NodeKey::Index(child_index) {
+        if node.1 != NodeKey::Index(child_index) {
             j += 1;
             continue;
         }
         // Matched a replayable path.
-        let (child_nodes, child_slots) = match &node {
-            ReplayNode::Element(node) => (Rc::clone(&node.2), node.3.borrow().clone()),
-            ReplayNode::Boundary(node) => (Rc::clone(&node.2), node.3.borrow().clone()),
-        };
+        let child_nodes = Rc::clone(&node.2.borrow());
+        let child_slots = node.3.borrow().clone();
         let child_replay = Rc::new(ReplaySet {
             nodes: Rc::clone(&child_nodes),
             slots: RefCell::new(child_slots.clone()),
@@ -4803,7 +4783,7 @@ pub struct PostponedState {
     root_format_context: &'static FormatContext,
     progressive_chunk_size: f64,
     resumable_state: &'static ResumableState,
-    replay_nodes: Rc<RefCell<Vec<ReplayNode>>>,
+    replay_nodes: ReplayNodes,
     replay_slots: RefCell<ResumeSlots>,
 }
 
@@ -4820,7 +4800,7 @@ fn errored_replay(
     _boundary: Option<Rc<SuspenseBoundary>>,
     _error: Option<&'static Unknown>,
     _error_info: &'static ThrownInfo,
-    _replay_nodes: &Rc<RefCell<Vec<ReplayNode>>>,
+    _replay_nodes: &ReplayNodes,
     _resume_slots: &ResumeSlots,
     _debug_task: Option<&'static ConsoleTask>,
 ) {
