@@ -8,7 +8,7 @@
 // Shared implementation and constants between the inline script and external
 // runtime instruction sets.
 
-import {$extend, $index, $unwrap} from '@rust-js/runtime';
+import {$index, $unwrap} from '@rust-js/runtime';
 
 const ELEMENT_NODE = 1;
 const COMMENT_NODE = 8;
@@ -309,7 +309,9 @@ export function revealCompletedBoundariesWithViewTransitions(
         );
         // TODO: Consider marking shouldStartViewTransition if we found any images.
         // But only once we can disable the root animation for that case.
-        $extend(suspenseyImages, Iterator.from(appearingImages));
+        for (let i = 0; i < appearingImages.length; i++) {
+          suspenseyImages.push(appearingImages[i]);
+        }
         break;
       }
     }
@@ -480,28 +482,33 @@ export function completeBoundary(suspenseBoundaryId, contentId) {
   if (window.$RB.length === 2) {
     // This is the first time we've pushed to the batch. We need to schedule a callback
     // to flush the batch. This is delayed by the throttle heuristic.
-    const shellTime = window.$RT;
-    if (typeof shellTime === 'number') {
-      const currentTime = performance.now();
-      // If the throttle would make us miss the target metric, then shorten the throttle.
-      // performance.now()'s zero value is assumed to be the start time of the metric.
-      const msUntilTimeout =
-        currentTime < TARGET_VANITY_METRIC &&
-        currentTime > TARGET_VANITY_METRIC - FALLBACK_THROTTLE_MS
-          ? TARGET_VANITY_METRIC - currentTime
-          : // Otherwise it's throttled starting from last commit time.
-            shellTime + FALLBACK_THROTTLE_MS - currentTime;
-      // We always schedule the flush in a timer even if it's very low or negative to allow
-      // for multiple completeBoundary calls that are already queued to have a chance to
-      // make the batch.
-      const reveal = window.$RV.bind(null, window.$RB);
-      setTimeout(reveal, msUntilTimeout);
-    } else {
+    if (typeof window.$RT !== 'number') {
       // If we haven't had our rAF callback yet, schedule everything for the first paint.
       const reveal = window.$RV.bind(null, window.$RB);
       requestAnimationFrame(() => {
         reveal();
       });
+    } else {
+      const currentTime = performance.now();
+      // If the throttle would make us miss the target metric, then shorten the throttle.
+      // performance.now()'s zero value is assumed to be the start time of the metric.
+      let msUntilTimeout;
+      if (
+        currentTime < TARGET_VANITY_METRIC &&
+        currentTime > TARGET_VANITY_METRIC - FALLBACK_THROTTLE_MS
+      ) {
+        msUntilTimeout = TARGET_VANITY_METRIC - currentTime;
+      } else {
+        // Otherwise it's throttled starting from last commit time.
+        // A number, as its type says.
+        const shellTime = window.$RT;
+        msUntilTimeout = shellTime + FALLBACK_THROTTLE_MS - currentTime;
+      }
+      // We always schedule the flush in a timer even if it's very low or negative to allow
+      // for multiple completeBoundary calls that are already queued to have a chance to
+      // make the batch.
+      const reveal = window.$RV.bind(null, window.$RB);
+      setTimeout(reveal, msUntilTimeout);
     }
   }
 }

@@ -603,7 +603,11 @@ pub fn complete_boundary(suspense_boundary_id: &str, content_id: &str) {
     if RB.borrow().len() == 2 {
         // This is the first time we've pushed to the batch. We need to schedule a callback
         // to flush the batch. This is delayed by the throttle heuristic.
-        if let Kind::Number(shell_time) = js::classify(RT) {
+        if js::type_of(RT) != "number" {
+            // If we haven't had our rAF callback yet, schedule everything for the first paint.
+            let reveal = function::bind(RV, Some(&Kind::Null), (RB,));
+            request_animation_frame(Box::new(move |_| reveal()));
+        } else {
             let current_time = performance.now();
             let ms_until_timeout =
                 // If the throttle would make us miss the target metric, then shorten the throttle.
@@ -614,6 +618,8 @@ pub fn complete_boundary(suspense_boundary_id: &str, content_id: &str) {
                     TARGET_VANITY_METRIC - current_time
                 } else {
                     // Otherwise it's throttled starting from last commit time.
+                    // A number, as its type says.
+                    let shell_time: f64 = unsafe { js::cast(RT) };
                     shell_time + FALLBACK_THROTTLE_MS - current_time
                 };
             // We always schedule the flush in a timer even if it's very low or negative to allow
@@ -621,10 +627,6 @@ pub fn complete_boundary(suspense_boundary_id: &str, content_id: &str) {
             // make the batch.
             let reveal = function::bind(RV, Some(&Kind::Null), (RB,));
             js::set_timeout(reveal, Some(ms_until_timeout));
-        } else {
-            // If we haven't had our rAF callback yet, schedule everything for the first paint.
-            let reveal = function::bind(RV, Some(&Kind::Null), (RB,));
-            request_animation_frame(Box::new(move |_| reveal()));
         }
     }
 }
