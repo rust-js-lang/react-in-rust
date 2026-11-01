@@ -741,9 +741,12 @@ These differences from upstream's output are accepted:
     `replayConsoleWithCallStackInDEV`, `null` outside DEV as upstream's
     are, are called through `unwrap_unchecked` where every caller runs in
     DEV, so the JS calls the constant as upstream does.
-- **Not accepted, held as gaps:** the Flight client's local
-  `UnderlyingSource` struct is a stand-in for webapi's binding (rd403, P1
-  with the Flight-gaps agent); it's replaced as soon as the binding lands.
+- **The Flight client's stream source is webapi's** (2026-11-02): its
+  local `UnderlyingSource` stand-in is gone; startReadableStream gives
+  `readable_stream::new` webapi's `UnderlyingSource { r#type, start, ..
+  }`, its controller a `ReadableStreamController` (rd403, rust-js
+  7f2381b7f), printed `new ReadableStream({type, start(c) { controller =
+  c; }})` as upstream.
 
 The audit of 2026-11-01 (Batch 41) listed these; the user accepted them the
 same day:

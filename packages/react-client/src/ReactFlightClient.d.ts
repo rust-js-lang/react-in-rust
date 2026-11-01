@@ -292,12 +292,6 @@ export function createStreamState(
   streamDebugValue?: unknown | null | undefined,
 ): StreamState;
 
-/** The underlying source startReadableStream gives its stream. */
-export interface UnderlyingSource {
-  type?: string | undefined;
-  start: (controller: ReadableStreamDefaultController) => void;
-}
-
 export function processBinaryChunk(
   weakResponse: WeakResponse,
   streamState: StreamState,

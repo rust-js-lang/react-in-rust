@@ -186,12 +186,19 @@ Object.defineProperty(ReactPromise.prototype, 'then', {
         wrapperPromise.then(onFulfilled);
       }
     }
-    let settled;
+    let reason;
     if (chunk.status === 'fulfilled') {
       // The status might have changed after initialization.
       const value = chunk;
-      settled = {TAG: 'Ok', _0: value.value};
-    } else if (
+      const value$1 = value.value;
+      // A callback may read the chunk again, so it's called once the
+      // state is no longer borrowed.
+      if (resolve != null) {
+        resolve(value$1);
+      }
+      return;
+    }
+    if (
       chunk.status === 'pending' ||
       chunk.status === 'pending_weak' ||
       chunk.status === 'blocked'
@@ -207,29 +214,21 @@ Object.defineProperty(ReactPromise.prototype, 'then', {
         value$1.reason.push(reject);
       }
       return;
-    } else if (chunk.status === 'halted') {
+    }
+    if (chunk.status === 'halted') {
       return;
-    } else if (chunk.status === 'rejected') {
+    }
+    if (chunk.status === 'rejected') {
       const value = chunk;
-      settled = {TAG: 'Err', _0: value.reason};
+      reason = value.reason;
     } else if (chunk.status === 'resolved_model') {
       const value = chunk;
-      settled = {TAG: 'Err', _0: value.reason};
+      reason = value.reason;
     } else {
-      settled = {TAG: 'Err'};
+      reason = undefined;
     }
-    // A callback may read the chunk again, so it's called once the
-    // state is no longer borrowed.
-    if (settled.TAG === 'Ok') {
-      const value = settled._0;
-      if (resolve != null) {
-        resolve(value);
-      }
-    } else {
-      const reason = settled._0;
-      if (reject != null) {
-        reject(reason);
-      }
+    if (reject != null) {
+      reject(reason);
     }
   },
 });
@@ -4347,11 +4346,11 @@ const replayConsoleWithCallStack = {
         }
       }
       const rootTask = getRootTask(response, env);
-      if (rootTask == null) {
-        callStack();
-      } else {
+      if (rootTask != null) {
         rootTask.run(callStack);
+        return;
       }
+      callStack();
     } finally {
       currentOwnerInDEV = null;
       ReactSharedInternals.getCurrentStack = prevStack;

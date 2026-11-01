@@ -31,7 +31,7 @@ use shared::react_types::{
     ReactErrorInfoDev, ReactIOInfo, ReactStackTrace, ReactTimeInfo,
 };
 use shared::react_version::REACT_VERSION;
-use webapi::{ConsoleTask, console, performance};
+use webapi::{ConsoleTask, ReadableStreamController, UnderlyingSource, console, performance};
 
 use crate::react_flight_client_dev_tools_hook::inject_internals;
 use crate::react_flight_performance_track::{
@@ -4479,13 +4479,13 @@ fn start_readable_stream(
     r#type: Option<&'static str>,
     stream_state: &StreamState,
 ) {
-    let controller: Rc<Cell<Option<&'static webapi::ReadableStreamDefaultController>>> =
-        Rc::default();
+    let controller: Rc<Cell<Option<&'static ReadableStreamController>>> = Rc::default();
     let closed = Rc::new(Cell::new(false));
     let stream = webapi::readable_stream::new(
         Some(&UnderlyingSource {
             r#type,
-            start: &|c| controller.set(Some(c)),
+            start: Some(&|c| controller.set(Some(c))),
+            ..Default::default()
         }),
         None,
     );
@@ -4634,15 +4634,6 @@ fn start_readable_stream(
         stream_state,
     );
 }
-
-/// The underlying source startReadableStream gives its stream.
-pub struct UnderlyingSource<'a> {
-    pub r#type: Option<&'static str>,
-    pub start: &'a dyn Fn(&'static webapi::ReadableStreamDefaultController),
-}
-
-unsafe impl js::Defined for UnderlyingSource<'_> {}
-impl webapi::IntoUnderlyingSource for UnderlyingSource<'_> {}
 
 fn previous_blocked_chunk_ref(chunk: &Chunk) -> &Chunk {
     chunk
