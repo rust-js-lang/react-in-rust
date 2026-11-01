@@ -909,7 +909,8 @@ export function markRootFinished(
       // have special logic associated with them because they may be entangled
       // with updates that occur outside that tree. But once the outer tree
       // commits, they behave like regular updates.
-      for (const update of hiddenUpdatesForLane) {
+      for (let i = 0; i < hiddenUpdatesForLane.length; i++) {
+        const update = hiddenUpdatesForLane[i];
         update.lane &= ~OffscreenLane;
       }
     }

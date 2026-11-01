@@ -1161,7 +1161,8 @@ function createReactNoop(reconciler, useMutation) {
         if (record.subscriptions != null) {
           const subscriptions = record.subscriptions;
           record.subscriptions = null;
-          for (const subscription of subscriptions) {
+          for (let i = 0; i < subscriptions.length; i++) {
+            const subscription = subscriptions[i];
             subscription.pendingCount--;
             if (subscription.pendingCount === 0) {
               const commit = subscription.commit;
@@ -1307,7 +1308,8 @@ function createReactNoop(reconciler, useMutation) {
       }
 
       function logHostInstances(log, children, depth) {
-        for (const child of children) {
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i];
           const indent = '  '.repeat(depth);
           if (!Array.isArray(child.children)) {
             log(indent + '- ' + child.text);

@@ -124,7 +124,8 @@ function registerSimpleEvent(domEventName, reactName) {
 }
 
 export function registerSimpleEvents() {
-  for (const eventName of simpleEventPluginEvents) {
+  for (let i = 0; i < simpleEventPluginEvents.length; i++) {
+    const eventName = simpleEventPluginEvents[i];
     const domEventName = eventName.toLowerCase();
     const capitalizedEvent =
       $unwrap(eventName[0]).toUpperCase() + eventName.slice(1);

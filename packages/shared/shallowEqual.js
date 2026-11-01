@@ -33,7 +33,8 @@ export default function shallowEqual(objA, objB) {
   }
 
   // Test for A's keys different from B.
-  for (const currentKey of keysA) {
+  for (let i = 0; i < keysA.length; i++) {
+    const currentKey = keysA[i];
     if (
       !hasOwnProperty.call(objB, currentKey) ||
       !is(objA[currentKey], objB[currentKey])

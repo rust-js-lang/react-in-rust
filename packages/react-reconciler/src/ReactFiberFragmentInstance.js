@@ -34,7 +34,8 @@ export function commitNewChildToFragmentInstances(
   if (parentFragmentInstances == null) {
     return;
   }
-  for (const fragmentInstance of parentFragmentInstances) {
+  for (let i = 0; i < parentFragmentInstances.length; i++) {
+    const fragmentInstance = parentFragmentInstances[i];
     commitNewChildToFragmentInstance(fiber.stateNode, fragmentInstance);
   }
 }

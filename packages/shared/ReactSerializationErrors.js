@@ -37,7 +37,8 @@ function isObjectPrototype(object) {
     return false;
   }
   const names = Object.getOwnPropertyNames(object);
-  for (const name of names) {
+  for (let i = 0; i < names.length; i++) {
+    const name = names[i];
     if (!(name in objectPrototype)) {
       return false;
     }
@@ -62,7 +63,8 @@ export function isSimpleObject(object) {
     return false;
   }
   const names = Object.getOwnPropertyNames(object);
-  for (const name of names) {
+  for (let i = 0; i < names.length; i++) {
+    const name = names[i];
     const descriptor = Object.getOwnPropertyDescriptor(object, name);
     if (descriptor == null) {
       return false;
@@ -242,7 +244,8 @@ export function describeObjectForErrorMessage(objectOrArray, expandedName) {
     str = '<' + (describeElementType(type) || '...');
     const object = objectOrArray;
     const names = Object.keys(object);
-    for (const name of names) {
+    for (let j = 0; j < names.length; j++) {
+      const name = names[j];
       str += ' ' + (describeKeyForErrorMessage(name) + '=');
       const value = object[name];
       let substr =

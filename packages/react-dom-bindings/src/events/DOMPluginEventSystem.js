@@ -252,7 +252,8 @@ function processDispatchQueueItemsInOrder(
       previousInstance = instance;
     }
   } else {
-    for (const {instance, currentTarget, listener} of dispatchListeners) {
+    for (let j = 0; j < dispatchListeners.length; j++) {
+      const {instance, currentTarget, listener} = dispatchListeners[j];
       if (instance !== previousInstance && event.isPropagationStopped()) {
         return;
       }
@@ -274,7 +275,8 @@ function processDispatchQueueItemsInOrder(
 
 export function processDispatchQueue(dispatchQueue, eventSystemFlags) {
   const inCapturePhase = (eventSystemFlags & IS_CAPTURE_PHASE) !== 0;
-  for (const {event, listeners} of dispatchQueue) {
+  for (let i = 0; i < dispatchQueue.length; i++) {
+    const {event, listeners} = dispatchQueue[i];
     processDispatchQueueItemsInOrder(event, listeners, inCapturePhase);
     //  event system doesn't use pooling.
   }

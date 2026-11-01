@@ -40,7 +40,8 @@ function getClassNameByType(classByType) {
   let className;
   const activeTypes = getPendingTransitionTypes();
   if (activeTypes != null) {
-    for (const activeType of activeTypes) {
+    for (let i = 0; i < activeTypes.length; i++) {
+      const activeType = activeTypes[i];
       const match = classByType[activeType];
       if (match != null) {
         if (match === 'none') {

@@ -34,7 +34,8 @@ export function finishQueueingConcurrentUpdates() {
 
   concurrentlyUpdatedLanes = NoLanes;
 
-  for (const [fiber, queue, update, lane] of queued) {
+  for (let i = 0; i < queued.length; i++) {
+    const [fiber, queue, update, lane] = queued[i];
     if (queue != null && update != null) {
       const pending = queue.pending;
       if (pending == null) {

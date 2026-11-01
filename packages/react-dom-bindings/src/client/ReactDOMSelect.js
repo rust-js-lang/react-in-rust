@@ -28,7 +28,8 @@ const valuePropNames = ['value', 'defaultValue'];
  */
 function checkSelectPropTypes(props) {
   if (__DEV__) {
-    for (const propName of valuePropNames) {
+    for (let i = 0; i < valuePropNames.length; i++) {
+      const propName = valuePropNames[i];
       if (props[propName] == null) {
         continue;
       }
@@ -58,8 +59,9 @@ function updateOptions(node, multiple, propValue, setDefaultSelected) {
   if (multiple) {
     const selectedValues = propValue;
     const selectedValue = {};
-    for (const selected of selectedValues) {
+    for (let j = 0; j < selectedValues.length; j++) {
       // Prefix to avoid chaos with special keys.
+      const selected = selectedValues[j];
       selectedValue['$' + selected] = true;
     }
     for (let i = 0; i < options.length; i++) {
@@ -152,8 +154,9 @@ export function hydrateSelect(element, value, defaultValue, multiple) {
     const selectedValues = propValue;
     const selectedValue = {};
     if (selectedValues != null) {
-      for (const selected of selectedValues) {
+      for (let j = 0; j < selectedValues.length; j++) {
         // Prefix to avoid chaos with special keys.
+        const selected = selectedValues[j];
         selectedValue['$' + selected] = true;
       }
     }

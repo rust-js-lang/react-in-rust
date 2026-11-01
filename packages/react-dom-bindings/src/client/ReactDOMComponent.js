@@ -1286,9 +1286,15 @@ export function setInitialProperties(domElement, tag, props) {
       break;
     case 'video':
     case 'audio':
-      // We listen to these events in case to ensure emulated bubble
-      // listeners still fire for all the media events.
-      for (const mediaEventType of mediaEventTypes) {
+      for (
+        let i = 0;
+        i <
+        // We listen to these events in case to ensure emulated bubble
+        // listeners still fire for all the media events.
+        mediaEventTypes.length;
+        i++
+      ) {
+        const mediaEventType = mediaEventTypes[i];
         listenToNonDelegatedEvent(mediaEventType, domElement);
       }
       break;
@@ -2962,9 +2968,15 @@ export function hydrateProperties(domElement, tag, props, hostContext) {
       break;
     case 'video':
     case 'audio':
-      // We listen to these events in case to ensure emulated bubble
-      // listeners still fire for all the media events.
-      for (const mediaEventType of mediaEventTypes) {
+      for (
+        let i = 0;
+        i <
+        // We listen to these events in case to ensure emulated bubble
+        // listeners still fire for all the media events.
+        mediaEventTypes.length;
+        i++
+      ) {
+        const mediaEventType = mediaEventTypes[i];
         listenToNonDelegatedEvent(mediaEventType, domElement);
       }
       break;

@@ -11,7 +11,8 @@ function prepareStackTrace(error, structuredStackTrace) {
   const name = error.name || 'Error';
   const message = error.message;
   let stack = name + ': ' + message;
-  for (const callSite of structuredStackTrace) {
+  for (let i = 0; i < structuredStackTrace.length; i++) {
+    const callSite = structuredStackTrace[i];
     stack += '\n    at ' + callSite.toString();
   }
   return stack;

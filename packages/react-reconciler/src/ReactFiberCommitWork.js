@@ -1928,7 +1928,8 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
         const updateQueue = finishedWork.updateQueue;
         if (updateQueue != null && updateQueue.events != null) {
           const eventPayloads = updateQueue.events;
-          for (const {ref, nextImpl} of eventPayloads) {
+          for (let i = 0; i < eventPayloads.length; i++) {
+            const {ref, nextImpl} = eventPayloads[i];
             ref.impl = nextImpl;
           }
         }

@@ -2084,7 +2084,8 @@ export function startViewTransition(
       const animations = documentElement.getAnimations({
         subtree: true,
       });
-      for (const animation of animations) {
+      for (let i = 0; i < animations.length; i++) {
+        const animation = animations[i];
         const effect = $unwrap(animation.effect);
         // $FlowFixMe[prop-missing]
         const pseudoElement = effect.pseudoElement;
@@ -2099,7 +2100,8 @@ export function startViewTransition(
           let width;
           let height;
           let unchangedDimensions = true;
-          for (const keyframe of keyframes) {
+          for (let j = 0; j < keyframes.length; j++) {
+            const keyframe = keyframes[j];
             const w = keyframe.width;
             if (width == null) {
               width = w;
@@ -2261,8 +2263,9 @@ function animateGesture(
   let width;
   let height;
   let unchangedDimensions = true;
-  for (const keyframe of keyframes) {
+  for (let i = 0; i < keyframes.length; i++) {
     // Delete any easing since we always apply linear easing to gestures.
+    const keyframe = keyframes[i];
     delete keyframe.easing;
     delete keyframe.computedOffset;
     const w = keyframe.width;
@@ -2326,7 +2329,8 @@ function animateGesture(
     // should have already been cancelled so we should observe the underlying element.
     const computedStyle = getComputedStyle(targetElement, pseudoElement);
     if (computedStyle.width === width && computedStyle.height === height) {
-      for (const keyframe of keyframes) {
+      for (let i = 0; i < keyframes.length; i++) {
+        const keyframe = keyframes[i];
         delete keyframe.width;
         delete keyframe.height;
       }
@@ -2429,7 +2433,8 @@ export function startGestureTransition(
       const foundNews = new Set();
       // Collect the longest duration of any view-transition animation including delay.
       let longestDuration = 0;
-      for (const animation of animations) {
+      for (let i = 0; i < animations.length; i++) {
+        const animation = animations[i];
         const effect = $unwrap(animation.effect);
         // $FlowFixMe[prop-missing]
         const pseudoElement = effect.pseudoElement;
@@ -2460,7 +2465,8 @@ export function startGestureTransition(
       }
       const durationToRangeMultipler =
         (rangeEnd - rangeStart) / longestDuration;
-      for (const anim of animations) {
+      for (let i = 0; i < animations.length; i++) {
+        const anim = animations[i];
         if (anim.playState !== 'running') {
           continue;
         }
@@ -2712,7 +2718,8 @@ ViewTransitionPseudoElement.prototype.getAnimations = function (options) {
     },
   );
   const result = [];
-  for (const animation of animations) {
+  for (let i = 0; i < animations.length; i++) {
+    const animation = animations[i];
     const effect = animation.effect;
     // TODO: Handle multiple child instances.
     if (
@@ -3449,7 +3456,8 @@ function schedulePendingIntersectionUnobserve(
     requestPostPaintCallback(() => {
       intersectionUnobserveScheduled = false;
       const pending = $borrowMut(pendingIntersectionUnobserves).splice(0);
-      for (const item of pending) {
+      for (let i = 0; i < pending.length; i++) {
+        const item = pending[i];
         item.observer.unobserve(item.instance);
       }
     });

@@ -212,7 +212,8 @@ if (__DEV__) {
 function validateFragmentProps(element, fiber, returnFiber) {
   if (__DEV__) {
     const keys = Object.keys(element.props);
-    for (const key of keys) {
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
       if (key !== 'children' && key !== 'key' && key !== 'ref') {
         let fiber$1;
         if (fiber != null) {

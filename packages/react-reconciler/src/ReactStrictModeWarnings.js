@@ -163,7 +163,8 @@ if (__DEV__) {
       $withBorrow(
         pendingComponentWillMountWarnings,
         pending => {
-          for (const fiber of pending) {
+          for (let i = 0; i < pending.length; i++) {
+            const fiber = pending[i];
             componentWillMountUniqueNames.add(
               getComponentNameFromFiber(fiber) || 'Component',
             );
@@ -186,7 +187,8 @@ if (__DEV__) {
       $withBorrow(
         pendingUNSAFE_ComponentWillMountWarnings,
         pending => {
-          for (const fiber of pending) {
+          for (let i = 0; i < pending.length; i++) {
+            const fiber = pending[i];
             unsafeComponentWillMountUniqueNames.add(
               getComponentNameFromFiber(fiber) || 'Component',
             );
@@ -209,7 +211,8 @@ if (__DEV__) {
       $withBorrow(
         pendingComponentWillReceivePropsWarnings,
         pending => {
-          for (const fiber of pending) {
+          for (let i = 0; i < pending.length; i++) {
+            const fiber = pending[i];
             componentWillReceivePropsUniqueNames.add(
               getComponentNameFromFiber(fiber) || 'Component',
             );
@@ -232,7 +235,8 @@ if (__DEV__) {
       $withBorrow(
         pendingUNSAFE_ComponentWillReceivePropsWarnings,
         pending => {
-          for (const fiber of pending) {
+          for (let i = 0; i < pending.length; i++) {
+            const fiber = pending[i];
             unsafeComponentWillReceivePropsUniqueNames.add(
               getComponentNameFromFiber(fiber) || 'Component',
             );
@@ -255,7 +259,8 @@ if (__DEV__) {
       $withBorrow(
         pendingComponentWillUpdateWarnings,
         pending => {
-          for (const fiber of pending) {
+          for (let i = 0; i < pending.length; i++) {
+            const fiber = pending[i];
             componentWillUpdateUniqueNames.add(
               getComponentNameFromFiber(fiber) || 'Component',
             );
@@ -278,7 +283,8 @@ if (__DEV__) {
       $withBorrow(
         pendingUNSAFE_ComponentWillUpdateWarnings,
         pending => {
-          for (const fiber of pending) {
+          for (let i = 0; i < pending.length; i++) {
+            const fiber = pending[i];
             unsafeComponentWillUpdateUniqueNames.add(
               getComponentNameFromFiber(fiber) || 'Component',
             );
@@ -436,7 +442,8 @@ if (__DEV__) {
           const firstFiber = fiberArray[0];
 
           const uniqueNames = new Set();
-          for (const fiber of fiberArray) {
+          for (let i = 0; i < fiberArray.length; i++) {
+            const fiber = fiberArray[i];
             uniqueNames.add(getComponentNameFromFiber(fiber) || 'Component');
             didWarnAboutLegacyContext.add(fiber.type);
           }

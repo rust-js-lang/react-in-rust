@@ -504,7 +504,8 @@ function describeNode(node, indent) {
   let parentContent = '';
   const debugInfo = node.fiber._debugInfo;
   if (debugInfo != null) {
-    for (const info of debugInfo) {
+    for (let j = 0; j < debugInfo.length; j++) {
+      const info = debugInfo[j];
       const serverComponentName = info.name;
       if (typeof serverComponentName === 'string') {
         parentContent +=
@@ -585,7 +586,8 @@ function describeNode(node, indent) {
     indent = (indent - 1) | 0;
   }
   try {
-    for (const tailNode of serverTail) {
+    for (let i = 0; i < serverTail.length; i++) {
+      const tailNode = serverTail[i];
       if (typeof tailNode === 'string') {
         // Removed text node
         childContent +=

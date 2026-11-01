@@ -16,7 +16,8 @@ export function queueTransitionTypes(root, transitionTypes) {
     if (includesTransitionLane(root.pendingLanes)) {
       root.transitionTypes ??= [];
       const queued = root.transitionTypes;
-      for (const transitionType of transitionTypes) {
+      for (let i = 0; i < transitionTypes.length; i++) {
+        const transitionType = transitionTypes[i];
         if (!queued.includes(transitionType)) {
           queued.push(transitionType);
         }
@@ -32,7 +33,8 @@ export function entangleAsyncTransitionTypes(transitionTypes) {
   if (enableViewTransition) {
     entangledTransitionTypes ??= [];
     const queued = entangledTransitionTypes;
-    for (const transitionType of transitionTypes) {
+    for (let i = 0; i < transitionTypes.length; i++) {
+      const transitionType = transitionTypes[i];
       if (!queued.includes(transitionType)) {
         queued.push(transitionType);
       }

@@ -81,7 +81,8 @@ function toJSON(inst) {
     delete props.children;
     const children = inst.children.slice();
     let renderedChildren;
-    for (const child of children) {
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
       const renderedChild = toJSON(child);
       if (renderedChild != null) {
         if (renderedChildren == null) {
@@ -483,7 +484,8 @@ export function create(element, options) {
         return toJSON(children[1]);
       }
       let renderedChildren;
-      for (const child of children) {
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
         const renderedChild = toJSON(child);
         if (renderedChild != null) {
           if (renderedChildren == null) {

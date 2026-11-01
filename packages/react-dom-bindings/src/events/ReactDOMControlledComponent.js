@@ -60,7 +60,8 @@ export function restoreStateIfNeeded() {
 
   restoreStateOfTarget(target);
   if (queuedTargets != null) {
-    for (const target of queuedTargets) {
+    for (let i = 0; i < queuedTargets.length; i++) {
+      const target = queuedTargets[i];
       restoreStateOfTarget(target);
     }
   }

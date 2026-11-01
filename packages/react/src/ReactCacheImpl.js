@@ -41,7 +41,8 @@ export function cache(fn) {
     } else {
       cacheNode = fnNode;
     }
-    for (const arg of args) {
+    for (let i = 0; i < args.length; i++) {
+      const arg = args[i];
       if (
         typeof arg === 'function' ||
         // $FlowFixMe[invalid-compare]

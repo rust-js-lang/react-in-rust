@@ -78,7 +78,8 @@ export function startScheduledGesture(
       if (transitionTypes != null) {
         prev.types ??= [];
         const scheduledTypes = prev.types;
-        for (const transitionType of transitionTypes) {
+        for (let i = 0; i < transitionTypes.length; i++) {
+          const transitionType = transitionTypes[i];
           if (!scheduledTypes.includes(transitionType)) {
             scheduledTypes.push(transitionType);
           }

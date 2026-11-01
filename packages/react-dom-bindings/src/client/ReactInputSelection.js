@@ -157,7 +157,8 @@ export function restoreSelection(priorSelectionInformation, containerInfo) {
       priorFocusedElem.focus();
     }
 
-    for (const info of ancestors) {
+    for (let i = 0; i < ancestors.length; i++) {
+      const info = ancestors[i];
       info.element.scrollLeft = info.left;
       info.element.scrollTop = info.top;
     }

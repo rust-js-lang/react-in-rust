@@ -51,7 +51,8 @@ export function registerDirectEvent(registrationName, dependencies) {
     }
   }
 
-  for (const dependency of dependencies) {
+  for (let i = 0; i < dependencies.length; i++) {
+    const dependency = dependencies[i];
     allNativeEvents.add(dependency);
   }
 }

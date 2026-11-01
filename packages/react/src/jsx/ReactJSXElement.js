@@ -510,7 +510,8 @@ function jsxDEVImpl(
     if (children !== undefined) {
       if (isStaticChildren) {
         if (isArray(children)) {
-          for (const child of children) {
+          for (let i = 0; i < children.length; i++) {
+            const child = children[i];
             validateChildKeys(child);
           }
 
@@ -639,7 +640,8 @@ export function createElement(type, config, ...children) {
     // errors. We don't want exception behavior to differ between dev and
     // prod. (Rendering will throw with a helpful message and as soon as the
     // type is fixed, the key warnings will appear.)
-    for (const child of children) {
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
       validateChildKeys(child);
     }
   }
@@ -858,7 +860,8 @@ export function cloneElement(element, config, ...children) {
     __DEV__ ? element._debugTask : undefined,
   );
 
-  for (const child of children) {
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i];
     validateChildKeys(child);
   }
 
