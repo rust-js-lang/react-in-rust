@@ -19,8 +19,8 @@ use shared::get_component_name_from_type::get_component_name_from_type;
 use shared::is_array::is_array;
 use shared::react_feature_flags::{
     DISABLE_LEGACY_CONTEXT, DISABLE_LEGACY_CONTEXT_FOR_FUNCTION_COMPONENTS,
-    ENABLE_ASYNC_ITERABLE_CHILDREN, ENABLE_CPU_SUSPENSE, ENABLE_SCOPE_API, ENABLE_VIEW_TRANSITION,
-    ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
+    ENABLE_ASYNC_ITERABLE_CHILDREN, ENABLE_CPU_SUSPENSE, ENABLE_FIZZ_BLOCKING_RENDER,
+    ENABLE_SCOPE_API, ENABLE_VIEW_TRANSITION, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
 };
 use shared::react_owner_stack_reset::reset_owner_stack_limit;
 use shared::react_recoverable::REACT_RECOVERABLE_DIGEST;
@@ -30,14 +30,17 @@ use shared::react_symbols::{
     ASYNC_ITERATOR, REACT_ACTIVITY_TYPE, REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE,
     REACT_ELEMENT_TYPE, REACT_FORWARD_REF_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE,
     REACT_LEGACY_HIDDEN_TYPE, REACT_MEMO_TYPE, REACT_PORTAL_TYPE, REACT_PROFILER_TYPE,
-    REACT_SCOPE_TYPE, REACT_STRICT_MODE_TYPE, REACT_SUSPENSE_LIST_TYPE, REACT_SUSPENSE_TYPE,
-    REACT_VIEW_TRANSITION_TYPE, get_iterator_fn,
+    REACT_RECOVERABLE_TYPE, REACT_SCOPE_TYPE, REACT_STRICT_MODE_TYPE, REACT_SUSPENSE_LIST_TYPE,
+    REACT_SUSPENSE_TYPE, REACT_VIEW_TRANSITION_TYPE, get_iterator_fn,
 };
 use shared::react_types::{
     ReactFormState, ReactNodeList, SuspenseListProps, SuspenseListRevealOrder, SuspenseProps,
     Thenable, ViewTransitionProps,
 };
-use webapi::{AbortController, ConsoleTask, console};
+use webapi::{
+    AbortController, AbortSignal, AddEventListenerOptions, ConsoleTask, Event, EventTargetExt,
+    console,
+};
 
 use crate::react_fizz_async_dispatcher::DEFAULT_ASYNC_DISPATCHER;
 use crate::react_fizz_call_user_space::{
@@ -51,10 +54,11 @@ use crate::react_fizz_component_stack::{
 use crate::react_fizz_current_task::{CURRENT_TASK_IN_DEV, set_current_task_in_dev};
 use crate::react_fizz_hooks::{
     CURRENT_RESUMABLE_STATE, HOOKS_DISPATCHER, check_did_render_id_hook,
-    clone_recoverable_error_as_fatal, finish_hooks, get_action_state_count,
-    get_action_state_matching_index, get_thenable_state_after_suspending, is_recoverable_error,
-    prepare_to_use_hooks, prepare_to_use_thenable_state, read_previous_thenable_from_state,
-    reset_hooks_state, set_current_resumable_state, unwrap_thenable,
+    clone_recoverable_error_as_fatal, create_recoverable_error, finish_hooks,
+    get_action_state_count, get_action_state_matching_index, get_thenable_state_after_suspending,
+    is_recoverable_error, prepare_to_use_hooks, prepare_to_use_thenable_state,
+    read_previous_thenable_from_state, reset_hooks_state, set_current_resumable_state,
+    unwrap_thenable,
 };
 use crate::react_fizz_legacy_context::{
     Context as LegacyContext, EMPTY_CONTEXT_OBJECT, get_masked_context, process_child_context,
@@ -200,6 +204,12 @@ unsafe impl js::Defined for RequestStorage {}
 impl RequestStorage {
     #[cfg_attr(rust_js, rust_js::link_name = "getStore")]
     fn get_store(&self) -> Option<Rc<Request>> {
+        unreachable!()
+    }
+
+    #[cfg_attr(rust_js, rust_js::link_name = "run")]
+    fn run(&self, store: &Rc<Request>, callback: fn(&Rc<Request>), arg: &Rc<Request>) {
+        let _ = (store, callback, arg);
         unreachable!()
     }
 }
@@ -6486,17 +6496,1672 @@ fn finished_task(
     }
 }
 
-// DRAFT: the sections below are not ported yet.
-
-fn prepare_preamble(_request: &Rc<Request>) {
-    todo!()
+fn retry_task(request: &Rc<Request>, task: &Rc<Task>) {
+    let segment = task.blocked_segment.borrow().clone();
+    match segment {
+        None => {
+            retry_replay_task(
+                request, // $FlowFixMe[incompatible-type]: Refined.
+                task,
+            );
+        }
+        Some(segment) => {
+            retry_render_task(
+                request, // $FlowFixMe[incompatible-type]: Refined.
+                task, &segment,
+            );
+        }
+    }
 }
-pub fn perform_work(_request: &Rc<Request>) {
-    todo!()
+
+fn retry_render_task(request: &Rc<Request>, task: &Rc<Task>, segment: &Rc<Segment>) {
+    if segment.status.get() != PENDING {
+        // We completed this by other means before we had a chance to retry it.
+        return;
+    }
+
+    let prev_task = request.current_task.replace(Some(Rc::clone(task)));
+
+    // We restore the context to what it was when we suspended.
+    // We don't restore it after we leave because it's likely that we'll end up
+    // needing a very similar context soon again.
+    switch_context(task.context.borrow().clone());
+    let mut prev_task_in_dev = None;
+    if __DEV__ {
+        prev_task_in_dev = CURRENT_TASK_IN_DEV.with_borrow(Clone::clone);
+        set_current_task_in_dev(Some(Rc::clone(task)));
+    }
+
+    let children_length = segment.children.borrow().len();
+    let chunk_length = segment.chunks.borrow().len();
+    // Used to detect forward progress if we hit a stack overflow below.
+    let start_node = task.node.get();
+    let result = catch_unwind(AssertUnwindSafe(|| {
+        // We call the destructive form that mutates this task. That way if something
+        // suspends again, we can reuse the same task instead of spawning a new one.
+
+        retry_node(request, task);
+        push_segment_finale(
+            &segment.chunks,
+            request.render_state,
+            segment.last_pushed_text.get(),
+            segment.text_embedded.get(),
+        );
+
+        task.abort_set.borrow().borrow_mut().remove(task);
+        segment.status.set(COMPLETED);
+        finished_segment(request, task.blocked_boundary.borrow().as_ref(), segment);
+        finished_task(
+            request,
+            task.blocked_boundary.borrow().as_ref(),
+            task.row.borrow().as_ref(),
+            Some(segment),
+        );
+    }));
+    let result = match result {
+        Ok(()) => Ok(()),
+        Err(thrown_value) => catch_unwind(AssertUnwindSafe(|| {
+            reset_hooks_state();
+
+            // Reset the write pointers to where we started.
+            segment.children.borrow_mut().truncate(children_length);
+            segment.chunks.borrow_mut().truncate(chunk_length);
+
+            let is_suspense_exception = is_suspense_exception(thrown_value_of(&*thrown_value));
+            let x = if is_suspense_exception {
+                // This is a special type of exception used for Suspense. For historical
+                // reasons, the rest of the Suspense implementation expects the thrown
+                // value to be a thenable, because before `use` existed that was the
+                // (unstable) API for suspending. This implementation detail can change
+                // later, once we deprecate the old API in favor of `use`.
+                Some(js::unknown(get_suspended_thenable()))
+            } else {
+                thrown_value_of(&*thrown_value)
+            };
+
+            if request.aborted.get() {
+                if is_suspense_exception {
+                    // This task was rendering when abort() was called, so it never took
+                    // the normal suspension path below that stores the thenable state.
+                    // Preserve it before finishing the abort so DEV can replay the task
+                    // and include this suspended use() call site in the owner stack.
+                    task.thenable_state
+                        .replace(get_thenable_state_after_suspending());
+                }
+                // The task has unwound from user code, so it must no longer appear to
+                // be the currently rendering task while we synchronously finish it.
+                // Restore the parent instead of clearing this field because finishing
+                // can reenter Fizz and abort an outer render that is still on the stack.
+                request.current_task.replace(prev_task.clone());
+                abort_unwound_task(task, request);
+                return;
+            }
+
+            if js::type_of(x) == "object" && !matches!(js::classify(x), Kind::Null) {
+                // $FlowFixMe[method-unbinding]
+                if js::is_function(js::get(x, "then")) {
+                    // Something suspended again, let's pick it back up later.
+                    segment.status.set(PENDING);
+                    task.thenable_state.replace(if is_suspense_exception {
+                        get_thenable_state_after_suspending()
+                    } else {
+                        None
+                    });
+                    let ping = &task.ping;
+                    // We've asserted that x is a thenable above
+                    // GAP rd491: upstream gives `then` the ping functions themselves.
+                    let thenable: &'static Thenable = unsafe { js::cast(x) };
+                    let (resolve, reject) = (Rc::clone(&ping.resolve), Rc::clone(&ping.reject));
+                    thenable.then(move |_| resolve(), move |error| reject(error));
+                    return;
+                }
+                if js::strict_equals(
+                    js::get(x, "message"),
+                    Some(js::unknown("Maximum call stack size exceeded")),
+                ) && !js::strict_equals(task.node.get(), start_node)
+                {
+                    segment.status.set(PENDING);
+                    task.thenable_state.replace(None);
+                    // Immediately schedule the task for retrying.
+                    request.pinged_tasks.borrow_mut().push(Rc::clone(task));
+                    return;
+                }
+            }
+
+            let error_info = get_thrown_info(task.component_stack.borrow().clone());
+            task.abort_set.borrow().borrow_mut().remove(task);
+
+            segment.status.set(ERRORED);
+            errored_task(
+                request,
+                task.blocked_boundary.borrow().as_ref(),
+                task.row.borrow().as_ref(),
+                x,
+                error_info,
+                if __DEV__ { task.debug_task.get() } else { None },
+            );
+        })),
+    };
+    request.current_task.replace(prev_task);
+    if __DEV__ {
+        set_current_task_in_dev(prev_task_in_dev);
+    }
+    if let Err(thrown_value) = result {
+        resume_unwind(thrown_value);
+    }
 }
 
-fn end_render_lifetime(_request: &Request) {
-    todo!()
+fn retry_replay_task(request: &Rc<Request>, task: &Rc<Task>) {
+    let replay = task.replay.borrow().clone().unwrap();
+    if replay.pending_tasks.get() == 0.0 {
+        // There are no pending tasks working on this set, so we must have aborted.
+        return;
+    }
+
+    let prev_task = request.current_task.replace(Some(Rc::clone(task)));
+
+    // We restore the context to what it was when we suspended.
+    // We don't restore it after we leave because it's likely that we'll end up
+    // needing a very similar context soon again.
+    switch_context(task.context.borrow().clone());
+    let mut prev_task_in_dev = None;
+    if __DEV__ {
+        prev_task_in_dev = CURRENT_TASK_IN_DEV.with_borrow(Clone::clone);
+        set_current_task_in_dev(Some(Rc::clone(task)));
+    }
+
+    // Used to detect forward progress if we hit a stack overflow below.
+    let start_node = task.node.get();
+    let result = catch_unwind(AssertUnwindSafe(|| {
+        // We call the destructive form that mutates this task. That way if something
+        // suspends again, we can reuse the same task instead of spawning a new one.
+        let slots = replay.slots.borrow().clone();
+        if let ResumeSlots::Root(resume_segment_id) = slots {
+            resume_node(
+                request,
+                task,
+                resume_segment_id,
+                task.node.get(),
+                task.child_index.get(),
+            );
+        } else {
+            retry_node(request, task);
+        }
+
+        if replay.pending_tasks.get() == 1.0 && !replay.nodes.borrow().is_empty() {
+            panic!(concat!(
+                "Couldn't find all resumable slots by key/index during replaying. ",
+                "The tree doesn't match so React will fallback to client rendering."
+            ));
+        }
+        replay.pending_tasks.set(replay.pending_tasks.get() - 1.0);
+
+        task.abort_set.borrow().borrow_mut().remove(task);
+        finished_task(
+            request,
+            task.blocked_boundary.borrow().as_ref(),
+            task.row.borrow().as_ref(),
+            None,
+        );
+    }));
+    let result = match result {
+        Ok(()) => Ok(()),
+        Err(thrown_value) => catch_unwind(AssertUnwindSafe(|| {
+            reset_hooks_state();
+
+            let is_suspense_exception = is_suspense_exception(thrown_value_of(&*thrown_value));
+            let x = if is_suspense_exception {
+                // This is a special type of exception used for Suspense. For historical
+                // reasons, the rest of the Suspense implementation expects the thrown
+                // value to be a thenable, because before `use` existed that was the
+                // (unstable) API for suspending. This implementation detail can change
+                // later, once we deprecate the old API in favor of `use`.
+                Some(js::unknown(get_suspended_thenable()))
+            } else {
+                thrown_value_of(&*thrown_value)
+            };
+
+            if request.aborted.get() {
+                if is_suspense_exception {
+                    // This task was rendering when abort() was called, so it never took
+                    // the normal suspension path below that stores the thenable state.
+                    // Preserve it before finishing the abort so DEV can replay the task
+                    // and include this suspended use() call site in the owner stack.
+                    task.thenable_state
+                        .replace(get_thenable_state_after_suspending());
+                }
+                // The task has unwound from user code, so it must no longer appear to
+                // be the currently rendering task while we synchronously finish it.
+                // Restore the parent instead of clearing this field because finishing
+                // can reenter Fizz and abort an outer render that is still on the stack.
+                request.current_task.replace(prev_task.clone());
+                abort_unwound_task(task, request);
+                return;
+            }
+
+            // $FlowFixMe[invalid-compare]
+            if js::type_of(x) == "object" && !matches!(js::classify(x), Kind::Null) {
+                // $FlowFixMe[method-unbinding]
+                if js::is_function(js::get(x, "then")) {
+                    // Something suspended again, let's pick it back up later.
+                    let ping = &task.ping;
+                    // GAP rd491: upstream gives `then` the ping functions themselves.
+                    let thenable: &'static Thenable = unsafe { js::cast(x) };
+                    let (resolve, reject) = (Rc::clone(&ping.resolve), Rc::clone(&ping.reject));
+                    thenable.then(move |_| resolve(), move |error| reject(error));
+                    task.thenable_state.replace(if is_suspense_exception {
+                        get_thenable_state_after_suspending()
+                    } else {
+                        None
+                    });
+                    return;
+                }
+                if js::strict_equals(
+                    js::get(x, "message"),
+                    Some(js::unknown("Maximum call stack size exceeded")),
+                ) && !js::strict_equals(task.node.get(), start_node)
+                {
+                    // Stack overflow after making forward progress. Retry from a fresh stack.
+                    // No progress (e.g. overflow inside the component itself) falls through.
+                    task.thenable_state.replace(None);
+                    // Immediately schedule the task for retrying.
+                    request.pinged_tasks.borrow_mut().push(Rc::clone(task));
+                    return;
+                }
+            }
+            replay.pending_tasks.set(replay.pending_tasks.get() - 1.0);
+            task.abort_set.borrow().borrow_mut().remove(task);
+            let error_info = get_thrown_info(task.component_stack.borrow().clone());
+            errored_replay(
+                request,
+                task.blocked_boundary.borrow().clone(),
+                if request.aborted.get() {
+                    request.fatal_error.get()
+                } else {
+                    x
+                },
+                error_info,
+                &replay.nodes,
+                &replay.slots.borrow(),
+                if __DEV__ { task.debug_task.get() } else { None },
+            );
+            request
+                .pending_root_tasks
+                .set(request.pending_root_tasks.get() - 1.0);
+            if request.pending_root_tasks.get() == 0.0 {
+                complete_shell(request);
+            }
+            request
+                .all_pending_tasks
+                .set(request.all_pending_tasks.get() - 1.0);
+            if request.all_pending_tasks.get() == 0.0 {
+                complete_all(request);
+            }
+        })),
+    };
+    request.current_task.replace(prev_task);
+    if __DEV__ {
+        set_current_task_in_dev(prev_task_in_dev);
+    }
+    if let Err(thrown_value) = result {
+        resume_unwind(thrown_value);
+    }
+}
+
+pub fn perform_work(request: &Rc<Request>) {
+    if request.aborted.get() || request.status.get() > OPEN {
+        return;
+    }
+    let prev_context = get_active_context();
+    let prev_dispatcher = REACT_SHARED_INTERNALS.h();
+    HOOKS_DISPATCHER.with(|hooks_dispatcher| REACT_SHARED_INTERNALS.set_h(Some(hooks_dispatcher)));
+    let prev_async_dispatcher = REACT_SHARED_INTERNALS.a();
+    DEFAULT_ASYNC_DISPATCHER.with(|default_async_dispatcher| {
+        REACT_SHARED_INTERNALS.set_a(Some(default_async_dispatcher))
+    });
+
+    let prev_request = CURRENT_REQUEST.replace(Some(Rc::clone(request)));
+
+    let mut prev_get_current_stack_impl = None;
+    if __DEV__ {
+        prev_get_current_stack_impl = REACT_SHARED_INTERNALS.get_current_stack();
+        REACT_SHARED_INTERNALS.set_get_current_stack(Some(get_current_stack_in_dev));
+    }
+    let prev_resumable_state = CURRENT_RESUMABLE_STATE.get();
+    set_current_resumable_state(Some(request.resumable_state));
+    let result = catch_unwind(AssertUnwindSafe(|| {
+        let pinged_tasks = &request.pinged_tasks;
+        let mut i = 0;
+        while i < pinged_tasks.borrow().len() {
+            let task = Rc::clone(&pinged_tasks.borrow()[i]);
+            retry_task(request, &task);
+            i += 1;
+        }
+        pinged_tasks.borrow_mut().drain(0..i);
+        if let Some(destination) = request.destination.get() {
+            flush_completed_queues(request, destination);
+        }
+    }));
+    let result = match result {
+        Ok(()) => Ok(()),
+        Err(error) => catch_unwind(AssertUnwindSafe(|| {
+            let error_info: &'static ThrownInfo =
+                unsafe { js::cast(Some(js::unknown(js::object::spread(None::<&Unknown>)))) };
+            log_recoverable_error(request, thrown_value_of(&*error), error_info, None);
+            fatal_error(request, thrown_value_of(&*error), error_info, None);
+        })),
+    };
+    set_current_resumable_state(prev_resumable_state);
+
+    REACT_SHARED_INTERNALS.set_h(prev_dispatcher);
+    REACT_SHARED_INTERNALS.set_a(prev_async_dispatcher);
+
+    if __DEV__ {
+        // GAP rd496 (blocking): what was read can't be put back.
+        REACT_SHARED_INTERNALS.set_get_current_stack(
+            prev_get_current_stack_impl.map(|_| get_current_stack_in_dev as fn() -> String),
+        );
+    }
+    if HOOKS_DISPATCHER.with(|hooks_dispatcher| {
+        js::strict_equals(
+            prev_dispatcher.map(js::unknown),
+            Some(js::unknown(hooks_dispatcher)),
+        )
+    }) {
+        // This means that we were in a reentrant work loop. This could happen
+        // in a renderer that supports synchronous work like renderToString,
+        // when it's called from within another renderer.
+        // Normally we don't bother switching the contexts to their root/default
+        // values when leaving because we'll likely need the same or similar
+        // context again. However, when we're inside a synchronous loop like this
+        // we'll to restore the context to what it was before returning.
+        switch_context(prev_context);
+    }
+    CURRENT_REQUEST.set(prev_request);
+    if let Err(thrown_value) = result {
+        resume_unwind(thrown_value);
+    }
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writePlaceholder"
+)]
+fn write_placeholder(destination: &Destination, render_state: &RenderState, id: f64) -> bool {
+    let _ = (destination, render_state, id);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeStartCompletedSuspenseBoundary"
+)]
+fn write_start_completed_suspense_boundary(
+    destination: &Destination,
+    render_state: &RenderState,
+) -> bool {
+    let _ = (destination, render_state);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeStartPendingSuspenseBoundary"
+)]
+fn write_start_pending_suspense_boundary(
+    destination: &Destination,
+    render_state: &RenderState,
+    id: Option<f64>,
+) -> bool {
+    let _ = (destination, render_state, id);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeStartClientRenderedSuspenseBoundary"
+)]
+fn write_start_client_rendered_suspense_boundary(
+    destination: &Destination,
+    render_state: &RenderState,
+    error_digest: Option<&str>,
+    error_message: Option<&str>,
+    error_stack: Option<&str>,
+    error_component_stack: Option<&str>,
+) -> bool {
+    let _ = (
+        destination,
+        render_state,
+        error_digest,
+        error_message,
+        error_stack,
+        error_component_stack,
+    );
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeEndCompletedSuspenseBoundary"
+)]
+fn write_end_completed_suspense_boundary(
+    destination: &Destination,
+    render_state: &RenderState,
+) -> bool {
+    let _ = (destination, render_state);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeEndPendingSuspenseBoundary"
+)]
+fn write_end_pending_suspense_boundary(
+    destination: &Destination,
+    render_state: &RenderState,
+) -> bool {
+    let _ = (destination, render_state);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeEndClientRenderedSuspenseBoundary"
+)]
+fn write_end_client_rendered_suspense_boundary(
+    destination: &Destination,
+    render_state: &RenderState,
+) -> bool {
+    let _ = (destination, render_state);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeStartSegment"
+)]
+fn write_start_segment(
+    destination: &Destination,
+    render_state: &RenderState,
+    format_context: &FormatContext,
+    id: f64,
+) -> bool {
+    let _ = (destination, render_state, format_context, id);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeEndSegment"
+)]
+fn write_end_segment(destination: &Destination, format_context: &FormatContext) -> bool {
+    let _ = (destination, format_context);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeCompletedSegmentInstruction"
+)]
+fn write_completed_segment_instruction(
+    destination: &Destination,
+    resumable_state: &ResumableState,
+    render_state: &RenderState,
+    content_segment_id: f64,
+) -> bool {
+    let _ = (
+        destination,
+        resumable_state,
+        render_state,
+        content_segment_id,
+    );
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeCompletedBoundaryInstruction"
+)]
+fn write_completed_boundary_instruction(
+    destination: &Destination,
+    resumable_state: &ResumableState,
+    render_state: &RenderState,
+    id: f64,
+    hoistable_state: &HoistableState,
+) -> bool {
+    let _ = (
+        destination,
+        resumable_state,
+        render_state,
+        id,
+        hoistable_state,
+    );
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeClientRenderBoundaryInstruction"
+)]
+fn write_client_render_boundary_instruction(
+    destination: &Destination,
+    resumable_state: &ResumableState,
+    render_state: &RenderState,
+    id: f64,
+    error_digest: Option<&str>,
+    error_message: Option<&str>,
+    error_stack: Option<&str>,
+    error_component_stack: Option<&str>,
+) -> bool {
+    let _ = (
+        destination,
+        resumable_state,
+        render_state,
+        id,
+        error_digest,
+        error_message,
+        error_stack,
+        error_component_stack,
+    );
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeHoistablesForBoundary"
+)]
+fn write_hoistables_for_boundary(
+    destination: &Destination,
+    hoistable_state: &HoistableState,
+    render_state: &RenderState,
+) -> bool {
+    let _ = (destination, hoistable_state, render_state);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writePreambleStart"
+)]
+fn write_preamble_start(
+    destination: &Destination,
+    resumable_state: &ResumableState,
+    render_state: &RenderState,
+    skip_blocking_shell: bool,
+) {
+    let _ = (
+        destination,
+        resumable_state,
+        render_state,
+        skip_blocking_shell,
+    );
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writePreambleEnd"
+)]
+fn write_preamble_end(destination: &Destination, render_state: &RenderState) {
+    let _ = (destination, render_state);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#hoistPreambleState"
+)]
+fn hoist_preamble_state(render_state: &RenderState, preamble_state: &PreambleState) {
+    let _ = (render_state, preamble_state);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#isPreambleReady"
+)]
+fn is_preamble_ready(render_state: &RenderState, has_pending_preambles: bool) -> bool {
+    let _ = (render_state, has_pending_preambles);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeCompletedRoot"
+)]
+fn write_completed_root(
+    destination: &Destination,
+    resumable_state: &ResumableState,
+    render_state: &RenderState,
+    is_complete: bool,
+) -> bool {
+    let _ = (destination, resumable_state, render_state, is_complete);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writeHoistables"
+)]
+fn write_hoistables(
+    destination: &Destination,
+    resumable_state: &ResumableState,
+    render_state: &RenderState,
+) {
+    let _ = (destination, resumable_state, render_state);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#writePostamble"
+)]
+fn write_postamble(destination: &Destination, resumable_state: &ResumableState) {
+    let _ = (destination, resumable_state);
+    unreachable!()
+}
+
+fn prepare_preamble_from_subtree(
+    request: &Request,
+    segment: &Segment,
+    collected_preamble_segments: &mut Vec<Vec<Rc<Segment>>>,
+) -> bool {
+    if !segment.preamble_children.borrow().is_empty() {
+        collected_preamble_segments.push(segment.preamble_children.borrow().clone());
+    }
+    let mut pending_preambles = false;
+    for next_segment in segment.children.borrow().iter() {
+        pending_preambles =
+            prepare_preamble_from_segment(request, next_segment, collected_preamble_segments)
+                || pending_preambles;
+    }
+    pending_preambles
+}
+
+fn prepare_preamble_from_segment(
+    request: &Request,
+    segment: &Segment,
+    collected_preamble_segments: &mut Vec<Vec<Rc<Segment>>>,
+) -> bool {
+    let Some(boundary) = segment.boundary.borrow().clone() else {
+        // This segment is not a boundary, let's check it's children
+        return prepare_preamble_from_subtree(request, segment, collected_preamble_segments);
+    };
+
+    let Some(preamble) = &boundary.preamble else {
+        // This boundary cannot have a preamble so it can't block the flushing of
+        // the preamble.
+        return false;
+    };
+
+    let status = boundary.status.get();
+
+    match status {
+        COMPLETED => {
+            // This boundary is complete. It might have inner boundaries which are pending
+            // and able to provide a preamble so we have to check it's children
+            hoist_preamble_state(request.render_state, preamble.content);
+            // We track this boundary's byteSize on the request since it will always flush with
+            // the request since it may contribute to the preamble
+            request
+                .byte_size
+                .set(request.byte_size.get() + boundary.byte_size.get());
+            let Some(boundary_root_segment) = boundary.completed_segments.borrow().first().cloned()
+            else {
+                // Using the same error from flushSegment to avoid making a new one since conceptually the problem is still the same
+                panic!(
+                    "A previously unvisited boundary must have exactly one root segment. This is a bug in React."
+                );
+            };
+            prepare_preamble_from_subtree(
+                request,
+                &boundary_root_segment,
+                collected_preamble_segments,
+            )
+        }
+        _ => {
+            if status == POSTPONED {
+                // This segment is postponed. When prerendering we consider this pending still because
+                // it can resume. If we're rendering then this is equivalent to errored.
+                if request.tracked_postpones.borrow().is_some() {
+                    // This boundary won't contribute a preamble to the current prerender
+                    return true;
+                }
+                // Expected fallthrough
+            }
+            if (status == POSTPONED || status == CLIENT_RENDERED)
+                && segment.status.get() == COMPLETED
+            {
+                // This boundary is errored so if it contains a preamble we should include it
+                hoist_preamble_state(request.render_state, preamble.fallback);
+                return prepare_preamble_from_subtree(
+                    request,
+                    segment,
+                    collected_preamble_segments,
+                );
+            }
+            // Expected fallthrough
+            // This boundary is still pending and might contain a preamble
+            true
+        }
+    }
+}
+
+fn prepare_preamble(request: &Request) {
+    let completed_root_segment = request.completed_root_segment.borrow().clone();
+    if let Some(completed_root_segment) = completed_root_segment
+        && request.completed_preamble_segments.borrow().is_none()
+    {
+        let mut collected_preamble_segments: Vec<Vec<Rc<Segment>>> = vec![];
+        let original_request_byte_size = request.byte_size.get();
+        let has_pending_preambles = prepare_preamble_from_segment(
+            request,
+            &completed_root_segment,
+            &mut collected_preamble_segments,
+        );
+        if is_preamble_ready(request.render_state, has_pending_preambles) {
+            request
+                .completed_preamble_segments
+                .replace(Some(collected_preamble_segments));
+        } else {
+            // We restore the original size since the preamble is not ready
+            // and we will prepare it again.
+            request.byte_size.set(original_request_byte_size);
+        }
+    }
+}
+
+fn flush_preamble(
+    request: &Rc<Request>,
+    destination: &Destination,
+    _root_segment: &Segment,
+    preamble_segments: &[Vec<Rc<Segment>>],
+    skip_blocking_shell: bool,
+) {
+    // The preamble is ready.
+    write_preamble_start(
+        destination,
+        request.resumable_state,
+        request.render_state,
+        skip_blocking_shell,
+    );
+    for segments in preamble_segments {
+        for segment in segments {
+            flush_segment(request, destination, segment, None);
+        }
+    }
+    write_preamble_end(destination, request.render_state);
+}
+
+fn flush_subtree(
+    request: &Rc<Request>,
+    destination: &Destination,
+    segment: &Segment,
+    hoistable_state: Option<&'static HoistableState>,
+) -> bool {
+    segment.parent_flushed.set(true);
+    match segment.status.get() {
+        status @ (PENDING | POSTPONED) => {
+            if status == PENDING {
+                // We're emitting a placeholder for this segment to be filled in later.
+                // Therefore we'll need to assign it an ID - to refer to it by.
+                segment.id.set(next_segment_id(request));
+                // Fallthrough
+            }
+            let segment_id = segment.id.get();
+            // When this segment finally completes it won't be embedded in text since it will flush separately
+            segment.last_pushed_text.set(false);
+            segment.text_embedded.set(false);
+            write_placeholder(destination, request.render_state, segment_id)
+        }
+        COMPLETED => {
+            segment.status.set(FLUSHED);
+            let mut r = true;
+            let chunks = segment.chunks.borrow();
+            let mut chunk_idx = 0;
+            let children = segment.children.borrow();
+
+            for next_child in children.iter() {
+                // Write all the chunks up until the next child.
+                while (chunk_idx as f64) < next_child.index {
+                    write_chunk(destination, chunks[chunk_idx]);
+                    chunk_idx += 1;
+                }
+                r = flush_segment(request, destination, next_child, hoistable_state);
+            }
+            // Finally just write all the remaining chunks
+            while chunk_idx + 1 < chunks.len() {
+                write_chunk(destination, chunks[chunk_idx]);
+                chunk_idx += 1;
+            }
+            if chunk_idx < chunks.len() {
+                r = write_chunk_and_return(destination, chunks[chunk_idx]);
+            }
+            r
+        }
+        ABORTED => true,
+        _ => {
+            panic!(
+                "Aborted, errored or already flushed boundaries should not be flushed again. This is a bug in React."
+            );
+        }
+    }
+}
+
+thread_local! {
+    // Running count for how much bytes of boundaries have flushed inlined into the currently
+    // flushing root or completed boundary.
+    static FLUSHED_BYTE_SIZE: Cell<f64> = const { Cell::new(0.0) };
+}
+
+fn flush_segment(
+    request: &Rc<Request>,
+    destination: &Destination,
+    segment: &Segment,
+    hoistable_state: Option<&'static HoistableState>,
+) -> bool {
+    let Some(boundary) = segment.boundary.borrow().clone() else {
+        // Not a suspense boundary.
+        return flush_subtree(request, destination, segment, hoistable_state);
+    };
+
+    // We're going to write the boundary. We don't need to maintain this reference since
+    // we might reflush this segment at a later time (if it aborts and we inlined) but
+    // we don't want to reflush the boundary
+    segment.boundary.replace(None);
+    boundary.parent_flushed.set(true);
+    // This segment is a Suspense boundary. We need to decide whether to
+    // emit the content or the fallback now.
+    if boundary.status.get() == CLIENT_RENDERED {
+        // Emit a client rendered suspense boundary wrapper.
+        // We never queue the inner boundary so we'll never emit its content or partial segments.
+
+        let row = boundary.row.borrow().clone();
+        if let Some(row) = row {
+            // Since this boundary end up client rendered, we can unblock future suspense list rows.
+            // This means that they may appear out of order if the future rows succeed but this is
+            // a client rendered row.
+            row.pending_tasks.set(row.pending_tasks.get() - 1.0);
+            if row.pending_tasks.get() == 0.0 {
+                finish_suspense_list_row(request, &row);
+            }
+        }
+
+        if __DEV__ {
+            write_start_client_rendered_suspense_boundary(
+                destination,
+                request.render_state,
+                boundary.error_digest.borrow().as_deref(),
+                boundary.error_message.borrow().as_deref(),
+                boundary.error_stack.borrow().as_deref(),
+                boundary.error_component_stack.borrow().as_deref(),
+            );
+        } else {
+            write_start_client_rendered_suspense_boundary(
+                destination,
+                request.render_state,
+                boundary.error_digest.borrow().as_deref(),
+                js::null(),
+                js::null(),
+                js::null(),
+            );
+        }
+        // Flush the fallback.
+        flush_subtree(request, destination, segment, hoistable_state);
+
+        write_end_client_rendered_suspense_boundary(destination, request.render_state)
+    } else if boundary.status.get() != COMPLETED {
+        if boundary.status.get() == PENDING {
+            // For pending boundaries we lazily assign an ID to the boundary
+            // and root segment.
+            boundary.root_segment_id.set(next_segment_id(request));
+        }
+
+        if !boundary.completed_segments.borrow().is_empty() {
+            // If this is at least partially complete, we can queue it to be partially emitted early.
+            request
+                .partial_boundaries
+                .borrow_mut()
+                .push(Rc::clone(&boundary));
+        }
+
+        // This boundary is still loading. Emit a pending suspense boundary wrapper.
+
+        let id = boundary.root_segment_id.get();
+        write_start_pending_suspense_boundary(destination, request.render_state, Some(id));
+
+        if let Some(hoistable_state) = hoistable_state {
+            hoist_hoistables(hoistable_state, boundary.fallback_state);
+        }
+        // Flush the fallback.
+        flush_subtree(request, destination, segment, hoistable_state);
+
+        write_end_pending_suspense_boundary(destination, request.render_state)
+    } else if
+    // We don't outline when we're emitting partially completed boundaries optimistically
+    // because it doesn't make sense to outline something if its parent is going to be
+    // blocked on something later in the stream anyway.
+    !FLUSHING_PARTIAL_BOUNDARIES.get()
+        && is_eligible_for_outlining(request, &boundary)
+        && (FLUSHED_BYTE_SIZE.get() + boundary.byte_size.get() > request.progressive_chunk_size
+            || has_suspensey_content(boundary.content_state, FLUSHING_SHELL.get())
+            || boundary.defer)
+    {
+        // Inlining this boundary would make the current sequence being written too large
+        // and block the parent for too long. Instead, it will be emitted separately so that we
+        // can progressively show other content.
+        // We add it to the queue during the flush because we have to ensure that
+        // the parent flushes first so that there's something to inject it into.
+        // We also have to make sure that it's emitted into the queue in a deterministic slot.
+        // I.e. we can't insert it here when it completes.
+
+        // Assign an ID to refer to the future content by.
+        boundary.root_segment_id.set(next_segment_id(request));
+
+        request
+            .completed_boundaries
+            .borrow_mut()
+            .push(Rc::clone(&boundary));
+        // Emit a pending rendered suspense boundary wrapper.
+        write_start_pending_suspense_boundary(
+            destination,
+            request.render_state,
+            Some(boundary.root_segment_id.get()),
+        );
+
+        // While we are going to flush the fallback we are going to follow it up with
+        // the completed boundary immediately so we make the choice to omit fallback
+        // boundary state from the parent since it will be replaced when the boundary
+        // flushes later in this pass or in a future flush
+
+        // Flush the fallback.
+        flush_subtree(request, destination, segment, hoistable_state);
+
+        write_end_pending_suspense_boundary(destination, request.render_state)
+    } else {
+        // We're inlining this boundary so its bytes get counted to the current running count.
+        FLUSHED_BYTE_SIZE.set(FLUSHED_BYTE_SIZE.get() + boundary.byte_size.get());
+        if let Some(hoistable_state) = hoistable_state {
+            hoist_hoistables(hoistable_state, boundary.content_state);
+        }
+
+        let row = boundary.row.borrow().clone();
+        if let Some(row) = row
+            && is_eligible_for_outlining(request, &boundary)
+        {
+            // Once we have written the boundary, we can unblock the row and let future
+            // rows be written. This may schedule new completed boundaries.
+            row.pending_tasks.set(row.pending_tasks.get() - 1.0);
+            if row.pending_tasks.get() == 0.0 {
+                finish_suspense_list_row(request, &row);
+            }
+        }
+
+        // We can inline this boundary's content as a complete boundary.
+        write_start_completed_suspense_boundary(destination, request.render_state);
+
+        let completed_segments = boundary.completed_segments.borrow().clone();
+
+        if completed_segments.len() != 1 {
+            panic!(
+                "A previously unvisited boundary must have exactly one root segment. This is a bug in React."
+            );
+        }
+
+        let content_segment = &completed_segments[0];
+        flush_segment(request, destination, content_segment, hoistable_state);
+
+        write_end_completed_suspense_boundary(destination, request.render_state)
+    }
+}
+
+fn flush_client_rendered_boundary(
+    request: &Request,
+    destination: &Destination,
+    boundary: &SuspenseBoundary,
+) -> bool {
+    if __DEV__ {
+        write_client_render_boundary_instruction(
+            destination,
+            request.resumable_state,
+            request.render_state,
+            boundary.root_segment_id.get(),
+            boundary.error_digest.borrow().as_deref(),
+            boundary.error_message.borrow().as_deref(),
+            boundary.error_stack.borrow().as_deref(),
+            boundary.error_component_stack.borrow().as_deref(),
+        )
+    } else {
+        write_client_render_boundary_instruction(
+            destination,
+            request.resumable_state,
+            request.render_state,
+            boundary.root_segment_id.get(),
+            boundary.error_digest.borrow().as_deref(),
+            js::null(),
+            js::null(),
+            js::null(),
+        )
+    }
+}
+
+fn flush_segment_container(
+    request: &Rc<Request>,
+    destination: &Destination,
+    segment: &Segment,
+    hoistable_state: &'static HoistableState,
+) -> bool {
+    write_start_segment(
+        destination,
+        request.render_state,
+        segment.parent_format_context,
+        segment.id.get(),
+    );
+    flush_segment(request, destination, segment, Some(hoistable_state));
+    write_end_segment(destination, segment.parent_format_context)
+}
+
+fn flush_completed_boundary(
+    request: &Rc<Request>,
+    destination: &Destination,
+    boundary: &SuspenseBoundary,
+) -> bool {
+    FLUSHED_BYTE_SIZE.set(boundary.byte_size.get()); // Start counting bytes
+    let completed_segments = boundary.completed_segments.borrow().clone();
+    for segment in &completed_segments {
+        flush_partially_completed_segment(request, destination, boundary, segment);
+    }
+    boundary.completed_segments.borrow_mut().clear();
+
+    let row = boundary.row.borrow().clone();
+    if let Some(row) = row
+        && is_eligible_for_outlining(request, boundary)
+    {
+        // Once we have written the boundary, we can unblock the row and let future
+        // rows be written. This may schedule new completed boundaries.
+        row.pending_tasks.set(row.pending_tasks.get() - 1.0);
+        if row.pending_tasks.get() == 0.0 {
+            finish_suspense_list_row(request, &row);
+        }
+    }
+
+    write_hoistables_for_boundary(destination, boundary.content_state, request.render_state);
+    write_completed_boundary_instruction(
+        destination,
+        request.resumable_state,
+        request.render_state,
+        boundary.root_segment_id.get(),
+        boundary.content_state,
+    )
+}
+
+fn flush_partial_boundary(
+    request: &Rc<Request>,
+    destination: &Destination,
+    boundary: &SuspenseBoundary,
+) -> bool {
+    FLUSHED_BYTE_SIZE.set(boundary.byte_size.get()); // Start counting bytes
+    let completed_segments = &boundary.completed_segments;
+    let mut i = 0;
+    while i < completed_segments.borrow().len() {
+        let segment = Rc::clone(&completed_segments.borrow()[i]);
+        if !flush_partially_completed_segment(request, destination, boundary, &segment) {
+            i += 1;
+            completed_segments.borrow_mut().drain(0..i);
+            // Only write as much as the buffer wants. Something higher priority
+            // might want to write later.
+            return false;
+        }
+        i += 1;
+    }
+    completed_segments.borrow_mut().drain(0..i);
+
+    let row = boundary.row.borrow().clone();
+    if let Some(row) = row
+        && row.together.get()
+        && boundary.pending_tasks.get() == 1.0
+    {
+        // "together" rows are blocked on their own boundaries.
+        // We have now flushed all the boundary's segments as partials.
+        // We can now unblock it from blocking the row that will eventually
+        // unblock the boundary itself which can issue its complete instruction.
+        // TODO: Ideally the complete instruction would be in a single <script> tag.
+        if row.pending_tasks.get() == 1.0 {
+            unblock_suspense_list_row(request, Some(Rc::clone(&row)), Some(row.hoistables));
+        } else {
+            row.pending_tasks.set(row.pending_tasks.get() - 1.0);
+        }
+    }
+
+    write_hoistables_for_boundary(destination, boundary.content_state, request.render_state)
+}
+
+fn flush_partially_completed_segment(
+    request: &Rc<Request>,
+    destination: &Destination,
+    boundary: &SuspenseBoundary,
+    segment: &Segment,
+) -> bool {
+    if segment.status.get() == FLUSHED {
+        // We've already flushed this inline
+        return true;
+    }
+
+    let hoistable_state = boundary.content_state;
+
+    let segment_id = segment.id.get();
+    if segment_id == -1.0 {
+        // This segment wasn't previously referred to. This happens at the root of
+        // a boundary. We make kind of a leap here and assume this is the root.
+        let root_segment_id = boundary.root_segment_id.get();
+        segment.id.set(root_segment_id);
+
+        if root_segment_id == -1.0 {
+            panic!("A root segment ID must have been assigned by now. This is a bug in React.");
+        }
+
+        flush_segment_container(request, destination, segment, hoistable_state)
+    } else if segment_id == boundary.root_segment_id.get() {
+        // When we emit postponed boundaries, we might have assigned the ID already
+        // but it's still the root segment so we can't inject it into the parent yet.
+        flush_segment_container(request, destination, segment, hoistable_state)
+    } else {
+        flush_segment_container(request, destination, segment, hoistable_state);
+        write_completed_segment_instruction(
+            destination,
+            request.resumable_state,
+            request.render_state,
+            segment_id,
+        )
+    }
+}
+
+thread_local! {
+    static FLUSHING_PARTIAL_BOUNDARIES: Cell<bool> = const { Cell::new(false) };
+    static FLUSHING_SHELL: Cell<bool> = const { Cell::new(false) };
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#resetResumableState"
+)]
+fn reset_resumable_state(resumable_state: &ResumableState, render_state: &RenderState) {
+    let _ = (resumable_state, render_state);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#completeResumableState"
+)]
+fn complete_resumable_state(resumable_state: &ResumableState) {
+    let _ = resumable_state;
+    unreachable!()
+}
+
+fn new_thrown_info() -> &'static ThrownInfo {
+    unsafe { js::cast(Some(js::unknown(js::object::spread(None::<&Unknown>)))) }
+}
+
+fn flush_completed_queues(request: &Rc<Request>, destination: &'static Destination) {
+    begin_writing(destination);
+    let result = catch_unwind(AssertUnwindSafe(|| {
+        // The structure of this is to go through each queue one by one and write
+        // until the sink tells us to stop. When we should stop, we still finish writing
+        // that item fully and then yield. At that point we remove the already completed
+        // items up until the point we completed them.
+
+        if request.pending_root_tasks.get() > 0.0 {
+            // When there are pending root tasks we don't want to flush anything
+            return;
+        }
+
+        let completed_root_segment = request.completed_root_segment.borrow().clone();
+        if let Some(completed_root_segment) = completed_root_segment {
+            if completed_root_segment.status.get() == POSTPONED {
+                return;
+            }
+
+            let Some(completed_preamble_segments) =
+                request.completed_preamble_segments.borrow().clone()
+            else {
+                // The preamble isn't ready yet even though the root is so we omit flushing
+                return;
+            };
+
+            FLUSHED_BYTE_SIZE.set(request.byte_size.get()); // Start counting bytes
+            // TODO: Count the size of the preamble chunks too.
+            let mut skip_blocking_shell = false;
+            if ENABLE_FIZZ_BLOCKING_RENDER.with(|&enabled| enabled) {
+                let blocking_render_max_size = get_blocking_render_max_size(request);
+                if FLUSHED_BYTE_SIZE.get() > blocking_render_max_size {
+                    skip_blocking_shell = true;
+                    let max_size_kb = js::math::round(blocking_render_max_size / 1000.0);
+                    let error = js::error::new(
+                        &format!(
+                            "This rendered a large document (>{max_size_kb} kB) without any Suspense boundaries around most of it. That can delay initial paint longer than necessary. To improve load performance, add a <Suspense> or <SuspenseList> around the content you expect to be below the header or below the fold. In the meantime, the content will deopt to paint arbitrary incomplete pieces of HTML."
+                        ),
+                        None,
+                    );
+                    let error_info = new_thrown_info();
+                    log_recoverable_error(request, Some(js::unknown(error)), error_info, None);
+                }
+            }
+            flush_preamble(
+                request,
+                destination,
+                &completed_root_segment,
+                &completed_preamble_segments,
+                skip_blocking_shell,
+            );
+            FLUSHING_SHELL.set(true);
+            flush_segment(request, destination, &completed_root_segment, None);
+            FLUSHING_SHELL.set(false);
+            request.completed_root_segment.replace(None);
+            let is_complete = request.all_pending_tasks.get() == 0.0
+                && request.client_rendered_boundaries.borrow().is_empty()
+                && request.completed_boundaries.borrow().is_empty()
+                && request
+                    .tracked_postpones
+                    .borrow()
+                    .as_ref()
+                    .is_none_or(|tracked_postpones| {
+                        tracked_postpones.root_nodes.borrow().is_empty()
+                            && matches!(*tracked_postpones.root_slots.borrow(), ResumeSlots::None)
+                    });
+            write_completed_root(
+                destination,
+                request.resumable_state,
+                request.render_state,
+                is_complete,
+            );
+        }
+
+        write_hoistables(destination, request.resumable_state, request.render_state);
+        // We emit client rendering instructions for already emitted boundaries first.
+        // This is so that we can signal to the client to start client rendering them as
+        // soon as possible.
+        let client_rendered_boundaries = &request.client_rendered_boundaries;
+        let mut i = 0;
+        while i < client_rendered_boundaries.borrow().len() {
+            let boundary = Rc::clone(&client_rendered_boundaries.borrow()[i]);
+            if !flush_client_rendered_boundary(request, destination, &boundary) {
+                request.destination.set(None);
+                i += 1;
+                client_rendered_boundaries.borrow_mut().drain(0..i);
+                return;
+            }
+            i += 1;
+        }
+        client_rendered_boundaries.borrow_mut().drain(0..i);
+
+        // Next we emit any complete boundaries. It's better to favor boundaries
+        // that are completely done since we can actually show them, than it is to emit
+        // any individual segments from a partially complete boundary.
+        let completed_boundaries = &request.completed_boundaries;
+        i = 0;
+        while i < completed_boundaries.borrow().len() {
+            let boundary = Rc::clone(&completed_boundaries.borrow()[i]);
+            if !flush_completed_boundary(request, destination, &boundary) {
+                request.destination.set(None);
+                i += 1;
+                completed_boundaries.borrow_mut().drain(0..i);
+                return;
+            }
+            i += 1;
+        }
+        completed_boundaries.borrow_mut().drain(0..i);
+
+        // Allow anything written so far to flush to the underlying sink before
+        // we continue with lower priorities.
+        complete_writing(destination);
+        begin_writing(destination);
+
+        // TODO: Here we'll emit data used by hydration.
+
+        // Next we emit any segments of any boundaries that are partially complete
+        // but not deeply complete.
+        FLUSHING_PARTIAL_BOUNDARIES.set(true);
+        let partial_boundaries = &request.partial_boundaries;
+        i = 0;
+        while i < partial_boundaries.borrow().len() {
+            let boundary = Rc::clone(&partial_boundaries.borrow()[i]);
+            if !flush_partial_boundary(request, destination, &boundary) {
+                request.destination.set(None);
+                i += 1;
+                partial_boundaries.borrow_mut().drain(0..i);
+                return;
+            }
+            i += 1;
+        }
+        partial_boundaries.borrow_mut().drain(0..i);
+        FLUSHING_PARTIAL_BOUNDARIES.set(false);
+
+        // Next we check the completed boundaries again. This may have had
+        // boundaries added to it in case they were too larged to be inlined.
+        // SuspenseListRows might have been unblocked as well.
+        // New ones might be added in this loop.
+        let large_boundaries = &request.completed_boundaries;
+        i = 0;
+        while i < large_boundaries.borrow().len() {
+            let boundary = Rc::clone(&large_boundaries.borrow()[i]);
+            if !flush_completed_boundary(request, destination, &boundary) {
+                request.destination.set(None);
+                i += 1;
+                large_boundaries.borrow_mut().drain(0..i);
+                return;
+            }
+            i += 1;
+        }
+        large_boundaries.borrow_mut().drain(0..i);
+    }));
+    FLUSHING_PARTIAL_BOUNDARIES.set(false);
+    let postponed_state = request.postponed_state.borrow().clone();
+    if let Some(postponed_state) = postponed_state {
+        // The shell flush above may have outlined completed boundaries, advancing
+        // nextSegmentId past the value getPostponedState snapshotted before the
+        // flush. Re-sync the postponed state to the post-flush high-water mark so
+        // the resume allocates segment ids strictly above the shell's and can't
+        // emit duplicate B:/S: ids. nextSegmentId only increases, so later flush
+        // passes refine this monotonically.
+        // TODO: Could be too late if the postponed state was already serialized
+        // by API consumers. Accessing postponed state before the prelude has flushed
+        // should be forbidden in the API.
+        postponed_state
+            .next_segment_id
+            .set(request.next_segment_id.get());
+    }
+    if request.all_pending_tasks.get() == 0.0
+        && request.client_rendered_boundaries.borrow().is_empty()
+        && request.completed_boundaries.borrow().is_empty()
+        && request.partial_boundaries.borrow().is_empty()
+    {
+        request.flush_scheduled.set(false);
+        // We write the trailing tags but only if don't have any data to resume.
+        // If we need to resume we'll write the postamble in the resume instead.
+        write_postamble(destination, request.resumable_state);
+        complete_writing(destination);
+        flush_buffered(destination);
+        if __DEV__ && !request.abortable_tasks.borrow().is_empty() {
+            console::error((
+                "There was still abortable task at the root when we closed. This is a bug in React.",
+            ));
+        }
+        // We're done.
+        end_render_lifetime(request);
+        request.status.set(CLOSED);
+        close(destination);
+        // We need to stop flowing now because we do not want any async contexts which might call
+        // float methods to initiate any flushes after this point
+        stop_flowing(request);
+    } else {
+        complete_writing(destination);
+        flush_buffered(destination);
+    }
+    if let Err(thrown_value) = result {
+        resume_unwind(thrown_value);
+    }
+}
+
+pub fn start_work(request: &Rc<Request>) {
+    // $FlowFixMe[constant-condition]
+    if IS_WORK_LOOP_EXTERNALLY_DRIVEN {
+        return;
+    }
+    request
+        .flush_scheduled
+        .set(request.destination.get().is_some());
+    // When prerendering we use microtasks for pinging work
+    // $FlowFixMe[constant-condition]
+    if SUPPORTS_REQUEST_STORAGE {
+        let request = Rc::clone(request);
+        schedule_microtask(move || REQUEST_STORAGE.run(&request, perform_work, &request));
+    } else {
+        let request = Rc::clone(request);
+        schedule_microtask(move || perform_work(&request));
+    }
+    let request = Rc::clone(request);
+    schedule_work(move || {
+        if request.status.get() == OPENING {
+            request.status.set(OPEN);
+        }
+
+        if request.tracked_postpones.borrow().is_none() {
+            // this is either a regular render or a resume. For regular render we want
+            // to call emitEarlyPreloads after the first performWork because we want
+            // are responding to a live request and need to balance sending something early
+            // (i.e. don't want for the shell to finish) but we need something to send.
+            // The only implementation of this is for DOM at the moment and during resumes nothing
+            // actually emits but the code paths here are the same.
+            // During a prerender we don't want to be too aggressive in emitting early preloads
+            // because we aren't responding to a live request and we can wait for the prerender to
+            // postpone before we emit anything.
+            // $FlowFixMe[constant-condition]
+            if SUPPORTS_REQUEST_STORAGE {
+                REQUEST_STORAGE.run(
+                    &request,
+                    enqueue_early_preloads_after_initial_work,
+                    &request,
+                );
+            } else {
+                enqueue_early_preloads_after_initial_work(&request);
+            }
+        }
+    });
+}
+
+fn enqueue_early_preloads_after_initial_work(request: &Rc<Request>) {
+    let shell_complete = request.pending_root_tasks.get() == 0.0;
+    safely_emit_early_preloads(request, shell_complete);
+}
+
+fn enqueue_flush(request: &Rc<Request>) {
+    if !request.flush_scheduled.get()
+        // If there are pinged tasks we are going to flush anyway after work completes
+        && request.pinged_tasks.borrow().is_empty()
+        // If there is no destination there is nothing we can flush to. A flush will
+        // happen when we start flowing again
+        && request.destination.get().is_some()
+    {
+        request.flush_scheduled.set(true);
+        let request = Rc::clone(request);
+        schedule_work(move || {
+            // We need to existence check destination again here because it might go away
+            // in between the enqueueFlush call and the work execution
+            let destination = request.destination.get();
+            if let Some(destination) = destination {
+                flush_completed_queues(&request, destination);
+            } else {
+                request.flush_scheduled.set(false);
+            }
+        });
+    }
+}
+
+// This function is intented to only be called during the pipe function for the Node builds.
+// The reason we need this is because `renderToPipeableStream` is the only API which allows
+// you to start flowing before the shell is complete and we've had a chance to emit early
+// preloads already. This is really just defensive programming to ensure that we give hosts an
+// opportunity to flush early preloads before streaming begins in case they are in an environment
+// that only supports a single call to emitEarlyPreloads like the DOM renderers. It's unfortunate
+// to put this Node only function directly in ReactFizzServer but it'd be more ackward to factor it
+// by moving the implementation into ReactServerStreamConfigNode and even then we may not be able to
+// eliminate all the wasted branching.
+pub fn prepare_for_start_flowing_if_before_all_ready(request: &Rc<Request>) {
+    let shell_complete = if request.tracked_postpones.borrow().is_none() {
+        // Render Request, we define shell complete by the pending root tasks
+        request.pending_root_tasks.get() == 0.0
+    } else {
+        // Prerender Request, we define shell complete by completedRootSegemtn
+        match request.completed_root_segment.borrow().as_ref() {
+            None => request.pending_root_tasks.get() == 0.0,
+            Some(completed_root_segment) => completed_root_segment.status.get() != POSTPONED,
+        }
+    };
+    safely_emit_early_preloads(request, shell_complete);
+}
+
+pub fn start_flowing(request: &Rc<Request>, destination: &'static Destination) {
+    if request.status.get() == CLOSING {
+        request.status.set(CLOSED);
+        let mut error = request.fatal_error.get();
+        if is_recoverable_error(error) {
+            // An aborted request keeps its original branded reason while tasks
+            // unwind. Convert it only now that the stream must receive a fatal.
+            error = Some(js::unknown(clone_recoverable_error_as_fatal(unsafe {
+                js::cast(error)
+            })));
+        }
+        close_with_error(destination, error);
+        return;
+    }
+    if request.status.get() == CLOSED {
+        return;
+    }
+    if request.destination.get().is_some() {
+        // We're already flowing.
+        return;
+    }
+    request.destination.set(Some(destination));
+
+    if let Err(error) = catch_unwind(AssertUnwindSafe(|| {
+        flush_completed_queues(request, destination);
+    })) {
+        let error_info = new_thrown_info();
+        log_recoverable_error(request, thrown_value_of(&*error), error_info, None);
+        fatal_error(request, thrown_value_of(&*error), error_info, None);
+    }
+}
+
+pub fn stop_flowing(request: &Request) {
+    request.destination.set(None);
+}
+
+fn finish_abort(request: &Rc<Request>, abortable_tasks: &AbortSet) {
+    if let Err(error) = catch_unwind(AssertUnwindSafe(|| {
+        if !abortable_tasks.borrow().is_empty() {
+            let error = request.fatal_error.get();
+            if __DEV__ {
+                for task in abortable_tasks.borrow().iter() {
+                    finish_aborted_task_dev(task, request, error);
+                }
+            } else {
+                for task in abortable_tasks.borrow().iter() {
+                    finish_aborted_task(task, request, error);
+                }
+            }
+            abortable_tasks.borrow_mut().clear();
+        }
+        if let Some(destination) = request.destination.get() {
+            flush_completed_queues(request, destination);
+        }
+    })) {
+        let error_info = new_thrown_info();
+        log_recoverable_error(request, thrown_value_of(&*error), error_info, None);
+        fatal_error(request, thrown_value_of(&*error), error_info, None);
+    }
+}
+
+fn end_render_lifetime(request: &Request) {
+    let render_lifetime_controller = request.render_lifetime_controller.get();
+    if let Some(render_lifetime_controller) = render_lifetime_controller {
+        render_lifetime_controller.abort(Some(&RENDER_ENDED));
+    }
+}
+
+// Aborts the request when the caller's signal aborts. The render lifetime
+// bounds the listener, so the runtime removes the listener as soon as the
+// render ends. From that point on abort() returns early, so the listener has
+// nothing left to do.
+//
+// The listener has to be removed, because it would otherwise keep the whole
+// Request reachable for as long as the caller's signal lives. A composite
+// signal from AbortSignal.any() is itself retained by the runtime while it has
+// any abort listener attached.
+//
+// A request whose stream is neither consumed nor cancelled never ends, so its
+// listener stays attached for as long as the caller's signal lives.
+pub fn attach_abort_signal(request: &Rc<Request>, signal: &'static AbortSignal) {
+    if signal.aborted() {
+        abort(request, signal.reason());
+        return;
+    }
+    let render_lifetime_controller = webapi::abort_controller::new();
+    request
+        .render_lifetime_controller
+        .set(Some(render_lifetime_controller));
+    let request = Rc::clone(request);
+    signal.add_event_listener(
+        webapi::events::Abort,
+        move |_: &Event| {
+            abort(&request, signal.reason());
+        },
+        Some(&AddEventListenerOptions {
+            capture: None,
+            passive: None,
+            once: None,
+            signal: Some(render_lifetime_controller.signal()),
+        }),
+    );
+}
+
+// This is called to early terminate a request. It puts all pending boundaries in client rendered state.
+pub fn abort(request: &Rc<Request>, reason: Option<&'static Unknown>) {
+    if request.aborted.get() || (request.status.get() != OPEN && request.status.get() != OPENING) {
+        // Only requests that are not already complete or in the process of aborting
+        // can be aborted. in practice this makes abort callable at most once per render.
+        return;
+    }
+    end_render_lifetime(request);
+    let is_recoverable_reason = js::type_of(reason) == "object"
+        && !matches!(js::classify(reason), Kind::Null)
+        // $FlowFixMe[prop-missing]
+        && SymbolFor::from_value(js::get(reason, "$$typeof")) == Some(REACT_RECOVERABLE_TYPE);
+    // Mark the request before initializing a recoverable reason so an initializer
+    // cannot reenter abort().
+    request.aborted.set(true);
+    let error = if is_recoverable_reason {
+        Some(js::unknown(create_recoverable_error(unsafe {
+            js::cast(reason)
+        })))
+    } else if matches!(js::classify(reason), Kind::Undefined) {
+        Some(js::unknown(js::error::new(
+            "The render was aborted by the server without a reason.",
+            None,
+        )))
+    } else if js::type_of(reason) == "object"
+        && !matches!(js::classify(reason), Kind::Null)
+        && js::is_function(js::get(reason, "then"))
+    {
+        Some(js::unknown(js::error::new(
+            "The render was aborted by the server with a promise.",
+            None,
+        )))
+    } else {
+        reason
+    };
+    // This error isn't necessarily fatal in this case but we need to stash it
+    // so we can use it to abort any pending work.
+    request.fatal_error.set(error);
+    let abortable_tasks = Rc::clone(&request.abortable_tasks);
+    if __DEV__ {
+        for task in abortable_tasks.borrow().iter() {
+            abort_task_dev(task, request);
+        }
+    } else {
+        for task in abortable_tasks.borrow().iter() {
+            abort_task(task, request);
+        }
+    }
+    // Even though this looks async some renderers schedule work sync
+    // So it is important that the finish step does not assume the stack
+    // has unwinded yet
+    let request = Rc::clone(request);
+    schedule_work(move || finish_abort(&request, &abortable_tasks));
+}
+
+pub fn flush_resources(request: &Rc<Request>) {
+    enqueue_flush(request);
 }
 
 #[cfg_attr(rust_js, rust_js::nullable)]
@@ -6504,19 +8169,120 @@ pub fn get_form_state(request: &Request) -> Option<&'static FormState> {
     request.form_state
 }
 
+pub fn get_resumable_state(request: &Request) -> &'static ResumableState {
+    request.resumable_state
+}
+
+pub fn get_render_state(request: &Request) -> &'static RenderState {
+    request.render_state
+}
+
+fn add_to_replay_parent(
+    node: &Rc<ReplayNode>,
+    parent_key_path: Option<&Rc<KeyNode>>,
+    tracked_postpones: &PostponedHoles,
+) {
+    match parent_key_path {
+        None => {
+            tracked_postpones
+                .root_nodes
+                .borrow_mut()
+                .push(Rc::clone(node));
+        }
+        Some(parent_key_path) => {
+            let working_map = &tracked_postpones.working_map;
+            let parent_node = working_map.borrow().get(parent_key_path).cloned();
+            let parent_node = match parent_node {
+                Some(parent_node) => parent_node,
+                None => {
+                    let parent_node = new_replay_node(
+                        parent_key_path.1.clone(),
+                        parent_key_path.2.clone(),
+                        ResumeSlots::None,
+                    );
+                    working_map
+                        .borrow_mut()
+                        .insert(Rc::clone(parent_key_path), Rc::clone(&parent_node));
+                    add_to_replay_parent(
+                        &parent_node,
+                        parent_key_path.0.as_ref(),
+                        tracked_postpones,
+                    );
+                    parent_node
+                }
+            };
+            parent_node.2.borrow().borrow_mut().push(Rc::clone(node));
+        }
+    }
+}
+
 pub struct PostponedState {
     next_segment_id: Cell<f64>,
     root_format_context: &'static FormatContext,
     progressive_chunk_size: f64,
-    resumable_state: &'static ResumableState,
+    pub resumable_state: &'static ResumableState,
     replay_nodes: ReplayNodes,
     replay_slots: RefCell<ResumeSlots>,
 }
 
-fn add_to_replay_parent(
-    _node: &Rc<ReplayNode>,
-    _parent_key_path: Option<&Rc<KeyNode>>,
-    _tracked_postpones: &PostponedHoles,
-) {
-    todo!()
+// Returns the state of a postponed request or null if nothing was postponed.
+#[cfg_attr(rust_js, rust_js::nullable)]
+pub fn get_postponed_state(request: &Request) -> Option<Rc<PostponedState>> {
+    let tracked_postpones = request.tracked_postpones.borrow().clone();
+    let Some(tracked_postpones) = tracked_postpones.filter(|tracked_postpones| {
+        !(tracked_postpones.root_nodes.borrow().is_empty()
+            && matches!(*tracked_postpones.root_slots.borrow(), ResumeSlots::None))
+    }) else {
+        // Reset. Let the flushing behave as if we completed the whole document.
+        request.tracked_postpones.replace(None);
+        return None;
+    };
+    // True only when we postponed with a real shell (as opposed to postponing the
+    // root itself). Only in that case does the prelude flush outline completed
+    // boundaries and advance nextSegmentId past the value we capture here.
+    let has_flushable_shell = match request.completed_root_segment.borrow().as_ref() {
+        None => true,
+        // The Root did not postpone
+        Some(completed_root_segment) => {
+            completed_root_segment.status.get() != POSTPONED
+                // the Preamble was available
+                && request.completed_preamble_segments.borrow().is_some()
+        }
+    };
+    let (replay_slots, next_segment_id) = if !has_flushable_shell {
+        // We need to ensure that on resume we retry the root. We use a number
+        // type for the replaySlots to signify this (see resumeRequest).
+        // The value -1 represents an unassigned ID but is not functionally meaningful
+        // for resuming at the root.
+        // We either postponed the root or we did not have a preamble to flush
+        reset_resumable_state(request.resumable_state, request.render_state);
+        (ResumeSlots::Root(-1.0), 0.0)
+    } else {
+        complete_resumable_state(request.resumable_state);
+        (
+            tracked_postpones.root_slots.borrow().clone(),
+            request.next_segment_id.get(),
+        )
+    };
+    let postponed_state = Rc::new(PostponedState {
+        next_segment_id: Cell::new(next_segment_id),
+        root_format_context: request.root_format_context,
+        progressive_chunk_size: request.progressive_chunk_size,
+        resumable_state: request.resumable_state,
+        replay_nodes: Rc::clone(&tracked_postpones.root_nodes),
+        replay_slots: RefCell::new(replay_slots),
+    });
+    if has_flushable_shell {
+        // The prelude hasn't flushed yet — it's pull-driven and runs after this
+        // (see completeAll -> onAllReady). Flushing the shell outlines completed
+        // boundaries, bumping request.nextSegmentId beyond the snapshot above. Hold
+        // a reference so flushCompletedQueues can finalize nextSegmentId to the
+        // post-flush high-water mark. Otherwise the resume reuses the shell's
+        // segment ids and the concatenated document has duplicate B:/S: ids, which
+        // cross-wires React's boundary-completion scripts ($RC).
+        request
+            .postponed_state
+            .replace(Some(Rc::clone(&postponed_state)));
+    }
+    Some(postponed_state)
 }
