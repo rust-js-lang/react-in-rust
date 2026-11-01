@@ -9,6 +9,8 @@
 const badgeFormat = '%c%s%c';
 // Same badge styling as DevTools.
 const badgeStyle =
+  // We use a fixed background if light-dark is not supported, otherwise
+  // we use a transparent background.
   'background: #e6e6e6;' +
   'background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));' +
   'color: #000000;' +

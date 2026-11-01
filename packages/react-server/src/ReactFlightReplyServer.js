@@ -208,9 +208,9 @@ function wakeChunkIfInitialized(
       if (rejectListeners != null) {
         $extend(reason, rejectListeners);
       }
-    } else {
-      value$1.reason = rejectListeners;
+      return;
     }
+    value$1.reason = rejectListeners;
     return;
   }
   if (borrowMut.value.status !== 'rejected') {
@@ -890,31 +890,32 @@ function resolveReference(response, handler, parentObject, key, resolvedValue) {
 
   if (handler.deps === 0) {
     const chunk = handler.chunk;
-    if (chunk != null) {
-      const borrowMut = {
-        get value() {
-          return chunk;
-        },
-        set value(value) {
-          chunk.status = value.status;
-          chunk.value = value.value;
-          chunk.reason = value.reason;
-        },
-      };
-      if (borrowMut.value.status !== 'blocked') {
-        return;
-      }
-      const value = borrowMut.value;
-      const resolveListeners = value.value;
-      value.value = null;
-      // Assuming handler.errored is false.
-      const arrayRoot = handler.arrayRoot;
-      chunk.status = 'fulfilled';
-      chunk.value = handler.value;
-      chunk.reason = arrayRoot;
-      if (resolveListeners != null) {
-        wakeChunk(response, resolveListeners, handler.value, chunk);
-      }
+    if (chunk == null) {
+      return;
+    }
+    const borrowMut = {
+      get value() {
+        return chunk;
+      },
+      set value(value) {
+        chunk.status = value.status;
+        chunk.value = value.value;
+        chunk.reason = value.reason;
+      },
+    };
+    if (borrowMut.value.status !== 'blocked') {
+      return;
+    }
+    const value = borrowMut.value;
+    const resolveListeners = value.value;
+    value.value = null;
+    // Assuming handler.errored is false.
+    const arrayRoot = handler.arrayRoot;
+    chunk.status = 'fulfilled';
+    chunk.value = handler.value;
+    chunk.reason = arrayRoot;
+    if (resolveListeners != null) {
+      wakeChunk(response, resolveListeners, handler.value, chunk);
     }
   }
 }
@@ -930,13 +931,14 @@ function rejectReference(response, handler, error) {
   handler.value = null;
   handler.reason = error;
   const chunk = handler.chunk;
-  if (chunk != null) {
-    if (chunk.status !== 'blocked') {
-      return;
-    }
-    // There's no debug info to forward in this direction.
-    triggerErrorOnChunk(response, chunk, error);
+  if (chunk == null) {
+    return;
   }
+  if (chunk.status !== 'blocked') {
+    return;
+  }
+  // There's no debug info to forward in this direction.
+  triggerErrorOnChunk(response, chunk, error);
 }
 
 function waitForReference(
@@ -1267,12 +1269,13 @@ function parseTypedArray(
     handler.value = null;
     handler.reason = error;
     const chunk = handler.chunk;
-    if (chunk != null) {
-      if (chunk.status !== 'blocked') {
-        return;
-      }
-      triggerErrorOnChunk(response, chunk, error);
+    if (chunk == null) {
+      return;
     }
+    if (chunk.status !== 'blocked') {
+      return;
+    }
+    triggerErrorOnChunk(response, chunk, error);
   }
 
   function fulfill(buffer) {
@@ -1301,31 +1304,32 @@ function parseTypedArray(
 
     if (handler.deps === 0) {
       const chunk = handler.chunk;
-      if (chunk != null) {
-        const borrowMut = {
-          get value() {
-            return chunk;
-          },
-          set value(value) {
-            chunk.status = value.status;
-            chunk.value = value.value;
-            chunk.reason = value.reason;
-          },
-        };
-        if (borrowMut.value.status !== 'blocked') {
-          return;
-        }
-        const value = borrowMut.value;
-        const resolveListeners = value.value;
-        value.value = null;
-        // We don't keep an array count for this since it won't be referenced again.
-        // In fact, we don't really need to store this chunk at all.
-        chunk.status = 'fulfilled';
-        chunk.value = handler.value;
-        chunk.reason = null;
-        if (resolveListeners != null) {
-          wakeChunk(response, resolveListeners, handler.value, chunk);
-        }
+      if (chunk == null) {
+        return;
+      }
+      const borrowMut = {
+        get value() {
+          return chunk;
+        },
+        set value(value) {
+          chunk.status = value.status;
+          chunk.value = value.value;
+          chunk.reason = value.reason;
+        },
+      };
+      if (borrowMut.value.status !== 'blocked') {
+        return;
+      }
+      const value = borrowMut.value;
+      const resolveListeners = value.value;
+      value.value = null;
+      // We don't keep an array count for this since it won't be referenced again.
+      // In fact, we don't really need to store this chunk at all.
+      chunk.status = 'fulfilled';
+      chunk.value = handler.value;
+      chunk.reason = null;
+      if (resolveListeners != null) {
+        wakeChunk(response, resolveListeners, handler.value, chunk);
       }
     }
   }

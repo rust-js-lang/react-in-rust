@@ -5348,59 +5348,62 @@ function writeStyleResourceAttribute(
   }
   // Reserved names
   if (
-    name !== 'innerHTML' &&
-    name !== 'dangerouslySetInnerHTML' &&
-    name !== 'suppressContentEditableWarning' &&
-    name !== 'suppressHydrationWarning' &&
-    name !== 'style' &&
-    name !== 'ref'
+    name === 'innerHTML' ||
+    name === 'dangerouslySetInnerHTML' ||
+    name === 'suppressContentEditableWarning' ||
+    name === 'suppressHydrationWarning' ||
+    name === 'style' ||
+    name === 'ref'
   ) {
-    // Attribute renames
-    let attributeValue;
-    if (name === 'className') {
-      attributeName = 'class';
-      if (__DEV__) {
-        checkAttributeStringCoercion(value, attributeName);
+    // Ignored
+    return;
+  }
+
+  // Attribute renames
+  let attributeValue;
+  if (name === 'className') {
+    attributeName = 'class';
+    if (__DEV__) {
+      checkAttributeStringCoercion(value, attributeName);
+    }
+    attributeValue = '' + value;
+  } else {
+    // Booleans
+    if (name === 'hidden') {
+      if (value === false) {
+        return;
       }
-      attributeValue = '' + value;
+      attributeValue = '';
     } else {
-      // Booleans
-      if (name === 'hidden') {
-        if (value === false) {
-          return;
+      // Santized URLs
+      if (name === 'src' || name === 'href') {
+        const value$1 = sanitizeURL(value);
+        if (__DEV__) {
+          checkAttributeStringCoercion(value$1, attributeName);
         }
-        attributeValue = '';
+        attributeValue = '' + value$1;
+      } else if (
+        // unrecognized event handlers are not SSR'd and we (apparently)
+        // use on* as hueristic for these handler props
+        name.length > 2 &&
+        (name[0] === 'o' || name[0] === 'O') &&
+        (name[1] === 'n' || name[1] === 'N')
+      ) {
+        return;
+      } else if (!isAttributeNameSafe(name)) {
+        return;
       } else {
-        // Santized URLs
-        if (name === 'src' || name === 'href') {
-          const value$1 = sanitizeURL(value);
-          if (__DEV__) {
-            checkAttributeStringCoercion(value$1, attributeName);
-          }
-          attributeValue = '' + value$1;
-        } else if (
-          // unrecognized event handlers are not SSR'd and we (apparently)
-          // use on* as hueristic for these handler props
-          name.length > 2 &&
-          (name[0] === 'o' || name[0] === 'O') &&
-          (name[1] === 'n' || name[1] === 'N')
-        ) {
-          return;
-        } else if (!isAttributeNameSafe(name)) {
-          return;
-        } else {
-          if (__DEV__) {
-            checkAttributeStringCoercion(value, attributeName);
-          }
-          attributeValue = '' + value;
+        if (__DEV__) {
+          checkAttributeStringCoercion(value, attributeName);
         }
+        attributeValue = '' + value;
       }
     }
-    writeChunk(destination, arrayInterstitial);
-    writeChunk(destination, stringToChunk(encode(attributeName)));
-    writeChunk(destination, arrayInterstitial);
-    writeChunk(destination, stringToChunk(encode(attributeValue)));
   }
+  writeChunk(destination, arrayInterstitial);
+  writeChunk(destination, stringToChunk(encode(attributeName)));
+  writeChunk(destination, arrayInterstitial);
+  writeChunk(destination, stringToChunk(encode(attributeValue)));
 }
 
 export function createHoistableState() {
@@ -6338,17 +6341,15 @@ export const NotPendingTransition = NotPending;
 const endOfStartTag = stringToPrecomputedChunk('>');
 const endOfStartTagSelfClosing = stringToPrecomputedChunk('/>');
 
-ReactDOMSharedInternals.d =
-  /* ReactDOMCurrentDispatcher */
-  {
-    f: /* flushSyncWork */ previousDispatcher.f /* flushSyncWork */,
-    r: /* requestFormReset */ previousDispatcher.r /* requestFormReset */,
-    D: prefetchDNS,
-    C: preconnect,
-    L: preload,
-    m: preloadModule,
-    X: preinitScript,
-    S: preinitStyle,
-    M: preinitModuleScript,
-  };
+ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */ = {
+  f: /* flushSyncWork */ previousDispatcher.f /* flushSyncWork */,
+  r: /* requestFormReset */ previousDispatcher.r /* requestFormReset */,
+  D: prefetchDNS,
+  C: preconnect,
+  L: preload,
+  m: preloadModule,
+  X: preinitScript,
+  S: preinitStyle,
+  M: preinitModuleScript,
+};
 //# sourceMappingURL=ReactFizzConfigDOM.js.map
