@@ -12,6 +12,7 @@ path = "client.rs"
 
 [dependencies]
 js.workspace = true
+node.workspace = true
 shared.workspace = true
 webapi.workspace = true
 

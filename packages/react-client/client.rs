@@ -15,7 +15,11 @@ pub mod react_client_debug_config_node;
 pub mod react_client_debug_config_plain;
 #[path = "src/ReactFlightClientDevToolsHook.rs"]
 pub mod react_flight_client_dev_tools_hook;
+#[path = "src/ReactFlightClientStreamConfigNode.rs"]
+pub mod react_flight_client_stream_config_node;
 #[path = "src/ReactFlightClientStreamConfigWeb.rs"]
 pub mod react_flight_client_stream_config_web;
+#[path = "src/ReactFlightPerformanceTrack.rs"]
+pub mod react_flight_performance_track;
 #[path = "src/ReactFlightTemporaryReferences.rs"]
 pub mod react_flight_temporary_references;
