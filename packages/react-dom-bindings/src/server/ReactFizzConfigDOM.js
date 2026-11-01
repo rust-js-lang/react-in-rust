@@ -8,18 +8,18 @@
 import {Children} from 'react';
 import {doctypeChunk as doctypeChunk$1} from 'react-server/src/ReactFizzConfig';
 import {
-  flushResources,
-  getRenderState,
-  getResumableState,
-  resolveRequest,
-} from 'react-server/src/ReactFizzServer';
-import {
   readAsDataURL,
   stringToChunk,
   stringToPrecomputedChunk,
   writeChunk,
   writeChunkAndReturn,
 } from 'react-server/src/ReactServerStreamConfig';
+import {
+  flushResources,
+  getRenderState,
+  getResumableState,
+  resolveRequest,
+} from 'react-server/src/ReactFizzServer';
 import {
   checkAttributeStringCoercion,
   checkCSSPropertyStringCoercion,
@@ -391,16 +391,19 @@ export function createRenderState(
   if (bootstrapScripts != null) {
     for (let i = 0; i < bootstrapScripts.length; i++) {
       const scriptConfig = bootstrapScripts[i];
-      let tmp;
+      let src;
+      let integrity;
+      let crossOrigin;
       if (typeof scriptConfig === 'string') {
-        tmp = [scriptConfig, undefined, undefined];
+        src = scriptConfig;
+        integrity = undefined;
+        crossOrigin = undefined;
       } else {
-        const [integrity, crossOrigin] = scriptCredentials(scriptConfig);
-        tmp = [scriptConfig.src, integrity, crossOrigin];
+        const [integrity$1, crossOrigin$1] = scriptCredentials(scriptConfig);
+        src = scriptConfig.src;
+        integrity = integrity$1;
+        crossOrigin = crossOrigin$1;
       }
-      const src = tmp[0];
-      const integrity = tmp[1];
-      const crossOrigin = tmp[2];
       const props = {
         rel: 'preload',
         as: 'script',
@@ -425,16 +428,19 @@ export function createRenderState(
   if (bootstrapModules != null) {
     for (let i = 0; i < bootstrapModules.length; i++) {
       const scriptConfig = bootstrapModules[i];
-      let tmp;
+      let src;
+      let integrity;
+      let crossOrigin;
       if (typeof scriptConfig === 'string') {
-        tmp = [scriptConfig, undefined, undefined];
+        src = scriptConfig;
+        integrity = undefined;
+        crossOrigin = undefined;
       } else {
-        const [integrity, crossOrigin] = scriptCredentials(scriptConfig);
-        tmp = [scriptConfig.src, integrity, crossOrigin];
+        const [integrity$1, crossOrigin$1] = scriptCredentials(scriptConfig);
+        src = scriptConfig.src;
+        integrity = integrity$1;
+        crossOrigin = crossOrigin$1;
       }
-      const src = tmp[0];
-      const integrity = tmp[1];
-      const crossOrigin = tmp[2];
       const props = {
         rel: 'modulepreload',
         fetchPriority: 'low',
@@ -4272,35 +4278,43 @@ const startSegmentColGroup2 = stringToPrecomputedChunk('">');
 const endSegmentColGroup = stringToPrecomputedChunk('</colgroup></table>');
 
 export function writeStartSegment(destination, renderState, formatContext, id) {
-  let tmp;
+  let start;
+  let end;
   if (
     formatContext.insertionMode === ROOT_HTML_MODE ||
     formatContext.insertionMode === HTML_HTML_MODE ||
     formatContext.insertionMode === HTML_HEAD_MODE ||
     formatContext.insertionMode === HTML_MODE
   ) {
-    tmp = [startSegmentHTML, startSegmentHTML2];
+    start = startSegmentHTML;
+    end = startSegmentHTML2;
   } else if (formatContext.insertionMode === SVG_MODE) {
-    tmp = [startSegmentSVG, startSegmentSVG2];
+    start = startSegmentSVG;
+    end = startSegmentSVG2;
   } else if (formatContext.insertionMode === MATHML_MODE) {
-    tmp = [startSegmentMathML, startSegmentMathML2];
+    start = startSegmentMathML;
+    end = startSegmentMathML2;
   } else if (formatContext.insertionMode === HTML_TABLE_MODE) {
-    tmp = [startSegmentTable, startSegmentTable2];
-  } else if (formatContext.insertionMode === HTML_TABLE_BODY_MODE) {
+    start = startSegmentTable;
+    end = startSegmentTable2;
+  } else {
     // TODO: For the rest of these, there will be extra wrapper nodes that never
     // get deleted from the document. We need to delete the table too as part
     // of the injected scripts. They are invisible though so it's not too terrible
     // and it's kind of an edge case to suspend in a table. Totally supported though.
-    tmp = [startSegmentTableBody, startSegmentTableBody2];
-  } else if (formatContext.insertionMode === HTML_TABLE_ROW_MODE) {
-    tmp = [startSegmentTableRow, startSegmentTableRow2];
-  } else if (formatContext.insertionMode === HTML_COLGROUP_MODE) {
-    tmp = [startSegmentColGroup, startSegmentColGroup2];
-  } else {
-    throw new Error('Unknown insertion mode. This is a bug in React.');
+    if (formatContext.insertionMode === HTML_TABLE_BODY_MODE) {
+      start = startSegmentTableBody;
+      end = startSegmentTableBody2;
+    } else if (formatContext.insertionMode === HTML_TABLE_ROW_MODE) {
+      start = startSegmentTableRow;
+      end = startSegmentTableRow2;
+    } else if (formatContext.insertionMode === HTML_COLGROUP_MODE) {
+      start = startSegmentColGroup;
+      end = startSegmentColGroup2;
+    } else {
+      throw new Error('Unknown insertion mode. This is a bug in React.');
+    }
   }
-  const start = tmp[0];
-  const end = tmp[1];
   writeChunk(destination, start);
   writeChunk(destination, renderState.segmentPrefix);
   writeChunk(destination, stringToChunk(id.toString(16)));

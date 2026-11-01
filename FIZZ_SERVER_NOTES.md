@@ -143,6 +143,46 @@ Open:
     { return; }` inside a `match` arm or a `catch_unwind` closure, with code
     after the match, prints a labeled block broken out of.
 
+## GAPs (rd570-rd579)
+
+- **rd570** (P1, wrong answer; a regression of rust-js 1d159bcd0, which
+  0c233f18a had fixed once): a module's imports are sorted by specifier
+  (ADR 0295's one block), so JS loads them in that order, not the `use`s'.
+  React DOM's server entries import `react-server/src/ReactFizzServer`
+  before `react-dom-bindings/src/server/ReactFizzConfigDOM`, and jest's
+  module cycle depends on it (entry -> ConfigDOM -> ReactFizzServer ->
+  ReactFizzHooks -> ReactFizzConfig -> ConfigDOM, half-loaded, so
+  `supportsClientAPIs` is `undefined` when `HooksDispatcher` is made and
+  every `useState` throws "Cannot use state or effect Hooks in
+  renderToHTML"). Regenerated on rust-js 090616b60, all eight entries
+  (FizzServer Browser/Edge/Node, FizzStatic Browser/Edge/Node,
+  LegacyServerImpl) print ConfigDOM first: react-dom 4153/111/2 and the
+  server set 470/1 (turbopack's DOM object references). With the
+  ReactFizzServer import moved back above by hand (test only, never
+  committed) the gate is 4264/1/2. No Rust can order them: rustfmt sorts a
+  group's `use`s, and after Phase B both are a dependency crate's subpaths,
+  `react-dom-bindings/..` sorting before `react-server/..`. Repro (one
+  crate):
+  ```rust
+  pub mod bindings {
+      #[cfg_attr(rust_js, rust_js::link_name = "zeta/Server#z")]
+      pub fn z() {}
+      #[cfg_attr(rust_js, rust_js::link_name = "alpha/Config#a")]
+      pub fn a() {}
+  }
+  // zeta/Server must load first: alpha/Config reads what it sets as it loads.
+  use bindings::z;
+
+  use bindings::a;
+
+  pub fn f() { z(); a(); }
+  ```
+  prints `import { a } from "alpha/Config";` before `import { z } from
+  "zeta/Server";`. Suggested: keep the `use`s' order (each rustfmt group's
+  order, groups as written), or never reorder imports across modules
+  that aren't side-effect free. The entries' JS stays main's until it's
+  fixed.
+
 ## Deep-tree resume (ReactDOMFizzServer-test, "can recover from very deep trees during resume")
 
 **Cause:** the resume replays 1200 nested `Deep` elements, each through

@@ -701,13 +701,9 @@ function createSuspenseBoundary(
 // upstream's `ping.resolve` and `ping.reject` arrows do; the task object has
 // no `ping` property.
 function pingOf(request, task) {
-  const resolveRequest = request;
-  const resolveTask = task;
-  const rejectRequest = request;
-  const rejectTask = task;
   return [
-    () => pingTask(resolveRequest, resolveTask),
-    pingRejectedTask.bind(null, rejectRequest, rejectTask),
+    () => pingTask(request, task),
+    pingRejectedTask.bind(null, request, task),
   ];
 }
 
@@ -3200,6 +3196,7 @@ function replayElement(
   // We're replaying. Find the path to follow.
   const replayNodes = replay.nodes;
   let i = 0;
+  // Matched a replayable path.
   while (i < $borrow(replayNodes).length) {
     // Flow doesn't support refinement on tuples so we do it manually here.
     function cloneReplayNode(replayNode) {
@@ -3259,7 +3256,6 @@ function replayElement(
         }
         childReplay.pendingTasks--;
       } catch (thrown) {
-        const x = $unwound(thrown);
         // Where this same element threw, the replay we just added is popped
         // before anything else runs here: a stack overflow leaves this
         // handler little stack, and one that overflows again must not skip
@@ -3268,6 +3264,7 @@ function replayElement(
         if (sameNode) {
           task.replay = replay;
         }
+        const x = $unwound(thrown);
         const thrownValue = thrownValueOf(x);
         if (isSuspending(thrownValue)) {
           // Suspend
@@ -3277,7 +3274,7 @@ function replayElement(
             // We finished rendering this node, so now we can consume this slot.
             $removeAt($borrowMut(replayNodes), i);
           }
-          throw $unwinding(x);
+          throw thrown;
         }
         childReplay.pendingTasks--;
         // Unlike regular render, we don't terminate the siblings if we error
@@ -3319,16 +3316,16 @@ function replayElement(
           }>. The tree doesn't match so React will fallback to client rendering.`,
         );
       }
-      // Matched a replayable path.
-      let tmp;
+      let fallbackNodes;
+      let fallbackSlots;
       if (fallback == null) {
-        tmp = [[], 'null'];
+        fallbackNodes = [];
+        fallbackSlots = 'null';
       } else {
         const [, , nodes, slots] = $borrow(fallback);
-        tmp = [nodes, slots];
+        fallbackNodes = nodes;
+        fallbackSlots = slots;
       }
-      const fallbackNodes = tmp[0];
-      const fallbackSlots = tmp[1];
       replaySuspenseBoundary(
         request,
         task,
@@ -3852,7 +3849,7 @@ function replayFragment(request, task, children, childIndex) {
             typeof thrownValue.then === 'function')
         ) {
           // Suspend
-          throw $unwinding(x);
+          throw thrown;
         }
         childReplay.pendingTasks--;
         // Unlike regular render, we don't terminate the siblings if we error
@@ -4367,27 +4364,29 @@ function untrackBoundary(request, boundary) {
     return;
   }
   const tracked = boundary.tracked;
-  if (tracked != null) {
-    const boundaryKeyPath = tracked.contentKeyPath;
-    if (boundaryKeyPath != null) {
-      const boundaryNode = trackedPostpones.workingMap.get(boundaryKeyPath);
-      if (boundaryNode == null) {
-        return;
-      }
-
-      // Downgrade to plain ReplayNode since we won't replay through it.
-      // $FlowFixMe[cannot-write]: We intentionally downgrade this to the other tuple.
-      const node = $borrowMut(boundaryNode, true);
-      const name = node[0];
-      const key = node[1];
-      // Remove any resumable slots.
-      $assign(node, [name ?? null, key, [], 'null']);
-
-      // TODO: We should really just remove the boundary from all parent paths too so
-      // we don't replay the path to it.
-      $unborrow(node);
-    }
+  if (tracked == null) {
+    return;
   }
+  const boundaryKeyPath = tracked.contentKeyPath;
+  if (boundaryKeyPath == null) {
+    return;
+  }
+  const boundaryNode = trackedPostpones.workingMap.get(boundaryKeyPath);
+  if (boundaryNode == null) {
+    return;
+  }
+
+  // Downgrade to plain ReplayNode since we won't replay through it.
+  // $FlowFixMe[cannot-write]: We intentionally downgrade this to the other tuple.
+  const node = $borrowMut(boundaryNode, true);
+  const name = node[0];
+  const key = node[1];
+  // Remove any resumable slots.
+  $assign(node, [name ?? null, key, [], 'null']);
+
+  // TODO: We should really just remove the boundary from all parent paths too so
+  // we don't replay the path to it.
+  $unborrow(node);
 }
 
 function spawnNewSuspendedReplayTask(request, task, thenableState) {
@@ -4515,299 +4514,289 @@ function renderNode(request, task, node, childIndex) {
   // Store how much we've pushed at this point so we can reset it in case something
   // suspended partially through writing something.
   const segment = task.blockedSegment;
-  // We are aborting so we can just bubble up to the task by falling through
-  // $FlowFixMe[invalid-compare]
+  let x;
+  let thrown;
+  if (segment == null) {
+    // Replay
+    const previousReplaySet = task.replay;
+    try {
+      renderNodeDestructive(request, task, node, childIndex);
+      return;
+    } catch (thrown$1) {
+      resetHooksState();
 
-  // TODO: Abort any undiscovered Suspense boundaries in the ReplayNode.
+      const thrownValue = $unwound(thrown$1);
+      const isSuspenseException$1 = isSuspenseException(
+        thrownValueOf(thrownValue),
+      );
+      x = isSuspenseException$1
+        ? // This is a special type of exception used for Suspense. For historical
+          // reasons, the rest of the Suspense implementation expects the thrown
+          // value to be a thenable, because before `use` existed that was the
+          // (unstable) API for suspending. This implementation detail can change
+          // later, once we deprecate the old API in favor of `use`.
+          getSuspendedThenable()
+        : thrownValueOf(thrownValue);
+      thrown = thrownValue;
+
+      if (request.aborted) {
+        // We are aborting so we can just bubble up to the task by falling through
+        // $FlowFixMe[invalid-compare]
+      } else if (typeof x === 'object' && x !== null) {
+        // $FlowFixMe[method-unbinding]
+        if (typeof x.then === 'function') {
+          const thenable = x;
+          const thenableState = isSuspenseException$1
+            ? getThenableStateAfterSuspending()
+            : undefined;
+          const newTask = spawnNewSuspendedReplayTask(
+            request,
+            // $FlowFixMe[incompatible-type]: Refined.
+            task,
+            thenableState,
+          );
+          const [resolve, reject] = pingOf(request, newTask);
+          thenable.then(resolve, reject);
+
+          // Restore the context. We assume that this will be restored by the inner
+          // functions in case nothing throws so we don't use "finally" here.
+          task.formatContext = previousFormatContext;
+          if (!disableLegacyContext) {
+            task.legacyContext = previousLegacyContext;
+          }
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'context')),
+            previousContext,
+          );
+          task.keyPath = previousKeyPath;
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'treeContext')),
+            previousTreeContext,
+          );
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'componentStack', true)),
+            previousComponentStack,
+          );
+          task.replay = previousReplaySet;
+          if (__DEV__) {
+            task.debugTask = previousDebugTask ?? null;
+          }
+          // Restore all active ReactContexts to what they were before.
+          switchContext(previousContext);
+          return;
+        }
+        if (x.message === 'Maximum call stack size exceeded') {
+          // This was a stack overflow. We do a lot of recursion in React by default for
+          // performance but it can lead to stack overflows in extremely deep trees.
+          // We do have the ability to create a trampoile if this happens which makes
+          // this kind of zero-cost.
+          const thenableState = isSuspenseException$1
+            ? getThenableStateAfterSuspending()
+            : undefined;
+          const newTask = spawnNewSuspendedReplayTask(
+            request,
+            // $FlowFixMe[incompatible-type]: Refined.
+            task,
+            thenableState,
+          );
+
+          // Immediately schedule the task for retrying.
+          request.pingedTasks.push(newTask);
+
+          // Restore the context. We assume that this will be restored by the inner
+          // functions in case nothing throws so we don't use "finally" here.
+          task.formatContext = previousFormatContext;
+          if (!disableLegacyContext) {
+            task.legacyContext = previousLegacyContext;
+          }
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'context')),
+            previousContext,
+          );
+          task.keyPath = previousKeyPath;
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'treeContext')),
+            previousTreeContext,
+          );
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'componentStack', true)),
+            previousComponentStack,
+          );
+          task.replay = previousReplaySet;
+          if (__DEV__) {
+            task.debugTask = previousDebugTask ?? null;
+          }
+          // Restore all active ReactContexts to what they were before.
+          switchContext(previousContext);
+          return;
+        }
+      }
+    }
+
+    // TODO: Abort any undiscovered Suspense boundaries in the ReplayNode.
+  } else {
+    // Render
+    const {length: childrenLength} = $borrow(segment.children);
+    const {length: chunkLength} = $borrow(segment.chunks);
+    try {
+      renderNodeDestructive(request, task, node, childIndex);
+      return;
+    } catch (thrown$1) {
+      resetHooksState();
+
+      // Reset the write pointers to where we started.
+      $truncate($borrowMut(segment.children), childrenLength);
+      $truncate($borrowMut(segment.chunks), chunkLength);
+
+      const thrownValue = $unwound(thrown$1);
+      const isSuspenseException$1 = isSuspenseException(
+        thrownValueOf(thrownValue),
+      );
+      x = isSuspenseException$1
+        ? // This is a special type of exception used for Suspense. For historical
+          // reasons, the rest of the Suspense implementation expects the thrown
+          // value to be a thenable, because before `use` existed that was the
+          // (unstable) API for suspending. This implementation detail can change
+          // later, once we deprecate the old API in favor of `use`.
+          getSuspendedThenable()
+        : thrownValueOf(thrownValue);
+      thrown = thrownValue;
+
+      if (request.aborted) {
+        // A postponed root cannot flush any shell and must be rendered again in
+        // full, so let it unwind instead of preserving individual holes.
+        if (
+          request.trackedPostpones != null &&
+          $borrow($fieldCell(task, 'blockedBoundary', true)).value != null
+        ) {
+          const thenableState = isSuspenseException$1
+            ? getThenableStateAfterSuspending()
+            : undefined;
+          postponeNewSuspendedRenderTask(
+            request,
+            // $FlowFixMe[incompatible-type]: Refined.
+            task,
+            thenableState,
+          );
+
+          // Restore the context. We assume that this will be restored by the inner
+          // functions in case nothing throws so we don't use "finally" here.
+          task.formatContext = previousFormatContext;
+          if (!disableLegacyContext) {
+            task.legacyContext = previousLegacyContext;
+          }
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'context')),
+            previousContext,
+          );
+          task.keyPath = previousKeyPath;
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'treeContext')),
+            previousTreeContext,
+          );
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'componentStack', true)),
+            previousComponentStack,
+          );
+          if (__DEV__) {
+            task.debugTask = previousDebugTask ?? null;
+          }
+          // Restore all active ReactContexts to what they were before.
+          switchContext(previousContext);
+          return;
+        }
+      } else if (typeof x === 'object' && x !== null) {
+        // $FlowFixMe[method-unbinding]
+        if (typeof x.then === 'function') {
+          const thenable = x;
+          const thenableState = isSuspenseException$1
+            ? getThenableStateAfterSuspending()
+            : undefined;
+          const newTask = spawnNewSuspendedRenderTask(
+            request,
+            // $FlowFixMe[incompatible-type]: Refined.
+            task,
+            thenableState,
+          );
+          const [resolve, reject] = pingOf(request, newTask);
+          thenable.then(resolve, reject);
+
+          // Restore the context. We assume that this will be restored by the inner
+          // functions in case nothing throws so we don't use "finally" here.
+          task.formatContext = previousFormatContext;
+          if (!disableLegacyContext) {
+            task.legacyContext = previousLegacyContext;
+          }
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'context')),
+            previousContext,
+          );
+          task.keyPath = previousKeyPath;
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'treeContext')),
+            previousTreeContext,
+          );
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'componentStack', true)),
+            previousComponentStack,
+          );
+          if (__DEV__) {
+            task.debugTask = previousDebugTask ?? null;
+          }
+          // Restore all active ReactContexts to what they were before.
+          switchContext(previousContext);
+          return;
+        }
+        if (x.message === 'Maximum call stack size exceeded') {
+          // This was a stack overflow. We do a lot of recursion in React by default for
+          // performance but it can lead to stack overflows in extremely deep trees.
+          // We do have the ability to create a trampoile if this happens which makes
+          // this kind of zero-cost.
+          const thenableState = isSuspenseException$1
+            ? getThenableStateAfterSuspending()
+            : undefined;
+          const newTask = spawnNewSuspendedRenderTask(
+            request,
+            // $FlowFixMe[incompatible-type]: Refined.
+            task,
+            thenableState,
+          );
+
+          // Immediately schedule the task for retrying.
+          request.pingedTasks.push(newTask);
+
+          // Restore the context. We assume that this will be restored by the inner
+          // functions in case nothing throws so we don't use "finally" here.
+          task.formatContext = previousFormatContext;
+          if (!disableLegacyContext) {
+            task.legacyContext = previousLegacyContext;
+          }
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'context')),
+            previousContext,
+          );
+          task.keyPath = previousKeyPath;
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'treeContext')),
+            previousTreeContext,
+          );
+          $cellReplace(
+            $borrowMut($fieldCell(task, 'componentStack', true)),
+            previousComponentStack,
+          );
+          if (__DEV__) {
+            task.debugTask = previousDebugTask ?? null;
+          }
+          // Restore all active ReactContexts to what they were before.
+          switchContext(previousContext);
+          return;
+        }
+      }
+    }
+  }
 
   // Restore the context. We assume that this will be restored by the inner
   // functions in case nothing throws so we don't use "finally" here.
-  let x;
-  let thrown;
-  bb368: {
-    if (segment == null) {
-      // Replay
-      const previousReplaySet = task.replay;
-      const catchUnwind = $catchUnwind(() =>
-        renderNodeDestructive(request, task, node, childIndex),
-      );
-      if (catchUnwind.TAG === 'Err') {
-        const thrownValue = catchUnwind._0;
-        resetHooksState();
-
-        const isSuspenseException$1 = isSuspenseException(
-          thrownValueOf(thrownValue),
-        );
-        x = isSuspenseException$1
-          ? // This is a special type of exception used for Suspense. For historical
-            // reasons, the rest of the Suspense implementation expects the thrown
-            // value to be a thenable, because before `use` existed that was the
-            // (unstable) API for suspending. This implementation detail can change
-            // later, once we deprecate the old API in favor of `use`.
-            getSuspendedThenable()
-          : thrownValueOf(thrownValue);
-        thrown = thrownValue;
-
-        if (request.aborted) {
-        } else if (typeof x === 'object' && x !== null) {
-          // $FlowFixMe[method-unbinding]
-          if (typeof x.then === 'function') {
-            const thenable = x;
-            const thenableState = isSuspenseException$1
-              ? getThenableStateAfterSuspending()
-              : undefined;
-            const newTask = spawnNewSuspendedReplayTask(
-              request,
-              // $FlowFixMe[incompatible-type]: Refined.
-              task,
-              thenableState,
-            );
-            const [resolve, reject] = pingOf(request, newTask);
-            thenable.then(resolve, reject);
-
-            // Restore the context. We assume that this will be restored by the inner
-            // functions in case nothing throws so we don't use "finally" here.
-            task.formatContext = previousFormatContext;
-            if (!disableLegacyContext) {
-              task.legacyContext = previousLegacyContext;
-            }
-            $cellReplace(
-              $borrowMut($fieldCell(task, 'context')),
-              previousContext,
-            );
-            task.keyPath = previousKeyPath;
-            $cellReplace(
-              $borrowMut($fieldCell(task, 'treeContext')),
-              previousTreeContext,
-            );
-            $cellReplace(
-              $borrowMut($fieldCell(task, 'componentStack', true)),
-              previousComponentStack,
-            );
-            task.replay = previousReplaySet;
-            if (__DEV__) {
-              task.debugTask = previousDebugTask ?? null;
-            }
-            // Restore all active ReactContexts to what they were before.
-            switchContext(previousContext);
-            return;
-          }
-          if (x.message === 'Maximum call stack size exceeded') {
-            // This was a stack overflow. We do a lot of recursion in React by default for
-            // performance but it can lead to stack overflows in extremely deep trees.
-            // We do have the ability to create a trampoile if this happens which makes
-            // this kind of zero-cost.
-            const thenableState = isSuspenseException$1
-              ? getThenableStateAfterSuspending()
-              : undefined;
-            const newTask = spawnNewSuspendedReplayTask(
-              request,
-              // $FlowFixMe[incompatible-type]: Refined.
-              task,
-              thenableState,
-            );
-
-            // Immediately schedule the task for retrying.
-            request.pingedTasks.push(newTask);
-
-            // Restore the context. We assume that this will be restored by the inner
-            // functions in case nothing throws so we don't use "finally" here.
-            task.formatContext = previousFormatContext;
-            if (!disableLegacyContext) {
-              task.legacyContext = previousLegacyContext;
-            }
-            $cellReplace(
-              $borrowMut($fieldCell(task, 'context')),
-              previousContext,
-            );
-            task.keyPath = previousKeyPath;
-            $cellReplace(
-              $borrowMut($fieldCell(task, 'treeContext')),
-              previousTreeContext,
-            );
-            $cellReplace(
-              $borrowMut($fieldCell(task, 'componentStack', true)),
-              previousComponentStack,
-            );
-            task.replay = previousReplaySet;
-            if (__DEV__) {
-              task.debugTask = previousDebugTask ?? null;
-            }
-            // Restore all active ReactContexts to what they were before.
-            switchContext(previousContext);
-            return;
-          }
-        }
-        break bb368;
-      }
-      return;
-    } else {
-      // Render
-      const {length: childrenLength} = $borrow(segment.children);
-      const {length: chunkLength} = $borrow(segment.chunks);
-      const value = $catchUnwind(() =>
-        renderNodeDestructive(request, task, node, childIndex),
-      );
-      if (value.TAG === 'Err') {
-        const thrownValue = value._0;
-        resetHooksState();
-
-        // Reset the write pointers to where we started.
-        $truncate($borrowMut(segment.children), childrenLength);
-        $truncate($borrowMut(segment.chunks), chunkLength);
-
-        const isSuspenseException$1 = isSuspenseException(
-          thrownValueOf(thrownValue),
-        );
-        x = isSuspenseException$1
-          ? // This is a special type of exception used for Suspense. For historical
-            // reasons, the rest of the Suspense implementation expects the thrown
-            // value to be a thenable, because before `use` existed that was the
-            // (unstable) API for suspending. This implementation detail can change
-            // later, once we deprecate the old API in favor of `use`.
-            getSuspendedThenable()
-          : thrownValueOf(thrownValue);
-        thrown = thrownValue;
-
-        if (request.aborted) {
-          // A postponed root cannot flush any shell and must be rendered again in
-          // full, so let it unwind instead of preserving individual holes.
-          if (
-            request.trackedPostpones != null &&
-            $borrow($fieldCell(task, 'blockedBoundary', true)).value != null
-          ) {
-            const thenableState = isSuspenseException$1
-              ? getThenableStateAfterSuspending()
-              : undefined;
-            postponeNewSuspendedRenderTask(
-              request,
-              // $FlowFixMe[incompatible-type]: Refined.
-              task,
-              thenableState,
-            );
-
-            // Restore the context. We assume that this will be restored by the inner
-            // functions in case nothing throws so we don't use "finally" here.
-            task.formatContext = previousFormatContext;
-            if (!disableLegacyContext) {
-              task.legacyContext = previousLegacyContext;
-            }
-            $cellReplace(
-              $borrowMut($fieldCell(task, 'context')),
-              previousContext,
-            );
-            task.keyPath = previousKeyPath;
-            $cellReplace(
-              $borrowMut($fieldCell(task, 'treeContext')),
-              previousTreeContext,
-            );
-            $cellReplace(
-              $borrowMut($fieldCell(task, 'componentStack', true)),
-              previousComponentStack,
-            );
-            if (__DEV__) {
-              task.debugTask = previousDebugTask ?? null;
-            }
-            // Restore all active ReactContexts to what they were before.
-            switchContext(previousContext);
-            return;
-          }
-          break bb368;
-        } else {
-          if (typeof x === 'object' && x !== null) {
-            // $FlowFixMe[method-unbinding]
-            if (typeof x.then === 'function') {
-              const thenable = x;
-              const thenableState = isSuspenseException$1
-                ? getThenableStateAfterSuspending()
-                : undefined;
-              const newTask = spawnNewSuspendedRenderTask(
-                request,
-                // $FlowFixMe[incompatible-type]: Refined.
-                task,
-                thenableState,
-              );
-              const [resolve, reject] = pingOf(request, newTask);
-              thenable.then(resolve, reject);
-
-              // Restore the context. We assume that this will be restored by the inner
-              // functions in case nothing throws so we don't use "finally" here.
-              task.formatContext = previousFormatContext;
-              if (!disableLegacyContext) {
-                task.legacyContext = previousLegacyContext;
-              }
-              $cellReplace(
-                $borrowMut($fieldCell(task, 'context')),
-                previousContext,
-              );
-              task.keyPath = previousKeyPath;
-              $cellReplace(
-                $borrowMut($fieldCell(task, 'treeContext')),
-                previousTreeContext,
-              );
-              $cellReplace(
-                $borrowMut($fieldCell(task, 'componentStack', true)),
-                previousComponentStack,
-              );
-              if (__DEV__) {
-                task.debugTask = previousDebugTask ?? null;
-              }
-              // Restore all active ReactContexts to what they were before.
-              switchContext(previousContext);
-              return;
-            }
-            if (x.message === 'Maximum call stack size exceeded') {
-              // This was a stack overflow. We do a lot of recursion in React by default for
-              // performance but it can lead to stack overflows in extremely deep trees.
-              // We do have the ability to create a trampoile if this happens which makes
-              // this kind of zero-cost.
-              const thenableState = isSuspenseException$1
-                ? getThenableStateAfterSuspending()
-                : undefined;
-              const newTask = spawnNewSuspendedRenderTask(
-                request,
-                // $FlowFixMe[incompatible-type]: Refined.
-                task,
-                thenableState,
-              );
-
-              // Immediately schedule the task for retrying.
-              request.pingedTasks.push(newTask);
-
-              // Restore the context. We assume that this will be restored by the inner
-              // functions in case nothing throws so we don't use "finally" here.
-              task.formatContext = previousFormatContext;
-              if (!disableLegacyContext) {
-                task.legacyContext = previousLegacyContext;
-              }
-              $cellReplace(
-                $borrowMut($fieldCell(task, 'context')),
-                previousContext,
-              );
-              task.keyPath = previousKeyPath;
-              $cellReplace(
-                $borrowMut($fieldCell(task, 'treeContext')),
-                previousTreeContext,
-              );
-              $cellReplace(
-                $borrowMut($fieldCell(task, 'componentStack', true)),
-                previousComponentStack,
-              );
-              if (__DEV__) {
-                task.debugTask = previousDebugTask ?? null;
-              }
-              // Restore all active ReactContexts to what they were before.
-              switchContext(previousContext);
-              return;
-            }
-            break bb368;
-          }
-          break bb368;
-        }
-      }
-      return;
-    }
-  }
   task.formatContext = previousFormatContext;
   if (!disableLegacyContext) {
     task.legacyContext = previousLegacyContext;
@@ -5154,11 +5143,10 @@ function abortTask(task, request) {
           // $FlowFixMe[invalid-compare]
           node.$$typeof === REACT_ELEMENT_TYPE ||
           // $FlowFixMe[invalid-compare]
-          node.$$typeof === REACT_LAZY_TYPE)
+          node.$$typeof === REACT_LAZY_TYPE) &&
+        isArray(node._debugInfo)
       ) {
-        if (isArray(node._debugInfo)) {
-          debugInfo = node._debugInfo;
-        }
+        debugInfo = node._debugInfo;
       }
       pushHaltedAwaitOnComponentStack(task, debugInfo);
       if ($borrow($fieldCell(task, 'thenableState', true)).value != null) {
@@ -5428,9 +5416,9 @@ function safelyEmitEarlyPreloads(request, shellComplete) {
       shellComplete,
     );
   } catch (thrown) {
-    const error = $unwound(thrown);
     // We assume preloads are optimistic and thus non-fatal if errored.
     const errorInfo = {};
+    const error = $unwound(thrown);
     logRecoverableError(request, thrownValueOf(error), errorInfo);
   }
 }
@@ -6274,65 +6262,65 @@ function flushPreamble(
 function flushSubtree(request, destination, segment, hoistableState) {
   segment.parentFlushed = true;
   const status = segment.status;
-  if (status === PENDING || status === POSTPONED) {
-    if (status === PENDING) {
-      // We're emitting a placeholder for this segment to be filled in later.
-      // Therefore we'll need to assign it an ID - to refer to it by.
-      segment.id = nextSegmentId(request);
-      // Fallthrough
+  switch (status) {
+    case PENDING:
+    case POSTPONED: {
+      if (status === PENDING) {
+        // We're emitting a placeholder for this segment to be filled in later.
+        // Therefore we'll need to assign it an ID - to refer to it by.
+        segment.id = nextSegmentId(request);
+        // Fallthrough
+      }
+      const segmentId = segment.id;
+      // When this segment finally completes it won't be embedded in text since it will flush separately
+      segment.lastPushedText = false;
+      segment.textEmbedded = false;
+      return writePlaceholder(destination, request.renderState, segmentId);
     }
-    const segmentId = segment.id;
-    // When this segment finally completes it won't be embedded in text since it will flush separately
-    segment.lastPushedText = false;
-    segment.textEmbedded = false;
-    return writePlaceholder(destination, request.renderState, segmentId);
-  }
-  if (status !== COMPLETED) {
-    if (status !== ABORTED) {
+    case COMPLETED: {
+      segment.status = FLUSHED;
+      let r = true;
+      const chunks = $borrow(segment.chunks, true);
+      let chunkIdx = 0;
+
+      let result;
+      try {
+        const children = $borrow(segment.children, true);
+        try {
+          const iter = children.values();
+          let nextChild;
+          while ((nextChild = iter.next().value) != null) {
+            // Write all the chunks up until the next child.
+            while (chunkIdx < nextChild.index) {
+              writeChunk(destination, $index(chunks, chunkIdx));
+              chunkIdx = (chunkIdx + 1) >>> 0;
+            }
+            r = flushSegment(request, destination, nextChild, hoistableState);
+          }
+          // Finally just write all the remaining chunks
+          while ((chunkIdx + 1) >>> 0 < chunks.length) {
+            writeChunk(destination, $index(chunks, chunkIdx));
+            chunkIdx = (chunkIdx + 1) >>> 0;
+          }
+          if (chunkIdx < chunks.length) {
+            r = writeChunkAndReturn(destination, chunks[chunkIdx]);
+          }
+          result = r;
+        } finally {
+          $unborrow(children);
+        }
+      } finally {
+        $unborrow(chunks);
+      }
+      return result;
+    }
+    case ABORTED:
+      return true;
+    default:
       throw new Error(
         'Aborted, errored or already flushed boundaries should not be flushed again. This is a bug in React.',
       );
-    }
-    return true;
   }
-  segment.status = FLUSHED;
-  let r = true;
-  const chunks = $borrow(segment.chunks, true);
-  let chunkIdx = 0;
-
-  let result;
-  try {
-    const children = $borrow(segment.children, true);
-    try {
-      const iter = children.values();
-      let nextChild;
-      bb28: while ((nextChild = iter.next().value) != null) {
-        // Write all the chunks up until the next child.
-        while (true) {
-          if (!(chunkIdx < nextChild.index)) {
-            r = flushSegment(request, destination, nextChild, hoistableState);
-            continue bb28;
-          }
-          writeChunk(destination, $index(chunks, chunkIdx));
-          chunkIdx = (chunkIdx + 1) >>> 0;
-        }
-      }
-      // Finally just write all the remaining chunks
-      while ((chunkIdx + 1) >>> 0 < chunks.length) {
-        writeChunk(destination, $index(chunks, chunkIdx));
-        chunkIdx = (chunkIdx + 1) >>> 0;
-      }
-      if (chunkIdx < chunks.length) {
-        r = writeChunkAndReturn(destination, chunks[chunkIdx]);
-      }
-      result = r;
-    } finally {
-      $unborrow(children);
-    }
-  } finally {
-    $unborrow(chunks);
-  }
-  return result;
 }
 
 // Running count for how much bytes of boundaries have flushed inlined into the currently
@@ -6662,7 +6650,6 @@ function newThrownInfo() {
 
 function flushCompletedQueues(request, destination) {
   beginWriting(destination);
-  // The preamble isn't ready yet even though the root is so we omit flushing
   const result = $catchUnwind(() => {
     // The structure of this is to go through each queue one by one and write
     // until the sink tells us to stop. When we should stop, we still finish writing
@@ -6676,13 +6663,15 @@ function flushCompletedQueues(request, destination) {
 
     const completedRootSegment = request.completedRootSegment;
     if (completedRootSegment != null) {
-      if (
-        completedRootSegment.status === POSTPONED ||
-        request.completedPreambleSegments == null
-      ) {
+      if (completedRootSegment.status === POSTPONED) {
         return;
       }
+
       const completedPreambleSegments = request.completedPreambleSegments;
+      if (completedPreambleSegments == null) {
+        // The preamble isn't ready yet even though the root is so we omit flushing
+        return;
+      }
 
       flushedByteSize = request.byteSize; // Start counting bytes
       // TODO: Count the size of the preamble chunks too.
@@ -6970,8 +6959,8 @@ export function startFlowing(request, destination) {
   try {
     flushCompletedQueues(request, destination);
   } catch (thrown) {
-    const error = $unwound(thrown);
     const errorInfo = newThrownInfo();
+    const error = $unwound(thrown);
     logRecoverableError(request, thrownValueOf(error), errorInfo);
     fatalError(request, thrownValueOf(error), errorInfo);
   }
@@ -7011,8 +7000,8 @@ function finishAbort(request, abortableTasks) {
       flushCompletedQueues(request, destination);
     }
   } catch (thrown) {
-    const error = $unwound(thrown);
     const errorInfo = newThrownInfo();
+    const error = $unwound(thrown);
     logRecoverableError(request, thrownValueOf(error), errorInfo);
     fatalError(request, thrownValueOf(error), errorInfo);
   }
@@ -7177,7 +7166,8 @@ export function getPostponedState(request) {
     (completedRootSegment.status !== POSTPONED &&
       // the Preamble was available
       request.completedPreambleSegments != null);
-  let tmp;
+  let replaySlots;
+  let nextSegmentId;
   if (!hasFlushableShell) {
     // We need to ensure that on resume we retry the root. We use a number
     // type for the replaySlots to signify this (see resumeRequest).
@@ -7185,13 +7175,13 @@ export function getPostponedState(request) {
     // for resuming at the root.
     // We either postponed the root or we did not have a preamble to flush
     resetResumableState(request.resumableState, request.renderState);
-    tmp = [-1, 0];
+    replaySlots = -1;
+    nextSegmentId = 0;
   } else {
     completeResumableState(request.resumableState);
-    tmp = [trackedPostpones.rootSlots, request.nextSegmentId];
+    replaySlots = trackedPostpones.rootSlots;
+    nextSegmentId = request.nextSegmentId;
   }
-  const replaySlots = tmp[0];
-  const nextSegmentId = tmp[1];
   const postponedState = {
     nextSegmentId,
     rootFormatContext: request.rootFormatContext,
