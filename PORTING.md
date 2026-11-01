@@ -516,6 +516,16 @@ These differences from upstream's output are accepted:
   only instances, never `null` or a falsy value, so no test tells them
   apart.
 
+- **ReactART's fill classes take `(...args)`** (the user, 2026-11-01;
+  8839806): LinearGradient, RadialGradient and Pattern are written with a
+  rest parameter, so their `.length` is 0 where upstream's is its
+  parameters' count. Nothing reads it.
+- **ReactART's JS is `ReactART.jsx`** (the user, 2026-11-01; 8839806):
+  rust-js names a module with JSX `.jsx`, so upstream's ReactART.js is
+  removed and jest resolves the `jsx` extension
+  (scripts/jest/config.base.js's moduleFileExtensions); index.js still
+  imports `./src/ReactART`.
+
 - **react-art's `prevProps ??= {}`** (the user, 2026-11-01; rd333): an
   applyXProps function's `prev_props.unwrap_or(object::spread(None))`
   prints `prevProps ??= {};` as its first statement, where upstream

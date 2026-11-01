@@ -607,7 +607,7 @@ pub fn use_reducer(
     }
 }
 
-fn use_memo(next_create: &'static MemoCreate, deps: Option<Deps>) -> Option<&'static Unknown> {
+fn use_memo(next_create: &MemoCreate, deps: Option<Deps>) -> Option<&'static Unknown> {
     CURRENTLY_RENDERING_COMPONENT.set(Some(resolve_currently_rendering_component()));
     let work_in_progress_hook = create_work_in_progress_hook();
 
@@ -934,7 +934,7 @@ fn use_action_state(
                         }
                         metadata
                             .action
-                            .set(Some(js::concat_text(permalink.as_str()).leak()));
+                            .replace(Some(js::concat_text(permalink.as_str())));
                     }
 
                     if let Some(form_data) = metadata.data {

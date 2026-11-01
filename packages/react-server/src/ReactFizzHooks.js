@@ -700,6 +700,7 @@ function useActionState(action, initialState, permalink) {
           if (__DEV__) {
             checkAttributeStringCoercion(permalink, 'target');
           }
+          const old = metadata.action;
           metadata.action = '' + permalink;
         }
 

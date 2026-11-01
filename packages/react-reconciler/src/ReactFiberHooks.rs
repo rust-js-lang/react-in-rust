@@ -3367,7 +3367,7 @@ fn update_callback(
 /// What `useMemo` calls for its value.
 pub type MemoCreate = dyn Fn() -> Option<&'static Unknown>;
 
-fn mount_memo(next_create: &'static MemoCreate, deps: Option<Deps>) -> Option<&'static Unknown> {
+fn mount_memo(next_create: &MemoCreate, deps: Option<Deps>) -> Option<&'static Unknown> {
     let hook = mount_work_in_progress_hook();
     let next_deps = match deps {
         None => js::null(),
@@ -3384,7 +3384,7 @@ fn mount_memo(next_create: &'static MemoCreate, deps: Option<Deps>) -> Option<&'
     next_value
 }
 
-fn update_memo(next_create: &'static MemoCreate, deps: Option<Deps>) -> Option<&'static Unknown> {
+fn update_memo(next_create: &MemoCreate, deps: Option<Deps>) -> Option<&'static Unknown> {
     let hook = update_work_in_progress_hook();
     let next_deps = match deps {
         None => js::null(),

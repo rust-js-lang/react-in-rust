@@ -1769,7 +1769,9 @@ fn push_form_action_attribute(
             // This action has a custom progressive enhancement form that can submit the form
             // back to the server if it's invoked before hydration. Such as a Server Action.
             name = custom_fields.name.as_deref().map(js::unknown);
-            form_action = Some(js::unknown(custom_fields.action.get().unwrap_or_default()));
+            form_action = Some(js::unknown_of(
+                custom_fields.action.borrow().clone().unwrap_or_default(),
+            ));
             form_enc_type = custom_fields.enc_type.as_deref().map(js::unknown);
             form_method = custom_fields.method.as_deref().map(js::unknown);
             form_target = custom_fields.target.as_deref().map(js::unknown);
@@ -2585,7 +2587,9 @@ fn push_start_form(
         if let Some(custom_fields) = get_custom_form_fields(resumable_state, action) {
             // This action has a custom progressive enhancement form that can submit the form
             // back to the server if it's invoked before hydration. Such as a Server Action.
-            form_action = Some(js::unknown(custom_fields.action.get().unwrap_or_default()));
+            form_action = Some(js::unknown_of(
+                custom_fields.action.borrow().clone().unwrap_or_default(),
+            ));
             form_enc_type = custom_fields.enc_type.as_deref().map(js::unknown);
             form_method = custom_fields.method.as_deref().map(js::unknown);
             form_target = custom_fields.target.as_deref().map(js::unknown);

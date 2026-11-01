@@ -264,7 +264,7 @@ impl<T> Usable<T> for &ReactRecoverable {}
 
 pub struct ReactCustomFormAction {
     pub name: Option<String>,
-    pub action: Cell<Option<&'static str>>,
+    pub action: RefCell<Option<String>>,
     pub enc_type: Option<String>,
     pub method: Option<String>,
     pub target: Option<String>,

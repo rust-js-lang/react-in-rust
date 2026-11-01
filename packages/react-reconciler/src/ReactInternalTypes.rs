@@ -517,7 +517,7 @@ pub struct Dispatcher {
     pub use_insertion_effect: fn(Rc<Create>, Option<Deps>),
     pub use_layout_effect: fn(Rc<Create>, Option<Deps>),
     pub use_callback: fn(Option<&'static Unknown>, Option<Deps>) -> Option<&'static Unknown>,
-    pub use_memo: fn(&'static MemoCreate, Option<Deps>) -> Option<&'static Unknown>,
+    pub use_memo: fn(&MemoCreate, Option<Deps>) -> Option<&'static Unknown>,
     // The ref: an object whose `current` is set, a function called with the
     // handle, or nothing; and what creates the handle.
     pub use_imperative_handle: fn(Option<&'static Unknown>, Option<&'static Unknown>, Option<Deps>),
