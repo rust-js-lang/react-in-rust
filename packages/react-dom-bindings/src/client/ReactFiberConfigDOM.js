@@ -2972,22 +2972,23 @@ FragmentInstance.prototype.blur = function () {
   const fragmentFiber = this._fragmentFiber;
   const parentHostFiber =
     getFragmentParentInstanceOrContainerFiber(fragmentFiber);
-  if (parentHostFiber != null) {
-    const parentInstanceOrContainer = getInstanceFromHostFiber(parentHostFiber);
-    // Instance is included in the Container type for DOM.
-    const ownerDocument = getOwnerDocumentFromRootContainer(
-      parentInstanceOrContainer,
-    );
-    const activeElement = ownerDocument.activeElement;
-    if (activeElement === null) {
-      return;
-    }
-    traverseFragmentInstancesAndTextInstances(
-      fragmentFiber,
-      blurActiveElementWithinFragment,
-      activeElement,
-    );
+  if (parentHostFiber == null) {
+    return;
   }
+  const parentInstanceOrContainer = getInstanceFromHostFiber(parentHostFiber);
+  // Instance is included in the Container type for DOM.
+  const ownerDocument = getOwnerDocumentFromRootContainer(
+    parentInstanceOrContainer,
+  );
+  const activeElement = ownerDocument.activeElement;
+  if (activeElement === null) {
+    return;
+  }
+  traverseFragmentInstancesAndTextInstances(
+    fragmentFiber,
+    blurActiveElementWithinFragment,
+    activeElement,
+  );
 };
 
 FragmentInstance.prototype.observeUsing = function (observer) {
@@ -3209,43 +3210,42 @@ FragmentInstance.prototype.scrollIntoView = function (alignToTop) {
         getFragmentParentInstanceOrContainerFiber(fragmentFiber))
       : (hostSiblings[0] ?? hostSiblings[1]);
 
-    if (targetFiber != null) {
-      // For text node siblings, use Range API to scroll to their position
-      if (targetFiber.tag === HostText) {
-        const textNode = getInstanceFromHostFiber(targetFiber);
-        scrollTextNodeIntoView(textNode, resolvedAlignToTop);
-        return;
-      }
-      const target = getInstanceFromHostFiber(targetFiber);
-      // If the parent host fiber is a HostRoot, the target is a Container
-      // which is not necessarily an Element with a scrollIntoView method.
-      if (target.nodeType === DOCUMENT_NODE) {
-        // A Document is always in view.
-      } else if (target.nodeType === DOCUMENT_FRAGMENT_NODE) {
-        const fragment = target;
-        // ShadowRoot always has a host: https://dom.spec.whatwg.org/#ref-for-concept-documentfragment-host%E2%91%A5
-        // A generic DocumentFragment doesn't implement this property but conceptually
-        // host is a nullable Element: https://dom.spec.whatwg.org/#concept-documentfragment-host
-        const host = 'host' in fragment ? fragment.host : undefined;
-        if (host !== undefined) {
-          // The ShadowRoot's host element marks the position where the
-          // fragment's content would appear.
-          host.scrollIntoView(align);
-        } else if (__DEV__) {
-          console.warn(
-            'You are attempting to scroll a FragmentInstance that is only ' +
-              'mounted inside a detached DocumentFragment. No scroll was ' +
-              'performed.',
-          );
-        }
-        return;
-      } else {
-        // Narrowed down to Element by nodeType check above, but Flow doesn't know that.
-        const element = target;
-        element.scrollIntoView(align);
-      }
-    } else {
+    if (targetFiber == null) {
       return;
+    }
+    // For text node siblings, use Range API to scroll to their position
+    if (targetFiber.tag === HostText) {
+      const textNode = getInstanceFromHostFiber(targetFiber);
+      scrollTextNodeIntoView(textNode, resolvedAlignToTop);
+      return;
+    }
+    const target = getInstanceFromHostFiber(targetFiber);
+    // If the parent host fiber is a HostRoot, the target is a Container
+    // which is not necessarily an Element with a scrollIntoView method.
+    if (target.nodeType === DOCUMENT_NODE) {
+      // A Document is always in view.
+    } else if (target.nodeType === DOCUMENT_FRAGMENT_NODE) {
+      const fragment = target;
+      // ShadowRoot always has a host: https://dom.spec.whatwg.org/#ref-for-concept-documentfragment-host%E2%91%A5
+      // A generic DocumentFragment doesn't implement this property but conceptually
+      // host is a nullable Element: https://dom.spec.whatwg.org/#concept-documentfragment-host
+      if ('host' in fragment) {
+        const host = fragment.host;
+        // The ShadowRoot's host element marks the position where the
+        // fragment's content would appear.
+        host.scrollIntoView(align);
+      } else if (__DEV__) {
+        console.warn(
+          'You are attempting to scroll a FragmentInstance that is only ' +
+            'mounted inside a detached DocumentFragment. No scroll was ' +
+            'performed.',
+        );
+      }
+      return;
+    } else {
+      // Narrowed down to Element by nodeType check above, but Flow doesn't know that.
+      const element = target;
+      element.scrollIntoView(align);
     }
   }
 
@@ -4759,21 +4759,19 @@ function requestFormReset(form) {
 // because we may be rendering inside an iframe.
 const globalDocument = typeof document !== 'undefined' ? document : null;
 
-ReactDOMSharedInternals.d =
-  /* ReactDOMCurrentDispatcher */
-  {
-    f: /* flushSyncWork */ disableLegacyMode
-      ? flushSyncWork
-      : previousDispatcher.f,
-    r: requestFormReset,
-    D: prefetchDNS,
-    C: preconnect,
-    L: preload,
-    m: preloadModule,
-    X: preinitScript,
-    S: preinitStyle,
-    M: preinitModuleScript,
-  };
+ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */ = {
+  f: /* flushSyncWork */ disableLegacyMode
+    ? flushSyncWork
+    : previousDispatcher.f,
+  r: requestFormReset,
+  D: prefetchDNS,
+  C: preconnect,
+  L: preload,
+  m: preloadModule,
+  X: preinitScript,
+  S: preinitStyle,
+  M: preinitModuleScript,
+};
 
 function getGlobalDocument() {
   return globalDocument;

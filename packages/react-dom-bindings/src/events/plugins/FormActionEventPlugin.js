@@ -46,107 +46,106 @@ export function extractEvents(
   if (domEventName !== 'submit') {
     return;
   }
-  // If we're inside a parent root that itself is a parent of this root, then
-  // its deepest target won't be the actual form that's being submitted.
   if (
-    maybeTargetInst != null &&
-    maybeTargetInst.stateNode === nativeEventTarget
+    maybeTargetInst == null ||
+    maybeTargetInst.stateNode !== nativeEventTarget
   ) {
-    const formInst = maybeTargetInst;
-    const form = nativeEventTarget;
-    let action = coerceFormActionProp(
-      getFiberCurrentPropsFromNode(form).action,
-    );
-    let submitter = nativeEvent.submitter;
-    if (submitter != null) {
-      const submitterProps = getFiberCurrentPropsFromNode(submitter);
-      const submitterAction =
-        submitterProps != null
-          ? coerceFormActionProp(submitterProps.formAction)
-          : // The built-in Flow type is ?string, wider than the spec
-            submitter.getAttribute('formAction');
-      if (submitterAction != null) {
-        // The submitter overrides the form action.
-        action = submitterAction;
-        // If the action is a function, we don't want to pass its name
-        // value to the FormData since it's controlled by the server.
-        submitter = undefined;
-      }
+    // If we're inside a parent root that itself is a parent of this root, then
+    // its deepest target won't be the actual form that's being submitted.
+    return;
+  }
+  const formInst = maybeTargetInst;
+  const form = nativeEventTarget;
+  let action = coerceFormActionProp(getFiberCurrentPropsFromNode(form).action);
+  let submitter = nativeEvent.submitter;
+  if (submitter != null) {
+    const submitterProps = getFiberCurrentPropsFromNode(submitter);
+    const submitterAction =
+      submitterProps != null
+        ? coerceFormActionProp(submitterProps.formAction)
+        : // The built-in Flow type is ?string, wider than the spec
+          submitter.getAttribute('formAction');
+    if (submitterAction != null) {
+      // The submitter overrides the form action.
+      action = submitterAction;
+      // If the action is a function, we don't want to pass its name
+      // value to the FormData since it's controlled by the server.
+      submitter = undefined;
     }
+  }
 
-    const event = new SyntheticEvent(
-      'action',
-      'action',
-      null,
-      nativeEvent,
-      nativeEventTarget,
-    );
+  const event = new SyntheticEvent(
+    'action',
+    'action',
+    null,
+    nativeEvent,
+    nativeEventTarget,
+  );
 
-    function submitForm() {
-      if (nativeEvent.defaultPrevented) {
-        // An earlier event prevented form submission. If a transition update was
-        // also scheduled, we should trigger a pending form status — even if
-        // no action function was provided.
-        if (didCurrentEventScheduleTransition()) {
-          // We're going to set the pending form status, but because the submission
-          // was prevented, we should not fire the action function.
-          const formData = new FormData(form, submitter);
-          const pendingState = {
-            pending: true,
-            data: formData,
-            method: form.method,
-            action: action ?? null,
-          };
-          if (__DEV__) {
-            Object.freeze(pendingState);
-          }
-          startHostTransition(
-            formInst,
-            pendingState,
-            // Pass `null` as the action
-            // TODO: Consider splitting up startHostTransition into two separate
-            // functions, one that sets the form status and one that invokes
-            // the action.
-            null,
-            formData,
-          );
-        } else {
-          // No earlier event scheduled a transition. Exit without setting a
-          // pending form status.
-        }
-      } else if (typeof action === 'function') {
-        // A form action was provided. Prevent native navigation.
-        event.preventDefault();
-
-        // Dispatch the action and set a pending form status.
+  function submitForm() {
+    if (nativeEvent.defaultPrevented) {
+      // An earlier event prevented form submission. If a transition update was
+      // also scheduled, we should trigger a pending form status — even if
+      // no action function was provided.
+      if (didCurrentEventScheduleTransition()) {
+        // We're going to set the pending form status, but because the submission
+        // was prevented, we should not fire the action function.
         const formData = new FormData(form, submitter);
         const pendingState = {
           pending: true,
           data: formData,
           method: form.method,
-          action,
+          action: action ?? null,
         };
         if (__DEV__) {
           Object.freeze(pendingState);
         }
-        startHostTransition(formInst, pendingState, action, formData);
+        startHostTransition(
+          formInst,
+          pendingState,
+          // Pass `null` as the action
+          // TODO: Consider splitting up startHostTransition into two separate
+          // functions, one that sets the form status and one that invokes
+          // the action.
+          null,
+          formData,
+        );
       } else {
-        // No earlier event prevented the default submission, and no action was
-        // provided. Exit without setting a pending form status.
+        // No earlier event scheduled a transition. Exit without setting a
+        // pending form status.
       }
-    }
+    } else if (typeof action === 'function') {
+      // A form action was provided. Prevent native navigation.
+      event.preventDefault();
 
-    dispatchQueue.push({
-      event,
-      listeners: [
-        {
-          instance: null,
-          listener: submitForm,
-          currentTarget: form,
-        },
-      ],
-    });
+      // Dispatch the action and set a pending form status.
+      const formData = new FormData(form, submitter);
+      const pendingState = {
+        pending: true,
+        data: formData,
+        method: form.method,
+        action,
+      };
+      if (__DEV__) {
+        Object.freeze(pendingState);
+      }
+      startHostTransition(formInst, pendingState, action, formData);
+    } else {
+      // No earlier event prevented the default submission, and no action was
+      // provided. Exit without setting a pending form status.
+    }
   }
+
+  dispatchQueue.push({
+    event,
+    listeners: [
+      {
+        instance: null,
+        listener: submitForm,
+        currentTarget: form,
+      },
+    ],
+  });
 }
 
 export function dispatchReplayedFormAction(formInst, form, action, formData) {

@@ -2697,7 +2697,7 @@ function renderRootConcurrent(root, lanes) {
             // The work loop is suspended. We need to either unwind the stack or
             // replay the suspended component.
             const thrownValue = workInProgressThrownValue;
-            switch (workInProgressSuspendedReason) {
+            resumeOrUnwind: switch (workInProgressSuspendedReason) {
               case SuspendedOnError:
                 // Unwind then continue with the normal work loop.
                 workInProgressSuspendedReason = NotSuspended;
@@ -2780,56 +2780,57 @@ function renderRootConcurrent(root, lanes) {
                 // ReactFiberConfig's `Resource`.
                 let resource = null;
                 const tag = unitOfWork.tag;
-                if (
-                  tag === HostHoistable ||
-                  tag === HostComponent ||
-                  tag === HostSingleton
-                ) {
-                  if (tag === HostHoistable) {
-                    resource = unitOfWork.memoizedState;
-                  }
-                  // Before unwinding the stack, check one more time if the
-                  // instance is ready. It may have loaded when React yielded to
-                  // the main thread.
+                switch (tag) {
+                  case HostHoistable:
+                  case HostComponent:
+                  case HostSingleton: {
+                    if (tag === HostHoistable) {
+                      resource = unitOfWork.memoizedState;
+                    }
+                    // Before unwinding the stack, check one more time if the
+                    // instance is ready. It may have loaded when React yielded to
+                    // the main thread.
 
-                  // Assigning this to a constant so Flow knows the binding won't
-                  // be mutated by `preloadInstance`.
-                  const hostFiber = unitOfWork;
-                  const type = hostFiber.type;
-                  const props = hostFiber.pendingProps;
-                  const isReady =
-                    resource != null
-                      ? preloadResource(resource)
-                      : preloadInstance(hostFiber.stateNode, type, props);
-                  if (isReady) {
-                    // The data resolved. Resume the work loop as if nothing
-                    // suspended. Unlike when a user component suspends, we don't
-                    // have to replay anything because the host fiber
-                    // already completed.
-                    workInProgressSuspendedReason = NotSuspended;
-                    workInProgressThrownValue = null;
-                    const sibling = hostFiber.sibling;
-                    if (sibling != null) {
-                      workInProgress = sibling;
-                    } else {
-                      const returnFiber = hostFiber.return;
-                      if (returnFiber != null) {
-                        workInProgress = returnFiber;
-                        completeUnitOfWork(returnFiber);
+                    // Assigning this to a constant so Flow knows the binding won't
+                    // be mutated by `preloadInstance`.
+                    const hostFiber = unitOfWork;
+                    const type = hostFiber.type;
+                    const props = hostFiber.pendingProps;
+                    const isReady =
+                      resource != null
+                        ? preloadResource(resource)
+                        : preloadInstance(hostFiber.stateNode, type, props);
+                    if (isReady) {
+                      // The data resolved. Resume the work loop as if nothing
+                      // suspended. Unlike when a user component suspends, we don't
+                      // have to replay anything because the host fiber
+                      // already completed.
+                      workInProgressSuspendedReason = NotSuspended;
+                      workInProgressThrownValue = null;
+                      const sibling = hostFiber.sibling;
+                      if (sibling != null) {
+                        workInProgress = sibling;
                       } else {
-                        workInProgress = null;
+                        const returnFiber = hostFiber.return;
+                        if (returnFiber != null) {
+                          workInProgress = returnFiber;
+                          completeUnitOfWork(returnFiber);
+                        } else {
+                          workInProgress = null;
+                        }
                       }
+                      break resumeOrUnwind;
                     }
                     break;
                   }
-                } else {
-                  // This will fail gracefully but it's not correct, so log a
-                  // warning in dev.
-                  if (__DEV__) {
-                    console.error(
-                      'Unexpected type of fiber triggered a suspensey commit. This is a bug in React.',
-                    );
-                  }
+                  default:
+                    // This will fail gracefully but it's not correct, so log a
+                    // warning in dev.
+                    if (__DEV__) {
+                      console.error(
+                        'Unexpected type of fiber triggered a suspensey commit. This is a bug in React.',
+                      );
+                    }
                 }
                 // Otherwise, unwind then continue with the normal work loop.
                 workInProgressSuspendedReason = NotSuspended;

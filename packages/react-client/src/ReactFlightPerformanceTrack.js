@@ -327,7 +327,7 @@ function getIOShortName(ioInfo, description, env, rootEnv) {
       if (queryIdx === -1) {
         queryIdx = description.length;
       }
-      if (description.charCodeAt(queryIdx - 1) === 47) {
+      if (description.charCodeAt(queryIdx - 1) === 47 /* "/" */) {
         // Ends with slash. Look before that.
         queryIdx--;
       }

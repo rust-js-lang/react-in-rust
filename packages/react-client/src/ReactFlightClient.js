@@ -5116,19 +5116,13 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
   const buffer = streamState._buffer;
   const chunkLength = chunk.length;
   incrementChunkDebugInfo(streamState, chunkLength);
-  /* "b" */
-  /* "b" */
   while (i < chunkLength) {
     let lastIdx = -1;
-    /* ":" */
-    /* "V" */
-    /* "x" */
-    /* "," */
     switch (rowState) {
       case ROW_ID: {
         const byte = $f64ToInt($unwrap(chunk[i]), -2147483648, 2147483647);
         i++;
-        if (byte === 58) {
+        if (byte === 58 /* ":" */) {
           // Finished the rowID, next we'll parse the tag.
           rowState = ROW_TAG;
         } else {
@@ -5157,7 +5151,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
           resolvedRowTag === 103 /* "g" */ ||
           resolvedRowTag === 77 /* "M" */ ||
           resolvedRowTag === 109 /* "m" */ ||
-          resolvedRowTag === 86
+          resolvedRowTag === 86 /* "V" */
         ) {
           rowTag = resolvedRowTag;
           rowState = ROW_LENGTH;
@@ -5166,7 +5160,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
           (resolvedRowTag > 64 && resolvedRowTag < 91) /* "A"-"Z" */ ||
           resolvedRowTag === 35 /* "#" */ ||
           resolvedRowTag === 114 /* "r" */ ||
-          resolvedRowTag === 120
+          resolvedRowTag === 120 /* "x" */
         ) {
           rowTag = resolvedRowTag;
           rowState = ROW_CHUNK_BY_NEWLINE;
@@ -5181,7 +5175,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
       case ROW_LENGTH: {
         const byte = $f64ToInt($unwrap(chunk[i]), -2147483648, 2147483647);
         i++;
-        if (byte === 44) {
+        if (byte === 44 /* "," */) {
           // Finished the rowLength, next we'll buffer up to that length.
           rowState = ROW_CHUNK_BY_LENGTH;
         } else {
@@ -5209,7 +5203,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
 
       // Check if this is a Uint8Array for a byte stream. We enqueue it
       // immediately but need to determine if we can use zero-copy or must copy.
-      if (rowTag === 98) {
+      if (rowTag === 98 /* "b" */) {
         resolveBuffer(
           response,
           rowId,
@@ -5251,7 +5245,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
       // For byte streams, we can enqueue the partial row immediately without
       // copying since we're at the end of the RSC chunk and no more parsing
       // will access this buffer.
-      if (rowTag === 98) {
+      if (rowTag === 98 /* "b" */) {
         // Update how many bytes we're still waiting for. We need to do this
         // before enqueueing, as enqueue will detach the buffer and byteLength
         // will become 0.
@@ -5304,15 +5298,11 @@ export function processStringChunk(weakResponse, streamState, chunk) {
   incrementChunkDebugInfo(streamState, chunkLength);
   while (i < chunkLength) {
     let lastIdx = -1;
-    /* ":" */
-    /* "V" */
-    /* "x" */
-    /* "," */
     switch (rowState) {
       case ROW_ID: {
         const byte = $f64ToInt(chunk.charCodeAt(i), -2147483648, 2147483647);
         i++;
-        if (byte === 58) {
+        if (byte === 58 /* ":" */) {
           // Finished the rowID, next we'll parse the tag.
           rowState = ROW_TAG;
         } else {
@@ -5340,7 +5330,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
           resolvedRowTag === 103 /* "g" */ ||
           resolvedRowTag === 77 /* "M" */ ||
           resolvedRowTag === 109 /* "m" */ ||
-          resolvedRowTag === 86
+          resolvedRowTag === 86 /* "V" */
         ) {
           rowTag = resolvedRowTag;
           rowState = ROW_LENGTH;
@@ -5348,7 +5338,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
         } else if (
           (resolvedRowTag > 64 && resolvedRowTag < 91) /* "A"-"Z" */ ||
           resolvedRowTag === 114 /* "r" */ ||
-          resolvedRowTag === 120
+          resolvedRowTag === 120 /* "x" */
         ) {
           rowTag = resolvedRowTag;
           rowState = ROW_CHUNK_BY_NEWLINE;
@@ -5363,7 +5353,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
       case ROW_LENGTH: {
         const byte = $f64ToInt(chunk.charCodeAt(i), -2147483648, 2147483647);
         i++;
-        if (byte === 44) {
+        if (byte === 44 /* "," */) {
           // Finished the rowLength, next we'll buffer up to that length.
           rowState = ROW_CHUNK_BY_LENGTH;
         } else {

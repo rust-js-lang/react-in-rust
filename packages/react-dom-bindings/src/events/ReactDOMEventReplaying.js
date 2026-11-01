@@ -295,14 +295,15 @@ function attemptExplicitHydrationTarget(queuedTarget) {
           attemptHydrationAtPriority(queuedTarget.priority, () => {
             attemptHydrationAtCurrentPriority(nearestMounted);
           });
-          // We don't currently have a way to increase the priority of
-          // a root other than sync.
+
           return;
         }
       } else if (tag === HostRoot) {
         const root = nearestMounted.stateNode;
         if (isRootDehydrated(root)) {
           queuedTarget.blockedOn = getContainerFromFiber(nearestMounted);
+          // We don't currently have a way to increase the priority of
+          // a root other than sync.
           return;
         }
       }

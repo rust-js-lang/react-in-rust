@@ -24,8 +24,8 @@ function flushSyncImpl(fn) {
     }
   } finally {
     ReactSharedInternals.T = previousTransition;
-    ReactDOMSharedInternals.p =
-      /* ReactDOMCurrentUpdatePriority */ previousUpdatePriority;
+    ReactDOMSharedInternals.p /* ReactDOMCurrentUpdatePriority */ =
+      previousUpdatePriority;
     const wasInRender =
       ReactDOMSharedInternals.d.f(/* ReactDOMCurrentDispatcher */); /* flushSyncWork */
     if (__DEV__ && wasInRender) {
