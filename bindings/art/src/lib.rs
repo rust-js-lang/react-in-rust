@@ -5,6 +5,10 @@
 //! art has no TypeScript types: these are written from its JS. What art
 //! takes of any kind, and coerces as it draws, is `Option<&Unknown>`.
 
+// A binding's body never runs, so rustc's crate sees its parameters unread
+// (rd330, the user's one crate-level allow for a bindings crate).
+#![cfg_attr(not(rust_js), allow(unused_variables))]
+
 use std::marker::PhantomData;
 use std::ops::Deref;
 
