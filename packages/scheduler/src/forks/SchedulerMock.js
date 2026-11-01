@@ -474,15 +474,12 @@ export function unstable_flushNumberOfYields(count) {
     expectedNumberOfYields = count;
     isFlushing = true;
     try {
-      while (true) {
-        const hasMoreWork = cb(true, currentMockTime);
-        if (hasMoreWork && !didStop) {
-          continue;
-        }
-        if (!hasMoreWork) {
-          scheduledCallback = null;
-        }
-        return;
+      let hasMoreWork;
+      do {
+        hasMoreWork = cb(true, currentMockTime);
+      } while (hasMoreWork && !didStop);
+      if (!hasMoreWork) {
+        scheduledCallback = null;
       }
     } finally {
       expectedNumberOfYields = -1;
@@ -502,15 +499,12 @@ export function unstable_flushUntilNextPaint() {
     needsPaint = false;
     isFlushing = true;
     try {
-      while (true) {
-        const hasMoreWork = cb(true, currentMockTime);
-        if (hasMoreWork && !didStop) {
-          continue;
-        }
-        if (!hasMoreWork) {
-          scheduledCallback = null;
-        }
-        break;
+      let hasMoreWork;
+      do {
+        hasMoreWork = cb(true, currentMockTime);
+      } while (hasMoreWork && !didStop);
+      if (!hasMoreWork) {
+        scheduledCallback = null;
       }
     } finally {
       shouldYieldForPaint = false;
@@ -551,18 +545,17 @@ export function unstable_flushAllWithoutAsserting() {
   if (cb != null) {
     isFlushing = true;
     try {
-      while (true) {
-        const hasMoreWork = cb(true, currentMockTime);
-        if (!hasMoreWork) {
-          if (!hasMoreWork) {
-            scheduledCallback = null;
-          }
-          return true;
-        }
+      let hasMoreWork;
+      do {
+        hasMoreWork = cb(true, currentMockTime);
+      } while (hasMoreWork);
+      if (!hasMoreWork) {
+        scheduledCallback = null;
       }
     } finally {
       isFlushing = false;
     }
+    return true;
   } else {
     return false;
   }

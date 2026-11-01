@@ -4717,7 +4717,8 @@ function getDocumentFromRoot(root) {
   return root.ownerDocument ?? root;
 }
 
-const previousDispatcher = ReactDOMSharedInternals.d;
+const previousDispatcher =
+  ReactDOMSharedInternals.d; /* ReactDOMCurrentDispatcher */
 
 function flushSyncWork() {
   if (disableLegacyMode) {
@@ -4758,19 +4759,21 @@ function requestFormReset(form) {
 // because we may be rendering inside an iframe.
 const globalDocument = typeof document !== 'undefined' ? document : null;
 
-ReactDOMSharedInternals.d = {
-  f: /* flushSyncWork */ disableLegacyMode
-    ? flushSyncWork
-    : previousDispatcher.f,
-  r: requestFormReset,
-  D: prefetchDNS,
-  C: preconnect,
-  L: preload,
-  m: preloadModule,
-  X: preinitScript,
-  S: preinitStyle,
-  M: preinitModuleScript,
-};
+ReactDOMSharedInternals.d =
+  /* ReactDOMCurrentDispatcher */
+  {
+    f: /* flushSyncWork */ disableLegacyMode
+      ? flushSyncWork
+      : previousDispatcher.f,
+    r: requestFormReset,
+    D: prefetchDNS,
+    C: preconnect,
+    L: preload,
+    m: preloadModule,
+    X: preinitScript,
+    S: preinitStyle,
+    M: preinitModuleScript,
+  };
 
 function getGlobalDocument() {
   return globalDocument;

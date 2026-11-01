@@ -338,7 +338,8 @@ export function getFindAllNodesFailureDescription(hostRoot, selectors) {
 
   if (maxSelectorIndex < selectors.length) {
     const unmatchedNames = [];
-    for (const selector of selectors.slice(maxSelectorIndex)) {
+    for (let i = maxSelectorIndex; i < selectors.length; i++) {
+      const selector = selectors[i];
       unmatchedNames.push(selectorToString(selector));
     }
 

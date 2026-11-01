@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$iter, $splice} from '@rust-js/runtime';
+import {$splice} from '@rust-js/runtime';
 
 // Keep in sync with ReactServerConsoleConfig
 // This flips color using ANSI, then sets a color styling, then resets.
@@ -41,24 +41,20 @@ export function bindToConsole(methodName, args, badgeName) {
   const newArgs = args.slice();
   const format = newArgs[offset];
   if (typeof format === 'string') {
-    $iter(
-      $splice(newArgs, offset, offset + 1, [
-        badgeFormat + ' ' + format,
-        badgeStyle,
-        pad + badgeName + pad,
-        resetStyle,
-      ]),
-    );
+    $splice(newArgs, offset, offset + 1, [
+      badgeFormat + ' ' + format,
+      badgeStyle,
+      pad + badgeName + pad,
+      resetStyle,
+    ]);
   } else {
     const at = Math.min(offset, newArgs.length);
-    $iter(
-      $splice(newArgs, at, at, [
-        badgeFormat,
-        badgeStyle,
-        pad + badgeName + pad,
-        resetStyle,
-      ]),
-    );
+    $splice(newArgs, at, at, [
+      badgeFormat,
+      badgeStyle,
+      pad + badgeName + pad,
+      resetStyle,
+    ]);
   }
 
   return method.bind(console, ...newArgs);

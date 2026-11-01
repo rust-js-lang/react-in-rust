@@ -550,7 +550,6 @@ export function retryIfBlockedOn(unblocked) {
   queuedPointers.forEach(unblock);
   queuedPointerCaptures.forEach(unblock);
 
-  let i;
   for (let i = 0; i < queuedExplicitHydrationTargets.length; i++) {
     const queuedTarget = queuedExplicitHydrationTargets[i];
     if (queuedTarget.blockedOn === unblocked) {
@@ -577,7 +576,7 @@ export function retryIfBlockedOn(unblocked) {
   const root = ownerDocument || unblocked;
   const formReplayingQueue = root.$$reactFormReplay;
   if (formReplayingQueue != null) {
-    i = 0;
+    let i = 0;
     while (i < formReplayingQueue.length) {
       const form = formReplayingQueue[i];
       const submitterOrAction = formReplayingQueue[i + 1];

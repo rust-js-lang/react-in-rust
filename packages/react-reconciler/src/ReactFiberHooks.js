@@ -670,7 +670,8 @@ function renderWithHooksAgain(workInProgress, component, props, secondArg) {
   currentlyRenderingFiber = workInProgress;
 
   let numberOfReRenders = 0;
-  while (true) {
+  let children;
+  do {
     if (didScheduleRenderPhaseUpdateDuringThisPass) {
       // It's possible that a use() value depended on a state that was updated in
       // this rerender, so we need to watch for different thenables this time.
@@ -712,13 +713,11 @@ function renderWithHooksAgain(workInProgress, component, props, secondArg) {
     } else {
       ReactSharedInternals.H = HooksDispatcherOnRerender;
     }
-    const children = __DEV__
+    children = __DEV__
       ? $unwrap(callComponentInDEV)(component, props, secondArg)
       : component(props, secondArg);
-    if (!didScheduleRenderPhaseUpdateDuringThisPass) {
-      return children;
-    }
-  }
+  } while (didScheduleRenderPhaseUpdateDuringThisPass);
+  return children;
 }
 
 // ReactFiberConfig's `TransitionStatus`.

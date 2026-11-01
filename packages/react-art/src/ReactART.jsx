@@ -32,8 +32,10 @@ function defaultOnDefaultTransitionIndicator() {
   // Noop
 }
 
-// Change to 'art/modes/dom' for easier debugging via SVG
-Mode.setCurrent(FAST_NO_SIDE_EFFECTS);
+Mode.setCurrent(
+  // Change to 'art/modes/dom' for easier debugging via SVG
+  FAST_NO_SIDE_EFFECTS
+);
 
 /* Declarative fill-type objects; API design not finalized */
 

@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$iter, $splice} from '@rust-js/runtime';
+import {$splice} from '@rust-js/runtime';
 
 // Keep in sync with ReactServerConsoleConfig
 const badgeFormat = '[%s]';
@@ -32,15 +32,13 @@ export function bindToConsole(methodName, args, badgeName) {
   const newArgs = args.slice();
   const format = newArgs[offset];
   if (typeof format === 'string') {
-    $iter(
-      $splice(newArgs, offset, offset + 1, [
-        badgeFormat + ' ' + format,
-        pad + badgeName + pad,
-      ]),
-    );
+    $splice(newArgs, offset, offset + 1, [
+      badgeFormat + ' ' + format,
+      pad + badgeName + pad,
+    ]);
   } else {
     const at = Math.min(offset, newArgs.length);
-    $iter($splice(newArgs, at, at, [badgeFormat, pad + badgeName + pad]));
+    $splice(newArgs, at, at, [badgeFormat, pad + badgeName + pad]);
   }
 
   return method.bind(console, ...newArgs);

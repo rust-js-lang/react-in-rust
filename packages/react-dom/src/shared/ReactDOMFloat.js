@@ -245,17 +245,12 @@ export function preinit(href, options) {
         /* preinitStyle */
         const d = ReactDOMSharedInternals.d;
         const precedence = options.precedence;
-        d.S(
-          href,
-          typeof precedence === 'string' /* ReactDOMCurrentDispatcher */
-            ? precedence
-            : undefined,
-          {
-            crossOrigin,
-            integrity,
-            fetchPriority,
-          },
-        );
+        d.S(href, typeof precedence === 'string' ? precedence : undefined, {
+          /* ReactDOMCurrentDispatcher */
+          crossOrigin,
+          integrity,
+          fetchPriority,
+        });
       } else if (as === 'script') {
         const value = ReactDOMSharedInternals.d;
         const nonce = options.nonce;

@@ -17,13 +17,15 @@ function flushSyncImpl(fn) {
 
   try {
     ReactSharedInternals.T = null;
-    ReactDOMSharedInternals.p = DiscreteEventPriority;
+    ReactDOMSharedInternals.p =
+      /* ReactDOMCurrentUpdatePriority */ DiscreteEventPriority;
     if (fn != null) {
       return fn();
     }
   } finally {
     ReactSharedInternals.T = previousTransition;
-    ReactDOMSharedInternals.p = previousUpdatePriority;
+    ReactDOMSharedInternals.p =
+      /* ReactDOMCurrentUpdatePriority */ previousUpdatePriority;
     const wasInRender =
       ReactDOMSharedInternals.d.f(/* ReactDOMCurrentDispatcher */); /* flushSyncWork */
     if (__DEV__ && wasInRender) {
