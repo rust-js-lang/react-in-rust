@@ -33,7 +33,7 @@ pub struct AsyncSequence {
     pub owner: Option<&'static ReactComponentInfo>,
     // callsite that spawned the I/O, created the Promise, or awaited
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub stack: Option<ReactStackTrace>,
+    pub stack: Option<Rc<ReactStackTrace>>,
     // start time when the first part of the I/O sequence started, or when we started blocking
     pub start: Cell<f64>,
     // end time when the Promise was resolved, or when we unblocked; -1.1 until it's resolved

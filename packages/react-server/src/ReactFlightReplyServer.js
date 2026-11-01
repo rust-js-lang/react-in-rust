@@ -33,7 +33,7 @@ const __PROTO__ = '__proto__';
 
 const RESPONSE_SYMBOL = Symbol();
 
-function ReactPromise(status, value, reason) {
+export function ReactPromise(status, value, reason) {
   this.status = status;
   this.value = value;
   this.reason = reason;

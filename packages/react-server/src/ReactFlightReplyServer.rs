@@ -47,7 +47,10 @@ unsafe impl js::Defined for ServerReference {}
     rust_js,
     rust_js::link_name = "react-client/src/ReactFlightClientConfig#resolveServerReference"
 )]
-fn resolve_server_reference(bundler_config: &ServerManifest, id: &str) -> &'static ServerReference {
+pub(crate) fn resolve_server_reference(
+    bundler_config: &ServerManifest,
+    id: &str,
+) -> &'static ServerReference {
     let _ = (bundler_config, id);
     unreachable!()
 }
@@ -57,7 +60,7 @@ fn resolve_server_reference(bundler_config: &ServerManifest, id: &str) -> &'stat
     rust_js::link_name = "react-client/src/ReactFlightClientConfig#preloadModule"
 )]
 #[cfg_attr(rust_js, rust_js::nullable)]
-fn preload_module(metadata: &ServerReference) -> Option<&'static Thenable> {
+pub(crate) fn preload_module(metadata: &ServerReference) -> Option<&'static Thenable> {
     let _ = metadata;
     unreachable!()
 }
@@ -66,7 +69,7 @@ fn preload_module(metadata: &ServerReference) -> Option<&'static Thenable> {
     rust_js,
     rust_js::link_name = "react-client/src/ReactFlightClientConfig#requireModule"
 )]
-fn require_module(metadata: &ServerReference) -> Option<&'static Unknown> {
+pub(crate) fn require_module(metadata: &ServerReference) -> Option<&'static Unknown> {
     let _ = metadata;
     unreachable!()
 }

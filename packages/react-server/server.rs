@@ -25,6 +25,8 @@ pub mod react_fizz_thenable;
 pub mod react_fizz_tree_context;
 #[path = "src/ReactFizzViewTransitionComponent.rs"]
 pub mod react_fizz_view_transition_component;
+#[path = "src/ReactFlightActionServer.rs"]
+pub mod react_flight_action_server;
 #[path = "src/flight/ReactFlightAsyncDispatcher.rs"]
 pub mod react_flight_async_dispatcher;
 #[path = "src/ReactFlightAsyncSequence.rs"]
@@ -37,6 +39,8 @@ pub mod react_flight_current_owner;
 pub mod react_flight_hooks;
 #[path = "src/ReactFlightReplyServer.rs"]
 pub mod react_flight_reply_server;
+#[path = "src/ReactFlightServerConfigDebugNode.rs"]
+pub mod react_flight_server_config_debug_node;
 #[path = "src/ReactFlightServerConfigDebugNoop.rs"]
 pub mod react_flight_server_config_debug_noop;
 #[path = "src/ReactFlightServerTemporaryReferences.rs"]
