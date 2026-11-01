@@ -5,6 +5,8 @@
 pub mod create_fast_hash_js;
 #[path = "src/ReactFizzCallUserSpace.rs"]
 pub mod react_fizz_call_user_space;
+#[path = "src/ReactFizzLegacyContext.rs"]
+pub mod react_fizz_legacy_context;
 #[path = "src/ReactFizzTreeContext.rs"]
 pub mod react_fizz_tree_context;
 #[path = "src/ReactFizzViewTransitionComponent.rs"]
