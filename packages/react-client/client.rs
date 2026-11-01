@@ -7,6 +7,8 @@ pub mod react_client_console_config_browser;
 pub mod react_client_console_config_plain;
 #[path = "src/ReactClientConsoleConfigServer.rs"]
 pub mod react_client_console_config_server;
+#[path = "src/ReactFlightClientDevToolsHook.rs"]
+pub mod react_flight_client_dev_tools_hook;
 #[path = "src/ReactFlightClientStreamConfigWeb.rs"]
 pub mod react_flight_client_stream_config_web;
 #[path = "src/ReactFlightTemporaryReferences.rs"]
