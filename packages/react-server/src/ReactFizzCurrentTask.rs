@@ -11,6 +11,7 @@ use shared::environment::__DEV__;
 use webapi::ConsoleTask;
 
 use crate::react_fizz_component_stack::ComponentStackNode;
+use crate::react_fizz_tree_context::TreeContext;
 
 /// A task of ReactFizzServer's, its JS's until it's ported: what's read of
 /// it here.
@@ -18,7 +19,27 @@ pub struct Task(PhantomData<JsObject>);
 
 unsafe impl js::Defined for Task {}
 
+/// ReactFizzServer's request, its JS's until it's ported.
+pub struct Request(PhantomData<JsObject>);
+
+unsafe impl js::Defined for Request {}
+
+/// ReactFizzServer's key path, its JS's until it's ported: `[parent, name,
+/// key]`, of strings, numbers and `null`, nested.
+pub struct KeyNode(PhantomData<JsObject>);
+
+unsafe impl js::Defined for KeyNode {}
+
+// Safety: an array of strings, numbers, `null` and such arrays.
+unsafe impl js::JsonText for KeyNode {}
+
 impl Task {
+    // the current tree context that this task is executing in
+    #[cfg_attr(rust_js, rust_js::link_name = "get treeContext")]
+    pub fn tree_context(&self) -> &'static TreeContext {
+        unreachable!()
+    }
+
     #[cfg_attr(rust_js, rust_js::link_name = "get componentStack")]
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub fn component_stack(&self) -> Option<&'static ComponentStackNode> {

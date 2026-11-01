@@ -13,6 +13,8 @@ pub mod react_fizz_class_component;
 pub mod react_fizz_component_stack;
 #[path = "src/ReactFizzCurrentTask.rs"]
 pub mod react_fizz_current_task;
+#[path = "src/ReactFizzHooks.rs"]
+pub mod react_fizz_hooks;
 #[path = "src/ReactFizzLegacyContext.rs"]
 pub mod react_fizz_legacy_context;
 #[path = "src/ReactFizzNewContext.rs"]

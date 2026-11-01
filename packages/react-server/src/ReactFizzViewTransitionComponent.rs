@@ -14,7 +14,7 @@ use crate::react_fizz_tree_context::{TreeContext, get_tree_id};
 pub struct ResumableState(PhantomData<JsObject>);
 
 #[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFizzConfig.js#makeId")]
-fn make_id(resumable_state: &ResumableState, tree_id: &str, local_id: f64) -> String {
+pub(crate) fn make_id(resumable_state: &ResumableState, tree_id: &str, local_id: f64) -> String {
     let _ = (resumable_state, tree_id, local_id);
     unreachable!()
 }
