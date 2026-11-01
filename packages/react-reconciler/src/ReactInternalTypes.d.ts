@@ -397,14 +397,7 @@ export interface Dispatcher {
     value: unknown | null | undefined,
   ) => [
     unknown | null | undefined,
-    (
-      | ((
-          value: unknown | null | undefined,
-          value2: unknown | null | undefined,
-        ) => void)
-      | null
-      | undefined
-    ),
+    ((value: unknown | null | undefined) => void) | null | undefined,
   ];
   useReducer: (
     value: (
@@ -415,14 +408,7 @@ export interface Dispatcher {
     value3: unknown | null | undefined,
   ) => [
     unknown | null | undefined,
-    (
-      | ((
-          value: unknown | null | undefined,
-          value2: unknown | null | undefined,
-        ) => void)
-      | null
-      | undefined
-    ),
+    ((value: unknown | null | undefined) => void) | null | undefined,
   ];
   useContext: (
     context: ReactContext<unknown | null | undefined>,
@@ -495,14 +481,7 @@ export interface Dispatcher {
     value2: unknown | null | undefined,
   ) => [
     unknown | null | undefined,
-    (
-      | ((
-          value: unknown | null | undefined,
-          value2: unknown | null | undefined,
-        ) => void)
-      | null
-      | undefined
-    ),
+    ((value: unknown | null | undefined) => void) | null | undefined,
   ];
   useFormState: (
     value: (

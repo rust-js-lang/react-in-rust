@@ -1014,21 +1014,19 @@ function useThenable(thenable) {
 // shared/ReactTypes' `Usable<T>`.
 function use(usable) {
   // $FlowFixMe[invalid-compare]
-  if (usable != null) {
-    if (typeof usable === 'object') {
-      // $FlowFixMe[method-unbinding]
-      if (typeof usable.then === 'function') {
-        // This is a thenable.
-        const thenable = usable;
-        return useThenable(thenable);
-      } else if (usable.$$typeof === REACT_RECOVERABLE_TYPE) {
-        // Fiber is the final renderer, so there is no downstream host that
-        // needs to recover this subtree. Continue rendering through it.
-        return;
-      } else if (usable.$$typeof === REACT_CONTEXT_TYPE) {
-        const context = usable;
-        return readContext(context);
-      }
+  if (usable != null && typeof usable === 'object') {
+    // $FlowFixMe[method-unbinding]
+    if (typeof usable.then === 'function') {
+      // This is a thenable.
+      const thenable = usable;
+      return useThenable(thenable);
+    } else if (usable.$$typeof === REACT_RECOVERABLE_TYPE) {
+      // Fiber is the final renderer, so there is no downstream host that
+      // needs to recover this subtree. Continue rendering through it.
+      return;
+    } else if (usable.$$typeof === REACT_CONTEXT_TYPE) {
+      const context = usable;
+      return readContext(context);
     }
   }
 
@@ -3210,13 +3208,17 @@ function refreshCache(fiber, seedKey, seedValue) {
   }
 }
 
-function dispatchReducerAction(fiber, queue, action, callback) {
-  if (__DEV__ && typeof callback === 'function') {
-    console.error(
-      "State updates from the useState() and useReducer() Hooks don't support the " +
-        'second callback argument. To execute a side effect after ' +
-        'rendering, declare it in the component body with useEffect().',
-    );
+function dispatchReducerAction(fiber, queue, action) {
+  if (__DEV__) {
+    // using a reference to `arguments` bails out of GCC optimizations which affect function arity
+    const args = arguments;
+    if (typeof args[3] === 'function') {
+      console.error(
+        "State updates from the useState() and useReducer() Hooks don't support the " +
+          'second callback argument. To execute a side effect after ' +
+          'rendering, declare it in the component body with useEffect().',
+      );
+    }
   }
 
   const lane = requestUpdateLane(fiber);
@@ -3245,13 +3247,17 @@ function dispatchReducerAction(fiber, queue, action, callback) {
   markUpdateInDevTools(fiber, lane, action);
 }
 
-function dispatchSetState(fiber, queue, action, callback) {
-  if (__DEV__ && typeof callback === 'function') {
-    console.error(
-      "State updates from the useState() and useReducer() Hooks don't support the " +
-        'second callback argument. To execute a side effect after ' +
-        'rendering, declare it in the component body with useEffect().',
-    );
+function dispatchSetState(fiber, queue, action) {
+  if (__DEV__) {
+    // using a reference to `arguments` bails out of GCC optimizations which affect function arity
+    const args = arguments;
+    if (typeof args[3] === 'function') {
+      console.error(
+        "State updates from the useState() and useReducer() Hooks don't support the " +
+          'second callback argument. To execute a side effect after ' +
+          'rendering, declare it in the component body with useEffect().',
+      );
+    }
   }
 
   const lane = requestUpdateLane(fiber);
@@ -3336,13 +3342,7 @@ function dispatchSetStateInternal(fiber, queue, action, lane) {
   return false;
 }
 
-function dispatchOptimisticSetState(
-  fiber,
-  throwIfDuringRender,
-  queue,
-  action,
-  callback,
-) {
+function dispatchOptimisticSetState(fiber, throwIfDuringRender, queue, action) {
   const transition = requestCurrentTransition();
 
   if (__DEV__ && transition == null) {

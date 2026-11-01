@@ -41,14 +41,8 @@ export type Reducer = (
   value2: unknown | null | undefined,
 ) => unknown | null | undefined;
 
-/**
- * A hook's dispatch: what schedules an update of its action. The second
- * argument is what a caller may wrongly pass as a callback (DEV warns).
- */
-export type Dispatch = (
-  value: unknown | null | undefined,
-  value2: unknown | null | undefined,
-) => void;
+/** A hook's dispatch: what schedules an update of its action. */
+export type Dispatch = (value: unknown | null | undefined) => void;
 
 /** What `useActionState` dispatches its action with: of the payload. */
 export type ActionDispatch = (value: unknown | null | undefined) => void;
@@ -72,13 +66,7 @@ export type ActionStateAndDispatch = [
 export interface UpdateQueue {
   pending?: Update | null | undefined;
   lanes: Lanes;
-  dispatch?:
-    | ((
-        value: unknown | null | undefined,
-        value2: unknown | null | undefined,
-      ) => void)
-    | null
-    | undefined;
+  dispatch?: ((value: unknown | null | undefined) => void) | null | undefined;
   lastRenderedReducer?:
     | ((
         value: unknown | null | undefined,

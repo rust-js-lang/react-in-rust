@@ -167,9 +167,8 @@ pub type Deps = Vec<Option<&'static Unknown>>;
 pub type Reducer =
     dyn Fn(Option<&'static Unknown>, Option<&'static Unknown>) -> Option<&'static Unknown>;
 
-/// A hook's dispatch: what schedules an update of its action. The second
-/// argument is what a caller may wrongly pass as a callback (DEV warns).
-pub type Dispatch = dyn Fn(Option<&'static Unknown>, Option<&'static Unknown>);
+/// A hook's dispatch: what schedules an update of its action.
+pub type Dispatch = dyn Fn(Option<&'static Unknown>);
 
 /// What `useActionState` dispatches its action with: of the payload.
 pub type ActionDispatch = dyn Fn(Option<&'static Unknown>);
@@ -2430,14 +2429,14 @@ fn dispatch_action_state(
     if prev_transition.is_some() {
         // Optimistically update the pending state, similar to useTransition.
         // This will be reverted automatically when all actions are finished.
-        set_pending_state(Some(js::unknown(&true)), None);
+        set_pending_state(Some(js::unknown(&true)));
         // `actionNode` is a thenable that resolves to the return value of
         // the action.
-        set_state(Some(js::unknown_of(Rc::clone(&action_node))), None);
+        set_state(Some(js::unknown_of(Rc::clone(&action_node))));
     } else {
         // This is not a transition.
         action_node.is_transition.set(false);
-        set_state(Some(js::unknown_of(Rc::clone(&action_node))), None);
+        set_state(Some(js::unknown_of(Rc::clone(&action_node))));
     }
 
     let last = action_queue.pending.borrow().clone();
@@ -3662,7 +3661,7 @@ fn start_transition(
     // diverges; for example, both an optimistic update and this one should
     // share the same lane.
     set_t(REACT_SHARED_INTERNALS, Some(&current_transition));
-    dispatch_optimistic_set_state(fiber, false, queue, pending_state, None);
+    dispatch_optimistic_set_state(fiber, false, queue, pending_state);
 
     let _finish = FinishTransition {
         previous_priority,
@@ -4092,14 +4091,17 @@ fn dispatch_reducer_action(
     fiber: &Rc<Fiber>,
     queue: &Rc<UpdateQueue>,
     action: Option<&'static Unknown>,
-    callback: Option<&'static Unknown>,
 ) {
-    if __DEV__ && js::type_of(callback) == "function" {
-        console::error((concat!(
-            "State updates from the useState() and useReducer() Hooks don't support the ",
-            "second callback argument. To execute a side effect after ",
-            "rendering, declare it in the component body with useEffect()."
-        ),));
+    if __DEV__ {
+        // using a reference to `arguments` bails out of GCC optimizations which affect function arity
+        let args = js::arguments();
+        if js::type_of(js::get(args, &3.0)) == "function" {
+            console::error((concat!(
+                "State updates from the useState() and useReducer() Hooks don't support the ",
+                "second callback argument. To execute a side effect after ",
+                "rendering, declare it in the component body with useEffect()."
+            ),));
+        }
     }
 
     let lane = request_update_lane(fiber);
@@ -4132,14 +4134,17 @@ fn dispatch_set_state(
     fiber: &Rc<Fiber>,
     queue: &Rc<UpdateQueue>,
     action: Option<&'static Unknown>,
-    callback: Option<&'static Unknown>,
 ) {
-    if __DEV__ && js::type_of(callback) == "function" {
-        console::error((concat!(
-            "State updates from the useState() and useReducer() Hooks don't support the ",
-            "second callback argument. To execute a side effect after ",
-            "rendering, declare it in the component body with useEffect()."
-        ),));
+    if __DEV__ {
+        // using a reference to `arguments` bails out of GCC optimizations which affect function arity
+        let args = js::arguments();
+        if js::type_of(js::get(args, &3.0)) == "function" {
+            console::error((concat!(
+                "State updates from the useState() and useReducer() Hooks don't support the ",
+                "second callback argument. To execute a side effect after ",
+                "rendering, declare it in the component body with useEffect()."
+            ),));
+        }
     }
 
     let lane = request_update_lane(fiber);
@@ -4239,7 +4244,6 @@ fn dispatch_optimistic_set_state(
     throw_if_during_render: bool,
     queue: &Rc<UpdateQueue>,
     action: Option<&'static Unknown>,
-    _callback: Option<&'static Unknown>,
 ) {
     let transition = request_current_transition();
 

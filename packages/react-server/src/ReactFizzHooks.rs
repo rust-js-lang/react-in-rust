@@ -665,7 +665,6 @@ fn dispatch_action(
     component_identity: Option<&'static Unknown>,
     queue: &Rc<UpdateQueue>,
     action: Option<&'static Unknown>,
-    _callback: Option<&'static Unknown>,
 ) {
     if NUMBER_OF_RE_RENDERS.get() >= RE_RENDER_LIMIT {
         panic!(
@@ -784,10 +783,7 @@ fn use_host_transition_status() -> Option<&'static Unknown> {
     NOT_PENDING_TRANSITION
 }
 
-fn unsupported_set_optimistic_state(
-    _action: Option<&'static Unknown>,
-    _callback: Option<&'static Unknown>,
-) {
+fn unsupported_set_optimistic_state(_action: Option<&'static Unknown>) {
     panic!("Cannot update optimistic state while rendering.");
 }
 

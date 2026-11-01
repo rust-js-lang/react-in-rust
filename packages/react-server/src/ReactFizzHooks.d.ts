@@ -61,14 +61,7 @@ export function useState(
   initialState?: unknown | null | undefined,
 ): [
   unknown | null | undefined,
-  (
-    | ((
-        value: unknown | null | undefined,
-        value2: unknown | null | undefined,
-      ) => void)
-    | null
-    | undefined
-  ),
+  ((value: unknown | null | undefined) => void) | null | undefined,
 ];
 
 export function useReducer(
@@ -80,14 +73,7 @@ export function useReducer(
   init?: unknown | null | undefined,
 ): [
   unknown | null | undefined,
-  (
-    | ((
-        value: unknown | null | undefined,
-        value2: unknown | null | undefined,
-      ) => void)
-    | null
-    | undefined
-  ),
+  ((value: unknown | null | undefined) => void) | null | undefined,
 ];
 
 export function useCallback(

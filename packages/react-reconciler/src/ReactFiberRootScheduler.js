@@ -210,14 +210,13 @@ function flushSyncWorkAcrossRoots_impl(syncTransitionLanes, onlyLegacy) {
           rootHasPendingCommit,
         );
         if (
-          includesSyncLane(nextLanes) ||
-          (enableGestureTransition && isGestureRender(nextLanes))
+          (includesSyncLane(nextLanes) ||
+            (enableGestureTransition && isGestureRender(nextLanes))) &&
+          !checkIfRootIsPrerendering(root, nextLanes)
         ) {
-          if (!checkIfRootIsPrerendering(root, nextLanes)) {
-            // This root has pending sync work. Flush it now.
-            didPerformSomeWork = true;
-            performSyncWorkOnRoot(root, nextLanes);
-          }
+          // This root has pending sync work. Flush it now.
+          didPerformSomeWork = true;
+          performSyncWorkOnRoot(root, nextLanes);
         }
       }
       root = root.next;

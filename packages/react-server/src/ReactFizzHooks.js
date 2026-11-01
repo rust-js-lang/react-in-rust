@@ -514,7 +514,7 @@ function useRef(initialValue) {
   }
 }
 
-function dispatchAction(componentIdentity, queue, action, callback) {
+function dispatchAction(componentIdentity, queue, action) {
   if (numberOfReRenders >= RE_RENDER_LIMIT) {
     throw new Error(
       'Too many re-renders. React limits the number of renders to prevent ' +
@@ -600,7 +600,7 @@ function useHostTransitionStatus() {
   return NotPendingTransition;
 }
 
-function unsupportedSetOptimisticState(action, callback) {
+function unsupportedSetOptimisticState(action) {
   throw new Error('Cannot update optimistic state while rendering.');
 }
 
@@ -748,23 +748,21 @@ function useId() {
 
 function use(usable) {
   // $FlowFixMe[invalid-compare]
-  if (usable != null) {
-    if (typeof usable === 'object') {
-      // $FlowFixMe[method-unbinding]
-      if (typeof usable.then === 'function') {
-        // This is a thenable.
-        const thenable = usable;
-        return unwrapThenable(thenable);
-      } else if (usable.$$typeof === REACT_RECOVERABLE_TYPE) {
-        // Create the recoverable error here so its stack captures the component
-        // that passed this value to use(). The internal brand lets the renderer
-        // distinguish it from an Error thrown by application code.
-        const recoverable = usable;
-        throw createRecoverableError(recoverable);
-      } else if (usable.$$typeof === REACT_CONTEXT_TYPE) {
-        const context = usable;
-        return readContext(context);
-      }
+  if (usable != null && typeof usable === 'object') {
+    // $FlowFixMe[method-unbinding]
+    if (typeof usable.then === 'function') {
+      // This is a thenable.
+      const thenable = usable;
+      return unwrapThenable(thenable);
+    } else if (usable.$$typeof === REACT_RECOVERABLE_TYPE) {
+      // Create the recoverable error here so its stack captures the component
+      // that passed this value to use(). The internal brand lets the renderer
+      // distinguish it from an Error thrown by application code.
+      const recoverable = usable;
+      throw createRecoverableError(recoverable);
+    } else if (usable.$$typeof === REACT_CONTEXT_TYPE) {
+      const context = usable;
+      return readContext(context);
     }
   }
 
