@@ -120,9 +120,7 @@ export function trackUsedThenable(thenableState, thenable, index) {
       if (__DEV__ && shouldCaptureSuspendedCallSite) {
         captureSuspendedCallSite();
       }
-      return (exception => {
-        throw exception;
-      })(SuspenseException);
+      throw SuspenseException;
   }
 }
 
