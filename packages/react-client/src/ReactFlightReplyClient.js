@@ -26,12 +26,9 @@ import {
 } from './ReactFlightClientConfig.js';
 import {writeTemporaryReference} from './ReactFlightTemporaryReferences.js';
 import {
-  $borrow,
-  $borrowMut,
   $displayF64,
   $getOrInit,
   $someValue,
-  $unborrow,
   $unwound,
   $unwrap,
 } from '@rust-js/runtime';
@@ -50,6 +47,8 @@ const knownServerReferences = new WeakMap();
 // references. They have no bound arguments and are never callable, so a
 // reference of one kind must not be usable where the other is expected.
 const knownServerObjectReferences = new WeakMap();
+
+// Serializable values
 
 const __PROTO__ = '__proto__';
 
@@ -213,13 +212,7 @@ const Reply = {
     progress = entry => {
       if (entry.done) {
         const blobId = Reply.takePartId(reply);
-        const borrow = $borrow(buffer, true);
-        let parts;
-        try {
-          parts = borrow.slice();
-        } finally {
-          $unborrow(borrow);
-        }
+        const parts = buffer.slice();
         data.append(
           reply.formFieldPrefix + $displayF64(blobId),
           new Blob(parts),
@@ -231,7 +224,7 @@ const Reply = {
           Reply.resolve(reply, data);
         }
       } else {
-        $borrowMut(buffer).push($someValue(entry.value));
+        buffer.push($someValue(entry.value));
         const progress$1 = $unwrap(progress);
         reader.read(new Uint8Array(1024)).then(
           entry => {
@@ -277,12 +270,11 @@ const Reply = {
           const partJson = Reply.stringify(reply, $someValue(captured));
           data.append(streamPrefix, partJson);
           const progress$1 = $unwrap(progress);
-          const rejecting = reply;
           reader.read().then(
             entry => {
               progress$1(entry);
             },
-            error => Reply.reject(rejecting, error),
+            error => Reply.reject(reply, error),
           );
         } catch (thrown$1) {
           const x = $unwound(thrown$1);
@@ -361,12 +353,11 @@ const Reply = {
           const partJson = Reply.stringify(reply, captured);
           data.append(streamPrefix, partJson);
           const progress$1 = $unwrap(progress);
-          const rejecting = reply;
           iterator.next().then(
             entry => {
               progress$1(entry);
             },
-            error => Reply.reject(rejecting, error),
+            error => Reply.reject(reply, error),
           );
         } catch (thrown$1) {
           const x = $unwound(thrown$1);

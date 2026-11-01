@@ -54,7 +54,9 @@ unsafe extern "Rust" {
 }
 
 /// TypeScript's `Function`, what a server reference is.
-pub type ServerFunction = dyn Fn() -> Option<&'static Unknown>;
+type ServerFunction = dyn Fn() -> Option<&'static Unknown>;
+
+pub type ServerReference<T> = T;
 
 pub type CallServerCallback =
     dyn Fn(&'static Unknown, &'static Unknown) -> js::Promise<Option<&'static Unknown>>;
@@ -85,6 +87,9 @@ thread_local! {
     static KNOWN_SERVER_OBJECT_REFERENCES: &'static js::WeakMap<dyn WeakKey, ServerReferenceId> =
         js::weak_map::new();
 }
+
+// Serializable values
+pub type ReactServerValue = Unknown;
 
 const __PROTO__: &str = "__proto__";
 
@@ -1251,7 +1256,7 @@ fn thrown(payload: &(dyn std::any::Any + Send)) -> Option<&'static Unknown> {
 }
 
 pub fn process_reply(
-    root: Option<&'static Unknown>,
+    root: Option<&'static ReactServerValue>,
     form_field_prefix: &str,
     temporary_references: Option<TemporaryReferenceSet>,
     on_resolve: impl Fn(&'static Unknown) + 'static,

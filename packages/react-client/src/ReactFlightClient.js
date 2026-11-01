@@ -154,18 +154,16 @@ Object.defineProperty(ReactPromise.prototype, 'then', {
       const rejectCallback = reject;
       let wrapper;
       const wrapperPromise = new Promise((res, rej) => {
-        const chunk = this;
         resolve = value => {
           const promise = $unwrap(wrapper);
-          const borrow = $borrow($fieldCell(chunk, '_debugInfo'), true);
+          const borrow = $borrow($fieldCell(this, '_debugInfo'), true);
           promise._debugInfo = borrow.value;
           $unborrow(borrow);
           res(value);
         };
-        const chunk$1 = this;
         reject = reason => {
           const promise = $unwrap(wrapper);
-          const borrow = $borrow($fieldCell(chunk$1, '_debugInfo'), true);
+          const borrow = $borrow($fieldCell(this, '_debugInfo'), true);
           promise._debugInfo = borrow.value;
           $unborrow(borrow);
           rej(reason);
@@ -5066,7 +5064,7 @@ function processFullStringRow(response, streamState, id, tag, row) {
       stopStream(response, id, row);
       break;
     // Fallthrough
-    default:
+    default: /* """ "{" "[" "t" "f" "n" "0" - "9" */
       if (__DEV__ && !row) {
         resolveDebugHalt(response, id);
         return;
@@ -5189,7 +5187,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
         );
       } else {
         // Process all other row types.
-        const parts = $borrow(buffer).slice();
+        const parts = buffer.slice();
         processFullBinaryRow(
           response,
           streamState,
@@ -5210,7 +5208,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
       rowTag = 0;
       rowId = 0;
       rowLength = 0;
-      $borrowMut(buffer).length = 0;
+      buffer.length = 0;
     } else {
       // The rest of this row is in a future chunk.
       const length = chunk.byteLength - i;
@@ -5231,7 +5229,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
       } else {
         // For other row types, stash the rest of the current chunk until we can
         // process the full row.
-        $borrowMut(buffer).push(remainingSlice);
+        buffer.push(remainingSlice);
         // Update how many bytes we're still waiting for. If we're looking for
         // a newline, this doesn't hurt since we'll just ignore it.
         rowLength =
@@ -5362,7 +5360,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
     }
     if (lastIdx > -1) {
       // We found the last chunk of the row
-      if ($borrow(buffer).length !== 0) {
+      if (buffer.length !== 0) {
         // If we had a buffer already, it means that this chunk was split up into
         // binary chunks preceeding it.
         throw new Error(
@@ -5383,7 +5381,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
       rowTag = 0;
       rowId = 0;
       rowLength = 0;
-      $borrowMut(buffer).length = 0;
+      buffer.length = 0;
     } else if (chunkLength !== i) {
       // The rest of this row is in a future chunk. We only support passing the
       // string from chunks in their entirety. Not split up into smaller string chunks.

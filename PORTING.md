@@ -726,8 +726,7 @@ These differences from upstream's output are accepted:
     executor's callbacks read, `let wrapper; .. wrapper = wrapperPromise;`
     and `$unwrap(wrapper)`, where upstream's callbacks read
     `wrapperPromise` itself (Rust can't name the promise inside the
-    executor `new Promise` runs); each callback's copy of the chunk is
-    `const chunk = this;` (rd515);
+    executor `new Promise` runs);
   - that `then` attaches `wrapperPromise.then(onFulfilled, reason =>
     {..})`, or `wrapperPromise.then(onFulfilled)` where it's given no
     `reject`, where upstream writes `wrapperPromise.then(resolveCallback,
@@ -1063,10 +1062,6 @@ The port is split between sessions by package:
     `Reply.serializeModel(reply, root, 0)`, where upstream's functions are
     nested in processReply over its variables (a `Box<dyn Fn>` probe gives
     upstream's form; the port keeps `impl Fn`);
-  - rd535: the ReplyClient's own `Rc<RefCell<Vec<&Uint8Array>>>` makes the
-    Flight client's `streamState._buffer` reads `$borrow(buffer).slice()`
-    and `$borrowMut(buffer).push(..)`, another module's cell of the same
-    type, where they were `buffer.slice()` and `buffer.push(..)`;
   - rd537: a part id, a JS number kept `f64`, is
     `prefix + $displayF64(id)` where upstream writes `prefix + id`;
   - rd425: a reader's or iterator's `progress` is a closure held in a cell

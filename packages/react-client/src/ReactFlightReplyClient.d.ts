@@ -8,8 +8,7 @@
 import type {ReactCustomFormAction} from 'shared/ReactTypes';
 import type {TemporaryReferenceSet} from './ReactFlightTemporaryReferences.js';
 
-/** TypeScript's `Function`, what a server reference is. */
-export type ServerFunction = () => unknown | null | undefined;
+export type ServerReference<T> = T;
 
 export type CallServerCallback = (
   value: unknown,
@@ -23,8 +22,11 @@ export type EncodeFormActionCallback = (
 
 export type ServerReferenceId = unknown;
 
+// Serializable values
+export type ReactServerValue = unknown;
+
 export function processReply(
-  root: unknown | null | undefined,
+  root: ReactServerValue | null | undefined,
   formFieldPrefix: string,
   temporaryReferences: TemporaryReferenceSet | null | undefined,
   onResolve: (value: unknown) => void,
@@ -33,17 +35,17 @@ export function processReply(
 ): void;
 
 export function registerBoundServerReference(
-  reference: ServerFunction,
+  reference: () => unknown | null | undefined,
   id: ServerReferenceId,
   bound?: any | null | undefined,
   encodeFormAction?: EncodeFormActionCallback | null | undefined,
 ): void;
 
 export function registerServerReference(
-  reference: ServerFunction,
+  reference: () => unknown | null | undefined,
   id: ServerReferenceId,
   encodeFormAction?: EncodeFormActionCallback | null | undefined,
-): ServerFunction;
+): () => unknown | null | undefined;
 
 export function createServerObjectReference(id: ServerReferenceId): unknown;
 
@@ -66,7 +68,7 @@ export function createBoundServerReference(
   callServer: CallServerCallback,
   encodeFormAction?: EncodeFormActionCallback | null | undefined,
   findSourceMapUrl?: FindSourceMapURLCallback | null | undefined,
-): ServerFunction;
+): () => unknown | null | undefined;
 
 export function createServerReference(
   id: ServerReferenceId,
@@ -74,4 +76,4 @@ export function createServerReference(
   encodeFormAction?: EncodeFormActionCallback | null | undefined,
   findSourceMapUrl?: FindSourceMapURLCallback | null | undefined,
   functionName?: string | null | undefined,
-): ServerFunction;
+): () => unknown | null | undefined;
