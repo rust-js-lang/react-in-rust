@@ -29,7 +29,7 @@ thread_local! {
 
 fn aggregate_errors(errors: &[Option<&'static Unknown>]) -> Option<&'static Unknown> {
     if errors.len() > 1 && js::is_function(aggregate_error::new) {
-        return aggregate_error::new(errors, None).as_unknown();
+        return aggregate_error::new(errors, None, None).as_unknown();
     }
     errors.first().copied().flatten()
 }
