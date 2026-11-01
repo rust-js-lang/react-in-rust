@@ -244,47 +244,51 @@ impl Node {
         unreachable!()
     }
 
-    /// `node.fillLinear(stops, x1, y1, x2, y2)`: a shape's or a text's.
-    #[cfg_attr(rust_js, rust_js::link_name = "fillLinear")]
+    /// `node.fillLinear`, a shape's or a text's method `(stops, x1, y1, x2,
+    /// y2)`, as a value.
+    #[cfg_attr(rust_js, rust_js::link_name = "get fillLinear")]
     pub fn fill_linear(
         &self,
-        stops: Option<&Unknown>,
-        x1: Option<&Unknown>,
-        y1: Option<&Unknown>,
-        x2: Option<&Unknown>,
-        y2: Option<&Unknown>,
+    ) -> &'static dyn Fn(
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
     ) -> &'static Node {
         unreachable!()
     }
 
-    /// `node.fillRadial(stops, focusX, focusY, radiusX, radiusY, centerX,
-    /// centerY)`: a shape's or a text's.
-    #[cfg_attr(rust_js, rust_js::link_name = "fillRadial")]
+    /// `node.fillRadial`, a shape's or a text's method `(stops, focusX,
+    /// focusY, radiusX, radiusY, centerX, centerY)`, as a value.
+    #[cfg_attr(rust_js, rust_js::link_name = "get fillRadial")]
     pub fn fill_radial(
         &self,
-        stops: Option<&Unknown>,
-        focus_x: Option<&Unknown>,
-        focus_y: Option<&Unknown>,
-        radius_x: Option<&Unknown>,
-        radius_y: Option<&Unknown>,
-        center_x: Option<&Unknown>,
-        center_y: Option<&Unknown>,
+    ) -> &'static dyn Fn(
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
     ) -> &'static Node {
         unreachable!()
     }
 
-    /// `node.fillImage(url, width, height, left, top, color1, color2)`: a
-    /// shape's or a text's.
-    #[cfg_attr(rust_js, rust_js::link_name = "fillImage")]
+    /// `node.fillImage`, a shape's or a text's method `(url, width, height,
+    /// left, top, color1, color2)`, as a value.
+    #[cfg_attr(rust_js, rust_js::link_name = "get fillImage")]
     pub fn fill_image(
         &self,
-        url: Option<&Unknown>,
-        width: Option<&Unknown>,
-        height: Option<&Unknown>,
-        left: Option<&Unknown>,
-        top: Option<&Unknown>,
-        color1: Option<&Unknown>,
-        color2: Option<&Unknown>,
+    ) -> &'static dyn Fn(
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
+        Option<&Unknown>,
     ) -> &'static Node {
         unreachable!()
     }

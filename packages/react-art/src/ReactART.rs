@@ -7,6 +7,7 @@ use std::cell::{Cell, OnceCell};
 use std::rc::Rc;
 
 use art::{FAST_NO_SIDE_EFFECTS, Node, Surface as ArtSurface, mode};
+use js::array::SLICE as slice;
 use js::{PropertyDescriptor, Unknown, function, object};
 use react::webapi::Element;
 use react::{CSSProperties, Component, HostType, JSX, jsx};
@@ -36,66 +37,86 @@ js::on_load! {
 
 #[cfg_attr(rust_js, rust_js::class)]
 pub struct LinearGradient {
-    _args: Vec<Option<&'static Unknown>>,
+    _args: Option<&'static Unknown>,
 }
 
 #[cfg_attr(rust_js, rust_js::class)]
 impl LinearGradient {
-    pub fn new(#[cfg_attr(rust_js, rust_js::rest)] args: &[Option<&'static Unknown>]) -> Self {
+    pub fn new(
+        _stops: Option<&Unknown>,
+        _x1: Option<&Unknown>,
+        _y1: Option<&Unknown>,
+        _x2: Option<&Unknown>,
+        _y2: Option<&Unknown>,
+    ) -> Self {
         LinearGradient {
-            _args: args.to_vec(),
+            _args: function::call(slice, Some(js::arguments()), ()),
         }
     }
 
     pub fn apply_fill(&self, node: &Node) {
         function::apply(
-            unsafe { js::cast::<&dyn Fn()>(js::get(node, "fillLinear")) },
+            node.fill_linear(),
             Some(node),
-            Some(&self._args),
+            self._args.map(|args| args as &dyn js::IntoUnknown),
         );
     }
 }
 
 #[cfg_attr(rust_js, rust_js::class)]
 pub struct RadialGradient {
-    _args: Vec<Option<&'static Unknown>>,
+    _args: Option<&'static Unknown>,
 }
 
 #[cfg_attr(rust_js, rust_js::class)]
 impl RadialGradient {
-    pub fn new(#[cfg_attr(rust_js, rust_js::rest)] args: &[Option<&'static Unknown>]) -> Self {
+    pub fn new(
+        _stops: Option<&Unknown>,
+        _fx: Option<&Unknown>,
+        _fy: Option<&Unknown>,
+        _rx: Option<&Unknown>,
+        _ry: Option<&Unknown>,
+        _cx: Option<&Unknown>,
+        _cy: Option<&Unknown>,
+    ) -> Self {
         RadialGradient {
-            _args: args.to_vec(),
+            _args: function::call(slice, Some(js::arguments()), ()),
         }
     }
 
     pub fn apply_fill(&self, node: &Node) {
         function::apply(
-            unsafe { js::cast::<&dyn Fn()>(js::get(node, "fillRadial")) },
+            node.fill_radial(),
             Some(node),
-            Some(&self._args),
+            self._args.map(|args| args as &dyn js::IntoUnknown),
         );
     }
 }
 
 #[cfg_attr(rust_js, rust_js::class)]
 pub struct Pattern {
-    _args: Vec<Option<&'static Unknown>>,
+    _args: Option<&'static Unknown>,
 }
 
 #[cfg_attr(rust_js, rust_js::class)]
 impl Pattern {
-    pub fn new(#[cfg_attr(rust_js, rust_js::rest)] args: &[Option<&'static Unknown>]) -> Self {
+    pub fn new(
+        _url: Option<&Unknown>,
+        _width: Option<&Unknown>,
+        _height: Option<&Unknown>,
+        _left: Option<&Unknown>,
+        _top: Option<&Unknown>,
+    ) -> Self {
         Pattern {
-            _args: args.to_vec(),
+            _args: function::call(slice, Some(js::arguments()), ()),
         }
     }
 
     pub fn apply_fill(&self, node: &Node) {
         function::apply(
-            unsafe { js::cast::<&dyn Fn()>(js::get(node, "fillImage")) },
+            node.fill_image(),
             Some(node),
-            Some(&self._args),
+            self._args.map(|args| args as &dyn js::IntoUnknown),
         );
     }
 }

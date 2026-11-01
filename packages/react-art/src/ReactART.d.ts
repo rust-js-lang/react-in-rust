@@ -15,20 +15,40 @@ export {default as version} from 'shared/ReactVersion';
 /* Declarative fill-type objects; API design not finalized */
 
 export declare class LinearGradient {
-  constructor(...args: (unknown | null | undefined)[]);
-  _args: (unknown | null | undefined)[];
+  constructor(
+    stops?: unknown | null | undefined,
+    x1?: unknown | null | undefined,
+    y1?: unknown | null | undefined,
+    x2?: unknown | null | undefined,
+    y2?: unknown | null | undefined,
+  );
+  _args?: unknown;
   applyFill(node: any): void;
 }
 
 export declare class RadialGradient {
-  constructor(...args: (unknown | null | undefined)[]);
-  _args: (unknown | null | undefined)[];
+  constructor(
+    stops?: unknown | null | undefined,
+    fx?: unknown | null | undefined,
+    fy?: unknown | null | undefined,
+    rx?: unknown | null | undefined,
+    ry?: unknown | null | undefined,
+    cx?: unknown | null | undefined,
+    cy?: unknown | null | undefined,
+  );
+  _args?: unknown;
   applyFill(node: any): void;
 }
 
 export declare class Pattern {
-  constructor(...args: (unknown | null | undefined)[]);
-  _args: (unknown | null | undefined)[];
+  constructor(
+    url?: unknown | null | undefined,
+    width?: unknown | null | undefined,
+    height?: unknown | null | undefined,
+    left?: unknown | null | undefined,
+    top?: unknown | null | undefined,
+  );
+  _args?: unknown;
   applyFill(node: any): void;
 }
 

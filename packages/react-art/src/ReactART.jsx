@@ -39,24 +39,24 @@ Mode.setCurrent(
 
 /* Declarative fill-type objects; API design not finalized */
 
-export function LinearGradient(...args) {
-  this._args = args.slice();
+export function LinearGradient(stops, x1, y1, x2, y2) {
+  this._args = Array.prototype.slice.call(arguments);
 }
 
 LinearGradient.prototype.applyFill = function (node) {
   node.fillLinear.apply(node, this._args);
 };
 
-export function RadialGradient(...args) {
-  this._args = args.slice();
+export function RadialGradient(stops, fx, fy, rx, ry, cx, cy) {
+  this._args = Array.prototype.slice.call(arguments);
 }
 
 RadialGradient.prototype.applyFill = function (node) {
   node.fillRadial.apply(node, this._args);
 };
 
-export function Pattern(...args) {
-  this._args = args.slice();
+export function Pattern(url, width, height, left, top) {
+  this._args = Array.prototype.slice.call(arguments);
 }
 
 Pattern.prototype.applyFill = function (node) {
