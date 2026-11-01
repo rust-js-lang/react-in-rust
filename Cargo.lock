@@ -9,6 +9,7 @@ dependencies = [
  "react-reconciler",
  "rust-js-bindings-art",
  "rust-js-builtins",
+ "rust-js-react",
  "shared",
 ]
 
@@ -132,6 +133,14 @@ version = "0.0.2"
 [[package]]
 name = "rust-js-node"
 version = "0.0.1"
+dependencies = [
+ "rust-js-builtins",
+ "rust-js-webapi",
+]
+
+[[package]]
+name = "rust-js-react"
+version = "0.0.4"
 dependencies = [
  "rust-js-builtins",
  "rust-js-webapi",

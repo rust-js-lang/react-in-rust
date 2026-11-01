@@ -53,3 +53,4 @@ packages/react-devtools-cdt-mcp/dist
 /target
 # rust-js source maps, written by every build
 *.js.map
+*.jsx.map

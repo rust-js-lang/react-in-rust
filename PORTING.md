@@ -523,6 +523,15 @@ These differences from upstream's output are accepted:
   which only a caller passing `null` sees (upstream then throws reading
   `null.cursor`); React never does.
 
+- **Surface's `OnceCell::set` guard** (the user, 2026-11-01): Surface's
+  `_mount_node` is a `#[rust_js::optional] OnceCell<Rc<FiberRoot>>`, set as
+  it mounts, `_ = self._mount_node.set(ReactFiberReconciler.create_container(..))`,
+  which prints `const value = createContainer(..); if (this._mountNode ===
+  undefined) { this._mountNode = value; }` where upstream assigns
+  `this._mountNode = createContainer(..)`. React mounts an instance once, so
+  the guard always holds; its later reads are Rust's `get().unwrap()`,
+  `$unwrap(this._mountNode)`.
+
 - **`Vec::clear` as `length = 0`** (the user, 2026-11-01): a shared
   array's `children.borrow_mut().clear()` prints `container.children.length
   = 0;` where upstream writes `container.children.splice(0)` (TestHost's
@@ -821,8 +830,12 @@ The port is split between sessions by package:
   it.
   react-noop-renderer's createReactNoop and ReactFiberConfigNoop are Rust.
   react-test-renderer's ReactFiberConfigTestHost and ReactTestRenderer are
-  Rust; react-art's ReactARTInternals and ReactFiberConfigART are Rust;
-  ReactART waits on class components (rd331) and `arguments` (rd332).
+  Rust; react-art's ReactARTInternals, ReactFiberConfigART and ReactART
+  are Rust. ReactART's Surface and Text are class components (rust-js ADR
+  1041), its module `ReactART.jsx`, as rust-js names a module with JSX, which
+  jest resolves by `jsx` in `scripts/jest/config.base.js`'s
+  `moduleFileExtensions`; react-art's `index.js` imports `./src/ReactART`
+  unchanged.
   bindToConsole binds the console's method to its arguments,
   `function::bind(method, Some(&console), args)`, printed
   `method.bind(console, ...args)` where upstream writes

@@ -389,7 +389,7 @@ pub mod mode {
         rust_js,
         rust_js::link_name = "get art/modes/current#default.Surface.tagName"
     )]
-    pub fn surface_tag_name() -> String {
+    pub fn surface_tag_name() -> &'static str {
         unreachable!()
     }
 

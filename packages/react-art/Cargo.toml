@@ -13,6 +13,7 @@ path = "react_art.rs"
 [dependencies]
 art.workspace = true
 js.workspace = true
+react = { package = "rust-js-react", path = "../../../rust-js/react" }
 react-reconciler = { path = "../react-reconciler" }
 shared.workspace = true
 
