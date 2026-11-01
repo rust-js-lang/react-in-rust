@@ -8,7 +8,7 @@
 // Shared implementation and constants between the inline script and external
 // runtime instruction sets.
 
-import {$displayF64, $extend, $index, $unwrap} from '@rust-js/runtime';
+import {$extend, $index, $unwrap} from '@rust-js/runtime';
 
 const ELEMENT_NODE = 1;
 const COMMENT_NODE = 8;
@@ -138,8 +138,9 @@ export function revealCompletedBoundariesWithViewTransitions(
       // TODO: We don't have a prefix to pick from here but maybe we don't need it
       // since it's only applicable temporarily during this specific animation.
       const idPrefix = '';
-      const index = autoNameIdx++;
-      name = `_${idPrefix}T_${$displayF64(index)}_`;
+      const index = autoNameIdx;
+      autoNameIdx = (index + 1) >>> 0;
+      name = `_${idPrefix}T_${index}_`;
     }
     // If the name isn't valid CSS identifier, base64 encode the name instead.
     // This doesn't let you select it in custom CSS selectors but it does work in current

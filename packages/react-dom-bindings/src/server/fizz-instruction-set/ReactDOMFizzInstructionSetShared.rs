@@ -215,7 +215,7 @@ pub fn reveal_completed_boundaries_with_view_transitions(
     batch: &'static Batch,
 ) {
     let should_start_view_transition = Cell::new(false);
-    let auto_name_idx = Cell::new(0.0);
+    let auto_name_idx = Cell::new(0u32);
     let restore_queue = RefCell::new(Vec::new());
     let apply_view_transition_name = |element: &'static Element, class_attribute_name: &str| {
         let Some(class_name) = element
@@ -245,7 +245,7 @@ pub fn reveal_completed_boundaries_with_view_transitions(
                 // since it's only applicable temporarily during this specific animation.
                 let id_prefix = "";
                 let index = auto_name_idx.get();
-                auto_name_idx.set(index + 1.0);
+                auto_name_idx.set(index + 1);
                 format!("_{id_prefix}T_{index}_")
             }
         };
