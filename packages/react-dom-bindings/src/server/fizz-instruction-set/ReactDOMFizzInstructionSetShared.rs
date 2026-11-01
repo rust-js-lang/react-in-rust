@@ -13,9 +13,9 @@ use js::{Kind, Unknown, function};
 use webapi::events::{Error, Load, Submit};
 use webapi::window_global::request_animation_frame;
 use webapi::{
-    Element, Event, EventTargetExt, Node, StartViewTransitionOptions, SubmitEvent, ViewTransition,
-    comment, css, document, element, form_data, global, html_form_element, html_image_element,
-    node_list, performance, tags, window, window_global,
+    Element, Event, EventTargetExt, HTMLElement, Node, StartViewTransitionOptions, SubmitEvent,
+    ViewTransition, comment, css, document, element, form_data, global, html_form_element,
+    html_image_element, node_list, performance, tags, window, window_global,
 };
 
 const ELEMENT_NODE: f64 = 1.0;
@@ -672,7 +672,10 @@ pub fn listen_to_form_submissions_for_replaying() {
             let form = html_form_element::unchecked_from(
                 event.target().expect("a submit event has a form"),
             );
-            let submitter = event.submitter();
+            // Read as any value, as upstream's `event['submitter']`: a host that
+            // has no `submitter`, JSDOM or an older Safari, gives `undefined`.
+            let submitter: Option<&'static HTMLElement> =
+                unsafe { js::cast(js::get(event, "submitter")) };
             let mut action = form.action();
             let mut form_data_submitter = submitter;
             if let Some(submitter) = submitter

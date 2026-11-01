@@ -541,10 +541,12 @@ export function listenToFormSubmissionsForReplaying() {
       return;
     }
     const form = $unwrap(event.target, 'a submit event has a form');
+    // Read as any value, as upstream's `event['submitter']`: a host that
+    // has no `submitter`, JSDOM or an older Safari, gives `undefined`.
     const submitter = event.submitter;
     let action = form.action;
     let formDataSubmitter = submitter;
-    if (submitter !== null) {
+    if (submitter != null) {
       const submitterAction = submitter.getAttribute('formAction');
       if (submitterAction !== null) {
         // The submitter overrides the action.
