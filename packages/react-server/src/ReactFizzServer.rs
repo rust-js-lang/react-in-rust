@@ -171,14 +171,8 @@ fn close_with_error(destination: &Destination, error: Option<&Unknown>) {
     unreachable!()
 }
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactServerStreamConfig.js#byteLengthOfChunk"
-)]
-fn byte_length_of_chunk(chunk: &Chunk) -> f64 {
-    let _ = chunk;
-    unreachable!()
-}
+/// A chunk's length in bytes, `null` where the host's config can't tell.
+pub type ByteLengthOfChunk = dyn Fn(&Chunk) -> f64;
 
 // ReactFizzConfig's functions and values, of the renderer's config.
 
@@ -194,6 +188,8 @@ unsafe extern "Rust" {
     // is bound here as ReactFlightCurrentOwner binds its storage.
     #[link_name = "./src/ReactFizzConfig.js#requestStorage"]
     safe static REQUEST_STORAGE: &'static RequestStorage;
+    #[link_name = "./src/ReactServerStreamConfig.js#byteLengthOfChunk"]
+    safe static BYTE_LENGTH_OF_CHUNK: Option<&'static ByteLengthOfChunk>;
 }
 
 /// The config's `AsyncLocalStorage<Request | void>`, where it has one.
@@ -6165,28 +6161,332 @@ fn abort_unwound_task(task: &Rc<Task>, request: &Rc<Request>) {
     }
 }
 
-// DRAFT: the sections below are not ported yet.
-
-fn finished_segment(
-    _request: &Rc<Request>,
-    _boundary: Option<&Rc<SuspenseBoundary>>,
-    _segment: &Rc<Segment>,
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#emitEarlyPreloads"
+)]
+fn emit_early_preloads(
+    render_state: &RenderState,
+    resumable_state: &ResumableState,
+    shell_complete: bool,
 ) {
-    todo!()
+    let _ = (render_state, resumable_state, shell_complete);
+    unreachable!()
 }
 
-fn queue_completed_segment(_boundary: &Rc<SuspenseBoundary>, _segment: &Rc<Segment>) {
-    todo!()
+fn safely_emit_early_preloads(request: &Rc<Request>, shell_complete: bool) {
+    if let Err(error) = catch_unwind(AssertUnwindSafe(|| {
+        emit_early_preloads(
+            request.render_state,
+            request.resumable_state,
+            shell_complete,
+        );
+    })) {
+        // We assume preloads are optimistic and thus non-fatal if errored.
+        let error_info: &'static ThrownInfo =
+            unsafe { js::cast(Some(js::unknown(js::object::spread(None::<&Unknown>)))) };
+        log_recoverable_error(request, thrown_value_of(&*error), error_info, None);
+    }
+}
+
+// I extracted this function out because we want to ensure we consistently emit preloads before
+// transitioning to the next request stage and this transition can happen in multiple places in this
+// implementation.
+fn complete_shell(request: &Rc<Request>) {
+    if request.tracked_postpones.borrow().is_none() {
+        // We only emit early preloads on shell completion for renders. For prerenders
+        // we wait for the entire Request to finish because we are not responding to a
+        // live request and can wait for as much data as possible.
+
+        // we should only be calling completeShell when the shell is complete so we
+        // just use a literal here
+        let shell_complete = true;
+        safely_emit_early_preloads(request, shell_complete);
+    }
+    if request.tracked_postpones.borrow().is_none() {
+        // When the shell is complete it will be possible to flush. We attempt to prepre
+        // the Preamble here in case it is ready for flushing.
+        // We exclude prerenders because these cannot flush until after completeAll has been called
+        prepare_preamble(request);
+    }
+
+    let on_shell_ready = &request.on_shell_ready;
+    on_shell_ready();
+}
+
+// I extracted this function out because we want to ensure we consistently emit preloads before
+// transitioning to the next request stage and this transition can happen in multiple places in this
+// implementation.
+fn complete_all(request: &Rc<Request>) {
+    // During a render the shell must be complete if the entire request is finished
+    // however during a Prerender it is possible that the shell is incomplete because
+    // it postponed. We cannot use rootPendingTasks in the prerender case because
+    // those hit zero even when the shell postpones. Instead we look at the completedRootSegment
+    let shell_complete = if request.tracked_postpones.borrow().is_none() {
+        // Render, we assume it is completed
+        true
+    } else {
+        // Prerender Request, we use the state of the root segment
+        request
+            .completed_root_segment
+            .borrow()
+            .as_ref()
+            .is_none_or(|completed_root_segment| completed_root_segment.status.get() != POSTPONED)
+    };
+    safely_emit_early_preloads(request, shell_complete);
+
+    // When the shell is complete it will be possible to flush. We attempt to prepre
+    // the Preamble here in case it is ready for flushing
+    prepare_preamble(request);
+
+    let on_all_ready = &request.on_all_ready;
+    on_all_ready();
+}
+
+fn queue_completed_segment(boundary: &SuspenseBoundary, segment: &Rc<Segment>) {
+    let only_child = {
+        let children = segment.children.borrow();
+        (segment.chunks.borrow().is_empty()
+            && children.len() == 1
+            && children[0].boundary.borrow().is_none()
+            && children[0].id.get() == -1.0)
+            .then(|| Rc::clone(&children[0]))
+    };
+    if let Some(child_segment) = only_child {
+        // This is an empty segment. There's nothing to write, so we can instead transfer the ID
+        // to the child. That way any existing references point to the child.
+        child_segment.id.set(segment.id.get());
+        child_segment.parent_flushed.set(true);
+        if child_segment.status.get() == COMPLETED
+            || child_segment.status.get() == ABORTED
+            || child_segment.status.get() == ERRORED
+        {
+            queue_completed_segment(boundary, &child_segment);
+        }
+    } else {
+        let completed_segments = &boundary.completed_segments;
+        completed_segments.borrow_mut().push(Rc::clone(segment));
+    }
+}
+
+fn finished_segment(request: &Request, boundary: Option<&Rc<SuspenseBoundary>>, segment: &Segment) {
+    // $FlowFixMe[invalid-compare]
+    if let Some(byte_length_of_chunk) = BYTE_LENGTH_OF_CHUNK {
+        // Count the bytes of all the chunks of this segment.
+        let chunks = &segment.chunks;
+        let mut segment_byte_size = 0.0;
+        for &chunk in chunks.borrow().iter() {
+            segment_byte_size += byte_length_of_chunk(chunk);
+        }
+        // Accumulate on the parent boundary to power heuristics.
+        match boundary {
+            None => request
+                .byte_size
+                .set(request.byte_size.get() + segment_byte_size),
+            Some(boundary) => boundary
+                .byte_size
+                .set(boundary.byte_size.get() + segment_byte_size),
+        }
+    }
 }
 
 fn finished_task(
-    _request: &Rc<Request>,
-    _boundary: Option<&Rc<SuspenseBoundary>>,
-    _row: Option<&Rc<SuspenseListRow>>,
-    _segment: Option<&Rc<Segment>>,
+    request: &Rc<Request>,
+    boundary: Option<&Rc<SuspenseBoundary>>,
+    row: Option<&Rc<SuspenseListRow>>,
+    segment: Option<&Rc<Segment>>,
 ) {
-    todo!()
+    if let Some(row) = row {
+        row.pending_tasks.set(row.pending_tasks.get() - 1.0);
+        if row.pending_tasks.get() == 0.0 {
+            finish_suspense_list_row(request, row);
+        } else if row.together.get() {
+            try_to_resolve_together_row(request, row);
+        }
+    }
+    request
+        .all_pending_tasks
+        .set(request.all_pending_tasks.get() - 1.0);
+    match boundary {
+        None => {
+            if let Some(segment) = segment
+                && segment.parent_flushed.get()
+            {
+                if request.completed_root_segment.borrow().is_some() {
+                    panic!("There can only be one root segment. This is a bug in React.");
+                }
+
+                request
+                    .completed_root_segment
+                    .replace(Some(Rc::clone(segment)));
+            }
+            request
+                .pending_root_tasks
+                .set(request.pending_root_tasks.get() - 1.0);
+            if request.pending_root_tasks.get() == 0.0 {
+                complete_shell(request);
+            }
+        }
+        Some(boundary) => {
+            boundary
+                .pending_tasks
+                .set(boundary.pending_tasks.get() - 1.0);
+            if boundary.status.get() == CLIENT_RENDERED {
+                // This already errored.
+            } else if boundary.pending_tasks.get() == 0.0 {
+                if boundary.status.get() == PENDING {
+                    boundary.status.set(COMPLETED);
+                }
+                // This must have been the last segment we were waiting on. This boundary is now complete.
+                if let Some(segment) = segment
+                    && segment.parent_flushed.get()
+                {
+                    // Our parent segment already flushed, so we need to schedule this segment to be emitted.
+                    // If it is a segment that was aborted, we'll write other content instead so we don't need
+                    // to emit it.
+                    if segment.status.get() == COMPLETED || segment.status.get() == ABORTED {
+                        queue_completed_segment(boundary, segment);
+                    }
+                }
+                if boundary.parent_flushed.get() {
+                    // The segment might be part of a segment that didn't flush yet, but if the boundary's
+                    // parent flushed, we need to schedule the boundary to be emitted.
+                    if boundary.status.get() == POSTPONED {
+                        // All tasks finished, but postponed holes still block revealing this boundary.
+                        request
+                            .partial_boundaries
+                            .borrow_mut()
+                            .push(Rc::clone(boundary));
+                    } else {
+                        request
+                            .completed_boundaries
+                            .borrow_mut()
+                            .push(Rc::clone(boundary));
+                    }
+                }
+
+                // We can now cancel any pending task on the fallback since we won't need to show it anymore.
+                // This needs to happen after we read the parentFlushed flags because aborting can finish
+                // work which can trigger user code, which can start flushing, which can change those flags.
+                // If the boundary was POSTPONED, we still need to finish the fallback first.
+                // If the boundary is eligible to be outlined during flushing we can't cancel the fallback
+                // since we might need it when it's being outlined.
+                if boundary.status.get() == COMPLETED {
+                    let boundary_row = boundary.row.borrow().clone();
+                    if let Some(boundary_row) = &boundary_row {
+                        // Hoist the HoistableState from the boundary to the row so that the next rows
+                        // can depend on the same dependencies.
+                        hoist_hoistables(boundary_row.hoistables, boundary.content_state);
+                    }
+                    if !is_eligible_for_outlining(request, boundary) {
+                        // abortTaskSoft (below) and finishSuspenseListRow → unblockSuspenseListRow
+                        // → finishedTask (further below) both reenter finishedTask and decrement
+                        // allPendingTasks. Pin the counter above zero for the duration of these
+                        // fan-outs so a nested finishedTask can't observe 0 and call completeAll
+                        // before this outer call reaches its own zero check.
+                        request
+                            .all_pending_tasks
+                            .set(request.all_pending_tasks.get() + 1.0);
+                        for fallback_task in boundary.fallback_abortable_tasks.borrow().iter() {
+                            abort_task_soft(request, fallback_task);
+                        }
+                        boundary.fallback_abortable_tasks.borrow_mut().clear();
+                        if let Some(boundary_row) = &boundary_row {
+                            // If we aren't eligible for outlining, we don't have to wait until we flush it.
+                            boundary_row
+                                .pending_tasks
+                                .set(boundary_row.pending_tasks.get() - 1.0);
+                            if boundary_row.pending_tasks.get() == 0.0 {
+                                finish_suspense_list_row(request, boundary_row);
+                            }
+                        }
+                        request
+                            .all_pending_tasks
+                            .set(request.all_pending_tasks.get() - 1.0);
+                    }
+
+                    if request.pending_root_tasks.get() == 0.0
+                        && request.tracked_postpones.borrow().is_none()
+                        && boundary.preamble.is_some()
+                    {
+                        // The root is complete and this boundary may contribute part of the preamble.
+                        // We eagerly attempt to prepare the preamble here because we expect most requests
+                        // to have few boundaries which contribute preambles and it allow us to do this
+                        // preparation work during the work phase rather than the when flushing.
+                        prepare_preamble(request);
+                    }
+                } else if boundary.status.get() == POSTPONED {
+                    let boundary_row = boundary.row.borrow().clone();
+                    if let Some(boundary_row) = boundary_row {
+                        let tracked_postpones = request.tracked_postpones.borrow().clone();
+                        if let Some(tracked_postpones) = tracked_postpones {
+                            // If this boundary is postponed, then we need to also postpone any blocked boundaries
+                            // in the next row.
+                            track_postponed_suspense_list_row(
+                                request,
+                                &tracked_postpones,
+                                boundary_row.next.borrow().as_ref(),
+                            );
+                        }
+                        // finishSuspenseListRow → unblockSuspenseListRow → finishedTask reenters
+                        // and decrements allPendingTasks. Pin the counter above zero so those
+                        // nested calls can't trip completeAll before this outer frame's own
+                        // zero check at the end.
+                        request
+                            .all_pending_tasks
+                            .set(request.all_pending_tasks.get() + 1.0);
+                        boundary_row
+                            .pending_tasks
+                            .set(boundary_row.pending_tasks.get() - 1.0);
+                        if boundary_row.pending_tasks.get() == 0.0 {
+                            // This is really unnecessary since we've already postponed the boundaries but
+                            // for pairity with other track+finish paths. We might end up using the hoisting.
+                            finish_suspense_list_row(request, &boundary_row);
+                        }
+                        request
+                            .all_pending_tasks
+                            .set(request.all_pending_tasks.get() - 1.0);
+                    }
+                }
+            } else {
+                if let Some(segment) = segment
+                    && segment.parent_flushed.get()
+                {
+                    // Our parent already flushed, so we need to schedule this segment to be emitted.
+                    // If it is a segment that was aborted, we'll write other content instead so we don't need
+                    // to emit it.
+                    if segment.status.get() == COMPLETED || segment.status.get() == ABORTED {
+                        queue_completed_segment(boundary, segment);
+                        let completed_segments = &boundary.completed_segments;
+                        if completed_segments.borrow().len() == 1 {
+                            // This is the first time since we last flushed that we completed anything.
+                            // We can schedule this boundary to emit its partially completed segments early
+                            // in case the parent has already been flushed.
+                            if boundary.parent_flushed.get() {
+                                request
+                                    .partial_boundaries
+                                    .borrow_mut()
+                                    .push(Rc::clone(boundary));
+                            }
+                        }
+                    }
+                }
+                let boundary_row = boundary.row.borrow().clone();
+                if let Some(boundary_row) = boundary_row
+                    && boundary_row.together.get()
+                {
+                    try_to_resolve_together_row(request, &boundary_row);
+                }
+            }
+        }
+    }
+
+    if request.all_pending_tasks.get() == 0.0 {
+        complete_all(request);
+    }
 }
+
+// DRAFT: the sections below are not ported yet.
 
 fn prepare_preamble(_request: &Rc<Request>) {
     todo!()
@@ -6218,13 +6518,5 @@ fn add_to_replay_parent(
     _parent_key_path: Option<&Rc<KeyNode>>,
     _tracked_postpones: &PostponedHoles,
 ) {
-    todo!()
-}
-
-fn complete_all(_request: &Rc<Request>) {
-    todo!()
-}
-
-fn complete_shell(_request: &Rc<Request>) {
     todo!()
 }
