@@ -7,6 +7,8 @@ pub mod create_fast_hash_js;
 pub mod react_fizz_call_user_space;
 #[path = "src/ReactFizzTreeContext.rs"]
 pub mod react_fizz_tree_context;
+#[path = "src/ReactFizzViewTransitionComponent.rs"]
+pub mod react_fizz_view_transition_component;
 #[path = "src/ReactServerStreamConfigBrowser.rs"]
 pub mod react_server_stream_config_browser;
 #[path = "src/ReactServerStreamConfigEdge.rs"]
