@@ -18,6 +18,9 @@ export interface HeadersDescriptor {
   Link?: string | undefined;
 }
 
+/** What a render tells of its early headers: React's `onHeaders`. */
+export type OnHeaders = (descriptor: HeadersDescriptor) => void;
+
 // Used to distinguish these contexts from ones used in other renderers.
 // E.g. this can be used to distinguish legacy renderers from this modern one.
 export const isPrimaryRenderer: boolean;
@@ -104,7 +107,7 @@ export interface RenderState {
   bootstrapChunks: any[];
   importMapChunks: any[];
   // Headers queues for Resources that can flush early
-  onHeaders?: ((descriptor: HeadersDescriptor) => void) | undefined;
+  onHeaders?: OnHeaders | undefined;
   headers?: Headers | null | undefined;
   resets: Resets;
   // Hoistable chunks
@@ -217,7 +220,7 @@ export function createRenderState(
   nonce?: Nonce | null | undefined,
   externalRuntimeConfig?: BootstrapScript | null | undefined,
   importMap?: unknown | null | undefined,
-  onHeaders?: ((descriptor: HeadersDescriptor) => void) | null | undefined,
+  onHeaders?: OnHeaders | null | undefined,
   maxHeadersLength?: unknown | null | undefined,
 ): RenderState;
 

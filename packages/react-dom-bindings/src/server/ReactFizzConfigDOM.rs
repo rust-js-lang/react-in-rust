@@ -166,6 +166,14 @@ pub struct HeadersDescriptor {
     pub link: Option<String>,
 }
 
+/// What a render tells of its early headers: React's `onHeaders`.
+pub type OnHeaders = dyn Fn(&HeadersDescriptor);
+
+// Safety: a header's text of each, its `None` written `None` where it's made.
+unsafe impl webapi::Record for HeadersDescriptor {
+    type Value = String;
+}
+
 // Used to distinguish these contexts from ones used in other renderers.
 // E.g. this can be used to distinguish legacy renderers from this modern one.
 #[cfg_attr(rust_js, rust_js::name = "isPrimaryRenderer")]
@@ -278,7 +286,7 @@ pub struct RenderState {
     pub import_map_chunks: Chunks,
 
     // Headers queues for Resources that can flush early
-    pub on_headers: Option<&'static dyn Fn(&HeadersDescriptor)>,
+    pub on_headers: Option<Rc<OnHeaders>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub headers: RefCell<Option<Rc<Headers>>>,
     pub resets: Resets,
@@ -609,7 +617,7 @@ pub fn create_render_state(
     nonce: Option<Nonce<'static>>,
     external_runtime_config: Option<BootstrapScript<'static>>,
     import_map: Option<&'static Unknown>,
-    on_headers: Option<&'static dyn Fn(&HeadersDescriptor)>,
+    on_headers: Option<Rc<OnHeaders>>,
     max_headers_length: Option<&'static Unknown>,
 ) -> RenderState {
     let nonce_script = match nonce {
@@ -711,7 +719,7 @@ pub fn create_render_state(
             },
         ));
     }
-    let headers = on_headers.map(|_| {
+    let headers = on_headers.as_ref().map(|_| {
         Rc::new(Headers {
             preconnects: RefCell::new(String::new()),
             font_preloads: RefCell::new(String::new()),
@@ -7238,7 +7246,7 @@ pub fn emit_early_preloads(
     _resumable_state: &ResumableState,
     shell_complete: bool,
 ) {
-    let on_headers = render_state.on_headers;
+    let on_headers = render_state.on_headers.clone();
     if let Some(on_headers) = on_headers {
         let headers = render_state.headers.borrow().clone();
         if let Some(headers) = headers {

@@ -10,6 +10,8 @@ pub mod react_dom_browser;
 pub mod react_dom_client;
 #[path = "src/client/ReactDOMDefaultTransitionIndicator.rs"]
 pub mod react_dom_default_transition_indicator;
+#[path = "src/server/ReactDOMFizzServerBrowser.rs"]
+pub mod react_dom_fizz_server_browser;
 #[path = "src/shared/ReactDOMFloat.rs"]
 pub mod react_dom_float;
 #[path = "src/shared/ReactDOMFlushSync.rs"]

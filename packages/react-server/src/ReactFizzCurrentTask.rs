@@ -24,6 +24,19 @@ pub struct Request(PhantomData<JsObject>);
 
 unsafe impl js::Defined for Request {}
 
+/// What a prerender left to resume, ReactFizzServer's, its JS's until
+/// it's ported: of a renderer's resumable state, `S`.
+pub struct PostponedState<S>(PhantomData<(JsObject, S)>);
+
+unsafe impl<S> js::Defined for PostponedState<S> {}
+
+impl<S: 'static> PostponedState<S> {
+    #[cfg_attr(rust_js, rust_js::link_name = "get resumableState")]
+    pub fn resumable_state(&self) -> &'static S {
+        unreachable!()
+    }
+}
+
 /// What ReactFizzServer tells a request's `onError` of an error, its JS's
 /// until it's ported: `{ componentStack }`.
 pub struct ErrorInfo(PhantomData<JsObject>);
@@ -115,6 +128,35 @@ pub fn create_request<S: ?Sized, R: ?Sized, F: ?Sized>(
         on_shell_error,
         on_fatal_error,
         form_state,
+    );
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFizzServer#resumeRequest"
+)]
+pub fn resume_request<S, R: ?Sized>(
+    children: Option<&'static Unknown>,
+    postponed_state: &PostponedState<S>,
+    render_state: &R,
+    on_error: Option<&OnError>,
+    on_browser_bailout: Option<&OnBrowserBailout>,
+    on_all_ready: Option<&dyn Fn()>,
+    on_shell_ready: Option<&dyn Fn()>,
+    on_shell_error: Option<&dyn Fn(Option<&'static Unknown>)>,
+    on_fatal_error: Option<&dyn Fn(Option<&'static Unknown>)>,
+) -> &'static Request {
+    let _ = (
+        children,
+        postponed_state,
+        render_state,
+        on_error,
+        on_browser_bailout,
+        on_all_ready,
+        on_shell_ready,
+        on_shell_error,
+        on_fatal_error,
     );
     unreachable!()
 }
