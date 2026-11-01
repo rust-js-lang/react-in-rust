@@ -3,33 +3,17 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use std::marker::PhantomData;
-
-use js::{ArrayBuffer, ArrayBufferView, JsObject, Promise, Unknown};
+use js::{ArrayBuffer, ArrayBufferView, Promise, Unknown};
 use node::BufferEncoding;
 use node::buffer::Buffer;
 use webapi::Blob;
 use webapi::global::btoa;
 
-/// What a legacy render's stream writes to: a readable's `push`, which takes
-/// a chunk, or `null` at the end, and its `destroy`.
-pub struct Destination(PhantomData<JsObject>);
-
-unsafe impl js::Defined for Destination {}
-
-impl Destination {
-    #[cfg_attr(rust_js, rust_js::link_name = "push")]
-    #[cfg_attr(rust_js, rust_js::nullable(chunk))]
-    pub fn push(&self, chunk: Option<&str>) -> bool {
-        let _ = chunk;
-        unreachable!()
-    }
-
-    #[cfg_attr(rust_js, rust_js::link_name = "destroy")]
-    pub fn destroy(&self, error: Option<&Unknown>) -> Option<&'static Unknown> {
-        let _ = error;
-        unreachable!()
-    }
+/// What the legacy renderer writes to: each chunk pushed, and `null` at
+/// its end; what fails it destroyed with its error.
+pub struct Destination<'a> {
+    pub push: &'a dyn Fn(Option<&str>) -> bool,
+    pub destroy: &'a dyn Fn(Option<&'static Unknown>),
 }
 
 pub type PrecomputedChunk = String;
@@ -57,13 +41,13 @@ pub fn write_chunk(destination: &Destination, chunk: &str) {
 }
 
 pub fn write_chunk_and_return(destination: &Destination, chunk: &str) -> bool {
-    destination.push(Some(chunk))
+    (destination.push)(Some(chunk))
 }
 
 pub fn complete_writing(_destination: &Destination) {}
 
 pub fn close(destination: &Destination) {
-    destination.push(None);
+    (destination.push)(js::null());
 }
 
 pub fn string_to_chunk(content: String) -> Chunk {
@@ -86,8 +70,8 @@ pub fn byte_length_of_binary_chunk(_chunk: &str) -> f64 {
     panic!("Not implemented.");
 }
 
-pub fn close_with_error(destination: &Destination, error: Option<&Unknown>) {
-    destination.destroy(error);
+pub fn close_with_error(destination: &Destination, error: Option<&'static Unknown>) {
+    (destination.destroy)(error);
 }
 
 pub use react_server::create_fast_hash_js::create_fast_hash_js as create_fast_hash;

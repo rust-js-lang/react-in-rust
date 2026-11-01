@@ -6,7 +6,7 @@
 use std::cell::Cell;
 use std::marker::PhantomData;
 
-use js::JsObject;
+use js::{JsObject, Unknown};
 use shared::environment::__DEV__;
 use webapi::ConsoleTask;
 
@@ -23,6 +23,20 @@ unsafe impl js::Defined for Task {}
 pub struct Request(PhantomData<JsObject>);
 
 unsafe impl js::Defined for Request {}
+
+/// What ReactFizzServer tells a request's `onError` of an error, its JS's
+/// until it's ported: `{ componentStack }`.
+pub struct ErrorInfo(PhantomData<JsObject>);
+
+unsafe impl js::Defined for ErrorInfo {}
+
+/// A request's `onError`: of what was thrown and where, the digest it's
+/// sent to the client as, if any.
+pub type OnError = dyn Fn(Option<&'static Unknown>, &ErrorInfo) -> Option<String>;
+
+/// A request's `onBrowserBailout`, of what made a boundary render on the
+/// client instead, and where.
+pub type OnBrowserBailout = dyn Fn(Option<&'static Unknown>, &ErrorInfo);
 
 /// ReactFizzServer's key path, its JS's until it's ported: `[parent, name,
 /// key]`, of strings, numbers and `null`, nested.

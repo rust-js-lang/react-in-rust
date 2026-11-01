@@ -15,6 +15,7 @@ js.workspace = true
 react-dom-bindings = { path = "../react-dom-bindings" }
 react-isomorphic = { path = "../react" }
 react-reconciler = { path = "../react-reconciler" }
+react-server = { path = "../react-server" }
 shared.workspace = true
 webapi.workspace = true
 

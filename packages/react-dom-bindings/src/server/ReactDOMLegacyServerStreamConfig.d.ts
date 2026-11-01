@@ -7,6 +7,15 @@
 
 export {createFastHashJS as createFastHash} from '../../../react-server/src/createFastHashJS.js';
 
+/**
+ * What the legacy renderer writes to: each chunk pushed, and `null` at
+ * its end; what fails it destroyed with its error.
+ */
+export interface Destination {
+  push: (value: string | null | undefined) => boolean;
+  destroy: (value: unknown | null | undefined) => void;
+}
+
 export type PrecomputedChunk = string;
 
 export type Chunk = string;
@@ -17,17 +26,20 @@ export function scheduleWork(callback: () => void): void;
 
 export function scheduleMicrotask(callback: () => void): void;
 
-export function flushBuffered(destination: any): void;
+export function flushBuffered(destination: Destination): void;
 
-export function beginWriting(destination: any): void;
+export function beginWriting(destination: Destination): void;
 
-export function writeChunk(destination: any, chunk: string): void;
+export function writeChunk(destination: Destination, chunk: string): void;
 
-export function writeChunkAndReturn(destination: any, chunk: string): boolean;
+export function writeChunkAndReturn(
+  destination: Destination,
+  chunk: string,
+): boolean;
 
-export function completeWriting(destination: any): void;
+export function completeWriting(destination: Destination): void;
 
-export function close(destination: any): void;
+export function close(destination: Destination): void;
 
 export function stringToChunk(content: string): Chunk;
 
@@ -40,7 +52,7 @@ export const byteLengthOfChunk: ((value: string) => number) | null;
 export function byteLengthOfBinaryChunk(chunk: string): number;
 
 export function closeWithError(
-  destination: any,
+  destination: Destination,
   error?: unknown | null | undefined,
 ): void;
 

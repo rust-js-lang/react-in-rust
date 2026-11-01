@@ -30,6 +30,7 @@ dependencies = [
  "react-dom-bindings",
  "react-isomorphic",
  "react-reconciler",
+ "react-server",
  "rust-js-builtins",
  "rust-js-webapi",
  "shared",

@@ -14,6 +14,12 @@ pub mod react_dom_default_transition_indicator;
 pub mod react_dom_float;
 #[path = "src/shared/ReactDOMFlushSync.rs"]
 pub mod react_dom_flush_sync;
+#[path = "src/server/ReactDOMLegacyServerBrowser.rs"]
+pub mod react_dom_legacy_server_browser;
+#[path = "src/server/ReactDOMLegacyServerImpl.rs"]
+pub mod react_dom_legacy_server_impl;
+#[path = "src/server/ReactDOMLegacyServerNode.rs"]
+pub mod react_dom_legacy_server_node;
 #[path = "src/client/ReactDOMRoot.rs"]
 pub mod react_dom_root;
 #[path = "src/ReactDOMSharedInternals.rs"]

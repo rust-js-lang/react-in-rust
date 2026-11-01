@@ -5,6 +5,24 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+/**
+ * A request's `onError`: of what was thrown and where, the digest it's
+ * sent to the client as, if any.
+ */
+export type OnError = (
+  value: unknown | null | undefined,
+  value2: any,
+) => string | null | undefined;
+
+/**
+ * A request's `onBrowserBailout`, of what made a boundary render on the
+ * client instead, and where.
+ */
+export type OnBrowserBailout = (
+  value: unknown | null | undefined,
+  value2: any,
+) => void;
+
 export let currentTaskInDEV: any | null;
 
 export function setCurrentTaskInDEV(task?: any | null | undefined): void;
