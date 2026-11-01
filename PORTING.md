@@ -134,7 +134,7 @@ react-server, react-client, the Fizz suites and react-server-dom-fb,
 | float | `yarn test react-dom/src/__tests__/ReactDOMFloat react-dom/src/__tests__/ReactDOMLegacyFloat` (2 suites) | 143 / 0 / 1 |
 | ssrmisc | `yarn test react-dom/src/__tests__/ReactServerRendering react-dom/src/__tests__/ReactDOMServerLifecycles react-dom/src/__tests__/ReactDOMInReactServer react-dom/src/__tests__/ReactClassComponentPropResolutionFizz packages/react-markup packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShimServer` (9 suites) | 104 / 0 / 0 |
 | server | `yarn test packages/react-server/src/__tests__` (4 suites) | 26 / 0 / 0² |
-| client | `yarn test packages/react-client/src/__tests__` (3 suites) | 96 / 0 / 0⁴ |
+| client | `yarn test packages/react-client/src/__tests__` (4 suites) | 98 / 0 / 0⁴ |
 | webpack | `yarn test packages/react-server-dom-webpack/src/__tests__` (9 suites) | 278 / 0 / 0 |
 | turbopack | `yarn test packages/react-server-dom-turbopack/src/__tests__` (7 suites) | 43 / 0 / 0 |
 | fb | `yarn test packages/react-server-dom-fb/src/__tests__` (1 suite) | 8 / 0 / 0 |
@@ -146,7 +146,12 @@ matches. Many server suites also run inside `dom` and `domrest`.
 ⁴ With the port's own `packages/react-client/src/__tests__/ReactFlightReplayOrder-test.js`
 (1 test, DEV: a console entry that arrives while an earlier one is still
 blocked replays after it, as upstream's resolveConsoleEntry does), added in
-Batch 52 with the fix of its unblock; upstream's suites alone are 95 in 2.
+Batch 52 with the fix of its unblock, and
+`packages/react-client/src/__tests__/ReactFlightUndefinedReference-test.js`
+(2 tests: a root that is only a reference to a row sent later resolves to
+that row's `undefined` or `null` as it is), added in Batch 53 with the
+handler's `value` and `reason` holding what they're given; upstream's suites
+alone are 95 in 2.
 
 ² One run in five of `-r=www-modern packages/react-server/src/__tests__`
 failed one test (25 / 1 / 0) while the machine was loaded. The default
@@ -634,7 +639,9 @@ These differences from upstream's output are accepted:
   parameter upstream names `_` is `callback` (Rust can't name a parameter
   `_` and read it); and an object literal's key whose value is `None` is
   left out, where upstream writes the key with `undefined` or `null` and
-  nothing tells the two apart (rd391). FlightStreamController's arrow
+  nothing tells the two apart (rd391). Of that kind, startAsyncIterable's
+  closed iterator result is `{done: true}`, where upstream writes `{done:
+  true, value: undefined}` (rd526). FlightStreamController's arrow
   properties, the old variant's keys left on a chunk and ReactPromise's
   constructor of upstream's parameters were accepted before.
 - **The Flight client's constructors as values** (the user, 2026-11-01):
@@ -768,9 +775,6 @@ These differences from upstream's output are accepted:
   - processFullStringRow reads a hint's code `row[0] ?? ''`, where
     upstream's is `undefined` of an empty row: dispatchHint matches
     neither;
-  - initializeModelChunk calls DEV's initializeDebugChunk inside the `try`
-    whose `finally` restores the handler and chunk, where upstream calls it
-    just before: it catches what it throws, so neither `finally` differs.
 - **The Flight client's stream source is webapi's** (2026-11-02): its
   local `UnderlyingSource` stand-in is gone; startReadableStream gives
   `readable_stream::new` webapi's `UnderlyingSource { r#type, start, ..

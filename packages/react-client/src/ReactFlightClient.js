@@ -1005,15 +1005,16 @@ function initializeModelChunk(chunk) {
   if ((enableProfilerTimer && enableComponentPerformanceTrack) || __DEV__) {
     initializingChunk = cyclicChunk;
   }
-  try {
-    if (__DEV__) {
-      // Initialize any debug info and block the initializing chunk on any
-      // unresolved entries.
-      initializeDebugChunk(response, chunk);
-      // TODO: The chunk might have transitioned to ERRORED now.
-      // Should we return early if that happens?
-    }
 
+  if (__DEV__) {
+    // Initialize any debug info and block the initializing chunk on any
+    // unresolved entries.
+    initializeDebugChunk(response, chunk);
+    // TODO: The chunk might have transitioned to ERRORED now.
+    // Should we return early if that happens?
+  }
+
+  try {
     const result = $catchUnwind(() => {
       const value = parseModel(response, resolvedModel);
       const handler = initializingHandler;
@@ -1034,7 +1035,7 @@ function initializeModelChunk(chunk) {
         // from a reference to its handler and on to that handler's chunk. A cycle
         // that closes through `cyclicChunk` is only found once `handler.chunk` is
         // `cyclicChunk`.
-        handler.value = value ?? null;
+        handler.value = value;
         $cellReplace(
           $borrowMut($fieldCell(handler, 'chunk', true)),
           cyclicChunk,
@@ -1782,8 +1783,8 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
 
     // If this is the root object for a model reference, where `handler.value`
     // is a stale `null`, the resolved value can be used directly.
-    if (!key && handler.value == null) {
-      handler.value = mappedValue ?? null;
+    if (!key && handler.value === null) {
+      handler.value = mappedValue;
     }
 
     // If the parent object is an unparsed React element tuple, we also need to
@@ -1865,7 +1866,7 @@ function rejectReference(response, handler, error) {
   const erroredHandler = handler;
   erroredHandler.errored = true;
   erroredHandler.value = null;
-  erroredHandler.reason = error ?? null;
+  erroredHandler.reason = error;
   let {value: chunk} = $borrow($fieldCell(handler, 'chunk', true));
   chunk = chunk != null && chunk.status === 'blocked' ? chunk : undefined;
   if (chunk == null) {
@@ -2072,8 +2073,8 @@ function loadServerReference(response, metaData, parentObject, key) {
 
     // If this is the root object for a model reference, where `handler.value`
     // is a stale `null`, the resolved value can be used directly.
-    if (!key && handler.value == null) {
-      handler.value = resolvedValue ?? null;
+    if (!key && handler.value === null) {
+      handler.value = resolvedValue;
     }
 
     // If the parent object is an unparsed React element tuple, we also need to
@@ -2112,7 +2113,7 @@ function loadServerReference(response, metaData, parentObject, key) {
     const erroredHandler = handler;
     erroredHandler.errored = true;
     erroredHandler.value = null;
-    erroredHandler.reason = error ?? null;
+    erroredHandler.reason = error;
     let {value: chunk} = $borrow($fieldCell(handler, 'chunk', true));
     chunk = chunk != null && chunk.status === 'blocked' ? chunk : undefined;
     if (chunk == null) {
@@ -2312,13 +2313,13 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
             if (erroredHandler != null) {
               erroredHandler.errored = true;
               erroredHandler.value = null;
-              erroredHandler.reason = erroredReason(referencedChunk) ?? null;
+              erroredHandler.reason = erroredReason(referencedChunk);
             } else {
               initializingHandler = {
                 parent: null,
                 chunk: null,
                 value: null,
-                reason: erroredReason(referencedChunk) ?? null,
+                reason: erroredReason(referencedChunk),
                 deps: 0,
                 errored: true,
               };
@@ -2414,13 +2415,13 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
     if (erroredHandler != null) {
       erroredHandler.errored = true;
       erroredHandler.value = null;
-      erroredHandler.reason = erroredReason(chunk) ?? null;
+      erroredHandler.reason = erroredReason(chunk);
     } else {
       initializingHandler = {
         parent: null,
         chunk: null,
         value: null,
-        reason: erroredReason(chunk) ?? null,
+        reason: erroredReason(chunk),
         deps: 0,
         errored: true,
       };

@@ -264,6 +264,7 @@ impl<T> Usable<T> for &ReactRecoverable {}
 
 pub struct ReactCustomFormAction {
     pub name: Option<String>,
+    #[cfg_attr(rust_js, rust_js::optional)]
     pub action: RefCell<Option<String>>,
     pub enc_type: Option<String>,
     pub method: Option<String>,

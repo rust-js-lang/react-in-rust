@@ -1345,11 +1345,9 @@ pub struct InitializationHandler {
     pub parent: Option<Rc<InitializationHandler>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub chunk: RefCell<Option<Chunk>>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub value: Cell<Option<&'static Unknown>>,
     // The controller of a stream whose chunk is blocked on its debug info. Null
     // for every other model. The error the handler was rejected with.
-    #[cfg_attr(rust_js, rust_js::nullable)]
     pub reason: Cell<Option<&'static Unknown>>,
     pub deps: Cell<f64>,
     pub errored: Cell<bool>,
@@ -1540,10 +1538,6 @@ fn initialize_model_chunk(chunk: &Chunk) {
     {
         INITIALIZING_CHUNK.set(Some(Rc::clone(cyclic_chunk)));
     }
-    let _restore = RestoreInitializing {
-        prev_handler,
-        prev_chunk,
-    };
 
     if __DEV__ {
         // Initialize any debug info and block the initializing chunk on any
@@ -1552,6 +1546,11 @@ fn initialize_model_chunk(chunk: &Chunk) {
         // TODO: The chunk might have transitioned to ERRORED now.
         // Should we return early if that happens?
     }
+
+    let _restore = RestoreInitializing {
+        prev_handler,
+        prev_chunk,
+    };
 
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         let value = parse_model(response, &resolved_model);
@@ -2462,7 +2461,7 @@ fn fulfill_reference(
 
         // If this is the root object for a model reference, where `handler.value`
         // is a stale `null`, the resolved value can be used directly.
-        if key.is_empty() && handler.value.get().is_none() {
+        if key.is_empty() && js::strict_equals(handler.value.get(), js::null::<&Unknown>()) {
             handler.value.set(mapped_value);
         }
 
@@ -2538,7 +2537,7 @@ fn reject_reference(
     let blocked_value = handler.value.get();
     let errored_handler = handler;
     errored_handler.errored.set(true);
-    errored_handler.value.set(None);
+    errored_handler.value.set(js::null());
     errored_handler.reason.set(error);
     let chunk = handler.chunk.borrow().clone();
     let Some(chunk) =
@@ -2626,8 +2625,8 @@ fn wait_for_reference(
         let handler = Rc::new(InitializationHandler {
             parent: None,
             chunk: RefCell::new(None),
-            value: Cell::new(None),
-            reason: Cell::new(None),
+            value: Cell::new(js::null()),
+            reason: Cell::new(js::null()),
             deps: Cell::new(1.0),
             errored: Cell::new(false),
         });
@@ -2740,8 +2739,8 @@ fn load_server_reference(
         let handler = Rc::new(InitializationHandler {
             parent: None,
             chunk: RefCell::new(None),
-            value: Cell::new(None),
-            reason: Cell::new(None),
+            value: Cell::new(js::null()),
+            reason: Cell::new(js::null()),
             deps: Cell::new(1.0),
             errored: Cell::new(false),
         });
@@ -2789,7 +2788,7 @@ fn load_server_reference(
 
             // If this is the root object for a model reference, where `handler.value`
             // is a stale `null`, the resolved value can be used directly.
-            if key.is_empty() && handler.value.get().is_none() {
+            if key.is_empty() && js::strict_equals(handler.value.get(), js::null::<&Unknown>()) {
                 handler.value.set(resolved_value);
             }
 
@@ -2825,7 +2824,7 @@ fn load_server_reference(
         let blocked_value = handler.value.get();
         let errored_handler = &handler;
         errored_handler.errored.set(true);
-        errored_handler.value.set(None);
+        errored_handler.value.set(js::null());
         errored_handler.reason.set(error.as_unknown());
         let chunk = handler.chunk.borrow().clone();
         let Some(chunk) =
@@ -3049,8 +3048,8 @@ fn get_outlined_model(
                         INITIALIZING_HANDLER.set(Some(Rc::new(InitializationHandler {
                             parent: None,
                             chunk: RefCell::new(None),
-                            value: Cell::new(None),
-                            reason: Cell::new(None),
+                            value: Cell::new(js::null()),
+                            reason: Cell::new(js::null()),
                             deps: Cell::new(1.0),
                             errored: Cell::new(false),
                         })));
@@ -3064,7 +3063,7 @@ fn get_outlined_model(
                     {
                         let errored_handler = initializing_handler;
                         errored_handler.errored.set(true);
-                        errored_handler.value.set(None);
+                        errored_handler.value.set(js::null());
                         errored_handler
                             .reason
                             .set(errored_reason(&referenced_chunk));
@@ -3072,7 +3071,7 @@ fn get_outlined_model(
                         INITIALIZING_HANDLER.set(Some(Rc::new(InitializationHandler {
                             parent: None,
                             chunk: RefCell::new(None),
-                            value: Cell::new(None),
+                            value: Cell::new(js::null()),
                             reason: Cell::new(errored_reason(&referenced_chunk)),
                             deps: Cell::new(0.0),
                             errored: Cell::new(true),
@@ -3168,8 +3167,8 @@ fn get_outlined_model(
             INITIALIZING_HANDLER.set(Some(Rc::new(InitializationHandler {
                 parent: None,
                 chunk: RefCell::new(None),
-                value: Cell::new(None),
-                reason: Cell::new(None),
+                value: Cell::new(js::null()),
+                reason: Cell::new(js::null()),
                 deps: Cell::new(1.0),
                 errored: Cell::new(false),
             })));
@@ -3181,13 +3180,13 @@ fn get_outlined_model(
         if let Some(initializing_handler) = INITIALIZING_HANDLER.with_borrow(Clone::clone) {
             let errored_handler = initializing_handler;
             errored_handler.errored.set(true);
-            errored_handler.value.set(None);
+            errored_handler.value.set(js::null());
             errored_handler.reason.set(errored_reason(&chunk));
         } else {
             INITIALIZING_HANDLER.set(Some(Rc::new(InitializationHandler {
                 parent: None,
                 chunk: RefCell::new(None),
-                value: Cell::new(None),
+                value: Cell::new(js::null()),
                 reason: Cell::new(errored_reason(&chunk)),
                 deps: Cell::new(0.0),
                 errored: Cell::new(true),
@@ -3415,8 +3414,8 @@ fn parse_model_string(
                 INITIALIZING_HANDLER.set(Some(Rc::new(InitializationHandler {
                     parent: Some(initializing_handler),
                     chunk: RefCell::new(None),
-                    value: Cell::new(None),
-                    reason: Cell::new(None),
+                    value: Cell::new(js::null()),
+                    reason: Cell::new(js::null()),
                     deps: Cell::new(0.0),
                     errored: Cell::new(false),
                 })));

@@ -218,10 +218,10 @@ export interface InitializationReference {
 export interface InitializationHandler {
   parent?: InitializationHandler | null | undefined;
   chunk?: ReactPromise | null | undefined;
-  value?: unknown | null | undefined;
+  value: unknown | null | undefined;
   // The controller of a stream whose chunk is blocked on its debug info. Null
   // for every other model. The error the handler was rejected with.
-  reason?: unknown | null | undefined;
+  reason: unknown | null | undefined;
   deps: number;
   errored: boolean;
 }
