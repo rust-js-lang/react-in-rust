@@ -241,7 +241,7 @@ pub fn render_to_readable_stream(
                             controller,
                         ));
                     }),
-                    pull: Some(&|_controller: &'static ReadableByteStreamController| {
+                    pull: Some(&|_: &'static ReadableByteStreamController| {
                         start_flowing(request.get().unwrap(), writable.get().unwrap());
                     }),
                     cancel: Some(&|reason| {
@@ -398,7 +398,7 @@ pub fn resume(
                             controller,
                         ));
                     }),
-                    pull: Some(&|_controller: &'static ReadableByteStreamController| {
+                    pull: Some(&|_: &'static ReadableByteStreamController| {
                         start_flowing(request.get().unwrap(), writable.get().unwrap());
                     }),
                     cancel: Some(&|reason| {

@@ -20,6 +20,8 @@ pub mod react_dom_fizz_server_node;
 pub mod react_dom_fizz_static_browser;
 #[path = "src/server/ReactDOMFizzStaticEdge.rs"]
 pub mod react_dom_fizz_static_edge;
+#[path = "src/server/ReactDOMFizzStaticNode.rs"]
+pub mod react_dom_fizz_static_node;
 #[path = "src/shared/ReactDOMFloat.rs"]
 pub mod react_dom_float;
 #[path = "src/shared/ReactDOMFlushSync.rs"]

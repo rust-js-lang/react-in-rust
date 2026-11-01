@@ -156,7 +156,7 @@ export function renderToReadableStream(children, options) {
               writable = value;
             }
           },
-          pull(controller) {
+          pull() {
             startFlowing($unwrap(request), $unwrap(writable));
           },
           cancel(reason) {
@@ -297,7 +297,7 @@ export function resume(children, postponedState, options) {
               writable = value;
             }
           },
-          pull(controller) {
+          pull() {
             startFlowing($unwrap(request), $unwrap(writable));
           },
           cancel(reason) {
