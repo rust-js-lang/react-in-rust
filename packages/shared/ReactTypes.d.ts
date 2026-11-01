@@ -141,7 +141,7 @@ export interface StartTransitionOptions {
 
 export interface ReactCustomFormAction {
   name?: string | undefined;
-  action?: string | undefined;
+  action: string | null | undefined;
   encType?: string | undefined;
   method?: string | undefined;
   target?: string | undefined;
@@ -302,7 +302,7 @@ export interface ReactTimeInfo {
  */
 export type ReactDebugInfoEntry = unknown;
 
-export type ReactDebugInfo = ReactDebugInfoEntry[];
+export type ReactDebugInfo = (ReactDebugInfoEntry | null | undefined)[];
 
 // Intrinsic ViewTransitionInstance. This type varies by Environment whether a particular
 // renderer supports it.
