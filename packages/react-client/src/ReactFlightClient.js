@@ -1617,18 +1617,6 @@ function initializeChunkIfUnblocked(response, handler) {
   initializeBlockedChunk(response, chunk, handler.value, controller);
 }
 
-/**
- * The chunk a lazy node wraps, of a value that's one (upstream's
- * `value.$$typeof === REACT_LAZY_TYPE` loops).
- */
-function isLazy(value) {
-  return (
-    typeof value === 'object' &&
-    value != null &&
-    value.$$typeof === REACT_LAZY_TYPE
-  );
-}
-
 function fulfillReference(response, reference, value, fulfilledChunk) {
   const {handler} = reference;
   const parentObject = reference.parentObject;
@@ -1640,7 +1628,11 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
     result = (() => {
       let i = 1;
       while (i < $borrow(path).length) {
-        while (isLazy(value$1)) {
+        while (
+          typeof value$1 === 'object' &&
+          value$1 != null &&
+          value$1.$$typeof === REACT_LAZY_TYPE
+        ) {
           // We never expect to see a Lazy node on this path because we encode those as
           // separate models. This must mean that we have inserted an extra lazy node
           // e.g. to replace a blocked element. We must instead look for it inside.
@@ -1731,7 +1723,11 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
         throw new Error('Invalid reference.');
       }
 
-      while (isLazy(value$1)) {
+      while (
+        typeof value$1 === 'object' &&
+        value$1 != null &&
+        value$1.$$typeof === REACT_LAZY_TYPE
+      ) {
         // If what we're referencing is a Lazy it must be because we inserted one as a virtual node
         // while it was blocked by other data. If it's no longer blocked, we can unwrap it.
         const referencedChunk = value$1._payload;
@@ -2148,7 +2144,11 @@ function loadServerObjectReference(response, metaData, parentObject, key) {
 }
 
 function resolveLazy(value) {
-  while (isLazy(value)) {
+  while (
+    typeof value === 'object' &&
+    value != null &&
+    value.$$typeof === REACT_LAZY_TYPE
+  ) {
     const payload = value._payload;
     if (payload.status !== 'fulfilled') {
       break;
@@ -2236,7 +2236,11 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
     let value = initializedValue(chunk);
     const {length: pathLen} = $borrow(path);
     for (let i = 1; i < pathLen; i++) {
-      while (isLazy(value)) {
+      while (
+        typeof value === 'object' &&
+        value != null &&
+        value.$$typeof === REACT_LAZY_TYPE
+      ) {
         const referencedChunk = value._payload;
         if (referencedChunk.status === 'resolved_model') {
           initializeModelChunk(referencedChunk);
@@ -2320,7 +2324,11 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
       }
     }
 
-    while (isLazy(value)) {
+    while (
+      typeof value === 'object' &&
+      value != null &&
+      value.$$typeof === REACT_LAZY_TYPE
+    ) {
       // If what we're referencing is a Lazy it must be because we inserted one as a virtual node
       // while it was blocked by other data. If it's no longer blocked, we can unwrap it.
       const referencedChunk = value._payload;

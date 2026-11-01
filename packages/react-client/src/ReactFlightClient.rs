@@ -2289,14 +2289,6 @@ fn initialize_chunk_if_unblocked(response: &'static Response, handler: &Initiali
     initialize_blocked_chunk(response, &chunk, handler.value.get(), controller);
 }
 
-/// The chunk a lazy node wraps, of a value that's one (upstream's
-/// `value.$$typeof === REACT_LAZY_TYPE` loops).
-fn is_lazy(value: Option<&'static Unknown>) -> bool {
-    js::type_of(value) == "object"
-        && value.is_some()
-        && SymbolFor::from_value(js::get(value, "$$typeof")) == Some(REACT_LAZY_TYPE)
-}
-
 fn fulfill_reference(
     response: &'static Response,
     reference: &Rc<InitializationReference>,
@@ -2317,7 +2309,10 @@ fn fulfill_reference(
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| -> bool {
         let mut i = 1;
         while i < path.borrow().len() {
-            while is_lazy(value) {
+            while js::type_of(value) == "object"
+                && value.is_some()
+                && SymbolFor::from_value(js::get(value, "$$typeof")) == Some(REACT_LAZY_TYPE)
+            {
                 // We never expect to see a Lazy node on this path because we encode those as
                 // separate models. This must mean that we have inserted an extra lazy node
                 // e.g. to replace a blocked element. We must instead look for it inside.
@@ -2418,7 +2413,10 @@ fn fulfill_reference(
             i += 1;
         }
 
-        while is_lazy(value) {
+        while js::type_of(value) == "object"
+            && value.is_some()
+            && SymbolFor::from_value(js::get(value, "$$typeof")) == Some(REACT_LAZY_TYPE)
+        {
             // If what we're referencing is a Lazy it must be because we inserted one as a virtual node
             // while it was blocked by other data. If it's no longer blocked, we can unwrap it.
             // SAFETY: a Flight lazy node's payload is its chunk.
@@ -2909,7 +2907,10 @@ fn load_server_object_reference(
 
 fn resolve_lazy(value: Option<&'static Unknown>) -> Option<&'static Unknown> {
     let mut value = value;
-    while is_lazy(value) {
+    while js::type_of(value) == "object"
+        && value.is_some()
+        && SymbolFor::from_value(js::get(value, "$$typeof")) == Some(REACT_LAZY_TYPE)
+    {
         // SAFETY: a Flight lazy node's payload is its chunk.
         let payload: Chunk = unsafe { js::cast(js::get(value, "_payload")) };
         if matches!(*payload.state.borrow(), ChunkState::Initialized { .. }) {
@@ -3006,7 +3007,10 @@ fn get_outlined_model(
         let mut value = initialized_value(&chunk);
         let path_len = path.borrow().len();
         for i in 1..path_len {
-            while is_lazy(value) {
+            while js::type_of(value) == "object"
+                && value.is_some()
+                && SymbolFor::from_value(js::get(value, "$$typeof")) == Some(REACT_LAZY_TYPE)
+            {
                 // SAFETY: a Flight lazy node's payload is its chunk.
                 let referenced_chunk: Chunk = unsafe { js::cast(js::get(value, "_payload")) };
                 if matches!(
@@ -3100,7 +3104,10 @@ fn get_outlined_model(
             }
         }
 
-        while is_lazy(value) {
+        while js::type_of(value) == "object"
+            && value.is_some()
+            && SymbolFor::from_value(js::get(value, "$$typeof")) == Some(REACT_LAZY_TYPE)
+        {
             // If what we're referencing is a Lazy it must be because we inserted one as a virtual node
             // while it was blocked by other data. If it's no longer blocked, we can unwrap it.
             // SAFETY: a Flight lazy node's payload is its chunk.
