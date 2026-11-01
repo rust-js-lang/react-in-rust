@@ -490,6 +490,33 @@ These differences from upstream's output are accepted:
   `performance` goes on to the `navigator.connection` estimate, where upstream's bare
   `typeof performance.getEntriesByType` throws a ReferenceError.
 
+- **TestHost's getInstanceFromNode and getInstanceFromScope** (the user,
+  2026-11-01): `if let Some(instance) = map.get(mock_node)` prints
+  `if (instance != null)` where upstream tests `instance !== undefined`,
+  and getInstanceFromScope's `map.get(scope_instance)` returned as an
+  `Option` prints `?? null` where upstream writes `|| null`. The map holds
+  only instances, never `null` or a falsy value, so no test tells them
+  apart.
+
+- **react-art's `prevProps ??= {}`** (the user, 2026-11-01; rd333): an
+  applyXProps function's `prev_props.unwrap_or(object::spread(None))`
+  prints `prevProps ??= {};` as its first statement, where upstream
+  defaults the parameter, `prevProps = {}`. `??=` also replaces a `null`,
+  which only a caller passing `null` sees (upstream then throws reading
+  `null.cursor`); React never does.
+
+- **`Vec::clear` as `length = 0`** (the user, 2026-11-01): a shared
+  array's `children.borrow_mut().clear()` prints `container.children.length
+  = 0;` where upstream writes `container.children.splice(0)` (TestHost's
+  clearContainer); both empty the array in place, and the removed items
+  upstream's splice returns are dropped.
+
+- **rd322's one-key literal layout** (the user, 2026-11-01): a struct
+  literal whose fields but one are `None` and so print nothing keeps
+  rustfmt's line breaks: the object and its one key are on lines of their
+  own inside the array, where upstream writes `[{awaited: ioInfo}]`
+  (ReactLazy's `_debugInfo`).
+
 These forms are decided:
 
 - **tr1**: test an Option with `== null` or `!= null`, never by truth. Where
@@ -511,6 +538,10 @@ These forms are decided:
   branch.
 - **Cast let**: every written `let` stays a `const`. Write casts inline
   where upstream does (`(children as any)._payload`).
+- **`'' + x` is `js::concat_text(x)`** (the user, 2026-11-01): upstream's
+  string concatenation of a value of any shape stays
+  `js::concat_text(x)`, its `Result` unwrapped where upstream lets JS
+  throw, which prints `'' + x` (ReactTestRenderer's getChildren).
 - **Names**: `#[rust_js::name]` on a `let` names the JS variable
   (`$$typeof`). A `_name` parameter loses its `_` only when the body doesn't
   read it (ADR 0678).
@@ -610,8 +641,8 @@ The port is split between sessions by package:
   it.
   react-noop-renderer's createReactNoop and ReactFiberConfigNoop are Rust.
   react-test-renderer's ReactFiberConfigTestHost is Rust (ReactTestRenderer
-  waits on rd324 and rd325); react-art's ReactARTInternals is Rust, its
-  ReactFiberConfigART and ReactART wait on rd331 to rd335.
+  waits on rd324 and rd325); react-art's ReactARTInternals and ReactFiberConfigART are Rust;
+  ReactART waits on class components (rd331) and `arguments` (rd332).
   bindToConsole binds the console's method to its arguments,
   `function::bind(method, Some(&console), args)`, printed
   `method.bind(console, ...args)` where upstream writes
