@@ -97,54 +97,51 @@ Phase B (when the draft is whole, in the commit that builds it):
    `$$$config` factory; it stays JS (the npm build wraps the module), so
    nothing there moves.
 
-## GAPs (rd490-rd496)
+## GAPs (rd490-rd499)
 
-Each is marked `// GAP rdNNN` in the source.
+Resolved:
+- **rd490** replay nodes: fixed in rust-js 9b4defe30 (ADR 1046). `ReplayNode`
+  is an untagged enum of `ReplayElement` and `ReplaySuspenseBoundary`, held
+  `Rc<RefCell<ReplayNode>>`, grown and shrunk by `*node = ..`.
+- **rd492** `AsyncLocalStorage`: node's `async_hooks` binding (rust-js
+  0e1cea0b0) is used for `requestStorage`.
+- **rd495** the dyn-Fn drop refusal: **the user's decision (2026-11-01),
+  "Pings made at then()"**: a task has no `ping` field; `ping_of(request,
+  task)` makes the resolve and reject closures where they're given to
+  `then`, each holding the request and the task strongly, as upstream's
+  arrows do. The task object has no `ping` property (accepted). This also
+  removes the draft's `Weak::upgrade().unwrap()`, which would have
+  panicked once a task was gone.
+- **rd496** getCurrentStack: fixed in react-in-rust 4cff83c; what was read
+  is put back.
 
-- **rd490** a replay node is `[name, key, children, slots]` or a boundary's
-  `[name, key, children, slots, fallback, rootSegmentID]`, told apart by
-  `node.length === 4`; Rust's form is an untagged enum of two tuple structs,
-  which rust-js can't tell apart (rd291's kind). Repro:
-  `#[rust_js::untagged] enum N { A(Rc<(String, f64)>), B(Rc<(String, f64, f64)>) } fn f(n: &N) -> bool { matches!(n, N::A(_)) }` wants `n.length === 2`.
-- **rd491** a function value given as a callback: `noop` (a `fn()`) is no
-  `dyn Fn(A)` or `dyn Fn(A, B)`, so `onShellError === undefined ? noop :
-  onShellError` needs `Rc::new(|_| {})`, printed as an arrow; and a task's
-  ping functions (`Rc<dyn Fn()>`) can't be given to `Thenable::then`, whose
-  parameters are `impl FnOnce`, as themselves (`then(ping.resolve,
-  ping.reject)`). Repro: `fn f(cb: Option<Rc<dyn Fn(f64)>>) -> Rc<dyn Fn(f64)> { cb.unwrap_or_else(|| Rc::new(|_| {})) }` wants `cb ?? noop`.
-- **rd492** node has no `async_hooks` binding: ReactFizzConfig's
-  `requestStorage` (`AsyncLocalStorage<Request | void>`) is bound locally,
-  `RequestStorage` with `getStore`, as ReactFlightCurrentOwner binds its
-  `ComponentStorage`. Repro: `node::async_hooks::AsyncLocalStorage::<T>::get_store` doesn't exist.
-- **rd493** a field set only under a condition: upstream sets a task's
-  `legacyContext` only `if (!disableLegacyContext)` and `debugTask` only in
-  DEV (to stay at 16 fields), and a boundary's errorMessage/errorStack/
-  errorComponentStack only in DEV. A struct's fields are always written;
-  `#[rust_js::optional]` on a `RefCell<Option<..>>` should leave them
-  absent until set. Repro: `struct T { #[rust_js::optional] d: Cell<Option<f64>> } fn new(dev: bool) -> T { T { d: Cell::new(if dev { Some(1.0) } else { None }) } }`, upstream `const t = {}; if (dev) t.d = 1;`.
-- **rd494** `new RequestInstance(..)`: upstream makes the request with a
-  constructor function for its hidden class; a Rust struct literal prints an
-  object literal. Repro: any struct of >16 fields made by one function.
-- **rd495 (blocking the build)** ADR 0626's refusal: "this crate's
-  `dyn Fn`s may hold a value with a destructor, which their drop runs, but
-  `react_isomorphic`, a rust-js library whose `dyn Fn`s drop nothing, holds
-  one of them". The server's `dyn Fn`s hold `Rc`s (a task's ping closures
-  capture the `Rc<Request>` and a `Weak<Task>`; the request's callbacks are
-  `Rc<dyn Fn>` of closures an entry makes), and react-server reaches
-  react_isomorphic's `BasicStateAction::Update(&'static dyn Fn(S) -> S)`
-  through ReactFizzHooks. ADR 0626's amendment records this refusal as the
-  recommendation while the user's decision is pending (rust-js's
-  `decisions-pending.md`, rd57). Repro: library crate `dep` exports
-  `pub enum E { F(&'static dyn Fn()) }`; a consumer that uses `dep::E` and
-  makes `let r = Rc::new(1); let f: Rc<dyn Fn()> = Rc::new(move || { let _ = &r; });`
-  is refused. (The draft's earlier rd495, an `Rc` or a `String` given to
-  JS as `&'static Unknown`, was its own mistake: `js::unknown_of(value)`
-  is that form, and the draft uses it.)
-- **rd496 (blocking, a wrong answer)** `ReactSharedInternals.getCurrentStack`:
-  its getter gives `Option<&'static dyn Fn() -> String>`, its setter takes
-  `Option<fn() -> String>`, so rerenderStalledTask can't put back what it
-  read. The draft puts back its own function, wrong where another
-  renderer's was set. Repro: `let p = R.get_current_stack(); R.set_get_current_stack(p);` doesn't type-check.
+Open:
+- **rd491** `noop` is no callback of one or two parameters:
+  `on_shell_error.unwrap_or_else(|| Rc::new(|_| {}))` prints an arrow where
+  upstream writes `noop`. Repro: `fn f(cb: Option<Rc<dyn Fn(f64)>>) -> Rc<dyn Fn(f64)> { cb.unwrap_or_else(|| Rc::new(|_| {})) }`.
+- **rd493** a field set only under a condition (a task's `legacyContext`
+  and `debugTask`, a boundary's DEV error fields): always written. Repro:
+  `struct T { #[rust_js::optional] d: Cell<Option<f64>> }` made with `None`
+  in production, where upstream never sets `t.d`.
+- **rd494** `new RequestInstance(..)`: the request is an object literal
+  (`requestInstance(..)` returns `{..}`).
+- **rd497** node's `AsyncLocalStorage<T>::run` takes a `&'static T`; the
+  request an `Rc` holds is given by `unsafe { js::cast(Some(js::unknown(&**request))) }`
+  (`request_store`). Upstream's `requestStorage.run(request, performWork,
+  request)` prints `requestStorage.run(requestStore(request), () =>
+  performWork(request))`. Repro: `fn f(s: &AsyncLocalStorage<Rc<R>>, r: &Rc<R>) { s.run(r, || ()) }`
+  doesn't borrow-check.
+- **rd498** an `extern "Rust"` static with no `#[link_name]` (the draft lost
+  one in an edit) compiles and prints its Rust name, `REQUEST_STORAGE`,
+  unimported: a ReferenceError at run time (852 test failures before the
+  fix). rust-js should refuse it. Repro: `unsafe extern "Rust" { safe static X: bool; } pub fn f() -> bool { X }`.
+- **rd499** labels in the generated JS (the gates' check wants none):
+  - flushSubtree: `for next_child in children.iter() { while (chunk_idx as f64) < next_child.index { ..; chunk_idx += 1; } r = flush_segment(..); }`
+    prints `bb28: while (..) { while (true) { if (!(..)) { r = ..; continue bb28; } .. } }`.
+    Repro: `for x in v { while i < x { i += 1; } g(); }`.
+  - renderNode (`bb368`) and flushCompletedQueues (`bb97`): a `let .. else
+    { return; }` inside a `match` arm or a `catch_unwind` closure, with code
+    after the match, prints a labeled block broken out of.
 
 ## Output differences expected (not built yet; from the Rust's forms)
 

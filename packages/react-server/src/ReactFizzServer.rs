@@ -84,9 +84,11 @@ use crate::react_fizz_view_transition_component::{
 /// Where a request writes, the host's stream.
 pub type Destination = Unknown;
 /// What's written: text, or its encoded bytes.
-pub type Chunk = Unknown;
+pub struct Chunk(std::marker::PhantomData<JsObject>);
+
+unsafe impl js::Defined for Chunk {}
 /// A chunk encoded once, as a module loads.
-pub type PrecomputedChunk = Unknown;
+pub type PrecomputedChunk = Chunk;
 
 // ReactFizzConfig's types, which a renderer's config defines.
 
@@ -189,6 +191,7 @@ unsafe extern "Rust" {
     safe static IS_WORK_LOOP_EXTERNALLY_DRIVEN: bool;
     #[link_name = "./src/ReactFizzConfig.js#supportsRequestStorage"]
     safe static SUPPORTS_REQUEST_STORAGE: bool;
+    #[link_name = "./src/ReactFizzConfig.js#requestStorage"]
     safe static REQUEST_STORAGE: &'static AsyncLocalStorage<Rc<Request>>;
     #[link_name = "./src/ReactServerStreamConfig.js#byteLengthOfChunk"]
     safe static BYTE_LENGTH_OF_CHUNK: Option<&'static ByteLengthOfChunk>;
@@ -464,7 +467,7 @@ struct Segment {
     index: f64,                 // the index within the parent's chunks or 0 at the root
     chunks: Chunks,
     children: RefCell<Vec<Rc<Segment>>>,
-    preamble_children: RefCell<Vec<Rc<Segment>>>,
+    preamble_children: Rc<RefCell<Vec<Rc<Segment>>>>,
     // The context that this segment was created in.
     parent_format_context: &'static FormatContext,
     // If this segment represents a fallback, this is the content that will replace that fallback.
@@ -528,7 +531,7 @@ pub struct Request {
     root_format_context: &'static FormatContext,
     progressive_chunk_size: f64,
     status: Cell<i32>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
+    // What was thrown, `undefined` too: `null` until then.
     fatal_error: Cell<Option<&'static Unknown>>,
     aborted: Cell<bool>,
     next_segment_id: Cell<f64>,
@@ -537,7 +540,7 @@ pub struct Request {
     #[cfg_attr(rust_js, rust_js::nullable)]
     completed_root_segment: RefCell<Option<Rc<Segment>>>, // Completed but not yet flushed root segments.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    completed_preamble_segments: RefCell<Option<Vec<Vec<Rc<Segment>>>>>, // contains the ready-to-flush segments that make up the preamble
+    completed_preamble_segments: RefCell<Option<Rc<PreambleSegments>>>, // contains the ready-to-flush segments that make up the preamble
     byte_size: Cell<f64>, // counts the number of bytes accumulated in the shell
     abortable_tasks: AbortSet,
     pinged_tasks: RefCell<Vec<Rc<Task>>>, // High priority tasks that should be worked on first.
@@ -590,6 +593,10 @@ pub struct Request {
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     did_warn_for_key: Cell<Option<&'static WeakSet<ComponentStackNode>>>,
 }
+
+/// The segments of a preamble: each segment's preamble children, as it
+/// holds them.
+type PreambleSegments = Vec<Rc<RefCell<Vec<Rc<Segment>>>>>;
 
 /// The result of an MPA submission.
 pub type FormState = ReactFormState<Option<&'static Unknown>, Option<&'static Unknown>>;
@@ -722,7 +729,7 @@ fn request_instance(
         } else {
             OPENING
         }),
-        fatal_error: Cell::new(None),
+        fatal_error: Cell::new(js::null()),
         aborted: Cell::new(false),
         next_segment_id: Cell::new(0.0),
         all_pending_tasks: Cell::new(0.0),
@@ -1256,7 +1263,7 @@ fn create_pending_segment(
         index,
         chunks: RefCell::new(vec![]),
         children: RefCell::new(vec![]),
-        preamble_children: RefCell::new(vec![]),
+        preamble_children: Rc::new(RefCell::new(vec![])),
         parent_format_context,
         boundary: RefCell::new(boundary),
         last_pushed_text: Cell::new(last_pushed_text),
@@ -1264,6 +1271,7 @@ fn create_pending_segment(
     })
 }
 
+#[cfg_attr(rust_js, rust_js::name = "getCurrentStackInDEV")]
 fn get_current_stack_in_dev() -> String {
     if __DEV__ {
         let Some(current_task_in_dev) = CURRENT_TASK_IN_DEV.with_borrow(Clone::clone) else {
@@ -1307,7 +1315,7 @@ fn push_halted_await_on_component_stack(task: &Task, debug_info: Option<&'static
                     task.component_stack
                         .replace(Some(Rc::new(ComponentStackNode {
                             parent,
-                            r#type: async_info.unwrap(),
+                            r#type: async_info,
                             owner: js::get(best_stack, "owner"),
                             stack: Cell::new(js::get(best_stack, "debugStack")),
                         })));
@@ -1437,7 +1445,7 @@ fn push_server_component_stack(task: &Task, debug_info: Option<&'static Unknown>
             task.component_stack
                 .replace(Some(Rc::new(ComponentStackNode {
                     parent,
-                    r#type: component_info.unwrap(),
+                    r#type: component_info,
                     owner: js::get(component_info, "owner"),
                     stack: Cell::new(js::get(component_info, "debugStack")),
                 })));
@@ -1476,10 +1484,7 @@ fn push_component_stack(task: &Task) {
                 let parent = task.component_stack.take();
                 task.component_stack
                     .replace(Some(create_component_stack_from_type(
-                        parent,
-                        r#type.unwrap(),
-                        owner,
-                        stack,
+                        parent, r#type, owner, stack,
                     )));
             }
             Some(REACT_LAZY_TYPE) => {
@@ -1491,7 +1496,7 @@ fn push_component_stack(task: &Task) {
             _ => {
                 if __DEV__ {
                     let maybe_usable = node;
-                    if js::is_function(js::get(maybe_usable, "then")) {
+                    if js::type_of(js::get(maybe_usable, "then")) == "function" {
                         let thenable = maybe_usable;
                         push_server_component_stack(task, js::get(thenable, "_debugInfo"));
                     }
@@ -1503,7 +1508,7 @@ fn push_component_stack(task: &Task) {
 
 fn create_component_stack_from_type(
     parent: Option<Rc<ComponentStackNode>>,
-    r#type: &'static Unknown,
+    r#type: Option<&'static Unknown>,
     owner: Option<&'static Unknown>, // DEV only
     stack: Option<&'static Unknown>, // DEV only
 ) -> Rc<ComponentStackNode> {
@@ -1529,7 +1534,7 @@ fn replace_suspense_component_stack_with_suspense_fallback_stack(
     let component_stack = component_stack?;
     Some(create_component_stack_from_type(
         component_stack.parent.clone(),
-        js::unknown("Suspense Fallback"),
+        Some(js::unknown("Suspense Fallback")),
         if __DEV__ {
             component_stack.owner
         } else {
@@ -2753,9 +2758,8 @@ fn render_suspense_list(
             }
         }
         if ENABLE_ASYNC_ITERABLE_CHILDREN.with(|&enabled| enabled)
-            && js::is_function(
-                ASYNC_ITERATOR.with(|&async_iterator| js::get(children, async_iterator)),
-            )
+            && js::type_of(ASYNC_ITERATOR.with(|&async_iterator| js::get(children, async_iterator)))
+                == "function"
         {
             let iterator: Option<&'static AsyncIterator> = unsafe {
                 js::cast(js::function::call(
@@ -3288,7 +3292,7 @@ fn render_function_component(
     }
     if __DEV__ {
         let prototype = js::get(component, "prototype");
-        if js::truthy(prototype) && js::is_function(js::get(prototype, "render")) {
+        if js::truthy(prototype) && js::type_of(js::get(prototype, "render")) == "function" {
             let component_name = component_name_or_unknown(component);
 
             DID_WARN_ABOUT_BAD_CLASS.with(|&did_warn_about_bad_class| {
@@ -3452,7 +3456,7 @@ fn validate_function_component_in_dev(component: &'static Unknown) {
             ));
         }
 
-        if js::is_function(js::get(component, "getDerivedStateFromProps")) {
+        if js::type_of(js::get(component, "getDerivedStateFromProps")) == "function" {
             let component_name = component_name_or_unknown(component);
 
             DID_WARN_ABOUT_GET_DERIVED_STATE_ON_FUNCTION_COMPONENT.with(|&did_warn| {
@@ -3564,7 +3568,7 @@ fn render_context_consumer(
 ) {
     let render = js::get(props, "children");
 
-    if __DEV__ && !js::is_function(render) {
+    if __DEV__ && js::type_of(render) != "function" {
         console::error((concat!(
             "A context consumer was rendered with multiple children, or a child ",
             "that isn't a function. A context consumer expects a single child ",
@@ -3970,7 +3974,7 @@ fn is_suspending(x: Option<&'static Unknown>) -> bool {
         && !matches!(js::classify(x), Kind::Null)
         && (SUSPENSE_EXCEPTION.with(|&suspense_exception| {
             js::strict_equals(x, Some(js::unknown(suspense_exception)))
-        }) || js::is_function(js::get(x, "then"))
+        }) || js::type_of(js::get(x, "then")) == "function"
             // Rethrow so retryReplayTask can trampoline on stack overflow.
             || js::strict_equals(
                 js::get(x, "message"),
@@ -4157,9 +4161,9 @@ fn validate_iterable(
             let component_stack = task.component_stack.borrow().clone();
             let is_generator_component = child_index == -1.0 // Only the root child is valid
                 && component_stack.as_ref().is_some_and(|component_stack| {
-                    js::type_of(Some(component_stack.r#type)) == "function" // FunctionComponent
+                    js::type_of(component_stack.r#type) == "function" // FunctionComponent
                         // $FlowFixMe[method-unbinding]
-                        && js::object::to_string(Some(component_stack.r#type)).unwrap()
+                        && js::object::to_string(component_stack.r#type).unwrap()
                             == "[object GeneratorFunction]"
                 })
                 // $FlowFixMe[method-unbinding]
@@ -4205,9 +4209,9 @@ fn validate_async_iterable(
         let component_stack = task.component_stack.borrow().clone();
         let is_generator_component = child_index == -1.0 // Only the root child is valid
             && component_stack.as_ref().is_some_and(|component_stack| {
-                js::type_of(Some(component_stack.r#type)) == "function" // FunctionComponent
+                js::type_of(component_stack.r#type) == "function" // FunctionComponent
                     // $FlowFixMe[method-unbinding]
-                    && js::object::to_string(Some(component_stack.r#type)).unwrap()
+                    && js::object::to_string(component_stack.r#type).unwrap()
                         == "[object AsyncGeneratorFunction]"
             })
             // $FlowFixMe[method-unbinding]
@@ -4464,7 +4468,8 @@ fn retry_node(request: &Rc<Request>, task: &Rc<Task>) {
         }
 
         if ENABLE_ASYNC_ITERABLE_CHILDREN.with(|&enabled| enabled)
-            && js::is_function(ASYNC_ITERATOR.with(|&async_iterator| js::get(node, async_iterator)))
+            && js::type_of(ASYNC_ITERATOR.with(|&async_iterator| js::get(node, async_iterator)))
+                == "function"
         {
             let iterator: Option<&'static AsyncIterator> = unsafe {
                 js::cast(js::function::call(
@@ -4547,7 +4552,7 @@ fn retry_node(request: &Rc<Request>, task: &Rc<Task>) {
         //
         // e.g. Usable<Usable<Usable<T>>> should resolve to T
         let maybe_usable = node;
-        if js::is_function(js::get(maybe_usable, "then")) {
+        if js::type_of(js::get(maybe_usable, "then")) == "function" {
             // Clear any previous thenable state that was created by the unwrapping.
             task.thenable_state.replace(None);
             let thenable: &'static Thenable = unsafe { js::cast(Some(maybe_usable)) };
@@ -4671,7 +4676,7 @@ fn replay_fragment(
                 && !matches!(js::classify(thrown_value), Kind::Null)
                 && (SUSPENSE_EXCEPTION.with(|&suspense_exception| {
                     js::strict_equals(thrown_value, Some(js::unknown(suspense_exception)))
-                }) || js::is_function(js::get(thrown_value, "then")))
+                }) || js::type_of(js::get(thrown_value, "then")) == "function")
             {
                 // Suspend
                 resume_unwind(x);
@@ -4800,7 +4805,7 @@ fn warn_for_missing_key(request: &Rc<Request>, task: &Rc<Task>, child: Option<&'
         let previous_component_stack = task.component_stack.borrow().clone();
         let stack_frame = create_component_stack_from_type(
             task.component_stack.borrow().clone(),
-            js::get(child, "type").unwrap(),
+            js::get(child, "type"),
             js::get(child, "_owner"),
             js::get(child, "_debugStack"),
         );
@@ -5364,7 +5369,7 @@ fn render_node(
                 // $FlowFixMe[invalid-compare]
             } else if js::type_of(x) == "object" && !matches!(js::classify(x), Kind::Null) {
                 // $FlowFixMe[method-unbinding]
-                if js::is_function(js::get(x, "then")) {
+                if js::type_of(js::get(x, "then")) == "function" {
                     let thenable: &'static Thenable = unsafe { js::cast(x) };
                     let thenable_state = if is_suspense_exception {
                         get_thenable_state_after_suspending()
@@ -5511,7 +5516,7 @@ fn render_node(
                 && !matches!(js::classify(x), Kind::Null)
             {
                 // $FlowFixMe[method-unbinding]
-                if js::is_function(js::get(x, "then")) {
+                if js::type_of(js::get(x, "then")) == "function" {
                     let thenable: &'static Thenable = unsafe { js::cast(x) };
                     let thenable_state = if is_suspense_exception {
                         get_thenable_state_after_suspending()
@@ -5922,9 +5927,9 @@ fn abort_task(task: &Rc<Task>, request: &Rc<Request>) {
             if js::type_of(node) == "object"
                 && !matches!(js::classify(node), Kind::Null)
                 && (is_array(node)
-                    || js::is_function(
+                    || js::type_of(
                         ASYNC_ITERATOR.with(|&async_iterator| js::get(node, async_iterator)),
-                    )
+                    ) == "function"
                     // $FlowFixMe[invalid-compare]
                     || SymbolFor::from_value(js::get(node, "$$typeof")) == Some(REACT_ELEMENT_TYPE)
                     // $FlowFixMe[invalid-compare]
@@ -6120,6 +6125,7 @@ fn finish_aborted_task(task: &Rc<Task>, request: &Rc<Request>, error: Option<&'s
     }
 }
 
+#[cfg_attr(rust_js, rust_js::name = "finishAbortedTaskDEV")]
 fn finish_aborted_task_dev(
     task: &Rc<Task>,
     request: &Rc<Request>,
@@ -6147,6 +6153,7 @@ fn finish_aborted_task_dev(
     }
 }
 
+#[cfg_attr(rust_js, rust_js::name = "abortTaskDEV")]
 fn abort_task_dev(task: &Rc<Task>, request: &Rc<Request>) {
     if __DEV__ {
         let prev_task_in_dev = CURRENT_TASK_IN_DEV.with_borrow(Clone::clone);
@@ -6614,7 +6621,7 @@ fn retry_render_task(request: &Rc<Request>, task: &Rc<Task>, segment: &Rc<Segmen
 
             if js::type_of(x) == "object" && !matches!(js::classify(x), Kind::Null) {
                 // $FlowFixMe[method-unbinding]
-                if js::is_function(js::get(x, "then")) {
+                if js::type_of(js::get(x, "then")) == "function" {
                     // Something suspended again, let's pick it back up later.
                     segment.status.set(PENDING);
                     task.thenable_state.replace(if is_suspense_exception {
@@ -6755,7 +6762,7 @@ fn retry_replay_task(request: &Rc<Request>, task: &Rc<Task>) {
             // $FlowFixMe[invalid-compare]
             if js::type_of(x) == "object" && !matches!(js::classify(x), Kind::Null) {
                 // $FlowFixMe[method-unbinding]
-                if js::is_function(js::get(x, "then")) {
+                if js::type_of(js::get(x, "then")) == "function" {
                     // Something suspended again, let's pick it back up later.
                     let thenable: &'static Thenable = unsafe { js::cast(x) };
                     let (resolve, reject) = ping_of(request, task);
@@ -7172,10 +7179,10 @@ fn write_postamble(destination: &Destination, resumable_state: &ResumableState) 
 fn prepare_preamble_from_subtree(
     request: &Request,
     segment: &Segment,
-    collected_preamble_segments: &mut Vec<Vec<Rc<Segment>>>,
+    collected_preamble_segments: &mut PreambleSegments,
 ) -> bool {
     if !segment.preamble_children.borrow().is_empty() {
-        collected_preamble_segments.push(segment.preamble_children.borrow().clone());
+        collected_preamble_segments.push(Rc::clone(&segment.preamble_children));
     }
     let mut pending_preambles = false;
     for next_segment in segment.children.borrow().iter() {
@@ -7189,7 +7196,7 @@ fn prepare_preamble_from_subtree(
 fn prepare_preamble_from_segment(
     request: &Request,
     segment: &Segment,
-    collected_preamble_segments: &mut Vec<Vec<Rc<Segment>>>,
+    collected_preamble_segments: &mut PreambleSegments,
 ) -> bool {
     let Some(boundary) = segment.boundary.borrow().clone() else {
         // This segment is not a boundary, let's check it's children
@@ -7260,7 +7267,7 @@ fn prepare_preamble(request: &Request) {
     if let Some(completed_root_segment) = completed_root_segment
         && request.completed_preamble_segments.borrow().is_none()
     {
-        let mut collected_preamble_segments: Vec<Vec<Rc<Segment>>> = vec![];
+        let mut collected_preamble_segments: PreambleSegments = vec![];
         let original_request_byte_size = request.byte_size.get();
         let has_pending_preambles = prepare_preamble_from_segment(
             request,
@@ -7270,7 +7277,7 @@ fn prepare_preamble(request: &Request) {
         if is_preamble_ready(request.render_state, has_pending_preambles) {
             request
                 .completed_preamble_segments
-                .replace(Some(collected_preamble_segments));
+                .replace(Some(Rc::new(collected_preamble_segments)));
         } else {
             // We restore the original size since the preamble is not ready
             // and we will prepare it again.
@@ -7283,7 +7290,7 @@ fn flush_preamble(
     request: &Rc<Request>,
     destination: &Destination,
     _root_segment: &Segment,
-    preamble_segments: &[Vec<Rc<Segment>>],
+    preamble_segments: &PreambleSegments,
     skip_blocking_shell: bool,
 ) {
     // The preamble is ready.
@@ -7294,8 +7301,11 @@ fn flush_preamble(
         skip_blocking_shell,
     );
     for segments in preamble_segments {
-        for segment in segments {
-            flush_segment(request, destination, segment, None);
+        let mut j = 0;
+        while j < segments.borrow().len() {
+            let segment = Rc::clone(&segments.borrow()[j]);
+            flush_segment(request, destination, &segment, None);
+            j += 1;
         }
     }
     write_preamble_end(destination, request.render_state);
@@ -7395,20 +7405,25 @@ fn flush_segment(
             }
         }
 
+        // Each read before the config's JS runs (ADR 0863).
+        let error_digest = boundary.error_digest.borrow().clone();
         if __DEV__ {
+            let error_message = boundary.error_message.borrow().clone();
+            let error_stack = boundary.error_stack.borrow().clone();
+            let error_component_stack = boundary.error_component_stack.borrow().clone();
             write_start_client_rendered_suspense_boundary(
                 destination,
                 request.render_state,
-                boundary.error_digest.borrow().as_deref(),
-                boundary.error_message.borrow().as_deref(),
-                boundary.error_stack.borrow().as_deref(),
-                boundary.error_component_stack.borrow().as_deref(),
+                error_digest.as_deref(),
+                error_message.as_deref(),
+                error_stack.as_deref(),
+                error_component_stack.as_deref(),
             );
         } else {
             write_start_client_rendered_suspense_boundary(
                 destination,
                 request.render_state,
-                boundary.error_digest.borrow().as_deref(),
+                error_digest.as_deref(),
                 js::null(),
                 js::null(),
                 js::null(),
@@ -7508,16 +7523,16 @@ fn flush_segment(
         // We can inline this boundary's content as a complete boundary.
         write_start_completed_suspense_boundary(destination, request.render_state);
 
-        let completed_segments = boundary.completed_segments.borrow().clone();
+        let completed_segments = &boundary.completed_segments;
 
-        if completed_segments.len() != 1 {
+        if completed_segments.borrow().len() != 1 {
             panic!(
                 "A previously unvisited boundary must have exactly one root segment. This is a bug in React."
             );
         }
 
-        let content_segment = &completed_segments[0];
-        flush_segment(request, destination, content_segment, hoistable_state);
+        let content_segment = Rc::clone(&completed_segments.borrow()[0]);
+        flush_segment(request, destination, &content_segment, hoistable_state);
 
         write_end_completed_suspense_boundary(destination, request.render_state)
     }
@@ -7528,16 +7543,21 @@ fn flush_client_rendered_boundary(
     destination: &Destination,
     boundary: &SuspenseBoundary,
 ) -> bool {
+    // Each read before the config's JS runs (ADR 0863).
+    let error_digest = boundary.error_digest.borrow().clone();
     if __DEV__ {
+        let error_message = boundary.error_message.borrow().clone();
+        let error_stack = boundary.error_stack.borrow().clone();
+        let error_component_stack = boundary.error_component_stack.borrow().clone();
         write_client_render_boundary_instruction(
             destination,
             request.resumable_state,
             request.render_state,
             boundary.root_segment_id.get(),
-            boundary.error_digest.borrow().as_deref(),
-            boundary.error_message.borrow().as_deref(),
-            boundary.error_stack.borrow().as_deref(),
-            boundary.error_component_stack.borrow().as_deref(),
+            error_digest.as_deref(),
+            error_message.as_deref(),
+            error_stack.as_deref(),
+            error_component_stack.as_deref(),
         )
     } else {
         write_client_render_boundary_instruction(
@@ -7545,7 +7565,7 @@ fn flush_client_rendered_boundary(
             request.resumable_state,
             request.render_state,
             boundary.root_segment_id.get(),
-            boundary.error_digest.borrow().as_deref(),
+            error_digest.as_deref(),
             js::null(),
             js::null(),
             js::null(),
@@ -7575,11 +7595,14 @@ fn flush_completed_boundary(
     boundary: &SuspenseBoundary,
 ) -> bool {
     FLUSHED_BYTE_SIZE.set(boundary.byte_size.get()); // Start counting bytes
-    let completed_segments = boundary.completed_segments.borrow().clone();
-    for segment in &completed_segments {
-        flush_partially_completed_segment(request, destination, boundary, segment);
+    let completed_segments = &boundary.completed_segments;
+    let mut i = 0;
+    while i < completed_segments.borrow().len() {
+        let segment = Rc::clone(&completed_segments.borrow()[i]);
+        flush_partially_completed_segment(request, destination, boundary, &segment);
+        i += 1;
     }
-    boundary.completed_segments.borrow_mut().clear();
+    completed_segments.borrow_mut().clear();
 
     let row = boundary.row.borrow().clone();
     if let Some(row) = row
@@ -8139,7 +8162,7 @@ pub fn abort(request: &Rc<Request>, reason: Option<&'static Unknown>) {
         )))
     } else if js::type_of(reason) == "object"
         && !matches!(js::classify(reason), Kind::Null)
-        && js::is_function(js::get(reason, "then"))
+        && js::type_of(js::get(reason, "then")) == "function"
     {
         Some(js::unknown(js::error::new(
             Some("The render was aborted by the server with a promise."),

@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {ViewTransitionProps} from 'shared/ReactTypes';
+import type {ResumableState} from './ReactFizzServer.js';
 import type {TreeContext} from './ReactFizzTreeContext.js';
 
 type ViewTransitionClass =
@@ -17,7 +18,7 @@ type ViewTransitionClass =
 export function getViewTransitionName(
   props: ViewTransitionProps,
   treeContext: TreeContext,
-  resumableState: any,
+  resumableState: ResumableState,
 ): string;
 
 export function getViewTransitionClassName(

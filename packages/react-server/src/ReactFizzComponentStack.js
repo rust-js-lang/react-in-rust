@@ -33,7 +33,7 @@ function describeComponentStackByType(type) {
     return describeBuiltInComponentFrame(type);
   }
   if (typeof type === 'function') {
-    if (shouldConstruct(type)) {
+    if (shouldConstruct($unwrap(type))) {
       return describeClassComponentFrame(type);
     } else {
       return describeFunctionComponentFrame(type);

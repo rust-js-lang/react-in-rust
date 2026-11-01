@@ -10,7 +10,7 @@
 
 import noop from 'shared/noop';
 import {currentTaskInDEV} from './ReactFizzCurrentTask.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$borrow, $fieldCell, $unwrap} from '@rust-js/runtime';
 
 // An error that is thrown (e.g. by `use`) to trigger Suspense. If we
 // detect this is caught by userspace, we'll log a warning in development.
@@ -184,14 +184,15 @@ function captureSuspendedCallSite() {
         'This is a bug in React.',
     );
   }
-  const currentComponentStack = currentTask.componentStack;
-  if (currentComponentStack === null) {
+  const {value: _15} = $borrow($fieldCell(currentTask, 'componentStack', true));
+  if (_15 == null) {
     // eslint-disable-next-line react-internal/prod-error-codes -- not a prod error
     throw new Error(
       'Expected to have a component stack on the current task when ' +
         'tracking a suspended call site. This is a bug in React.',
     );
   }
+  const currentComponentStack = _15;
   suspendedCallSiteStack = {
     parent: currentComponentStack.parent ?? null,
     type: currentComponentStack.type,

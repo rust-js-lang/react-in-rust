@@ -7,7 +7,8 @@
 
 export interface ComponentStackNode {
   parent?: ComponentStackNode | null | undefined;
-  type: unknown;
+  // What it renders, as the element gave it: `null` or `undefined` too.
+  type?: unknown;
   // DEV only: a ReactComponentInfo or a ComponentStackNode.
   owner?: unknown | null | undefined;
   // DEV only: its text, or the Error it's made of.

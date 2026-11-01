@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {Task} from './ReactFizzServer.js';
+
 /**
  * A request's `onError`: of what was thrown and where, the digest it's
  * sent to the client as, if any.
@@ -23,6 +25,6 @@ export type OnBrowserBailout = (
   value2: any,
 ) => void;
 
-export let currentTaskInDEV: any | null;
+export let currentTaskInDEV: Task | null;
 
-export function setCurrentTaskInDEV(task?: any | null | undefined): void;
+export function setCurrentTaskInDEV(task?: Task | null | undefined): void;

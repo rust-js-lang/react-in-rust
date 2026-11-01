@@ -24,7 +24,8 @@ use shared::react_symbols::{
 pub struct ComponentStackNode {
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub parent: Option<Rc<ComponentStackNode>>,
-    pub r#type: &'static Unknown,
+    // What it renders, as the element gave it: `null` or `undefined` too.
+    pub r#type: Option<&'static Unknown>,
     // DEV only: a ReactComponentInfo or a ComponentStackNode.
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub owner: Option<&'static Unknown>,
@@ -42,18 +43,18 @@ fn should_construct(component: &Unknown) -> bool {
     js::truthy(prototype) && js::truthy(js::get(prototype, "isReactComponent"))
 }
 
-fn describe_component_stack_by_type(mut r#type: &'static Unknown) -> String {
-    if let Kind::String(r#type) = js::classify(Some(r#type)) {
+fn describe_component_stack_by_type(mut r#type: Option<&'static Unknown>) -> String {
+    if let Kind::String(r#type) = js::classify(r#type) {
         return describe_built_in_component_frame(r#type);
     }
-    if js::type_of(Some(r#type)) == "function" {
-        if should_construct(r#type) {
-            return describe_class_component_frame(unsafe { js::cast(Some(r#type)) });
+    if js::type_of(r#type) == "function" {
+        if should_construct(r#type.unwrap()) {
+            return describe_class_component_frame(unsafe { js::cast(r#type) });
         } else {
-            return describe_function_component_frame(unsafe { js::cast(Some(r#type)) });
+            return describe_function_component_frame(unsafe { js::cast(r#type) });
         }
     }
-    if js::type_of(Some(r#type)) == "object" {
+    if js::type_of(r#type) == "object" {
         match SymbolFor::from_value(js::get(r#type, "$$typeof")) {
             Some(REACT_FORWARD_REF_TYPE) => {
                 return describe_function_component_frame(unsafe {
@@ -66,7 +67,7 @@ fn describe_component_stack_by_type(mut r#type: &'static Unknown) -> String {
                 });
             }
             Some(REACT_LAZY_TYPE) => {
-                let lazy_component: &LazyComponent = unsafe { js::cast(Some(r#type)) };
+                let lazy_component: &LazyComponent = unsafe { js::cast(r#type) };
                 let payload = &lazy_component.payload;
                 let init = lazy_component.init;
                 match catch_unwind(AssertUnwindSafe(|| init(payload))) {
@@ -88,7 +89,7 @@ fn describe_component_stack_by_type(mut r#type: &'static Unknown) -> String {
             );
         }
     }
-    match SymbolFor::from_value(Some(r#type)) {
+    match SymbolFor::from_value(r#type) {
         Some(REACT_SUSPENSE_LIST_TYPE) => describe_built_in_component_frame("SuspenseList"),
         Some(REACT_SUSPENSE_TYPE) => describe_built_in_component_frame("Suspense"),
         Some(REACT_VIEW_TRANSITION_TYPE) if ENABLE_VIEW_TRANSITION => {
@@ -156,15 +157,14 @@ pub fn get_owner_stack_by_component_stack_node_in_dev(
         // add one extra frame just to describe the "current" built-in component by name.
         // Similarly, if there is no owner at all, then there's no stack frame so we add the name
         // of the root component to the stack to know which component is currently executing.
-        if let Kind::String(r#type) = js::classify(Some(component_stack.r#type)) {
+        if let Kind::String(r#type) = js::classify(component_stack.r#type) {
             info += &describe_built_in_component_frame(r#type);
-        } else if js::type_of(Some(component_stack.r#type)) == "function" {
+        } else if js::type_of(component_stack.r#type) == "function" {
             if !js::truthy(component_stack.owner) {
                 // Only if we have no other data about the callsite do we add
                 // the component name as the single stack frame.
-                info += &describe_function_component_frame_without_line_number(Some(
-                    component_stack.r#type,
-                ));
+                info +=
+                    &describe_function_component_frame_without_line_number(component_stack.r#type);
             }
         } else if !js::truthy(component_stack.owner) {
             info += &describe_component_stack_by_type(component_stack.r#type);

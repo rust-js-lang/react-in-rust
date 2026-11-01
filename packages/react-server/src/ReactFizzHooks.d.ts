@@ -7,6 +7,7 @@
 
 import type {Dispatcher} from 'react-reconciler/src/ReactInternalTypes';
 import type {ReactRecoverable} from 'shared/ReactTypes';
+import type {Request, ResumableState, Task} from './ReactFizzServer.js';
 import type {ThenableState} from './ReactFizzThenable.js';
 
 export function createRecoverableError(recoverable: ReactRecoverable): Error;
@@ -16,8 +17,8 @@ export function isRecoverableError(error?: unknown | null | undefined): boolean;
 export function cloneRecoverableErrorAsFatal(recoverableError: Error): Error;
 
 export function prepareToUseHooks(
-  request: any,
-  task: any,
+  request: Request,
+  task: Task,
   keyPath: any | null,
   componentIdentity: unknown,
   prevThenableState: ThenableState | null,
@@ -91,6 +92,8 @@ export function readPreviousThenableFromState(): unknown | null | undefined;
 
 export const HooksDispatcher: Dispatcher;
 
-export let currentResumableState: any | null;
+export let currentResumableState: ResumableState | null;
 
-export function setCurrentResumableState(resumableState: any | null): void;
+export function setCurrentResumableState(
+  resumableState: ResumableState | null,
+): void;

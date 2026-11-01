@@ -9,8 +9,9 @@ import {makeId} from './ReactFizzConfig.js';
 import {getTreeId} from './ReactFizzTreeContext.js';
 
 export function getViewTransitionName(props, treeContext, resumableState) {
-  if (props.name != null && props.name !== 'auto') {
-    return props.name;
+  const name = props.name;
+  if (name != null && name !== 'auto') {
+    return name;
   }
   const treeId = getTreeId(treeContext);
   return makeId(resumableState, treeId, 0);
