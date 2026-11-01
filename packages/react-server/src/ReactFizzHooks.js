@@ -28,7 +28,7 @@ import {
 } from './ReactFizzThenable.js';
 import {getTreeId} from './ReactFizzTreeContext.js';
 import {createFastHash} from './ReactServerStreamConfig.js';
-import {$index, $roomFor, $unwrap} from '@rust-js/runtime';
+import {$roomFor, $unwrap} from '@rust-js/runtime';
 
 let currentlyRenderingComponent = null;
 let currentlyRenderingTask = null;
@@ -199,7 +199,7 @@ function areHookInputsEqual(nextDeps, prevDeps) {
   // $FlowFixMe[incompatible-use] found when upgrading Flow
   for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
     // $FlowFixMe[incompatible-use] found when upgrading Flow
-    if (!objectIs($index(nextDeps, i), $index(prevDeps, i))) {
+    if (!objectIs(nextDeps[i], prevDeps[i])) {
       return false;
     }
   }
