@@ -1034,17 +1034,53 @@ The port is split between sessions by package:
   upstream's `try { (0, eval)('null'); } catch {..}`) and
   ReactFlightClientDevToolsHook are Rust; the ReactFlightClientConfig forks
   stay JS, as the reconciler's ReactFiberConfig forks do (re-exports and
-  `$$$config` shims). Waiting: ReactFlightClientStreamConfigNode on
-  `node::util::text_decoder::new` taking an encoding and options (rd357;
-  drafted as StreamConfigWeb's through `node::util`), ReactFlightPerformanceTrack on `lastIndexOf`'s position (rd343;
-  drafted, its JS compared with upstream's call for call),
-  ReactFlightReplyClient on `js::arguments()` in a `function::with_this`
-  function (rd509), `Array.from` (rd501), an `AsyncIterator` (rd507) and
-  a wrong answer in its lazy case's retry (rd511); it's drafted out of tree.
+  `$$$config` shims). ReactFlightClientStreamConfigNode (rd357) and
+  ReactFlightPerformanceTrack (rd343) are Rust.
   ReactFlightClient is Rust (2026-11-02): its chunk is ADR 0761's
   `ReactPromise` class and its Response a constructor function the
   program writes, `Class::of(function::with_this(..))`, whose `this` gives
   `new WeakRef(this)`.
+  ReactFlightReplyClient is Rust (2026-11-02, Batch 54): processReply's
+  state is a struct, `Reply`, made once in it, whose `self: &Rc<Self>`
+  methods are upstream's nested functions (rust-js ADR 1043); its
+  `serialize*ID`s keep upstream's names by `#[rust_js::name]`;
+  `const FunctionBind = Function.prototype.bind;` and `const ArraySlice =
+  Array.prototype.slice;` are `use js::function::BIND as FUNCTION_BIND;`
+  and `use js::array::SLICE as ARRAY_SLICE;` named so (rd510); an async
+  iterable's iterator is `js::AsyncIterator` (rd507); serializeReadableStream
+  is `stream.get_reader_with_options(ReadableStreamGetByobReaderOptions {
+  mode: Byob })`, upstream's `try { .. getReader({mode: 'byob'}) } catch
+  { .. }` (rd506). The Flight client calls its
+  createBoundServerReference, registerBoundServerReference and
+  createServerObjectReference by their Rust signatures: a server
+  reference's metadata, read off the model, is cast to
+  `BoundServerReferenceMetaData`, its module to a function, its bound
+  arguments to a `Thenable`, as upstream's `metaData.id`/`metaData.bound`.
+  **Pending in rust-js, not accepted** (each changes no result):
+  - rd536: processReply takes its callbacks as `impl Fn`, which makes it
+    generic, and rust-js finds no scope of a generic function, so `Reply`
+    prints as an object of methods, `const Reply = {..}` and
+    `Reply.serializeModel(reply, root, 0)`, where upstream's functions are
+    nested in processReply over its variables (a `Box<dyn Fn>` probe gives
+    upstream's form; the port keeps `impl Fn`);
+  - rd535: the ReplyClient's own `Rc<RefCell<Vec<&Uint8Array>>>` makes the
+    Flight client's `streamState._buffer` reads `$borrow(buffer).slice()`
+    and `$borrowMut(buffer).push(..)`, another module's cell of the same
+    type, where they were `buffer.slice()` and `buffer.push(..)`;
+  - rd537: a part id, a JS number kept `f64`, is
+    `prefix + $displayF64(id)` where upstream writes `prefix + id`;
+  - rd425: a reader's or iterator's `progress` is a closure held in a cell
+    that hands itself on, `let progress; progress = entry => {..}` and
+    `const progress$1 = $unwrap(progress)`, where upstream's `function
+    progress(entry)` names itself;
+  - rd426 and rd508: upstream's `JSON.stringify(value, resolveToJSON)` at
+    each site is one `stringify` method, `JSON.stringify(value, function
+    (key, value) { return resolveToJson(reply, this, key, value); }, 0) ??
+    ''`, a replacer calling resolveToJSON with its `this` cast to the
+    holding object;
+  - rd387: a caught error is read off the unwind, `catch (thrown$1) {
+    const x = $unwound(thrown$1); .. thrown(x) ..}`, where upstream's is
+    `catch (x)`.
 - **The second session** has react-server, react-server-dom-* and
   react-dom-bindings/src/server.
 

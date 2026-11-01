@@ -6,13 +6,13 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {ReactComponentInfo, ReactIOInfo} from 'shared/ReactTypes';
+import type {
+  CallServerCallback,
+  EncodeFormActionCallback,
+} from './ReactFlightReplyClient.js';
 import type {TemporaryReferenceSet} from './ReactFlightTemporaryReferences.js';
 
 declare const RESPONSE_SYMBOL: unique symbol;
-
-export type CallServerCallback = unknown;
-
-export type EncodeFormActionCallback = unknown;
 
 /**
  * What a stream chunk's `reason` holds once it's fulfilled: the stream's

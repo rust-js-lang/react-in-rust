@@ -40,6 +40,9 @@ use crate::react_flight_performance_track::{
     log_component_await_errored, log_component_errored, log_component_render,
     log_deduped_component_render, log_io_info, log_io_info_errored, mark_all_tracks_in_order,
 };
+use crate::react_flight_reply_client::{
+    create_bound_server_reference, create_server_object_reference, register_bound_server_reference,
+};
 use crate::react_flight_temporary_references::{TemporaryReferenceSet, read_temporary_reference};
 
 // ReactFlightClientConfig: each renderer's fork (they stay JS, as the
@@ -159,41 +162,6 @@ unsafe extern "Rust" {
     safe static RENDERER_PACKAGE_NAME: &'static str;
 }
 
-// ReactFlightReplyClient, still JS (rd332, rd345, rd346, rd347).
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightReplyClient.js#createBoundServerReference"
-)]
-fn create_bound_server_reference(
-    meta_data: &'static Unknown,
-    call_server: &'static Unknown,
-    encode_form_action: Option<&'static Unknown>,
-    find_source_map_url: Option<&'static Unknown>,
-) -> &'static Unknown {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightReplyClient.js#registerBoundServerReference"
-)]
-fn register_bound_server_reference(
-    reference: Option<&'static Unknown>,
-    id: &str,
-    bound: Option<&'static Unknown>,
-    encode_form_action: Option<&'static Unknown>,
-) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightReplyClient.js#createServerObjectReference"
-)]
-fn create_server_object_reference(id: Option<&'static Unknown>) -> &'static Unknown {
-    unreachable!()
-}
-
 unsafe extern "Rust" {
     #[link_name = "react#*.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE"]
     safe static SERVER_INTERNALS: Option<&'static Unknown>;
@@ -214,8 +182,7 @@ thread_local! {
         js::or(CLIENT_INTERNALS, REACT_SHARED_INTERALS_SERVER.with(|&server| server));
 }
 
-pub type CallServerCallback = Unknown;
-pub type EncodeFormActionCallback = Unknown;
+pub use crate::react_flight_reply_client::{CallServerCallback, EncodeFormActionCallback};
 
 /// What a stream chunk's `reason` holds once it's fulfilled: the stream's
 /// controller, which the rows of its id feed.
@@ -2684,19 +2651,18 @@ fn load_server_reference(
     let Some(server_reference_config) = response._server_reference_config.get() else {
         // In the normal case, we can't load this Server Reference in the current environment and
         // we just return a proxy to it.
-        return Some(create_bound_server_reference(
+        // SAFETY: a server reference's metadata is a BoundServerReferenceMetaData.
+        let meta_data = unsafe { js::cast(Some(meta_data)) };
+        return Some(js::unknown(create_bound_server_reference(
             meta_data,
             response._call_server.get().unwrap(),
             response._encode_form_action.get(),
             if __DEV__ {
-                response
-                    ._debug_find_source_map_url
-                    .get()
-                    .map(|f| js::unknown(f))
+                response._debug_find_source_map_url.get()
             } else {
                 None
             },
-        ));
+        )));
     };
     // If we have a module mapping we can load the real version of this Server Reference.
     let server_reference = resolve_server_reference(server_reference_config, &id);
@@ -2713,9 +2679,12 @@ fn load_server_reference(
                 // Anything else could be a foreign thenable whose `then` we must not call.
                 let resolved_value = require_module(server_reference);
                 register_bound_server_reference(
-                    resolved_value,
-                    &id,
-                    bound,
+                    // SAFETY: a server reference's module is a function.
+                    unsafe { js::cast(resolved_value) },
+                    // SAFETY: a server reference's metadata has its id.
+                    unsafe { js::cast(js::get(meta_data, "id")) },
+                    // SAFETY: its bound arguments are a thenable, or null.
+                    unsafe { js::cast(bound) },
                     response._encode_form_action.get(),
                 );
                 return resolved_value;
@@ -2750,7 +2719,6 @@ fn load_server_reference(
 
     let fulfill = {
         let handler = Rc::clone(&handler);
-        let id = id.clone();
         let key = key.clone();
         move |_: Option<&'static Unknown>| {
             let mut resolved_value = require_module(server_reference);
@@ -2775,9 +2743,12 @@ fn load_server_reference(
             }
 
             register_bound_server_reference(
-                resolved_value,
-                &id,
-                bound,
+                // SAFETY: a server reference's module is a function.
+                unsafe { js::cast(resolved_value) },
+                // SAFETY: a server reference's metadata has its id.
+                unsafe { js::cast(js::get(meta_data, "id")) },
+                // SAFETY: its bound arguments are a thenable, or null.
+                unsafe { js::cast(bound) },
                 response._encode_form_action.get(),
             );
 
@@ -2900,7 +2871,8 @@ fn load_server_object_reference(
     if !matches!(js::classify(existing_reference), Kind::Undefined) {
         return existing_reference;
     }
-    let reference = create_server_object_reference(js::get(meta_data, "id"));
+    // SAFETY: a server object reference's metadata has its id.
+    let reference = create_server_object_reference(unsafe { js::cast(js::get(meta_data, "id")) });
     js::set(meta_data, "$$reference", reference);
     Some(reference)
 }
@@ -3785,9 +3757,9 @@ fn parse_model_tuple(
 }
 
 fn missing_call(
-    _id: Option<&'static Unknown>,
-    _args: Option<&'static Unknown>,
-) -> Option<&'static Unknown> {
+    _id: &'static Unknown,
+    _args: &'static Unknown,
+) -> Promise<Option<&'static Unknown>> {
     panic!(
         "{}",
         concat!(
@@ -3862,7 +3834,7 @@ thread_local! {
                 this._module_loading.set(module_loading);
                 this._call_server.set(Some(match call_server {
                     Some(call_server) => call_server,
-                    None => js::unknown(&(missing_call as fn(_, _) -> _)),
+                    None => &missing_call,
                 }));
                 this._encode_form_action.set(encode_form_action);
                 *this._nonce.borrow_mut() = nonce;

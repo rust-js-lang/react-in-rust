@@ -1991,7 +1991,7 @@ function loadServerReference(response, metaData, parentObject, key) {
       const resolvedValue = requireModule(serverReference);
       registerBoundServerReference(
         resolvedValue,
-        id,
+        metaData.id,
         bound,
         response._encodeFormAction,
       );
@@ -2034,7 +2034,7 @@ function loadServerReference(response, metaData, parentObject, key) {
 
     registerBoundServerReference(
       resolvedValue,
-      id,
+      metaData.id,
       bound,
       response._encodeFormAction,
     );
@@ -5189,7 +5189,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
         );
       } else {
         // Process all other row types.
-        const parts = buffer.slice();
+        const parts = $borrow(buffer).slice();
         processFullBinaryRow(
           response,
           streamState,
@@ -5210,7 +5210,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
       rowTag = 0;
       rowId = 0;
       rowLength = 0;
-      buffer.length = 0;
+      $borrowMut(buffer).length = 0;
     } else {
       // The rest of this row is in a future chunk.
       const length = chunk.byteLength - i;
@@ -5231,7 +5231,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
       } else {
         // For other row types, stash the rest of the current chunk until we can
         // process the full row.
-        buffer.push(remainingSlice);
+        $borrowMut(buffer).push(remainingSlice);
         // Update how many bytes we're still waiting for. If we're looking for
         // a newline, this doesn't hurt since we'll just ignore it.
         rowLength =
@@ -5362,7 +5362,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
     }
     if (lastIdx > -1) {
       // We found the last chunk of the row
-      if (buffer.length !== 0) {
+      if ($borrow(buffer).length !== 0) {
         // If we had a buffer already, it means that this chunk was split up into
         // binary chunks preceeding it.
         throw new Error(
@@ -5383,7 +5383,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
       rowTag = 0;
       rowId = 0;
       rowLength = 0;
-      buffer.length = 0;
+      $borrowMut(buffer).length = 0;
     } else if (chunkLength !== i) {
       // The rest of this row is in a future chunk. We only support passing the
       // string from chunks in their entirety. Not split up into smaller string chunks.

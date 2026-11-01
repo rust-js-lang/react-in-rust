@@ -23,5 +23,7 @@ pub mod react_flight_client_stream_config_node;
 pub mod react_flight_client_stream_config_web;
 #[path = "src/ReactFlightPerformanceTrack.rs"]
 pub mod react_flight_performance_track;
+#[path = "src/ReactFlightReplyClient.rs"]
+pub mod react_flight_reply_client;
 #[path = "src/ReactFlightTemporaryReferences.rs"]
 pub mod react_flight_temporary_references;
