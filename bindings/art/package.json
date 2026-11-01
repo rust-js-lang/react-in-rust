@@ -1,0 +1,25 @@
+{
+  "name": "@rust-js-bindings/art",
+  "version": "0.10.0",
+  "description": "rust-js bindings of art, ART's vector graphics library",
+  "license": "MIT",
+  "keywords": [
+    "rust-js",
+    "art"
+  ],
+  "files": [
+    "Cargo.toml",
+    "src",
+    "README.md"
+  ],
+  "rust-js": {
+    "crate": "rust-js-bindings-art"
+  },
+  "owners": [
+    "nguyenyou"
+  ],
+  "peerDependencies": {
+    "art": ">=0.10.0 <0.11.0",
+    "@rust-js/builtins": "~0.0.2"
+  }
+}
