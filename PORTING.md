@@ -45,13 +45,23 @@ Each package's Rust is a crate in the workspace, and the crate's modules are
 the package's files: `packages/scheduler/src/SchedulerMinHeap.rs` compiles
 to `SchedulerMinHeap.js` and `.d.ts` beside it. A crate's root file is
 Cargo.toml's `[lib] path`: `shared.rs`, `src/forks/Scheduler.rs`,
-`react.rs`, `reconciler.rs`, `bindings.rs`, `react_dom.rs` or `noop.rs`. It declares each module as
+`react.rs`, `reconciler.rs`, `bindings.rs`, `react_dom.rs`, `noop.rs`,
+`test_renderer.rs` or `react_art.rs`. It declares each module as
 `#[path = "src/..."] pub mod ..;` and writes no JS of its own.
 
 The crates are `shared`, `scheduler`, `react-isomorphic` (packages/react),
-`react-reconciler`, `react-dom-bindings`, `react-dom` and
-`react-noop-renderer`. A new package is a new crate,
-added to the workspace's `members`. The generated `.js` and `.d.ts` files are
+`react-reconciler`, `react-dom-bindings`, `react-dom`,
+`react-noop-renderer`, `react-test-renderer` and `react-art`. A new package is a new crate,
+added to the workspace's `members`.
+
+**A JS library's binding is a crate of its own** (the user, 2026-11-01):
+`bindings/art` is `@rust-js-bindings/art`, the `art` library's, laid out
+as rust-js-lang/bindings' `bindings/<library>/` (ADRs 0118, 0119):
+`Cargo.toml` (rust-js-bindings-art, `[package.metadata.rust-js] bindings =
+true`), `package.json`, `src/lib.rs` and `README.md`, written by hand from
+the library's JS, so it can move to that repository unchanged. It names
+`js` by version; the workspace's `[patch.crates-io]` says where it is. A
+crate using it takes `art.workspace = true`. The generated `.js` and `.d.ts` files are
 committed, as upstream's JS was. Source maps are not committed (see
 `.gitignore`).
 
@@ -599,6 +609,9 @@ The port is split between sessions by package:
   can't), its JS beside its `.rs` where React Native's Fabric config imports
   it.
   react-noop-renderer's createReactNoop and ReactFiberConfigNoop are Rust.
+  react-test-renderer's ReactFiberConfigTestHost is Rust (ReactTestRenderer
+  waits on rd324 and rd325); react-art's ReactARTInternals is Rust, its
+  ReactFiberConfigART and ReactART wait on rd331 to rd335.
   bindToConsole binds the console's method to its arguments,
   `function::bind(method, Some(&console), args)`, printed
   `method.bind(console, ...args)` where upstream writes
