@@ -33,6 +33,9 @@ pub struct Component {
 }
 
 unsafe impl js::Defined for Component {}
+impl js::Classed for Component {
+    type Constructor = js::AnyConstructor;
+}
 
 #[cfg_attr(rust_js, rust_js::class)]
 impl Component {
@@ -179,6 +182,9 @@ js::on_load! {
 struct ComponentDummy {}
 
 unsafe impl js::Defined for ComponentDummy {}
+impl js::Classed for ComponentDummy {
+    type Constructor = js::AnyConstructor;
+}
 
 #[cfg_attr(rust_js, rust_js::class)]
 impl ComponentDummy {
@@ -197,6 +203,10 @@ pub struct PureComponent {
     pub context: Option<&'static Unknown>,
     pub refs: &'static EmptyObject,
     pub updater: &'static Updater,
+}
+
+impl js::Classed for PureComponent {
+    type Constructor = js::AnyConstructor;
 }
 
 #[cfg_attr(rust_js, rust_js::class)]

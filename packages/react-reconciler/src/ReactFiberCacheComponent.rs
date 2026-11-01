@@ -45,6 +45,10 @@ struct AbortControllerShim {
     abort: Box<dyn Fn()>,
 }
 
+impl js::Classed for AbortControllerShim {
+    type Constructor = js::AnyConstructor;
+}
+
 #[cfg_attr(rust_js, rust_js::class)]
 impl AbortControllerShim {
     fn new() -> Self {
