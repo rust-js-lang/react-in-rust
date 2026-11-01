@@ -324,6 +324,7 @@ export function revealCompletedBoundariesWithViewTransitions(
             $unwrap(document.documentElement, 'a document has its element')
               .clientHeight,
           ),
+          // Block on fonts finishing loading before revealing these boundaries.
           document.fonts.ready,
         ];
         for (let i = 0; i < suspenseyImages.length; i++) {
