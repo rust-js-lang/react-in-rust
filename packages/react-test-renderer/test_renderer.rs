@@ -3,3 +3,6 @@
 
 #[path = "src/ReactFiberConfigTestHost.rs"]
 pub mod react_fiber_config_test_host;
+
+#[path = "src/ReactTestRenderer.rs"]
+pub mod react_test_renderer;
