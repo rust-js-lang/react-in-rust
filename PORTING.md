@@ -804,16 +804,18 @@ The port is split between sessions by package:
   until rd293.
   **react-client** (the Flight client) is the first session's too (agreed
   with the second, 2026-11-01). ReactFlightTemporaryReferences,
-  ReactFlightClientStreamConfigWeb, the three ReactClientConsoleConfigs and
+  ReactFlightClientStreamConfigWeb, the three ReactClientConsoleConfigs, the
+  three ReactClientDebugConfigs (`js::eval("null").is_err()`, printed
+  upstream's `try { (0, eval)('null'); } catch {..}`) and
   ReactFlightClientDevToolsHook are Rust; the ReactFlightClientConfig forks
   stay JS, as the reconciler's ReactFiberConfig forks do (re-exports and
-  `$$$config` shims). Waiting: the ReactClientDebugConfigs on `js::eval`
-  (rd339), ReactFlightClientStreamConfigNode on `node::util::TextDecoder`
-  (rd340), ReactFlightPerformanceTrack on `lastIndexOf`'s position (rd343;
+  `$$$config` shims). Waiting: ReactFlightClientStreamConfigNode on
+  `node::util::text_decoder::new` taking an encoding and options (rd357;
+  drafted as StreamConfigWeb's through `node::util`), ReactFlightPerformanceTrack on `lastIndexOf`'s position (rd343;
   drafted, its JS compared with upstream's call for call),
-  ReactFlightReplyClient on `arguments` (rd332), rd339, a form for
+  ReactFlightReplyClient on `arguments` (rd332), a form for
   processReply's nested functions (rd345) and a `this` replacer (rd346);
-  ReactFlightClient on rd339 and rd346 among others.
+  ReactFlightClient on rd346 among others.
 - **The second session** has react-server, react-server-dom-* and
   react-dom-bindings/src/server.
 
