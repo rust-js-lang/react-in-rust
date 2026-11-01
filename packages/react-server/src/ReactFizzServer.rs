@@ -300,7 +300,7 @@ pub enum ResumeSlots {
     // resume with segment ID at the root position
     Root(f64),
     // resume with segmentID at the index
-    Indices(Rc<Dict<f64>>),
+    Indices(&'static Dict<f64>),
 }
 
 // GAP rd490: a replay node is `[name, key, children, slots]`, or a
@@ -2535,13 +2535,13 @@ fn render_suspense_list_rows(
                     total_children as i32,
                     i as i32,
                 ));
-                let resume_segment_id = js::dict::get(&resume_slots, &i.to_string()).copied();
+                let resume_segment_id = js::dict::get(resume_slots, &i.to_string()).copied();
                 // TODO: If this errors we should still continue with the next sibling.
                 if let Some(resume_segment_id) = resume_segment_id {
                     resume_node(request, task, resume_segment_id, node, i as f64);
                     // We finished rendering this node, so now we can consume this
                     // slot. This must happen after in case we rerender this task.
-                    js::delete(&*resume_slots, &i.to_string());
+                    js::delete(resume_slots, &i.to_string());
                 } else {
                     render_node(request, task, node, i as f64);
                 }
@@ -4706,6 +4706,576 @@ fn replay_fragment(
     }
 }
 
+fn warn_for_missing_key(request: &Rc<Request>, task: &Rc<Task>, child: Option<&'static Unknown>) {
+    if __DEV__ {
+        let Some(child) = child.filter(|_| js::type_of(child) == "object") else {
+            return;
+        };
+        if !matches!(
+            SymbolFor::from_value(js::get(child, "$$typeof")),
+            Some(REACT_ELEMENT_TYPE | REACT_PORTAL_TYPE)
+        ) {
+            return;
+        }
+
+        let store = js::get(child, "_store");
+        if !js::truthy(store)
+            || ((js::truthy(js::get(store, "validated"))
+                || !js::loose_equals(js::get(child, "key"), js::null::<Option<&Unknown>>()))
+                && !js::strict_equals(js::get(store, "validated"), Some(js::unknown(&2.0))))
+        {
+            return;
+        }
+
+        if js::type_of(store) != "object" {
+            panic!(concat!(
+                "React Component in warnForMissingKey should have a _store. ",
+                "This error is likely caused by a bug in React. Please file an issue."
+            ));
+        }
+
+        // $FlowFixMe[cannot-write] unable to narrow type from mixed to writable object
+        js::set(store.unwrap(), "validated", 1.0);
+
+        let did_warn_for_key = match request.did_warn_for_key.get() {
+            Some(did_warn_for_key) => did_warn_for_key,
+            None => {
+                let did_warn_for_key = js::weak_set::new();
+                request.did_warn_for_key.set(Some(did_warn_for_key));
+                did_warn_for_key
+            }
+        };
+        let Some(parent_stack_frame) = task.component_stack.borrow().clone() else {
+            // We already warned for other children in this parent.
+            return;
+        };
+        if did_warn_for_key.has(&parent_stack_frame) {
+            // We already warned for other children in this parent.
+            return;
+        }
+        did_warn_for_key.add(&parent_stack_frame);
+
+        let component_name = get_component_name_from_type(js::get(child, "type"));
+        let child_owner = js::get(child, "_owner");
+        let parent_owner = parent_stack_frame.owner;
+
+        let mut current_component_error_info = String::new();
+        if js::truthy(parent_owner)
+            && !matches!(js::classify(js::get(parent_owner, "type")), Kind::Undefined)
+            && let Some(name) = get_component_name_from_type(js::get(parent_owner, "type"))
+                .filter(|name| !name.is_empty())
+        {
+            current_component_error_info =
+                "\n\nCheck the render method of `".to_owned() + &name + "`.";
+        }
+        if current_component_error_info.is_empty()
+            && let Some(component_name) = component_name.as_ref().filter(|name| !name.is_empty())
+        {
+            current_component_error_info =
+                format!("\n\nCheck the top-level render call using <{component_name}>.");
+        }
+
+        // Usually the current owner is the offender, but if it accepts children as a
+        // property, it may be the creator of the child that's responsible for
+        // assigning it a key.
+        let mut child_owner_appendix = String::new();
+        if !js::loose_equals(child_owner, js::null::<Option<&Unknown>>())
+            && !js::strict_equals(parent_owner, child_owner)
+        {
+            let mut owner_name = None;
+            if !matches!(js::classify(js::get(child_owner, "type")), Kind::Undefined) {
+                owner_name = get_component_name_from_type(js::get(child_owner, "type"));
+            } else if let Kind::String(name) = js::classify(js::get(child_owner, "name")) {
+                owner_name = Some(name.to_owned());
+            }
+            if let Some(owner_name) = owner_name.filter(|name| !name.is_empty()) {
+                // Give the component that originally created this child.
+                child_owner_appendix = format!(" It was passed a child from {owner_name}.");
+            }
+        }
+
+        // We create a fake component stack for the child to log the stack trace from.
+        let previous_component_stack = task.component_stack.borrow().clone();
+        let stack_frame = create_component_stack_from_type(
+            task.component_stack.borrow().clone(),
+            js::get(child, "type").unwrap(),
+            js::get(child, "_owner"),
+            js::get(child, "_debugStack"),
+        );
+        task.component_stack.replace(Some(stack_frame));
+        console::error((
+            concat!(
+                "Each child in a list should have a unique \"key\" prop.",
+                "%s%s See https://react.dev/link/warning-keys for more information."
+            ),
+            current_component_error_info,
+            child_owner_appendix,
+        ));
+        task.component_stack.replace(previous_component_stack);
+    }
+}
+
+fn render_children_array(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    children: &[Option<&'static ReactNodeList>],
+    child_index: f64,
+) {
+    let prev_key_path = task.key_path.borrow().clone();
+    let previous_component_stack = task.component_stack.borrow().clone();
+    let mut previous_debug_task = None;
+    if __DEV__ {
+        previous_debug_task = task.debug_task.get();
+        // We read debugInfo from task.node instead of children because it might have been an
+        // unwrapped iterable so we read from the original node.
+        push_server_component_stack(task, js::get(task.node.get(), "_debugInfo"));
+    }
+    if child_index != -1.0 {
+        task.key_path.replace(Some(Rc::new(KeyNode(
+            prev_key_path.clone(),
+            Some("Fragment".to_owned()),
+            NodeKey::Index(child_index),
+        ))));
+        if task.replay.borrow().is_some() {
+            replay_fragment(
+                request,
+                // $FlowFixMe[incompatible-type]: Refined.
+                task,
+                children,
+                child_index,
+            );
+            task.key_path.replace(prev_key_path);
+            if __DEV__ {
+                task.component_stack.replace(previous_component_stack);
+                task.debug_task.set(previous_debug_task);
+            }
+            return;
+        }
+    }
+
+    let prev_tree_context = Rc::clone(&task.tree_context.borrow());
+    let total_children = children.len();
+
+    let replay = task.replay.borrow().clone();
+    if let Some(replay) = replay {
+        // Replay
+        // First we need to check if we have any resume slots at this level.
+        let resume_slots = replay.slots.borrow().clone();
+        if let ResumeSlots::Indices(resume_slots) = resume_slots {
+            for (i, &node) in children.iter().enumerate() {
+                task.tree_context.replace(push_tree_context(
+                    &prev_tree_context,
+                    total_children as i32,
+                    i as i32,
+                ));
+                // We need to use the non-destructive form so that we can safely pop back
+                // up and render the sibling if something suspends.
+                let resume_segment_id = js::dict::get(resume_slots, &i.to_string()).copied();
+                // TODO: If this errors we should still continue with the next sibling.
+                if let Some(resume_segment_id) = resume_segment_id {
+                    resume_node(request, task, resume_segment_id, node, i as f64);
+                    // We finished rendering this node, so now we can consume this
+                    // slot. This must happen after in case we rerender this task.
+                    js::delete(resume_slots, &i.to_string());
+                } else {
+                    render_node(request, task, node, i as f64);
+                }
+            }
+            task.tree_context.replace(prev_tree_context);
+            task.key_path.replace(prev_key_path);
+            if __DEV__ {
+                task.component_stack.replace(previous_component_stack);
+                task.debug_task.set(previous_debug_task);
+            }
+            return;
+        }
+    }
+
+    for (i, &node) in children.iter().enumerate() {
+        if __DEV__ {
+            warn_for_missing_key(request, task, node);
+        }
+        task.tree_context.replace(push_tree_context(
+            &prev_tree_context,
+            total_children as i32,
+            i as i32,
+        ));
+        // We need to use the non-destructive form so that we can safely pop back
+        // up and render the sibling if something suspends.
+        render_node(request, task, node, i as f64);
+    }
+
+    // Because this context is always set right before rendering every child, we
+    // only need to reset it to the previous value at the very end.
+    task.tree_context.replace(prev_tree_context);
+    task.key_path.replace(prev_key_path);
+    if __DEV__ {
+        task.component_stack.replace(previous_component_stack);
+        task.debug_task.set(previous_debug_task);
+    }
+}
+
+fn next_segment_id(request: &Request) -> f64 {
+    let id = request.next_segment_id.get();
+    request.next_segment_id.set(id + 1.0);
+    id
+}
+
+fn track_postponed_boundary(
+    request: &Request,
+    tracked_postpones: &PostponedHoles,
+    boundary: &SuspenseBoundary,
+) -> Rc<ReplayNode> {
+    boundary.status.set(POSTPONED);
+    if boundary.root_segment_id.get() == -1.0 {
+        // Assign an ID before flushing. Resumed boundaries keep the ID already
+        // referenced by the previous prerender's HTML.
+        boundary.root_segment_id.set(next_segment_id(request));
+    }
+
+    let Some(tracked) = boundary.tracked.borrow().clone() else {
+        panic!("It should not be possible to postpone at the root. This is a bug in React.");
+    };
+
+    let Some(boundary_key_path) = tracked.content_key_path.borrow().clone() else {
+        panic!("It should not be possible to postpone at the root. This is a bug in React.");
+    };
+
+    let fallback_replay_node = tracked.fallback_node.borrow().clone();
+
+    let children: ReplayNodes = Rc::new(RefCell::new(vec![]));
+    let boundary_node = tracked_postpones
+        .working_map
+        .borrow()
+        .get(&boundary_key_path)
+        .cloned();
+    match boundary_node {
+        None => {
+            let suspense_boundary = Rc::new(ReplayNode(
+                boundary_key_path.1.clone(),
+                boundary_key_path.2.clone(),
+                RefCell::new(children),
+                RefCell::new(ResumeSlots::None),
+                RefCell::new(fallback_replay_node),
+                Cell::new(Some(boundary.root_segment_id.get())),
+            ));
+            tracked_postpones
+                .working_map
+                .borrow_mut()
+                .insert(Rc::clone(&boundary_key_path), Rc::clone(&suspense_boundary));
+            add_to_replay_parent(
+                &suspense_boundary,
+                boundary_key_path.0.as_ref(),
+                tracked_postpones,
+            );
+            suspense_boundary
+        }
+        Some(boundary_node) => {
+            // Upgrade to ReplaySuspenseBoundary.
+            let suspense_boundary = boundary_node;
+            suspense_boundary.4.replace(fallback_replay_node);
+            suspense_boundary
+                .5
+                .set(Some(boundary.root_segment_id.get()));
+            suspense_boundary
+        }
+    }
+}
+
+fn track_postpone(
+    request: &Request,
+    tracked_postpones: &PostponedHoles,
+    task: &Task,
+    segment: &Segment,
+) {
+    segment.status.set(POSTPONED);
+
+    let key_path = task.key_path.borrow().clone();
+    let boundary = task.blocked_boundary.borrow().clone();
+
+    let Some(boundary) = boundary else {
+        segment.id.set(next_segment_id(request));
+        tracked_postpones
+            .root_slots
+            .replace(ResumeSlots::Root(segment.id.get()));
+        if let Some(completed_root_segment) = request.completed_root_segment.borrow().as_ref() {
+            // Postpone the root if this was a deeper segment.
+            completed_root_segment.status.set(POSTPONED);
+        }
+        return;
+    };
+
+    // $FlowFixMe[invalid-compare]
+    if boundary.status.get() == PENDING {
+        let boundary_node = track_postponed_boundary(request, tracked_postpones, &boundary);
+        if let Some(tracked) = boundary.tracked.borrow().as_ref()
+            && match (&*tracked.content_key_path.borrow(), &key_path) {
+                (Some(content_key_path), Some(key_path)) => Rc::ptr_eq(content_key_path, key_path),
+                (None, None) => true,
+                _ => false,
+            }
+            && task.child_index.get() == -1.0
+        {
+            // Assign ID
+            if segment.id.get() == -1.0 {
+                if segment.parent_flushed.get() {
+                    // If this segment's parent was already flushed, it means we really just
+                    // skipped the parent and this segment is now the root.
+                    segment.id.set(boundary.root_segment_id.get());
+                } else {
+                    segment.id.set(next_segment_id(request));
+                }
+            }
+            // We postponed directly inside the Suspense boundary so we mark this for resuming.
+            boundary_node.3.replace(ResumeSlots::Root(segment.id.get()));
+            return;
+        }
+        // Otherwise, fall through to add the child node.
+    }
+
+    // We know that this will leave a hole so we might as well assign an ID now.
+    // We might have one already if we had a parent that gave us its ID.
+    if segment.id.get() == -1.0 {
+        // $FlowFixMe[invalid-compare]
+        if segment.parent_flushed.get() {
+            // If this segment's parent was already flushed, it means we really just
+            // skipped the parent and this segment is now the root.
+            segment.id.set(boundary.root_segment_id.get());
+        } else {
+            segment.id.set(next_segment_id(request));
+        }
+    }
+
+    if task.child_index.get() == -1.0 {
+        // Resume starting from directly inside the previous parent element.
+        match key_path {
+            None => {
+                tracked_postpones
+                    .root_slots
+                    .replace(ResumeSlots::Root(segment.id.get()));
+            }
+            Some(key_path) => {
+                let working_map = &tracked_postpones.working_map;
+                let resumable_node = working_map.borrow().get(&key_path).cloned();
+                match resumable_node {
+                    None => {
+                        let resumable_node = new_replay_node(
+                            key_path.1.clone(),
+                            key_path.2.clone(),
+                            ResumeSlots::Root(segment.id.get()),
+                        );
+                        add_to_replay_parent(
+                            &resumable_node,
+                            key_path.0.as_ref(),
+                            tracked_postpones,
+                        );
+                    }
+                    Some(resumable_node) => {
+                        resumable_node
+                            .3
+                            .replace(ResumeSlots::Root(segment.id.get()));
+                    }
+                }
+            }
+        }
+    } else {
+        let slots = match key_path {
+            None => {
+                let slots = tracked_postpones.root_slots.borrow().clone();
+                match slots {
+                    ResumeSlots::None => {
+                        let slots = js::dict::new();
+                        tracked_postpones
+                            .root_slots
+                            .replace(ResumeSlots::Indices(slots));
+                        slots
+                    }
+                    ResumeSlots::Root(_) => {
+                        panic!(concat!(
+                            "It should not be possible to postpone both at the root of an element ",
+                            "as well as a slot below. This is a bug in React."
+                        ));
+                    }
+                    ResumeSlots::Indices(slots) => slots,
+                }
+            }
+            Some(key_path) => {
+                let working_map = &tracked_postpones.working_map;
+                let resumable_node = working_map.borrow().get(&key_path).cloned();
+                match resumable_node {
+                    None => {
+                        let slots = js::dict::new();
+                        let resumable_node = new_replay_node(
+                            key_path.1.clone(),
+                            key_path.2.clone(),
+                            ResumeSlots::Indices(slots),
+                        );
+                        working_map
+                            .borrow_mut()
+                            .insert(Rc::clone(&key_path), Rc::clone(&resumable_node));
+                        add_to_replay_parent(
+                            &resumable_node,
+                            key_path.0.as_ref(),
+                            tracked_postpones,
+                        );
+                        slots
+                    }
+                    Some(resumable_node) => {
+                        let slots = resumable_node.3.borrow().clone();
+                        match slots {
+                            ResumeSlots::None => {
+                                let slots = js::dict::new();
+                                resumable_node.3.replace(ResumeSlots::Indices(slots));
+                                slots
+                            }
+                            ResumeSlots::Root(_) => {
+                                panic!(concat!(
+                                    "It should not be possible to postpone both at the root of an element ",
+                                    "as well as a slot below. This is a bug in React."
+                                ));
+                            }
+                            ResumeSlots::Indices(slots) => slots,
+                        }
+                    }
+                }
+            }
+        };
+        js::dict::set(slots, &task.child_index.get().to_string(), segment.id.get());
+    }
+}
+
+// In case a boundary errors, we need to stop tracking it because we won't
+// resume it.
+fn untrack_boundary(request: &Request, boundary: &SuspenseBoundary) {
+    let Some(tracked_postpones) = request.tracked_postpones.borrow().clone() else {
+        return;
+    };
+    let Some(tracked) = boundary.tracked.borrow().clone() else {
+        return;
+    };
+    let Some(boundary_key_path) = tracked.content_key_path.borrow().clone() else {
+        return;
+    };
+    let Some(boundary_node) = tracked_postpones
+        .working_map
+        .borrow()
+        .get(&boundary_key_path)
+        .cloned()
+    else {
+        return;
+    };
+
+    // Downgrade to plain ReplayNode since we won't replay through it.
+    // $FlowFixMe[cannot-write]: We intentionally downgrade this to the other tuple.
+    // GAP rd490: upstream's `boundaryNode.length = 4`.
+    boundary_node.4.replace(None);
+    boundary_node.5.set(None);
+    // Remove any resumable slots.
+    boundary_node.2.replace(Rc::new(RefCell::new(vec![])));
+    boundary_node.3.replace(ResumeSlots::None);
+
+    // TODO: We should really just remove the boundary from all parent paths too so
+    // we don't replay the path to it.
+}
+
+fn spawn_new_suspended_replay_task(
+    request: &Rc<Request>,
+    task: &Task,
+    thenable_state: Option<Rc<ThenableState>>,
+) -> Rc<Task> {
+    create_replay_task(
+        request,
+        thenable_state,
+        task.replay.borrow().clone().unwrap(),
+        task.node.get(),
+        task.child_index.get(),
+        task.blocked_boundary.borrow().clone(),
+        task.hoistable_state.get(),
+        Rc::clone(&task.abort_set.borrow()),
+        task.key_path.borrow().clone(),
+        task.format_context.get(),
+        task.context.borrow().clone(),
+        Rc::clone(&task.tree_context.borrow()),
+        task.row.borrow().clone(),
+        task.component_stack.borrow().clone(),
+        if !DISABLE_LEGACY_CONTEXT {
+            task.legacy_context.get()
+        } else {
+            EMPTY_CONTEXT_OBJECT.with(|empty_context_object| *empty_context_object)
+        },
+        if __DEV__ { task.debug_task.get() } else { None },
+    )
+}
+
+fn spawn_new_suspended_render_task(
+    request: &Rc<Request>,
+    task: &Task,
+    thenable_state: Option<Rc<ThenableState>>,
+) -> Rc<Task> {
+    // Something suspended, we'll need to create a new segment and resolve it later.
+    let segment = task.blocked_segment.borrow().clone().unwrap();
+    let insertion_index = segment.chunks.borrow().len() as f64;
+    let new_segment = create_pending_segment(
+        request,
+        insertion_index,
+        None,
+        task.format_context.get(),
+        // Adopt the parent segment's leading text embed
+        segment.last_pushed_text.get(),
+        // Assume we are text embedded at the trailing edge
+        true,
+    );
+    segment.children.borrow_mut().push(Rc::clone(&new_segment));
+    // Reset lastPushedText for current Segment since the new Segment "consumed" it
+    segment.last_pushed_text.set(false);
+    create_render_task(
+        request,
+        thenable_state,
+        task.node.get(),
+        task.child_index.get(),
+        task.blocked_boundary.borrow().clone(),
+        new_segment,
+        task.blocked_preamble.get(),
+        task.hoistable_state.get(),
+        Rc::clone(&task.abort_set.borrow()),
+        task.key_path.borrow().clone(),
+        task.format_context.get(),
+        task.context.borrow().clone(),
+        Rc::clone(&task.tree_context.borrow()),
+        task.row.borrow().clone(),
+        task.component_stack.borrow().clone(),
+        if !DISABLE_LEGACY_CONTEXT {
+            task.legacy_context.get()
+        } else {
+            EMPTY_CONTEXT_OBJECT.with(|empty_context_object| *empty_context_object)
+        },
+        if __DEV__ { task.debug_task.get() } else { None },
+    )
+}
+
+fn postpone_new_suspended_render_task(
+    request: &Rc<Request>,
+    task: &Task,
+    thenable_state: Option<Rc<ThenableState>>,
+) {
+    // Preserve the segment rendered so far and leave a hole at this node. The
+    // request has already been aborted, so this new task must be finished now
+    // rather than scheduled for another attempt.
+    let postponed_task = spawn_new_suspended_render_task(request, task, thenable_state);
+    if __DEV__ {
+        abort_task_dev(&postponed_task, request);
+    } else {
+        abort_task(&postponed_task, request);
+    }
+    let abort_set = Rc::clone(&postponed_task.abort_set.borrow());
+    abort_set.borrow_mut().remove(&postponed_task);
+    if __DEV__ {
+        finish_aborted_task_dev(&postponed_task, request, request.fatal_error.get());
+    } else {
+        finish_aborted_task(&postponed_task, request, request.fatal_error.get());
+    }
+}
+
 // DRAFT: the sections below are not ported yet.
 
 fn render_node(
@@ -4738,19 +5308,7 @@ fn finished_task(
     todo!()
 }
 
-fn untrack_boundary(_request: &Request, _boundary: &Rc<SuspenseBoundary>) {
-    todo!()
-}
-
 fn prepare_preamble(_request: &Rc<Request>) {
-    todo!()
-}
-
-fn track_postponed_boundary(
-    _request: &Rc<Request>,
-    _tracked_postpones: &PostponedHoles,
-    _boundary: &Rc<SuspenseBoundary>,
-) {
     todo!()
 }
 pub fn perform_work(_request: &Rc<Request>) {
@@ -4787,14 +5345,6 @@ pub struct PostponedState {
     replay_slots: RefCell<ResumeSlots>,
 }
 
-fn warn_for_missing_key(
-    _request: &Rc<Request>,
-    _task: &Rc<Task>,
-    _child: Option<&'static Unknown>,
-) {
-    todo!()
-}
-
 fn errored_replay(
     _request: &Rc<Request>,
     _boundary: Option<Rc<SuspenseBoundary>>,
@@ -4807,11 +5357,18 @@ fn errored_replay(
     todo!()
 }
 
-fn render_children_array(
-    _request: &Rc<Request>,
-    _task: &Rc<Task>,
-    _children: &[Option<&'static ReactNodeList>],
-    _child_index: f64,
+fn add_to_replay_parent(
+    _node: &Rc<ReplayNode>,
+    _parent_key_path: Option<&Rc<KeyNode>>,
+    _tracked_postpones: &PostponedHoles,
 ) {
+    todo!()
+}
+
+fn abort_task(_task: &Rc<Task>, _request: &Rc<Request>) {
+    todo!()
+}
+
+fn abort_task_dev(_task: &Rc<Task>, _request: &Rc<Request>) {
     todo!()
 }
