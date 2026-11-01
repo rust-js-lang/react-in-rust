@@ -19,13 +19,20 @@ use shared::get_component_name_from_type::get_component_name_from_type;
 use shared::is_array::is_array;
 use shared::react_feature_flags::{
     DISABLE_LEGACY_CONTEXT, DISABLE_LEGACY_CONTEXT_FOR_FUNCTION_COMPONENTS,
-    ENABLE_ASYNC_ITERABLE_CHILDREN, ENABLE_CPU_SUSPENSE, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
+    ENABLE_ASYNC_ITERABLE_CHILDREN, ENABLE_CPU_SUSPENSE, ENABLE_SCOPE_API, ENABLE_VIEW_TRANSITION,
+    ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
 };
 use shared::react_owner_stack_reset::reset_owner_stack_limit;
 use shared::react_recoverable::REACT_RECOVERABLE_DIGEST;
 use shared::react_serialization_errors::describe_object_for_error_message;
 use shared::react_shared_internals::REACT_SHARED_INTERNALS;
-use shared::react_symbols::{ASYNC_ITERATOR, REACT_ELEMENT_TYPE, REACT_LAZY_TYPE, get_iterator_fn};
+use shared::react_symbols::{
+    ASYNC_ITERATOR, REACT_ACTIVITY_TYPE, REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE,
+    REACT_ELEMENT_TYPE, REACT_FORWARD_REF_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE,
+    REACT_LEGACY_HIDDEN_TYPE, REACT_MEMO_TYPE, REACT_PROFILER_TYPE, REACT_SCOPE_TYPE,
+    REACT_STRICT_MODE_TYPE, REACT_SUSPENSE_LIST_TYPE, REACT_SUSPENSE_TYPE,
+    REACT_VIEW_TRANSITION_TYPE, get_iterator_fn,
+};
 use shared::react_types::{
     ReactFormState, ReactNodeList, SuspenseListProps, SuspenseListRevealOrder, SuspenseProps,
     Thenable, ViewTransitionProps,
@@ -56,8 +63,9 @@ use crate::react_fizz_new_context::{
     push_provider, read_context, switch_context,
 };
 use crate::react_fizz_thenable::{
-    ThenableState, ensure_suspendable_thenable_state_dev, get_suspended_call_site_debug_task_dev,
-    get_suspended_call_site_stack_dev, set_capture_suspended_call_site_dev,
+    SUSPENSE_EXCEPTION, ThenableState, ensure_suspendable_thenable_state_dev,
+    get_suspended_call_site_debug_task_dev, get_suspended_call_site_stack_dev,
+    set_capture_suspended_call_site_dev,
 };
 use crate::react_fizz_tree_context::{EMPTY_TREE_CONTEXT, TreeContext, push_tree_context};
 use crate::react_fizz_view_transition_component::{
@@ -3770,6 +3778,376 @@ fn render_view_transition(
     task.key_path.replace(prev_key_path);
 }
 
+impl ReplayNode {
+    fn name(&self) -> Option<&str> {
+        match self {
+            ReplayNode::Element(node) => node.0.as_deref(),
+            ReplayNode::Boundary(node) => node.0.as_deref(),
+        }
+    }
+
+    fn key(&self) -> &NodeKey {
+        match self {
+            ReplayNode::Element(node) => &node.1,
+            ReplayNode::Boundary(node) => &node.1,
+        }
+    }
+}
+
+fn render_element(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    r#type: Option<&'static Unknown>,
+    props: &'static Unknown,
+    r#ref: Option<&'static Unknown>,
+) {
+    if let Some(r#type) = r#type
+        && js::type_of(Some(r#type)) == "function"
+    {
+        if should_construct(r#type) {
+            render_class_component(request, task, key_path, r#type, props);
+            return;
+        } else {
+            render_function_component(request, task, key_path, r#type, props);
+            return;
+        }
+    }
+    if let Kind::String(r#type) = js::classify(r#type) {
+        render_host_element(request, task, key_path, r#type, props);
+        return;
+    }
+
+    let symbol = SymbolFor::from_value(r#type);
+    match symbol {
+        // LegacyHidden acts the same as a fragment. This only works because we
+        // currently assume that every instance of LegacyHidden is accompanied by a
+        // host component wrapper. In the hidden mode, the host component is given a
+        // `hidden` attribute, which ensures that the initial HTML is not visible.
+        // To support the use of LegacyHidden as a true fragment, without an extra
+        // DOM node, we would have to hide the initial HTML in some other way.
+        // TODO: Delete in LegacyHidden. It's an unstable API only used in the
+        // www build. As a migration step, we could add a special prop to Offscreen
+        // that simulates the old behavior (no hiding, no change to effects).
+        // $FlowFixMe[invalid-compare]
+        // $FlowFixMe[invalid-compare] -- falls through
+        // $FlowFixMe[invalid-compare] -- falls through
+        // $FlowFixMe[invalid-compare] -- falls through
+        Some(
+            REACT_LEGACY_HIDDEN_TYPE
+            | REACT_STRICT_MODE_TYPE
+            | REACT_PROFILER_TYPE
+            | REACT_FRAGMENT_TYPE,
+        ) => {
+            let prev_key_path = task.key_path.replace(Some(Rc::clone(key_path)));
+            render_node_destructive(request, task, js::get(props, "children"), -1.0);
+            task.key_path.replace(prev_key_path);
+            return;
+        }
+        // $FlowFixMe[invalid-compare]
+        Some(REACT_ACTIVITY_TYPE) => {
+            render_activity(request, task, key_path, props);
+            return;
+        }
+        // $FlowFixMe[invalid-compare]
+        Some(REACT_SUSPENSE_LIST_TYPE) => {
+            render_suspense_list(request, task, key_path, unsafe { js::cast(Some(props)) });
+            return;
+        }
+        // $FlowFixMe[invalid-compare]
+        // $FlowFixMe[invalid-compare]
+        Some(REACT_VIEW_TRANSITION_TYPE | REACT_SCOPE_TYPE) => {
+            if symbol == Some(REACT_VIEW_TRANSITION_TYPE) && ENABLE_VIEW_TRANSITION {
+                render_view_transition(request, task, key_path, unsafe { js::cast(Some(props)) });
+                return;
+            }
+            // Fallthrough
+            if ENABLE_SCOPE_API {
+                let prev_key_path = task.key_path.replace(Some(Rc::clone(key_path)));
+                render_node_destructive(request, task, js::get(props, "children"), -1.0);
+                task.key_path.replace(prev_key_path);
+                return;
+            }
+            panic!("ReactDOMServer does not yet support scope components.");
+        }
+        // $FlowFixMe[invalid-compare]
+        Some(REACT_SUSPENSE_TYPE) => {
+            render_suspense_boundary(request, task, key_path, unsafe { js::cast(Some(props)) });
+            return;
+        }
+        _ => {}
+    }
+
+    // $FlowFixMe[invalid-compare]
+    if js::type_of(r#type) == "object"
+        && let Some(r#type) = r#type
+    {
+        match SymbolFor::from_value(js::get(r#type, "$$typeof")) {
+            // $FlowFixMe[invalid-compare]
+            Some(REACT_FORWARD_REF_TYPE) => {
+                render_forward_ref(request, task, key_path, r#type, props, r#ref);
+                return;
+            }
+            // $FlowFixMe[invalid-compare]
+            Some(REACT_MEMO_TYPE) => {
+                render_memo(request, task, key_path, r#type, props, r#ref);
+                return;
+            }
+            // $FlowFixMe[invalid-compare]
+            Some(REACT_CONTEXT_TYPE) => {
+                let context = unsafe { js::cast(Some(r#type)) };
+                render_context_provider(request, task, key_path, context, props);
+                return;
+            }
+            // $FlowFixMe[invalid-compare]
+            Some(REACT_CONSUMER_TYPE) => {
+                let context: &'static Context = unsafe { js::cast(js::get(r#type, "_context")) };
+                render_context_consumer(request, task, key_path, context, props);
+                return;
+            }
+            // $FlowFixMe[invalid-compare]
+            Some(REACT_LAZY_TYPE) => {
+                render_lazy_component(
+                    request,
+                    task,
+                    key_path,
+                    unsafe { js::cast(Some(r#type)) },
+                    props,
+                    r#ref,
+                );
+                return;
+            }
+            _ => {}
+        }
+    }
+
+    let mut info = String::new();
+    if __DEV__
+        && (matches!(js::classify(r#type), Kind::Undefined)
+            || (js::type_of(r#type) == "object"
+                // $FlowFixMe[invalid-compare]
+                && r#type.is_some_and(|r#type| js::object::keys(r#type).is_empty())))
+    {
+        info += concat!(
+            " You likely forgot to export your component from the file ",
+            "it's defined in, or you might have mixed up default and ",
+            "named imports."
+        );
+    }
+
+    panic!(
+        "Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: {}.{}",
+        if js::loose_equals(r#type, js::null::<Option<&Unknown>>()) {
+            js::string(r#type)
+        } else {
+            js::type_of(r#type).to_owned()
+        },
+        info
+    );
+}
+
+fn resume_node(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    segment_id: f64,
+    node: Option<&'static ReactNodeList>,
+    child_index: f64,
+) {
+    let prev_replay = task.replay.borrow().clone();
+    let blocked_boundary = task.blocked_boundary.borrow().clone();
+    let resumed_segment =
+        create_pending_segment(request, 0.0, None, task.format_context.get(), false, false);
+    resumed_segment.id.set(segment_id);
+    resumed_segment.parent_flushed.set(true);
+    let result = catch_unwind(AssertUnwindSafe(|| {
+        // Convert the current ReplayTask to a RenderTask.
+        let render_task = task;
+        render_task.replay.replace(None);
+        render_task
+            .blocked_segment
+            .replace(Some(Rc::clone(&resumed_segment)));
+        render_node(request, task, node, child_index);
+        resumed_segment.status.set(COMPLETED);
+        finished_segment(request, blocked_boundary.as_ref(), &resumed_segment);
+        match &blocked_boundary {
+            None => {
+                request
+                    .completed_root_segment
+                    .replace(Some(Rc::clone(&resumed_segment)));
+            }
+            Some(blocked_boundary) => {
+                queue_completed_segment(blocked_boundary, &resumed_segment);
+                if blocked_boundary.parent_flushed.get() {
+                    request
+                        .partial_boundaries
+                        .borrow_mut()
+                        .push(Rc::clone(blocked_boundary));
+                }
+            }
+        }
+    }));
+    // Restore to a ReplayTask.
+    task.replay.replace(prev_replay);
+    task.blocked_segment.replace(None);
+    if let Err(thrown_value) = result {
+        resume_unwind(thrown_value);
+    }
+}
+
+fn is_suspending(x: Option<&'static Unknown>) -> bool {
+    js::type_of(x) == "object"
+        && !matches!(js::classify(x), Kind::Null)
+        && (SUSPENSE_EXCEPTION.with(|&suspense_exception| {
+            js::strict_equals(x, Some(js::unknown(suspense_exception)))
+        }) || js::is_function(js::get(x, "then"))
+            // Rethrow so retryReplayTask can trampoline on stack overflow.
+            || js::strict_equals(
+                js::get(x, "message"),
+                Some(js::unknown("Maximum call stack size exceeded")),
+            ))
+}
+
+fn replay_element(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    name: Option<&str>,
+    key_or_index: &NodeKey,
+    _child_index: f64,
+    r#type: Option<&'static Unknown>,
+    props: &'static Unknown,
+    r#ref: Option<&'static Unknown>,
+    replay: &Rc<ReplaySet>,
+) {
+    // We're replaying. Find the path to follow.
+    let replay_nodes = &replay.nodes;
+    let mut i = 0;
+    while i < replay_nodes.borrow().len() {
+        // Flow doesn't support refinement on tuples so we do it manually here.
+        let node = replay_nodes.borrow()[i].clone();
+        if key_or_index != node.key() {
+            i += 1;
+            continue;
+        }
+        match &node {
+            ReplayNode::Element(element) => {
+                // Matched a replayable path.
+                // Let's double check that the component name matches as a precaution.
+                if let Some(name) = name
+                    && Some(name) != node.name()
+                {
+                    panic!(
+                        "Expected the resume to render <{}> in this slot but instead it rendered <{}>. The tree doesn't match so React will fallback to client rendering.",
+                        js::string(node.name().map(js::unknown)),
+                        name
+                    );
+                }
+                let child_nodes = Rc::clone(&element.2);
+                let child_slots = element.3.borrow().clone();
+                let current_node = task.node.get();
+                let child_replay = Rc::new(ReplaySet {
+                    nodes: Rc::clone(&child_nodes),
+                    slots: RefCell::new(child_slots.clone()),
+                    pending_tasks: Cell::new(1.0),
+                });
+                task.replay.replace(Some(Rc::clone(&child_replay)));
+                let result = catch_unwind(AssertUnwindSafe(|| {
+                    render_element(request, task, key_path, r#type, props, r#ref);
+                    if child_replay.pending_tasks.get() == 1.0
+                        && !child_replay.nodes.borrow().is_empty()
+                    // TODO check remaining slots
+                    {
+                        panic!(concat!(
+                            "Couldn't find all resumable slots by key/index during replaying. ",
+                            "The tree doesn't match so React will fallback to client rendering."
+                        ));
+                    }
+                    child_replay
+                        .pending_tasks
+                        .set(child_replay.pending_tasks.get() - 1.0);
+                }));
+                if let Err(x) = result {
+                    let thrown_value = thrown_value_of(&*x);
+                    if is_suspending(thrown_value) {
+                        // Suspend
+                        if js::strict_equals(task.node.get(), current_node) {
+                            // This same element suspended so we need to pop the replay we just added.
+                            task.replay.replace(Some(Rc::clone(replay)));
+                        } else {
+                            // We finished rendering this node, so now we can consume this slot.
+                            replay_nodes.borrow_mut().remove(i);
+                        }
+                        resume_unwind(x);
+                    }
+                    child_replay
+                        .pending_tasks
+                        .set(child_replay.pending_tasks.get() - 1.0);
+                    // Unlike regular render, we don't terminate the siblings if we error
+                    // during a replay. That's because this component didn't actually error
+                    // in the original prerender. What's unable to complete is the child
+                    // replay nodes which might be Suspense boundaries which are able to
+                    // absorb the error and we can still continue with siblings.
+                    let thrown_info = get_thrown_info(task.component_stack.borrow().clone());
+                    errored_replay(
+                        request,
+                        task.blocked_boundary.borrow().clone(),
+                        if request.aborted.get() {
+                            request.fatal_error.get()
+                        } else {
+                            thrown_value
+                        },
+                        thrown_info,
+                        &child_nodes,
+                        &child_slots,
+                        if __DEV__ { task.debug_task.get() } else { None },
+                    );
+                }
+                task.replay.replace(Some(Rc::clone(replay)));
+            }
+            ReplayNode::Boundary(boundary) => {
+                // Let's double check that the component type matches.
+                if SymbolFor::from_value(r#type) != Some(REACT_SUSPENSE_TYPE) {
+                    let expected_type = "Suspense";
+                    panic!(
+                        "Expected the resume to render <{}> in this slot but instead it rendered <{}>. The tree doesn't match so React will fallback to client rendering.",
+                        expected_type,
+                        get_component_name_from_type(r#type)
+                            .filter(|name| !name.is_empty())
+                            .unwrap_or_else(|| "Unknown".to_owned())
+                    );
+                }
+                // Matched a replayable path.
+                let fallback = boundary.4.borrow().clone();
+                replay_suspense_boundary(
+                    request,
+                    task,
+                    key_path,
+                    unsafe { js::cast(Some(props)) },
+                    boundary.5,
+                    Rc::clone(&boundary.2),
+                    boundary.3.borrow().clone(),
+                    match &fallback {
+                        None => Rc::new(RefCell::new(vec![])),
+                        Some(ReplayNode::Element(fallback)) => Rc::clone(&fallback.2),
+                        Some(ReplayNode::Boundary(fallback)) => Rc::clone(&fallback.2),
+                    },
+                    match &fallback {
+                        None => ResumeSlots::None,
+                        Some(ReplayNode::Element(fallback)) => fallback.3.borrow().clone(),
+                        Some(ReplayNode::Boundary(fallback)) => fallback.3.borrow().clone(),
+                    },
+                );
+            }
+        }
+        // We finished rendering this node, so now we can consume this
+        // slot. This must happen after in case we rerender this task.
+        replay_nodes.borrow_mut().remove(i);
+        return;
+    }
+    // We didn't find any matching nodes. We assume that this element was already
+    // rendered in the prelude and skip it.
+}
+
 // DRAFT: the sections below are not ported yet.
 
 fn render_node(
@@ -3855,16 +4233,6 @@ pub struct PostponedState {
     replay_slots: RefCell<ResumeSlots>,
 }
 
-fn resume_node(
-    _request: &Rc<Request>,
-    _task: &Rc<Task>,
-    _segment_id: f64,
-    _node: Option<&'static ReactNodeList>,
-    _child_index: f64,
-) {
-    todo!()
-}
-
 fn warn_for_missing_key(
     _request: &Rc<Request>,
     _task: &Rc<Task>,
@@ -3901,13 +4269,14 @@ fn render_node_destructive(
     todo!()
 }
 
-fn render_element(
+fn errored_replay(
     _request: &Rc<Request>,
-    _task: &Rc<Task>,
-    _key_path: &Rc<KeyNode>,
-    _type: Option<&'static Unknown>,
-    _props: &'static Unknown,
-    _ref: Option<&'static Unknown>,
+    _boundary: Option<Rc<SuspenseBoundary>>,
+    _error: Option<&'static Unknown>,
+    _error_info: &'static ThrownInfo,
+    _replay_nodes: &Rc<RefCell<Vec<ReplayNode>>>,
+    _resume_slots: &ResumeSlots,
+    _debug_task: Option<&'static ConsoleTask>,
 ) {
     todo!()
 }
