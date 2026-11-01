@@ -29,8 +29,8 @@ use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use shared::react_symbols::{
     ASYNC_ITERATOR, REACT_ACTIVITY_TYPE, REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE,
     REACT_ELEMENT_TYPE, REACT_FORWARD_REF_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE,
-    REACT_LEGACY_HIDDEN_TYPE, REACT_MEMO_TYPE, REACT_PROFILER_TYPE, REACT_SCOPE_TYPE,
-    REACT_STRICT_MODE_TYPE, REACT_SUSPENSE_LIST_TYPE, REACT_SUSPENSE_TYPE,
+    REACT_LEGACY_HIDDEN_TYPE, REACT_MEMO_TYPE, REACT_PORTAL_TYPE, REACT_PROFILER_TYPE,
+    REACT_SCOPE_TYPE, REACT_STRICT_MODE_TYPE, REACT_SUSPENSE_LIST_TYPE, REACT_SUSPENSE_TYPE,
     REACT_VIEW_TRANSITION_TYPE, get_iterator_fn,
 };
 use shared::react_types::{
@@ -4148,6 +4148,584 @@ fn replay_element(
     // rendered in the prelude and skip it.
 }
 
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#pushTextInstance"
+)]
+fn push_text_instance(
+    target: &Chunks,
+    text: &str,
+    render_state: &RenderState,
+    text_embedded: bool,
+) -> bool {
+    let _ = (target, text, render_state, text_embedded);
+    unreachable!()
+}
+
+fn validate_iterable(
+    task: &Rc<Task>,
+    iterable: Option<&'static Unknown>,
+    child_index: f64,
+    iterator: &'static Iterator<Option<&'static ReactNodeList>>,
+    iterator_fn: &'static Unknown,
+) {
+    if __DEV__ {
+        if js::strict_equals(Some(js::unknown(iterator)), iterable) {
+            // We don't support rendering Generators as props because it's a mutation.
+            // See https://github.com/react/react/issues/12995
+            // We do support generators if they were created by a GeneratorFunction component
+            // as its direct child since we can recreate those by rerendering the component
+            // as needed.
+            let component_stack = task.component_stack.borrow().clone();
+            let is_generator_component = child_index == -1.0 // Only the root child is valid
+                && component_stack.as_ref().is_some_and(|component_stack| {
+                    js::type_of(Some(component_stack.r#type)) == "function" // FunctionComponent
+                        // $FlowFixMe[method-unbinding]
+                        && js::object::to_string(Some(component_stack.r#type)).unwrap()
+                            == "[object GeneratorFunction]"
+                })
+                // $FlowFixMe[method-unbinding]
+                && js::object::to_string(Some(js::unknown(iterator))).unwrap()
+                    == "[object Generator]";
+            if !is_generator_component {
+                if !DID_WARN_ABOUT_GENERATORS.get() {
+                    console::error((concat!(
+                        "Using Iterators as children is unsupported and will likely yield ",
+                        "unexpected results because enumerating a generator mutates it. ",
+                        "You may convert it to an array with `Array.from()` or the ",
+                        "`[...spread]` operator before rendering. You can also use an ",
+                        "Iterable that can iterate multiple times over the same items."
+                    ),));
+                }
+                DID_WARN_ABOUT_GENERATORS.set(true);
+            }
+        } else if js::strict_equals(js::get(iterable, "entries"), Some(iterator_fn)) {
+            // Warn about using Maps as children
+            if !DID_WARN_ABOUT_MAPS.get() {
+                console::error((concat!(
+                    "Using Maps as children is not supported. ",
+                    "Use an array of keyed ReactElements instead."
+                ),));
+                DID_WARN_ABOUT_MAPS.set(true);
+            }
+        }
+    }
+}
+
+fn validate_async_iterable(
+    task: &Rc<Task>,
+    iterable: Option<&'static Unknown>,
+    child_index: f64,
+    iterator: &'static AsyncIterator,
+) {
+    if __DEV__ && js::strict_equals(Some(js::unknown(iterator)), iterable) {
+        // We don't support rendering Generators as props because it's a mutation.
+        // See https://github.com/react/react/issues/12995
+        // We do support generators if they were created by a GeneratorFunction component
+        // as its direct child since we can recreate those by rerendering the component
+        // as needed.
+        let component_stack = task.component_stack.borrow().clone();
+        let is_generator_component = child_index == -1.0 // Only the root child is valid
+            && component_stack.as_ref().is_some_and(|component_stack| {
+                js::type_of(Some(component_stack.r#type)) == "function" // FunctionComponent
+                    // $FlowFixMe[method-unbinding]
+                    && js::object::to_string(Some(component_stack.r#type)).unwrap()
+                        == "[object AsyncGeneratorFunction]"
+            })
+            // $FlowFixMe[method-unbinding]
+            && js::object::to_string(Some(js::unknown(iterator))).unwrap()
+                == "[object AsyncGenerator]";
+        if !is_generator_component {
+            if !DID_WARN_ABOUT_GENERATORS.get() {
+                console::error((concat!(
+                    "Using AsyncIterators as children is unsupported and will likely yield ",
+                    "unexpected results because enumerating a generator mutates it. ",
+                    "You can use an AsyncIterable that can iterate multiple times over ",
+                    "the same items."
+                ),));
+            }
+            DID_WARN_ABOUT_GENERATORS.set(true);
+        }
+    }
+}
+
+fn warn_on_function_type(invalid_child: &'static Unknown) {
+    if __DEV__ {
+        let display_name = js::get(invalid_child, "displayName");
+        let name = js::get(invalid_child, "name");
+        let name = if js::truthy(display_name) {
+            display_name
+        } else if js::truthy(name) {
+            name
+        } else {
+            Some(js::unknown("Component"))
+        };
+        console::error((
+            concat!(
+                "Functions are not valid as a React child. This may happen if ",
+                "you return %s instead of <%s /> from render. ",
+                "Or maybe you meant to call this function rather than return it."
+            ),
+            name,
+            name,
+        ));
+    }
+}
+
+fn warn_on_symbol_type(invalid_child: &'static Unknown) {
+    if __DEV__ {
+        // eslint-disable-next-line react-internal/safe-string-coercion
+        let name = js::string(Some(invalid_child));
+        console::error((
+            concat!("Symbols are not valid as a React child.\n", "  %s"),
+            name,
+        ));
+    }
+}
+
+// This function by it self renders a node and consumes the task by mutating it
+// to update the current execution state.
+fn render_node_destructive(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    node: Option<&'static ReactNodeList>,
+    child_index: f64,
+) {
+    let replay = task.replay.borrow().clone();
+    if let Some(replay) = replay
+        && let ResumeSlots::Root(resume_segment_id) = *replay.slots.borrow()
+    {
+        // TODO: Figure out a cheaper place than this hot path to do this check.
+        resume_node(request, task, resume_segment_id, node, child_index);
+        return;
+    }
+    // Stash the node we're working on. We'll pick up from this task in case
+    // something suspends.
+    task.node.set(node);
+    task.child_index.set(child_index);
+
+    let previous_component_stack = task.component_stack.borrow().clone();
+    let previous_debug_task = if __DEV__ { task.debug_task.get() } else { None };
+
+    push_component_stack(task);
+
+    retry_node(request, task);
+
+    task.component_stack.replace(previous_component_stack);
+    if __DEV__ {
+        task.debug_task.set(previous_debug_task);
+    }
+}
+
+fn retry_node(request: &Rc<Request>, task: &Rc<Task>) {
+    let node = task.node.get();
+    let child_index = task.child_index.get();
+
+    if matches!(js::classify(node), Kind::Null) {
+        return;
+    }
+
+    // Handle object types
+    if js::type_of(node) == "object" {
+        let node = node.unwrap();
+        match SymbolFor::from_value(js::get(node, "$$typeof")) {
+            Some(REACT_ELEMENT_TYPE) => {
+                let element = node;
+                let r#type = js::get(element, "type");
+                let key = js::get(element, "key");
+                let props = js::get(element, "props").unwrap();
+
+                // TODO: We should get the ref off the props object right before using
+                // it.
+                let ref_prop = js::get(props, "ref");
+                let r#ref = if !matches!(js::classify(ref_prop), Kind::Undefined) {
+                    ref_prop
+                } else {
+                    js::null()
+                };
+
+                let debug_task = if __DEV__ { task.debug_task.get() } else { None };
+
+                let name = get_component_name_from_type(r#type);
+                let key_or_index = match js::classify(key) {
+                    Kind::String(key) => NodeKey::Key(key.to_owned()),
+                    // A `null` key, or the optimistic key.
+                    _ => NodeKey::Index(if child_index == -1.0 {
+                        0.0
+                    } else {
+                        child_index
+                    }),
+                };
+                let key_path = Rc::new(KeyNode(
+                    task.key_path.borrow().clone(),
+                    name.clone(),
+                    key_or_index.clone(),
+                ));
+                let replay = task.replay.borrow().clone();
+                if let Some(replay) = replay {
+                    if let Some(debug_task) = debug_task {
+                        debug_task.run(|| {
+                            replay_element(
+                                request,
+                                task,
+                                &key_path,
+                                name.as_deref(),
+                                &key_or_index,
+                                child_index,
+                                r#type,
+                                props,
+                                r#ref,
+                                &replay,
+                            )
+                        });
+                    } else {
+                        replay_element(
+                            request,
+                            task,
+                            &key_path,
+                            name.as_deref(),
+                            &key_or_index,
+                            child_index,
+                            r#type,
+                            props,
+                            r#ref,
+                            &replay,
+                        );
+                    }
+                    // No matches found for this node. We assume it's already emitted in the
+                    // prelude and skip it during the replay.
+                } else {
+                    // We're doing a plain render.
+                    if let Some(debug_task) = debug_task {
+                        debug_task
+                            .run(|| render_element(request, task, &key_path, r#type, props, r#ref));
+                    } else {
+                        render_element(request, task, &key_path, r#type, props, r#ref);
+                    }
+                }
+                return;
+            }
+            Some(REACT_PORTAL_TYPE) => {
+                panic!(concat!(
+                    "Portals are not currently supported by the server renderer. ",
+                    "Render them conditionally so that they only appear on the client render."
+                ));
+            }
+            Some(REACT_LAZY_TYPE) => {
+                let lazy_node: &LazyComponent = unsafe { js::cast(Some(node)) };
+                let resolved_node = if __DEV__ {
+                    CALL_LAZY_INIT_IN_DEV
+                        .with(|call_lazy_init_in_dev| call_lazy_init_in_dev.unwrap())(
+                        lazy_node
+                    )
+                } else {
+                    let payload = &lazy_node.payload;
+                    let init = lazy_node.init;
+                    init(payload)
+                };
+                if request.aborted.get() {
+                    // eslint-disable-next-line no-throw-literal
+                    js::throw(js::null());
+                }
+                // Now we render the resolved node
+                render_node_destructive(request, task, resolved_node, child_index);
+                return;
+            }
+            _ => {}
+        }
+
+        if is_array(Some(node)) {
+            render_children_array(request, task, unsafe { js::cast(Some(node)) }, child_index);
+            return;
+        }
+
+        let iterator_fn = get_iterator_fn(Some(node));
+        if let Some(iterator_fn) = iterator_fn {
+            let iterator: Option<&'static Iterator<Option<&'static ReactNodeList>>> = unsafe {
+                js::cast(js::function::call(
+                    js::cast::<&dyn Fn() -> Option<&'static Unknown>>(Some(iterator_fn)),
+                    Some(&node),
+                    (),
+                ))
+            };
+            if request.aborted.get() {
+                // eslint-disable-next-line no-throw-literal
+                js::throw(js::null());
+            }
+            if let Some(iterator) = iterator {
+                if __DEV__ {
+                    validate_iterable(task, Some(node), child_index, iterator, iterator_fn);
+                }
+                // We need to know how many total children are in this set, so that we
+                // can allocate enough id slots to acommodate them. So we must exhaust
+                // the iterator before we start recursively rendering the children.
+                // TODO: This is not great but I think it's inherent to the id
+                // generation algorithm.
+                let mut step = iterator.next();
+                if request.aborted.get() {
+                    // eslint-disable-next-line no-throw-literal
+                    js::throw(js::null());
+                }
+                if step.done != Some(true) {
+                    let mut children = vec![];
+                    loop {
+                        children.push(step.value);
+                        step = iterator.next();
+                        if request.aborted.get() {
+                            // eslint-disable-next-line no-throw-literal
+                            js::throw(js::null());
+                        }
+                        if step.done == Some(true) {
+                            break;
+                        }
+                    }
+                    render_children_array(request, task, &children, child_index);
+                }
+                return;
+            }
+        }
+
+        if ENABLE_ASYNC_ITERABLE_CHILDREN.with(|&enabled| enabled)
+            && js::is_function(ASYNC_ITERATOR.with(|&async_iterator| js::get(node, async_iterator)))
+        {
+            let iterator: Option<&'static AsyncIterator> = unsafe {
+                js::cast(js::function::call(
+                    js::cast::<&dyn Fn() -> Option<&'static Unknown>>(
+                        ASYNC_ITERATOR.with(|&async_iterator| js::get(node, async_iterator)),
+                    ),
+                    Some(&node),
+                    (),
+                ))
+            };
+            if request.aborted.get() {
+                // eslint-disable-next-line no-throw-literal
+                js::throw(js::null());
+            }
+            if let Some(iterator) = iterator {
+                if __DEV__ {
+                    validate_async_iterable(task, Some(node), child_index, iterator);
+                }
+                // TODO: Update the task.node to be the iterator to avoid asking
+                // for new iterators, but we currently warn for rendering these
+                // so needs some refactoring to deal with the warning.
+
+                // Restore the thenable state before resuming.
+                let prev_thenable_state = task.thenable_state.take();
+                prepare_to_use_thenable_state(prev_thenable_state);
+
+                // We need to know how many total children are in this set, so that we
+                // can allocate enough id slots to acommodate them. So we must exhaust
+                // the iterator before we start recursively rendering the children.
+                // TODO: This is not great but I think it's inherent to the id
+                // generation algorithm.
+                let mut children = vec![];
+
+                let mut done = false;
+
+                // $FlowFixMe[invalid-compare]
+                if js::strict_equals(Some(js::unknown(iterator)), Some(node)) {
+                    // If it's an iterator we need to continue reading where we left
+                    // off. We can do that by reading the first few rows from the previous
+                    // thenable state.
+                    // $FlowFixMe[underconstrained-implicit-instantiation]
+                    let mut step = read_previous_thenable_from_state();
+                    while !matches!(js::classify(step), Kind::Undefined) {
+                        if js::truthy(js::get(step, "done")) {
+                            done = true;
+                            break;
+                        }
+                        children.push(js::get(step, "value"));
+                        step = read_previous_thenable_from_state();
+                    }
+                }
+
+                if !done {
+                    let mut step = unwrap_thenable(iterator.next());
+                    if request.aborted.get() {
+                        // eslint-disable-next-line no-throw-literal
+                        js::throw(js::null());
+                    }
+                    while !js::truthy(js::get(step, "done")) {
+                        children.push(js::get(step, "value"));
+                        step = unwrap_thenable(iterator.next());
+                        if request.aborted.get() {
+                            // eslint-disable-next-line no-throw-literal
+                            js::throw(js::null());
+                        }
+                    }
+                }
+                render_children_array(request, task, &children, child_index);
+                return;
+            }
+        }
+
+        // Usables are a valid React node type. When React encounters a Usable in
+        // a child position, it unwraps it using the same algorithm as `use`. For
+        // example, for promises, React will throw an exception to unwind the
+        // stack, then replay the component once the promise resolves.
+        //
+        // A difference from `use` is that React will keep unwrapping the value
+        // until it reaches a non-Usable type.
+        //
+        // e.g. Usable<Usable<Usable<T>>> should resolve to T
+        let maybe_usable = node;
+        if js::is_function(js::get(maybe_usable, "then")) {
+            // Clear any previous thenable state that was created by the unwrapping.
+            task.thenable_state.replace(None);
+            let thenable: &'static Thenable = unsafe { js::cast(Some(maybe_usable)) };
+            let resolved_node = unwrap_thenable(thenable);
+            if request.aborted.get() {
+                // eslint-disable-next-line no-throw-literal
+                js::throw(js::null());
+            }
+            render_node_destructive(request, task, resolved_node, child_index);
+            return;
+        }
+
+        if SymbolFor::from_value(js::get(maybe_usable, "$$typeof")) == Some(REACT_CONTEXT_TYPE) {
+            let context: &'static Context = unsafe { js::cast(Some(maybe_usable)) };
+            render_node_destructive(request, task, read_context(context), child_index);
+            return;
+        }
+
+        // $FlowFixMe[method-unbinding]
+        let child_string = js::object::to_string(Some(node)).unwrap();
+
+        panic!(
+            "Objects are not valid as a React child (found: {}). If you meant to render a collection of children, use an array instead.",
+            if child_string == "[object Object]" {
+                "object with keys {".to_owned() + &js::object::keys(node).join(", ") + "}"
+            } else {
+                child_string
+            }
+        );
+    }
+
+    if let Kind::String(node) = js::classify(node) {
+        let segment = task.blocked_segment.borrow().clone();
+        if let Some(segment) = segment {
+            segment.last_pushed_text.set(push_text_instance(
+                &segment.chunks,
+                node,
+                request.render_state,
+                segment.last_pushed_text.get(),
+            ));
+        } else {
+            // We assume a text node doesn't have a representation in the replay set,
+            // since it can't postpone. If it does, it'll be left unmatched and error.
+        }
+        return;
+    }
+
+    if js::type_of(node) == "number" || js::type_of(node) == "bigint" {
+        let segment = task.blocked_segment.borrow().clone();
+        if let Some(segment) = segment {
+            segment.last_pushed_text.set(push_text_instance(
+                &segment.chunks,
+                &js::concat_text(node).unwrap(),
+                request.render_state,
+                segment.last_pushed_text.get(),
+            ));
+        } else {
+            // We assume a text node doesn't have a representation in the replay set,
+            // since it can't postpone. If it does, it'll be left unmatched and error.
+        }
+        return;
+    }
+
+    if __DEV__ {
+        if js::type_of(node) == "function" {
+            warn_on_function_type(node.unwrap());
+        }
+        if js::type_of(node) == "symbol" {
+            warn_on_symbol_type(node.unwrap());
+        }
+    }
+}
+
+fn replay_fragment(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    children: &[Option<&'static ReactNodeList>],
+    child_index: f64,
+) {
+    // If we're supposed follow this array, we'd expect to see a ReplayNode matching
+    // this fragment.
+    let replay = task.replay.borrow().clone().unwrap();
+    let replay_nodes = &replay.nodes;
+    let mut j = 0;
+    while j < replay_nodes.borrow().len() {
+        let node = replay_nodes.borrow()[j].clone();
+        if *node.key() != NodeKey::Index(child_index) {
+            j += 1;
+            continue;
+        }
+        // Matched a replayable path.
+        let (child_nodes, child_slots) = match &node {
+            ReplayNode::Element(node) => (Rc::clone(&node.2), node.3.borrow().clone()),
+            ReplayNode::Boundary(node) => (Rc::clone(&node.2), node.3.borrow().clone()),
+        };
+        let child_replay = Rc::new(ReplaySet {
+            nodes: Rc::clone(&child_nodes),
+            slots: RefCell::new(child_slots.clone()),
+            pending_tasks: Cell::new(1.0),
+        });
+        task.replay.replace(Some(Rc::clone(&child_replay)));
+        let result = catch_unwind(AssertUnwindSafe(|| {
+            render_children_array(request, task, children, -1.0);
+            if child_replay.pending_tasks.get() == 1.0 && !child_replay.nodes.borrow().is_empty() {
+                panic!(concat!(
+                    "Couldn't find all resumable slots by key/index during replaying. ",
+                    "The tree doesn't match so React will fallback to client rendering."
+                ));
+            }
+            child_replay
+                .pending_tasks
+                .set(child_replay.pending_tasks.get() - 1.0);
+        }));
+        if let Err(x) = result {
+            let thrown_value = thrown_value_of(&*x);
+            if js::type_of(thrown_value) == "object"
+                && !matches!(js::classify(thrown_value), Kind::Null)
+                && (SUSPENSE_EXCEPTION.with(|&suspense_exception| {
+                    js::strict_equals(thrown_value, Some(js::unknown(suspense_exception)))
+                }) || js::is_function(js::get(thrown_value, "then")))
+            {
+                // Suspend
+                resume_unwind(x);
+            }
+            child_replay
+                .pending_tasks
+                .set(child_replay.pending_tasks.get() - 1.0);
+            // Unlike regular render, we don't terminate the siblings if we error
+            // during a replay. That's because this component didn't actually error
+            // in the original prerender. What's unable to complete is the child
+            // replay nodes which might be Suspense boundaries which are able to
+            // absorb the error and we can still continue with siblings.
+            // This is an error, stash the component stack if it is null.
+            let thrown_info = get_thrown_info(task.component_stack.borrow().clone());
+            errored_replay(
+                request,
+                task.blocked_boundary.borrow().clone(),
+                if request.aborted.get() {
+                    request.fatal_error.get()
+                } else {
+                    thrown_value
+                },
+                thrown_info,
+                &child_nodes,
+                &child_slots,
+                if __DEV__ { task.debug_task.get() } else { None },
+            );
+        }
+        task.replay.replace(Some(Rc::clone(&replay)));
+        // We finished rendering this node, so now we can consume this
+        // slot. This must happen after in case we rerender this task.
+        replay_nodes.borrow_mut().remove(j);
+        break;
+    }
+}
+
 // DRAFT: the sections below are not ported yet.
 
 fn render_node(
@@ -4195,10 +4773,6 @@ fn track_postponed_boundary(
 ) {
     todo!()
 }
-fn retry_node(_request: &Rc<Request>, _task: &Rc<Task>) {
-    todo!()
-}
-
 pub fn perform_work(_request: &Rc<Request>) {
     todo!()
 }
@@ -4241,34 +4815,6 @@ fn warn_for_missing_key(
     todo!()
 }
 
-fn validate_iterable(
-    _task: &Rc<Task>,
-    _iterable: Option<&'static Unknown>,
-    _child_index: f64,
-    _iterator: &'static Iterator<Option<&'static ReactNodeList>>,
-    _iterator_fn: &'static Unknown,
-) {
-    todo!()
-}
-
-fn validate_async_iterable(
-    _task: &Rc<Task>,
-    _iterable: Option<&'static Unknown>,
-    _child_index: f64,
-    _iterator: &'static AsyncIterator,
-) {
-    todo!()
-}
-
-fn render_node_destructive(
-    _request: &Rc<Request>,
-    _task: &Rc<Task>,
-    _node: Option<&'static ReactNodeList>,
-    _child_index: f64,
-) {
-    todo!()
-}
-
 fn errored_replay(
     _request: &Rc<Request>,
     _boundary: Option<Rc<SuspenseBoundary>>,
@@ -4277,6 +4823,15 @@ fn errored_replay(
     _replay_nodes: &Rc<RefCell<Vec<ReplayNode>>>,
     _resume_slots: &ResumeSlots,
     _debug_task: Option<&'static ConsoleTask>,
+) {
+    todo!()
+}
+
+fn render_children_array(
+    _request: &Rc<Request>,
+    _task: &Rc<Task>,
+    _children: &[Option<&'static ReactNodeList>],
+    _child_index: f64,
 ) {
     todo!()
 }
