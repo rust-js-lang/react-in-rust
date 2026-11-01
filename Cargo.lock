@@ -36,6 +36,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "react-dom-bindings-fizz-instruction-set"
+version = "0.0.0"
+dependencies = [
+ "rust-js-builtins",
+ "rust-js-webapi",
+]
+
+[[package]]
 name = "react-is"
 version = "0.0.0"
 dependencies = [

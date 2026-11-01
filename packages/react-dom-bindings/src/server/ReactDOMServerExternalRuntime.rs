@@ -16,7 +16,7 @@ use crate::react_dom_fizz_instruction_set_shared::{RC, RR, RS, RX};
 
 // Imports are resolved statically by the closure compiler in release bundles
 // and by rollup in jest unit tests
-js::import!("./src/server/fizz-instruction-set/ReactDOMFizzInstructionSetExternalRuntime.js");
+js::import!("./ReactDOMFizzInstructionSetExternalRuntime.js");
 
 js::on_load! {
     if let Some(body) = document.body() {
