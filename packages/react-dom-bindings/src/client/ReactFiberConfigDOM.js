@@ -2164,7 +2164,6 @@ export function startViewTransition(
           errorCallback(error$1);
         }
       } finally {
-        // Skip passiveCallback(). Spawned work will schedule a task.
         // Continue the reset of the work.
         // If the error happened in the snapshot phase before the update callback
         // was invoked, then we need to first finish the mutation and layout phases.
@@ -2213,6 +2212,7 @@ export function startViewTransition(
       finishedAnimation();
     }
     spawnedWorkCallback();
+    // Skip passiveCallback(). Spawned work will schedule a task.
   }
 }
 

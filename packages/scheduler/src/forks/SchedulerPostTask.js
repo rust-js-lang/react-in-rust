@@ -130,15 +130,16 @@ function runTask(priorityLevel, postTaskPriority, node, callback) {
       throw error;
     });
   } finally {
-    // Abort errors are an implementation detail. We don't expose the
-    // TaskController to the user, nor do we expose the promise that is returned
-    // from `postTask`. So we should suppress them, since there's no way for the
-    // user to handle them.
     currentPriorityLevel_DEPRECATED = reset;
   }
 }
 
-function handleAbortError(error) {}
+function handleAbortError(error) {
+  // Abort errors are an implementation detail. We don't expose the
+  // TaskController to the user, nor do we expose the promise that is returned
+  // from `postTask`. So we should suppress them, since there's no way for the
+  // user to handle them.
+}
 
 export function unstable_cancelCallback(node) {
   const controller = node._controller;

@@ -420,7 +420,6 @@ function recursivelyInsertNewFiber(
           parentViewTransition,
           visitPhase,
         );
-        // TODO: Consider what should happen to Portals. For now we exclude them.
         break;
       }
     // Fall through
@@ -491,6 +490,7 @@ function recursivelyInsertNewFiber(
       break;
     }
     case HostPortal:
+      // TODO: Consider what should happen to Portals. For now we exclude them.
       break;
     case OffscreenComponent: {
       const newState = finishedWork.memoizedState;
