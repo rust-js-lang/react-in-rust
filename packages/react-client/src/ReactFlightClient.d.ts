@@ -285,7 +285,6 @@ export function createStreamState(
   streamDebugValue?: unknown | null | undefined,
 ): StreamState;
 
-// GAP rd403: TypeScript's UnderlyingSource, which webapi lacks.
 /** The underlying source startReadableStream gives its stream. */
 export interface UnderlyingSource {
   type?: string | undefined;

@@ -718,6 +718,22 @@ These differences from upstream's output are accepted:
     missing `reject` leaves the rejection unhandled either way;
   - clippy's `collapsible_match` makes a `match` arm's nested
     `if __DEV__` a guard, `"4" if __DEV__ => ..`, as ci1 merges nested ifs.
+- **The Flight client's names and parameters** (decided for the user while
+  away, 2026-11-02; neither changes a result):
+  - its functions and module-level constants keep upstream's acronyms
+    through `#[rust_js::name]`, `createFakeJSXCallStackInDEV`,
+    `getIOInfoTaskName`, `hasGCedResponse`, `markIOStarted`, as its fields
+    and exports do (locals stay camelCased, the entry above);
+  - createResponse keeps `#[allow(clippy::too_many_arguments)]` for
+    upstream's 14 positional parameters, and createFakeFunction and
+    logComponentInfo for their eight: the parameters are upstream's API;
+  - the DEV-only `createFakeJSXCallStackInDEV` and
+    `replayConsoleWithCallStackInDEV`, `null` outside DEV as upstream's
+    are, are called through `unwrap_unchecked` where every caller runs in
+    DEV, so the JS calls the constant as upstream does.
+- **Not accepted, held as gaps:** the Flight client's local
+  `UnderlyingSource` struct is a stand-in for webapi's binding (rd403, P1
+  with the Flight-gaps agent); it's replaced as soon as the binding lands.
 
 The audit of 2026-11-01 (Batch 41) listed these; the user accepted them the
 same day:

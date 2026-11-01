@@ -84,11 +84,6 @@ import {
 
 const ReactSharedInteralsServer =
   React.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-// GAP rd382: upstream reads both off `import * as React`, `const
-// ReactSharedInternals = React.__CLIENT_INTERNALS_.. ||
-// ReactSharedInteralsServer;`. The port's `js::or` of the two is that
-// `||`; whether the namespace path above prints `React.x` reads is to
-// check in the build.
 const ReactSharedInternals =
   React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE ||
   ReactSharedInteralsServer;
@@ -718,21 +713,16 @@ function createResolvedModelChunk(response, value) {
 }
 
 /** A value of an object literal, `null` for none. */
-// GAP rd391: an object literal of values of any shape, `{type, key, props}`,
-// is written with `object::from_entries`, whose values are `&Unknown`.
 function orNull(value) {
   return value ?? null;
 }
 
 /** A value of an object literal, `undefined` for none. */
-// GAP rd391.
 function orUndefined(value) {
   return value ?? undefined;
 }
 
 /** `{[RESPONSE_SYMBOL]: response}`, a resolved model chunk's `reason`. */
-// GAP rd386: a literal of a computed symbol key, `{[RESPONSE_SYMBOL]:
-// response}`; written as a function of an object and its `js::set`.
 function responseHolder(response) {
   const holder = {};
   holder[RESPONSE_SYMBOL] = response;
@@ -903,8 +893,6 @@ let isInitializingDebugInfo = false;
 
 /** What JS threw, of a caught unwind. */
 function thrown(payload) {
-  // GAP rd387: upstream's `catch (error) { .. error .. }`; the thrown value
-  // is the payload's `JsError`, read the reconciler's way.
   return payload.error;
 }
 
@@ -995,9 +983,6 @@ function initializeDebugChunk(response, chunk) {
 }
 
 /** `initializeDebugInfo` as a reference's map. */
-// GAP rd389: upstream hands `initializeDebugInfo` itself as the map, whose
-// parameters are `(response, debugInfo)`; a `fn` of the map's four is this
-// wrapper.
 function mapInitializeDebugInfo(response, model, parentObject, key) {
   return initializeDebugInfo(response, $unwrap(model));
 }
@@ -1326,7 +1311,7 @@ function initializeElement(response, element, lazyNode) {
     // source mapping information.
     // This can unfortunately happen within a user space callstack which will
     // remain on the stack.
-    normalizedStackTrace = createFakeJsxCallStackInDev(response, stack, env);
+    normalizedStackTrace = createFakeJSXCallStackInDEV(response, stack, env);
   }
   element._debugStack = normalizedStackTrace;
   let task = null;
@@ -1444,8 +1429,6 @@ function createElement(
       configurable: false,
       enumerable: false,
       writable: true,
-      // GAP rd392: upstream's `stack === undefined ? null : stack`,
-      // a given `null` kept; `Option` reads both as `None`.
       value: orNull(stack),
     });
     Object.defineProperty(element, '_debugTask', {
@@ -1518,8 +1501,6 @@ function createElement(
 }
 
 /** `initializeElement` given a listener's value too, as `bind` calls it. */
-// GAP rd389: upstream binds initializeElement itself, `init(value)` calling
-// it with one argument more than it reads.
 function initializeElementListener(response, element, lazyNode, value) {
   initializeElement(response, element, lazyNode);
 }
@@ -1548,8 +1529,6 @@ function createLazyChunkWrapper(
   chunk,
   validated, // DEV-only
 ) {
-  // GAP rd391: the lazy node's literal, `{$$typeof: REACT_LAZY_TYPE,
-  // _payload: chunk, _init: readChunk}`.
   const lazyType = {
     $$typeof: REACT_LAZY_TYPE,
     _payload: chunk,
@@ -2056,8 +2035,6 @@ function loadServerReference(response, metaData, parentObject, key) {
     }
   } else if (boundIsChunk) {
     const preloaded = promise;
-    // GAP rd394: `Promise.all([promise, bound])` of a promise and a
-    // chunk, two thenables of different types.
     const all = Promise.all([preloaded, bound]);
     promise = all;
   }
@@ -2087,10 +2064,6 @@ function loadServerReference(response, metaData, parentObject, key) {
       // This promise is coming from us and should have initialized by now.
       const promiseValue = bound.value;
       const boundArgs = isArray(promiseValue) ? promiseValue.slice() : [];
-      // GAP rd395: upstream's `boundArgs.unshift(null); // this` and
-      // `resolvedValue.bind.apply(resolvedValue, boundArgs)`; the
-      // port gives `bind` its `this`, null, and spreads the rest,
-      // `resolvedValue.bind(null, ...boundArgs)`.
       const function$ = resolvedValue;
       resolvedValue = function$.bind(null, ...boundArgs);
     }
@@ -2487,9 +2460,6 @@ function createBlob(response, model, parentObject, key) {
 function createFormData(response, model, parentObject, key) {
   const formData = new FormData();
   for (let i = 0; i < model.length; i++) {
-    // GAP rd397: `formData.append(model[i][0], model[i][1])` of a value
-    // of any kind, a string or a Blob; the draft casts it to the string
-    // webapi's `append` takes (TypeScript's `value: string | Blob`).
     const [name, value] = model[i];
     formData.append(name, value);
   }
@@ -2537,8 +2507,6 @@ function defineLazyGetter(response, chunk, parentObject, key) {
 }
 
 function extractIterator(response, model, parentObject, key) {
-  // GAP rd398: `model[Symbol.iterator]()`, a method of a well-known
-  // symbol called on its object.
   const iterator = model[Symbol.iterator];
   return iterator.call(model);
 }
@@ -2675,8 +2643,6 @@ function parseModelString(response, parentObject, key, value) {
         return;
       case 'S':
         // Symbol
-        // GAP rd399: `Symbol.for(key)` of a key the program reads: a
-        // `SymbolFor` lives as long as its key, so the draft casts it.
         return Symbol.for(value.slice(2));
       case 'h': {
         // Server Reference
@@ -2901,8 +2867,6 @@ function parseModelString(response, parentObject, key, value) {
 }
 
 /** `resolveErrorDev` as a reference's map. */
-// GAP rd389: upstream hands resolveErrorDev itself, of `(response,
-// errorInfo)`, as the map.
 function mapResolveErrorDev(response, model, parentObject, key) {
   const errorInfo = model;
   return resolveErrorDev(response, errorInfo);
@@ -3098,8 +3062,6 @@ function resolveChunkDebugInfo(response, streamState, chunk) {
       awaited: $unwrap(streamState._debugInfo),
     };
     if (chunk.status === 'pending' || chunk.status === 'blocked') {
-      // GAP rd389: upstream binds addAsyncInfo itself, which the
-      // listener's call gives one more argument.
       const boundAddAsyncInfo = addAsyncInfoListener.bind(
         null,
         chunk,
@@ -3113,7 +3075,6 @@ function resolveChunkDebugInfo(response, streamState, chunk) {
 }
 
 /** `addAsyncInfo` given a listener's value too, as `bind` calls it. */
-// GAP rd389.
 function addAsyncInfoListener(chunk, asyncInfo, value) {
   addAsyncInfo(chunk, asyncInfo);
 }
@@ -3217,8 +3178,6 @@ function resolveModule(response, id, model, streamState) {
     clientReferenceMetadata,
   );
 
-  // GAP rd427: upstream passes `response._nonce` itself; a borrow held
-  // across the binding's call is refused, so the port reads it first.
   const nonce = response._nonce;
   prepareDestinationForModule(
     response._moduleLoading,
@@ -3359,12 +3318,6 @@ function resolveStream(response, id, stream, controller, streamState) {
 function startReadableStream(response, id, type, streamState) {
   let controller;
   let closed = false;
-  // GAP rd403: `new ReadableStream({type: type, start(c) { controller = c;
-  // }})` of a `type` that's `'bytes'` or undefined: webapi binds
-  // TypeScript's UnderlyingByteSource (`type: "bytes"`) and
-  // UnderlyingDefaultSource (no `type`), not its general UnderlyingSource
-  // (`type?: "bytes"`, its controller a `ReadableStreamController`, either
-  // kind), so the port's struct stands in for it, the default controller's.
   const stream = new ReadableStream({
     type,
     start(c) {
@@ -3805,8 +3758,6 @@ function ResponseInstance(
       ReactSharedInteralsServer != null &&
       ReactSharedInteralsServer.A != null
     ) {
-      // GAP rd401: `ReactSharedInteralsServer.A.getOwner()`,
-      // a method of the server's dispatcher.
       const a = ReactSharedInteralsServer.A;
       const getOwner = a.getOwner;
       rootOwner = getOwner.call(a);
@@ -4063,8 +4014,6 @@ function buildFakeCallStack(
   let callStack = innerCall;
   const fakeFunctionCache$1 = $unwrap(fakeFunctionCache);
   for (let i = 0; i < stack.length; i++) {
-    // GAP rd407: `frame.join('-')` of a tuple of strings, numbers and a
-    // boolean, each converted as JS does.
     const frame = stack[i];
     const frameKey =
       frameValues(frame).join('-') +
@@ -4101,7 +4050,6 @@ function buildFakeCallStack(
 }
 
 /** A frame's values, as `join` reads them. */
-// GAP rd407.
 function frameValues(frame) {
   const [name, filename, line, col, enclosingLine, enclosingCol, isAsync] =
     frame;
@@ -4217,12 +4165,6 @@ function buildFakeTask(
   }
 }
 
-function createFakeJsxCallStackInDev(response, stack, environmentName) {
-  // GAP rd408: upstream calls `createFakeJSXCallStackInDEV(..)`, the
-  // module's binding, where Rust calls through the thread-local's value.
-  return $unwrap(createFakeJSXCallStackInDEV)(response, stack, environmentName);
-}
-
 // v8 (Chromium, Node.js) defaults to 10
 // SpiderMonkey (Firefox) does not support Error.stackTraceLimit
 // JSC (Safari) defaults to 100
@@ -4268,7 +4210,7 @@ function initializeFakeStack(response, debugInfo) {
   const stack = debugInfo.stack;
   if (stack != null) {
     const env = envOf(debugInfo) ?? '';
-    debugInfo.debugStack = createFakeJsxCallStackInDev(response, stack, env);
+    debugInfo.debugStack = createFakeJSXCallStackInDEV(response, stack, env);
   }
   let owner = debugInfo.owner;
   owner = owner != null && owner != null ? owner : undefined;
@@ -4385,8 +4327,6 @@ function getCurrentStackInDEV() {
 
 const replayConsoleWithCallStack = {
   react_stack_bottom_frame(response, payload) {
-    // GAP rd409: a ConsoleEntry tuple whose rest is the console's
-    // arguments, `payload.slice(4)`, read by index.
     const methodName = payload[0];
     const stackTrace = payload[1];
     const owner = payload[2];
@@ -4435,11 +4375,6 @@ const replayConsoleWithCallStackInDEV = __DEV__
     )
   : null;
 
-function replayConsoleWithCallStackInDev(response, payload) {
-  // GAP rd408.
-  $unwrap(replayConsoleWithCallStackInDEV)(response, $unwrap(payload));
-}
-
 function resolveConsoleEntry(response, json) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
@@ -4464,23 +4399,33 @@ function resolveConsoleEntry(response, json) {
     initializeModelChunk(chunk);
     const initializedChunk = chunk;
     if (initializedChunk.status === 'fulfilled') {
-      replayConsoleWithCallStackInDev(
+      replayConsoleWithCallStackInDEV(
         response,
-        initializedValue(initializedChunk),
+        $unwrap(initializedValue(initializedChunk)),
       );
     } else {
-      chunk.then(replayConsoleWithCallStackInDev.bind(null, response), e => {
-        // Ignore console errors for now. Unnecessary noise.
-      });
+      chunk.then(
+        v => {
+          replayConsoleWithCallStackInDEV(response, $unwrap(v));
+        },
+        e => {
+          // Ignore console errors for now. Unnecessary noise.
+        },
+      );
       const old = response._blockedConsole;
       response._blockedConsole = chunk;
     }
   } else {
     // We're still waiting on a previous chunk so we can't enqueue quite yet.
     const chunk = createPendingChunk(response);
-    chunk.then(replayConsoleWithCallStackInDev.bind(null, response), e => {
-      // Ignore console errors for now. Unnecessary noise.
-    });
+    chunk.then(
+      v => {
+        replayConsoleWithCallStackInDEV(response, $unwrap(v));
+      },
+      e => {
+        // Ignore console errors for now. Unnecessary noise.
+      },
+    );
     const old = response._blockedConsole;
     response._blockedConsole = chunk;
     const unblock = () => {
@@ -4640,7 +4585,6 @@ function logComponentInfo(
     // If this is the last component to render before this chunk rejected, then conceptually
     // this component errored. If this was a cancellation then it wasn't this component that
     // errored.
-    // GAP rd427 (as resolveModule's nonce).
     const rootEnv = $unwrap(response._rootEnvironmentName);
     logComponentErrored(
       componentInfo,

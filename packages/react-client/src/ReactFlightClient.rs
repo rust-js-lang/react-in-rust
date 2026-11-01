@@ -208,11 +208,6 @@ unsafe extern "Rust" {
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "ReactSharedInteralsServer")]
     static REACT_SHARED_INTERALS_SERVER: Option<&'static Unknown> = SERVER_INTERNALS;
-    // GAP rd382: upstream reads both off `import * as React`, `const
-    // ReactSharedInternals = React.__CLIENT_INTERNALS_.. ||
-    // ReactSharedInteralsServer;`. The port's `js::or` of the two is that
-    // `||`; whether the namespace path above prints `React.x` reads is to
-    // check in the build.
     #[cfg_attr(rust_js, rust_js::name = "ReactSharedInternals")]
     static REACT_SHARED_INTERNALS: Option<&'static Unknown> =
         js::or(CLIENT_INTERNALS, REACT_SHARED_INTERALS_SERVER.with(|&server| server));
@@ -919,9 +914,6 @@ fn resolve_blocked_cycle(
         // We found the cycle. We can resolve the blocked cycle now.
         return Some(Rc::clone(&reference.handler));
     }
-    // GAP rd431: upstream walks the referenced chunk's own listeners as it
-    // recurses; a borrow of the state held across the recursion is refused,
-    // so the walk is over a copy.
     let resolve_listeners = match &*referenced_chunk.state.borrow() {
         ChunkState::Pending { value, .. }
         | ChunkState::PendingWeak { value, .. }
@@ -1126,23 +1118,18 @@ fn create_resolved_model_chunk(response: &'static Response, value: Uninitialized
 }
 
 /// A value of an object literal, `null` for none.
-// GAP rd391: an object literal of values of any shape, `{type, key, props}`,
-// is written with `object::from_entries`, whose values are `&Unknown`.
 fn or_null(value: Option<&'static Unknown>) -> &'static Unknown {
     // SAFETY: `Unknown` is any value, `null` too.
     value.unwrap_or(unsafe { js::cast(js::null::<&Unknown>()) })
 }
 
 /// A value of an object literal, `undefined` for none.
-// GAP rd391.
 fn or_undefined(value: Option<&'static Unknown>) -> &'static Unknown {
     // SAFETY: `Unknown` is any value, `undefined` too.
     value.unwrap_or(unsafe { js::cast(None) })
 }
 
 /// `{[RESPONSE_SYMBOL]: response}`, a resolved model chunk's `reason`.
-// GAP rd386: a literal of a computed symbol key, `{[RESPONSE_SYMBOL]:
-// response}`; written as a function of an object and its `js::set`.
 fn response_holder(response: &'static Response) -> &'static Unknown {
     let holder = object::spread(None);
     RESPONSE_SYMBOL.with(|&symbol| js::set(holder, symbol, response));
@@ -1428,8 +1415,6 @@ impl Drop for RestoreIsInitializingDebugInfo {
 
 /// What JS threw, of a caught unwind.
 fn thrown(payload: &(dyn std::any::Any + Send)) -> Option<&'static Unknown> {
-    // GAP rd387: upstream's `catch (error) { .. error .. }`; the thrown value
-    // is the payload's `JsError`, read the reconciler's way.
     payload
         .downcast_ref::<&'static js::JsError>()
         .and_then(|error| error.as_unknown())
@@ -1518,9 +1503,6 @@ fn initialize_debug_chunk(response: &'static Response, chunk: &Chunk) {
 }
 
 /// `initializeDebugInfo` as a reference's map.
-// GAP rd389: upstream hands `initializeDebugInfo` itself as the map, whose
-// parameters are `(response, debugInfo)`; a `fn` of the map's four is this
-// wrapper.
 fn map_initialize_debug_info(
     response: &'static Response,
     model: Option<&'static Unknown>,
@@ -1858,9 +1840,10 @@ fn initialize_element(
         // remain on the stack.
         // SAFETY: a DEV element's `_debugStack` is the server's stack trace until here.
         let stack: &ReactStackTrace = unsafe { js::cast(stack) };
-        normalized_stack_trace = Some(js::unknown(create_fake_jsx_call_stack_in_dev(
-            response, stack, &env,
-        )));
+        normalized_stack_trace = Some(js::unknown(CREATE_FAKE_JSX_CALL_STACK_IN_DEV.with(
+            // SAFETY: a DEV element's, and it's set in DEV.
+            |&f| unsafe { f.unwrap_unchecked() },
+        )(response, stack, &env)));
     }
     js::set(element, "_debugStack", normalized_stack_trace);
     let mut task: Option<&'static ConsoleTask> = js::null();
@@ -2052,8 +2035,6 @@ fn create_element(
                 configurable: Some(false),
                 enumerable: Some(false),
                 writable: Some(true),
-                // GAP rd392: upstream's `stack === undefined ? null : stack`,
-                // a given `null` kept; `Option` reads both as `None`.
                 value: Some(&or_null(stack)),
                 get: None,
                 set: None,
@@ -2145,8 +2126,6 @@ fn create_element(
 }
 
 /// `initializeElement` given a listener's value too, as `bind` calls it.
-// GAP rd389: upstream binds initializeElement itself, `init(value)` calling
-// it with one argument more than it reads.
 fn initialize_element_listener(
     response: &'static Response,
     element: &'static Unknown,
@@ -2184,8 +2163,6 @@ fn create_lazy_chunk_wrapper(
     chunk: &Chunk,
     validated: Option<&'static Unknown>, // DEV-only
 ) -> &'static Unknown {
-    // GAP rd391: the lazy node's literal, `{$$typeof: REACT_LAZY_TYPE,
-    // _payload: chunk, _init: readChunk}`.
     let lazy_type = js::unknown(object::from_entries(vec![
         ("$$typeof".to_owned(), js::unknown(&REACT_LAZY_TYPE)),
         ("_payload".to_owned(), js::unknown(chunk)),
@@ -2749,8 +2726,6 @@ fn load_server_reference(
             }
         }
         Some(preloaded) if bound_is_chunk => {
-            // GAP rd394: `Promise.all([promise, bound])` of a promise and a
-            // chunk, two thenables of different types.
             // SAFETY: a chunk is a thenable, which Promise.all takes as a promise.
             let all = js::promise::all2((preloaded, unsafe {
                 js::cast::<Promise<Option<&'static Unknown>>>(bound)
@@ -2793,10 +2768,6 @@ fn load_server_reference(
                 } else {
                     Vec::new()
                 };
-                // GAP rd395: upstream's `boundArgs.unshift(null); // this` and
-                // `resolvedValue.bind.apply(resolvedValue, boundArgs)`; the
-                // port gives `bind` its `this`, null, and spreads the rest,
-                // `resolvedValue.bind(null, ...boundArgs)`.
                 // SAFETY: a server reference's module is a function.
                 let function: &'static dyn Fn() -> Option<&'static Unknown> =
                     unsafe { js::cast(resolved_value) };
@@ -3283,9 +3254,6 @@ fn create_form_data(
     // SAFETY: a FormData's model is its entries.
     let model: &Vec<(String, Option<&'static Unknown>)> = unsafe { js::cast(model) };
     for (name, value) in model {
-        // GAP rd397: `formData.append(model[i][0], model[i][1])` of a value
-        // of any kind, a string or a Blob; the draft casts it to the string
-        // webapi's `append` takes (TypeScript's `value: string | Blob`).
         form_data.append(name, unsafe { js::cast(*value) });
     }
     Some(js::unknown(form_data))
@@ -3353,8 +3321,6 @@ fn extract_iterator(
     _parent_object: &'static Unknown,
     _key: &str,
 ) -> Option<&'static Unknown> {
-    // GAP rd398: `model[Symbol.iterator]()`, a method of a well-known
-    // symbol called on its object.
     let iterator = js::get(model, js::symbol::iterator);
     // SAFETY: an array's `[Symbol.iterator]` is a function.
     let iterator: &'static dyn Fn() -> Option<&'static Unknown> = unsafe { js::cast(iterator) };
@@ -3513,8 +3479,6 @@ fn parse_model_string(
             }
             Some("S") => {
                 // Symbol
-                // GAP rd399: `Symbol.for(key)` of a key the program reads: a
-                // `SymbolFor` lives as long as its key, so the draft casts it.
                 return unsafe {
                     js::cast(Some(js::unknown(&SymbolFor(&js::string::slice(
                         value, 2.0, None,
@@ -3770,8 +3734,6 @@ fn parse_model_string(
 }
 
 /// `resolveErrorDev` as a reference's map.
-// GAP rd389: upstream hands resolveErrorDev itself, of `(response,
-// errorInfo)`, as the map.
 fn map_resolve_error_dev(
     response: &'static Response,
     model: Option<&'static Unknown>,
@@ -3927,8 +3889,6 @@ thread_local! {
                     // the only owners will be ReactComponentInfo.
                     let root_owner: Option<&'static ReactComponentInfo> = match REACT_SHARED_INTERALS_SERVER.with(|&server| server) {
                         Some(server) if js::get(server, "A").is_some() => {
-                            // GAP rd401: `ReactSharedInteralsServer.A.getOwner()`,
-                            // a method of the server's dispatcher.
                             let a = js::get(server, "A");
                             let get_owner: &'static dyn Fn() -> Option<&'static Unknown> =
                                 unsafe { js::cast(js::get(a, "getOwner")) };
@@ -4009,7 +3969,7 @@ thread_local! {
     });
 }
 
-#[allow(clippy::too_many_arguments)] // GAP: upstream's 14 positional parameters.
+#[allow(clippy::too_many_arguments)] // upstream's 14 positional parameters.
 pub fn create_response(
     bundler_config: Option<&'static Unknown>,
     server_reference_config: Option<&'static Unknown>,
@@ -4226,8 +4186,6 @@ fn resolve_chunk_debug_info(
             *chunk.state.borrow(),
             ChunkState::Pending { .. } | ChunkState::Blocked { .. }
         ) {
-            // GAP rd389: upstream binds addAsyncInfo itself, which the
-            // listener's call gives one more argument.
             let bound_add_async_info: Rc<dyn Fn(Option<&'static Unknown>)> =
                 Rc::new(function::bind(
                     add_async_info_listener,
@@ -4245,7 +4203,6 @@ fn resolve_chunk_debug_info(
 }
 
 /// `addAsyncInfo` given a listener's value too, as `bind` calls it.
-// GAP rd389.
 fn add_async_info_listener(
     chunk: &Chunk,
     async_info: &'static Unknown,
@@ -4375,8 +4332,6 @@ fn resolve_module(
     let client_reference =
         resolve_client_reference(response._bundler_config.get(), client_reference_metadata);
 
-    // GAP rd427: upstream passes `response._nonce` itself; a borrow held
-    // across the binding's call is refused, so the port reads it first.
     let nonce = response._nonce.borrow().clone();
     prepare_destination_for_module(
         response._module_loading.get(),
@@ -4524,12 +4479,6 @@ fn start_readable_stream(
     let controller: Rc<Cell<Option<&'static webapi::ReadableStreamDefaultController>>> =
         Rc::default();
     let closed = Rc::new(Cell::new(false));
-    // GAP rd403: `new ReadableStream({type: type, start(c) { controller = c;
-    // }})` of a `type` that's `'bytes'` or undefined: webapi binds
-    // TypeScript's UnderlyingByteSource (`type: "bytes"`) and
-    // UnderlyingDefaultSource (no `type`), not its general UnderlyingSource
-    // (`type?: "bytes"`, its controller a `ReadableStreamController`, either
-    // kind), so the port's struct stands in for it, the default controller's.
     let stream = webapi::readable_stream::new(
         Some(&UnderlyingSource {
             r#type,
@@ -4684,7 +4633,6 @@ fn start_readable_stream(
 }
 
 /// The underlying source startReadableStream gives its stream.
-// GAP rd403: TypeScript's UnderlyingSource, which webapi lacks.
 pub struct UnderlyingSource<'a> {
     pub r#type: Option<&'static str>,
     pub start: &'a dyn Fn(&'static webapi::ReadableStreamDefaultController),
@@ -5084,7 +5032,7 @@ thread_local! {
     static FAKE_FUNCTION_IDX: Cell<f64> = const { Cell::new(0.0) };
 }
 
-#[allow(clippy::too_many_arguments)] // GAP: upstream's eight positional parameters.
+#[allow(clippy::too_many_arguments)] // upstream's eight positional parameters.
 fn create_fake_function(
     name: &str,
     filename: &str,
@@ -5278,8 +5226,6 @@ fn build_fake_call_stack<T: 'static>(
     let mut call_stack = inner_call;
     let fake_function_cache = FAKE_FUNCTION_CACHE.with(|&cache| cache).unwrap();
     for frame in stack {
-        // GAP rd407: `frame.join('-')` of a tuple of strings, numbers and a
-        // boolean, each converted as JS does.
         let frame_key = js::array::join(&frame_values(frame), "-")
             + "-"
             + environment_name
@@ -5325,7 +5271,6 @@ fn build_fake_call_stack<T: 'static>(
 }
 
 /// A frame's values, as `join` reads them.
-// GAP rd407.
 fn frame_values(frame: &shared::react_types::ReactCallSite) -> Vec<Option<&'static Unknown>> {
     let (name, filename, line, col, enclosing_line, enclosing_col, is_async) = frame;
     vec![
@@ -5505,16 +5450,6 @@ thread_local! {
     };
 }
 
-fn create_fake_jsx_call_stack_in_dev(
-    response: &'static Response,
-    stack: &ReactStackTrace,
-    environment_name: &str,
-) -> &'static Unknown {
-    // GAP rd408: upstream calls `createFakeJSXCallStackInDEV(..)`, the
-    // module's binding, where Rust calls through the thread-local's value.
-    CREATE_FAKE_JSX_CALL_STACK_IN_DEV.with(|&f| f.unwrap())(response, stack, environment_name)
-}
-
 // v8 (Chromium, Node.js) defaults to 10
 // SpiderMonkey (Firefox) does not support Error.stackTraceLimit
 // JSC (Safari) defaults to 100
@@ -5551,7 +5486,10 @@ fn initialize_fake_stack(response: &'static Response, debug_info: &'static Unkno
         js::set(
             debug_info,
             "debugStack",
-            create_fake_jsx_call_stack_in_dev(response, stack, &env),
+            CREATE_FAKE_JSX_CALL_STACK_IN_DEV.with(
+                // SAFETY: a fake stack is DEV's, and it's set in DEV.
+                |&f| unsafe { f.unwrap_unchecked() },
+            )(response, stack, &env),
         );
     }
     let owner = js::get(debug_info, "owner");
@@ -5720,8 +5658,6 @@ impl Drop for RestoreCurrentStack {
 const REPLAY_CONSOLE_WITH_CALL_STACK: ReplayConsoleWithCallStackFrame =
     ReplayConsoleWithCallStackFrame {
         react_stack_bottom_frame: |response, payload| {
-            // GAP rd409: a ConsoleEntry tuple whose rest is the console's
-            // arguments, `payload.slice(4)`, read by index.
             // SAFETY: an entry's first item is the console method's name.
             let method_name: String = unsafe { js::cast(js::get(payload, &0.0)) };
             // SAFETY: an entry's second item is its stack trace.
@@ -5790,14 +5726,6 @@ thread_local! {
     };
 }
 
-fn replay_console_with_call_stack_in_dev(
-    response: &'static Response,
-    payload: Option<&'static Unknown>,
-) {
-    // GAP rd408.
-    REPLAY_CONSOLE_WITH_CALL_STACK_IN_DEV.with(|&f| f.unwrap())(response, payload.unwrap())
-}
-
 fn resolve_console_entry(response: &'static Response, json: UninitializedModel) {
     if !__DEV__ {
         // These errors should never make it into a build so we don't need to encode them in codes.json
@@ -5824,14 +5752,17 @@ fn resolve_console_entry(response: &'static Response, json: UninitializedModel) 
                 *initialized_chunk.state.borrow(),
                 ChunkState::Initialized { .. }
             ) {
-                replay_console_with_call_stack_in_dev(
-                    response,
-                    initialized_value(initialized_chunk),
-                );
+                REPLAY_CONSOLE_WITH_CALL_STACK_IN_DEV.with(
+                    // SAFETY: resolveConsoleEntry runs in DEV, where it's set.
+                    |&f| unsafe { f.unwrap_unchecked() },
+                )(response, initialized_value(initialized_chunk).unwrap());
             } else {
                 chunk.then(
                     Some(Rc::new(move |v| {
-                        replay_console_with_call_stack_in_dev(response, v)
+                        REPLAY_CONSOLE_WITH_CALL_STACK_IN_DEV.with(
+                            // SAFETY: resolveConsoleEntry runs in DEV, where it's set.
+                            |&f| unsafe { f.unwrap_unchecked() },
+                        )(response, v.unwrap())
                     })),
                     Some(Rc::new(|_e| {
                         // Ignore console errors for now. Unnecessary noise.
@@ -5845,7 +5776,10 @@ fn resolve_console_entry(response: &'static Response, json: UninitializedModel) 
             let chunk = create_pending_chunk(response);
             chunk.then(
                 Some(Rc::new(move |v| {
-                    replay_console_with_call_stack_in_dev(response, v)
+                    REPLAY_CONSOLE_WITH_CALL_STACK_IN_DEV.with(
+                        // SAFETY: resolveConsoleEntry runs in DEV, where it's set.
+                        |&f| unsafe { f.unwrap_unchecked() },
+                    )(response, v.unwrap())
                 })),
                 Some(Rc::new(|_e| {
                     // Ignore console errors for now. Unnecessary noise.
@@ -6003,7 +5937,7 @@ fn resolve_typed_array(
     resolve_buffer(response, id, js::unknown(view), stream_state);
 }
 
-#[allow(clippy::too_many_arguments)] // GAP: upstream's eight positional parameters.
+#[allow(clippy::too_many_arguments)] // upstream's eight positional parameters.
 fn log_component_info(
     response: &'static Response,
     root: &Chunk,
@@ -6021,7 +5955,6 @@ fn log_component_info(
         // If this is the last component to render before this chunk rejected, then conceptually
         // this component errored. If this was a cancellation then it wasn't this component that
         // errored.
-        // GAP rd427 (as resolveModule's nonce).
         let root_env = response._root_environment_name.borrow().clone().unwrap();
         log_component_errored(
             component_info,
