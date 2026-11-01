@@ -46,12 +46,12 @@ the package's files: `packages/scheduler/src/SchedulerMinHeap.rs` compiles
 to `SchedulerMinHeap.js` and `.d.ts` beside it. A crate's root file is
 Cargo.toml's `[lib] path`: `shared.rs`, `src/forks/Scheduler.rs`,
 `react.rs`, `reconciler.rs`, `bindings.rs`, `react_dom.rs`, `noop.rs`,
-`test_renderer.rs` or `react_art.rs`. It declares each module as
+`test_renderer.rs`, `react_art.rs` or `client.rs`. It declares each module as
 `#[path = "src/..."] pub mod ..;` and writes no JS of its own.
 
 The crates are `shared`, `scheduler`, `react-isomorphic` (packages/react),
 `react-reconciler`, `react-dom-bindings`, `react-dom`,
-`react-noop-renderer`, `react-test-renderer` and `react-art`. A new package is a new crate,
+`react-noop-renderer`, `react-test-renderer`, `react-art` and `react-client`. A new package is a new crate,
 added to the workspace's `members`.
 
 **A JS library's binding is a crate of its own** (the user, 2026-11-01):
@@ -651,8 +651,20 @@ The port is split between sessions by package:
   an Error of its own where upstream's bind throws a TypeError). rd308 is decided: the reconciler holds its
   error handlers as `Rc`s. ReactNoop.js and ReactNoopPersistent.js stay JS
   until rd293.
-- **The second session** has react-server, react-client, react-server-dom-*
-  and react-dom-bindings/src/server.
+  **react-client** (the Flight client) is the first session's too (agreed
+  with the second, 2026-11-01). ReactFlightTemporaryReferences,
+  ReactFlightClientStreamConfigWeb, the three ReactClientConsoleConfigs and
+  ReactFlightClientDevToolsHook are Rust; the ReactFlightClientConfig forks
+  stay JS, as the reconciler's ReactFiberConfig forks do (re-exports and
+  `$$$config` shims). Waiting: the ReactClientDebugConfigs on `js::eval`
+  (rd339), ReactFlightClientStreamConfigNode on `node::util::TextDecoder`
+  (rd340), ReactFlightPerformanceTrack on `lastIndexOf`'s position (rd343;
+  drafted, its JS compared with upstream's call for call),
+  ReactFlightReplyClient on `arguments` (rd332), rd339, a form for
+  processReply's nested functions (rd345) and a `this` replacer (rd346);
+  ReactFlightClient on rd339 and rd346 among others.
+- **The second session** has react-server, react-server-dom-* and
+  react-dom-bindings/src/server.
 
 Before editing another session's modules, regeneration included, message
 the coordinator (m1-arch).
