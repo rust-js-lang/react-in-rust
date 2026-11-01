@@ -517,6 +517,65 @@ These differences from upstream's output are accepted:
   own inside the array, where upstream writes `[{awaited: ioInfo}]`
   (ReactLazy's `_debugInfo`).
 
+- **The ReactClientConsoleConfigs' bindToConsole** (the user, 2026-11-01;
+  rd294's form): the method is read once, `const method =
+  console[methodName];`, before the switch and bound by
+  `function::bind(method, Some(&console), &new_args)`, printed
+  `method.bind(console, ...newArgs)`, where upstream writes `const bind =
+  Function.prototype.bind;`, `newArgs.unshift(console)` and
+  `bind.apply(console[methodName], newArgs)`. A method that isn't a
+  function throws the port's own Error (`console.x is no function`) where
+  upstream's bind throws a TypeError. The non-string branch inserts at
+  `Math.min(offset, newArgs.length)` (Rust's splice panics past the end,
+  JS's clamps); `const format = newArgs[offset];` is read once (rd226's
+  kind); and the cases' braces upstream writes without declarations are
+  dropped.
+
+- **StreamConfigWeb's `?? false`** (the user, 2026-11-01):
+  createStringDecoder's `{fatal: false, ignoreBOM: preserveByteOrderMark ??
+  false}` where upstream defaults the parameter, `preserveByteOrderMark =
+  false`; a `null` gives `false` in both, as TextDecoder converts it.
+
+- **ReactFlightClientDevToolsHook's last test** (the user, 2026-11-01):
+  `if (hook.checkDCE) { // This is the real DevTools. return true; } ..
+  return false;` with no `else`, which clippy's `needless_bool` asks of
+  the Rust, where upstream writes `} else { .. return false; }`.
+
+- **ReactFlightPerformanceTrack's forms** (the user, 2026-11-01, for the
+  held draft): `env != null && !isPrimaryEnv ? name + .. : name`, a match
+  with a guard, where upstream writes `isPrimaryEnv || env === undefined ?
+  name : ..`; `??` where upstream writes `||` of a debugTask, which is an
+  object or absent.
+
+- **ReactTestRenderer's forms** (the user, 2026-11-01, 9421ead's list):
+  `{...inst.props}` then `delete props.children` for upstream's `const
+  {children, ...props} = inst.props` (rd323); an `isHidden(inst)` helper
+  for `inst.isHidden`, and toJSON's container children copied, `.slice()`,
+  before it recurses (a borrow held across calls that may run JS); toJSON's
+  renderedChildren `undefined` until its first child and returned `??
+  null`, its `container.children && container.children.length` guard the
+  loop; create's `__DEV__` warning's nested if merged (ci1), its flags
+  tested by truth where upstream writes `=== true` and `=== false` (they
+  are bools), `root: undefined` left out of the renderer object (rd327,
+  since printed), and the `const` copies Rust's borrows make (unmount's
+  `const current = root`, toTree's `const current = root.current`, the
+  root getter's `const fiberRoot = root`); nodeAndSiblingsArray,
+  getChildren and wrapFiber naming a field before reassigning it, and
+  wrapFiber returning in each branch; flatten's `while ((n = stack.pop())
+  != null)`, `$index(n.array, n.i)` and `n.i = (n.i + 1) >>> 0`; findAll's
+  `for (const child of root.children) { if (typeof child !== 'object')
+  continue; .. }` for upstream's `forEach` testing `typeof child ===
+  'string'`, and `$extend(results, ..)` for `results.push(...)` (rd183's
+  form); `export function unstable_batchedUpdates(fn, a) { return
+  batchedUpdates(fn, a); }` for `batchedUpdates as
+  unstable_batchedUpdates`, and defaultOnDefaultTransitionIndicator a
+  function returning nothing where upstream passes `noop`; and toTree's
+  HostRoot and HostPortal as one arm.
+
+- **The ReactFlightClientConfig forks stay JS** (the user, 2026-11-01), as
+  the reconciler's ReactFiberConfig forks do: `export *` re-exports of the
+  configs and the `$$$config` shims.
+
 These forms are decided:
 
 - **tr1**: test an Option with `== null` or `!= null`, never by truth. Where
