@@ -197,9 +197,7 @@ export function decodeFormState(actionResult, body, serverManifest) {
     // The form action dispatch method is always bound to the initial state.
     // But when comparing signatures, we compare to the original unbound action.
     // Subtract one from the arity to account for this.
-    // GAP rd564: upstream's `bound.length - 1`, JS's `-` of any value, is
-    // `+bound.length - 1`.
-    const boundArity = +bound.length - 1;
+    const boundArity = bound.length - 1;
     return [actionResult, keyPath, referenceId, boundArity];
   });
 }

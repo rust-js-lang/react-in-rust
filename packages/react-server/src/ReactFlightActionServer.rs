@@ -146,7 +146,7 @@ pub fn decode_action(
                     // $FlowFixMe[incompatible-type]
                     form_data.append(&key, value)
                 }
-                FormDataEntryValue::File(value) => form_data.append_with_blob(&key, value, None),
+                FormDataEntryValue::File(value) => form_data.append(&key, value),
             }
         } else if key.starts_with("$ACTION_REF_") {
             // Later actions may override earlier actions if a button is used to
@@ -231,9 +231,7 @@ pub fn decode_form_state(
         // The form action dispatch method is always bound to the initial state.
         // But when comparing signatures, we compare to the original unbound action.
         // Subtract one from the arity to account for this.
-        // GAP rd564: upstream's `bound.length - 1`, JS's `-` of any value, is
-        // `+bound.length - 1`.
-        let bound_arity = js::to_number(js::get(bound, "length")).unwrap() - 1.0;
+        let bound_arity = js::subtract(js::get(bound, "length"), 1.0).unwrap();
         Some((
             action_result,
             key_path.to_owned(),
