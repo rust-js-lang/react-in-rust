@@ -6270,7 +6270,7 @@ export function emitEarlyPreloads(renderState, resumableState, shellComplete) {
     if (headers != null) {
       // Even if onHeaders throws we don't want to call this again so
       // we drop the headers state from this point onwards.
-      renderState.headers = undefined;
+      renderState.headers = null;
 
       let linkHeader = headers.preconnects;
       if (headers.fontPreloads) {
