@@ -2680,7 +2680,7 @@ export function addViewTransitionFinishedListener(transition, callback) {
  * `::view-transition-group(name)` and its kin: animated, and asked for
  * its animations and style, as an element is.
  */
-export function ViewTransitionPseudoElement(pseudo, name) {
+function ViewTransitionPseudoElement(pseudo, name) {
   // TODO: Get the owner document from the root container.
   this._scope = $unwrap(document.documentElement);
   this._selector = '::view-transition-' + pseudo + '(' + name + ')';
@@ -2757,7 +2757,7 @@ export function getCurrentGestureOffset(timeline) {
  * A Fragment's ref: the host children it holds, as one element-like
  * handle that is focused, observed and measured as they are.
  */
-export function FragmentInstance(fragmentFiber) {
+function FragmentInstance(fragmentFiber) {
   this._fragmentFiber = fragmentFiber;
   this._eventListeners = null;
   this._observers = null;

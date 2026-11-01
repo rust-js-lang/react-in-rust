@@ -184,7 +184,7 @@ export function createRoot(
   return new ReactDOMRoot(root);
 }
 
-export function ReactDOMHydrationRoot(internalRoot) {
+function ReactDOMHydrationRoot(internalRoot) {
   this._internalRoot = internalRoot;
 }
 

@@ -427,7 +427,7 @@ export function addViewTransitionFinishedListener(
  * `::view-transition-group(name)` and its kin: animated, and asked for
  * its animations and style, as an element is.
  */
-export declare class ViewTransitionPseudoElement {
+declare class ViewTransitionPseudoElement {
   _scope: Element;
   _selector: string;
   animate(
@@ -437,6 +437,8 @@ export declare class ViewTransitionPseudoElement {
   getAnimations(options?: any | null | undefined): Animation[];
   getComputedStyle(): CSSStyleProperties;
 }
+
+export type {ViewTransitionPseudoElement};
 
 /**
  * The pseudo-elements of a View Transition name, each animated as an
@@ -489,7 +491,7 @@ export type EventListeners = StoredEventListener[];
  * A Fragment's ref: the host children it holds, as one element-like
  * handle that is focused, observed and measured as they are.
  */
-export declare class FragmentInstance {
+declare class FragmentInstance {
   _fragmentFiber: Fiber;
   _eventListeners?: StoredEventListener[] | null | undefined;
   _observers?: Set<Observer> | null | undefined;
@@ -514,6 +516,8 @@ export declare class FragmentInstance {
   compareDocumentPosition(otherNode: Instance): number;
   scrollIntoView(alignToTop?: unknown | null | undefined): void;
 }
+
+export type {FragmentInstance};
 
 /**
  * An IntersectionObserver or a ResizeObserver, as a fragment observes its
