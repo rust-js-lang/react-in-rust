@@ -922,8 +922,6 @@ function initializeDebugChunk(response, chunk) {
             $unwrap(initializedValue(initializedChunk)),
           );
           const debugInfo$1 = $borrowMut(debugInfo, true);
-          // `debugInfo[idx] = ..` may write past the array's end,
-          // leaving holes JS fills later (rd388).
           try {
             if (idx >= debugInfo$1.length) {
               $resize(debugInfo$1, (idx + 1) >>> 0, undefined, 4);
@@ -1984,8 +1982,6 @@ function waitForReference(
 }
 
 function loadServerReference(response, metaData, parentObject, key) {
-  // `metaData: {id, bound, name?, env?, location?}`, read by name as
-  // upstream reads it, and handed on whole to the reply client.
   metaData = $unwrap(metaData);
   if (key === 'then') {
     // This should never happen because we always serialize objects with then-functions
@@ -2575,8 +2571,6 @@ function parseModelString(response, parentObject, key, value) {
       return REACT_ELEMENT_TYPE;
     }
     const tag = value[1];
-    // A true fallthrough (rd127's form): P falls to E in production,
-    // E and Y fall to the reference ID.
     // eslint-disable-next-line no-eval
     switch (tag) {
       case '$':
@@ -3224,19 +3218,19 @@ function resolveModule(response, id, model, streamState) {
       () => resolveModuleChunk(response, blockedChunk, clientReference),
       triggerErrorOnChunk.bind(null, response, rejectedChunk),
     );
-  } else if (chunk != null) {
+  } else if (chunk == null) {
+    const newChunk = createResolvedModuleChunk(response, clientReference);
+    if (__DEV__) {
+      resolveChunkDebugInfo(response, streamState, newChunk);
+    }
+    chunks.set(id, newChunk);
+  } else {
     if (__DEV__) {
       resolveChunkDebugInfo(response, streamState, chunk);
     }
     // This can't actually happen because we don't have any forward
     // references to modules.
     resolveModuleChunk(response, chunk, clientReference);
-  } else {
-    const newChunk = createResolvedModuleChunk(response, clientReference);
-    if (__DEV__) {
-      resolveChunkDebugInfo(response, streamState, newChunk);
-    }
-    chunks.set(id, newChunk);
   }
 }
 
@@ -4074,8 +4068,6 @@ function envOf(debugInfo) {
 }
 
 function initializeFakeTask(response, debugInfo) {
-  // `debugInfo: ReactComponentInfo | ReactAsyncInfo | ReactIOInfo`, read
-  // by name: an untagged enum can't tell the three apart (rd291).
   if (!supportsCreateTask) {
     return null;
   }
@@ -5053,8 +5045,6 @@ function processFullStringRow(response, streamState, id, tag, row) {
     case 84 /* "T" */:
       resolveText(response, id, row, streamState);
       break;
-    // A true fallthrough (rd127's form): N falls to D, D to J, J to W in
-    // the builds without the flag each tests, and W throws.
     case 78 /* "N" */:
     case 68 /* "D" */:
     case 74 /* "J" */:

@@ -741,6 +741,36 @@ These differences from upstream's output are accepted:
     `replayConsoleWithCallStackInDEV`, `null` outside DEV as upstream's
     are, are called through `unwrap_unchecked` where every caller runs in
     DEV, so the JS calls the constant as upstream does.
+- **The Flight client's line-by-line read, accepted on the user's behalf
+  while away, 2026-11-02** (Batch 52; each changes no result a program
+  sees; the gaps found are rd518-rd529):
+  - functions given as a callback take the callback type's parameters,
+    `missingCall(id, args)`, `createBlob(response, model, parentObject,
+    key)` and createMap, createSet, createFormData, extractIterator, where
+    upstream's take fewer: only their `.length` differs, which nothing
+    reads;
+  - a closure field of an object literal is a method, `react_stack_bottom_frame(..) {..}`
+    and a property descriptor's `get() {..}` and `set() {}`, where upstream
+    writes `name: function (..) {..}`: each is called, never constructed;
+  - resolveConsoleEntry's listeners unwrap the entry, `$unwrap(v)`, so a
+    server's malformed entry panics where upstream's destructuring throws a
+    TypeError (an unchecked unwrap of the server's data would be unsound);
+  - createElement writes `key: key ?? null` and `props: props ?? null`,
+    where upstream passes them as given: a server's element tuple always
+    has both;
+  - triggerErrorOnChunk's and resolveStream's DEV blocks set
+    `initializingChunk` without upstream's `(enableProfilerTimer && ..) ||
+    __DEV__` test, which is true inside them;
+  - a closure that passes its argument on to a function of captured values
+    prints as that function's `bind`, `triggerErrorOnChunk.bind(null,
+    response, rejectedChunk)` in resolveModule, where upstream writes the
+    arrow (rust-js's one form, which initializeIOInfo's upstream writes);
+  - processFullStringRow reads a hint's code `row[0] ?? ''`, where
+    upstream's is `undefined` of an empty row: dispatchHint matches
+    neither;
+  - initializeModelChunk calls DEV's initializeDebugChunk inside the `try`
+    whose `finally` restores the handler and chunk, where upstream calls it
+    just before: it catches what it throws, so neither `finally` differs.
 - **The Flight client's stream source is webapi's** (2026-11-02): its
   local `UnderlyingSource` stand-in is gone; startReadableStream gives
   `readable_stream::new` webapi's `UnderlyingSource { r#type, start, ..

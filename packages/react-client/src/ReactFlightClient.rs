@@ -1458,8 +1458,6 @@ fn initialize_debug_chunk(response: &'static Response, chunk: &Chunk) {
                 let entry =
                     initialize_debug_info(response, initialized_value(&initialized_chunk).unwrap());
                 let mut debug_info = debug_info.borrow_mut();
-                // `debugInfo[idx] = ..` may write past the array's end,
-                // leaving holes JS fills later (rd388).
                 if idx >= debug_info.len() {
                     debug_info.resize(idx + 1, None);
                 }
@@ -2674,8 +2672,6 @@ fn load_server_reference(
     parent_object: &'static Unknown,
     key: &str,
 ) -> Option<&'static Unknown> {
-    // `metaData: {id, bound, name?, env?, location?}`, read by name as
-    // upstream reads it, and handed on whole to the reply client.
     let meta_data = meta_data.unwrap();
     if key == "then" {
         // This should never happen because we always serialize objects with then-functions
@@ -3601,8 +3597,6 @@ fn parse_model_string(
                     value, 2.0, None,
                 ))));
             }
-            // A true fallthrough (rd127's form): P falls to E in production,
-            // E and Y fall to the reference ID.
             _ => {
                 if tag == Some("P") && __DEV__ {
                     // In DEV mode we allow debug objects to specify themselves as instances of
@@ -4376,19 +4370,24 @@ fn resolve_module(
             move |_| resolve_module_chunk(response, &blocked_chunk, client_reference),
             move |error| trigger_error_on_chunk(response, &rejected_chunk, error.as_unknown()),
         );
-    } else if let Some(chunk) = chunk {
-        if __DEV__ {
-            resolve_chunk_debug_info(response, stream_state, &chunk);
-        }
-        // This can't actually happen because we don't have any forward
-        // references to modules.
-        resolve_module_chunk(response, &chunk, client_reference);
     } else {
-        let new_chunk = create_resolved_module_chunk(response, client_reference);
-        if __DEV__ {
-            resolve_chunk_debug_info(response, stream_state, &new_chunk);
+        match chunk {
+            None => {
+                let new_chunk = create_resolved_module_chunk(response, client_reference);
+                if __DEV__ {
+                    resolve_chunk_debug_info(response, stream_state, &new_chunk);
+                }
+                chunks.set(&id, new_chunk);
+            }
+            Some(chunk) => {
+                if __DEV__ {
+                    resolve_chunk_debug_info(response, stream_state, &chunk);
+                }
+                // This can't actually happen because we don't have any forward
+                // references to modules.
+                resolve_module_chunk(response, &chunk, client_reference);
+            }
         }
-        chunks.set(&id, new_chunk);
     }
 }
 
@@ -5316,8 +5315,6 @@ fn initialize_fake_task(
     response: &'static Response,
     debug_info: &'static Unknown,
 ) -> Option<&'static ConsoleTask> {
-    // `debugInfo: ReactComponentInfo | ReactAsyncInfo | ReactIOInfo`, read
-    // by name: an untagged enum can't tell the three apart (rd291).
     if !SUPPORTS_CREATE_TASK.with(|&supports| supports) {
         return None;
     }
@@ -6377,8 +6374,6 @@ fn process_full_string_row(
         84 /* "T" */ => {
             resolve_text(response, id, row, stream_state);
         }
-        // A true fallthrough (rd127's form): N falls to D, D to J, J to W in
-        // the builds without the flag each tests, and W throws.
         78 /* "N" */ | 68 /* "D" */ | 74 /* "J" */ | 87 /* "W" */ => {
             if tag == 78 && ENABLE_PROFILER_TIMER.with(|&enabled| enabled) {
                 // Track the time origin for future debug info. We track it relative
