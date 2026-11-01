@@ -24,6 +24,8 @@ type BlobPart =
   | Blob
   | string;
 
+declare const RESPONSE_SYMBOL: unique symbol;
+
 /** What a stream's rows are given to. */
 export interface FlightStreamController {
   enqueueModel: (value: string) => void;
@@ -33,10 +35,6 @@ export interface FlightStreamController {
 
 export type JSONValue = unknown;
 
-// GAP rd480: `const RESPONSE_SYMBOL = Symbol()` keys a resolved model's
-// response, `{id, [RESPONSE_SYMBOL]: response}`; a struct's field can't be
-// keyed by a module's own symbol, so `ModelReason` names it `response`.
-
 /** A chunk's listener: a function, or a reference waiting on its value. */
 export type Listener =
   | ((value: unknown | null | undefined) => void)
@@ -45,7 +43,7 @@ export type Listener =
 /** A resolved model's chunk's `reason`: its id and its response. */
 export interface ModelReason {
   id: number;
-  response: Response;
+  [RESPONSE_SYMBOL]: Response;
 }
 
 /**

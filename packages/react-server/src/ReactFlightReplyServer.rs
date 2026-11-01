@@ -9,7 +9,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::rc::Rc;
 
 use js::{
-    ArrayBuffer, ArrayBufferView, Error, JsError, JsObject, Kind, Map, Uint8Array, Unknown,
+    ArrayBuffer, ArrayBufferView, Error, JsError, JsObject, Kind, Map, Symbol, Uint8Array, Unknown,
     WeakMap, WeakSet, function,
 };
 use shared::get_prototype_of::GET_PROTOTYPE_OF;
@@ -148,9 +148,9 @@ pub type JSONValue = Unknown;
 
 const __PROTO__: &str = "__proto__";
 
-// GAP rd480: `const RESPONSE_SYMBOL = Symbol()` keys a resolved model's
-// response, `{id, [RESPONSE_SYMBOL]: response}`; a struct's field can't be
-// keyed by a module's own symbol, so `ModelReason` names it `response`.
+thread_local! {
+    static RESPONSE_SYMBOL: &'static Symbol = js::symbol::new(None);
+}
 
 /// A chunk's listener: a function, or a reference waiting on its value.
 #[cfg_attr(rust_js, rust_js::untagged)]
@@ -164,6 +164,7 @@ pub enum Listener {
 /// A resolved model's chunk's `reason`: its id and its response.
 pub struct ModelReason {
     pub id: f64,
+    #[cfg_attr(rust_js, rust_js::name(RESPONSE_SYMBOL))]
     pub response: Rc<Response>,
 }
 
@@ -211,6 +212,10 @@ pub struct ReactPromise {
 }
 
 unsafe impl js::Defined for ReactPromise {}
+
+impl js::Classed for ReactPromise {
+    type Constructor = js::AnyConstructor;
+}
 
 #[cfg_attr(rust_js, rust_js::class)]
 impl ReactPromise {
@@ -1998,6 +2003,10 @@ pub struct FlightIterator {
 
 unsafe impl js::Defined for FlightIterator {}
 
+impl js::Classed for FlightIterator {
+    type Constructor = js::AnyConstructor;
+}
+
 #[cfg_attr(rust_js, rust_js::class)]
 impl FlightIterator {
     fn new(next: Box<dyn Fn(Option<&'static Unknown>) -> Rc<ReactPromise>>) -> Self {
@@ -2013,6 +2022,8 @@ js::on_load! {
     // a global but exists as a prototype of an AsyncGenerator. However, it's not needed
     // to satisfy the iterable protocol.
     js::class::<FlightIterator>().set_prototype(js::unknown(js::object::spread(None)));
+    // GAP rd480: upstream's `function asyncIterator() { return this; }`: a
+    // function `with_this` makes is unnamed, `function () { .. }`.
     js::set(
         js::class::<FlightIterator>().prototype(),
         ASYNC_ITERATOR.with(|async_iterator| *async_iterator),
@@ -2022,6 +2033,15 @@ js::on_load! {
         }),
     );
 }
+
+/// An async iterable of a stream's values, its one method its iterator's
+/// maker, keyed by the symbol (rust-js ADR 1051).
+struct AsyncIterable {
+    #[cfg_attr(rust_js, rust_js::name(ASYNC_ITERATOR))]
+    async_iterator: Box<dyn Fn() -> Rc<FlightIterator>>,
+}
+
+unsafe impl js::Defined for AsyncIterable {}
 
 fn parse_async_iterable(
     response: &Rc<Response>,
@@ -2103,60 +2123,53 @@ fn parse_async_iterable(
             }
         }),
     });
-    // GAP rd480: upstream's iterable is an object literal of one method
-    // keyed by a symbol, `{[ASYNC_ITERATOR]() { .. }}`; it's set on an
-    // empty object, and called through the Rust closure.
-    let async_iterator = {
-        let response = Rc::clone(response);
-        let buffer = Rc::clone(&buffer);
-        let closed = Rc::clone(&closed);
-        Rc::new(move || -> Rc<FlightIterator> {
-            let next_read_index = Rc::new(Cell::new(0));
-            let response = Rc::clone(&response);
+    let iterable = AsyncIterable {
+        async_iterator: Box::new({
+            let response = Rc::clone(response);
             let buffer = Rc::clone(&buffer);
             let closed = Rc::clone(&closed);
-            Rc::new(FlightIterator::new(Box::new(move |arg| {
-                if !matches!(js::classify(arg), Kind::Undefined) {
-                    panic!(
-                        "Values cannot be passed to next() of AsyncIterables passed to Client Components."
-                    );
-                }
-                if next_read_index.get() == buffer.borrow().len() {
-                    if closed.get() {
-                        return Rc::new(ReactPromise::new(ChunkState::Initialized {
-                            // GAP rd488: `{done: true, value: undefined}`: js's
-                            // `IteratorResult` is no value of any shape, and a
-                            // struct's `None` field is left out (ADR 0280), so
-                            // its `value` key, which `'value' in step` sees, is
-                            // an entry's.
-                            value: Some(js::unknown(js::object::from_entries(vec![
-                                ("done".to_owned(), Some(js::unknown_of(true))),
-                                ("value".to_owned(), None),
-                            ]))),
-                            reason: None,
-                        }));
+            move || -> Rc<FlightIterator> {
+                let next_read_index = Rc::new(Cell::new(0));
+                let response = Rc::clone(&response);
+                let buffer = Rc::clone(&buffer);
+                let closed = Rc::clone(&closed);
+                Rc::new(FlightIterator::new(Box::new(move |arg| {
+                    if !matches!(js::classify(arg), Kind::Undefined) {
+                        panic!(
+                            "Values cannot be passed to next() of AsyncIterables passed to Client Components."
+                        );
                     }
-                    let chunk = create_pending_chunk(&response);
-                    buffer.borrow_mut().push(chunk);
-                }
-                let chunk = Rc::clone(&buffer.borrow()[next_read_index.get()]);
-                next_read_index.set(next_read_index.get() + 1);
-                chunk
-            })))
-        })
+                    if next_read_index.get() == buffer.borrow().len() {
+                        if closed.get() {
+                            return Rc::new(ReactPromise::new(ChunkState::Initialized {
+                                // GAP rd488: `{done: true, value: undefined}`: js's
+                                // `IteratorResult` is no value of any shape, and a
+                                // struct's `None` field is left out (ADR 0280), so
+                                // its `value` key, which `'value' in step` sees, is
+                                // an entry's.
+                                value: Some(js::unknown(js::object::from_entries(vec![
+                                    ("done".to_owned(), Some(js::unknown_of(true))),
+                                    ("value".to_owned(), None),
+                                ]))),
+                                reason: None,
+                            }));
+                        }
+                        let chunk = create_pending_chunk(&response);
+                        buffer.borrow_mut().push(chunk);
+                    }
+                    let chunk = Rc::clone(&buffer.borrow()[next_read_index.get()]);
+                    next_read_index.set(next_read_index.get() + 1);
+                    chunk
+                })))
+            }
+        }),
     };
-    let iterable = js::unknown(js::object::spread(None));
-    js::set(
-        iterable,
-        ASYNC_ITERATOR.with(|async_iterator| *async_iterator),
-        Rc::clone(&async_iterator),
-    );
     // TODO: If it's a single shot iterator we can optimize memory by cleaning up the buffer after
     // reading through the end, but currently we favor code size over this optimization.
     let stream = if iterator {
-        js::unknown_of(async_iterator())
+        js::unknown_of((iterable.async_iterator)())
     } else {
-        iterable
+        js::unknown_of(iterable)
     };
     resolve_stream(response, id, stream, flight_controller);
     stream

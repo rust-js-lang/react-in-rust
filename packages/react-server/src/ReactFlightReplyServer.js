@@ -31,6 +31,8 @@ import {$extend, $index, $unwrap} from '@rust-js/runtime';
 
 const __PROTO__ = '__proto__';
 
+const RESPONSE_SYMBOL = Symbol();
+
 function ReactPromise(status, value, reason) {
   this.status = status;
   this.value = value;
@@ -249,7 +251,7 @@ function triggerErrorOnChunk(response, chunk, error) {
 function createResolvedModelChunk(response, value, id) {
   return new ReactPromise('resolved_model', value, {
     id,
-    response,
+    [RESPONSE_SYMBOL]: response,
   });
 }
 
@@ -304,7 +306,7 @@ function resolveModelChunk(response, chunk, value, id) {
   chunk.value = value;
   chunk.reason = {
     id,
-    response,
+    [RESPONSE_SYMBOL]: response,
   };
   if (resolveListeners != null) {
     // This is unfortunate that we're reading this eagerly if
@@ -328,7 +330,7 @@ function createResolvedIteratorResultChunk(response, value, done) {
     (done ? '{"done":true,"value":' : '{"done":false,"value":') + value + '}';
   return new ReactPromise('resolved_model', iteratorResultJson, {
     id: -1,
-    response,
+    [RESPONSE_SYMBOL]: response,
   });
 }
 
@@ -652,7 +654,7 @@ function initializeModelChunk(chunk) {
   if (chunk.status !== 'resolved_model') {
     throw new Error('internal error: entered unreachable code');
   }
-  const response = chunk.reason.response;
+  const response = chunk.reason[RESPONSE_SYMBOL];
   const id = chunk.reason.id;
   const {value: resolvedModel} = chunk;
   const old = initializingHandler;
@@ -1516,6 +1518,8 @@ function FlightIterator(next) {
 // a global but exists as a prototype of an AsyncGenerator. However, it's not needed
 // to satisfy the iterable protocol.
 FlightIterator.prototype = {};
+// GAP rd480: upstream's `function asyncIterator() { return this; }`: a
+// function `with_this` makes is unnamed, `function () { .. }`.
 FlightIterator.prototype[ASYNC_ITERATOR] = function () {
   // Self referencing iterator.
   return this;
@@ -1584,46 +1588,43 @@ function parseAsyncIterable(
       }
     },
   };
-  // GAP rd480: upstream's iterable is an object literal of one method
-  // keyed by a symbol, `{[ASYNC_ITERATOR]() { .. }}`; it's set on an
-  // empty object, and called through the Rust closure.
-  const asyncIterator = () => {
-    let nextReadIndex = 0;
-    return new FlightIterator(arg => {
-      if (arg !== undefined) {
-        throw new Error(
-          'Values cannot be passed to next() of AsyncIterables passed to Client Components.',
-        );
-      }
-      if (nextReadIndex === buffer.length) {
-        if (closed) {
-          return new ReactPromise(
-            'fulfilled',
-            // GAP rd488: `{done: true, value: undefined}`: js's
-            // `IteratorResult` is no value of any shape, and a
-            // struct's `None` field is left out (ADR 0280), so
-            // its `value` key, which `'value' in step` sees, is
-            // an entry's.
-            Object.fromEntries([
-              ['done', true],
-              ['value', undefined],
-            ]),
-            null,
+  const iterable = {
+    [ASYNC_ITERATOR]() {
+      let nextReadIndex = 0;
+      return new FlightIterator(arg => {
+        if (arg !== undefined) {
+          throw new Error(
+            'Values cannot be passed to next() of AsyncIterables passed to Client Components.',
           );
         }
-        const chunk = createPendingChunk(response);
-        buffer.push(chunk);
-      }
-      const chunk = $index(buffer, nextReadIndex);
-      nextReadIndex = (nextReadIndex + 1) >>> 0;
-      return chunk;
-    });
+        if (nextReadIndex === buffer.length) {
+          if (closed) {
+            return new ReactPromise(
+              'fulfilled',
+              // GAP rd488: `{done: true, value: undefined}`: js's
+              // `IteratorResult` is no value of any shape, and a
+              // struct's `None` field is left out (ADR 0280), so
+              // its `value` key, which `'value' in step` sees, is
+              // an entry's.
+              Object.fromEntries([
+                ['done', true],
+                ['value', undefined],
+              ]),
+              null,
+            );
+          }
+          const chunk = createPendingChunk(response);
+          buffer.push(chunk);
+        }
+        const chunk = $index(buffer, nextReadIndex);
+        nextReadIndex = (nextReadIndex + 1) >>> 0;
+        return chunk;
+      });
+    },
   };
-  const iterable = {};
-  iterable[ASYNC_ITERATOR] = asyncIterator;
   // TODO: If it's a single shot iterator we can optimize memory by cleaning up the buffer after
   // reading through the end, but currently we favor code size over this optimization.
-  const stream = iterator ? asyncIterator() : iterable;
+  const stream = iterator ? iterable[ASYNC_ITERATOR]() : iterable;
   resolveStream(response, id, stream, flightController);
   return stream;
 }

@@ -12,27 +12,24 @@ what rust-js writes, "refused" what it says. The refusals and printed forms
 quoted were seen building this draft; the snippets are the minimal shape of
 the same code, not each built on its own.
 
-## rd480: a member keyed by a module's own symbol
+## rd480: resolved but for a function's name: a field named by a symbol
 
-Upstream keys a resolved model's response by `RESPONSE_SYMBOL = Symbol()`,
-`{id, [RESPONSE_SYMBOL]: response}`, and its iterable is a literal of one
-symbol-keyed method, `{[ASYNC_ITERATOR]() { .. }}`. A struct's field can't be
-keyed by a symbol, and an object literal can't hold a symbol-keyed method,
-so the port names the field `response` and sets the method on `{}`.
+rust-js 8ba13da9c (ADR 1051, the user's decision, option A): a struct's
+field `#[cfg_attr(rust_js, rust_js::name(SYMBOL))]` is keyed by that symbol.
+`ModelReason`'s `response` is `#[rust_js::name(RESPONSE_SYMBOL)]` of the
+module's own `thread_local! { static RESPONSE_SYMBOL: &'static Symbol =
+js::symbol::new(None); }`, printed upstream's `{id, [RESPONSE_SYMBOL]:
+response}` and `chunk.reason[RESPONSE_SYMBOL]`; the async iterable is an
+`AsyncIterable` struct whose closure field is
+`#[rust_js::name(ASYNC_ITERATOR)]`, printed `{[ASYNC_ITERATOR]() { .. }}`,
+and `iterator ? iterable[ASYNC_ITERATOR]() : iterable`, as upstream's.
 
-```rust
-pub struct ModelReason { pub id: f64, pub response: std::rc::Rc<u32> }
-pub fn iterable(f: std::rc::Rc<dyn Fn() -> f64>) -> &'static js::Unknown {
-    let iterable = js::unknown(js::object::spread(None));
-    js::set(iterable, js::symbol::async_iterator, f);
-    iterable
-}
-```
-
-prints `{ id, response }` and `const iterable = {}; iterable[Symbol.asyncIterator] = f;`,
-where upstream writes `{id, [RESPONSE_SYMBOL]: response}` and `{[ASYNC_ITERATOR]() {..}}`.
-`FlightIterator.prototype[ASYNC_ITERATOR] = function () {..}` also loses
-upstream's name `asyncIterator` (a `function::with_this` closure).
+Left: `FlightIterator.prototype[ASYNC_ITERATOR] = function () { .. }`, a
+`function::with_this` closure, is unnamed where upstream's is
+`function asyncIterator() { .. }`; and initializeModelChunk reads
+`chunk.reason[RESPONSE_SYMBOL]` and `chunk.reason.id` where upstream
+destructures, `const {[RESPONSE_SYMBOL]: response, id} = chunk.reason;`
+(a pattern of a symbol-named field reads each, ADR 1051's next step).
 
 ## rd481: resolved, a chunk inherits `Promise.prototype`
 
