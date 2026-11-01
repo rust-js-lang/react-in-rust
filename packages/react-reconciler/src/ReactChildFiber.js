@@ -61,13 +61,11 @@ import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {
   $borrow,
   $borrowMut,
-  $catchUnwind,
   $cellReplace,
   $fieldCell,
   $iter,
   $next,
   $unborrow,
-  $unwinding,
 } from '@rust-js/runtime';
 
 // This tracks the thenables that are unwrapped during reconcilation.
@@ -2030,81 +2028,70 @@ function createChildReconciler(shouldTrackSideEffects) {
     const restore = prevDebugInfo;
     let result;
     try {
-      const catchUnwind = $catchUnwind(() => {
-        // This indirection only exists so we can reset `thenableState` at the end.
-        // It should get inlined by Closure.
-        thenableIndexCounter = 0;
-        const firstChildFiber = reconcileChildFibersImpl(
-          shouldTrackSideEffects,
-          returnFiber,
-          currentFirstChild,
-          newChild,
-          lanes,
-        );
-        thenableState = null;
-        // Don't bother to reset `thenableIndexCounter` to 0 because it always gets
-        // set at the beginning.
-        return firstChildFiber;
-      });
-      if (catchUnwind.TAG === 'Ok') {
-        const firstChildFiber = catchUnwind._0;
-        result = firstChildFiber;
-      } else {
-        const x = catchUnwind._0;
-        const thrown = x.error;
-        if (
-          thrown === SuspenseException ||
-          thrown === SuspenseActionException ||
-          (!disableLegacyMode &&
-            (returnFiber.mode & ConcurrentMode) === NoMode &&
-            typeof thrown === 'object' &&
-            thrown != null &&
-            typeof thrown.then === 'function')
-        ) {
-          // Suspense exceptions need to read the current suspended state before
-          // yielding and replay it using the same sequence so this trick doesn't
-          // work here.
-          // Suspending in legacy mode actually mounts so if we let the child
-          // mount then we delete its state in an update.
-          throw $unwinding(x);
-        }
-        // Something errored during reconciliation but it's conceptually a child that
-        // errored and not the current component itself so we create a virtual child
-        // that throws in its begin phase. That way the current component can handle
-        // the error or suspending if needed.
-        const throwFiber = createFiberFromThrow(
-          thrown,
-          returnFiber.mode,
-          lanes,
-        );
-        throwFiber.return = returnFiber;
-        if (__DEV__) {
-          const debugInfo = currentDebugInfo;
-          throwFiber._debugInfo = debugInfo;
-          // Conceptually the error's owner should ideally be captured when the
-          // Error constructor is called but we don't override them to capture our
-          // `owner`. So instead, we use the nearest parent as the owner/task of the
-          // error. This is usually the same thing when it's thrown from the same
-          // async component but not if you await a promise started from a different
-          // component/task.
-          // In newer Chrome, Error constructor does capture the Task which is what
-          // is logged by reportError. In that case this debugTask isn't used.
-          throwFiber._debugOwner = returnFiber._debugOwner;
-          throwFiber._debugTask = returnFiber._debugTask;
-          if (debugInfo != null) {
-            const iter = $iter(debugInfo.toReversed());
-            let info;
-            while ((info = $next(iter)) != null) {
-              if (typeof info.stack === 'string') {
-                throwFiber._debugOwner = info;
-                throwFiber._debugTask = info.debugTask ?? null;
-                break;
-              }
+      // This indirection only exists so we can reset `thenableState` at the end.
+      // It should get inlined by Closure.
+      thenableIndexCounter = 0;
+      const firstChildFiber = reconcileChildFibersImpl(
+        shouldTrackSideEffects,
+        returnFiber,
+        currentFirstChild,
+        newChild,
+        lanes,
+      );
+      thenableState = null;
+      // Don't bother to reset `thenableIndexCounter` to 0 because it always gets
+      // set at the beginning.
+      result = firstChildFiber;
+    } catch (x) {
+      const thrown = x;
+      if (
+        thrown === SuspenseException ||
+        thrown === SuspenseActionException ||
+        (!disableLegacyMode &&
+          (returnFiber.mode & ConcurrentMode) === NoMode &&
+          typeof thrown === 'object' &&
+          thrown != null &&
+          typeof thrown.then === 'function')
+      ) {
+        // Suspense exceptions need to read the current suspended state before
+        // yielding and replay it using the same sequence so this trick doesn't
+        // work here.
+        // Suspending in legacy mode actually mounts so if we let the child
+        // mount then we delete its state in an update.
+        throw x;
+      }
+      // Something errored during reconciliation but it's conceptually a child that
+      // errored and not the current component itself so we create a virtual child
+      // that throws in its begin phase. That way the current component can handle
+      // the error or suspending if needed.
+      const throwFiber = createFiberFromThrow(thrown, returnFiber.mode, lanes);
+      throwFiber.return = returnFiber;
+      if (__DEV__) {
+        const debugInfo = currentDebugInfo;
+        throwFiber._debugInfo = debugInfo;
+        // Conceptually the error's owner should ideally be captured when the
+        // Error constructor is called but we don't override them to capture our
+        // `owner`. So instead, we use the nearest parent as the owner/task of the
+        // error. This is usually the same thing when it's thrown from the same
+        // async component but not if you await a promise started from a different
+        // component/task.
+        // In newer Chrome, Error constructor does capture the Task which is what
+        // is logged by reportError. In that case this debugTask isn't used.
+        throwFiber._debugOwner = returnFiber._debugOwner;
+        throwFiber._debugTask = returnFiber._debugTask;
+        if (debugInfo != null) {
+          const iter = $iter(debugInfo.toReversed());
+          let info;
+          while ((info = $next(iter)) != null) {
+            if (typeof info.stack === 'string') {
+              throwFiber._debugOwner = info;
+              throwFiber._debugTask = info.debugTask ?? null;
+              break;
             }
           }
         }
-        result = throwFiber;
       }
+      result = throwFiber;
     } finally {
       currentDebugInfo = restore ?? null;
     }

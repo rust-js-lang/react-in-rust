@@ -3110,21 +3110,19 @@ function throwAndUnwindWorkLoop(
   const returnFiber = unitOfWork.return;
   let didFatal;
   try {
-    didFatal = (() => {
-      // Find and mark the nearest Suspense or error boundary that can handle
-      // this "exception".
-      const didFatal = throwException(
-        root,
-        returnFiber,
-        unitOfWork,
-        thrownValue,
-        workInProgressRootRenderLanes,
-      );
-      if (didFatal) {
-        panicOnRootError(root, thrownValue);
-      }
-      return didFatal;
-    })();
+    // Find and mark the nearest Suspense or error boundary that can handle
+    // this "exception".
+    const didFatal$1 = throwException(
+      root,
+      returnFiber,
+      unitOfWork,
+      thrownValue,
+      workInProgressRootRenderLanes,
+    );
+    if (didFatal$1) {
+      panicOnRootError(root, thrownValue);
+    }
+    didFatal = didFatal$1;
   } catch (error) {
     // We had trouble processing the error. An example of this happening is
     // when accessing the `componentDidCatch` property of an error boundary

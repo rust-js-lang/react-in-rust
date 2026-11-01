@@ -3229,8 +3229,8 @@ FragmentInstance.prototype.scrollIntoView = function (alignToTop) {
       // ShadowRoot always has a host: https://dom.spec.whatwg.org/#ref-for-concept-documentfragment-host%E2%91%A5
       // A generic DocumentFragment doesn't implement this property but conceptually
       // host is a nullable Element: https://dom.spec.whatwg.org/#concept-documentfragment-host
-      if ('host' in fragment) {
-        const host = fragment.host;
+      const host = 'host' in fragment ? fragment.host : undefined;
+      if (host !== undefined) {
         // The ShadowRoot's host element marks the position where the
         // fragment's content would appear.
         host.scrollIntoView(align);
