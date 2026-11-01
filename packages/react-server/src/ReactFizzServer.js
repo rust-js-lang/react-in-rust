@@ -454,7 +454,7 @@ export function createPrerenderRequest(
   request.trackedPostpones = {
     workingMap: new Map(),
     rootNodes: [],
-    rootSlots: 'null',
+    rootSlots: null,
   };
   return request;
 }
@@ -579,7 +579,7 @@ export function resumeAndPrerenderRequest(
   request.trackedPostpones = {
     workingMap: new Map(),
     rootNodes: [],
-    rootSlots: 'null',
+    rootSlots: null,
   };
   return request;
 }
@@ -1336,7 +1336,7 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
         fallbackKeyPath[1],
         fallbackKeyPath[2],
         [],
-        'null',
+        null,
       ];
       trackedPostpones.workingMap.set(fallbackKeyPath, fallbackReplayNode);
       newBoundary.tracked = {
@@ -1612,7 +1612,7 @@ function replaySuspenseBoundary(
       fallbackKeyPath[1],
       fallbackKeyPath[2],
       [],
-      'null',
+      null,
     ];
     trackedPostpones.workingMap.set(fallbackKeyPath, fallbackReplayNode);
     resumedBoundary.tracked = {
@@ -1868,7 +1868,6 @@ function isBackwards(revealOrder) {
 function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
   // This is a fork of renderChildrenArray that's aware of tracking rows.
   const prevKeyPath = task.keyPath;
-  task.keyPath = keyPath;
   const prevTreeContext = task.treeContext;
   const prevRow = task.row;
   const previousComponentStack = task.componentStack;
@@ -1880,6 +1879,8 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
     pushServerComponentStack(task, task.node.props.children._debugInfo);
   }
 
+  task.keyPath = keyPath;
+
   const totalChildren = rows.length;
   let previousSuspenseListRow;
   const replay = task.replay;
@@ -1888,7 +1889,7 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
     // Replay
     // First we need to check if we have any resume slots at this level.
     const resumeSlots = replay.slots;
-    if (typeof resumeSlots === 'object') {
+    if (typeof resumeSlots === 'object' && resumeSlots !== null) {
       for (let n = 0; n < totalChildren; n++) {
         // Since we are going to resume into a slot whose order was already
         // determined by the prerender, we can safely resume it even in reverse
@@ -3147,7 +3148,7 @@ function replayElement(
       let fallbackSlots;
       if (fallback == null) {
         fallbackNodes = [];
-        fallbackSlots = 'null';
+        fallbackSlots = null;
       } else {
         const borrow = $borrow(fallback);
         const nodes = borrow[2];
@@ -3833,7 +3834,7 @@ function renderChildrenArray(request, task, children, childIndex) {
     // Replay
     // First we need to check if we have any resume slots at this level.
     const resumeSlots = replay.slots;
-    if (typeof resumeSlots === 'object') {
+    if (typeof resumeSlots === 'object' && resumeSlots !== null) {
       for (const [i, node] of children.entries()) {
         task.treeContext = pushTreeContext(prevTreeContext, totalChildren, i);
         // We need to use the non-destructive form so that we can safely pop back
@@ -3915,7 +3916,7 @@ function trackPostponedBoundary(request, trackedPostpones, boundary) {
       boundaryKeyPath[1],
       boundaryKeyPath[2],
       children,
-      'null',
+      null,
       fallbackReplayNode,
       boundary.rootSegmentID,
     ];
@@ -4066,7 +4067,7 @@ function trackPostpone(request, trackedPostpones, task, segment) {
     let slots;
     if (keyPath == null) {
       const slots$1 = trackedPostpones.rootSlots;
-      if (slots$1 === 'null') {
+      if (slots$1 === null) {
         slots = {};
         trackedPostpones.rootSlots = slots;
       } else if (typeof slots$1 !== 'number') {
@@ -4108,7 +4109,7 @@ function trackPostpone(request, trackedPostpones, task, segment) {
         const slots$1 = resumableSlots.value;
         let dict;
         try {
-          if (slots$1 === 'null') {
+          if (slots$1 === null) {
             const slots = {};
             resumableSlots.value = slots;
             dict = slots;
@@ -4157,7 +4158,7 @@ function untrackBoundary(request, boundary) {
   const name = node[0];
   const key = node[1];
   // Remove any resumable slots.
-  $assign(node, [name ?? null, key, [], 'null']);
+  $assign(node, [name ?? null, key, [], null]);
 
   // TODO: We should really just remove the boundary from all parent paths too so
   // we don't replay the path to it.
@@ -4781,7 +4782,7 @@ function abortRemainingReplayNodes(
   // Empty the set, since we've cleared it now.
   $borrowMut(nodes).length = 0;
 
-  if (slots !== 'null') {
+  if (slots !== null) {
     // We had something still to resume in the parent boundary. We must trigger
     // the error on the parent boundary since it's not able to complete.
     if (boundary == null) {
@@ -4798,7 +4799,7 @@ function abortRemainingReplayNodes(
       }
     }
     // Empty the set
-    if (typeof slots === 'object') {
+    if (typeof slots === 'object' && slots !== null) {
       for (const index in slots) {
         delete slots[index];
       }
@@ -6322,7 +6323,7 @@ function flushCompletedQueues(request, destination) {
         request.completedBoundaries.length === 0 &&
         (request.trackedPostpones == null ||
           ($borrow(request.trackedPostpones.rootNodes).length === 0 &&
-            request.trackedPostpones.rootSlots === 'null'));
+            request.trackedPostpones.rootSlots === null));
       writeCompletedRoot(
         destination,
         request.resumableState,
@@ -6746,7 +6747,7 @@ function addToReplayParent(node, parentKeyPath, trackedPostpones) {
     const workingMap = trackedPostpones.workingMap;
     let parentNode = workingMap.get(parentKeyPath);
     if (parentNode == null) {
-      parentNode = [parentKeyPath[1], parentKeyPath[2], [], 'null'];
+      parentNode = [parentKeyPath[1], parentKeyPath[2], [], null];
       workingMap.set(parentKeyPath, parentNode);
       addToReplayParent(parentNode, parentKeyPath[0], trackedPostpones);
     }
@@ -6766,7 +6767,7 @@ export function getPostponedState(request) {
   trackedPostpones =
     trackedPostpones != null &&
     ($borrow(trackedPostpones.rootNodes).length !== 0 ||
-      trackedPostpones.rootSlots !== 'null')
+      trackedPostpones.rootSlots !== null)
       ? trackedPostpones
       : undefined;
   if (trackedPostpones == null) {

@@ -116,7 +116,7 @@ export type NodeKey = string | number;
  * segment ID at each index.
  */
 export type ResumeSlots =
-  | 'null'
+  | null
   | number
   | {
       [key: string]: number;

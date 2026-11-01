@@ -285,7 +285,7 @@ pub enum NodeKey {
 #[derive(Clone, Copy)]
 pub enum ResumeSlots {
     // nothing to resume
-    #[cfg_attr(rust_js, rust_js::name = "null")]
+    #[cfg_attr(rust_js, rust_js::null)]
     None,
     // resume with segment ID at the root position
     Root(f64),
@@ -2482,7 +2482,7 @@ fn render_suspense_list_rows(
     reveal_order: Option<SuspenseListRevealOrder>,
 ) {
     // This is a fork of renderChildrenArray that's aware of tracking rows.
-    let prev_key_path = task.key_path.replace(Some(Rc::clone(key_path)));
+    let prev_key_path = task.key_path.borrow().clone();
     let prev_tree_context = Rc::clone(&task.tree_context.borrow());
     let prev_row = task.row.borrow().clone();
     let previous_component_stack = task.component_stack.borrow().clone();
@@ -2499,6 +2499,8 @@ fn render_suspense_list_rows(
             ),
         );
     }
+
+    task.key_path.replace(Some(Rc::clone(key_path)));
 
     let total_children = rows.len();
     let mut previous_suspense_list_row: Option<Rc<SuspenseListRow>> = None;

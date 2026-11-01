@@ -66,7 +66,54 @@ Phase A (done in this branch, react-server only):
   `didWarnForKey`), and `get_owner_stack_by_component_stack_node_in_dev`
   takes `&ComponentStackNode` of any lifetime.
 
-Phase B (when the draft is whole, in the commit that builds it):
+Phase B: step 3 (ConfigDOM's four bindings) is done (b0dc024). Steps 1
+and 2 are stopped, for three reasons (each needs the coordinator or the
+user):
+
+- **rd570 blocks them.** Any regenerated entry imports ReactFizzConfigDOM
+  before ReactFizzServer, which fails 111 react-dom tests and one
+  turbopack test; after step 2 both are a dependency's subpaths and sort
+  so too. The entries' JS is main's until rust-js keeps the order.
+- **The legacy entry's destination isn't `'static`.** The server holds
+  its destination, `start_flowing(&Rc<Request>, &'static Destination)`,
+  and ReactDOMLegacyServerStreamConfig's `Destination<'a>` is two `&'a
+  dyn Fn` of the stack (`push` writes a stack `RefCell<String>`). Making it
+  `'static` changes that stream config (react-dom-bindings, not this
+  branch's) to `Rc<dyn Fn>` fields of `Rc` cells, with no `Box::leak`.
+- **A request the entry's callbacks read is a box, and a cycle
+  (rd573).** Each streaming entry's `onShellReady`/`pull`/`cancel` read the
+  request `createRequest` returns, which the server holds them in, so they
+  must be `'static` `Rc<dyn Fn>`s holding the request: an
+  `Rc<OnceCell<Rc<Request>>>` prints `const request = {};`,
+  `$unwrap(request.value)` and `$getOrInit(request, () => createRequest(..))`
+  where main's entries print upstream's `let request; .. request =
+  createRequest(..)`, and in Rust it's an `Rc` cycle (request -> callback ->
+  cell -> request), a leak unless the cell holds a `Weak`, which adds
+  `upgrade()`s. Repro:
+  ```rust
+  pub fn render(log: &'static dyn Fn(f64)) {
+      let request: Rc<OnceCell<Rc<Request>>> = Rc::default();
+      let on_shell_ready = {
+          let request = Rc::clone(&request);
+          move || log(request.get().unwrap().n)
+      };
+      let request = request.get_or_init(|| create_request(Some(Rc::new(on_shell_ready))));
+      start(request);
+  }
+  ```
+  prints `const request = {}; function onShellReady() {
+  log($unwrap(request.value).n); } const request$1 = $getOrInit(request,
+  () => createRequest(onShellReady));` (an `Rc<RefCell<Option<..>>>`
+  prints `$borrow`s). The user's choice: accept the box, or a rust-js form
+  where a cell set once after the closures are made is the `let` they
+  close over.
+- Options' callbacks: an `Options` field typed `Option<Rc<OnError>>`
+  (not `&'static OnError`) reads `options?.onError` with no wrapper, so the
+  server's `Rc` callbacks need no arrows there. The server's `OnError`
+  returns `Option<&'static Unknown>` (upstream checks the digest's type),
+  CurrentTask's `Option<String>`: the entries' `on_error`s change type.
+
+The plan, for when they're unblocked (step 1 lands with step 2):
 1. Delete from ReactFizzCurrentTask the opaque `Request`, `PostponedState<S>`,
    `ErrorInfo`, `OnError`, `OnBrowserBailout` and every
    `react-server/src/ReactFizzServer#..` binding (createRequest,
@@ -284,17 +331,28 @@ payload only where it's read, and rethrow an untouched payload as `throw thrown`
 - renderSuspenseList's sync-iterator branch casts `children` to the rows
   it renders, as upstream passes `children`, not the `rows` it read.
 
-## Where the draft stands
+## Where the draft stands (2026-11-02, after the rebase on main)
 
-The whole module is drafted, in upstream's order, and clippy-clean.
-Phase A of the migration is done. Next:
+Built and committed: ReactFizzServer.js is generated (rust-js 090616b60)
+and passes the gates: react-dom 4264/1/2 (the 1 is PartialHydration's
+`[GATED, SHOULD FAIL]` LegacyHidden), the server set 472/472 (with the
+port's ReactFizzPostponedState-test), `-r=stable` 454/454, "very deep
+trees" 6/6 (rd551 fixed the deep-tree resume; the prologue gap above is
+gone), no labels.
 
-1. Get rd495 decided (or restructure the pings and callbacks so no `dyn Fn`
-   holds an `Rc`, e.g. `function::bind` of a plain function, rd209), then
-   `rust-js build --package react-server` and compare
-   `scripts/port/fndiff.sh react-server/src/ReactFizzServer.js` function by
-   function.
-2. rd490 (replay nodes' length) and rd496 (getCurrentStack) are wrong
-   answers until fixed; rd491-rd494 are readability.
-3. Phase B of the migration (above), then build react-dom and
-   react-dom-bindings and run the server gates.
+- Step 3 (readability): the task fields' `$fieldCell` borrows are gone
+  but for a together row's `boundaries` (6), held through
+  isEligibleForOutlining, which calls the config's hasSuspenseyContent.
+- A resume slot's `None` is `#[rust_js::null]`: it was
+  `#[rust_js::name = "null"]`, the string `'null'`, in every postponed
+  state's `replaySlots` and replay node, where upstream has `null` (a
+  wrong answer, in the JSON an app stores; the port resumed its own
+  alike, so no upstream test saw it). The port's
+  `packages/react-server/src/__tests__/ReactFizzPostponedState-test.js`
+  holds it.
+- Phase B: step 3 done; steps 1 and 2 stopped (above: rd570, the legacy
+  destination, rd573).
+
+Next: rd570's fix in rust-js, then the user's choice on rd573 and the
+legacy stream config's destination, then steps 2 and 1, then the
+remaining fndiff differences (the report's list).
