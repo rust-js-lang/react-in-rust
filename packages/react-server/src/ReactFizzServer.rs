@@ -50,11 +50,11 @@ use crate::react_fizz_component_stack::{
 };
 use crate::react_fizz_current_task::{CURRENT_TASK_IN_DEV, set_current_task_in_dev};
 use crate::react_fizz_hooks::{
-    CURRENT_RESUMABLE_STATE, HOOKS_DISPATCHER, check_did_render_id_hook, finish_hooks,
-    get_action_state_count, get_action_state_matching_index, get_thenable_state_after_suspending,
-    is_recoverable_error, prepare_to_use_hooks, prepare_to_use_thenable_state,
-    read_previous_thenable_from_state, reset_hooks_state, set_current_resumable_state,
-    unwrap_thenable,
+    CURRENT_RESUMABLE_STATE, HOOKS_DISPATCHER, check_did_render_id_hook,
+    clone_recoverable_error_as_fatal, finish_hooks, get_action_state_count,
+    get_action_state_matching_index, get_thenable_state_after_suspending, is_recoverable_error,
+    prepare_to_use_hooks, prepare_to_use_thenable_state, read_previous_thenable_from_state,
+    reset_hooks_state, set_current_resumable_state, unwrap_thenable,
 };
 use crate::react_fizz_legacy_context::{
     Context as LegacyContext, EMPTY_CONTEXT_OBJECT, get_masked_context, process_child_context,
@@ -5620,6 +5620,551 @@ fn errored_replay(
     );
 }
 
+fn errored_task(
+    request: &Rc<Request>,
+    boundary: Option<&Rc<SuspenseBoundary>>,
+    row: Option<&Rc<SuspenseListRow>>,
+    error: Option<&'static Unknown>,
+    error_info: &'static ThrownInfo,
+    debug_task: Option<&'static ConsoleTask>,
+) {
+    if let Some(row) = row {
+        row.pending_tasks.set(row.pending_tasks.get() - 1.0);
+        if row.pending_tasks.get() == 0.0 {
+            finish_suspense_list_row(request, row);
+        }
+    }
+
+    request
+        .all_pending_tasks
+        .set(request.all_pending_tasks.get() - 1.0);
+
+    // We don't handle halts here because we only halt when prerendering and
+    // when prerendering we should be finishing tasks not erroring them when
+    // they halt or postpone
+    match boundary {
+        None => {
+            // Recoverables can remain silent when a Suspense boundary lets us emit a
+            // shell and defer its content to a downstream renderer. At the root there
+            // is no shell to stream, so this is a fatal error and must be reported like
+            // any other root error.
+            if is_recoverable_error(error) {
+                // This recoverable reached the root without a Suspense boundary, so
+                // report it using the fatal diagnostic while leaving the original intact.
+                let fatal_recoverable_error =
+                    Some(js::unknown(clone_recoverable_error_as_fatal(unsafe {
+                        js::cast(error)
+                    })));
+                log_recoverable_error(request, fatal_recoverable_error, error_info, debug_task);
+                fatal_error(request, fatal_recoverable_error, error_info, debug_task);
+            } else {
+                log_recoverable_error(request, error, error_info, debug_task);
+                fatal_error(request, error, error_info, debug_task);
+            }
+            // The shell fatally errored, so the render can never complete. Return before
+            // the completeAll check below so we don't fire onAllReady for a render that
+            // produced nothing. This mirrors finishAbortedTask, which also returns after
+            // a fatalError on the root.
+            return;
+        }
+        Some(boundary) => {
+            let error_digest = log_recoverable_error(request, error, error_info, debug_task);
+            boundary
+                .pending_tasks
+                .set(boundary.pending_tasks.get() - 1.0);
+            if boundary.status.get() != CLIENT_RENDERED {
+                boundary.status.set(CLIENT_RENDERED);
+                encode_error_for_boundary(boundary, error_digest, error, error_info, false);
+                untrack_boundary(request, boundary);
+
+                let boundary_row = boundary.row.borrow().clone();
+                if let Some(boundary_row) = boundary_row {
+                    // Unblock the SuspenseListRow that was blocked by this boundary.
+                    // finishSuspenseListRow → unblockSuspenseListRow → finishedTask reenters
+                    // and decrements allPendingTasks. Pin the counter above zero so those
+                    // nested calls can't trip completeAll before this outer frame's own
+                    // zero check at the end.
+                    request
+                        .all_pending_tasks
+                        .set(request.all_pending_tasks.get() + 1.0);
+                    boundary_row
+                        .pending_tasks
+                        .set(boundary_row.pending_tasks.get() - 1.0);
+                    if boundary_row.pending_tasks.get() == 0.0 {
+                        finish_suspense_list_row(request, &boundary_row);
+                    }
+                    request
+                        .all_pending_tasks
+                        .set(request.all_pending_tasks.get() - 1.0);
+                }
+
+                // Regardless of what happens next, this boundary won't be displayed,
+                // so we can flush it, if the parent already flushed.
+                if boundary.parent_flushed.get() {
+                    // We don't have a preference where in the queue this goes since it's likely
+                    // to error on the client anyway. However, intentionally client-rendered
+                    // boundaries should be flushed earlier so that they can start on the client.
+                    // We reuse the same queue for errors.
+                    request
+                        .client_rendered_boundaries
+                        .borrow_mut()
+                        .push(Rc::clone(boundary));
+                }
+
+                if request.pending_root_tasks.get() == 0.0
+                    && request.tracked_postpones.borrow().is_none()
+                    && boundary.preamble.is_some()
+                {
+                    // The root is complete and this boundary may contribute part of the preamble.
+                    // We eagerly attempt to prepare the preamble here because we expect most requests
+                    // to have few boundaries which contribute preambles and it allow us to do this
+                    // preparation work during the work phase rather than the when flushing.
+                    prepare_preamble(request);
+                }
+            }
+        }
+    }
+
+    if request.all_pending_tasks.get() == 0.0 {
+        complete_all(request);
+    }
+}
+
+fn abort_task_soft(request: &Rc<Request>, task: &Rc<Task>) {
+    // This aborts task without aborting the parent boundary that it blocks.
+    // It's used for when we didn't need this task to complete the tree.
+    // If task was needed, then it should use abortTask instead.
+    let boundary = task.blocked_boundary.borrow().clone();
+    let segment = task.blocked_segment.borrow().clone();
+    if let Some(segment) = segment {
+        segment.status.set(ABORTED);
+        finished_task(
+            request,
+            boundary.as_ref(),
+            task.row.borrow().as_ref(),
+            Some(&segment),
+        );
+    }
+}
+
+fn abort_remaining_suspense_boundary(
+    request: &Rc<Request>,
+    root_segment_id: f64,
+    error: Option<&'static Unknown>,
+    error_digest: Option<String>,
+    error_info: &ThrownInfo,
+    was_aborted: bool,
+) {
+    let resumed_boundary = create_suspense_boundary(
+        request,
+        None,
+        Rc::new(RefCell::new(HashSet::new())),
+        None,
+        false,
+    );
+    resumed_boundary.parent_flushed.set(true);
+    // We restore the same id of this boundary as was used during prerender.
+    resumed_boundary.root_segment_id.set(root_segment_id);
+
+    resumed_boundary.status.set(CLIENT_RENDERED);
+    encode_error_for_boundary(
+        &resumed_boundary,
+        error_digest,
+        error,
+        error_info,
+        was_aborted,
+    );
+
+    if resumed_boundary.parent_flushed.get() {
+        request
+            .client_rendered_boundaries
+            .borrow_mut()
+            .push(resumed_boundary);
+    }
+}
+
+fn abort_remaining_replay_nodes(
+    request: &Rc<Request>,
+    boundary: Option<Rc<SuspenseBoundary>>,
+    nodes: &ReplayNodes,
+    slots: &ResumeSlots,
+    error: Option<&'static Unknown>,
+    error_digest: Option<String>,
+    error_info: &'static ThrownInfo,
+    aborted: bool,
+) {
+    for node in nodes.borrow().iter() {
+        match node.5.get() {
+            None => {
+                abort_remaining_replay_nodes(
+                    request,
+                    boundary.clone(),
+                    &node.2.borrow(),
+                    &node.3.borrow(),
+                    error,
+                    error_digest.clone(),
+                    error_info,
+                    aborted,
+                );
+            }
+            Some(root_segment_id) => {
+                abort_remaining_suspense_boundary(
+                    request,
+                    root_segment_id,
+                    error,
+                    error_digest.clone(),
+                    error_info,
+                    aborted,
+                );
+            }
+        }
+    }
+    // Empty the set, since we've cleared it now.
+    nodes.borrow_mut().clear();
+
+    if !matches!(slots, ResumeSlots::None) {
+        // We had something still to resume in the parent boundary. We must trigger
+        // the error on the parent boundary since it's not able to complete.
+        match &boundary {
+            None => {
+                panic!(concat!(
+                    "We should not have any resumable nodes in the shell. ",
+                    "This is a bug in React."
+                ));
+            }
+            Some(boundary) if boundary.status.get() != CLIENT_RENDERED => {
+                boundary.status.set(CLIENT_RENDERED);
+                encode_error_for_boundary(boundary, error_digest, error, error_info, aborted);
+                if boundary.parent_flushed.get() {
+                    request
+                        .client_rendered_boundaries
+                        .borrow_mut()
+                        .push(Rc::clone(boundary));
+                }
+            }
+            Some(_) => {}
+        }
+        // Empty the set
+        if let ResumeSlots::Indices(slots) = slots {
+            for index in js::keys_in(js::unknown(*slots)) {
+                js::delete(*slots, &index);
+            }
+        }
+    }
+}
+
+fn is_current_task(request: &Request, task: &Rc<Task>) -> bool {
+    request
+        .current_task
+        .borrow()
+        .as_ref()
+        .is_some_and(|current_task| Rc::ptr_eq(current_task, task))
+}
+
+fn abort_task(task: &Rc<Task>, request: &Rc<Request>) {
+    // Mark pending tasks as aborted synchronously so any work that was already
+    // scheduled cannot begin after abort is called.
+    if is_current_task(request, task) {
+        // This is a currently rendering Task. The render itself will abort the task.
+        return;
+    }
+    let boundary = task.blocked_boundary.borrow().clone();
+    let segment = task.blocked_segment.borrow().clone();
+    if let Some(segment) = segment {
+        segment.status.set(ABORTED);
+    }
+
+    if __DEV__ {
+        // Capture async debug information at the point abort begins. The task may
+        // receive more data before finishAbort runs and no longer suspend at the
+        // call site we need to report.
+        let mut node = task.node.get();
+        if js::type_of(node) == "object" && !matches!(js::classify(node), Kind::Null) {
+            let mut debug_info = js::get(node, "_debugInfo");
+            while js::type_of(node) == "object"
+                && !matches!(js::classify(node), Kind::Null)
+                && SymbolFor::from_value(js::get(node, "$$typeof")) == Some(REACT_LAZY_TYPE)
+            {
+                let payload = js::get(node, "_payload");
+                if js::strict_equals(js::get(payload, "status"), Some(js::unknown("fulfilled"))) {
+                    node = js::get(payload, "value");
+                    continue;
+                }
+                break;
+            }
+            if js::type_of(node) == "object"
+                && !matches!(js::classify(node), Kind::Null)
+                && (is_array(node)
+                    || js::is_function(
+                        ASYNC_ITERATOR.with(|&async_iterator| js::get(node, async_iterator)),
+                    )
+                    // $FlowFixMe[invalid-compare]
+                    || SymbolFor::from_value(js::get(node, "$$typeof")) == Some(REACT_ELEMENT_TYPE)
+                    // $FlowFixMe[invalid-compare]
+                    || SymbolFor::from_value(js::get(node, "$$typeof")) == Some(REACT_LAZY_TYPE))
+                && is_array(js::get(node, "_debugInfo"))
+            {
+                debug_info = js::get(node, "_debugInfo");
+            }
+            push_halted_await_on_component_stack(task, debug_info);
+            if task.thenable_state.borrow().is_some() {
+                push_suspended_call_site_on_component_stack(request, task);
+            }
+        }
+    }
+
+    if let Some(boundary) = boundary {
+        for fallback_task in boundary.fallback_abortable_tasks.borrow().iter() {
+            abort_task(fallback_task, request);
+        }
+    }
+}
+
+fn finish_aborted_task(task: &Rc<Task>, request: &Rc<Request>, error: Option<&'static Unknown>) {
+    // Report and complete a task that was synchronously claimed by abortTask.
+    // A currently rendering task remains responsible for unwinding itself.
+    if is_current_task(request, task) {
+        return;
+    }
+    let boundary = task.blocked_boundary.borrow().clone();
+    let segment = task.blocked_segment.borrow().clone();
+    if let Some(segment) = &segment
+        && segment.status.get() != ABORTED
+    {
+        return;
+    }
+
+    let error_info = get_thrown_info(task.component_stack.borrow().clone());
+    // Only errors materialized by use() or abort() carry this internal brand.
+    // Throwing the browser() token directly is still an application error.
+    let is_recoverable_reason = is_recoverable_error(error);
+
+    match &boundary {
+        None => {
+            let replay = task.replay.borrow().clone();
+            let Some(replay) = replay else {
+                // We didn't complete the root so we have nothing to show. We can close
+                // the request;
+                let tracked_postpones = request.tracked_postpones.borrow().clone();
+                if !is_recoverable_reason
+                    && let Some(tracked_postpones) = tracked_postpones
+                    && let Some(segment) = &segment
+                {
+                    // We are aborting a prerender and must treat the shell as halted
+                    // We log the error but we still resolve the prerender
+                    log_recoverable_error(request, error, error_info, task.debug_task.get());
+                    track_postpone(request, &tracked_postpones, task, segment);
+                    finished_task(request, None, task.row.borrow().as_ref(), Some(segment));
+                } else if is_recoverable_reason {
+                    // This root task cannot recover from the abort. Report a fatal clone,
+                    // but keep the original branded reason on the request for other tasks.
+                    let fatal_recoverable_error =
+                        Some(js::unknown(clone_recoverable_error_as_fatal(unsafe {
+                            js::cast(error)
+                        })));
+                    log_recoverable_error(
+                        request,
+                        fatal_recoverable_error,
+                        error_info,
+                        task.debug_task.get(),
+                    );
+                    if request.status.get() != CLOSING && request.status.get() != CLOSED {
+                        fatal_error(
+                            request,
+                            fatal_recoverable_error,
+                            error_info,
+                            task.debug_task.get(),
+                        );
+                    }
+                } else {
+                    log_recoverable_error(request, error, error_info, task.debug_task.get());
+                    if request.status.get() != CLOSING && request.status.get() != CLOSED {
+                        fatal_error(request, error, error_info, task.debug_task.get());
+                    }
+                }
+                return;
+            };
+            if request.status.get() != CLOSING && request.status.get() != CLOSED {
+                // If the shell aborts during a replay, that's not a fatal error. Instead
+                // we should be able to recover by client rendering all the root boundaries in
+                // the ReplaySet.
+                replay.pending_tasks.set(replay.pending_tasks.get() - 1.0);
+                if replay.pending_tasks.get() == 0.0 && !replay.nodes.borrow().is_empty() {
+                    let error_digest = log_recoverable_error(request, error, error_info, None);
+                    abort_remaining_replay_nodes(
+                        request,
+                        None,
+                        &replay.nodes,
+                        &replay.slots.borrow(),
+                        error,
+                        error_digest,
+                        error_info,
+                        true,
+                    );
+                }
+                request
+                    .pending_root_tasks
+                    .set(request.pending_root_tasks.get() - 1.0);
+                if request.pending_root_tasks.get() == 0.0 {
+                    complete_shell(request);
+                }
+            }
+        }
+        Some(boundary) => {
+            // We construct an errorInfo from the boundary's componentStack so the error in dev will indicate which
+            // boundary the message is referring to
+            let tracked_postpones = request.tracked_postpones.borrow().clone();
+            if boundary.status.get() != CLIENT_RENDERED {
+                if !is_recoverable_reason
+                    && let Some(tracked_postpones) = &tracked_postpones
+                    && let Some(segment) = &segment
+                {
+                    // We are aborting a prerender and must halt this boundary.
+                    // We treat this like other postpones during prerendering
+                    log_recoverable_error(request, error, error_info, task.debug_task.get());
+                    track_postpone(request, tracked_postpones, task, segment);
+                    // If this boundary was still pending then we haven't already cancelled its fallbacks.
+                    // We'll need to abort the fallbacks, which will also error that parent boundary.
+                    for fallback_task in boundary.fallback_abortable_tasks.borrow().iter() {
+                        finish_aborted_task(fallback_task, request, error);
+                    }
+                    boundary.fallback_abortable_tasks.borrow_mut().clear();
+                    return finished_task(
+                        request,
+                        Some(boundary),
+                        task.row.borrow().as_ref(),
+                        Some(segment),
+                    );
+                }
+                boundary.status.set(CLIENT_RENDERED);
+                // We are aborting a render or resume which should put boundaries
+                // into an explicitly client rendered state
+                let error_digest =
+                    log_recoverable_error(request, error, error_info, task.debug_task.get());
+                encode_error_for_boundary(boundary, error_digest, error, error_info, true);
+
+                untrack_boundary(request, boundary);
+
+                if boundary.parent_flushed.get() {
+                    request
+                        .client_rendered_boundaries
+                        .borrow_mut()
+                        .push(Rc::clone(boundary));
+                }
+            }
+
+            boundary
+                .pending_tasks
+                .set(boundary.pending_tasks.get() - 1.0);
+
+            let boundary_row = boundary.row.borrow().clone();
+            if let Some(boundary_row) = boundary_row {
+                // Unblock the SuspenseListRow that was blocked by this boundary.
+                boundary_row
+                    .pending_tasks
+                    .set(boundary_row.pending_tasks.get() - 1.0);
+                if boundary_row.pending_tasks.get() == 0.0 {
+                    finish_suspense_list_row(request, &boundary_row);
+                }
+            }
+
+            // If this boundary was still pending then we haven't already cancelled its fallbacks.
+            // We'll need to abort the fallbacks, which will also error that parent boundary.
+            for fallback_task in boundary.fallback_abortable_tasks.borrow().iter() {
+                finish_aborted_task(fallback_task, request, error);
+            }
+            boundary.fallback_abortable_tasks.borrow_mut().clear();
+        }
+    }
+
+    let row = task.row.borrow().clone();
+    if let Some(row) = row {
+        row.pending_tasks.set(row.pending_tasks.get() - 1.0);
+        if row.pending_tasks.get() == 0.0 {
+            finish_suspense_list_row(request, &row);
+        }
+    }
+
+    request
+        .all_pending_tasks
+        .set(request.all_pending_tasks.get() - 1.0);
+    if request.all_pending_tasks.get() == 0.0 {
+        complete_all(request);
+    }
+}
+
+fn finish_aborted_task_dev(
+    task: &Rc<Task>,
+    request: &Rc<Request>,
+    error: Option<&'static Unknown>,
+) {
+    if __DEV__ {
+        let prev_task_in_dev = CURRENT_TASK_IN_DEV.with_borrow(Clone::clone);
+        let prev_get_current_stack_impl = REACT_SHARED_INTERNALS.get_current_stack();
+        set_current_task_in_dev(Some(Rc::clone(task)));
+        REACT_SHARED_INTERNALS.set_get_current_stack(Some(get_current_stack_in_dev));
+        let result = catch_unwind(AssertUnwindSafe(|| {
+            finish_aborted_task(task, request, error);
+        }));
+        set_current_task_in_dev(prev_task_in_dev);
+        // GAP rd496 (blocking): what was read can't be put back.
+        REACT_SHARED_INTERNALS.set_get_current_stack(
+            prev_get_current_stack_impl.map(|_| get_current_stack_in_dev as fn() -> String),
+        );
+        if let Err(thrown_value) = result {
+            resume_unwind(thrown_value);
+        }
+    } else {
+        // These errors should never make it into a build so we don't need to encode them in codes.json
+        // eslint-disable-next-line react-internal/prod-error-codes
+        panic!(
+            "finishAbortedTaskDEV should never be called in production mode. This is a bug in React."
+        );
+    }
+}
+
+fn abort_task_dev(task: &Rc<Task>, request: &Rc<Request>) {
+    if __DEV__ {
+        let prev_task_in_dev = CURRENT_TASK_IN_DEV.with_borrow(Clone::clone);
+        let prev_get_current_stack_impl = REACT_SHARED_INTERNALS.get_current_stack();
+        set_current_task_in_dev(Some(Rc::clone(task)));
+        REACT_SHARED_INTERNALS.set_get_current_stack(Some(get_current_stack_in_dev));
+        let result = catch_unwind(AssertUnwindSafe(|| {
+            abort_task(task, request);
+        }));
+        set_current_task_in_dev(prev_task_in_dev);
+        // GAP rd496 (blocking): what was read can't be put back.
+        REACT_SHARED_INTERNALS.set_get_current_stack(
+            prev_get_current_stack_impl.map(|_| get_current_stack_in_dev as fn() -> String),
+        );
+        if let Err(thrown_value) = result {
+            resume_unwind(thrown_value);
+        }
+    } else {
+        // These errors should never make it into a build so we don't need to encode them in codes.json
+        // eslint-disable-next-line react-internal/prod-error-codes
+        panic!("abortTaskDEV should never be called in production mode. This is a bug in React.");
+    }
+}
+
+fn abort_unwound_task(task: &Rc<Task>, request: &Rc<Request>) {
+    // This task was rendering when abort began, so the synchronous abort sweep
+    // left it alone. It has now unwound from user code and can be completed
+    // through the normal abort path.
+    if __DEV__ {
+        abort_task_dev(task, request);
+    } else {
+        abort_task(task, request);
+    }
+    let abort_set = Rc::clone(&task.abort_set.borrow());
+    abort_set.borrow_mut().remove(task);
+    if __DEV__ {
+        finish_aborted_task_dev(task, request, request.fatal_error.get());
+    } else {
+        finish_aborted_task(task, request, request.fatal_error.get());
+    }
+}
+
 // DRAFT: the sections below are not ported yet.
 
 fn finished_segment(
@@ -5650,18 +6195,6 @@ pub fn perform_work(_request: &Rc<Request>) {
     todo!()
 }
 
-fn finish_aborted_task(_task: &Rc<Task>, _request: &Rc<Request>, _error: Option<&'static Unknown>) {
-    todo!()
-}
-
-fn finish_aborted_task_dev(
-    _task: &Rc<Task>,
-    _request: &Rc<Request>,
-    _error: Option<&'static Unknown>,
-) {
-    todo!()
-}
-
 fn end_render_lifetime(_request: &Request) {
     todo!()
 }
@@ -5688,23 +6221,10 @@ fn add_to_replay_parent(
     todo!()
 }
 
-fn abort_task(_task: &Rc<Task>, _request: &Rc<Request>) {
+fn complete_all(_request: &Rc<Request>) {
     todo!()
 }
 
-fn abort_task_dev(_task: &Rc<Task>, _request: &Rc<Request>) {
-    todo!()
-}
-
-fn abort_remaining_replay_nodes(
-    _request: &Rc<Request>,
-    _boundary: Option<Rc<SuspenseBoundary>>,
-    _nodes: &ReplayNodes,
-    _slots: &ResumeSlots,
-    _error: Option<&'static Unknown>,
-    _error_digest: Option<String>,
-    _error_info: &'static ThrownInfo,
-    _aborted: bool,
-) {
+fn complete_shell(_request: &Rc<Request>) {
     todo!()
 }
