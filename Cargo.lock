@@ -3,6 +3,13 @@
 version = 4
 
 [[package]]
+name = "react-art"
+version = "0.0.0"
+dependencies = [
+ "rust-js-builtins",
+]
+
+[[package]]
 name = "react-dom"
 version = "0.0.0"
 dependencies = [
