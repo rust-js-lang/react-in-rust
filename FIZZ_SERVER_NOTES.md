@@ -183,6 +183,21 @@ Open:
   that aren't side-effect free. The entries' JS stays main's until it's
   fixed.
 
+- **rd571** (readability) a field read into a `let` so its `RefCell`
+  guard isn't held through a call prints the `let`: `let row =
+  task.row.borrow().clone(); finished_task(request, None, row.as_ref(),
+  Some(segment));` is `const row = task.row; finishedTask(request, null,
+  row, segment);` where upstream writes `finishedTask(request, null,
+  task.row, segment)`. The `let` is what keeps the guard out of the call
+  (in Rust, `f(t.row.borrow().as_ref())` holds it through `f`, so rust-js
+  counts the field everywhere: `$borrow($fieldCell(task, 'row', true))`).
+  About 40 such lets (the create task calls, finishedTask/erroredTask,
+  getThrownInfo, switchContext). Repro:
+  `fn f(t: &T) { let row = t.row.borrow().clone(); g(t, row); }` prints
+  `const row = t.row; g(t, row);`; suggested: a `const` of a plain field
+  read, used once as the next statement's argument with nothing between
+  that could write it, read in place.
+
 ## Deep-tree resume (ReactDOMFizzServer-test, "can recover from very deep trees during resume")
 
 **Cause:** the resume replays 1200 nested `Deep` elements, each through

@@ -28,13 +28,7 @@ import {
 } from './ReactFizzThenable.js';
 import {getTreeId} from './ReactFizzTreeContext.js';
 import {createFastHash} from './ReactServerStreamConfig.js';
-import {
-  $borrow,
-  $fieldCell,
-  $roomFor,
-  $unborrow,
-  $unwrap,
-} from '@rust-js/runtime';
+import {$roomFor, $unwrap} from '@rust-js/runtime';
 
 let currentlyRenderingComponent = null;
 let currentlyRenderingTask = null;
@@ -736,13 +730,8 @@ function useActionState(action, initialState, permalink) {
 
 function useId() {
   const task = $unwrap(currentlyRenderingTask);
-  const borrow = $borrow($fieldCell(task, 'treeContext'), true);
-  let treeId;
-  try {
-    treeId = getTreeId(borrow.value);
-  } finally {
-    $unborrow(borrow);
-  }
+  const treeContext = task.treeContext;
+  const treeId = getTreeId(treeContext);
 
   const resumableState = currentResumableState;
   if (resumableState == null) {

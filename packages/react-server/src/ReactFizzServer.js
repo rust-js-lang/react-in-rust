@@ -490,50 +490,45 @@ export function resumeRequest(
   );
   request.nextSegmentId = postponedState.nextSegmentId;
 
-  const borrow = $borrow($fieldCell(postponedState, 'replaySlots'), true);
-  try {
-    if (typeof borrow.value === 'number') {
-      // We have a resume slot at the very root. This is effectively just a full rerender.
-      const rootSegment = createPendingSegment(
-        request,
-        0,
-        undefined,
-        postponedState.rootFormatContext,
-        // Root segments are never embedded in Text on either edge
-        false,
-        false,
-      );
-      // There is no parent so conceptually, we're unblocked to flush this segment.
-      rootSegment.parentFlushed = true;
-      const rootTask = createRenderTask(
-        request,
-        undefined,
-        children,
-        -1,
-        undefined,
-        rootSegment,
-        undefined,
-        undefined,
-        request.abortableTasks,
-        undefined,
-        postponedState.rootFormatContext,
-        rootContextSnapshot,
-        emptyTreeContext,
-        undefined,
-        undefined,
-        emptyContextObject,
-      );
-      pushComponentStack(rootTask);
-      request.pingedTasks.push(rootTask);
-      return request;
-    }
-  } finally {
-    $unborrow(borrow);
+  if (typeof postponedState.replaySlots === 'number') {
+    // We have a resume slot at the very root. This is effectively just a full rerender.
+    const rootSegment = createPendingSegment(
+      request,
+      0,
+      undefined,
+      postponedState.rootFormatContext,
+      // Root segments are never embedded in Text on either edge
+      false,
+      false,
+    );
+    // There is no parent so conceptually, we're unblocked to flush this segment.
+    rootSegment.parentFlushed = true;
+    const rootTask = createRenderTask(
+      request,
+      undefined,
+      children,
+      -1,
+      undefined,
+      rootSegment,
+      undefined,
+      undefined,
+      request.abortableTasks,
+      undefined,
+      postponedState.rootFormatContext,
+      rootContextSnapshot,
+      emptyTreeContext,
+      undefined,
+      undefined,
+      emptyContextObject,
+    );
+    pushComponentStack(rootTask);
+    request.pingedTasks.push(rootTask);
+    return request;
   }
 
   const replay = {
     nodes: postponedState.replayNodes,
-    slots: $borrow($fieldCell(postponedState, 'replaySlots')).value,
+    slots: postponedState.replaySlots,
     pendingTasks: 0,
   };
   const rootTask = createReplayTask(
@@ -629,7 +624,7 @@ function pingRejectedTask(request, task, error) {
     pingTask(request, task);
     return;
   }
-  const {value: abortSet} = $borrow($fieldCell(task, 'abortSet'));
+  const abortSet = task.abortSet;
   if (!$borrowMut(abortSet).delete(task)) {
     // finishAbort already completed this task with the request's abort reason.
     return;
@@ -673,24 +668,18 @@ function createSuspenseBoundary(
   if (row != null) {
     // This boundary will block this row from completing.
     row.pendingTasks++;
-    const blockedBoundaries = $borrowMut(
+    const {value: blockedBoundaries} = $borrowMut(
       $fieldCell(row, 'boundaries', true),
-      true,
     );
-    const blockedBoundaries$1 = blockedBoundaries.value;
-    try {
-      if (blockedBoundaries$1 != null) {
-        // Previous rows will block this boundary itself from completing.
-        request.allPendingTasks++;
-        boundary.pendingTasks++;
-        blockedBoundaries$1.push(boundary);
-      }
-      const inheritedHoistables = row.inheritedHoistables;
-      if (inheritedHoistables != null) {
-        hoistHoistables(boundary.contentState, inheritedHoistables);
-      }
-    } finally {
-      $unborrow(blockedBoundaries);
+    if (blockedBoundaries != null) {
+      // Previous rows will block this boundary itself from completing.
+      request.allPendingTasks++;
+      boundary.pendingTasks++;
+      blockedBoundaries.push(boundary);
+    }
+    const inheritedHoistables = row.inheritedHoistables;
+    if (inheritedHoistables != null) {
+      hoistHoistables(boundary.contentState, inheritedHoistables);
     }
   }
   return boundary;
@@ -838,9 +827,7 @@ function getCurrentStackInDEV() {
     if (currentTaskInDev == null) {
       return '';
     }
-    const {value: componentStack} = $borrow(
-      $fieldCell(currentTaskInDev, 'componentStack', true),
-    );
+    const componentStack = currentTaskInDev.componentStack;
     if (componentStack == null) {
       return '';
     }
@@ -868,17 +855,15 @@ function pushHaltedAwaitOnComponentStack(task, debugInfo) {
         const bestStack =
           asyncInfo.debugStack == null ? asyncInfo.awaited : asyncInfo;
         if (bestStack.debugStack !== undefined) {
-          const parent =
-            $cellReplace(
-              $borrowMut($fieldCell(task, 'componentStack', true)),
-            ) ?? null;
+          const parent = task.componentStack;
+          task.componentStack = null;
           const unknown = bestStack.owner ?? null;
-          $cellReplace($borrowMut($fieldCell(task, 'componentStack', true)), {
+          task.componentStack = {
             parent,
             type: asyncInfo,
             owner: unknown,
             stack: bestStack.debugStack ?? null,
-          });
+          };
           task.debugTask = bestStack.debugTask ?? null;
           break;
         }
@@ -910,7 +895,8 @@ function rerenderStalledTask(request, task) {
 
   const prevResumableState = currentResumableState;
   setCurrentResumableState(request.resumableState);
-  switchContext($borrow($fieldCell(task, 'context')).value);
+  const context = task.context;
+  switchContext(context);
   const prevTaskInDev = currentTaskInDEV;
   setCurrentTaskInDEV(task);
   try {
@@ -944,15 +930,8 @@ function rerenderStalledTask(request, task) {
 function pushSuspendedCallSiteOnComponentStack(request, task) {
   setCaptureSuspendedCallSiteDEV(true);
   // refined at the callsite
-  const borrow = $borrow($fieldCell(task, 'thenableState', true), true);
-  let restoreThenableState;
-  try {
-    restoreThenableState = ensureSuspendableThenableStateDEV(
-      $unwrap(borrow.value),
-    );
-  } finally {
-    $unborrow(borrow);
-  }
+  const thenableState = $unwrap(task.thenableState);
+  const restoreThenableState = ensureSuspendableThenableStateDEV(thenableState);
   const result = $catchUnwind(() => rerenderStalledTask(request, task));
   restoreThenableState();
   setCaptureSuspendedCallSiteDEV(false);
@@ -965,17 +944,16 @@ function pushSuspendedCallSiteOnComponentStack(request, task) {
   const suspendCallSiteDebugTask = getSuspendedCallSiteDebugTaskDEV();
 
   if (suspendCallSiteStack != null) {
-    const ownerStack = $cellReplace(
-      $borrowMut($fieldCell(task, 'componentStack', true)),
-    );
-    $cellReplace($borrowMut($fieldCell(task, 'componentStack', true)), {
+    const ownerStack = task.componentStack;
+    task.componentStack = null;
+    task.componentStack = {
       // The owner of the suspended call site would be the owner of this task.
       // We need the task itself otherwise we'd miss a frame.
-      owner: ownerStack ?? null,
+      owner: ownerStack,
       parent: suspendCallSiteStack.parent ?? null,
       stack: suspendCallSiteStack.stack,
       type: suspendCallSiteStack.type,
-    });
+    };
   }
   task.debugTask = suspendCallSiteDebugTask;
 }
@@ -997,16 +975,15 @@ function pushServerComponentStack(task, debugInfo) {
       if (componentInfo.debugStack === undefined) {
         continue;
       }
-      const parent =
-        $cellReplace($borrowMut($fieldCell(task, 'componentStack', true))) ??
-        null;
+      const parent = task.componentStack;
+      task.componentStack = null;
       const unknown = componentInfo.owner ?? null;
-      $cellReplace($borrowMut($fieldCell(task, 'componentStack', true)), {
+      task.componentStack = {
         parent,
         type: componentInfo,
         owner: unknown,
         stack: componentInfo.debugStack ?? null,
-      });
+      };
       task.debugTask = componentInfo.debugTask ?? null;
     }
   }
@@ -1029,12 +1006,13 @@ function pushComponentStack(task) {
           pushServerComponentStack(task, element._debugInfo);
           task.debugTask = element._debugTask ?? null;
         }
-        const parent = $cellReplace(
-          $borrowMut($fieldCell(task, 'componentStack', true)),
-        );
-        $cellReplace(
-          $borrowMut($fieldCell(task, 'componentStack', true)),
-          createComponentStackFromType(parent, type, owner, stack),
+        const parent = task.componentStack;
+        task.componentStack = null;
+        task.componentStack = createComponentStackFromType(
+          parent,
+          type,
+          owner,
+          stack,
         );
         break;
       }
@@ -1264,7 +1242,8 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
     const prevKeyPath = someTask.keyPath;
     someTask.keyPath = keyPath;
     const prevContext = someTask.formatContext;
-    const prevRow = $cellReplace($borrowMut($fieldCell(someTask, 'row', true)));
+    const prevRow = someTask.row;
+    someTask.row = null;
     someTask.formatContext = getSuspenseContentFormatContext(
       request.resumableState,
       prevContext,
@@ -1275,7 +1254,7 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
     });
     someTask.keyPath = prevKeyPath;
     someTask.formatContext = prevContext;
-    $cellReplace($borrowMut($fieldCell(someTask, 'row', true)), prevRow);
+    someTask.row = prevRow;
     if (result.TAG === 'Err') {
       const thrownValue = result._0;
       throw $unwinding(thrownValue);
@@ -1287,10 +1266,8 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
 
   const prevKeyPath = task.keyPath;
   const prevContext = task.formatContext;
-  const {value: prevRow} = $borrow($fieldCell(task, 'row', true));
-  const {value: parentBoundary} = $borrow(
-    $fieldCell(task, 'blockedBoundary', true),
-  );
+  const prevRow = task.row;
+  const parentBoundary = task.blockedBoundary;
   const parentPreamble = task.blockedPreamble;
   const parentHoistableState = task.hoistableState;
   const parentSegment = $unwrap(task.blockedSegment);
@@ -1304,20 +1281,16 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
   const defer = enableCPUSuspense && props.defer === true;
 
   const fallbackAbortSet = new Set();
-  const borrow = $borrow($fieldCell(task, 'row', true), true);
-  const value = borrow.value;
-  let newBoundary;
-  try {
-    newBoundary = createSuspenseBoundary(
-      request,
-      value,
-      fallbackAbortSet,
-      canHavePreamble(task.formatContext) ? createPreamble() : undefined,
-      defer,
-    );
-  } finally {
-    $unborrow(borrow);
-  }
+  const preamble = canHavePreamble(task.formatContext)
+    ? createPreamble()
+    : undefined;
+  const newBoundary = createSuspenseBoundary(
+    request,
+    prevRow,
+    fallbackAbortSet,
+    preamble,
+    defer,
+  );
 
   const {length: insertionIndex} = $borrow(parentSegment.chunks);
   // The children of the boundary segment is actually the fallback.
@@ -1355,9 +1328,7 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
     // where we try to skip rendering the fallback if the content itself can render synchronously
 
     // Stash the original stack frame.
-    const {value: suspenseComponentStack} = $borrow(
-      $fieldCell(task, 'componentStack', true),
-    );
+    const suspenseComponentStack = task.componentStack;
 
     const fallbackKeyPath = fallbackKeyPathOf(keyPath);
     if (trackedPostpones != null) {
@@ -1383,12 +1354,10 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
       request.resumableState,
       prevContext,
     );
-    $cellReplace(
-      $borrowMut($fieldCell(task, 'componentStack', true)),
+    task.componentStack =
       replaceSuspenseComponentStackWithSuspenseFallbackStack(
         suspenseComponentStack,
-      ),
-    );
+      ) ?? null;
     const result = $catchUnwind(() => {
       renderNode(request, task, fallback, -1);
       pushSegmentFinale(
@@ -1418,48 +1387,34 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
 
     // We create a suspended task for the primary content because we want to allow
     // sibling fallbacks to be rendered first.
+    const abortSet = task.abortSet;
+    const context = task.context;
+    const treeContext = task.treeContext;
     const value = newBoundary.preamble?.content;
     const contentState = newBoundary.contentState;
-    const value$1 = $borrow($fieldCell(task, 'abortSet'), true);
-    const value$2 = value$1.value;
-    let suspendedPrimaryTask;
-    try {
-      const unknown = getSuspenseContentFormatContext(
-        request.resumableState,
-        task.formatContext,
-      );
-      const value$1 = $borrow($fieldCell(task, 'context'), true);
-      try {
-        const value$3 = $borrow($fieldCell(task, 'treeContext'), true);
-        try {
-          suspendedPrimaryTask = createRenderTask(
-            request,
-            undefined,
-            content,
-            -1,
-            newBoundary,
-            contentRootSegment,
-            value,
-            contentState,
-            value$2,
-            keyPath,
-            unknown,
-            value$1.value,
-            value$3.value,
-            undefined, // The row gets reset inside the Suspense boundary.
-            suspenseComponentStack,
-            !disableLegacyContext ? task.legacyContext : emptyContextObject,
-            __DEV__ ? task.debugTask : undefined,
-          );
-        } finally {
-          $unborrow(value$3);
-        }
-      } finally {
-        $unborrow(value$1);
-      }
-    } finally {
-      $unborrow(value$1);
-    }
+    const unknown = getSuspenseContentFormatContext(
+      request.resumableState,
+      task.formatContext,
+    );
+    const suspendedPrimaryTask = createRenderTask(
+      request,
+      undefined,
+      content,
+      -1,
+      newBoundary,
+      contentRootSegment,
+      value,
+      contentState,
+      abortSet,
+      keyPath,
+      unknown,
+      context,
+      treeContext,
+      undefined, // The row gets reset inside the Suspense boundary.
+      suspenseComponentStack,
+      !disableLegacyContext ? task.legacyContext : emptyContextObject,
+      __DEV__ ? task.debugTask : undefined,
+    );
     pushComponentStack(suspendedPrimaryTask);
     request.pingedTasks.push(suspendedPrimaryTask);
   } else {
@@ -1475,10 +1430,7 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
     // We can reuse the current context and task to render the content immediately without
     // context switching. We just need to temporarily switch which boundary and which segment
     // we're writing to. If something suspends, it'll spawn new suspended task with that context.
-    $cellReplace(
-      $borrowMut($fieldCell(task, 'blockedBoundary', true)),
-      newBoundary,
-    );
+    task.blockedBoundary = newBoundary;
     task.blockedPreamble = newBoundary.preamble?.content ?? null;
     task.hoistableState = newBoundary.contentState;
     task.blockedSegment = contentRootSegment;
@@ -1487,7 +1439,7 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
       request.resumableState,
       prevContext,
     );
-    $cellReplace($borrowMut($fieldCell(task, 'row', true)));
+    task.row = null;
     const result = $catchUnwind(() => {
       // We use the safe form because we don't handle suspending here. Only error handling.
       renderNode(request, task, content, -1);
@@ -1544,13 +1496,8 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
         error = thrownValueOf(result._0);
       }
 
-      const value = $borrow($fieldCell(task, 'componentStack', true), true);
-      let thrownInfo;
-      try {
-        thrownInfo = getThrownInfo(value.value);
-      } finally {
-        $unborrow(value);
-      }
+      const componentStack = task.componentStack;
+      const thrownInfo = getThrownInfo(componentStack);
       const errorDigest = logRecoverableError(
         request,
         error,
@@ -1571,16 +1518,13 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
       // We don't need to schedule any task because we know the parent has written yet.
       // We do need to fallthrough to create the fallback though.
     }
-    $cellReplace(
-      $borrowMut($fieldCell(task, 'blockedBoundary', true)),
-      parentBoundary,
-    );
+    task.blockedBoundary = parentBoundary;
     task.blockedPreamble = parentPreamble;
     task.hoistableState = parentHoistableState;
     task.blockedSegment = parentSegment;
     task.keyPath = prevKeyPath;
     task.formatContext = prevContext;
-    $cellReplace($borrowMut($fieldCell(task, 'row', true)), prevRow);
+    task.row = prevRow;
     if (result.TAG === 'Ok' && result._0) {
       return;
     }
@@ -1588,60 +1532,37 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
     const fallbackKeyPath = fallbackKeyPathOf(keyPath);
     // We create suspended task for the fallback because we don't want to actually work
     // on it yet in case we finish the main content, so we queue for later.
+    const context = task.context;
+    const treeContext = task.treeContext;
+    const row = task.row;
+    const componentStack = task.componentStack;
     const value = newBoundary.preamble?.fallback;
     const fallbackState = newBoundary.fallbackState;
     const value$1 = getSuspenseFallbackFormatContext(
       request.resumableState,
       task.formatContext,
     );
-    const value$2 = $borrow($fieldCell(task, 'context'), true);
-    let suspendedFallbackTask;
-    try {
-      const value$3 = $borrow($fieldCell(task, 'treeContext'), true);
-      try {
-        const value$4 = $borrow($fieldCell(task, 'row', true), true);
-        const value$5 = value$4.value;
-        try {
-          const value$4 = $borrow(
-            $fieldCell(task, 'componentStack', true),
-            true,
-          );
-          try {
-            const componentStackNode =
-              replaceSuspenseComponentStackWithSuspenseFallbackStack(
-                value$4.value,
-              );
-            suspendedFallbackTask = createRenderTask(
-              request,
-              undefined,
-              fallback,
-              -1,
-              parentBoundary,
-              boundarySegment,
-              value,
-              fallbackState,
-              fallbackAbortSet,
-              fallbackKeyPath,
-              value$1,
-              value$2.value,
-              value$3.value,
-              value$5,
-              componentStackNode,
-              !disableLegacyContext ? task.legacyContext : emptyContextObject,
-              __DEV__ ? task.debugTask : undefined,
-            );
-          } finally {
-            $unborrow(value$4);
-          }
-        } finally {
-          $unborrow(value$4);
-        }
-      } finally {
-        $unborrow(value$3);
-      }
-    } finally {
-      $unborrow(value$2);
-    }
+    const componentStackNode =
+      replaceSuspenseComponentStackWithSuspenseFallbackStack(componentStack);
+    const suspendedFallbackTask = createRenderTask(
+      request,
+      undefined,
+      fallback,
+      -1,
+      parentBoundary,
+      boundarySegment,
+      value,
+      fallbackState,
+      fallbackAbortSet,
+      fallbackKeyPath,
+      value$1,
+      context,
+      treeContext,
+      row,
+      componentStackNode,
+      !disableLegacyContext ? task.legacyContext : emptyContextObject,
+      __DEV__ ? task.debugTask : undefined,
+    );
     pushComponentStack(suspendedFallbackTask);
     // TODO: This should be queued at a separate lower priority queue so that we only work
     // on preparing fallbacks if we don't have any more main content to task on.
@@ -1662,12 +1583,10 @@ function replaySuspenseBoundary(
 ) {
   const prevKeyPath = task.keyPath;
   const prevContext = task.formatContext;
-  const {value: prevRow} = $borrow($fieldCell(task, 'row', true));
+  const prevRow = task.row;
   const previousReplaySet = task.replay;
 
-  const {value: parentBoundary} = $borrow(
-    $fieldCell(task, 'blockedBoundary', true),
-  );
+  const parentBoundary = task.blockedBoundary;
   const parentHoistableState = task.hoistableState;
 
   const content = props.children;
@@ -1675,20 +1594,13 @@ function replaySuspenseBoundary(
   const defer = enableCPUSuspense && props.defer === true;
 
   const fallbackAbortSet = new Set();
-  const borrow = $borrow($fieldCell(task, 'row', true), true);
-  const value = borrow.value;
-  let resumedBoundary;
-  try {
-    resumedBoundary = createSuspenseBoundary(
-      request,
-      value,
-      fallbackAbortSet,
-      canHavePreamble(task.formatContext) ? createPreamble() : undefined,
-      defer,
-    );
-  } finally {
-    $unborrow(borrow);
-  }
+  const resumedBoundary = createSuspenseBoundary(
+    request,
+    prevRow,
+    fallbackAbortSet,
+    canHavePreamble(task.formatContext) ? createPreamble() : undefined,
+    defer,
+  );
   resumedBoundary.parentFlushed = true;
   // We restore the same id of this boundary as was used during prerender.
   resumedBoundary.rootSegmentID = id;
@@ -1712,17 +1624,14 @@ function replaySuspenseBoundary(
   // We can reuse the current context and task to render the content immediately without
   // context switching. We just need to temporarily switch which boundary and replay node
   // we're writing to. If something suspends, it'll spawn new suspended task with that context.
-  $cellReplace(
-    $borrowMut($fieldCell(task, 'blockedBoundary', true)),
-    resumedBoundary,
-  );
+  task.blockedBoundary = resumedBoundary;
   task.hoistableState = resumedBoundary.contentState;
   task.keyPath = keyPath;
   task.formatContext = getSuspenseContentFormatContext(
     request.resumableState,
     prevContext,
   );
-  $cellReplace($borrowMut($fieldCell(task, 'row', true)));
+  task.row = null;
   const replay = {
     nodes: childNodes,
     slots: childSlots,
@@ -1762,13 +1671,8 @@ function replaySuspenseBoundary(
     const error = request.aborted
       ? request.fatalError
       : thrownValueOf(result._0);
-    const value = $borrow($fieldCell(task, 'componentStack', true), true);
-    let thrownInfo;
-    try {
-      thrownInfo = getThrownInfo(value.value);
-    } finally {
-      $unborrow(value);
-    }
+    const componentStack = task.componentStack;
+    const thrownInfo = getThrownInfo(componentStack);
     const errorDigest = logRecoverableError(
       request,
       error,
@@ -1792,15 +1696,12 @@ function replaySuspenseBoundary(
     // We don't need to schedule any task because we know the parent has written yet.
     // We do need to fallthrough to create the fallback though.
   }
-  $cellReplace(
-    $borrowMut($fieldCell(task, 'blockedBoundary', true)),
-    parentBoundary,
-  );
+  task.blockedBoundary = parentBoundary;
   task.hoistableState = parentHoistableState;
   task.replay = previousReplaySet;
   task.keyPath = prevKeyPath;
   task.formatContext = prevContext;
-  $cellReplace($borrowMut($fieldCell(task, 'row', true)), prevRow);
+  task.row = prevRow;
   if (result.TAG === 'Ok' && result._0) {
     return;
   }
@@ -1812,53 +1713,31 @@ function replaySuspenseBoundary(
     slots: fallbackSlots,
     pendingTasks: 0,
   };
-  const fallbackState = resumedBoundary.fallbackState;
-  const unknown = getSuspenseFallbackFormatContext(
-    request.resumableState,
-    task.formatContext,
+  const context = task.context;
+  const treeContext = task.treeContext;
+  const row = task.row;
+  const componentStack = task.componentStack;
+  const suspendedFallbackTask = createReplayTask(
+    request,
+    undefined,
+    fallbackReplay,
+    fallback,
+    -1,
+    parentBoundary,
+    resumedBoundary.fallbackState,
+    fallbackAbortSet,
+    fallbackKeyPath,
+    getSuspenseFallbackFormatContext(
+      request.resumableState,
+      task.formatContext,
+    ),
+    context,
+    treeContext,
+    row,
+    replaceSuspenseComponentStackWithSuspenseFallbackStack(componentStack),
+    !disableLegacyContext ? task.legacyContext : emptyContextObject,
+    __DEV__ ? task.debugTask : undefined,
   );
-  const value$1 = $borrow($fieldCell(task, 'context'), true);
-  let suspendedFallbackTask;
-  try {
-    const value = $borrow($fieldCell(task, 'treeContext'), true);
-    try {
-      const value$2 = $borrow($fieldCell(task, 'row', true), true);
-      const value$3 = value$2.value;
-      try {
-        const value$2 = $borrow($fieldCell(task, 'componentStack', true), true);
-        try {
-          suspendedFallbackTask = createReplayTask(
-            request,
-            undefined,
-            fallbackReplay,
-            fallback,
-            -1,
-            parentBoundary,
-            fallbackState,
-            fallbackAbortSet,
-            fallbackKeyPath,
-            unknown,
-            value$1.value,
-            value.value,
-            value$3,
-            replaceSuspenseComponentStackWithSuspenseFallbackStack(
-              value$2.value,
-            ),
-            !disableLegacyContext ? task.legacyContext : emptyContextObject,
-            __DEV__ ? task.debugTask : undefined,
-          );
-        } finally {
-          $unborrow(value$2);
-        }
-      } finally {
-        $unborrow(value$2);
-      }
-    } finally {
-      $unborrow(value);
-    }
-  } finally {
-    $unborrow(value$1);
-  }
 
   pushComponentStack(suspendedFallbackTask);
   // TODO: This should be queued at a separate lower priority queue so that we only work
@@ -1868,12 +1747,8 @@ function replaySuspenseBoundary(
 
 function finishSuspenseListRow(request, row) {
   // This row finished. Now we have to unblock all the next rows that were blocked on this.
-  const borrow = $borrow($fieldCell(row, 'next', true), true);
-  try {
-    unblockSuspenseListRow(request, borrow.value, row.hoistables);
-  } finally {
-    $unborrow(borrow);
-  }
+  const next = row.next;
+  unblockSuspenseListRow(request, next, row.hoistables);
 }
 
 function unblockSuspenseListRow(request, unblockedRow, inheritedHoistables) {
@@ -1909,8 +1784,7 @@ function unblockSuspenseListRow(request, unblockedRow, inheritedHoistables) {
       break;
     }
     inheritedHoistables = unblockedRow.hoistables;
-    const {value: _72} = $borrow($fieldCell(unblockedRow, 'next', true));
-    unblockedRow = _72;
+    unblockedRow = unblockedRow.next;
   }
 }
 
@@ -1980,7 +1854,7 @@ function createSuspenseListRow(previousRow) {
     // When it finishes, we'll decrement our pending tasks.
     newRow.pendingTasks++;
     $cellReplace($borrowMut($fieldCell(newRow, 'boundaries', true)), []);
-    $cellReplace($borrowMut($fieldCell(previousRow, 'next', true)), newRow);
+    previousRow.next = newRow;
   }
   return newRow;
 }
@@ -1995,11 +1869,9 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
   // This is a fork of renderChildrenArray that's aware of tracking rows.
   const prevKeyPath = task.keyPath;
   task.keyPath = keyPath;
-  const {value: prevTreeContext} = $borrow($fieldCell(task, 'treeContext'));
-  const {value: prevRow} = $borrow($fieldCell(task, 'row', true));
-  const {value: previousComponentStack} = $borrow(
-    $fieldCell(task, 'componentStack', true),
-  );
+  const prevTreeContext = task.treeContext;
+  const prevRow = task.row;
+  const previousComponentStack = task.componentStack;
   let previousDebugTask;
   if (__DEV__) {
     previousDebugTask = task.debugTask;
@@ -2015,7 +1887,7 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
   if (replay != null) {
     // Replay
     // First we need to check if we have any resume slots at this level.
-    const {value: resumeSlots} = $borrow($fieldCell(replay, 'slots'));
+    const resumeSlots = replay.slots;
     if (typeof resumeSlots === 'object') {
       for (let n = 0; n < totalChildren; n++) {
         // Since we are going to resume into a slot whose order was already
@@ -2026,11 +1898,12 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
           : (((totalChildren - 1) >>> 0) - n) >>> 0;
         const node = $index(rows, i);
         const row = createSuspenseListRow(previousSuspenseListRow);
-        $cellReplace($borrowMut($fieldCell(task, 'row', true)), row);
+        task.row = row;
         previousSuspenseListRow = row;
-        $cellReplace(
-          $borrowMut($fieldCell(task, 'treeContext')),
-          pushTreeContext(prevTreeContext, totalChildren, i | 0),
+        task.treeContext = pushTreeContext(
+          prevTreeContext,
+          totalChildren,
+          i | 0,
         );
         const resumeSegmentId = resumeSlots[String(i)];
         // TODO: If this errors we should still continue with the next sibling.
@@ -2060,11 +1933,12 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
           warnForMissingKey(request, task, node);
         }
         const row = createSuspenseListRow(previousSuspenseListRow);
-        $cellReplace($borrowMut($fieldCell(task, 'row', true)), row);
+        task.row = row;
         previousSuspenseListRow = row;
-        $cellReplace(
-          $borrowMut($fieldCell(task, 'treeContext')),
-          pushTreeContext(prevTreeContext, totalChildren, i | 0),
+        task.treeContext = pushTreeContext(
+          prevTreeContext,
+          totalChildren,
+          i | 0,
         );
         renderNode(request, task, node, i);
         row.pendingTasks--;
@@ -2080,12 +1954,9 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
         warnForMissingKey(request, task, node);
       }
       const row = createSuspenseListRow(previousSuspenseListRow);
-      $cellReplace($borrowMut($fieldCell(task, 'row', true)), row);
+      task.row = row;
       previousSuspenseListRow = row;
-      $cellReplace(
-        $borrowMut($fieldCell(task, 'treeContext')),
-        pushTreeContext(prevTreeContext, totalChildren, i),
-      );
+      task.treeContext = pushTreeContext(prevTreeContext, totalChildren, i);
       renderNode(request, task, node, i);
       row.pendingTasks--;
       if (row.pendingTasks === 0) {
@@ -2106,12 +1977,9 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
           : n;
       const node = $index(rows, i);
       const row = createSuspenseListRow(previousSuspenseListRow);
-      $cellReplace($borrowMut($fieldCell(task, 'row', true)), row);
+      task.row = row;
       previousSuspenseListRow = row;
-      $cellReplace(
-        $borrowMut($fieldCell(task, 'treeContext')),
-        pushTreeContext(prevTreeContext, totalChildren, i | 0),
-      );
+      task.treeContext = pushTreeContext(prevTreeContext, totalChildren, i | 0);
       const newSegment = createPendingSegment(
         request,
         insertionIndex,
@@ -2136,12 +2004,8 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
           newSegment.textEmbedded,
         );
         newSegment.status = COMPLETED;
-        const borrow = $borrow($fieldCell(task, 'blockedBoundary', true), true);
-        try {
-          finishedSegment(request, borrow.value, newSegment);
-        } finally {
-          $unborrow(borrow);
-        }
+        const blockedBoundary = task.blockedBoundary;
+        finishedSegment(request, blockedBoundary, newSegment);
         row.pendingTasks--;
         if (row.pendingTasks === 0) {
           finishSuspenseListRow(request, row);
@@ -2168,22 +2032,16 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
     // If we are part of an outer SuspenseList and our last row is still pending, then that blocks
     // the parent row from completing. We can continue the chain.
     prevRow.pendingTasks++;
-    $cellReplace(
-      $borrowMut($fieldCell(previousSuspenseListRow, 'next', true)),
-      prevRow,
-    );
+    previousSuspenseListRow.next = prevRow;
   }
 
   // Because this context is always set right before rendering every child, we
   // only need to reset it to the previous value at the very end.
-  $cellReplace($borrowMut($fieldCell(task, 'treeContext')), prevTreeContext);
-  $cellReplace($borrowMut($fieldCell(task, 'row', true)), prevRow);
+  task.treeContext = prevTreeContext;
+  task.row = prevRow;
   task.keyPath = prevKeyPath;
   if (__DEV__) {
-    $cellReplace(
-      $borrowMut($fieldCell(task, 'componentStack', true)),
-      previousComponentStack,
-    );
+    task.componentStack = previousComponentStack;
     task.debugTask = previousDebugTask ?? null;
   }
 }
@@ -2254,9 +2112,8 @@ function renderSuspenseList(request, task, keyPath, props) {
         // so needs some refactoring to deal with the warning.
 
         // Restore the thenable state before resuming.
-        const prevThenableState = $cellReplace(
-          $borrowMut($fieldCell(task, 'thenableState', true)),
-        );
+        const prevThenableState = task.thenableState;
+        task.thenableState = null;
         prepareToUseThenableState(prevThenableState);
 
         // We need to know how many total rows are in this set, so that we
@@ -2306,9 +2163,9 @@ function renderSuspenseList(request, task, keyPath, props) {
 
   if (revealOrder === 'together') {
     const prevKeyPath = task.keyPath;
-    const {value: prevRow} = $borrow($fieldCell(task, 'row', true));
+    const prevRow = task.row;
     const newRow = createSuspenseListRow();
-    $cellReplace($borrowMut($fieldCell(task, 'row', true)), newRow);
+    task.row = newRow;
     // This will cause boundaries to block on this row, but there's nothing to
     // unblock them. We'll use the partial flushing pass to unblock them.
     $cellReplace($borrowMut($fieldCell(newRow, 'boundaries', true)), []);
@@ -2320,12 +2177,12 @@ function renderSuspenseList(request, task, keyPath, props) {
       finishSuspenseListRow(request, newRow);
     }
     task.keyPath = prevKeyPath;
-    $cellReplace($borrowMut($fieldCell(task, 'row', true)), prevRow);
+    task.row = prevRow;
     if (prevRow != null && newRow.pendingTasks > 0) {
       // If we are part of an outer SuspenseList and our row is still pending, then that blocks
       // the parent row from completing. We can continue the chain.
       prevRow.pendingTasks++;
-      $cellReplace($borrowMut($fieldCell(newRow, 'next', true)), prevRow);
+      newRow.next = prevRow;
     }
     return;
   }
@@ -2356,12 +2213,8 @@ function renderPreamble(request, task, blockedSegment, node) {
       preambleSegment.textEmbedded,
     );
     preambleSegment.status = COMPLETED;
-    const borrow = $borrow($fieldCell(task, 'blockedBoundary', true), true);
-    try {
-      finishedSegment(request, borrow.value, preambleSegment);
-    } finally {
-      $unborrow(borrow);
-    }
+    const blockedBoundary = task.blockedBoundary;
+    finishedSegment(request, blockedBoundary, preambleSegment);
   });
   task.blockedSegment = blockedSegment;
   if (result.TAG === 'Err') {
@@ -2442,9 +2295,8 @@ function renderWithHooks(request, task, keyPath, component, props, secondArg) {
   // Reset the task's thenable state before continuing, so that if a later
   // component suspends we can reuse the same task object. If the same
   // component suspends again, the thenable state will be restored.
-  const prevThenableState = $cellReplace(
-    $borrowMut($fieldCell(task, 'thenableState', true)),
-  );
+  const prevThenableState = task.thenableState;
+  task.thenableState = null;
   const componentIdentity = {};
   prepareToUseHooks(
     request,
@@ -2683,19 +2535,16 @@ function finishFunctionComponent(
   if (hasId) {
     // This component materialized an id. We treat this as its own level, with
     // a single "child" slot.
-    const {value: prevTreeContext} = $borrow($fieldCell(task, 'treeContext'));
+    const prevTreeContext = task.treeContext;
     const totalChildren = 1;
     const index = 0;
     // Modify the id context. Because we'll need to reset this if something
     // suspends or errors, we'll use the non-destructive render path.
-    $cellReplace(
-      $borrowMut($fieldCell(task, 'treeContext')),
-      pushTreeContext(prevTreeContext, totalChildren, index),
-    );
+    task.treeContext = pushTreeContext(prevTreeContext, totalChildren, index);
     renderNode(request, task, children, -1);
     // Like the other contexts, this does not need to be in a finally block
     // because renderNode takes care of unwinding the stack.
-    $cellReplace($borrowMut($fieldCell(task, 'treeContext')), prevTreeContext);
+    task.treeContext = prevTreeContext;
   } else if (didEmitActionStateMarkers) {
     // If there were useActionState hooks, we must use the non-destructive path
     // because this component is not a pure indirection; we emitted markers
@@ -2829,18 +2678,15 @@ function renderContextProvider(request, task, keyPath, context, props) {
   const children = props.children;
   let prevSnapshot;
   if (__DEV__) {
-    prevSnapshot = $borrow($fieldCell(task, 'context')).value;
+    prevSnapshot = task.context;
   }
   const prevKeyPath = task.keyPath;
-  $cellReplace(
-    $borrowMut($fieldCell(task, 'context')),
-    pushProvider(context, value),
-  );
+  task.context = pushProvider(context, value);
   task.keyPath = keyPath;
   renderNodeDestructive(request, task, children, -1);
-  $cellReplace($borrowMut($fieldCell(task, 'context')), popProvider(context));
+  task.context = popProvider(context);
   task.keyPath = prevKeyPath;
-  if (__DEV__ && prevSnapshot != $borrow($fieldCell(task, 'context')).value) {
+  if (__DEV__ && prevSnapshot != task.context) {
     console.error(
       'Popping the context provider did not return back to the original snapshot. This is a bug in React.',
     );
@@ -2912,17 +2758,12 @@ function renderViewTransition(request, task, keyPath, props) {
   const prevContext = task.formatContext;
   const prevKeyPath = task.keyPath;
   // Get the name off props or generate an auto-generated one in case we need it.
-  const borrow = $borrow($fieldCell(task, 'treeContext'), true);
-  let autoName;
-  try {
-    autoName = getViewTransitionName(
-      props,
-      borrow.value,
-      request.resumableState,
-    );
-  } finally {
-    $unborrow(borrow);
-  }
+  const treeContext = task.treeContext;
+  const autoName = getViewTransitionName(
+    props,
+    treeContext,
+    request.resumableState,
+  );
   // Pass `undefined` (rather than the resolved class) when the prop is absent
   // so the format context can distinguish "no parentEnter/parentExit" (which
   // stops the relay) from an explicit "auto"/class (which continues it).
@@ -2989,19 +2830,16 @@ function renderViewTransition(request, task, keyPath, props) {
     // This will be auto-assigned a name which claims a "useId" slot.
     // This component materialized an id. We treat this as its own level, with
     // a single "child" slot.
-    const {value: prevTreeContext} = $borrow($fieldCell(task, 'treeContext'));
+    const prevTreeContext = task.treeContext;
     const totalChildren = 1;
     const index = 0;
     // Modify the id context. Because we'll need to reset this if something
     // suspends or errors, we'll use the non-destructive render path.
-    $cellReplace(
-      $borrowMut($fieldCell(task, 'treeContext')),
-      pushTreeContext(prevTreeContext, totalChildren, index),
-    );
+    task.treeContext = pushTreeContext(prevTreeContext, totalChildren, index);
     renderNode(request, task, props.children, -1);
     // Like the other contexts, this does not need to be in a finally block
     // because renderNode takes care of unwinding the stack.
-    $cellReplace($borrowMut($fieldCell(task, 'treeContext')), prevTreeContext);
+    task.treeContext = prevTreeContext;
   }
   task.formatContext = prevContext;
   task.keyPath = prevKeyPath;
@@ -3131,9 +2969,7 @@ function renderElement(request, task, keyPath, type, props, ref) {
 
 function resumeNode(request, task, segmentId, node, childIndex) {
   const prevReplay = task.replay;
-  const {value: blockedBoundary} = $borrow(
-    $fieldCell(task, 'blockedBoundary', true),
-  );
+  const blockedBoundary = task.blockedBoundary;
   const resumedSegment = createPendingSegment(
     request,
     0,
@@ -3282,27 +3118,18 @@ function replayElement(
         // in the original prerender. What's unable to complete is the child
         // replay nodes which might be Suspense boundaries which are able to
         // absorb the error and we can still continue with siblings.
-        const borrow = $borrow($fieldCell(task, 'componentStack', true), true);
-        let thrownInfo;
-        try {
-          thrownInfo = getThrownInfo(borrow.value);
-        } finally {
-          $unborrow(borrow);
-        }
-        const value = $borrow($fieldCell(task, 'blockedBoundary', true), true);
-        try {
-          erroredReplay(
-            request,
-            value.value,
-            request.aborted ? request.fatalError : thrownValue,
-            thrownInfo,
-            childNodes,
-            childSlots,
-            __DEV__ ? task.debugTask : undefined,
-          );
-        } finally {
-          $unborrow(value);
-        }
+        const componentStack = task.componentStack;
+        const thrownInfo = getThrownInfo(componentStack);
+        const blockedBoundary = task.blockedBoundary;
+        erroredReplay(
+          request,
+          blockedBoundary,
+          request.aborted ? request.fatalError : thrownValue,
+          thrownInfo,
+          childNodes,
+          childSlots,
+          __DEV__ ? task.debugTask : undefined,
+        );
       }
       task.replay = replay;
     } else {
@@ -3322,7 +3149,9 @@ function replayElement(
         fallbackNodes = [];
         fallbackSlots = 'null';
       } else {
-        const [, , nodes, slots] = $borrow(fallback);
+        const borrow = $borrow(fallback);
+        const nodes = borrow[2];
+        const slots = borrow[3];
         fallbackNodes = nodes;
         fallbackSlots = slots;
       }
@@ -3353,9 +3182,7 @@ function validateIterable(task, iterable, childIndex, iterator, iteratorFn) {
       // We do support generators if they were created by a GeneratorFunction component
       // as its direct child since we can recreate those by rerendering the component
       // as needed.
-      const {value: componentStack} = $borrow(
-        $fieldCell(task, 'componentStack', true),
-      );
+      const componentStack = task.componentStack;
       const isGeneratorComponent =
         childIndex === -1 && // Only the root child is valid
         componentStack != null &&
@@ -3398,9 +3225,7 @@ function validateAsyncIterable(task, iterable, childIndex, iterator) {
     // We do support generators if they were created by a GeneratorFunction component
     // as its direct child since we can recreate those by rerendering the component
     // as needed.
-    const {value: componentStack} = $borrow(
-      $fieldCell(task, 'componentStack', true),
-    );
+    const componentStack = task.componentStack;
     const isGeneratorComponent =
       childIndex === -1 && // Only the root child is valid
       componentStack != null &&
@@ -3452,36 +3277,24 @@ function warnOnSymbolType(invalidChild) {
 // to update the current execution state.
 function renderNodeDestructive(request, task, node, childIndex) {
   const replay = task.replay;
-  if (replay != null) {
-    const borrow = $borrow($fieldCell(replay, 'slots'), true);
-    try {
-      if (typeof borrow.value === 'number') {
-        // TODO: Figure out a cheaper place than this hot path to do this check.
-        resumeNode(request, task, borrow.value, node, childIndex);
-        return;
-      }
-    } finally {
-      $unborrow(borrow);
-    }
+  if (replay != null && typeof replay.slots === 'number') {
+    // TODO: Figure out a cheaper place than this hot path to do this check.
+    resumeNode(request, task, replay.slots, node, childIndex);
+    return;
   }
   // Stash the node we're working on. We'll pick up from this task in case
   // something suspends.
   task.node = node;
   task.childIndex = childIndex;
 
-  const {value: previousComponentStack} = $borrow(
-    $fieldCell(task, 'componentStack', true),
-  );
+  const previousComponentStack = task.componentStack;
   const previousDebugTask = __DEV__ ? task.debugTask : undefined;
 
   pushComponentStack(task);
 
   retryNode(request, task);
 
-  $cellReplace(
-    $borrowMut($fieldCell(task, 'componentStack', true)),
-    previousComponentStack,
-  );
+  task.componentStack = previousComponentStack;
   if (__DEV__) {
     task.debugTask = previousDebugTask ?? null;
   }
@@ -3651,9 +3464,8 @@ function retryNode(request, task) {
         // so needs some refactoring to deal with the warning.
 
         // Restore the thenable state before resuming.
-        const prevThenableState = $cellReplace(
-          $borrowMut($fieldCell(task, 'thenableState', true)),
-        );
+        const prevThenableState = task.thenableState;
+        task.thenableState = null;
         prepareToUseThenableState(prevThenableState);
 
         // We need to know how many total children are in this set, so that we
@@ -3714,7 +3526,7 @@ function retryNode(request, task) {
     const maybeUsable = node$1;
     if (typeof maybeUsable.then === 'function') {
       // Clear any previous thenable state that was created by the unwrapping.
-      $cellReplace($borrowMut($fieldCell(task, 'thenableState', true)));
+      task.thenableState = null;
       const thenable = maybeUsable;
       const resolvedNode = unwrapThenable(thenable);
       if (request.aborted) {
@@ -3815,7 +3627,9 @@ function replayFragment(request, task, children, childIndex) {
             : replayNode;
       }
       const node = cloneReplayNode($borrow($borrow(replayNodes)[j]));
-      const [, nodeKey, childNodes, childSlots] = node;
+      const nodeKey = node[1];
+      const childNodes = node[2];
+      const childSlots = node[3];
       if (nodeKey !== childIndex) {
         j++;
         continue;
@@ -3858,27 +3672,18 @@ function replayFragment(request, task, children, childIndex) {
         // replay nodes which might be Suspense boundaries which are able to
         // absorb the error and we can still continue with siblings.
         // This is an error, stash the component stack if it is null.
-        const borrow = $borrow($fieldCell(task, 'componentStack', true), true);
-        let thrownInfo;
-        try {
-          thrownInfo = getThrownInfo(borrow.value);
-        } finally {
-          $unborrow(borrow);
-        }
-        const value = $borrow($fieldCell(task, 'blockedBoundary', true), true);
-        try {
-          erroredReplay(
-            request,
-            value.value,
-            request.aborted ? request.fatalError : thrownValue,
-            thrownInfo,
-            childNodes,
-            childSlots,
-            __DEV__ ? task.debugTask : undefined,
-          );
-        } finally {
-          $unborrow(value);
-        }
+        const componentStack = task.componentStack;
+        const thrownInfo = getThrownInfo(componentStack);
+        const blockedBoundary = task.blockedBoundary;
+        erroredReplay(
+          request,
+          blockedBoundary,
+          request.aborted ? request.fatalError : thrownValue,
+          thrownInfo,
+          childNodes,
+          childSlots,
+          __DEV__ ? task.debugTask : undefined,
+        );
       }
       task.replay = replay;
       // We finished rendering this node, so now we can consume this
@@ -3924,9 +3729,7 @@ function warnForMissingKey(request, task, child) {
       didWarnForKey = new WeakSet();
       request.didWarnForKey = didWarnForKey;
     }
-    const {value: parentStackFrame} = $borrow(
-      $fieldCell(task, 'componentStack', true),
-    );
+    const parentStackFrame = task.componentStack;
     if (parentStackFrame == null) {
       // We already warned for other children in this parent.
       return;
@@ -3975,37 +3778,27 @@ function warnForMissingKey(request, task, child) {
     }
 
     // We create a fake component stack for the child to log the stack trace from.
-    const {value: previousComponentStack} = $borrow(
-      $fieldCell(task, 'componentStack', true),
-    );
+    const previousComponentStack = task.componentStack;
     const stackFrame = createComponentStackFromType(
-      $borrow($fieldCell(task, 'componentStack', true)).value,
+      previousComponentStack,
       child$1.type,
       child$1._owner,
       child$1._debugStack,
     );
-    $cellReplace(
-      $borrowMut($fieldCell(task, 'componentStack', true)),
-      stackFrame,
-    );
+    task.componentStack = stackFrame;
     console.error(
       'Each child in a list should have a unique "key" prop.' +
         '%s%s See https://react.dev/link/warning-keys for more information.',
       currentComponentErrorInfo,
       childOwnerAppendix,
     );
-    $cellReplace(
-      $borrowMut($fieldCell(task, 'componentStack', true)),
-      previousComponentStack,
-    );
+    task.componentStack = previousComponentStack;
   }
 }
 
 function renderChildrenArray(request, task, children, childIndex) {
   const prevKeyPath = task.keyPath;
-  const {value: previousComponentStack} = $borrow(
-    $fieldCell(task, 'componentStack', true),
-  );
+  const previousComponentStack = task.componentStack;
   let previousDebugTask;
   if (__DEV__) {
     previousDebugTask = task.debugTask;
@@ -4025,30 +3818,24 @@ function renderChildrenArray(request, task, children, childIndex) {
       );
       task.keyPath = prevKeyPath;
       if (__DEV__) {
-        $cellReplace(
-          $borrowMut($fieldCell(task, 'componentStack', true)),
-          previousComponentStack,
-        );
+        task.componentStack = previousComponentStack;
         task.debugTask = previousDebugTask ?? null;
       }
       return;
     }
   }
 
-  const {value: prevTreeContext} = $borrow($fieldCell(task, 'treeContext'));
+  const prevTreeContext = task.treeContext;
   const totalChildren = children.length;
 
   const replay = task.replay;
   if (replay != null) {
     // Replay
     // First we need to check if we have any resume slots at this level.
-    const {value: resumeSlots} = $borrow($fieldCell(replay, 'slots'));
+    const resumeSlots = replay.slots;
     if (typeof resumeSlots === 'object') {
       for (const [i, node] of children.entries()) {
-        $cellReplace(
-          $borrowMut($fieldCell(task, 'treeContext')),
-          pushTreeContext(prevTreeContext, totalChildren, i),
-        );
+        task.treeContext = pushTreeContext(prevTreeContext, totalChildren, i);
         // We need to use the non-destructive form so that we can safely pop back
         // up and render the sibling if something suspends.
         const resumeSegmentId = resumeSlots[String(i)];
@@ -4062,16 +3849,10 @@ function renderChildrenArray(request, task, children, childIndex) {
           renderNode(request, task, node, i);
         }
       }
-      $cellReplace(
-        $borrowMut($fieldCell(task, 'treeContext')),
-        prevTreeContext,
-      );
+      task.treeContext = prevTreeContext;
       task.keyPath = prevKeyPath;
       if (__DEV__) {
-        $cellReplace(
-          $borrowMut($fieldCell(task, 'componentStack', true)),
-          previousComponentStack,
-        );
+        task.componentStack = previousComponentStack;
         task.debugTask = previousDebugTask ?? null;
       }
       return;
@@ -4082,10 +3863,7 @@ function renderChildrenArray(request, task, children, childIndex) {
     if (__DEV__) {
       warnForMissingKey(request, task, node);
     }
-    $cellReplace(
-      $borrowMut($fieldCell(task, 'treeContext')),
-      pushTreeContext(prevTreeContext, totalChildren, i),
-    );
+    task.treeContext = pushTreeContext(prevTreeContext, totalChildren, i);
     // We need to use the non-destructive form so that we can safely pop back
     // up and render the sibling if something suspends.
     renderNode(request, task, node, i);
@@ -4093,13 +3871,10 @@ function renderChildrenArray(request, task, children, childIndex) {
 
   // Because this context is always set right before rendering every child, we
   // only need to reset it to the previous value at the very end.
-  $cellReplace($borrowMut($fieldCell(task, 'treeContext')), prevTreeContext);
+  task.treeContext = prevTreeContext;
   task.keyPath = prevKeyPath;
   if (__DEV__) {
-    $cellReplace(
-      $borrowMut($fieldCell(task, 'componentStack', true)),
-      previousComponentStack,
-    );
+    task.componentStack = previousComponentStack;
     task.debugTask = previousDebugTask ?? null;
   }
 }
@@ -4171,7 +3946,7 @@ function trackPostpone(request, trackedPostpones, task, segment) {
   segment.status = POSTPONED;
 
   const keyPath = task.keyPath;
-  const {value: boundary} = $borrow($fieldCell(task, 'blockedBoundary', true));
+  const boundary = task.blockedBoundary;
 
   if (boundary == null) {
     segment.id = nextSegmentId(request);
@@ -4390,33 +4165,27 @@ function untrackBoundary(request, boundary) {
 }
 
 function spawnNewSuspendedReplayTask(request, task, thenableState) {
-  const replaySet = $unwrap(task.replay);
-  const node = task.node;
-  const childIndex = task.childIndex;
-  const {value: _17} = $borrow($fieldCell(task, 'blockedBoundary', true));
-  const hoistableState = task.hoistableState;
-  const {value: _25} = $borrow($fieldCell(task, 'abortSet'));
-  const keyPath = task.keyPath;
-  const formatContext = task.formatContext;
-  const borrow = $borrow($fieldCell(task, 'context'));
-  const value = $borrow($fieldCell(task, 'treeContext'));
-  const {value: _53} = $borrow($fieldCell(task, 'row', true));
-  const {value: _59} = $borrow($fieldCell(task, 'componentStack', true));
+  const blockedBoundary = task.blockedBoundary;
+  const abortSet = task.abortSet;
+  const context = task.context;
+  const treeContext = task.treeContext;
+  const row = task.row;
+  const componentStack = task.componentStack;
   return createReplayTask(
     request,
     thenableState,
-    replaySet,
-    node,
-    childIndex,
-    _17,
-    hoistableState,
-    _25,
-    keyPath,
-    formatContext,
-    borrow.value,
-    value.value,
-    _53,
-    _59,
+    $unwrap(task.replay),
+    task.node,
+    task.childIndex,
+    blockedBoundary,
+    task.hoistableState,
+    abortSet,
+    task.keyPath,
+    task.formatContext,
+    context,
+    treeContext,
+    row,
+    componentStack,
     !disableLegacyContext ? task.legacyContext : emptyContextObject,
     __DEV__ ? task.debugTask : undefined,
   );
@@ -4439,34 +4208,28 @@ function spawnNewSuspendedRenderTask(request, task, thenableState) {
   $borrowMut(segment.children).push(newSegment);
   // Reset lastPushedText for current Segment since the new Segment "consumed" it
   segment.lastPushedText = false;
-  const node = task.node;
-  const childIndex = task.childIndex;
-  const {value: _53} = $borrow($fieldCell(task, 'blockedBoundary', true));
-  const blockedPreamble = task.blockedPreamble;
-  const hoistableState = task.hoistableState;
-  const {value: _64} = $borrow($fieldCell(task, 'abortSet'));
-  const keyPath = task.keyPath;
-  const formatContext = task.formatContext;
-  const borrow = $borrow($fieldCell(task, 'context'));
-  const value = $borrow($fieldCell(task, 'treeContext'));
-  const {value: _92} = $borrow($fieldCell(task, 'row', true));
-  const {value: _98} = $borrow($fieldCell(task, 'componentStack', true));
+  const blockedBoundary = task.blockedBoundary;
+  const abortSet = task.abortSet;
+  const context = task.context;
+  const treeContext = task.treeContext;
+  const row = task.row;
+  const componentStack = task.componentStack;
   return createRenderTask(
     request,
     thenableState,
-    node,
-    childIndex,
-    _53,
+    task.node,
+    task.childIndex,
+    blockedBoundary,
     newSegment,
-    blockedPreamble,
-    hoistableState,
-    _64,
-    keyPath,
-    formatContext,
-    borrow.value,
-    value.value,
-    _92,
-    _98,
+    task.blockedPreamble,
+    task.hoistableState,
+    abortSet,
+    task.keyPath,
+    task.formatContext,
+    context,
+    treeContext,
+    row,
+    componentStack,
     !disableLegacyContext ? task.legacyContext : emptyContextObject,
     __DEV__ ? task.debugTask : undefined,
   );
@@ -4486,7 +4249,7 @@ function postponeNewSuspendedRenderTask(request, task, thenableState) {
   } else {
     abortTask(postponedTask, request);
   }
-  const {value: abortSet} = $borrow($fieldCell(postponedTask, 'abortSet'));
+  const abortSet = postponedTask.abortSet;
   $borrowMut(abortSet).delete(postponedTask);
   if (__DEV__) {
     finishAbortedTaskDEV(postponedTask, request, request.fatalError);
@@ -4504,12 +4267,10 @@ function renderNode(request, task, node, childIndex) {
   const previousLegacyContext = !disableLegacyContext
     ? task.legacyContext
     : emptyContextObject;
-  const {value: previousContext} = $borrow($fieldCell(task, 'context'));
+  const previousContext = task.context;
   const previousKeyPath = task.keyPath;
-  const {value: previousTreeContext} = $borrow($fieldCell(task, 'treeContext'));
-  const {value: previousComponentStack} = $borrow(
-    $fieldCell(task, 'componentStack', true),
-  );
+  const previousTreeContext = task.treeContext;
+  const previousComponentStack = task.componentStack;
   const previousDebugTask = __DEV__ ? task.debugTask : undefined;
   // Store how much we've pushed at this point so we can reset it in case something
   // suspended partially through writing something.
@@ -4564,19 +4325,10 @@ function renderNode(request, task, node, childIndex) {
           if (!disableLegacyContext) {
             task.legacyContext = previousLegacyContext;
           }
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'context')),
-            previousContext,
-          );
+          task.context = previousContext;
           task.keyPath = previousKeyPath;
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'treeContext')),
-            previousTreeContext,
-          );
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'componentStack', true)),
-            previousComponentStack,
-          );
+          task.treeContext = previousTreeContext;
+          task.componentStack = previousComponentStack;
           task.replay = previousReplaySet;
           if (__DEV__) {
             task.debugTask = previousDebugTask ?? null;
@@ -4609,19 +4361,10 @@ function renderNode(request, task, node, childIndex) {
           if (!disableLegacyContext) {
             task.legacyContext = previousLegacyContext;
           }
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'context')),
-            previousContext,
-          );
+          task.context = previousContext;
           task.keyPath = previousKeyPath;
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'treeContext')),
-            previousTreeContext,
-          );
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'componentStack', true)),
-            previousComponentStack,
-          );
+          task.treeContext = previousTreeContext;
+          task.componentStack = previousComponentStack;
           task.replay = previousReplaySet;
           if (__DEV__) {
             task.debugTask = previousDebugTask ?? null;
@@ -4665,10 +4408,7 @@ function renderNode(request, task, node, childIndex) {
       if (request.aborted) {
         // A postponed root cannot flush any shell and must be rendered again in
         // full, so let it unwind instead of preserving individual holes.
-        if (
-          request.trackedPostpones != null &&
-          $borrow($fieldCell(task, 'blockedBoundary', true)).value != null
-        ) {
+        if (request.trackedPostpones != null && task.blockedBoundary != null) {
           const thenableState = isSuspenseException$1
             ? getThenableStateAfterSuspending()
             : undefined;
@@ -4685,19 +4425,10 @@ function renderNode(request, task, node, childIndex) {
           if (!disableLegacyContext) {
             task.legacyContext = previousLegacyContext;
           }
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'context')),
-            previousContext,
-          );
+          task.context = previousContext;
           task.keyPath = previousKeyPath;
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'treeContext')),
-            previousTreeContext,
-          );
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'componentStack', true)),
-            previousComponentStack,
-          );
+          task.treeContext = previousTreeContext;
+          task.componentStack = previousComponentStack;
           if (__DEV__) {
             task.debugTask = previousDebugTask ?? null;
           }
@@ -4727,19 +4458,10 @@ function renderNode(request, task, node, childIndex) {
           if (!disableLegacyContext) {
             task.legacyContext = previousLegacyContext;
           }
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'context')),
-            previousContext,
-          );
+          task.context = previousContext;
           task.keyPath = previousKeyPath;
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'treeContext')),
-            previousTreeContext,
-          );
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'componentStack', true)),
-            previousComponentStack,
-          );
+          task.treeContext = previousTreeContext;
+          task.componentStack = previousComponentStack;
           if (__DEV__) {
             task.debugTask = previousDebugTask ?? null;
           }
@@ -4771,19 +4493,10 @@ function renderNode(request, task, node, childIndex) {
           if (!disableLegacyContext) {
             task.legacyContext = previousLegacyContext;
           }
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'context')),
-            previousContext,
-          );
+          task.context = previousContext;
           task.keyPath = previousKeyPath;
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'treeContext')),
-            previousTreeContext,
-          );
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'componentStack', true)),
-            previousComponentStack,
-          );
+          task.treeContext = previousTreeContext;
+          task.componentStack = previousComponentStack;
           if (__DEV__) {
             task.debugTask = previousDebugTask ?? null;
           }
@@ -4801,12 +4514,9 @@ function renderNode(request, task, node, childIndex) {
   if (!disableLegacyContext) {
     task.legacyContext = previousLegacyContext;
   }
-  $cellReplace($borrowMut($fieldCell(task, 'context')), previousContext);
+  task.context = previousContext;
   task.keyPath = previousKeyPath;
-  $cellReplace(
-    $borrowMut($fieldCell(task, 'treeContext')),
-    previousTreeContext,
-  );
+  task.treeContext = previousTreeContext;
   // We intentionally do not restore the component stack on the error pathway
   // Whatever handles the error needs to use this stack which is the location of the
   // error. We must restore the stack wherever we handle this
@@ -4948,16 +4658,12 @@ function abortTaskSoft(request, task) {
   // This aborts task without aborting the parent boundary that it blocks.
   // It's used for when we didn't need this task to complete the tree.
   // If task was needed, then it should use abortTask instead.
-  const {value: boundary} = $borrow($fieldCell(task, 'blockedBoundary', true));
+  const boundary = task.blockedBoundary;
   const segment = task.blockedSegment;
   if (segment != null) {
     segment.status = ABORTED;
-    const borrow = $borrow($fieldCell(task, 'row', true), true);
-    try {
-      finishedTask(request, boundary, borrow.value, segment);
-    } finally {
-      $unborrow(borrow);
-    }
+    const row = task.row;
+    finishedTask(request, boundary, row, segment);
   }
 }
 
@@ -5111,7 +4817,7 @@ function abortTask(task, request) {
     // This is a currently rendering Task. The render itself will abort the task.
     return;
   }
-  const {value: boundary} = $borrow($fieldCell(task, 'blockedBoundary', true));
+  const boundary = task.blockedBoundary;
   const segment = task.blockedSegment;
   if (segment != null) {
     segment.status = ABORTED;
@@ -5149,7 +4855,7 @@ function abortTask(task, request) {
         debugInfo = node._debugInfo;
       }
       pushHaltedAwaitOnComponentStack(task, debugInfo);
-      if ($borrow($fieldCell(task, 'thenableState', true)).value != null) {
+      if (task.thenableState != null) {
         pushSuspendedCallSiteOnComponentStack(request, task);
       }
     }
@@ -5173,19 +4879,14 @@ function finishAbortedTask(task, request, error) {
   if (isCurrentTask(request, task)) {
     return;
   }
-  const {value: boundary} = $borrow($fieldCell(task, 'blockedBoundary', true));
+  const boundary = task.blockedBoundary;
   const segment = task.blockedSegment;
   if (segment != null && segment.status !== ABORTED) {
     return;
   }
 
-  const borrow = $borrow($fieldCell(task, 'componentStack', true), true);
-  let errorInfo;
-  try {
-    errorInfo = getThrownInfo(borrow.value);
-  } finally {
-    $unborrow(borrow);
-  }
+  const componentStack = task.componentStack;
+  const errorInfo = getThrownInfo(componentStack);
   // Only errors materialized by use() or abort() carry this internal brand.
   // Throwing the browser() token directly is still an application error.
   const isRecoverableReason = isRecoverableError(error);
@@ -5200,12 +4901,8 @@ function finishAbortedTask(task, request, error) {
         // We log the error but we still resolve the prerender
         logRecoverableError(request, error, errorInfo, task.debugTask);
         trackPostpone(request, trackedPostpones, task, segment);
-        const value = $borrow($fieldCell(task, 'row', true), true);
-        try {
-          finishedTask(request, undefined, value.value, segment);
-        } finally {
-          $unborrow(value);
-        }
+        const row = task.row;
+        finishedTask(request, undefined, row, segment);
       } else if (isRecoverableReason) {
         // This root task cannot recover from the abort. Report a fatal clone,
         // but keep the original branded reason on the request for other tasks.
@@ -5234,21 +4931,16 @@ function finishAbortedTask(task, request, error) {
       replay.pendingTasks--;
       if (replay.pendingTasks === 0 && $borrow(replay.nodes).length !== 0) {
         const errorDigest = logRecoverableError(request, error, errorInfo);
-        const value = $borrow($fieldCell(replay, 'slots'), true);
-        try {
-          abortRemainingReplayNodes(
-            request,
-            undefined,
-            replay.nodes,
-            value.value,
-            error,
-            errorDigest,
-            errorInfo,
-            true,
-          );
-        } finally {
-          $unborrow(value);
-        }
+        abortRemainingReplayNodes(
+          request,
+          undefined,
+          replay.nodes,
+          replay.slots,
+          error,
+          errorDigest,
+          errorInfo,
+          true,
+        );
       }
       request.pendingRootTasks--;
       if (request.pendingRootTasks === 0) {
@@ -5267,21 +4959,17 @@ function finishAbortedTask(task, request, error) {
         trackPostpone(request, trackedPostpones, task, segment);
         // If this boundary was still pending then we haven't already cancelled its fallbacks.
         // We'll need to abort the fallbacks, which will also error that parent boundary.
-        const value = $borrow(boundary.fallbackAbortableTasks, true);
+        const borrow = $borrow(boundary.fallbackAbortableTasks, true);
         try {
-          for (const fallbackTask of value) {
+          for (const fallbackTask of borrow) {
             finishAbortedTask(fallbackTask, request, error);
           }
         } finally {
-          $unborrow(value);
+          $unborrow(borrow);
         }
         $borrowMut(boundary.fallbackAbortableTasks).clear();
-        const value$1 = $borrow($fieldCell(task, 'row', true), true);
-        try {
-          finishedTask(request, boundary, value$1.value, segment);
-        } finally {
-          $unborrow(value$1);
-        }
+        const row = task.row;
+        finishedTask(request, boundary, row, segment);
         return;
       }
       boundary.status = CLIENT_RENDERED;
@@ -5326,7 +5014,7 @@ function finishAbortedTask(task, request, error) {
     $borrowMut(boundary.fallbackAbortableTasks).clear();
   }
 
-  const {value: row} = $borrow($fieldCell(task, 'row', true));
+  const row = task.row;
   if (row != null) {
     row.pendingTasks--;
     if (row.pendingTasks === 0) {
@@ -5399,7 +5087,7 @@ function abortUnwoundTask(task, request) {
   } else {
     abortTask(task, request);
   }
-  const {value: abortSet} = $borrow($fieldCell(task, 'abortSet'));
+  const abortSet = task.abortSet;
   $borrowMut(abortSet).delete(task);
   if (__DEV__) {
     finishAbortedTaskDEV(task, request, request.fatalError);
@@ -5636,16 +5324,8 @@ function finishedTask(request, boundary, row, segment) {
           if (trackedPostpones != null) {
             // If this boundary is postponed, then we need to also postpone any blocked boundaries
             // in the next row.
-            const value = $borrow($fieldCell(boundaryRow, 'next', true), true);
-            try {
-              trackPostponedSuspenseListRow(
-                request,
-                trackedPostpones,
-                value.value,
-              );
-            } finally {
-              $unborrow(value);
-            }
+            const next = boundaryRow.next;
+            trackPostponedSuspenseListRow(request, trackedPostpones, next);
           }
           // finishSuspenseListRow → unblockSuspenseListRow → finishedTask reenters
           // and decrements allPendingTasks. Pin the counter above zero so those
@@ -5719,7 +5399,8 @@ function retryRenderTask(request, task, segment) {
   // We restore the context to what it was when we suspended.
   // We don't restore it after we leave because it's likely that we'll end up
   // needing a very similar context soon again.
-  switchContext($borrow($fieldCell(task, 'context')).value);
+  const context = task.context;
+  switchContext(context);
   let prevTaskInDev;
   if (__DEV__) {
     prevTaskInDev = currentTaskInDEV;
@@ -5742,26 +5423,12 @@ function retryRenderTask(request, task, segment) {
       segment.textEmbedded,
     );
 
-    $borrowMut($borrow($fieldCell(task, 'abortSet')).value).delete(task);
+    $borrowMut(task.abortSet).delete(task);
     segment.status = COMPLETED;
-    const borrow = $borrow($fieldCell(task, 'blockedBoundary', true), true);
-    try {
-      finishedSegment(request, borrow.value, segment);
-    } finally {
-      $unborrow(borrow);
-    }
-    const value = $borrow($fieldCell(task, 'blockedBoundary', true), true);
-    const value$1 = value.value;
-    try {
-      const value = $borrow($fieldCell(task, 'row', true), true);
-      try {
-        finishedTask(request, value$1, value.value, segment);
-      } finally {
-        $unborrow(value);
-      }
-    } finally {
-      $unborrow(value);
-    }
+    const blockedBoundary = task.blockedBoundary;
+    finishedSegment(request, blockedBoundary, segment);
+    const row = task.row;
+    finishedTask(request, blockedBoundary, row, segment);
   });
   if (result.TAG === 'Ok') {
     result = {TAG: 'Ok'};
@@ -5792,10 +5459,7 @@ function retryRenderTask(request, task, segment) {
           // the normal suspension path below that stores the thenable state.
           // Preserve it before finishing the abort so DEV can replay the task
           // and include this suspended use() call site in the owner stack.
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'thenableState', true)),
-            getThenableStateAfterSuspending(),
-          );
+          task.thenableState = getThenableStateAfterSuspending() ?? null;
         }
         // The task has unwound from user code, so it must no longer appear to
         // be the currently rendering task while we synchronously finish it.
@@ -5814,10 +5478,7 @@ function retryRenderTask(request, task, segment) {
           const value = isSuspenseException$1
             ? getThenableStateAfterSuspending()
             : undefined;
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'thenableState', true)),
-            value,
-          );
+          task.thenableState = value ?? null;
           // We've asserted that x is a thenable above
           const thenable = x;
           const [resolve, reject] = pingOf(request, task);
@@ -5829,42 +5490,28 @@ function retryRenderTask(request, task, segment) {
           task.node !== startNode
         ) {
           segment.status = PENDING;
-          $cellReplace($borrowMut($fieldCell(task, 'thenableState', true)));
+          task.thenableState = null;
           // Immediately schedule the task for retrying.
           request.pingedTasks.push(task);
           return;
         }
       }
 
-      const borrow = $borrow($fieldCell(task, 'componentStack', true), true);
-      let errorInfo;
-      try {
-        errorInfo = getThrownInfo(borrow.value);
-      } finally {
-        $unborrow(borrow);
-      }
-      $borrowMut($borrow($fieldCell(task, 'abortSet')).value).delete(task);
+      const componentStack = task.componentStack;
+      const errorInfo = getThrownInfo(componentStack);
+      $borrowMut(task.abortSet).delete(task);
 
       segment.status = ERRORED;
-      const value$1 = $borrow($fieldCell(task, 'blockedBoundary', true), true);
-      const value = value$1.value;
-      try {
-        const value$1 = $borrow($fieldCell(task, 'row', true), true);
-        try {
-          erroredTask(
-            request,
-            value,
-            value$1.value,
-            x,
-            errorInfo,
-            __DEV__ ? task.debugTask : undefined,
-          );
-        } finally {
-          $unborrow(value$1);
-        }
-      } finally {
-        $unborrow(value$1);
-      }
+      const blockedBoundary = task.blockedBoundary;
+      const row = task.row;
+      erroredTask(
+        request,
+        blockedBoundary,
+        row,
+        x,
+        errorInfo,
+        __DEV__ ? task.debugTask : undefined,
+      );
     });
   }
   request.currentTask = prevTask;
@@ -5890,7 +5537,8 @@ function retryReplayTask(request, task) {
   // We restore the context to what it was when we suspended.
   // We don't restore it after we leave because it's likely that we'll end up
   // needing a very similar context soon again.
-  switchContext($borrow($fieldCell(task, 'context')).value);
+  const context = task.context;
+  switchContext(context);
   let prevTaskInDev;
   if (__DEV__) {
     prevTaskInDev = currentTaskInDEV;
@@ -5902,7 +5550,7 @@ function retryReplayTask(request, task) {
   let result = $catchUnwind(() => {
     // We call the destructive form that mutates this task. That way if something
     // suspends again, we can reuse the same task instead of spawning a new one.
-    const {value: slots} = $borrow($fieldCell(replay, 'slots'));
+    const slots = replay.slots;
     if (typeof slots === 'number') {
       resumeNode(request, task, slots, task.node, task.childIndex);
     } else {
@@ -5917,19 +5565,10 @@ function retryReplayTask(request, task) {
     }
     replay.pendingTasks--;
 
-    $borrowMut($borrow($fieldCell(task, 'abortSet')).value).delete(task);
-    const borrow = $borrow($fieldCell(task, 'blockedBoundary', true), true);
-    const value = borrow.value;
-    try {
-      const value$1 = $borrow($fieldCell(task, 'row', true), true);
-      try {
-        finishedTask(request, value, value$1.value);
-      } finally {
-        $unborrow(value$1);
-      }
-    } finally {
-      $unborrow(borrow);
-    }
+    $borrowMut(task.abortSet).delete(task);
+    const blockedBoundary = task.blockedBoundary;
+    const row = task.row;
+    finishedTask(request, blockedBoundary, row);
   });
   if (result.TAG === 'Ok') {
     result = {TAG: 'Ok'};
@@ -5956,10 +5595,7 @@ function retryReplayTask(request, task) {
           // the normal suspension path below that stores the thenable state.
           // Preserve it before finishing the abort so DEV can replay the task
           // and include this suspended use() call site in the owner stack.
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'thenableState', true)),
-            getThenableStateAfterSuspending(),
-          );
+          task.thenableState = getThenableStateAfterSuspending() ?? null;
         }
         // The task has unwound from user code, so it must no longer appear to
         // be the currently rendering task while we synchronously finish it.
@@ -5981,10 +5617,7 @@ function retryReplayTask(request, task) {
           const value = isSuspenseException$1
             ? getThenableStateAfterSuspending()
             : undefined;
-          $cellReplace(
-            $borrowMut($fieldCell(task, 'thenableState', true)),
-            value,
-          );
+          task.thenableState = value ?? null;
           return;
         }
         if (
@@ -5993,42 +5626,26 @@ function retryReplayTask(request, task) {
         ) {
           // Stack overflow after making forward progress. Retry from a fresh stack.
           // No progress (e.g. overflow inside the component itself) falls through.
-          $cellReplace($borrowMut($fieldCell(task, 'thenableState', true)));
+          task.thenableState = null;
           // Immediately schedule the task for retrying.
           request.pingedTasks.push(task);
           return;
         }
       }
       replay.pendingTasks--;
-      $borrowMut($borrow($fieldCell(task, 'abortSet')).value).delete(task);
-      const borrow = $borrow($fieldCell(task, 'componentStack', true), true);
-      let errorInfo;
-      try {
-        errorInfo = getThrownInfo(borrow.value);
-      } finally {
-        $unborrow(borrow);
-      }
-      const value$1 = $borrow($fieldCell(task, 'blockedBoundary', true), true);
-      const value = value$1.value;
-      const get = request.aborted ? request.fatalError : x;
-      try {
-        const value$1 = $borrow($fieldCell(replay, 'slots'), true);
-        try {
-          erroredReplay(
-            request,
-            value,
-            get,
-            errorInfo,
-            replay.nodes,
-            value$1.value,
-            __DEV__ ? task.debugTask : undefined,
-          );
-        } finally {
-          $unborrow(value$1);
-        }
-      } finally {
-        $unborrow(value$1);
-      }
+      $borrowMut(task.abortSet).delete(task);
+      const componentStack = task.componentStack;
+      const errorInfo = getThrownInfo(componentStack);
+      const blockedBoundary = task.blockedBoundary;
+      erroredReplay(
+        request,
+        blockedBoundary,
+        request.aborted ? request.fatalError : x,
+        errorInfo,
+        replay.nodes,
+        replay.slots,
+        __DEV__ ? task.debugTask : undefined,
+      );
       request.pendingRootTasks--;
       if (request.pendingRootTasks === 0) {
         completeShell(request);

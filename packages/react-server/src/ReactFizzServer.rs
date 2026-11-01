@@ -282,7 +282,7 @@ pub enum NodeKey {
 /// What to resume: nothing, the segment ID at the root position, or the
 /// segment ID at each index.
 #[cfg_attr(rust_js, rust_js::untagged)]
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum ResumeSlots {
     // nothing to resume
     #[cfg_attr(rust_js, rust_js::name = "null")]
@@ -329,7 +329,7 @@ pub type ReplayNodes = Rc<RefCell<Vec<Rc<RefCell<ReplayNode>>>>>;
 struct PostponedHoles {
     working_map: RefCell<HashMap<Rc<KeyNode>, Rc<RefCell<ReplayNode>>>>,
     root_nodes: ReplayNodes,
-    root_slots: RefCell<ResumeSlots>,
+    root_slots: Cell<ResumeSlots>,
 }
 
 struct SuspenseListRow {
@@ -386,11 +386,11 @@ struct SuspenseBoundary {
 }
 
 struct ReplaySet {
-    nodes: ReplayNodes,          // the possible paths to follow down the replaying
-    slots: RefCell<ResumeSlots>, // slots to resume
-    pending_tasks: Cell<f64>,    // tracks the number of tasks currently tracking this set of nodes
-                                 // if pending tasks reach zero but there are still nodes left, it means we couldn't find
-                                 // them all in the tree, so we need to abort and client render the boundary.
+    nodes: ReplayNodes,       // the possible paths to follow down the replaying
+    slots: Cell<ResumeSlots>, // slots to resume
+    pending_tasks: Cell<f64>, // tracks the number of tasks currently tracking this set of nodes
+                              // if pending tasks reach zero but there are still nodes left, it means we couldn't find
+                              // them all in the tree, so we need to abort and client render the boundary.
 }
 
 /// A render task, which writes to its segment, or a replay task, which
@@ -852,7 +852,7 @@ pub fn create_prerender_request(
         .replace(Some(Rc::new(PostponedHoles {
             working_map: RefCell::new(HashMap::new()),
             root_nodes: Rc::new(RefCell::new(vec![])),
-            root_slots: RefCell::new(ResumeSlots::None),
+            root_slots: Cell::new(ResumeSlots::None),
         })));
     request
 }
@@ -890,7 +890,7 @@ pub fn resume_request(
         .next_segment_id
         .set(postponed_state.next_segment_id.get());
 
-    if let ResumeSlots::Root(_) = *postponed_state.replay_slots.borrow() {
+    if let ResumeSlots::Root(_) = postponed_state.replay_slots.get() {
         // We have a resume slot at the very root. This is effectively just a full rerender.
         let root_segment = create_pending_segment(
             &request,
@@ -929,7 +929,7 @@ pub fn resume_request(
 
     let replay = Rc::new(ReplaySet {
         nodes: Rc::clone(&postponed_state.replay_nodes),
-        slots: RefCell::new(postponed_state.replay_slots.borrow().clone()),
+        slots: Cell::new(postponed_state.replay_slots.get()),
         pending_tasks: Cell::new(0.0),
     });
     let root_task = create_replay_task(
@@ -983,7 +983,7 @@ pub fn resume_and_prerender_request(
         .replace(Some(Rc::new(PostponedHoles {
             working_map: RefCell::new(HashMap::new()),
             root_nodes: Rc::new(RefCell::new(vec![])),
-            root_slots: RefCell::new(ResumeSlots::None),
+            root_slots: Cell::new(ResumeSlots::None),
         })));
     request
 }
@@ -1081,8 +1081,7 @@ fn create_suspense_boundary(
     if let Some(row) = row {
         // This boundary will block this row from completing.
         row.pending_tasks.set(row.pending_tasks.get() + 1.0);
-        let mut blocked_boundaries = row.boundaries.borrow_mut();
-        if let Some(blocked_boundaries) = blocked_boundaries.as_mut() {
+        if let Some(blocked_boundaries) = row.boundaries.borrow_mut().as_mut() {
             // Previous rows will block this boundary itself from completing.
             request
                 .all_pending_tasks
@@ -1345,7 +1344,8 @@ fn rerender_stalled_task(request: &Rc<Request>, task: &Rc<Task>) {
 
     let prev_resumable_state = CURRENT_RESUMABLE_STATE.get();
     set_current_resumable_state(Some(request.resumable_state));
-    switch_context(task.context.borrow().clone());
+    let context = task.context.borrow().clone();
+    switch_context(context);
     let prev_task_in_dev = CURRENT_TASK_IN_DEV.with_borrow(Clone::clone);
     set_current_task_in_dev(Some(Rc::clone(task)));
     let result = catch_unwind(AssertUnwindSafe(|| retry_node(request, task)));
@@ -1382,10 +1382,9 @@ fn rerender_stalled_task(request: &Rc<Request>, task: &Rc<Task>) {
 
 fn push_suspended_call_site_on_component_stack(request: &Rc<Request>, task: &Rc<Task>) {
     set_capture_suspended_call_site_dev(true);
-    let restore_thenable_state = ensure_suspendable_thenable_state_dev(
-        // refined at the callsite
-        task.thenable_state.borrow().as_ref().unwrap(),
-    );
+    // refined at the callsite
+    let thenable_state = task.thenable_state.borrow().clone().unwrap();
+    let restore_thenable_state = ensure_suspendable_thenable_state_dev(&thenable_state);
     let result = catch_unwind(AssertUnwindSafe(|| rerender_stalled_task(request, task)));
     restore_thenable_state();
     set_capture_suspended_call_site_dev(false);
@@ -1843,7 +1842,7 @@ fn render_suspense_boundary(
     let fallback_abort_set: AbortSet = Rc::new(RefCell::new(HashSet::new()));
     let new_boundary = create_suspense_boundary(
         request,
-        task.row.borrow().clone(),
+        prev_row.clone(),
         Rc::clone(&fallback_abort_set),
         if can_have_preamble(task.format_context.get()) {
             Some(Rc::new(create_preamble()))
@@ -1961,6 +1960,9 @@ fn render_suspense_boundary(
 
         // We create a suspended task for the primary content because we want to allow
         // sibling fallbacks to be rendered first.
+        let abort_set = Rc::clone(&task.abort_set.borrow());
+        let context = task.context.borrow().clone();
+        let tree_context = Rc::clone(&task.tree_context.borrow());
         let suspended_primary_task = create_render_task(
             request,
             None,
@@ -1973,11 +1975,11 @@ fn render_suspense_boundary(
                 .as_ref()
                 .map(|preamble| preamble.content),
             Some(new_boundary.content_state),
-            Rc::clone(&task.abort_set.borrow()),
+            abort_set,
             Some(Rc::clone(key_path)),
             get_suspense_content_format_context(request.resumable_state, task.format_context.get()),
-            task.context.borrow().clone(),
-            Rc::clone(&task.tree_context.borrow()),
+            context,
+            tree_context,
             None, // The row gets reset inside the Suspense boundary.
             suspense_component_stack,
             if !DISABLE_LEGACY_CONTEXT {
@@ -2083,7 +2085,8 @@ fn render_suspense_boundary(
                 thrown_value_of(&**thrown_value)
             };
 
-            let thrown_info = get_thrown_info(task.component_stack.borrow().clone());
+            let component_stack = task.component_stack.borrow().clone();
+            let thrown_info = get_thrown_info(component_stack);
             let error_digest = log_recoverable_error(
                 request,
                 error,
@@ -2112,6 +2115,10 @@ fn render_suspense_boundary(
         let fallback_key_path = fallback_key_path_of(key_path);
         // We create suspended task for the fallback because we don't want to actually work
         // on it yet in case we finish the main content, so we queue for later.
+        let context = task.context.borrow().clone();
+        let tree_context = Rc::clone(&task.tree_context.borrow());
+        let row = task.row.borrow().clone();
+        let component_stack = task.component_stack.borrow().clone();
         let suspended_fallback_task = create_render_task(
             request,
             None,
@@ -2130,12 +2137,10 @@ fn render_suspense_boundary(
                 request.resumable_state,
                 task.format_context.get(),
             ),
-            task.context.borrow().clone(),
-            Rc::clone(&task.tree_context.borrow()),
-            task.row.borrow().clone(),
-            replace_suspense_component_stack_with_suspense_fallback_stack(
-                task.component_stack.borrow().as_ref(),
-            ),
+            context,
+            tree_context,
+            row,
+            replace_suspense_component_stack_with_suspense_fallback_stack(component_stack.as_ref()),
             if !DISABLE_LEGACY_CONTEXT {
                 task.legacy_context.get()
             } else {
@@ -2179,7 +2184,7 @@ fn replay_suspense_boundary(
     let fallback_abort_set: AbortSet = Rc::new(RefCell::new(HashSet::new()));
     let resumed_boundary = create_suspense_boundary(
         request,
-        task.row.borrow().clone(),
+        prev_row.clone(),
         Rc::clone(&fallback_abort_set),
         if can_have_preamble(task.format_context.get()) {
             Some(Rc::new(create_preamble()))
@@ -2225,7 +2230,7 @@ fn replay_suspense_boundary(
     task.row.replace(None);
     let replay = Rc::new(ReplaySet {
         nodes: child_nodes,
-        slots: RefCell::new(child_slots),
+        slots: Cell::new(child_slots),
         pending_tasks: Cell::new(1.0),
     });
     task.replay.replace(Some(Rc::clone(&replay)));
@@ -2264,7 +2269,8 @@ fn replay_suspense_boundary(
         } else {
             thrown_value_of(&**thrown_value)
         };
-        let thrown_info = get_thrown_info(task.component_stack.borrow().clone());
+        let component_stack = task.component_stack.borrow().clone();
+        let thrown_info = get_thrown_info(component_stack);
         let error_digest = log_recoverable_error(
             request,
             error,
@@ -2299,9 +2305,13 @@ fn replay_suspense_boundary(
     // on it yet in case we finish the main content, so we queue for later.
     let fallback_replay = Rc::new(ReplaySet {
         nodes: fallback_nodes,
-        slots: RefCell::new(fallback_slots),
+        slots: Cell::new(fallback_slots),
         pending_tasks: Cell::new(0.0),
     });
+    let context = task.context.borrow().clone();
+    let tree_context = Rc::clone(&task.tree_context.borrow());
+    let row = task.row.borrow().clone();
+    let component_stack = task.component_stack.borrow().clone();
     let suspended_fallback_task = create_replay_task(
         request,
         None,
@@ -2313,12 +2323,10 @@ fn replay_suspense_boundary(
         fallback_abort_set,
         Some(fallback_key_path),
         get_suspense_fallback_format_context(request.resumable_state, task.format_context.get()),
-        task.context.borrow().clone(),
-        Rc::clone(&task.tree_context.borrow()),
-        task.row.borrow().clone(),
-        replace_suspense_component_stack_with_suspense_fallback_stack(
-            task.component_stack.borrow().as_ref(),
-        ),
+        context,
+        tree_context,
+        row,
+        replace_suspense_component_stack_with_suspense_fallback_stack(component_stack.as_ref()),
         if !DISABLE_LEGACY_CONTEXT {
             task.legacy_context.get()
         } else {
@@ -2338,7 +2346,8 @@ fn replay_suspense_boundary(
 
 fn finish_suspense_list_row(request: &Rc<Request>, row: &SuspenseListRow) {
     // This row finished. Now we have to unblock all the next rows that were blocked on this.
-    unblock_suspense_list_row(request, row.next.borrow().clone(), Some(row.hoistables));
+    let next = row.next.borrow().clone();
+    unblock_suspense_list_row(request, next, Some(row.hoistables));
 }
 
 fn unblock_suspense_list_row(
@@ -2497,7 +2506,7 @@ fn render_suspense_list_rows(
     if let Some(replay) = replay {
         // Replay
         // First we need to check if we have any resume slots at this level.
-        let resume_slots = replay.slots.borrow().clone();
+        let resume_slots = replay.slots.get();
         if let ResumeSlots::Indices(resume_slots) = resume_slots {
             for n in 0..total_children {
                 // Since we are going to resume into a slot whose order was already
@@ -2634,11 +2643,8 @@ fn render_suspense_list_rows(
                     new_segment.text_embedded.get(),
                 );
                 new_segment.status.set(COMPLETED);
-                finished_segment(
-                    request,
-                    task.blocked_boundary.borrow().as_ref(),
-                    &new_segment,
-                );
+                let blocked_boundary = task.blocked_boundary.borrow().clone();
+                finished_segment(request, blocked_boundary.as_ref(), &new_segment);
                 row.pending_tasks.set(row.pending_tasks.get() - 1.0);
                 if row.pending_tasks.get() == 0.0 {
                     finish_suspense_list_row(request, &row);
@@ -2895,11 +2901,8 @@ fn render_preamble(
             preamble_segment.text_embedded.get(),
         );
         preamble_segment.status.set(COMPLETED);
-        finished_segment(
-            request,
-            task.blocked_boundary.borrow().as_ref(),
-            &preamble_segment,
-        );
+        let blocked_boundary = task.blocked_boundary.borrow().clone();
+        finished_segment(request, blocked_boundary.as_ref(), &preamble_segment);
     }));
     task.blocked_segment
         .replace(Some(Rc::clone(blocked_segment)));
@@ -3687,8 +3690,8 @@ fn render_view_transition(
     let prev_context = task.format_context.get();
     let prev_key_path = task.key_path.borrow().clone();
     // Get the name off props or generate an auto-generated one in case we need it.
-    let auto_name =
-        get_view_transition_name(props, &task.tree_context.borrow(), request.resumable_state);
+    let tree_context = Rc::clone(&task.tree_context.borrow());
+    let auto_name = get_view_transition_name(props, &tree_context, request.resumable_state);
     let enable_parent_enter_exit =
         ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT.with(|&enabled| enabled);
     // Pass `undefined` (rather than the resolved class) when the prop is absent
@@ -4015,7 +4018,7 @@ fn replay_element(
                 let current_node = task.node.get();
                 let child_replay = Rc::new(ReplaySet {
                     nodes: Rc::clone(&child_nodes),
-                    slots: RefCell::new(child_slots.clone()),
+                    slots: Cell::new(child_slots),
                     pending_tasks: Cell::new(1.0),
                 });
                 task.replay.replace(Some(Rc::clone(&child_replay)));
@@ -4062,10 +4065,12 @@ fn replay_element(
                     // in the original prerender. What's unable to complete is the child
                     // replay nodes which might be Suspense boundaries which are able to
                     // absorb the error and we can still continue with siblings.
-                    let thrown_info = get_thrown_info(task.component_stack.borrow().clone());
+                    let component_stack = task.component_stack.borrow().clone();
+                    let thrown_info = get_thrown_info(component_stack);
+                    let blocked_boundary = task.blocked_boundary.borrow().clone();
                     errored_replay(
                         request,
-                        task.blocked_boundary.borrow().clone(),
+                        blocked_boundary,
                         if request.aborted.get() {
                             request.fatal_error.get()
                         } else {
@@ -4104,7 +4109,7 @@ fn replay_element(
                     Some(fallback) => match &*fallback.borrow() {
                         ReplayNode::Element(ReplayElement(_, _, nodes, slots))
                         | ReplayNode::Boundary(ReplaySuspenseBoundary(_, _, nodes, slots, ..)) => {
-                            (Rc::clone(nodes), slots.clone())
+                            (Rc::clone(nodes), *slots)
                         }
                     },
                 };
@@ -4275,7 +4280,7 @@ fn render_node_destructive(
 ) {
     let replay = task.replay.borrow().clone();
     if let Some(replay) = replay
-        && let ResumeSlots::Root(resume_segment_id) = *replay.slots.borrow()
+        && let ResumeSlots::Root(resume_segment_id) = replay.slots.get()
     {
         // TODO: Figure out a cheaper place than this hot path to do this check.
         resume_node(request, task, resume_segment_id, node, child_index);
@@ -4654,7 +4659,7 @@ fn replay_fragment(
         // Matched a replayable path.
         let child_replay = Rc::new(ReplaySet {
             nodes: Rc::clone(&child_nodes),
-            slots: RefCell::new(child_slots.clone()),
+            slots: Cell::new(child_slots),
             pending_tasks: Cell::new(1.0),
         });
         task.replay.replace(Some(Rc::clone(&child_replay)));
@@ -4690,10 +4695,12 @@ fn replay_fragment(
             // replay nodes which might be Suspense boundaries which are able to
             // absorb the error and we can still continue with siblings.
             // This is an error, stash the component stack if it is null.
-            let thrown_info = get_thrown_info(task.component_stack.borrow().clone());
+            let component_stack = task.component_stack.borrow().clone();
+            let thrown_info = get_thrown_info(component_stack);
+            let blocked_boundary = task.blocked_boundary.borrow().clone();
             errored_replay(
                 request,
-                task.blocked_boundary.borrow().clone(),
+                blocked_boundary,
                 if request.aborted.get() {
                     request.fatal_error.get()
                 } else {
@@ -4804,7 +4811,7 @@ fn warn_for_missing_key(request: &Rc<Request>, task: &Rc<Task>, child: Option<&'
         // We create a fake component stack for the child to log the stack trace from.
         let previous_component_stack = task.component_stack.borrow().clone();
         let stack_frame = create_component_stack_from_type(
-            task.component_stack.borrow().clone(),
+            previous_component_stack.clone(),
             js::get(child, "type"),
             js::get(child, "_owner"),
             js::get(child, "_debugStack"),
@@ -4867,7 +4874,7 @@ fn render_children_array(
     if let Some(replay) = replay {
         // Replay
         // First we need to check if we have any resume slots at this level.
-        let resume_slots = replay.slots.borrow().clone();
+        let resume_slots = replay.slots.get();
         if let ResumeSlots::Indices(resume_slots) = resume_slots {
             for (i, &node) in children.iter().enumerate() {
                 task.tree_context.replace(push_tree_context(
@@ -4989,7 +4996,7 @@ fn track_postponed_boundary(
                 name.clone(),
                 key.clone(),
                 Rc::clone(children),
-                slots.clone(),
+                *slots,
                 fallback_replay_node,
                 boundary.root_segment_id.get(),
             ));
@@ -5014,7 +5021,7 @@ fn track_postpone(
         segment.id.set(next_segment_id(request));
         tracked_postpones
             .root_slots
-            .replace(ResumeSlots::Root(segment.id.get()));
+            .set(ResumeSlots::Root(segment.id.get()));
         if let Some(completed_root_segment) = request.completed_root_segment.borrow().as_ref() {
             // Postpone the root if this was a deeper segment.
             completed_root_segment.status.set(POSTPONED);
@@ -5072,7 +5079,7 @@ fn track_postpone(
             None => {
                 tracked_postpones
                     .root_slots
-                    .replace(ResumeSlots::Root(segment.id.get()));
+                    .set(ResumeSlots::Root(segment.id.get()));
             }
             Some(key_path) => {
                 let working_map = &tracked_postpones.working_map;
@@ -5104,13 +5111,13 @@ fn track_postpone(
     } else {
         let slots = match key_path {
             None => {
-                let slots = tracked_postpones.root_slots.borrow().clone();
+                let slots = tracked_postpones.root_slots.get();
                 match slots {
                     ResumeSlots::None => {
                         let slots = js::dict::new();
                         tracked_postpones
                             .root_slots
-                            .replace(ResumeSlots::Indices(slots));
+                            .set(ResumeSlots::Indices(slots));
                         slots
                     }
                     ResumeSlots::Root(_) => {
@@ -5155,7 +5162,7 @@ fn track_postpone(
                             resumable_slots,
                             ..,
                         ))) = &mut *resumable_node;
-                        let slots = resumable_slots.clone();
+                        let slots = *resumable_slots;
                         match slots {
                             ResumeSlots::None => {
                                 let slots = js::dict::new();
@@ -5221,21 +5228,27 @@ fn spawn_new_suspended_replay_task(
     task: &Task,
     thenable_state: Option<Rc<ThenableState>>,
 ) -> Rc<Task> {
+    let blocked_boundary = task.blocked_boundary.borrow().clone();
+    let abort_set = Rc::clone(&task.abort_set.borrow());
+    let context = task.context.borrow().clone();
+    let tree_context = Rc::clone(&task.tree_context.borrow());
+    let row = task.row.borrow().clone();
+    let component_stack = task.component_stack.borrow().clone();
     create_replay_task(
         request,
         thenable_state,
         task.replay.borrow().clone().unwrap(),
         task.node.get(),
         task.child_index.get(),
-        task.blocked_boundary.borrow().clone(),
+        blocked_boundary,
         task.hoistable_state.get(),
-        Rc::clone(&task.abort_set.borrow()),
+        abort_set,
         task.key_path.borrow().clone(),
         task.format_context.get(),
-        task.context.borrow().clone(),
-        Rc::clone(&task.tree_context.borrow()),
-        task.row.borrow().clone(),
-        task.component_stack.borrow().clone(),
+        context,
+        tree_context,
+        row,
+        component_stack,
         if !DISABLE_LEGACY_CONTEXT {
             task.legacy_context.get()
         } else {
@@ -5266,22 +5279,28 @@ fn spawn_new_suspended_render_task(
     segment.children.borrow_mut().push(Rc::clone(&new_segment));
     // Reset lastPushedText for current Segment since the new Segment "consumed" it
     segment.last_pushed_text.set(false);
+    let blocked_boundary = task.blocked_boundary.borrow().clone();
+    let abort_set = Rc::clone(&task.abort_set.borrow());
+    let context = task.context.borrow().clone();
+    let tree_context = Rc::clone(&task.tree_context.borrow());
+    let row = task.row.borrow().clone();
+    let component_stack = task.component_stack.borrow().clone();
     create_render_task(
         request,
         thenable_state,
         task.node.get(),
         task.child_index.get(),
-        task.blocked_boundary.borrow().clone(),
+        blocked_boundary,
         new_segment,
         task.blocked_preamble.get(),
         task.hoistable_state.get(),
-        Rc::clone(&task.abort_set.borrow()),
+        abort_set,
         task.key_path.borrow().clone(),
         task.format_context.get(),
-        task.context.borrow().clone(),
-        Rc::clone(&task.tree_context.borrow()),
-        task.row.borrow().clone(),
-        task.component_stack.borrow().clone(),
+        context,
+        tree_context,
+        row,
+        component_stack,
         if !DISABLE_LEGACY_CONTEXT {
             task.legacy_context.get()
         } else {
@@ -5769,12 +5788,8 @@ fn abort_task_soft(request: &Rc<Request>, task: &Rc<Task>) {
     let segment = task.blocked_segment.borrow().clone();
     if let Some(segment) = segment {
         segment.status.set(ABORTED);
-        finished_task(
-            request,
-            boundary.as_ref(),
-            task.row.borrow().as_ref(),
-            Some(&segment),
-        );
+        let row = task.row.borrow().clone();
+        finished_task(request, boundary.as_ref(), row.as_ref(), Some(&segment));
     }
 }
 
@@ -5966,7 +5981,8 @@ fn finish_aborted_task(task: &Rc<Task>, request: &Rc<Request>, error: Option<&'s
         return;
     }
 
-    let error_info = get_thrown_info(task.component_stack.borrow().clone());
+    let component_stack = task.component_stack.borrow().clone();
+    let error_info = get_thrown_info(component_stack);
     // Only errors materialized by use() or abort() carry this internal brand.
     // Throwing the browser() token directly is still an application error.
     let is_recoverable_reason = is_recoverable_error(error);
@@ -5986,7 +6002,8 @@ fn finish_aborted_task(task: &Rc<Task>, request: &Rc<Request>, error: Option<&'s
                     // We log the error but we still resolve the prerender
                     log_recoverable_error(request, error, error_info, task.debug_task.get());
                     track_postpone(request, &tracked_postpones, task, segment);
-                    finished_task(request, None, task.row.borrow().as_ref(), Some(segment));
+                    let row = task.row.borrow().clone();
+                    finished_task(request, None, row.as_ref(), Some(segment));
                 } else if is_recoverable_reason {
                     // This root task cannot recover from the abort. Report a fatal clone,
                     // but keep the original branded reason on the request for other tasks.
@@ -6027,7 +6044,7 @@ fn finish_aborted_task(task: &Rc<Task>, request: &Rc<Request>, error: Option<&'s
                         request,
                         None,
                         &replay.nodes,
-                        &replay.slots.borrow(),
+                        &replay.slots.get(),
                         error,
                         error_digest,
                         error_info,
@@ -6061,12 +6078,8 @@ fn finish_aborted_task(task: &Rc<Task>, request: &Rc<Request>, error: Option<&'s
                         finish_aborted_task(fallback_task, request, error);
                     }
                     boundary.fallback_abortable_tasks.borrow_mut().clear();
-                    return finished_task(
-                        request,
-                        Some(boundary),
-                        task.row.borrow().as_ref(),
-                        Some(segment),
-                    );
+                    let row = task.row.borrow().clone();
+                    return finished_task(request, Some(boundary), row.as_ref(), Some(segment));
                 }
                 boundary.status.set(CLIENT_RENDERED);
                 // We are aborting a render or resume which should put boundaries
@@ -6454,10 +6467,11 @@ fn finished_task(
                         if let Some(tracked_postpones) = tracked_postpones {
                             // If this boundary is postponed, then we need to also postpone any blocked boundaries
                             // in the next row.
+                            let next = boundary_row.next.borrow().clone();
                             track_postponed_suspense_list_row(
                                 request,
                                 &tracked_postpones,
-                                boundary_row.next.borrow().as_ref(),
+                                next.as_ref(),
                             );
                         }
                         // finishSuspenseListRow → unblockSuspenseListRow → finishedTask reenters
@@ -6547,7 +6561,8 @@ fn retry_render_task(request: &Rc<Request>, task: &Rc<Task>, segment: &Rc<Segmen
     // We restore the context to what it was when we suspended.
     // We don't restore it after we leave because it's likely that we'll end up
     // needing a very similar context soon again.
-    switch_context(task.context.borrow().clone());
+    let context = task.context.borrow().clone();
+    switch_context(context);
     let mut prev_task_in_dev = None;
     if __DEV__ {
         prev_task_in_dev = CURRENT_TASK_IN_DEV.with_borrow(Clone::clone);
@@ -6572,11 +6587,13 @@ fn retry_render_task(request: &Rc<Request>, task: &Rc<Task>, segment: &Rc<Segmen
 
         task.abort_set.borrow().borrow_mut().remove(task);
         segment.status.set(COMPLETED);
-        finished_segment(request, task.blocked_boundary.borrow().as_ref(), segment);
+        let blocked_boundary = task.blocked_boundary.borrow().clone();
+        finished_segment(request, blocked_boundary.as_ref(), segment);
+        let row = task.row.borrow().clone();
         finished_task(
             request,
-            task.blocked_boundary.borrow().as_ref(),
-            task.row.borrow().as_ref(),
+            blocked_boundary.as_ref(),
+            row.as_ref(),
             Some(segment),
         );
     }));
@@ -6648,14 +6665,17 @@ fn retry_render_task(request: &Rc<Request>, task: &Rc<Task>, segment: &Rc<Segmen
                 }
             }
 
-            let error_info = get_thrown_info(task.component_stack.borrow().clone());
+            let component_stack = task.component_stack.borrow().clone();
+            let error_info = get_thrown_info(component_stack);
             task.abort_set.borrow().borrow_mut().remove(task);
 
             segment.status.set(ERRORED);
+            let blocked_boundary = task.blocked_boundary.borrow().clone();
+            let row = task.row.borrow().clone();
             errored_task(
                 request,
-                task.blocked_boundary.borrow().as_ref(),
-                task.row.borrow().as_ref(),
+                blocked_boundary.as_ref(),
+                row.as_ref(),
                 x,
                 error_info,
                 if __DEV__ { task.debug_task.get() } else { None },
@@ -6683,7 +6703,8 @@ fn retry_replay_task(request: &Rc<Request>, task: &Rc<Task>) {
     // We restore the context to what it was when we suspended.
     // We don't restore it after we leave because it's likely that we'll end up
     // needing a very similar context soon again.
-    switch_context(task.context.borrow().clone());
+    let context = task.context.borrow().clone();
+    switch_context(context);
     let mut prev_task_in_dev = None;
     if __DEV__ {
         prev_task_in_dev = CURRENT_TASK_IN_DEV.with_borrow(Clone::clone);
@@ -6695,7 +6716,7 @@ fn retry_replay_task(request: &Rc<Request>, task: &Rc<Task>) {
     let result = catch_unwind(AssertUnwindSafe(|| {
         // We call the destructive form that mutates this task. That way if something
         // suspends again, we can reuse the same task instead of spawning a new one.
-        let slots = replay.slots.borrow().clone();
+        let slots = replay.slots.get();
         if let ResumeSlots::Root(resume_segment_id) = slots {
             resume_node(
                 request,
@@ -6717,12 +6738,9 @@ fn retry_replay_task(request: &Rc<Request>, task: &Rc<Task>) {
         replay.pending_tasks.set(replay.pending_tasks.get() - 1.0);
 
         task.abort_set.borrow().borrow_mut().remove(task);
-        finished_task(
-            request,
-            task.blocked_boundary.borrow().as_ref(),
-            task.row.borrow().as_ref(),
-            None,
-        );
+        let blocked_boundary = task.blocked_boundary.borrow().clone();
+        let row = task.row.borrow().clone();
+        finished_task(request, blocked_boundary.as_ref(), row.as_ref(), None);
     }));
     let result = match result {
         Ok(()) => Ok(()),
@@ -6789,10 +6807,12 @@ fn retry_replay_task(request: &Rc<Request>, task: &Rc<Task>) {
             }
             replay.pending_tasks.set(replay.pending_tasks.get() - 1.0);
             task.abort_set.borrow().borrow_mut().remove(task);
-            let error_info = get_thrown_info(task.component_stack.borrow().clone());
+            let component_stack = task.component_stack.borrow().clone();
+            let error_info = get_thrown_info(component_stack);
+            let blocked_boundary = task.blocked_boundary.borrow().clone();
             errored_replay(
                 request,
-                task.blocked_boundary.borrow().clone(),
+                blocked_boundary,
                 if request.aborted.get() {
                     request.fatal_error.get()
                 } else {
@@ -6800,7 +6820,7 @@ fn retry_replay_task(request: &Rc<Request>, task: &Rc<Task>) {
                 },
                 error_info,
                 &replay.nodes,
-                &replay.slots.borrow(),
+                &replay.slots.get(),
                 if __DEV__ { task.debug_task.get() } else { None },
             );
             request
@@ -7789,17 +7809,16 @@ fn flush_completed_queues(request: &Rc<Request>, destination: &'static Destinati
             flush_segment(request, destination, &completed_root_segment, None);
             FLUSHING_SHELL.set(false);
             request.completed_root_segment.replace(None);
-            let is_complete = request.all_pending_tasks.get() == 0.0
-                && request.client_rendered_boundaries.borrow().is_empty()
-                && request.completed_boundaries.borrow().is_empty()
-                && request
-                    .tracked_postpones
-                    .borrow()
-                    .as_ref()
-                    .is_none_or(|tracked_postpones| {
-                        tracked_postpones.root_nodes.borrow().is_empty()
-                            && matches!(*tracked_postpones.root_slots.borrow(), ResumeSlots::None)
-                    });
+            let is_complete =
+                request.all_pending_tasks.get() == 0.0
+                    && request.client_rendered_boundaries.borrow().is_empty()
+                    && request.completed_boundaries.borrow().is_empty()
+                    && request.tracked_postpones.borrow().as_ref().is_none_or(
+                        |tracked_postpones| {
+                            tracked_postpones.root_nodes.borrow().is_empty()
+                                && matches!(tracked_postpones.root_slots.get(), ResumeSlots::None)
+                        },
+                    );
             write_completed_root(
                 destination,
                 request.resumable_state,
@@ -8257,7 +8276,7 @@ pub struct PostponedState {
     progressive_chunk_size: f64,
     pub resumable_state: &'static ResumableState,
     replay_nodes: ReplayNodes,
-    replay_slots: RefCell<ResumeSlots>,
+    replay_slots: Cell<ResumeSlots>,
 }
 
 // Returns the state of a postponed request or null if nothing was postponed.
@@ -8266,7 +8285,7 @@ pub fn get_postponed_state(request: &Request) -> Option<Rc<PostponedState>> {
     let tracked_postpones = request.tracked_postpones.borrow().clone();
     let Some(tracked_postpones) = tracked_postpones.filter(|tracked_postpones| {
         !(tracked_postpones.root_nodes.borrow().is_empty()
-            && matches!(*tracked_postpones.root_slots.borrow(), ResumeSlots::None))
+            && matches!(tracked_postpones.root_slots.get(), ResumeSlots::None))
     }) else {
         // Reset. Let the flushing behave as if we completed the whole document.
         request.tracked_postpones.replace(None);
@@ -8295,7 +8314,7 @@ pub fn get_postponed_state(request: &Request) -> Option<Rc<PostponedState>> {
     } else {
         complete_resumable_state(request.resumable_state);
         (
-            tracked_postpones.root_slots.borrow().clone(),
+            tracked_postpones.root_slots.get(),
             request.next_segment_id.get(),
         )
     };
@@ -8305,7 +8324,7 @@ pub fn get_postponed_state(request: &Request) -> Option<Rc<PostponedState>> {
         progressive_chunk_size: request.progressive_chunk_size,
         resumable_state: request.resumable_state,
         replay_nodes: Rc::clone(&tracked_postpones.root_nodes),
-        replay_slots: RefCell::new(replay_slots),
+        replay_slots: Cell::new(replay_slots),
     });
     if has_flushable_shell {
         // The prelude hasn't flushed yet — it's pull-driven and runs after this

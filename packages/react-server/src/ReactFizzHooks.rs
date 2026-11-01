@@ -965,7 +965,8 @@ fn use_action_state(
 
 fn use_id() -> String {
     let task = CURRENTLY_RENDERING_TASK.with_borrow(Clone::clone).unwrap();
-    let tree_id = get_tree_id(&task.tree_context.borrow());
+    let tree_context = Rc::clone(&task.tree_context.borrow());
+    let tree_id = get_tree_id(&tree_context);
 
     let Some(resumable_state) = CURRENT_RESUMABLE_STATE.get() else {
         panic!(

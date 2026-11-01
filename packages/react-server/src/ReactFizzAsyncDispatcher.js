@@ -6,7 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 import {currentTaskInDEV} from './ReactFizzCurrentTask.js';
-import {$borrow, $fieldCell} from '@rust-js/runtime';
 
 function getCacheForType(resourceType) {
   throw new Error('Not implemented.');
@@ -26,9 +25,7 @@ function getOwner() {
   if (currentTaskInDev == null) {
     return null;
   }
-  return (
-    $borrow($fieldCell(currentTaskInDev, 'componentStack', true)).value ?? null
-  );
+  return currentTaskInDev.componentStack;
 }
 
 if (__DEV__) {
