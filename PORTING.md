@@ -654,6 +654,23 @@ These differences from upstream's output are accepted:
     makes them);
   - resolveStream passes `stream` to wakeChunk, where upstream passes
     `chunk.value`, the same value it has just written.
+- **The Flight reply server's names and types** (the user, 2026-11-02),
+  each gap left open for rust-js:
+  - a chunk's `then` is named `value`, where upstream's is
+    `reactPromiseThen`, and FlightIterator's `[ASYNC_ITERATOR]` method an
+    unnamed function where upstream's is `asyncIterator`: nothing reads a
+    name (rd480, rd488);
+  - initializeModelChunk reads `chunk.reason[RESPONSE_SYMBOL]` where
+    upstream destructures it, a symbol-named field's pattern not yet
+    rust-js's (rd480);
+  - a stream controller's `error`, called off the object
+    (`const error$1 = controller.error; error$1(error)`), would word the
+    TypeError of a chunk that isn't a stream's `error$1 is not a function`,
+    on a path only a bundler's thenable calling both its callbacks reaches
+    (rd488);
+  - createResponse's `backingFormData` and `arraySizeLimit` are declared
+    `unknown`, where upstream's are `FormData` and `number`: each is told
+    `undefined` from `null` as upstream's defaults are.
 - **The Flight clients' names and arms** (the user, 2026-11-01):
   - readChunk's default arm is split by variant, `throw chunk.reason` of
     an errored chunk and `throw null` of a resolved module's, where
