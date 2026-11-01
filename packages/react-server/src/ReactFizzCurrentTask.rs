@@ -163,6 +163,79 @@ pub fn resume_request<S, R: ?Sized>(
 
 #[cfg_attr(
     rust_js,
+    rust_js::link_name = "react-server/src/ReactFizzServer#createPrerenderRequest"
+)]
+pub fn create_prerender_request<S: ?Sized, R: ?Sized, F: ?Sized>(
+    children: Option<&'static Unknown>,
+    resumable_state: &S,
+    render_state: &R,
+    root_format_context: &F,
+    progressive_chunk_size: Option<f64>,
+    on_error: Option<&OnError>,
+    on_browser_bailout: Option<&OnBrowserBailout>,
+    on_all_ready: Option<&dyn Fn()>,
+    on_shell_ready: Option<&dyn Fn()>,
+    on_shell_error: Option<&dyn Fn(Option<&'static Unknown>)>,
+    on_fatal_error: Option<&dyn Fn(Option<&'static Unknown>)>,
+) -> &'static Request {
+    let _ = (
+        children,
+        resumable_state,
+        render_state,
+        root_format_context,
+        progressive_chunk_size,
+        on_error,
+        on_browser_bailout,
+        on_all_ready,
+        on_shell_ready,
+        on_shell_error,
+        on_fatal_error,
+    );
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFizzServer#resumeAndPrerenderRequest"
+)]
+pub fn resume_and_prerender_request<S, R: ?Sized>(
+    children: Option<&'static Unknown>,
+    postponed_state: &PostponedState<S>,
+    render_state: &R,
+    on_error: Option<&OnError>,
+    on_browser_bailout: Option<&OnBrowserBailout>,
+    on_all_ready: Option<&dyn Fn()>,
+    on_shell_ready: Option<&dyn Fn()>,
+    on_shell_error: Option<&dyn Fn(Option<&'static Unknown>)>,
+    on_fatal_error: Option<&dyn Fn(Option<&'static Unknown>)>,
+) -> &'static Request {
+    let _ = (
+        children,
+        postponed_state,
+        render_state,
+        on_error,
+        on_browser_bailout,
+        on_all_ready,
+        on_shell_ready,
+        on_shell_error,
+        on_fatal_error,
+    );
+    unreachable!()
+}
+
+/// What a prerender left to resume, or `null` where it finished.
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFizzServer#getPostponedState"
+)]
+#[cfg_attr(rust_js, rust_js::nullable)]
+pub fn get_postponed_state<S: 'static>(request: &Request) -> Option<&'static PostponedState<S>> {
+    let _ = request;
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
     rust_js::link_name = "react-server/src/ReactFizzServer#startWork"
 )]
 pub fn start_work(request: &Request) {
