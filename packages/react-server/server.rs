@@ -3,3 +3,5 @@
 
 #[path = "src/createFastHashJS.rs"]
 pub mod create_fast_hash_js;
+#[path = "src/ReactServerStreamConfigNode.rs"]
+pub mod react_server_stream_config_node;

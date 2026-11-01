@@ -99,6 +99,9 @@ name = "react-server"
 version = "0.0.0"
 dependencies = [
  "rust-js-builtins",
+ "rust-js-node",
+ "rust-js-webapi",
+ "shared",
 ]
 
 [[package]]
