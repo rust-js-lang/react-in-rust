@@ -3,6 +3,12 @@
   "version": "19.3.0",
   "description": "Brand checking of React Elements.",
   "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./*.js": "./*.js",
+    "./*": "./*.js",
+    "./package.json": "./package.json"
+  },
   "sideEffects": false,
   "repository": {
     "type": "git",

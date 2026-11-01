@@ -1,6 +1,12 @@
 {
   "name": "scheduler",
   "version": "0.28.0",
+  "exports": {
+    ".": "./index.js",
+    "./*.js": "./*.js",
+    "./*": "./*.js",
+    "./package.json": "./package.json"
+  },
   "description": "Cooperative scheduler for the browser environment.",
   "repository": {
     "type": "git",

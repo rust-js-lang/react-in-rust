@@ -3,6 +3,12 @@
   "version": "19.3.0",
   "description": "React package for snapshot testing.",
   "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./*.js": "./*.js",
+    "./*": "./*.js",
+    "./package.json": "./package.json"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/react/react.git",

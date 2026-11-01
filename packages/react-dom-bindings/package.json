@@ -4,6 +4,11 @@
   "version": "19.3.0",
   "private": true,
   "main": "index.js",
+  "exports": {
+    "./*.js": "./*.js",
+    "./*": "./*.js",
+    "./package.json": "./package.json"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/react/react.git",

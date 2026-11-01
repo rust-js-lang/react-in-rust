@@ -1,5 +1,10 @@
 {
   "private": true,
   "name": "shared",
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "exports": {
+    "./*.js": "./*.js",
+    "./*": "./*.js",
+    "./package.json": "./package.json"
+  }
 }

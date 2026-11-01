@@ -116,7 +116,8 @@
       "default": "./unstable_testing.js"
     },
     "./unstable_server-external-runtime": "./unstable_server-external-runtime.js",
-    "./src/*": "./src/*",
+    "./src/*.js": "./src/*.js",
+    "./src/*": "./src/*.js",
     "./package.json": "./package.json"
   },
   "browser": {

@@ -2,6 +2,11 @@
   "name": "react-client",
   "description": "React package for consuming streaming models.",
   "version": "0.1.0",
+  "exports": {
+    "./*.js": "./*.js",
+    "./*": "./*.js",
+    "./package.json": "./package.json"
+  },
   "private": true,
   "keywords": [
     "react"
