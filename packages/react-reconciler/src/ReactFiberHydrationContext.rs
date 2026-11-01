@@ -647,10 +647,10 @@ fn try_hydrate_suspense(
 
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "HydrationMismatchException")]
-    pub static HYDRATION_MISMATCH_EXCEPTION: &'static Error = js::error::new(concat!(
+    pub static HYDRATION_MISMATCH_EXCEPTION: &'static Error = js::error::new(Some(concat!(
         "Hydration Mismatch Exception: This is not a real error, and should not leak into ",
         "userspace. If you're seeing this, it's likely a bug in React."
-    ), None);
+    )), None);
 }
 
 fn throw_on_hydration_mismatch(fiber: &Rc<Fiber>, from_text: bool) -> ! {
@@ -664,7 +664,7 @@ fn throw_on_hydration_mismatch(fiber: &Rc<Fiber>, from_text: bool) -> ! {
         }
     }
     let error = js::error::new(
-        &format!(
+        Some(&format!(
             concat!(
                 "Hydration failed because the server rendered {} didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n",
                 "\n",
@@ -680,7 +680,7 @@ fn throw_on_hydration_mismatch(fiber: &Rc<Fiber>, from_text: bool) -> ! {
             ),
             if from_text { "text" } else { "HTML" },
             diff
-        ),
+        )),
         None,
     );
     queue_hydration_error(create_captured_value_at_fiber(error.as_unknown(), fiber));

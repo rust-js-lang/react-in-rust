@@ -148,7 +148,7 @@ pub fn create_recoverable_error(recoverable: &ReactRecoverable) -> &'static Erro
         cause: Some(&initialized_reason),
     });
     let error = js::error::new(
-        "Browser-only rendering was requested by `browser()`.",
+        Some("Browser-only rendering was requested by `browser()`."),
         options.as_ref(),
     );
     js::object::define_property(
@@ -187,11 +187,11 @@ pub fn clone_recoverable_error_as_fatal(recoverable_error: &Error) -> &'static E
         None
     };
     let fatal_recoverable_error = js::error::new(
-        concat!(
+        Some(concat!(
             "The server render could not complete because client rendering was ",
             "requested outside a Suspense boundary. See this error's cause for ",
             "additional details."
-        ),
+        )),
         options.as_ref(),
     );
     // Keep the frames captured where the recoverable was consumed, but replace

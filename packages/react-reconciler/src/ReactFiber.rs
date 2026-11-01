@@ -739,14 +739,14 @@ pub fn create_fiber_from_type_and_props(
                     // element itself. That way the error stack will point to the JSX callsite.
                     fiber_tag = THROW;
                     pending_props = js::error::new(
-                        &format!(
+                        Some(&format!(
                             concat!(
                                 "Element type is invalid: expected a string (for built-in ",
                                 "components) or a class/function (for composite components) ",
                                 "but got: {}.{}"
                             ),
                             type_string, info
-                        ),
+                        )),
                         None,
                     )
                     .as_unknown();

@@ -45,7 +45,10 @@ fn create_cancel_handler(request: &'static Request, reason: &'static str) -> Box
     Box::new(move || {
         stop_flowing(request);
         // eslint-disable-next-line react-internal/prod-error-codes
-        abort(request, Some(js::unknown(js::error::new(reason, None))));
+        abort(
+            request,
+            Some(js::unknown(js::error::new(Some(reason), None))),
+        );
     })
 }
 

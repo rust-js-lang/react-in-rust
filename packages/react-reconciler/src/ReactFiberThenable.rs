@@ -36,7 +36,7 @@ thread_local! {
     // An error that is thrown (e.g. by `use`) to trigger Suspense. If we
     // detect this is caught by userspace, we'll log a warning in development.
     #[cfg_attr(rust_js, rust_js::name = "SuspenseException")]
-    pub static SUSPENSE_EXCEPTION: &'static Error = js::error::new(concat!(
+    pub static SUSPENSE_EXCEPTION: &'static Error = js::error::new(Some(concat!(
         "Suspense Exception: This is not a real error! It's an implementation ",
         "detail of `use` to interrupt the current render. You must either ",
         "rethrow it immediately, or move the `use` call outside of the ",
@@ -44,23 +44,23 @@ thread_local! {
         "unexpected behavior.\n\n",
         "To handle async errors, wrap your component in an error boundary, or ",
         "call the promise's `.catch` method and pass the result to `use`."
-    ), None);
+    )), None);
 
     #[cfg_attr(rust_js, rust_js::name = "SuspenseyCommitException")]
-    pub static SUSPENSEY_COMMIT_EXCEPTION: &'static Error = js::error::new(concat!(
+    pub static SUSPENSEY_COMMIT_EXCEPTION: &'static Error = js::error::new(Some(concat!(
         "Suspense Exception: This is not a real error, and should not leak into ",
         "userspace. If you're seeing this, it's likely a bug in React."
-    ), None);
+    )), None);
 
     #[cfg_attr(rust_js, rust_js::name = "SuspenseActionException")]
-    pub static SUSPENSE_ACTION_EXCEPTION: &'static Error = js::error::new(concat!(
+    pub static SUSPENSE_ACTION_EXCEPTION: &'static Error = js::error::new(Some(concat!(
         "Suspense Exception: This is not a real error! It's an implementation ",
         "detail of `useActionState` to interrupt the current render. You must either ",
         "rethrow it immediately, or move the `useActionState` call outside of the ",
         "`try/catch` block. Capturing without rethrowing will lead to ",
         "unexpected behavior.\n\n",
         "To handle async errors, wrap your component in an error boundary."
-    ), None);
+    )), None);
 }
 
 /// A thenable that's never listened to: `then` is only a warning.
@@ -342,11 +342,11 @@ pub fn track_used_thenable(
                     // Stash an error in case we end up triggering the use() warning.
                     // This ensures that we have a stack trace at the location of the first use()
                     // call since there won't be a second one we have to do that eagerly.
-                    LAST_SUSPENDED_STACK.set(Some(js::error::new(concat!(
+                    LAST_SUSPENDED_STACK.set(Some(js::error::new(Some(concat!(
                         "This library called use() to suspend in a previous render but ",
                         "did not call use() when it finished. This indicates an incorrect use of use(). ",
                         "Learn more: https://react.dev/warnings/conditional-use-of-use"
-                    ), None)));
+                    )), None)));
                 }
             }
             SUSPENSE_EXCEPTION.with(|exception| js::throw(exception.as_unknown()))

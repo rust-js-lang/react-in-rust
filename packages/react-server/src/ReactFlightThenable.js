@@ -41,7 +41,7 @@ export function trackUsedThenable(thenableState, thenable, index) {
         stacks = [];
         thenableState._stacks = stacks;
       }
-      stacks.push(new Error(''));
+      stacks.push(new Error());
     }
   } else if (previous !== thenable) {
     // Reuse the previous thenable, and drop the new one. We can assume

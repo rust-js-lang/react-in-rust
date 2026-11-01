@@ -2122,12 +2122,12 @@ fn customize_view_transition_error(
                 if __DEV__ {
                     // eslint-disable-next-line react-internal/prod-error-codes
                     return js::error::new(
-                        concat!(
+                        Some(concat!(
                             "A ViewTransition timed out because a Navigation stalled. ",
                             "This can happen if a Navigation is blocked on React itself. ",
                             "Such as if it's resolved inside useEffect. ",
                             "This can be solved by moving the resolution to useLayoutEffect."
-                        ),
+                        )),
                         Some(&ErrorOptions {
                             cause: Some(&error),
                         }),
@@ -2142,12 +2142,12 @@ fn customize_view_transition_error(
                 if __DEV__ {
                     // eslint-disable-next-line react-internal/prod-error-codes
                     return js::error::new(
-                        concat!(
+                        Some(concat!(
                             "A ViewTransition was aborted early. This might be because you have ",
                             "other View Transition libraries on the page and only one can run at ",
                             "a time. To avoid this, use only React's built-in <ViewTransition> ",
                             "to coordinate."
-                        ),
+                        )),
                         Some(&ErrorOptions {
                             cause: Some(&error),
                         }),

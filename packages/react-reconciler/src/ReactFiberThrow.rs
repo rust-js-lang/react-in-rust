@@ -594,12 +594,12 @@ pub fn throw_exception(
             } else {
                 // In a legacy root, suspending without a boundary is always an error.
                 let uncaught_suspense_error = js::error::new(
-                    concat!(
+                    Some(concat!(
                         "A component suspended while responding to synchronous input. This ",
                         "will cause the UI to be replaced with a loading indicator. To ",
                         "fix, updates that suspend should be wrapped ",
                         "with startTransition."
-                    ),
+                    )),
                     None,
                 );
                 value = uncaught_suspense_error.as_unknown();
@@ -643,10 +643,10 @@ pub fn throw_exception(
             if !HYDRATION_MISMATCH_EXCEPTION.with(|exception| js::strict_equals(value, *exception))
             {
                 let wrapper_error = js::error::new(
-                    concat!(
+                    Some(concat!(
                         "There was an error while hydrating but React was able to recover by ",
                         "instead client rendering from the nearest Suspense boundary."
-                    ),
+                    )),
                     Some(&ErrorOptions {
                         cause: Some(&value),
                     }),
@@ -661,10 +661,10 @@ pub fn throw_exception(
             if !HYDRATION_MISMATCH_EXCEPTION.with(|exception| js::strict_equals(value, *exception))
             {
                 let wrapper_error = js::error::new(
-                    concat!(
+                    Some(concat!(
                         "There was an error while hydrating but React was able to recover by ",
                         "instead client rendering the entire root."
-                    ),
+                    )),
                     Some(&ErrorOptions {
                         cause: Some(&value),
                     }),
@@ -700,10 +700,10 @@ pub fn throw_exception(
     }
 
     let wrapper_error = js::error::new(
-        concat!(
+        Some(concat!(
             "There was an error during concurrent rendering but React was able to recover by ",
             "instead synchronously rendering the entire root."
-        ),
+        )),
         Some(&ErrorOptions {
             cause: Some(&value),
         }),

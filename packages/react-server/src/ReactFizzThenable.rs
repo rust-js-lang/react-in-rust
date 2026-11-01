@@ -25,7 +25,7 @@ thread_local! {
     // An error that is thrown (e.g. by `use`) to trigger Suspense. If we
     // detect this is caught by userspace, we'll log a warning in development.
     #[cfg_attr(rust_js, rust_js::name = "SuspenseException")]
-    pub static SUSPENSE_EXCEPTION: &'static Error = js::error::new(concat!(
+    pub static SUSPENSE_EXCEPTION: &'static Error = js::error::new(Some(concat!(
         "Suspense Exception: This is not a real error! It's an implementation ",
         "detail of `use` to interrupt the current render. You must either ",
         "rethrow it immediately, or move the `use` call outside of the ",
@@ -33,7 +33,7 @@ thread_local! {
         "unexpected behavior.\n\n",
         "To handle async errors, wrap your component in an error boundary, or ",
         "call the promise's `.catch` method and pass the result to `use`."
-    ), None);
+    )), None);
 }
 
 pub fn create_thenable_state() -> ThenableState {
@@ -227,7 +227,7 @@ fn capture_suspended_call_site() {
         r#type: current_component_stack.r#type,
         owner: current_component_stack.owner,
         stack: Cell::new(Some(js::unknown(js::error::new(
-            "react-stack-top-frame",
+            Some("react-stack-top-frame"),
             None,
         )))),
     })));
