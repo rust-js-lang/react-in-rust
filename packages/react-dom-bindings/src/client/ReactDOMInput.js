@@ -6,12 +6,12 @@
 // LICENSE file in the root directory of this source tree.
 
 // TODO: direct imports like some-package/src/* are bad. Fix me.
-import {getCurrentFiberOwnerNameInDevOrNull} from '../../../react-reconciler/src/ReactCurrentFiber.js';
-import {checkAttributeStringCoercion} from '../../../shared/CheckStringCoercion.js';
+import {getCurrentFiberOwnerNameInDevOrNull} from 'react-reconciler/src/ReactCurrentFiber';
+import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
 import {
   disableInputAttributeSyncing,
   enableHydrationChangeEvent,
-} from '../../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {queueChangeEvent} from '../events/ReactDOMEventReplaying.js';
 import {getFiberCurrentPropsFromNode} from './ReactDOMComponentTree.js';
 import {getToStringValue, toString} from './ToStringValue.js';

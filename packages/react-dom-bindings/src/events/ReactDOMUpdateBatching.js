@@ -9,7 +9,7 @@ import {
   batchedUpdates as batchedUpdatesImpl,
   discreteUpdates as discreteUpdatesImpl,
   flushSyncWork,
-} from '../../../react-reconciler/src/ReactFiberWorkLoop.js';
+} from 'react-reconciler/src/ReactFiberWorkLoop';
 import {
   needsStateRestore,
   restoreStateIfNeeded,

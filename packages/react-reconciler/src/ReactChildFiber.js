@@ -9,7 +9,7 @@ import {
   disableLegacyMode,
   enableAsyncIterableChildren,
   enableOptimisticKey,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {
   ASYNC_ITERATOR,
   REACT_CONTEXT_TYPE,
@@ -20,8 +20,8 @@ import {
   REACT_OPTIMISTIC_KEY,
   REACT_PORTAL_TYPE,
   getIteratorFn,
-} from '../../shared/ReactSymbols.js';
-import isArray from '../../shared/isArray.js';
+} from 'shared/ReactSymbols';
+import isArray from 'shared/isArray';
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {
   createFiberFromElement,

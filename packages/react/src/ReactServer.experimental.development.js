@@ -44,13 +44,13 @@ export {
   REACT_STRICT_MODE_TYPE as StrictMode,
   REACT_SUSPENSE_TYPE as Suspense,
   REACT_VIEW_TRANSITION_TYPE as ViewTransition,
-} from '../../shared/ReactSymbols.js';
+} from 'shared/ReactSymbols';
 
-export {default as version} from '../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 // Experimental
-export {REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList} from '../../shared/ReactSymbols.js';
+export {REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList} from 'shared/ReactSymbols';
 // enableOptimisticKey
-export {REACT_OPTIMISTIC_KEY as optimisticKey} from '../../shared/ReactSymbols.js';
+export {REACT_OPTIMISTIC_KEY as optimisticKey} from 'shared/ReactSymbols';
 // DEV-only
 export {captureOwnerStack} from './ReactOwnerStack.js';
 

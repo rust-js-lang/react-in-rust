@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {getFragmentInstanceOrTextInstanceSiblings} from '../react-reconciler/src/ReactFiberTreeReflection.js';
+import {getFragmentInstanceOrTextInstanceSiblings} from 'react-reconciler/src/ReactFiberTreeReflection';
 import {$f64ToInt} from '@rust-js/runtime';
 
 export function compareDocumentPositionForEmptyFragment(

@@ -5,9 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {runWithFiberInDEV} from '../../../react-reconciler/src/ReactCurrentFiber.js';
-import {requestFormReset as requestFormResetOnFiber} from '../../../react-reconciler/src/ReactFiberHooks.js';
-import {getCurrentRootHostContainer} from '../../../react-reconciler/src/ReactFiberHostContext.js';
+import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
+import {requestFormReset as requestFormResetOnFiber} from 'react-reconciler/src/ReactFiberHooks';
+import {getCurrentRootHostContainer} from 'react-reconciler/src/ReactFiberHostContext';
 import {
   fiberIsPortaledIntoHost,
   getFragmentInstanceOrTextInstanceSiblings,
@@ -21,16 +21,16 @@ import {
   isFragmentContainedByFiber,
   traverseFragmentInstancesAndTextInstances,
   traverseFragmentInstancesAndTextInstancesDeeply,
-} from '../../../react-reconciler/src/ReactFiberTreeReflection.js';
-import {flushSyncWork as flushSyncWorkOnAllRoots} from '../../../react-reconciler/src/ReactFiberWorkLoop.js';
+} from 'react-reconciler/src/ReactFiberTreeReflection';
+import {flushSyncWork as flushSyncWorkOnAllRoots} from 'react-reconciler/src/ReactFiberWorkLoop';
 import {
   HostComponent,
   HostHoistable,
   HostSingleton,
   HostText,
-} from '../../../react-reconciler/src/ReactWorkTags.js';
-import {checkAttributeStringCoercion} from '../../../shared/CheckStringCoercion.js';
-import ReactDOMSharedInternals from '../../../shared/ReactDOMSharedInternals.js';
+} from 'react-reconciler/src/ReactWorkTags';
+import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import {
   disableCommentsAsDOMContainers,
   disableLegacyMode,
@@ -42,10 +42,10 @@ import {
   enableSrcObject,
   enableSuspenseyImages,
   enableViewTransition,
-} from '../../../shared/ReactFeatureFlags.js';
-import {REACT_CONTEXT_TYPE} from '../../../shared/ReactSymbols.js';
-import hasOwnProperty from '../../../shared/hasOwnProperty.js';
-import noop from '../../../shared/noop.js';
+} from 'shared/ReactFeatureFlags';
+import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+import hasOwnProperty from 'shared/hasOwnProperty';
+import noop from 'shared/noop';
 import {compareDocumentPositionForEmptyFragment} from '../../../shared/ReactDOMFragmentRefShared.js';
 import {listenToAllSupportedEvents} from '../events/DOMPluginEventSystem.js';
 import {
@@ -137,7 +137,7 @@ export {
 
 export {detachDeletedInstance} from './ReactDOMComponentTree.js';
 
-export {default as rendererVersion} from '../../../shared/ReactVersion.js';
+export {default as rendererVersion} from 'shared/ReactVersion';
 
 export {
   supportsPersistence,
@@ -148,7 +148,7 @@ export {
   replaceContainerChildren,
   cloneHiddenInstance,
   cloneHiddenTextInstance,
-} from '../../../react-reconciler/src/ReactFiberConfigWithNoPersistence.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
 
 export {getClosestInstanceFromNode as getInstanceFromNode} from './ReactDOMComponentTree.js';
 

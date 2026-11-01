@@ -10,20 +10,20 @@ import {
   DefaultEventPriority,
   DiscreteEventPriority,
   IdleEventPriority,
-} from '../../../react-reconciler/src/ReactEventPriorities.js';
-import {attemptSynchronousHydration} from '../../../react-reconciler/src/ReactFiberReconciler.js';
-import {isRootDehydrated} from '../../../react-reconciler/src/ReactFiberShellHydration.js';
+} from 'react-reconciler/src/ReactEventPriorities';
+import {attemptSynchronousHydration} from 'react-reconciler/src/ReactFiberReconciler';
+import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
 import {
   getActivityInstanceFromFiber,
   getContainerFromFiber,
   getNearestMountedFiber,
   getSuspenseInstanceFromFiber,
-} from '../../../react-reconciler/src/ReactFiberTreeReflection.js';
+} from 'react-reconciler/src/ReactFiberTreeReflection';
 import {
   ActivityComponent,
   HostRoot,
   SuspenseComponent,
-} from '../../../react-reconciler/src/ReactWorkTags.js';
+} from 'react-reconciler/src/ReactWorkTags';
 import {
   IdlePriority as IdleSchedulerPriority,
   ImmediatePriority as ImmediateSchedulerPriority,
@@ -31,8 +31,8 @@ import {
   NormalPriority as NormalSchedulerPriority,
   UserBlockingPriority as UserBlockingSchedulerPriority,
   getCurrentPriorityLevel as getCurrentSchedulerPriorityLevel,
-} from '../../../react-reconciler/src/Scheduler.js';
-import ReactSharedInternals from '../../../shared/ReactSharedInternals.js';
+} from 'react-reconciler/src/Scheduler';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {
   getClosestInstanceFromNode,
   getInstanceFromNode,

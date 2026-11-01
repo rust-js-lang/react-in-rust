@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export {REACT_FRAGMENT_TYPE as Fragment} from '../../../shared/ReactSymbols.js';
+export {REACT_FRAGMENT_TYPE as Fragment} from 'shared/ReactSymbols';
 
 export const jsx: unknown;
 

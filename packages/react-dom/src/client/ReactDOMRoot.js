@@ -5,20 +5,20 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {COMMENT_NODE} from '../../../react-dom-bindings/src/client/HTMLNodeType.js';
+import {COMMENT_NODE} from 'react-dom-bindings/src/client/HTMLNodeType';
 import {
   isContainerMarkedAsRoot,
   markContainerAsRoot,
   unmarkContainerAsRoot,
-} from '../../../react-dom-bindings/src/client/ReactDOMComponentTree.js';
-import {isValidContainer} from '../../../react-dom-bindings/src/client/ReactDOMContainer.js';
-import {listenToAllSupportedEvents} from '../../../react-dom-bindings/src/events/DOMPluginEventSystem.js';
-import {queueExplicitHydrationTarget} from '../../../react-dom-bindings/src/events/ReactDOMEventReplaying.js';
+} from 'react-dom-bindings/src/client/ReactDOMComponentTree';
+import {isValidContainer} from 'react-dom-bindings/src/client/ReactDOMContainer';
+import {listenToAllSupportedEvents} from 'react-dom-bindings/src/events/DOMPluginEventSystem';
+import {queueExplicitHydrationTarget} from 'react-dom-bindings/src/events/ReactDOMEventReplaying';
 import {
   defaultOnCaughtError,
   defaultOnRecoverableError,
   defaultOnUncaughtError,
-} from '../../../react-reconciler/src/ReactFiberErrorLogger.js';
+} from 'react-reconciler/src/ReactFiberErrorLogger';
 import {
   createContainer,
   createHydrationContainer,
@@ -26,13 +26,13 @@ import {
   isAlreadyRendering,
   updateContainer,
   updateContainerSync,
-} from '../../../react-reconciler/src/ReactFiberReconciler.js';
-import {ConcurrentRoot} from '../../../react-reconciler/src/ReactRootTags.js';
+} from 'react-reconciler/src/ReactFiberReconciler';
+import {ConcurrentRoot} from 'react-reconciler/src/ReactRootTags';
 import {
   disableCommentsAsDOMContainers,
   enableDefaultTransitionIndicator,
-} from '../../../shared/ReactFeatureFlags.js';
-import {REACT_ELEMENT_TYPE} from '../../../shared/ReactSymbols.js';
+} from 'shared/ReactFeatureFlags';
+import {REACT_ELEMENT_TYPE} from 'shared/ReactSymbols';
 import {defaultOnDefaultTransitionIndicator} from './ReactDOMDefaultTransitionIndicator.js';
 
 function ReactDOMRoot(internalRoot) {

@@ -10,9 +10,9 @@ import {
   describeClassComponentFrame,
   describeDebugInfoFrame,
   describeFunctionComponentFrame,
-} from '../../shared/ReactComponentStackFrame.js';
-import {enableViewTransition} from '../../shared/ReactFeatureFlags.js';
-import {formatOwnerStack} from '../../shared/ReactOwnerStackFrames.js';
+} from 'shared/ReactComponentStackFrame';
+import {enableViewTransition} from 'shared/ReactFeatureFlags';
+import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
 import {
   ActivityComponent,
   ClassComponent,

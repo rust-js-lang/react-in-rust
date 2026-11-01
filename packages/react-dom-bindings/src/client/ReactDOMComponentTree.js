@@ -13,11 +13,11 @@ import {
   HostSingleton,
   HostText,
   SuspenseComponent,
-} from '../../../react-reconciler/src/ReactWorkTags.js';
+} from 'react-reconciler/src/ReactWorkTags';
 import {
   enableInternalInstanceMap,
   enableScopeAPI,
-} from '../../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {getParentHydrationBoundary} from './ReactFiberConfigDOM.js';
 
 const randomKey = Math.random().toString(36).slice(2);

@@ -6,8 +6,8 @@
 // LICENSE file in the root directory of this source tree.
 
 // TODO: direct imports like some-package/src/* are bad. Fix me.
-import {getCurrentFiberOwnerNameInDevOrNull} from '../../../react-reconciler/src/ReactCurrentFiber.js';
-import isArray from '../../../shared/isArray.js';
+import {getCurrentFiberOwnerNameInDevOrNull} from 'react-reconciler/src/ReactCurrentFiber';
+import isArray from 'shared/isArray';
 import {queueChangeEvent} from '../events/ReactDOMEventReplaying.js';
 import {getToStringValue, toString} from './ToStringValue.js';
 

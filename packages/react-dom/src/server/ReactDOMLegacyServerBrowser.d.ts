@@ -7,7 +7,7 @@
 
 import type {ServerOptions} from './ReactDOMLegacyServerImpl.js';
 
-export {default as version} from '../../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
 export function renderToString(
   children?: unknown | null | undefined,

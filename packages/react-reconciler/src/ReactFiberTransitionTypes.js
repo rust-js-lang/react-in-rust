@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {enableViewTransition} from '../../shared/ReactFeatureFlags.js';
+import {enableViewTransition} from 'shared/ReactFeatureFlags';
 import {includesTransitionLane} from './ReactFiberLane.js';
 
 export function queueTransitionTypes(root, transitionTypes) {

@@ -8,7 +8,7 @@
 import {
   disableLegacyMode,
   enableUpdaterTracking,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {callComponentDidCatchInDEV} from './ReactFiberCallUserSpace.js';

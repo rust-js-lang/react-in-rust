@@ -16,7 +16,7 @@ import {
   enableViewTransition,
   enableViewTransitionParentEnterExit,
   passChildrenWhenCloningPersistedNodes,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {resetChildFibers} from './ReactChildFiber.js';
 import {popCacheProvider} from './ReactFiberCacheComponent.js';
 import {

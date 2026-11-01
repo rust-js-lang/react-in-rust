@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ReactContext} from '../../shared/ReactTypes.js';
+import type {ReactContext} from 'shared/ReactTypes';
 
 /** A context Fizz renders, of any value. */
 export type Context = ReactContext<unknown | null | undefined>;

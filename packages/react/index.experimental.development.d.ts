@@ -15,11 +15,11 @@ export {
   REACT_STRICT_MODE_TYPE as StrictMode,
   REACT_SUSPENSE_TYPE as Suspense,
   REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList,
-} from '../shared/ReactSymbols.js';
+} from 'shared/ReactSymbols';
 
-export {default as version} from '../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
-export {REACT_VIEW_TRANSITION_TYPE as ViewTransition} from '../shared/ReactSymbols.js';
+export {REACT_VIEW_TRANSITION_TYPE as ViewTransition} from 'shared/ReactSymbols';
 
 export {
   __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,

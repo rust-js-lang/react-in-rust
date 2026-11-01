@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {disableLegacyContext} from '../../shared/ReactFeatureFlags.js';
+import {disableLegacyContext} from 'shared/ReactFeatureFlags';
 import {createCursor, pop, push} from './ReactFiberStack.js';
 import {ClassComponent, HostRoot} from './ReactWorkTags.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';

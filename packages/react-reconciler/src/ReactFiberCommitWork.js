@@ -19,7 +19,7 @@ import {
   enableTransitionTracing,
   enableUpdaterTracking,
   enableViewTransition,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {releaseCache, retainCache} from './ReactFiberCacheComponent.js';
 import {deferHiddenCallbacks} from './ReactFiberClassUpdateQueue.js';
 import {

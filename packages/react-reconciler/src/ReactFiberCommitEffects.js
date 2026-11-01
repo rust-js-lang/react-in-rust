@@ -11,7 +11,7 @@ import {
   enableProfilerTimer,
   enableSchedulingProfiler,
   enableViewTransition,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {didWarnAboutReassigningProps} from './ReactFiberBeginWork.js';
 import {

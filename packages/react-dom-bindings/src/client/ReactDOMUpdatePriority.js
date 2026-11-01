@@ -8,8 +8,8 @@
 import {
   DefaultEventPriority,
   NoEventPriority,
-} from '../../../react-reconciler/src/ReactEventPriorities.js';
-import ReactDOMSharedInternals from '../../../shared/ReactDOMSharedInternals.js';
+} from 'react-reconciler/src/ReactEventPriorities';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import {getEventPriority} from '../events/ReactDOMEventListener.js';
 
 export function setCurrentUpdatePriority(

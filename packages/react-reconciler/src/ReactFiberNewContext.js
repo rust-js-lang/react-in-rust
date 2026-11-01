@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import is from '../../shared/objectIs.js';
+import is from 'shared/objectIs';
 import {HostTransitionContext, isPrimaryRenderer} from './ReactFiberConfig.js';
 import {
   DidPropagateContext,

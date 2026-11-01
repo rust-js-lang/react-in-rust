@@ -6,11 +6,11 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {CSSProperties, Component, JSX} from 'react';
-import type {FiberRoot} from '../../react-reconciler/src/ReactInternalTypes.js';
+import type {FiberRoot} from 'react-reconciler/src/ReactInternalTypes';
 
 export {default as Transform} from 'art/core/transform';
 
-export {default as version} from '../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
 /* Declarative fill-type objects; API design not finalized */
 

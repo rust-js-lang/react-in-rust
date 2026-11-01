@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {Fiber} from '../../../react-reconciler/src/ReactInternalTypes.js';
+import type {Fiber} from 'react-reconciler/src/ReactInternalTypes';
 import type {EventSystemFlags} from './EventSystemFlags.js';
 import type {AnyNativeEvent} from './PluginModuleType.js';
 import type {

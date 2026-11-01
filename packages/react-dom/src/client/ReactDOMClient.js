@@ -8,14 +8,14 @@
 import {
   findHostInstance,
   injectIntoDevTools,
-} from '../../../react-reconciler/src/ReactFiberReconciler.js';
-import {canUseDOM} from '../../../shared/ExecutionEnvironment.js';
-import ReactDOMSharedInternals from '../../../shared/ReactDOMSharedInternals.js';
+} from 'react-reconciler/src/ReactFiberReconciler';
+import {canUseDOM} from 'shared/ExecutionEnvironment';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
 
 export {createRoot, hydrateRoot} from './ReactDOMRoot.js';
 
-export {default as version} from '../../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
 ensureCorrectIsomorphicReactVersion();
 

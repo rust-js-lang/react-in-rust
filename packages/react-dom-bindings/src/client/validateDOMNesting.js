@@ -8,14 +8,14 @@
 import {
   current,
   runWithFiberInDEV,
-} from '../../../react-reconciler/src/ReactCurrentFiber.js';
-import {describeDiff} from '../../../react-reconciler/src/ReactFiberHydrationDiffs.js';
+} from 'react-reconciler/src/ReactCurrentFiber';
+import {describeDiff} from 'react-reconciler/src/ReactFiberHydrationDiffs';
 import {
   HostComponent,
   HostHoistable,
   HostSingleton,
   HostText,
-} from '../../../react-reconciler/src/ReactWorkTags.js';
+} from 'react-reconciler/src/ReactWorkTags';
 
 function describeAncestors(ancestor, child, props) {
   let fiber = child;

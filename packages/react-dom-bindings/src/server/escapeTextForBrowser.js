@@ -37,7 +37,7 @@
  * Module variables.
  * @private
  */
-import {checkHtmlStringCoercion} from '../../../shared/CheckStringCoercion.js';
+import {checkHtmlStringCoercion} from 'shared/CheckStringCoercion';
 
 const matchHtmlRegExp = /["'&<>]/;
 

@@ -15,7 +15,7 @@ import {
   enableTransitionTracing,
   enableUpdaterTracking,
   enableViewTransition,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {createHostRootFiber} from './ReactFiber.js';
 import {createCache, retainCache} from './ReactFiberCacheComponent.js';
 import {initializeUpdateQueue} from './ReactFiberClassUpdateQueue.js';

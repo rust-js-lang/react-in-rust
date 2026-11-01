@@ -16,7 +16,7 @@ import {
   retryLaneExpirationMs,
   syncLaneExpirationMs,
   transitionLaneExpirationMs,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
 import {LegacyRoot} from './ReactRootTags.js';
 import {clz32} from './clz32.js';

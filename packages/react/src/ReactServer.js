@@ -28,9 +28,9 @@ export {
   REACT_STRICT_MODE_TYPE as StrictMode,
   REACT_SUSPENSE_TYPE as Suspense,
   REACT_VIEW_TRANSITION_TYPE as ViewTransition,
-} from '../../shared/ReactSymbols.js';
+} from 'shared/ReactSymbols';
 
-export {default as version} from '../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 // DEV-only
 export {captureOwnerStack} from './ReactOwnerStack.js';
 

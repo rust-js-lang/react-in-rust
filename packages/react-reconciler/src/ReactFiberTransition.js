@@ -9,8 +9,8 @@ import {
   enableGestureTransition,
   enableTransitionTracing,
   enableViewTransition,
-} from '../../shared/ReactFeatureFlags.js';
-import ReactSharedInternals from '../../shared/ReactSharedInternals.js';
+} from 'shared/ReactFeatureFlags';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {
   entangleAsyncAction,
   peekEntangledActionLane,

@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {EventPriority} from '../../../react-reconciler/src/ReactEventPriorities.js';
+import type {EventPriority} from 'react-reconciler/src/ReactEventPriorities';
 
 export function setCurrentUpdatePriority(
   newPriority: EventPriority,

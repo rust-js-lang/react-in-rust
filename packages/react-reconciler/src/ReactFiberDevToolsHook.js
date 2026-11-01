@@ -8,7 +8,7 @@
 import {
   enableProfilerTimer,
   enableSchedulingProfiler,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {
   ContinuousEventPriority,
   DefaultEventPriority,

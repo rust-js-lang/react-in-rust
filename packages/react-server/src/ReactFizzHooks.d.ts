@@ -5,8 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {Dispatcher} from '../../react-reconciler/src/ReactInternalTypes.js';
-import type {ReactRecoverable} from '../../shared/ReactTypes.js';
+import type {Dispatcher} from 'react-reconciler/src/ReactInternalTypes';
+import type {ReactRecoverable} from 'shared/ReactTypes';
 import type {ThenableState} from './ReactFizzThenable.js';
 
 export function createRecoverableError(recoverable: ReactRecoverable): Error;

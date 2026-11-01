@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export {createFastHashJS as createFastHash} from '../../../react-server/src/createFastHashJS.js';
+export {createFastHashJS as createFastHash} from 'react-server/src/createFastHashJS';
 
 /**
  * What the legacy renderer writes to: each chunk pushed, and `null` at

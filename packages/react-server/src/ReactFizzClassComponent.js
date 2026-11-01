@@ -5,18 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {disableLegacyContext} from '../../shared/ReactFeatureFlags.js';
-import {
-  get as getInstance,
-  set as setInstance,
-} from '../../shared/ReactInstanceMap.js';
-import {
-  REACT_CONSUMER_TYPE,
-  REACT_CONTEXT_TYPE,
-} from '../../shared/ReactSymbols.js';
-import assign from '../../shared/assign.js';
-import getComponentNameFromType from '../../shared/getComponentNameFromType.js';
-import isArray from '../../shared/isArray.js';
+import {disableLegacyContext} from 'shared/ReactFeatureFlags';
+import {get as getInstance, set as setInstance} from 'shared/ReactInstanceMap';
+import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+import assign from 'shared/assign';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
+import isArray from 'shared/isArray';
 import {emptyContextObject} from './ReactFizzLegacyContext.js';
 import {readContext} from './ReactFizzNewContext.js';
 import {$index, $slice, $unwrap} from '@rust-js/runtime';

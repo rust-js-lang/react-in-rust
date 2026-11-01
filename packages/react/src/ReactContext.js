@@ -5,10 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {
-  REACT_CONSUMER_TYPE,
-  REACT_CONTEXT_TYPE,
-} from '../../shared/ReactSymbols.js';
+import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
 
 export function createContext(defaultValue) {
   // TODO: Second argument used to be an optional `calculateChangedBits`

@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {GestureTransitionOptions} from '../../react/src/ReactStartTransition.js';
+import type {GestureTransitionOptions} from 'react/src/ReactStartTransition';
 import type {Lane} from './ReactFiberLane.js';
 import type {FiberRoot} from './ReactInternalTypes.js';
 

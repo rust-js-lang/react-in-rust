@@ -8,19 +8,13 @@
 import {
   disableLegacyContext,
   enableSchedulingProfiler,
-} from '../../shared/ReactFeatureFlags.js';
-import {
-  get as getInstance,
-  set as setInstance,
-} from '../../shared/ReactInstanceMap.js';
-import {
-  REACT_CONSUMER_TYPE,
-  REACT_CONTEXT_TYPE,
-} from '../../shared/ReactSymbols.js';
-import assign from '../../shared/assign.js';
-import getComponentNameFromType from '../../shared/getComponentNameFromType.js';
-import isArray from '../../shared/isArray.js';
-import shallowEqual from '../../shared/shallowEqual.js';
+} from 'shared/ReactFeatureFlags';
+import {get as getInstance, set as setInstance} from 'shared/ReactInstanceMap';
+import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+import assign from 'shared/assign';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
+import isArray from 'shared/isArray';
+import shallowEqual from 'shared/shallowEqual';
 import {
   checkHasForceUpdateAfterProcessing,
   cloneUpdateQueue,

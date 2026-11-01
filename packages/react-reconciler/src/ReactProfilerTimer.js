@@ -11,7 +11,7 @@ import {
   enableProfilerCommitHooks,
   enableProfilerNestedUpdatePhase,
   enableProfilerTimer,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {resolveEventTimeStamp, resolveEventType} from './ReactFiberConfig.js';
 import {
   NoLanes,

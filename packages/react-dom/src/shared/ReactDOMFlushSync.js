@@ -5,10 +5,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {DiscreteEventPriority} from '../../../react-reconciler/src/ReactEventPriorities.js';
-import ReactDOMSharedInternals from '../../../shared/ReactDOMSharedInternals.js';
-import {disableLegacyMode} from '../../../shared/ReactFeatureFlags.js';
-import ReactSharedInternals from '../../../shared/ReactSharedInternals.js';
+import {DiscreteEventPriority} from 'react-reconciler/src/ReactEventPriorities';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
+import {disableLegacyMode} from 'shared/ReactFeatureFlags';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 function flushSyncImpl(fn) {
   const previousTransition = ReactSharedInternals.T;

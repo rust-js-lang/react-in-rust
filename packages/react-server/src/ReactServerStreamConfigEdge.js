@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import hasOwnProperty from '../../shared/hasOwnProperty.js';
+import hasOwnProperty from 'shared/hasOwnProperty';
 import {$unwrap} from '@rust-js/runtime';
 
 export {createFastHashJS as createFastHash} from './createFastHashJS.js';

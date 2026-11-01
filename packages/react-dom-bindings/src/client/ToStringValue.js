@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {checkFormFieldValueStringCoercion} from '../../../shared/CheckStringCoercion.js';
+import {checkFormFieldValueStringCoercion} from 'shared/CheckStringCoercion';
 
 // Flow does not allow string concatenation of most non-string types. To work
 // around this limitation, we use an opaque type that can only be obtained by

@@ -10,15 +10,15 @@
 // and for testing semantics of reconciliation separate from the host
 // environment.
 
-import type * as ReactFiberReconciler from '../../react-reconciler/src/ReactFiberReconciler.js';
-import type {EventPriority} from '../../react-reconciler/src/ReactEventPriorities.js';
+import type * as ReactFiberReconciler from 'react-reconciler/src/ReactFiberReconciler';
+import type {EventPriority} from 'react-reconciler/src/ReactEventPriorities';
 import type {
   CaughtErrorInfo,
   ErrorInfo,
   FiberRoot,
   TransitionTracingCallbacks,
-} from '../../react-reconciler/src/ReactInternalTypes.js';
-import type {ReactPortal} from '../../shared/ReactTypes.js';
+} from 'react-reconciler/src/ReactInternalTypes';
+import type {ReactPortal} from 'shared/ReactTypes';
 import type {Child, Container, Instance} from './ReactFiberConfigNoop.js';
 
 /** A host component's props, as JS gives them. */

@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {SuspenseListTailMode} from '../../shared/ReactTypes.js';
+import type {SuspenseListTailMode} from 'shared/ReactTypes';
 import type {CapturedValue} from './ReactCapturedValue.js';
 import type {Lane} from './ReactFiberLane.js';
 import type {TreeContext} from './ReactFiberTreeContext.js';

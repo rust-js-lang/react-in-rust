@@ -5,10 +5,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {isValidContainer} from '../../../react-dom-bindings/src/client/ReactDOMContainer.js';
-import {createPortal as createPortalImpl} from '../../../react-reconciler/src/ReactPortal.js';
+import {isValidContainer} from 'react-dom-bindings/src/client/ReactDOMContainer';
+import {createPortal as createPortalImpl} from 'react-reconciler/src/ReactPortal';
 
-export {default as version} from '../../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
 export {browser} from './ReactDOMBrowser.js';
 
@@ -27,7 +27,7 @@ export {
   requestFormReset,
   useFormState,
   useFormStatus,
-} from '../../../react-dom-bindings/src/shared/ReactDOMFormActions.js';
+} from 'react-dom-bindings/src/shared/ReactDOMFormActions';
 
 if (
   __DEV__ &&

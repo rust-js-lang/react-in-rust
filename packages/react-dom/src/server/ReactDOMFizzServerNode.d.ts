@@ -10,9 +10,9 @@ import type {
   BootstrapScriptDescriptor,
   HeadersDescriptor,
   NonceOption,
-} from '../../../react-dom-bindings/src/server/ReactFizzConfigDOM.js';
+} from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 
-export {default as version} from '../../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
 type BootstrapScript = string | BootstrapScriptDescriptor;
 

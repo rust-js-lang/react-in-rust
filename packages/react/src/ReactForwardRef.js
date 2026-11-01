@@ -5,10 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {
-  REACT_FORWARD_REF_TYPE,
-  REACT_MEMO_TYPE,
-} from '../../shared/ReactSymbols.js';
+import {REACT_FORWARD_REF_TYPE, REACT_MEMO_TYPE} from 'shared/ReactSymbols';
 
 export function forwardRef(render) {
   if (__DEV__) {

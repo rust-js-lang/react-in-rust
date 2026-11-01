@@ -12,24 +12,21 @@ import {
   defaultOnCaughtError,
   defaultOnRecoverableError,
   defaultOnUncaughtError,
-} from '../../react-reconciler/src/ReactFiberErrorLogger.js';
+} from 'react-reconciler/src/ReactFiberErrorLogger';
 import {
   createContainer,
   flushSyncWork,
   injectIntoDevTools,
   updateContainerSync,
-} from '../../react-reconciler/src/ReactFiberReconciler.js';
-import {
-  ConcurrentRoot,
-  LegacyRoot,
-} from '../../react-reconciler/src/ReactRootTags.js';
-import {disableLegacyMode} from '../../shared/ReactFeatureFlags.js';
+} from 'react-reconciler/src/ReactFiberReconciler';
+import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
+import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 import {TYPES, childrenAsString} from './ReactARTInternals.js';
 import {$unwrap} from '@rust-js/runtime';
 
 export {default as Transform} from 'art/core/transform';
 
-export {default as version} from '../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
 function defaultOnDefaultTransitionIndicator() {
   // Noop

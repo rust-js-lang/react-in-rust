@@ -7,7 +7,7 @@
 
 // Flow type for SyntheticEvent class that includes private properties
 
-import type {Fiber} from '../../../react-reconciler/src/ReactInternalTypes.js';
+import type {Fiber} from 'react-reconciler/src/ReactInternalTypes';
 import type {DOMEventName} from './DOMEventNames.js';
 
 /** A `DispatchConfig`'s two phases' registration names. */

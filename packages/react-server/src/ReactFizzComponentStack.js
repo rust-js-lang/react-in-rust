@@ -10,9 +10,9 @@ import {
   describeClassComponentFrame,
   describeDebugInfoFrame,
   describeFunctionComponentFrame,
-} from '../../shared/ReactComponentStackFrame.js';
-import {enableViewTransition} from '../../shared/ReactFeatureFlags.js';
-import {formatOwnerStack} from '../../shared/ReactOwnerStackFrames.js';
+} from 'shared/ReactComponentStackFrame';
+import {enableViewTransition} from 'shared/ReactFeatureFlags';
+import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
 import {
   REACT_FORWARD_REF_TYPE,
   REACT_LAZY_TYPE,
@@ -20,7 +20,7 @@ import {
   REACT_SUSPENSE_LIST_TYPE,
   REACT_SUSPENSE_TYPE,
   REACT_VIEW_TRANSITION_TYPE,
-} from '../../shared/ReactSymbols.js';
+} from 'shared/ReactSymbols';
 import {$unwrap} from '@rust-js/runtime';
 
 function shouldConstruct(component) {

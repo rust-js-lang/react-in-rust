@@ -82,7 +82,7 @@
 // regardless of priority. Intermediate state may vary according to system
 // resources, but the final state is always the same.
 
-import assign from '../../shared/assign.js';
+import assign from 'shared/assign';
 import {
   peekEntangledActionLane,
   peekEntangledActionThenable,

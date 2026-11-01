@@ -8,7 +8,7 @@
 import {
   enableCreateEventHandleAPI,
   enableScopeAPI,
-} from '../../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {listenToNativeEventForNonManagedEventTarget} from '../events/DOMPluginEventSystem.js';
 import {allNativeEvents} from '../events/EventRegistry.js';
 import {ELEMENT_NODE} from './HTMLNodeType.js';

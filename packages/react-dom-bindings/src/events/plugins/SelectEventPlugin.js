@@ -5,8 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {canUseDOM} from '../../../../shared/ExecutionEnvironment.js';
-import shallowEqual from '../../../../shared/shallowEqual.js';
+import {canUseDOM} from 'shared/ExecutionEnvironment';
+import shallowEqual from 'shared/shallowEqual';
 import {DOCUMENT_NODE} from '../../client/HTMLNodeType.js';
 import {getNodeFromInstance} from '../../client/ReactDOMComponentTree.js';
 import {hasSelectionCapabilities} from '../../client/ReactInputSelection.js';

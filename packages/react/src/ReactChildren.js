@@ -5,17 +5,17 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {checkKeyStringCoercion} from '../../shared/CheckStringCoercion.js';
-import {enableOptimisticKey} from '../../shared/ReactFeatureFlags.js';
+import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
+import {enableOptimisticKey} from 'shared/ReactFeatureFlags';
 import {
   REACT_ELEMENT_TYPE,
   REACT_LAZY_TYPE,
   REACT_OPTIMISTIC_KEY,
   REACT_PORTAL_TYPE,
   getIteratorFn,
-} from '../../shared/ReactSymbols.js';
-import isArray from '../../shared/isArray.js';
-import noop from '../../shared/noop.js';
+} from 'shared/ReactSymbols';
+import isArray from 'shared/isArray';
+import noop from 'shared/noop';
 import {cloneAndReplaceKey, isValidElement} from './jsx/ReactJSXElement.js';
 
 const SEPARATOR = '.';

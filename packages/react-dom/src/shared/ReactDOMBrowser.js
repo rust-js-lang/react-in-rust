@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {REACT_RECOVERABLE_TYPE} from '../../../shared/ReactSymbols.js';
+import {REACT_RECOVERABLE_TYPE} from 'shared/ReactSymbols';
 
 export function browser(reason) {
   // This also runs in the browser, where the reason is never observed. Keep the

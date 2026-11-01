@@ -13,15 +13,15 @@ import {
   enableSchedulingProfiler,
   enableTransitionTracing,
   enableViewTransition,
-} from '../../shared/ReactFeatureFlags.js';
-import ReactSharedInternals from '../../shared/ReactSharedInternals.js';
+} from 'shared/ReactFeatureFlags';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {
   REACT_CONTEXT_TYPE,
   REACT_MEMO_CACHE_SENTINEL,
   REACT_RECOVERABLE_TYPE,
-} from '../../shared/ReactSymbols.js';
-import isArray from '../../shared/isArray.js';
-import is from '../../shared/objectIs.js';
+} from 'shared/ReactSymbols';
+import isArray from 'shared/isArray';
+import is from 'shared/objectIs';
 import {
   ContinuousEventPriority,
   higherEventPriority,

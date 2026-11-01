@@ -5,8 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {disableLegacyContext} from '../../shared/ReactFeatureFlags.js';
-import getComponentNameFromType from '../../shared/getComponentNameFromType.js';
+import {disableLegacyContext} from 'shared/ReactFeatureFlags';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
 
 const warnedAboutMissingGetChildContext = __DEV__ ? {} : undefined;
 

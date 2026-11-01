@@ -5,12 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {getNearestMountedFiber} from '../../../../react-reconciler/src/ReactFiberTreeReflection.js';
+import {getNearestMountedFiber} from 'react-reconciler/src/ReactFiberTreeReflection';
 import {
   HostComponent,
   HostSingleton,
   HostText,
-} from '../../../../react-reconciler/src/ReactWorkTags.js';
+} from 'react-reconciler/src/ReactWorkTags';
 import {
   getClosestInstanceFromNode,
   getNodeFromInstance,

@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ReactPortal} from '../../shared/ReactTypes.js';
+import type {ReactPortal} from 'shared/ReactTypes';
 
 export function createPortal(
   children?: unknown | null | undefined,

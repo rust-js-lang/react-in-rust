@@ -10,7 +10,7 @@ import type {
   ErrorInfo,
   FiberRoot,
   TransitionTracingCallbacks,
-} from '../../../react-reconciler/src/ReactInternalTypes.js';
+} from 'react-reconciler/src/ReactInternalTypes';
 
 export interface CreateRootOptions {
   unstable_strictMode?: boolean | undefined;

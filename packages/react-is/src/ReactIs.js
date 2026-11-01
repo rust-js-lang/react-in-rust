@@ -10,7 +10,7 @@ import {
   enableScopeAPI,
   enableTransitionTracing,
   enableViewTransition,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {
   REACT_CONSUMER_TYPE,
   REACT_CONTEXT_TYPE,
@@ -28,7 +28,7 @@ import {
   REACT_SUSPENSE_TYPE,
   REACT_TRACING_MARKER_TYPE,
   REACT_VIEW_TRANSITION_TYPE,
-} from '../../shared/ReactSymbols.js';
+} from 'shared/ReactSymbols';
 
 const REACT_CLIENT_REFERENCE = Symbol.for('react.client.reference');
 

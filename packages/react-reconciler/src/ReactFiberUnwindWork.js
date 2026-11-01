@@ -8,7 +8,7 @@
 import {
   enableProfilerTimer,
   enableTransitionTracing,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {popCacheProvider} from './ReactFiberCacheComponent.js';
 import {DidCapture, NoFlags, ShouldCapture, Update} from './ReactFiberFlags.js';
 import {popHiddenContext} from './ReactFiberHiddenContext.js';

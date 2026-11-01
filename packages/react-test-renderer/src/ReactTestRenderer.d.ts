@@ -5,11 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {Fiber} from '../../react-reconciler/src/ReactInternalTypes.js';
+import type {Fiber} from 'react-reconciler/src/ReactInternalTypes';
 
 export * as _Scheduler from 'scheduler/unstable_mock';
 
-export {default as version} from '../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
 export const act: unknown | null | undefined;
 

@@ -9,9 +9,9 @@ import {
   disableLegacyMode,
   enableLegacyHidden,
   enableViewTransition,
-} from '../../shared/ReactFeatureFlags.js';
-import {REACT_STRICT_MODE_TYPE} from '../../shared/ReactSymbols.js';
-import getComponentNameFromType from '../../shared/getComponentNameFromType.js';
+} from 'shared/ReactFeatureFlags';
+import {REACT_STRICT_MODE_TYPE} from 'shared/ReactSymbols';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
 import {
   ActivityComponent,
   CacheComponent,

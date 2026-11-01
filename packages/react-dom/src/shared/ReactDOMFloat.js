@@ -8,8 +8,8 @@
 import {
   getCrossOriginString,
   getCrossOriginStringAs,
-} from '../../../react-dom-bindings/src/shared/crossOriginStrings.js';
-import ReactDOMSharedInternals from '../../../shared/ReactDOMSharedInternals.js';
+} from 'react-dom-bindings/src/shared/crossOriginStrings';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import {$unwrap} from '@rust-js/runtime';
 
 // Each function is given what JS gives, a string or not, and tests it, as

@@ -24,12 +24,12 @@ import {
   enableUpdaterTracking,
   enableViewTransition,
   enableYieldingBeforePassive,
-} from '../../shared/ReactFeatureFlags.js';
-import {resetOwnerStackLimit} from '../../shared/ReactOwnerStackReset.js';
-import ReactSharedInternals from '../../shared/ReactSharedInternals.js';
-import {REACT_STRICT_MODE_TYPE} from '../../shared/ReactSymbols.js';
-import objectIs from '../../shared/objectIs.js';
-import reportGlobalError from '../../shared/reportGlobalError.js';
+} from 'shared/ReactFeatureFlags';
+import {resetOwnerStackLimit} from 'shared/ReactOwnerStackReset';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
+import {REACT_STRICT_MODE_TYPE} from 'shared/ReactSymbols';
+import objectIs from 'shared/objectIs';
+import reportGlobalError from 'shared/reportGlobalError';
 import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
 import {resetChildReconcilerOnUnwind} from './ReactChildFiber.js';
 import {

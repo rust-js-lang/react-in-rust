@@ -9,7 +9,7 @@ import {
   enableComponentPerformanceTrack,
   enableProfilerTimer,
   enableViewTransitionParentEnterExit,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {
   commitHookEffectListMount,
   commitHookEffectListUnmount,

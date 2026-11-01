@@ -5,8 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {runWithFiberInDEV} from '../../../react-reconciler/src/ReactCurrentFiber.js';
-import {getLowestCommonAncestor} from '../../../react-reconciler/src/ReactFiberTreeReflection.js';
+import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
+import {getLowestCommonAncestor} from 'react-reconciler/src/ReactFiberTreeReflection';
 import {
   HostComponent,
   HostHoistable,
@@ -15,15 +15,15 @@ import {
   HostSingleton,
   HostText,
   ScopeComponent,
-} from '../../../react-reconciler/src/ReactWorkTags.js';
+} from 'react-reconciler/src/ReactWorkTags';
 import {
   disableCommentsAsDOMContainers,
   enableCreateEventHandleAPI,
   enableLegacyFBSupport,
   enableScopeAPI,
   enableScrollEndPolyfill,
-} from '../../../shared/ReactFeatureFlags.js';
-import reportGlobalError from '../../../shared/reportGlobalError.js';
+} from 'shared/ReactFeatureFlags';
+import reportGlobalError from 'shared/reportGlobalError';
 import {COMMENT_NODE, DOCUMENT_NODE} from '../client/HTMLNodeType.js';
 import {
   getClosestInstanceFromNode,

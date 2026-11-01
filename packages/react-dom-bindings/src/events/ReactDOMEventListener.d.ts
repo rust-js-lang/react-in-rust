@@ -5,8 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {EventPriority} from '../../../react-reconciler/src/ReactEventPriorities.js';
-import type {Fiber} from '../../../react-reconciler/src/ReactInternalTypes.js';
+import type {EventPriority} from 'react-reconciler/src/ReactEventPriorities';
+import type {Fiber} from 'react-reconciler/src/ReactInternalTypes';
 import type {EventSystemFlags} from './EventSystemFlags.js';
 import type {AnyNativeEvent} from './PluginModuleType.js';
 

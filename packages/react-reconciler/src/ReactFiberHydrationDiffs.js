@@ -5,11 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {enableSrcObject} from '../../shared/ReactFeatureFlags.js';
-import {REACT_ELEMENT_TYPE} from '../../shared/ReactSymbols.js';
-import assign from '../../shared/assign.js';
-import getComponentNameFromType from '../../shared/getComponentNameFromType.js';
-import isArray from '../../shared/isArray.js';
+import {enableSrcObject} from 'shared/ReactFeatureFlags';
+import {REACT_ELEMENT_TYPE} from 'shared/ReactSymbols';
+import assign from 'shared/assign';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
+import isArray from 'shared/isArray';
 import {
   ActivityComponent,
   ClassComponent,

@@ -5,9 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {startHostTransition} from '../../../../react-reconciler/src/ReactFiberHooks.js';
-import {didCurrentEventScheduleTransition} from '../../../../react-reconciler/src/ReactFiberRootScheduler.js';
-import {checkAttributeStringCoercion} from '../../../../shared/CheckStringCoercion.js';
+import {startHostTransition} from 'react-reconciler/src/ReactFiberHooks';
+import {didCurrentEventScheduleTransition} from 'react-reconciler/src/ReactFiberRootScheduler';
+import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
 import {getFiberCurrentPropsFromNode} from '../../client/ReactDOMComponentTree.js';
 import sanitizeURL from '../../shared/sanitizeURL.js';
 import {SyntheticEvent} from '../SyntheticEvent.js';

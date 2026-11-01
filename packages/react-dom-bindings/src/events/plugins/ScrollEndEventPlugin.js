@@ -5,8 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {canUseDOM} from '../../../../shared/ExecutionEnvironment.js';
-import {enableScrollEndPolyfill} from '../../../../shared/ReactFeatureFlags.js';
+import {canUseDOM} from 'shared/ExecutionEnvironment';
+import {enableScrollEndPolyfill} from 'shared/ReactFeatureFlags';
 import {
   clearScrollEndTimer,
   getScrollEndTimer,

@@ -8,8 +8,8 @@
 import {
   enableGestureTransition,
   enableViewTransition,
-} from '../../shared/ReactFeatureFlags.js';
-import ReactSharedInternals from '../../shared/ReactSharedInternals.js';
+} from 'shared/ReactFeatureFlags';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {startTransition} from './ReactStartTransition.js';
 
 export function addTransitionType(type) {

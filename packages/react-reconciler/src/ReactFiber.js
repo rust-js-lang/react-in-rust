@@ -14,7 +14,7 @@ import {
   enableSuspenseyImages,
   enableTransitionTracing,
   enableViewTransition,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {
   REACT_ACTIVITY_TYPE,
   REACT_CONSUMER_TYPE,
@@ -32,9 +32,9 @@ import {
   REACT_SUSPENSE_TYPE,
   REACT_TRACING_MARKER_TYPE,
   REACT_VIEW_TRANSITION_TYPE,
-} from '../../shared/ReactSymbols.js';
-import getComponentNameFromType from '../../shared/getComponentNameFromType.js';
-import isArray from '../../shared/isArray.js';
+} from 'shared/ReactSymbols';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
+import isArray from 'shared/isArray';
 import {
   isHostHoistableType,
   isHostSingletonType,

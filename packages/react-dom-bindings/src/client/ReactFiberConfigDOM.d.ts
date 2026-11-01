@@ -5,12 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {Fiber} from '../../../react-reconciler/src/ReactInternalTypes.js';
+import type {Fiber} from 'react-reconciler/src/ReactInternalTypes';
 import type {
   BoundingRect,
   Intersection,
-} from '../../../react-reconciler/src/ReactTestSelectors.js';
-import type {ReactContext} from '../../../shared/ReactTypes.js';
+} from 'react-reconciler/src/ReactTestSelectors';
+import type {ReactContext} from 'shared/ReactTypes';
 import type {FormStatus} from '../shared/ReactDOMFormActions.js';
 import type {AncestorInfoDev} from './validateDOMNesting.js';
 
@@ -22,7 +22,7 @@ export {
 
 export {detachDeletedInstance} from './ReactDOMComponentTree.js';
 
-export {default as rendererVersion} from '../../../shared/ReactVersion.js';
+export {default as rendererVersion} from 'shared/ReactVersion';
 
 export {
   supportsPersistence,
@@ -33,7 +33,7 @@ export {
   replaceContainerChildren,
   cloneHiddenInstance,
   cloneHiddenTextInstance,
-} from '../../../react-reconciler/src/ReactFiberConfigWithNoPersistence.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
 
 export {getClosestInstanceFromNode as getInstanceFromNode} from './ReactDOMComponentTree.js';
 

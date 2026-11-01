@@ -54,9 +54,9 @@ export {
   REACT_PROFILER_TYPE as Profiler,
   REACT_STRICT_MODE_TYPE as StrictMode,
   REACT_SUSPENSE_TYPE as Suspense,
-} from '../../shared/ReactSymbols.js';
+} from 'shared/ReactSymbols';
 
-export {default as version} from '../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
 export {
   getCacheForType as unstable_getCacheForType,
@@ -72,19 +72,19 @@ export {
   REACT_ACTIVITY_TYPE as Activity,
   REACT_LEGACY_HIDDEN_TYPE as unstable_LegacyHidden,
   REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList,
-} from '../../shared/ReactSymbols.js';
+} from 'shared/ReactSymbols';
 
-export {REACT_SCOPE_TYPE as unstable_Scope} from '../../shared/ReactSymbols.js';
+export {REACT_SCOPE_TYPE as unstable_Scope} from 'shared/ReactSymbols';
 
-export {REACT_TRACING_MARKER_TYPE as unstable_TracingMarker} from '../../shared/ReactSymbols.js';
+export {REACT_TRACING_MARKER_TYPE as unstable_TracingMarker} from 'shared/ReactSymbols';
 
 export {addTransitionType} from './ReactTransitionType.js';
 
-export {REACT_VIEW_TRANSITION_TYPE as ViewTransition} from '../../shared/ReactSymbols.js';
+export {REACT_VIEW_TRANSITION_TYPE as ViewTransition} from 'shared/ReactSymbols';
 
 export {startGestureTransition as unstable_startGestureTransition} from './ReactStartTransition.js';
 
-export {REACT_OPTIMISTIC_KEY as optimisticKey} from '../../shared/ReactSymbols.js';
+export {REACT_OPTIMISTIC_KEY as optimisticKey} from 'shared/ReactSymbols';
 
 export {act} from './ReactAct.js';
 

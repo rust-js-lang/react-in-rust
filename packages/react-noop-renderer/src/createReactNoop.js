@@ -16,20 +16,14 @@ import {
   DiscreteEventPriority,
   IdleEventPriority,
   NoEventPriority,
-} from '../../react-reconciler/src/ReactEventPriorities.js';
-import {
-  ConcurrentRoot,
-  LegacyRoot,
-} from '../../react-reconciler/src/ReactRootTags.js';
-import {checkPropStringCoercion} from '../../shared/CheckStringCoercion.js';
-import {disableLegacyMode} from '../../shared/ReactFeatureFlags.js';
-import ReactSharedInternals from '../../shared/ReactSharedInternals.js';
-import {
-  REACT_ELEMENT_TYPE,
-  REACT_FRAGMENT_TYPE,
-} from '../../shared/ReactSymbols.js';
-import ReactVersion from '../../shared/ReactVersion.js';
-import isArray from '../../shared/isArray.js';
+} from 'react-reconciler/src/ReactEventPriorities';
+import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
+import {checkPropStringCoercion} from 'shared/CheckStringCoercion';
+import {disableLegacyMode} from 'shared/ReactFeatureFlags';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
+import {REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE} from 'shared/ReactSymbols';
+import ReactVersion from 'shared/ReactVersion';
+import isArray from 'shared/isArray';
 import * as DefaultConfig from './ReactFiberConfigNoop.js';
 import {$displayF64, $unwrap} from '@rust-js/runtime';
 

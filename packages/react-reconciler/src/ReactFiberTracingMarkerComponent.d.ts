@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {Transition} from '../../react/src/ReactStartTransition.js';
+import type {Transition} from 'react/src/ReactStartTransition';
 import type {OffscreenInstance} from './ReactFiberOffscreenComponent.js';
 import type {Fiber, TransitionTracingCallbacks} from './ReactInternalTypes.js';
 

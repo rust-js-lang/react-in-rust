@@ -10,7 +10,7 @@ import {
   enableProfilerTimer,
   enableViewTransitionForPersistenceMode,
   enableViewTransitionParentEnterExit,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {
   applyViewTransitionName,
   hasInstanceAffectedParent,

@@ -14,10 +14,10 @@ import {
   enableProfilerNestedUpdatePhase,
   enableProfilerTimer,
   enableYieldingBeforePassive,
-} from '../../shared/ReactFeatureFlags.js';
-import ReactSharedInternals from '../../shared/ReactSharedInternals.js';
-import noop from '../../shared/noop.js';
-import reportGlobalError from '../../shared/reportGlobalError.js';
+} from 'shared/ReactFeatureFlags';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
+import noop from 'shared/noop';
+import reportGlobalError from 'shared/reportGlobalError';
 import {
   ContinuousEventPriority,
   DefaultEventPriority,

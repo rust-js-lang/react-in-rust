@@ -11,7 +11,7 @@ import {
   defaultOnCaughtError,
   defaultOnRecoverableError,
   defaultOnUncaughtError,
-} from '../../react-reconciler/src/ReactFiberErrorLogger.js';
+} from 'react-reconciler/src/ReactFiberErrorLogger';
 import {
   batchedUpdates,
   createContainer,
@@ -19,12 +19,9 @@ import {
   getPublicRootInstance,
   injectIntoDevTools,
   updateContainer,
-} from '../../react-reconciler/src/ReactFiberReconciler.js';
-import {findCurrentFiberUsingSlowPath} from '../../react-reconciler/src/ReactFiberTreeReflection.js';
-import {
-  ConcurrentRoot,
-  LegacyRoot,
-} from '../../react-reconciler/src/ReactRootTags.js';
+} from 'react-reconciler/src/ReactFiberReconciler';
+import {findCurrentFiberUsingSlowPath} from 'react-reconciler/src/ReactFiberTreeReflection';
+import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
 import {
   ClassComponent,
   ContextConsumer,
@@ -44,18 +41,18 @@ import {
   Profiler,
   ScopeComponent,
   SimpleMemoComponent,
-} from '../../react-reconciler/src/ReactWorkTags.js';
-import {checkPropStringCoercion} from '../../shared/CheckStringCoercion.js';
+} from 'react-reconciler/src/ReactWorkTags';
+import {checkPropStringCoercion} from 'shared/CheckStringCoercion';
 import {
   disableLegacyMode,
   enableReactTestRendererWarning,
-} from '../../shared/ReactFeatureFlags.js';
-import getComponentNameFromType from '../../shared/getComponentNameFromType.js';
+} from 'shared/ReactFeatureFlags';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
 import {getPublicInstance} from './ReactFiberConfigTestHost.js';
 import {$extend, $index, $unwrap} from '@rust-js/runtime';
 
 export * as _Scheduler from 'scheduler/unstable_mock';
-export {default as version} from '../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
 function defaultOnDefaultTransitionIndicator() {}
 

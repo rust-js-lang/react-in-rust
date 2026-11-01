@@ -19,11 +19,11 @@ import {
   createResumableState,
   createRootFormatContext,
   resumeRenderState,
-} from '../../../react-dom-bindings/src/server/ReactFizzConfigDOM.js';
+} from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
 import {$unwrap} from '@rust-js/runtime';
 
-export {default as version} from '../../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
 ensureCorrectIsomorphicReactVersion();
 

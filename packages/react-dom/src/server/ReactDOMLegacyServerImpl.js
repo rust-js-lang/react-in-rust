@@ -14,10 +14,10 @@ import {
 import {
   createResumableState,
   createRootFormatContext,
-} from '../../../react-dom-bindings/src/server/ReactFizzConfigDOM.js';
-import {createRenderState} from '../../../react-dom-bindings/src/server/ReactFizzConfigDOMLegacy.js';
+} from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
+import {createRenderState} from 'react-dom-bindings/src/server/ReactFizzConfigDOMLegacy';
 
-export {default as version} from '../../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
 function onError(error, errorInfo) {
   // Non-fatal errors are ignored.

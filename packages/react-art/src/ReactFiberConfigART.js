@@ -10,11 +10,11 @@ import Mode from 'art/modes/current';
 import {
   DefaultEventPriority,
   NoEventPriority,
-} from '../../react-reconciler/src/ReactEventPriorities.js';
-import {REACT_CONTEXT_TYPE} from '../../shared/ReactSymbols.js';
+} from 'react-reconciler/src/ReactEventPriorities';
+import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
 import {EVENT_TYPES, TYPES, childrenAsString} from './ReactARTInternals.js';
 
-export {default as rendererVersion} from '../../shared/ReactVersion.js';
+export {default as rendererVersion} from 'shared/ReactVersion';
 
 export {
   supportsHydration,
@@ -59,12 +59,12 @@ export {
   describeHydratableInstanceForDevWarnings,
   validateHydratableInstance,
   validateHydratableTextInstance,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoHydration.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoHydration';
 
 export {
   supportsMicrotasks,
   scheduleMicrotask,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoMicrotasks.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoMicrotasks';
 
 export {
   supportsPersistence,
@@ -75,7 +75,7 @@ export {
   replaceContainerChildren,
   cloneHiddenInstance,
   cloneHiddenTextInstance,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoPersistence.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
 
 export {
   supportsResources,
@@ -92,12 +92,12 @@ export {
   mayResourceSuspendCommit,
   preloadResource,
   suspendResource,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoResources.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoResources';
 
 export {
   prepareScopeUpdate,
   getInstanceFromScope,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoScopes.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoScopes';
 
 export {
   supportsSingletons,
@@ -106,7 +106,7 @@ export {
   releaseSingletonInstance,
   isHostSingletonType,
   isSingletonScope,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoSingletons.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoSingletons';
 
 export {
   supportsTestSelectors,
@@ -117,7 +117,7 @@ export {
   matchAccessibilityRole,
   setFocusIfFocusable,
   setupIntersectionObserver,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoTestSelectors.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoTestSelectors';
 
 export const rendererPackageName = 'react-art';
 export const extraDevToolsConfig = null;

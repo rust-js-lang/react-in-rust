@@ -6,25 +6,25 @@
 // LICENSE file in the root directory of this source tree.
 
 import {unstable_scheduleCallback as scheduleCallback} from 'scheduler';
-import {isHigherEventPriority} from '../../../react-reconciler/src/ReactEventPriorities.js';
+import {isHigherEventPriority} from 'react-reconciler/src/ReactEventPriorities';
 import {
   attemptContinuousHydration,
   attemptHydrationAtCurrentPriority,
-} from '../../../react-reconciler/src/ReactFiberReconciler.js';
-import {isRootDehydrated} from '../../../react-reconciler/src/ReactFiberShellHydration.js';
+} from 'react-reconciler/src/ReactFiberReconciler';
+import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
 import {
   getActivityInstanceFromFiber,
   getContainerFromFiber,
   getNearestMountedFiber,
   getSuspenseInstanceFromFiber,
-} from '../../../react-reconciler/src/ReactFiberTreeReflection.js';
+} from 'react-reconciler/src/ReactFiberTreeReflection';
 import {
   ActivityComponent,
   HostRoot,
   SuspenseComponent,
-} from '../../../react-reconciler/src/ReactWorkTags.js';
-import {NormalPriority} from '../../../scheduler/src/SchedulerPriorities.js';
-import {enableHydrationChangeEvent} from '../../../shared/ReactFeatureFlags.js';
+} from 'react-reconciler/src/ReactWorkTags';
+import {NormalPriority} from 'scheduler/src/SchedulerPriorities';
+import {enableHydrationChangeEvent} from 'shared/ReactFeatureFlags';
 import {
   getClosestInstanceFromNode,
   getFiberCurrentPropsFromNode,

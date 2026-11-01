@@ -9,7 +9,7 @@ import type {
   ReactContext,
   RefObject,
   StartTransitionOptions,
-} from '../../shared/ReactTypes.js';
+} from 'shared/ReactTypes';
 
 /** The next state, or what makes it of the one before. */
 export type BasicStateAction<S> = ((s: S) => S) | S;

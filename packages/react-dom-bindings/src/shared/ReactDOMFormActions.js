@@ -5,8 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import ReactDOMSharedInternals from '../../../shared/ReactDOMSharedInternals.js';
-import ReactSharedInternals from '../../../shared/ReactSharedInternals.js';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 // Since the "not pending" value is always the same, we can reuse the
 // same object across all transitions.

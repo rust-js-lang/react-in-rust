@@ -11,12 +11,12 @@ import {
   enableGestureTransition,
   enablePerformanceIssueReporting,
   enableProfilerTimer,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {
   addObjectDiffToProperties,
   addObjectToProperties,
   addValueToProperties,
-} from '../../shared/ReactPerformanceTrackProperties.js';
+} from 'shared/ReactPerformanceTrackProperties';
 import {
   getGroupNameOfHighestPriorityLane,
   includesOnlyHydrationLanes,

@@ -9,7 +9,7 @@ import {
   REACT_FORWARD_REF_TYPE,
   REACT_LAZY_TYPE,
   REACT_MEMO_TYPE,
-} from '../../shared/ReactSymbols.js';
+} from 'shared/ReactSymbols';
 import {enqueueConcurrentRenderForLane} from './ReactFiberConcurrentUpdates.js';
 import {SyncLane} from './ReactFiberLane.js';
 import {emptyContextObject} from './ReactFiberLegacyContext.js';

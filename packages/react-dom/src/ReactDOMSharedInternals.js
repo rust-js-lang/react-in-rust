@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import noop from '../../shared/noop.js';
+import noop from 'shared/noop';
 
 // This should line up with NoEventPriority from react-reconciler/src/ReactEventPriorities
 // but we can't depend on the react-reconciler from this isomorphic code.

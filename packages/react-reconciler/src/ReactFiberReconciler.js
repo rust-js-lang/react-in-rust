@@ -8,10 +8,10 @@
 import {
   disableLegacyMode,
   enableSchedulingProfiler,
-} from '../../shared/ReactFeatureFlags.js';
-import {get as getInstance} from '../../shared/ReactInstanceMap.js';
-import ReactSharedInternals from '../../shared/ReactSharedInternals.js';
-import ReactVersion from '../../shared/ReactVersion.js';
+} from 'shared/ReactFeatureFlags';
+import {get as getInstance} from 'shared/ReactInstanceMap';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
+import ReactVersion from 'shared/ReactVersion';
 import {
   current as ReactCurrentFiberCurrent,
   isRendering as ReactCurrentFiberIsRendering,

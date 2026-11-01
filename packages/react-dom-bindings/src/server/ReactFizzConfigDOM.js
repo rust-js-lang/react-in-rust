@@ -25,17 +25,17 @@ import {
   checkCSSPropertyStringCoercion,
   checkHtmlStringCoercion,
   checkOptionStringCoercion,
-} from '../../../shared/CheckStringCoercion.js';
-import ReactDOMSharedInternals from '../../../shared/ReactDOMSharedInternals.js';
+} from 'shared/CheckStringCoercion';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import {
   enableFizzBlockingRender,
   enableFizzExternalRuntime,
   enableSrcObject,
   enableViewTransition,
   enableViewTransitionParentEnterExit,
-} from '../../../shared/ReactFeatureFlags.js';
-import hasOwnProperty from '../../../shared/hasOwnProperty.js';
-import isArray from '../../../shared/isArray.js';
+} from 'shared/ReactFeatureFlags';
+import hasOwnProperty from 'shared/hasOwnProperty';
+import isArray from 'shared/isArray';
 import {checkControlledValueProps} from '../shared/ReactControlledValuePropTypes.js';
 import {NotPending} from '../shared/ReactDOMFormActions.js';
 import {validateProperties as validateARIAProperties} from '../shared/ReactDOMInvalidARIAHook.js';

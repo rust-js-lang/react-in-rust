@@ -11,7 +11,7 @@ import type {
   ReactAsyncInfo,
   ReactComponentInfo,
   ReactIOInfo,
-} from '../../shared/ReactTypes.js';
+} from 'shared/ReactTypes';
 
 /**
  * What DevTools' performance panel reads of a measure's `detail.devtools`:

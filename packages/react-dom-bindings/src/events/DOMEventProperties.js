@@ -8,7 +8,7 @@
 import {
   enableCreateEventHandleAPI,
   enableScrollEndPolyfill,
-} from '../../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {
   ANIMATION_CANCEL,
   ANIMATION_END,

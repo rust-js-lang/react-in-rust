@@ -12,7 +12,7 @@ import {
   jsxProdSignatureRunningInDevWithStaticChildren,
 } from './ReactJSXElement.js';
 
-export {REACT_FRAGMENT_TYPE as Fragment} from '../../../shared/ReactSymbols.js';
+export {REACT_FRAGMENT_TYPE as Fragment} from 'shared/ReactSymbols';
 
 export const jsx = __DEV__
   ? jsxProdSignatureRunningInDevWithDynamicChildren

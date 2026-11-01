@@ -7,7 +7,7 @@
 
 import {renderToStringImpl} from './ReactDOMLegacyServerImpl.js';
 
-export {default as version} from '../../../shared/ReactVersion.js';
+export {default as version} from 'shared/ReactVersion';
 
 export function renderToString(children, options) {
   return renderToStringImpl(

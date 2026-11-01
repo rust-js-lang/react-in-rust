@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import * as IsomorphicReactPackage from 'react';
-import reactDOMPackageVersion from '../../../shared/ReactVersion.js';
+import reactDOMPackageVersion from 'shared/ReactVersion';
 
 export function ensureCorrectIsomorphicReactVersion() {
   const isomorphicReactPackageVersion = IsomorphicReactPackage.version;

@@ -17,15 +17,15 @@ import {
   enableScopeAPI,
   enableTransitionTracing,
   enableViewTransition,
-} from '../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {
   REACT_CONTEXT_TYPE,
   REACT_FORWARD_REF_TYPE,
   REACT_LAZY_TYPE,
   REACT_MEMO_TYPE,
-} from '../../shared/ReactSymbols.js';
-import getComponentNameFromType from '../../shared/getComponentNameFromType.js';
-import shallowEqual from '../../shared/shallowEqual.js';
+} from 'shared/ReactSymbols';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
+import shallowEqual from 'shared/shallowEqual';
 import {
   createCapturedValueAtFiber,
   createCapturedValueFromError,

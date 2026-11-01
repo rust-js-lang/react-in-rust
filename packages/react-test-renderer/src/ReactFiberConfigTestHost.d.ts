@@ -5,10 +5,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {EventPriority} from '../../react-reconciler/src/ReactEventPriorities.js';
-import type {ReactContext} from '../../shared/ReactTypes.js';
+import type {EventPriority} from 'react-reconciler/src/ReactEventPriorities';
+import type {ReactContext} from 'shared/ReactTypes';
 
-export {default as rendererVersion} from '../../shared/ReactVersion.js';
+export {default as rendererVersion} from 'shared/ReactVersion';
 
 export {
   supportsHydration,
@@ -53,12 +53,12 @@ export {
   describeHydratableInstanceForDevWarnings,
   validateHydratableInstance,
   validateHydratableTextInstance,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoHydration.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoHydration';
 
 export {
   supportsMicrotasks,
   scheduleMicrotask,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoMicrotasks.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoMicrotasks';
 
 export {
   supportsPersistence,
@@ -69,7 +69,7 @@ export {
   replaceContainerChildren,
   cloneHiddenInstance,
   cloneHiddenTextInstance,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoPersistence.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
 
 export {
   supportsResources,
@@ -86,7 +86,7 @@ export {
   mayResourceSuspendCommit,
   preloadResource,
   suspendResource,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoResources.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoResources';
 
 export {
   supportsSingletons,
@@ -95,7 +95,7 @@ export {
   releaseSingletonInstance,
   isHostSingletonType,
   isSingletonScope,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoSingletons.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoSingletons';
 
 export {
   supportsTestSelectors,
@@ -106,7 +106,7 @@ export {
   matchAccessibilityRole,
   setFocusIfFocusable,
   setupIntersectionObserver,
-} from '../../react-reconciler/src/ReactFiberConfigWithNoTestSelectors.js';
+} from 'react-reconciler/src/ReactFiberConfigWithNoTestSelectors';
 
 export const rendererPackageName: string;
 

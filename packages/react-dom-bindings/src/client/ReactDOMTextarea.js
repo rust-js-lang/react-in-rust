@@ -5,9 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {getCurrentFiberOwnerNameInDevOrNull} from '../../../react-reconciler/src/ReactCurrentFiber.js';
-import {disableTextareaChildren} from '../../../shared/ReactFeatureFlags.js';
-import isArray from '../../../shared/isArray.js';
+import {getCurrentFiberOwnerNameInDevOrNull} from 'react-reconciler/src/ReactCurrentFiber';
+import {disableTextareaChildren} from 'shared/ReactFeatureFlags';
+import isArray from 'shared/isArray';
 import {queueChangeEvent} from '../events/ReactDOMEventReplaying.js';
 import {getToStringValue, toString} from './ToStringValue.js';
 import {track, trackHydrated} from './inputValueTracking.js';

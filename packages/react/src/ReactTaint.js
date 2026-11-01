@@ -5,9 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {enableTaint} from '../../shared/ReactFeatureFlags.js';
-import binaryToComparableString from '../../shared/binaryToComparableString.js';
-import getPrototypeOf from '../../shared/getPrototypeOf.js';
+import {enableTaint} from 'shared/ReactFeatureFlags';
+import binaryToComparableString from 'shared/binaryToComparableString';
+import getPrototypeOf from 'shared/getPrototypeOf';
 import ReactSharedInternals from './ReactSharedInternalsServer.js';
 import {$unwrap} from '@rust-js/runtime';
 

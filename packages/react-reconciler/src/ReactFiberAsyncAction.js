@@ -9,9 +9,9 @@ import {
   enableComponentPerformanceTrack,
   enableDefaultTransitionIndicator,
   enableProfilerTimer,
-} from '../../shared/ReactFeatureFlags.js';
-import noop from '../../shared/noop.js';
-import reportGlobalError from '../../shared/reportGlobalError.js';
+} from 'shared/ReactFeatureFlags';
+import noop from 'shared/noop';
+import reportGlobalError from 'shared/reportGlobalError';
 import {NoLane} from './ReactFiberLane.js';
 import {
   ensureScheduleIsScheduled,

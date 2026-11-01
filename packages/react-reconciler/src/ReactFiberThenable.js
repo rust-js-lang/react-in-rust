@@ -5,9 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {enableConditionalUseWarning} from '../../shared/ReactFeatureFlags.js';
-import ReactSharedInternals from '../../shared/ReactSharedInternals.js';
-import noop from '../../shared/noop.js';
+import {enableConditionalUseWarning} from 'shared/ReactFeatureFlags';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
+import noop from 'shared/noop';
 import {callLazyInitInDEV} from './ReactFiberCallUserSpace.js';
 import {getWorkInProgressRoot} from './ReactFiberWorkLoop.js';
 import {HostRoot} from './ReactWorkTags.js';

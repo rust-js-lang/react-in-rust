@@ -5,18 +5,18 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {trackHostMutation} from '../../../react-reconciler/src/ReactFiberMutationTracking.js';
+import {trackHostMutation} from 'react-reconciler/src/ReactFiberMutationTracking';
 import {
   checkAttributeStringCoercion,
   checkHtmlStringCoercion,
-} from '../../../shared/CheckStringCoercion.js';
+} from 'shared/CheckStringCoercion';
 import {
   enableHydrationChangeEvent,
   enableScrollEndPolyfill,
   enableSrcObject,
   enableViewTransition,
   enableViewTransitionParentEnterExit,
-} from '../../../shared/ReactFeatureFlags.js';
+} from 'shared/ReactFeatureFlags';
 import {
   listenToNonDelegatedEvent,
   mediaEventTypes,

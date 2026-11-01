@@ -5,15 +5,15 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {checkAttributeStringCoercion} from '../../shared/CheckStringCoercion.js';
+import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
 import {
   REACT_CONTEXT_TYPE,
   REACT_MEMO_CACHE_SENTINEL,
   REACT_RECOVERABLE_TYPE,
-} from '../../shared/ReactSymbols.js';
-import hasOwnProperty from '../../shared/hasOwnProperty.js';
-import noop from '../../shared/noop.js';
-import objectIs from '../../shared/objectIs.js';
+} from 'shared/ReactSymbols';
+import hasOwnProperty from 'shared/hasOwnProperty';
+import noop from 'shared/noop';
+import objectIs from 'shared/objectIs';
 import {
   NotPendingTransition,
   makeId,

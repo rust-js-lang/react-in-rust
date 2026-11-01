@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {enableCreateEventHandleAPI} from '../../shared/ReactFeatureFlags.js';
+import {enableCreateEventHandleAPI} from 'shared/ReactFeatureFlags';
 
 // Don't change these values. They're used by React Dev Tools.
 export const NoFlags = /*                      */ 0b0000000000000000000000000000000;
