@@ -613,6 +613,27 @@ These differences from upstream's output are accepted:
   the reconciler's ReactFiberConfig forks do: `export *` re-exports of the
   configs and the `$$$config` shims.
 
+- **The Flight client's forms** (the user, 2026-11-01): ResponseInstance,
+  the constructor function `Class::of(function::with_this(..))` makes, ends
+  `return this;`; `missingCall` takes the parameters of the callback it
+  stands in for, where upstream's takes none; the fake function fallback's
+  parameter upstream names `_` is `callback` (Rust can't name a parameter
+  `_` and read it); and an object literal's key whose value is `None` is
+  left out, where upstream writes the key with `undefined` or `null` and
+  nothing tells the two apart (rd391). FlightStreamController's arrow
+  properties, the old variant's keys left on a chunk and ReactPromise's
+  constructor of upstream's parameters were accepted before.
+- **The Flight client's constructors as values** (the user, 2026-11-01):
+  an Error-family constructor used as a value, `Error.bind(null, ..)`,
+  prints as the class itself (rd404); the typed-array constructors
+  resolveTypedArray is handed share one type,
+  `Class<fn(&ArrayBuffer, f64, f64) -> &'static ArrayBufferView>` (rd410).
+- **ReactART's `updateContainerSync(.., null)`** (the user, 2026-11-01):
+  updateContainerSync's `callback` stays nullable, as two of upstream's
+  three callers pass `null`, so ReactART's call prints a trailing `null`
+  where upstream leaves the argument out. Its type is `?Function`, and the
+  reconciler tests it `!= null`.
+
 The audit of 2026-11-01 (Batch 41) listed these; the user accepted them the
 same day:
 
