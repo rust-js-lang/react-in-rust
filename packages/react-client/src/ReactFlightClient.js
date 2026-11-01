@@ -4432,7 +4432,7 @@ function initializeIOInfo(response, ioInfo) {
     const env = $unwrap(response._rootEnvironmentName);
     const promise = ioInfo.value;
     if (promise != null) {
-      switch (String(promise.status)) {
+      switch (promise.status) {
         case 'fulfilled':
           logIOInfo(ioInfo, env, promise.value);
           break;
@@ -4788,7 +4788,7 @@ function flushComponentPerformance(
               const env = $unwrap(response._rootEnvironmentName);
               const promise = asyncInfo.awaited.value;
               if (promise != null) {
-                switch (String(promise.status)) {
+                switch (promise.status) {
                   case 'fulfilled':
                     logComponentAwait(
                       asyncInfo,

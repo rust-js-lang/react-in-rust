@@ -775,6 +775,10 @@ These differences from upstream's output are accepted:
   - processFullStringRow reads a hint's code `row[0] ?? ''`, where
     upstream's is `undefined` of an empty row: dispatchHint matches
     neither;
+  - initializeIOInfo and flushComponentPerformance switch on
+    `promise.status`, where upstream names the promise first, `const
+    thenable: Thenable<mixed> = promise as any;`: the port's `js::cast` to
+    shared's `Thenable` prints no alias (Batch 53).
 - **The Flight client's stream source is webapi's** (2026-11-02): its
   local `UnderlyingSource` stand-in is gone; startReadableStream gives
   `readable_stream::new` webapi's `UnderlyingSource { r#type, start, ..

@@ -28,7 +28,7 @@ use shared::react_symbols::{
 };
 use shared::react_types::{
     JSONValue, ReactAsyncInfo, ReactComponentInfo, ReactDebugInfo, ReactDebugInfoEntry,
-    ReactErrorInfoDev, ReactIOInfo, ReactStackTrace, ReactTimeInfo,
+    ReactErrorInfoDev, ReactIOInfo, ReactStackTrace, ReactTimeInfo, Thenable,
 };
 use shared::react_version::REACT_VERSION;
 use webapi::{ConsoleTask, ReadableStreamController, UnderlyingSource, console, performance};
@@ -5813,10 +5813,11 @@ fn initialize_io_info(response: &'static Response, io_info: &'static ReactIOInfo
         let env = response._root_environment_name.borrow().clone().unwrap();
         let promise = io_info.value.get();
         if let Some(promise) = promise {
-            let thenable = js::unknown(&promise);
-            match js::string(js::get(thenable, "status")).as_str() {
-                INITIALIZED => log_io_info(io_info, &env, js::get(thenable, "value")),
-                ERRORED => log_io_info_errored(io_info, &env, js::get(thenable, "reason")),
+            // SAFETY: a promise is a thenable.
+            let thenable: &Thenable = unsafe { js::cast(Some(js::unknown(&promise))) };
+            match thenable.status().as_deref() {
+                Some(INITIALIZED) => log_io_info(io_info, &env, thenable.value()),
+                Some(ERRORED) => log_io_info_errored(io_info, &env, thenable.reason()),
                 _ => {
                     // If we haven't resolved the Promise yet, wait to log until have so we can include
                     // its data in the log.
@@ -6170,23 +6171,25 @@ fn flush_component_performance(
                         let env = response._root_environment_name.borrow().clone().unwrap();
                         let promise = async_info.awaited.value.get();
                         if let Some(promise) = promise {
-                            let thenable = js::unknown(&promise);
-                            match js::string(js::get(thenable, "status")).as_str() {
-                                INITIALIZED => log_component_await(
+                            // SAFETY: a promise is a thenable.
+                            let thenable: &Thenable =
+                                unsafe { js::cast(Some(js::unknown(&promise))) };
+                            match thenable.status().as_deref() {
+                                Some(INITIALIZED) => log_component_await(
                                     async_info,
                                     track_idx,
                                     time,
                                     end_time,
                                     &env,
-                                    js::get(thenable, "value"),
+                                    thenable.value(),
                                 ),
-                                ERRORED => log_component_await_errored(
+                                Some(ERRORED) => log_component_await_errored(
                                     async_info,
                                     track_idx,
                                     time,
                                     end_time,
                                     &env,
-                                    js::get(thenable, "reason"),
+                                    thenable.reason(),
                                 ),
                                 // We assume that we should have received the data by now since this is logged at the
                                 // end of the response stream. This is more sensitive to ordering so we don't wait
