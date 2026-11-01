@@ -5718,11 +5718,12 @@ function preload(href, as, options) {
         const hasAsType = unknownResources.hasOwnProperty(as);
         let resources;
         if (hasAsType) {
-          resources = $unwrap(unknownResources[as]);
-          if (resources.hasOwnProperty(key)) {
+          const resources$1 = $unwrap(unknownResources[as]);
+          if (resources$1.hasOwnProperty(key)) {
             // we can return if we already have this resource
             return;
           }
+          resources = resources$1;
         } else {
           resources = {};
           unknownResources[as] = resources;

@@ -198,6 +198,17 @@ Open:
   read, used once as the next statement's argument with nothing between
   that could write it, read in place.
 
+- **rd572** (readability, no minimal repro yet) ConfigDOM's preload, of
+  `let resources = if has_as_type { let resources = *dict::get(..).unwrap();
+  if .. { return; } resources } else { .. };`, printed upstream's `resources
+  = $unwrap(unknownResources[as]);` before phase B's step 3 and prints
+  `const resources$1 = ..; .. resources = resources$1;` after it, though
+  the step changed only where `resumable_state` comes from (the server's
+  generic `get_resumable_state::<ResumableState>`, where it was a
+  binding). The module-unknown site below it printed `resources$1` before
+  too. The same function alone, in a crate of its own, prints upstream's
+  form.
+
 ## Deep-tree resume (ReactDOMFizzServer-test, "can recover from very deep trees during resume")
 
 **Cause:** the resume replays 1200 nested `Deep` elements, each through

@@ -9,7 +9,9 @@ use std::panic::{self, AssertUnwindSafe};
 use std::rc::Rc;
 
 use js::{Dict, JsObject, Kind, Unknown, dict};
-use react_server::react_fizz_current_task::Request;
+use react_server::react_fizz_server::{
+    flush_resources, get_render_state, get_resumable_state, resolve_request,
+};
 use shared::environment::__DEV__;
 use shared::react_dom_shared_internals::{HostDispatcher, REACT_DOM_SHARED_INTERNALS};
 use shared::react_feature_flags::{
@@ -115,41 +117,6 @@ pub fn string_to_precomputed_chunk(content: &str) -> &'static PrecomputedChunk {
 )]
 fn read_as_data_url(blob: &Blob) -> &'static Thenable {
     let _ = blob;
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFizzServer#resolveRequest"
-)]
-fn resolve_request() -> Option<&'static Request> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFizzServer#getResumableState"
-)]
-fn get_resumable_state(request: &Request) -> &'static ResumableState {
-    let _ = request;
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFizzServer#getRenderState"
-)]
-fn get_render_state(request: &Request) -> &'static RenderState {
-    let _ = request;
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFizzServer#flushResources"
-)]
-fn flush_resources(request: &Request) {
-    let _ = request;
     unreachable!()
 }
 
@@ -6255,8 +6222,8 @@ fn prefetch_dns(href: &str) {
         (PREVIOUS_DISPATCHER.with(|previous_dispatcher| previous_dispatcher.prefetch_dns))(href);
         return;
     };
-    let resumable_state = get_resumable_state(request);
-    let render_state = get_render_state(request);
+    let resumable_state: &ResumableState = get_resumable_state(&request);
+    let render_state: &RenderState = get_render_state(&request);
 
     if !href.is_empty() {
         let key = get_resource_key(href);
@@ -6288,7 +6255,7 @@ fn prefetch_dns(href: &str) {
                 render_state.preconnects.add(&resource);
             }
         }
-        flush_resources(request);
+        flush_resources(&request);
     }
 }
 
@@ -6312,8 +6279,8 @@ fn preconnect(href: &str, cross_origin: Option<&'static Unknown>) {
         );
         return;
     };
-    let resumable_state = get_resumable_state(request);
-    let render_state = get_render_state(request);
+    let resumable_state: &ResumableState = get_resumable_state(&request);
+    let render_state: &RenderState = get_render_state(&request);
 
     if !href.is_empty() {
         let bucket = if js::strict_equals(cross_origin, "use-credentials") {
@@ -6361,7 +6328,7 @@ fn preconnect(href: &str, cross_origin: Option<&'static Unknown>) {
                 render_state.preconnects.add(&resource);
             }
         }
-        flush_resources(request);
+        flush_resources(&request);
     }
 }
 
@@ -6402,8 +6369,8 @@ fn preload(href: &str, r#as: &str, options: Option<&'static Unknown>) {
         );
         return;
     };
-    let resumable_state = get_resumable_state(request);
-    let render_state = get_render_state(request);
+    let resumable_state: &ResumableState = get_resumable_state(&request);
+    let render_state: &RenderState = get_render_state(&request);
     if !r#as.is_empty() && !href.is_empty() {
         match r#as {
             "image" => {
@@ -6592,7 +6559,7 @@ fn preload(href: &str, r#as: &str, options: Option<&'static Unknown>) {
             }
         }
         // If we got this far we created a new resource
-        flush_resources(request);
+        flush_resources(&request);
     }
 }
 
@@ -6613,8 +6580,8 @@ fn preload_module(href: &str, options: Option<&'static Unknown>) {
         (PREVIOUS_DISPATCHER.with(|previous_dispatcher| previous_dispatcher.m))(href, options);
         return;
     };
-    let resumable_state = get_resumable_state(request);
-    let render_state = get_render_state(request);
+    let resumable_state: &ResumableState = get_resumable_state(&request);
+    let render_state: &RenderState = get_render_state(&request);
     if !href.is_empty() {
         let key = get_resource_key(href);
         let r#as = if js::truthy(options) && js::type_of(js::get(options, "as")) == "string" {
@@ -6675,7 +6642,7 @@ fn preload_module(href: &str, options: Option<&'static Unknown>) {
         );
         render_state.bulk_preloads.add(&resource);
         // If we got this far we created a new resource
-        flush_resources(request);
+        flush_resources(&request);
     }
 }
 
@@ -6715,8 +6682,8 @@ fn preinit_style(
         );
         return;
     };
-    let resumable_state = get_resumable_state(request);
-    let render_state = get_render_state(request);
+    let resumable_state: &ResumableState = get_resumable_state(&request);
+    let render_state: &RenderState = get_render_state(&request);
     if !href.is_empty() {
         let precedence = if js::truthy(precedence) {
             js::concat_text(precedence).unwrap()
@@ -6798,7 +6765,7 @@ fn preinit_style(
             style_queue.sheets.set(&key, resource);
 
             // Notify the request that there are resources to flush even if no work is currently happening
-            flush_resources(request);
+            flush_resources(&request);
         }
     }
 }
@@ -6822,8 +6789,8 @@ fn preinit_script(src: &str, options: Option<&'static Unknown>) {
         );
         return;
     };
-    let resumable_state = get_resumable_state(request);
-    let render_state = get_render_state(request);
+    let resumable_state: &ResumableState = get_resumable_state(&request);
+    let render_state: &RenderState = get_render_state(&request);
     if !src.is_empty() {
         let key = get_resource_key(src);
 
@@ -6864,7 +6831,7 @@ fn preinit_script(src: &str, options: Option<&'static Unknown>) {
             // encode the tag as Chunks
             push_script_impl(&resource, props);
             // Notify the request that there are resources to flush even if no work is currently happening
-            flush_resources(request);
+            flush_resources(&request);
         }
     }
 }
@@ -6889,8 +6856,8 @@ fn preinit_module_script(src: &str, options: Option<&'static Unknown>) {
         );
         return;
     };
-    let resumable_state = get_resumable_state(request);
-    let render_state = get_render_state(request);
+    let resumable_state: &ResumableState = get_resumable_state(&request);
+    let render_state: &RenderState = get_render_state(&request);
     if !src.is_empty() {
         let key = get_resource_key(src);
         let module_script_resources = resumable_state.module_script_resources.get();
@@ -6931,7 +6898,7 @@ fn preinit_module_script(src: &str, options: Option<&'static Unknown>) {
             // encode the tag as Chunks
             push_script_impl(&resource, props);
             // Notify the request that there are resources to flush even if no work is currently happening
-            flush_resources(request);
+            flush_resources(&request);
         }
     }
 }

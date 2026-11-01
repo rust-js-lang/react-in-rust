@@ -364,9 +364,9 @@ export function flushResources(request: Request): void;
 
 export function getFormState(request: Request): FormState | null;
 
-export function getResumableState(request: Request): ResumableState;
+export function getResumableState<S>(request: Request): S;
 
-export function getRenderState(request: Request): RenderState;
+export function getRenderState<R>(request: Request): R;
 
 export interface PostponedState {
   nextSegmentId: number;

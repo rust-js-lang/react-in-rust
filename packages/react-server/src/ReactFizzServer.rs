@@ -8219,12 +8219,12 @@ pub fn get_form_state(request: &Request) -> Option<&'static FormState> {
     request.form_state
 }
 
-pub fn get_resumable_state(request: &Request) -> &'static ResumableState {
-    request.resumable_state
+pub fn get_resumable_state<S: 'static>(request: &Request) -> &'static S {
+    unsafe { js::cast(Some(request.resumable_state)) }
 }
 
-pub fn get_render_state(request: &Request) -> &'static RenderState {
-    request.render_state
+pub fn get_render_state<R: 'static>(request: &Request) -> &'static R {
+    unsafe { js::cast(Some(request.render_state)) }
 }
 
 fn add_to_replay_parent(
