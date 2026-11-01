@@ -8,7 +8,7 @@ use std::marker::PhantomData;
 
 use js::{JsObject, Unknown};
 use shared::environment::__DEV__;
-use webapi::ConsoleTask;
+use webapi::{AbortSignal, ConsoleTask};
 
 use crate::react_fizz_component_stack::ComponentStackNode;
 use crate::react_fizz_tree_context::TreeContext;
@@ -79,4 +79,84 @@ pub fn set_current_task_in_dev(task: Option<&'static Task>) {
     if __DEV__ {
         CURRENT_TASK_IN_DEV.set(task);
     }
+}
+
+// ReactFizzServer's functions an entry calls, its JS's until it's ported:
+// each of a renderer's own states, which its Fizz config makes.
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFizzServer#createRequest"
+)]
+pub fn create_request<S: ?Sized, R: ?Sized, F: ?Sized>(
+    children: Option<&'static Unknown>,
+    resumable_state: &S,
+    render_state: &R,
+    root_format_context: &F,
+    progressive_chunk_size: Option<f64>,
+    on_error: Option<&OnError>,
+    on_browser_bailout: Option<&OnBrowserBailout>,
+    on_all_ready: Option<&dyn Fn()>,
+    on_shell_ready: Option<&dyn Fn()>,
+    on_shell_error: Option<&dyn Fn(Option<&'static Unknown>)>,
+    on_fatal_error: Option<&dyn Fn(Option<&'static Unknown>)>,
+    form_state: Option<&'static Unknown>,
+) -> &'static Request {
+    let _ = (
+        children,
+        resumable_state,
+        render_state,
+        root_format_context,
+        progressive_chunk_size,
+        on_error,
+        on_browser_bailout,
+        on_all_ready,
+        on_shell_ready,
+        on_shell_error,
+        on_fatal_error,
+        form_state,
+    );
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFizzServer#startWork"
+)]
+pub fn start_work(request: &Request) {
+    let _ = request;
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFizzServer#startFlowing"
+)]
+pub fn start_flowing<D: ?Sized>(request: &Request, destination: &D) {
+    let _ = (request, destination);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFizzServer#stopFlowing"
+)]
+pub fn stop_flowing(request: &Request) {
+    let _ = request;
+    unreachable!()
+}
+
+#[cfg_attr(rust_js, rust_js::link_name = "react-server/src/ReactFizzServer#abort")]
+pub fn abort(request: &Request, reason: Option<&Unknown>) {
+    let _ = (request, reason);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFizzServer#attachAbortSignal"
+)]
+pub fn attach_abort_signal(request: &Request, signal: &AbortSignal) {
+    let _ = (request, signal);
+    unreachable!()
 }

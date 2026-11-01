@@ -7,73 +7,15 @@ use std::cell::{Cell, RefCell};
 
 use js::Unknown;
 use react_dom_bindings::react_dom_legacy_server_stream_config::Destination;
-use react_dom_bindings::react_fizz_config_dom::{FormatContext, ResumableState};
 use react_dom_bindings::react_fizz_config_dom_legacy::{
-    RenderState, create_render_state, create_resumable_state, create_root_format_context,
+    create_render_state, create_resumable_state, create_root_format_context,
 };
-use react_server::react_fizz_current_task::{ErrorInfo, OnBrowserBailout, OnError, Request};
+use react_server::react_fizz_current_task::{
+    ErrorInfo, abort, create_request, start_flowing, start_work,
+};
 
 #[cfg_attr(rust_js, rust_js::name = "version")]
 pub use shared::react_version::REACT_VERSION as VERSION;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFizzServer#createRequest"
-)]
-fn create_request(
-    children: Option<&'static Unknown>,
-    resumable_state: &ResumableState,
-    render_state: &RenderState,
-    root_format_context: &FormatContext,
-    progressive_chunk_size: Option<f64>,
-    on_error: Option<&OnError>,
-    on_browser_bailout: Option<&OnBrowserBailout>,
-    on_all_ready: Option<&dyn Fn()>,
-    on_shell_ready: Option<&dyn Fn()>,
-    on_shell_error: Option<&dyn Fn(Option<&'static Unknown>)>,
-    on_fatal_error: Option<&dyn Fn(Option<&'static Unknown>)>,
-    form_state: Option<&'static Unknown>,
-) -> &'static Request {
-    let _ = (
-        children,
-        resumable_state,
-        render_state,
-        root_format_context,
-        progressive_chunk_size,
-        on_error,
-        on_browser_bailout,
-        on_all_ready,
-        on_shell_ready,
-        on_shell_error,
-        on_fatal_error,
-        form_state,
-    );
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFizzServer#startWork"
-)]
-fn start_work(request: &Request) {
-    let _ = request;
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFizzServer#startFlowing"
-)]
-fn start_flowing(request: &Request, destination: &Destination) {
-    let _ = (request, destination);
-    unreachable!()
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "react-server/src/ReactFizzServer#abort")]
-fn abort(request: &Request, reason: Option<&Unknown>) {
-    let _ = (request, reason);
-    unreachable!()
-}
 
 pub struct ServerOptions {
     pub identifier_prefix: Option<String>,
