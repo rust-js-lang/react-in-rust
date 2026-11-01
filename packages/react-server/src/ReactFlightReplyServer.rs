@@ -2643,14 +2643,12 @@ fn create_file_from_handle(handle: &FileHandle) -> &'static File {
                 endings: None,
             }),
         ),
-        Some(&handle.filename),
+        &handle.filename,
     );
-    // GAP rd483: upstream's `scratch.get('file') as any`. The string arm is
-    // tested first: one of `File` would test `instanceof File`, which throws
-    // where there's no global `File`, the one host this is for.
+    // GAP rd483: upstream's `scratch.get('file') as any`.
     match scratch.get("file") {
-        None | Some(FormDataEntryValue::Str(_)) => unreachable!(),
         Some(FormDataEntryValue::File(file)) => file,
+        None | Some(FormDataEntryValue::Str(_)) => unreachable!(),
     }
 }
 

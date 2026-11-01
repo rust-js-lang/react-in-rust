@@ -216,8 +216,7 @@ function wakeChunkIfInitialized(
   if (borrowMut.value.status !== 'rejected') {
     return;
   }
-  const value = borrowMut.value;
-  const errored = value.reason;
+  const errored = borrowMut.value.reason;
   if (rejectListeners != null) {
     rejectChunk(response, rejectListeners, errored);
   }
@@ -288,20 +287,19 @@ function resolveModelChunk(response, chunk, value, id) {
       chunk.reason = value.reason;
     },
   };
-  let tmp;
+  let resolveListeners;
+  let rejectListeners;
   if (borrowMut.value.status === 'pending') {
     const value = borrowMut.value;
     const value$1 = borrowMut.value;
-    const old = value.value;
+    resolveListeners = value.value;
     value.value = null;
-    const old$1 = value$1.reason;
+    rejectListeners = value$1.reason;
     value$1.reason = null;
-    tmp = [old, old$1];
   } else {
-    tmp = [undefined, undefined];
+    resolveListeners = undefined;
+    rejectListeners = undefined;
   }
-  const resolveListeners = tmp[0];
-  const rejectListeners = tmp[1];
   chunk.status = 'resolved_model';
   chunk.value = value;
   chunk.reason = {
@@ -400,30 +398,28 @@ function loadServerReference(response, metaData, parentObject, key) {
   function fulfill() {
     let value;
     try {
-      value = (() => {
-        let value = requireServerReference(response, serverReference);
-        const bound = metaData.bound;
-        if (bound) {
-          // This promise is coming from us and should have initialized by now.
-          const promiseValue = bound.value;
-          const boundArgs = Array.isArray(promiseValue)
-            ? promiseValue.slice()
-            : [];
-          if (boundArgs.length > MAX_BOUND_ARGS) {
-            throw new Error(
-              `Server Function has too many bound arguments. Received ${boundArgs.length} but the limit is ${MAX_BOUND_ARGS}.`,
-            );
-          }
-          boundArgs.unshift(null); // this
-          // GAP rd486: upstream's `value.bind.apply(value, boundArgs)`,
-          // the value's own `bind`, read and applied as upstream does
-          // (a value with none throws JS's TypeError), its function
-          // of any shape read by a cast.
-          const bind = value.bind;
-          value = bind.apply(value, boundArgs);
+      let value$1 = requireServerReference(response, serverReference);
+      const bound = metaData.bound;
+      if (bound) {
+        // This promise is coming from us and should have initialized by now.
+        const promiseValue = bound.value;
+        const boundArgs = Array.isArray(promiseValue)
+          ? promiseValue.slice()
+          : [];
+        if (boundArgs.length > MAX_BOUND_ARGS) {
+          throw new Error(
+            `Server Function has too many bound arguments. Received ${boundArgs.length} but the limit is ${MAX_BOUND_ARGS}.`,
+          );
         }
-        return value;
-      })();
+        boundArgs.unshift(null); // this
+        // GAP rd486: upstream's `value.bind.apply(value, boundArgs)`,
+        // the value's own `bind`, read and applied as upstream does
+        // (a value with none throws JS's TypeError), its function
+        // of any shape read by a cast.
+        const bind = value$1.bind;
+        value$1 = bind.apply(value$1, boundArgs);
+      }
+      value = value$1;
     } catch (error) {
       triggerErrorOnChunk(response, blockedPromise, error);
       return;
@@ -454,9 +450,8 @@ function requireServerReference(response, reference) {
 function resolveServerReferenceChunk(response, chunk, value) {
   let resolveListeners;
   if (chunk.status === 'blocked') {
-    const value = chunk;
-    const old = value.value;
-    value.value = null;
+    const old = chunk.value;
+    chunk.value = null;
     resolveListeners = old;
   } else {
     resolveListeners = undefined;
@@ -514,17 +509,15 @@ function loadServerObjectReference(response, metaData, parentObject, key) {
   function fulfill() {
     let value;
     try {
-      value = (() => {
-        const value = requireServerReference(response, serverReference);
-        // Objects can appear under "then", but a function here would turn
-        // the containing object into a thenable during reply decoding.
-        if (typeof value !== 'object' || value === null) {
-          throw new Error(
-            'Expected a Server Reference to an object to resolve to an object.',
-          );
-        }
-        return value;
-      })();
+      const value$1 = requireServerReference(response, serverReference);
+      // Objects can appear under "then", but a function here would turn
+      // the containing object into a thenable during reply decoding.
+      if (typeof value$1 !== 'object' || value$1 === null) {
+        throw new Error(
+          'Expected a Server Reference to an object to resolve to an object.',
+        );
+      }
+      value = value$1;
     } catch (error) {
       triggerErrorOnChunk(response, blockedPromise, error);
       return;
@@ -670,6 +663,9 @@ function initializeModelChunk(chunk) {
     chunk.value = null;
     chunk.reason = null;
 
+    // Invoke any listeners added while resolving this model. I.e. cyclic
+    // references. This may or may not fully resolve the model depending on
+    // if they were blocked.
     try {
       const rawModel = JSON.parse(resolvedModel);
 
@@ -689,12 +685,8 @@ function initializeModelChunk(chunk) {
       );
       let resolveListeners;
       if (chunk.status === 'blocked') {
-        // Invoke any listeners added while resolving this model. I.e. cyclic
-        // references. This may or may not fully resolve the model depending on
-        // if they were blocked.
-        const value = chunk;
-        const old = value.value;
-        value.value = null;
+        const old = chunk.value;
+        chunk.value = null;
         resolveListeners = old;
       } else {
         resolveListeners = undefined;
@@ -788,83 +780,81 @@ function fulfillReference(response, reference, value, arrayRoot) {
 
   let resolvedValue;
   try {
-    resolvedValue = (() => {
-      let value$1 = value;
-      let arrayRoot$1 = arrayRoot;
-      let localLength = 0;
-      const rootArrayContexts = response._rootArrayContexts;
-      const serverReferenceObjects = response._serverReferenceObjects;
-      for (const name of path.slice(1)) {
-        // The server doesn't have any lazy references so we don't expect to go through a Promise.
-        const object =
-          typeof value$1 === 'object' && value$1 !== null ? value$1 : undefined;
-        if (
-          object != null &&
-          (serverReferenceObjects == null ||
-            !serverReferenceObjects.has(object)) &&
-          (getPrototypeOf(value$1) === ObjectPrototype ||
-            getPrototypeOf(value$1) === ArrayPrototype) &&
-          hasOwnProperty.call(object, name)
-        ) {
-          value$1 = object[name];
-          if (isArray(value$1)) {
-            localLength = 0;
-            arrayRoot$1 =
-              rootArrayContexts.get(
-                // Our `isArray` typing can't narrow `mixed`
-                value$1,
-              ) ?? arrayRoot$1;
-          } else {
-            arrayRoot$1 = undefined;
-            switch (typeof value$1) {
-              case 'string': {
-                const value = value$1;
-                localLength = value.length;
-                break;
-              }
-              case 'bigint': {
-                const value = value$1;
-                // Estimate the length to avoid expensive toString() calls on large
-                // BigInt values. If the value is too large, we get Infinity, which
-                // will trigger the array size limit error.
-                const n = Math.abs(Number(value));
-                if (n === 0) {
-                  localLength = 1;
-                } else {
-                  localLength = Math.floor(Math.log10(n)) + 1;
-                }
-                break;
-              }
-              default:
-                if (ArrayBuffer.isView(value$1)) {
-                  const view = value$1;
-                  localLength = view.byteLength;
-                } else {
-                  localLength = 0;
-                }
+    let value$1 = value;
+    let arrayRoot$1 = arrayRoot;
+    let localLength = 0;
+    const rootArrayContexts = response._rootArrayContexts;
+    const serverReferenceObjects = response._serverReferenceObjects;
+    for (const name of path.slice(1)) {
+      // The server doesn't have any lazy references so we don't expect to go through a Promise.
+      const object =
+        typeof value$1 === 'object' && value$1 !== null ? value$1 : undefined;
+      if (
+        object != null &&
+        (serverReferenceObjects == null ||
+          !serverReferenceObjects.has(object)) &&
+        (getPrototypeOf(value$1) === ObjectPrototype ||
+          getPrototypeOf(value$1) === ArrayPrototype) &&
+        hasOwnProperty.call(object, name)
+      ) {
+        value$1 = object[name];
+        if (isArray(value$1)) {
+          localLength = 0;
+          arrayRoot$1 =
+            rootArrayContexts.get(
+              // Our `isArray` typing can't narrow `mixed`
+              value$1,
+            ) ?? arrayRoot$1;
+        } else {
+          arrayRoot$1 = undefined;
+          switch (typeof value$1) {
+            case 'string': {
+              const value = value$1;
+              localLength = value.length;
+              break;
             }
+            case 'bigint': {
+              const value = value$1;
+              // Estimate the length to avoid expensive toString() calls on large
+              // BigInt values. If the value is too large, we get Infinity, which
+              // will trigger the array size limit error.
+              const n = Math.abs(Number(value));
+              if (n === 0) {
+                localLength = 1;
+              } else {
+                localLength = Math.floor(Math.log10(n)) + 1;
+              }
+              break;
+            }
+            default:
+              if (ArrayBuffer.isView(value$1)) {
+                const view = value$1;
+                localLength = view.byteLength;
+              } else {
+                localLength = 0;
+              }
           }
-          continue;
         }
-        throw new Error('Invalid reference.');
+        continue;
       }
+      throw new Error('Invalid reference.');
+    }
 
-      const resolvedValue = map(response, value$1, parentObject, key);
+    const resolvedValue$1 = map(response, value$1, parentObject, key);
 
-      // Add any array counts to the reference's array root. The value that we're
-      // resolving might have deep nesting that we need to resolve.
-      if (reference.arrayRoot != null) {
-        if (arrayRoot$1 != null) {
-          if (arrayRoot$1.fork) {
-            reference.arrayRoot.fork = true;
-          }
-          bumpArrayCount(reference.arrayRoot, arrayRoot$1.count, response);
-        } else if (localLength > 0) {
-          bumpArrayCount(reference.arrayRoot, localLength, response);
+    // Add any array counts to the reference's array root. The value that we're
+    // resolving might have deep nesting that we need to resolve.
+    if (reference.arrayRoot != null) {
+      if (arrayRoot$1 != null) {
+        if (arrayRoot$1.fork) {
+          reference.arrayRoot.fork = true;
         }
+        bumpArrayCount(reference.arrayRoot, arrayRoot$1.count, response);
+      } else if (localLength > 0) {
+        bumpArrayCount(reference.arrayRoot, localLength, response);
       }
-      return resolvedValue;
-    })();
+    }
+    resolvedValue = resolvedValue$1;
   } catch (error) {
     rejectReference(response, handler, error);
     return;
@@ -978,12 +968,10 @@ function waitForReference(
 
   // Add "listener".
   if (referencedChunk.status === 'blocked') {
-    const value = referencedChunk;
-    const value$1 = referencedChunk;
-    value.value ??= [];
-    value.value.push(reference);
-    value$1.reason ??= [];
-    value$1.reason.push(reference);
+    referencedChunk.value ??= [];
+    referencedChunk.value.push(reference);
+    referencedChunk.reason ??= [];
+    referencedChunk.reason.push(reference);
   }
 
   // Return a place holder value for now.
@@ -2011,14 +1999,12 @@ function createFileFromHandle(handle) {
     }),
     handle.filename,
   );
-  // GAP rd483: upstream's `scratch.get('file') as any`. The string arm is
-  // tested first: one of `File` would test `instanceof File`, which throws
-  // where there's no global `File`, the one host this is for.
+  // GAP rd483: upstream's `scratch.get('file') as any`.
   const file = scratch.get('file');
-  if (file !== null && typeof file !== 'string') {
-    return file;
+  if (file === null || typeof file === 'string') {
+    throw new Error('internal error: entered unreachable code');
   }
-  throw new Error('internal error: entered unreachable code');
+  return file;
 }
 
 export function resolveFileComplete(response, key, handle) {
