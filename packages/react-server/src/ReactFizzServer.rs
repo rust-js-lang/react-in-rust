@@ -9,16 +9,24 @@ use std::hash::{Hash, Hasher};
 use std::panic::{AssertUnwindSafe, catch_unwind, resume_unwind};
 use std::rc::{Rc, Weak};
 
-use js::{Dict, JsError, JsObject, Kind, PropertyDescriptor, SymbolFor, Unknown, WeakSet};
+use js::{
+    Dict, Iterator, JsError, JsObject, Kind, PropertyDescriptor, SymbolFor, Unknown, WeakSet,
+};
 use react_isomorphic::react_lazy::LazyComponent;
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{DISABLE_LEGACY_CONTEXT, ENABLE_CPU_SUSPENSE};
+use shared::is_array::is_array;
+use shared::react_feature_flags::{
+    DISABLE_LEGACY_CONTEXT, ENABLE_ASYNC_ITERABLE_CHILDREN, ENABLE_CPU_SUSPENSE,
+};
 use shared::react_owner_stack_reset::reset_owner_stack_limit;
 use shared::react_recoverable::REACT_RECOVERABLE_DIGEST;
 use shared::react_serialization_errors::describe_object_for_error_message;
 use shared::react_shared_internals::REACT_SHARED_INTERNALS;
-use shared::react_symbols::{REACT_ELEMENT_TYPE, REACT_LAZY_TYPE};
-use shared::react_types::{ReactFormState, ReactNodeList, SuspenseProps};
+use shared::react_symbols::{ASYNC_ITERATOR, REACT_ELEMENT_TYPE, REACT_LAZY_TYPE, get_iterator_fn};
+use shared::react_types::{
+    ReactFormState, ReactNodeList, SuspenseListProps, SuspenseListRevealOrder, SuspenseProps,
+    Thenable,
+};
 use webapi::{AbortController, ConsoleTask, console};
 
 use crate::react_fizz_async_dispatcher::DEFAULT_ASYNC_DISPATCHER;
@@ -28,8 +36,9 @@ use crate::react_fizz_component_stack::{
 };
 use crate::react_fizz_current_task::{CURRENT_TASK_IN_DEV, set_current_task_in_dev};
 use crate::react_fizz_hooks::{
-    CURRENT_RESUMABLE_STATE, HOOKS_DISPATCHER, is_recoverable_error, reset_hooks_state,
-    set_current_resumable_state,
+    CURRENT_RESUMABLE_STATE, HOOKS_DISPATCHER, is_recoverable_error, prepare_to_use_thenable_state,
+    read_previous_thenable_from_state, reset_hooks_state, set_current_resumable_state,
+    unwrap_thenable,
 };
 use crate::react_fizz_legacy_context::{Context as LegacyContext, EMPTY_CONTEXT_OBJECT};
 use crate::react_fizz_new_context::{
@@ -39,7 +48,7 @@ use crate::react_fizz_thenable::{
     ThenableState, ensure_suspendable_thenable_state_dev, get_suspended_call_site_debug_task_dev,
     get_suspended_call_site_stack_dev, set_capture_suspended_call_site_dev,
 };
-use crate::react_fizz_tree_context::{EMPTY_TREE_CONTEXT, TreeContext};
+use crate::react_fizz_tree_context::{EMPTY_TREE_CONTEXT, TreeContext, push_tree_context};
 
 // ReactServerStreamConfig's types, which its fork for each host defines: a
 // destination, and the chunks written to it.
@@ -2429,6 +2438,470 @@ fn create_suspense_list_row(previous_row: Option<&Rc<SuspenseListRow>>) -> Rc<Su
     new_row
 }
 
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#getChildFormatContext"
+)]
+fn get_child_format_context(
+    parent_context: &FormatContext,
+    r#type: &str,
+    props: &Unknown,
+) -> &'static FormatContext {
+    let _ = (parent_context, r#type, props);
+    unreachable!()
+}
+
+fn is_backwards(reveal_order: Option<SuspenseListRevealOrder>) -> bool {
+    matches!(
+        reveal_order,
+        Some(SuspenseListRevealOrder::Backwards | SuspenseListRevealOrder::UnstableLegacyBackwards)
+    )
+}
+
+fn render_suspense_list_rows(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    rows: &[Option<&'static ReactNodeList>],
+    reveal_order: Option<SuspenseListRevealOrder>,
+) {
+    // This is a fork of renderChildrenArray that's aware of tracking rows.
+    let prev_key_path = task.key_path.replace(Some(Rc::clone(key_path)));
+    let prev_tree_context = Rc::clone(&task.tree_context.borrow());
+    let prev_row = task.row.borrow().clone();
+    let previous_component_stack = task.component_stack.borrow().clone();
+    let mut previous_debug_task = None;
+    if __DEV__ {
+        previous_debug_task = task.debug_task.get();
+        // We read debugInfo from task.node.props.children instead of rows because it
+        // might have been an unwrapped iterable so we read from the original node.
+        push_server_component_stack(
+            task,
+            js::get(
+                js::get(js::get(task.node.get(), "props"), "children"),
+                "_debugInfo",
+            ),
+        );
+    }
+
+    let total_children = rows.len();
+    let mut previous_suspense_list_row: Option<Rc<SuspenseListRow>> = None;
+    let replay = task.replay.borrow().clone();
+    if let Some(replay) = replay {
+        // Replay
+        // First we need to check if we have any resume slots at this level.
+        let resume_slots = replay.slots.borrow().clone();
+        if let ResumeSlots::Indices(resume_slots) = resume_slots {
+            for n in 0..total_children {
+                // Since we are going to resume into a slot whose order was already
+                // determined by the prerender, we can safely resume it even in reverse
+                // render order.
+                let i = if !is_backwards(reveal_order) {
+                    n
+                } else {
+                    total_children - 1 - n
+                };
+                let node = rows[i];
+                let row = create_suspense_list_row(previous_suspense_list_row.as_ref());
+                task.row.replace(Some(Rc::clone(&row)));
+                previous_suspense_list_row = Some(Rc::clone(&row));
+                task.tree_context.replace(push_tree_context(
+                    &prev_tree_context,
+                    total_children as i32,
+                    i as i32,
+                ));
+                let resume_segment_id = js::dict::get(&resume_slots, &i.to_string()).copied();
+                // TODO: If this errors we should still continue with the next sibling.
+                if let Some(resume_segment_id) = resume_segment_id {
+                    resume_node(request, task, resume_segment_id, node, i as f64);
+                    // We finished rendering this node, so now we can consume this
+                    // slot. This must happen after in case we rerender this task.
+                    js::delete(&*resume_slots, &i.to_string());
+                } else {
+                    render_node(request, task, node, i as f64);
+                }
+                row.pending_tasks.set(row.pending_tasks.get() - 1.0);
+                if row.pending_tasks.get() == 0.0 {
+                    finish_suspense_list_row(request, &row);
+                }
+            }
+        } else {
+            for n in 0..total_children {
+                // Since we are going to resume into a slot whose order was already
+                // determined by the prerender, we can safely resume it even in reverse
+                // render order.
+                let i = if !is_backwards(reveal_order) {
+                    n
+                } else {
+                    total_children - 1 - n
+                };
+                let node = rows[i];
+                if __DEV__ {
+                    warn_for_missing_key(request, task, node);
+                }
+                let row = create_suspense_list_row(previous_suspense_list_row.as_ref());
+                task.row.replace(Some(Rc::clone(&row)));
+                previous_suspense_list_row = Some(Rc::clone(&row));
+                task.tree_context.replace(push_tree_context(
+                    &prev_tree_context,
+                    total_children as i32,
+                    i as i32,
+                ));
+                render_node(request, task, node, i as f64);
+                row.pending_tasks.set(row.pending_tasks.get() - 1.0);
+                if row.pending_tasks.get() == 0.0 {
+                    finish_suspense_list_row(request, &row);
+                }
+            }
+        }
+    } else if !is_backwards(reveal_order) {
+        // Forwards direction
+        for (i, &node) in rows.iter().enumerate() {
+            if __DEV__ {
+                warn_for_missing_key(request, task, node);
+            }
+            let row = create_suspense_list_row(previous_suspense_list_row.as_ref());
+            task.row.replace(Some(Rc::clone(&row)));
+            previous_suspense_list_row = Some(Rc::clone(&row));
+            task.tree_context.replace(push_tree_context(
+                &prev_tree_context,
+                total_children as i32,
+                i as i32,
+            ));
+            render_node(request, task, node, i as f64);
+            row.pending_tasks.set(row.pending_tasks.get() - 1.0);
+            if row.pending_tasks.get() == 0.0 {
+                finish_suspense_list_row(request, &row);
+            }
+        }
+    } else {
+        // For backwards direction we need to do things a bit differently.
+        // We give each row its own segment so that we can render the content in
+        // reverse order but still emit it in the right order when we flush.
+        let parent_segment = task.blocked_segment.borrow().clone().unwrap();
+        let child_index = parent_segment.children.borrow().len();
+        let insertion_index = parent_segment.chunks.borrow().len() as f64;
+        for n in 0..total_children {
+            let i = if reveal_order == Some(SuspenseListRevealOrder::UnstableLegacyBackwards) {
+                total_children - 1 - n
+            } else {
+                n
+            };
+            let node = rows[i];
+            let row = create_suspense_list_row(previous_suspense_list_row.as_ref());
+            task.row.replace(Some(Rc::clone(&row)));
+            previous_suspense_list_row = Some(Rc::clone(&row));
+            task.tree_context.replace(push_tree_context(
+                &prev_tree_context,
+                total_children as i32,
+                i as i32,
+            ));
+            let new_segment = create_pending_segment(
+                request,
+                insertion_index,
+                None,
+                task.format_context.get(),
+                // Assume we are text embedded at the trailing edges
+                if i == 0 {
+                    parent_segment.last_pushed_text.get()
+                } else {
+                    true
+                },
+                true,
+            );
+            // Insert in the beginning of the sequence, which will insert before any previous rows.
+            parent_segment
+                .children
+                .borrow_mut()
+                .insert(child_index, Rc::clone(&new_segment));
+            task.blocked_segment.replace(Some(Rc::clone(&new_segment)));
+            if __DEV__ {
+                warn_for_missing_key(request, task, node);
+            }
+            let result = catch_unwind(AssertUnwindSafe(|| {
+                render_node(request, task, node, i as f64);
+                push_segment_finale(
+                    &new_segment.chunks,
+                    request.render_state,
+                    new_segment.last_pushed_text.get(),
+                    new_segment.text_embedded.get(),
+                );
+                new_segment.status.set(COMPLETED);
+                finished_segment(
+                    request,
+                    task.blocked_boundary.borrow().as_ref(),
+                    &new_segment,
+                );
+                row.pending_tasks.set(row.pending_tasks.get() - 1.0);
+                if row.pending_tasks.get() == 0.0 {
+                    finish_suspense_list_row(request, &row);
+                }
+            }));
+            if let Err(thrown_value) = result {
+                if request.aborted.get() {
+                    new_segment.status.set(ABORTED);
+                } else {
+                    new_segment.status.set(ERRORED);
+                }
+                resume_unwind(thrown_value);
+            }
+        }
+        task.blocked_segment
+            .replace(Some(Rc::clone(&parent_segment)));
+        // Reset lastPushedText for current Segment since the new Segments "consumed" it
+        parent_segment.last_pushed_text.set(false);
+    }
+
+    if let Some(prev_row) = &prev_row
+        && let Some(previous_suspense_list_row) = &previous_suspense_list_row
+        && previous_suspense_list_row.pending_tasks.get() > 0.0
+    {
+        // If we are part of an outer SuspenseList and our last row is still pending, then that blocks
+        // the parent row from completing. We can continue the chain.
+        prev_row
+            .pending_tasks
+            .set(prev_row.pending_tasks.get() + 1.0);
+        previous_suspense_list_row
+            .next
+            .replace(Some(Rc::clone(prev_row)));
+    }
+
+    // Because this context is always set right before rendering every child, we
+    // only need to reset it to the previous value at the very end.
+    task.tree_context.replace(prev_tree_context);
+    task.row.replace(prev_row);
+    task.key_path.replace(prev_key_path);
+    if __DEV__ {
+        task.component_stack.replace(previous_component_stack);
+        task.debug_task.set(previous_debug_task);
+    }
+}
+
+fn render_suspense_list(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    props: &SuspenseListProps,
+) {
+    let children = props.children;
+    let reveal_order = props.reveal_order;
+    // TODO: Support tail hidden/collapsed modes.
+    // const tailMode: SuspenseListTailMode = props.tail;
+    if reveal_order != Some(SuspenseListRevealOrder::Independent)
+        && reveal_order != Some(SuspenseListRevealOrder::Together)
+    {
+        // For ordered reveal, we need to produce rows from the children.
+        if is_array(children) {
+            let children: &[Option<&'static ReactNodeList>] = unsafe { js::cast(children) };
+            render_suspense_list_rows(request, task, key_path, children, reveal_order);
+            return;
+        }
+        let iterator_fn = get_iterator_fn(children);
+        if let Some(iterator_fn) = iterator_fn {
+            let iterator: Option<&'static Iterator<Option<&'static ReactNodeList>>> = unsafe {
+                js::cast(js::function::call(
+                    js::cast::<&dyn Fn() -> Option<&'static Unknown>>(Some(iterator_fn)),
+                    Some(&children),
+                    (),
+                ))
+            };
+            if request.aborted.get() {
+                // eslint-disable-next-line no-throw-literal
+                js::throw(js::null());
+            }
+            if let Some(iterator) = iterator {
+                if __DEV__ {
+                    validate_iterable(task, children, -1.0, iterator, iterator_fn);
+                }
+                // TODO: We currently use the same id algorithm as regular nodes
+                // but we need a new algorithm for SuspenseList that doesn't require
+                // a full set to be loaded up front to support Async Iterable.
+                // When we have that, we shouldn't buffer anymore.
+                let mut step = iterator.next();
+                if request.aborted.get() {
+                    // eslint-disable-next-line no-throw-literal
+                    js::throw(js::null());
+                }
+                if step.done != Some(true) {
+                    let mut rows = vec![];
+                    loop {
+                        rows.push(step.value);
+                        step = iterator.next();
+                        if step.done == Some(true) {
+                            break;
+                        }
+                    }
+                    if request.aborted.get() {
+                        // eslint-disable-next-line no-throw-literal
+                        js::throw(js::null());
+                    }
+                    // Upstream renders `children` here, not the `rows` it read,
+                    // which the port keeps.
+                    let children: &[Option<&'static ReactNodeList>] = unsafe { js::cast(children) };
+                    render_suspense_list_rows(request, task, key_path, children, reveal_order);
+                }
+                return;
+            }
+        }
+        if ENABLE_ASYNC_ITERABLE_CHILDREN.with(|&enabled| enabled)
+            && js::is_function(
+                ASYNC_ITERATOR.with(|&async_iterator| js::get(children, async_iterator)),
+            )
+        {
+            let iterator: Option<&'static AsyncIterator> = unsafe {
+                js::cast(js::function::call(
+                    js::cast::<&dyn Fn() -> Option<&'static Unknown>>(
+                        ASYNC_ITERATOR.with(|&async_iterator| js::get(children, async_iterator)),
+                    ),
+                    Some(&children),
+                    (),
+                ))
+            };
+            if request.aborted.get() {
+                // eslint-disable-next-line no-throw-literal
+                js::throw(js::null());
+            }
+            if let Some(iterator) = iterator {
+                if __DEV__ {
+                    validate_async_iterable(task, children, -1.0, iterator);
+                }
+                // TODO: Update the task.children to be the iterator to avoid asking
+                // for new iterators, but we currently warn for rendering these
+                // so needs some refactoring to deal with the warning.
+
+                // Restore the thenable state before resuming.
+                let prev_thenable_state = task.thenable_state.take();
+                prepare_to_use_thenable_state(prev_thenable_state);
+
+                // We need to know how many total rows are in this set, so that we
+                // can allocate enough id slots to acommodate them. So we must exhaust
+                // the iterator before we start recursively rendering the rows.
+                // TODO: This is not great but I think it's inherent to the id
+                // generation algorithm.
+
+                let mut rows = vec![];
+
+                let mut done = false;
+
+                // $FlowFixMe[invalid-compare]
+                if js::strict_equals(Some(js::unknown(iterator)), children) {
+                    // If it's an iterator we need to continue reading where we left
+                    // off. We can do that by reading the first few rows from the previous
+                    // thenable state.
+                    // $FlowFixMe[underconstrained-implicit-instantiation]
+                    let mut step = read_previous_thenable_from_state();
+                    while !matches!(js::classify(step), Kind::Undefined) {
+                        if js::truthy(js::get(step, "done")) {
+                            done = true;
+                            break;
+                        }
+                        rows.push(js::get(step, "value"));
+                        step = read_previous_thenable_from_state();
+                    }
+                }
+
+                if !done {
+                    let mut step = unwrap_thenable(iterator.next());
+                    while !js::truthy(js::get(step, "done")) {
+                        rows.push(js::get(step, "value"));
+                        step = unwrap_thenable(iterator.next());
+                    }
+                }
+                if request.aborted.get() {
+                    // eslint-disable-next-line no-throw-literal
+                    js::throw(js::null());
+                }
+                render_suspense_list_rows(request, task, key_path, &rows, reveal_order);
+                return;
+            }
+        }
+        // This case will warn on the client. It's the same as independent revealOrder.
+    }
+
+    if reveal_order == Some(SuspenseListRevealOrder::Together) {
+        let prev_key_path = task.key_path.borrow().clone();
+        let prev_row = task.row.borrow().clone();
+        let new_row = create_suspense_list_row(None);
+        task.row.replace(Some(Rc::clone(&new_row)));
+        // This will cause boundaries to block on this row, but there's nothing to
+        // unblock them. We'll use the partial flushing pass to unblock them.
+        new_row.boundaries.replace(Some(vec![]));
+        new_row.together.set(true);
+        task.key_path.replace(Some(Rc::clone(key_path)));
+        render_node_destructive(request, task, children, -1.0);
+        new_row.pending_tasks.set(new_row.pending_tasks.get() - 1.0);
+        if new_row.pending_tasks.get() == 0.0 {
+            finish_suspense_list_row(request, &new_row);
+        }
+        task.key_path.replace(prev_key_path);
+        task.row.replace(prev_row.clone());
+        if let Some(prev_row) = &prev_row
+            && new_row.pending_tasks.get() > 0.0
+        {
+            // If we are part of an outer SuspenseList and our row is still pending, then that blocks
+            // the parent row from completing. We can continue the chain.
+            prev_row
+                .pending_tasks
+                .set(prev_row.pending_tasks.get() + 1.0);
+            new_row.next.replace(Some(Rc::clone(prev_row)));
+        }
+        return;
+    }
+    // For other reveal order modes, we just render it as a fragment.
+    let prev_key_path = task.key_path.replace(Some(Rc::clone(key_path)));
+    render_node_destructive(request, task, children, -1.0);
+    task.key_path.replace(prev_key_path);
+}
+
+/// An async iterator of a node list's rows: its `next()` gives a thenable
+/// of each step.
+pub struct AsyncIterator(std::marker::PhantomData<JsObject>);
+
+unsafe impl js::Defined for AsyncIterator {}
+
+impl AsyncIterator {
+    #[cfg_attr(rust_js, rust_js::link_name = "next")]
+    fn next(&self) -> &'static Thenable {
+        unreachable!()
+    }
+}
+
+fn render_preamble(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    blocked_segment: &Rc<Segment>,
+    node: Option<&'static ReactNodeList>,
+) {
+    let preamble_segment =
+        create_pending_segment(request, 0.0, None, task.format_context.get(), false, false);
+    blocked_segment
+        .preamble_children
+        .borrow_mut()
+        .push(Rc::clone(&preamble_segment));
+    task.blocked_segment
+        .replace(Some(Rc::clone(&preamble_segment)));
+    let result = catch_unwind(AssertUnwindSafe(|| {
+        render_node(request, task, node, -1.0);
+        push_segment_finale(
+            &preamble_segment.chunks,
+            request.render_state,
+            preamble_segment.last_pushed_text.get(),
+            preamble_segment.text_embedded.get(),
+        );
+        preamble_segment.status.set(COMPLETED);
+        finished_segment(
+            request,
+            task.blocked_boundary.borrow().as_ref(),
+            &preamble_segment,
+        );
+    }));
+    task.blocked_segment
+        .replace(Some(Rc::clone(blocked_segment)));
+    if let Err(thrown_value) = result {
+        resume_unwind(thrown_value);
+    }
+}
+
 // DRAFT: the sections below are not ported yet.
 
 fn render_node(
@@ -2512,4 +2985,50 @@ pub struct PostponedState {
     resumable_state: &'static ResumableState,
     replay_nodes: Rc<RefCell<Vec<ReplayNode>>>,
     replay_slots: RefCell<ResumeSlots>,
+}
+
+fn resume_node(
+    _request: &Rc<Request>,
+    _task: &Rc<Task>,
+    _segment_id: f64,
+    _node: Option<&'static ReactNodeList>,
+    _child_index: f64,
+) {
+    todo!()
+}
+
+fn warn_for_missing_key(
+    _request: &Rc<Request>,
+    _task: &Rc<Task>,
+    _child: Option<&'static Unknown>,
+) {
+    todo!()
+}
+
+fn validate_iterable(
+    _task: &Rc<Task>,
+    _iterable: Option<&'static Unknown>,
+    _child_index: f64,
+    _iterator: &'static Iterator<Option<&'static ReactNodeList>>,
+    _iterator_fn: &'static Unknown,
+) {
+    todo!()
+}
+
+fn validate_async_iterable(
+    _task: &Rc<Task>,
+    _iterable: Option<&'static Unknown>,
+    _child_index: f64,
+    _iterator: &'static AsyncIterator,
+) {
+    todo!()
+}
+
+fn render_node_destructive(
+    _request: &Rc<Request>,
+    _task: &Rc<Task>,
+    _node: Option<&'static ReactNodeList>,
+    _child_index: f64,
+) {
+    todo!()
 }
