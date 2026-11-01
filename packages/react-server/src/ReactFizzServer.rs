@@ -197,13 +197,6 @@ unsafe extern "Rust" {
     safe static BYTE_LENGTH_OF_CHUNK: Option<&'static ByteLengthOfChunk>;
 }
 
-/// Gives JS's `AsyncLocalStorage::run` the request a caller holds.
-// GAP rd497: node's `AsyncLocalStorage<T>::run` takes a `&'static T`; a
-// store an `Rc` holds is the object itself, but is that only by a cast.
-fn request_store(request: &Rc<Request>) -> &'static Rc<Request> {
-    unsafe { js::cast(Some(js::unknown(&**request))) }
-}
-
 #[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFizzConfig.js#bindToConsole")]
 fn bind_to_console(
     method_name: &str,
@@ -4042,12 +4035,19 @@ fn replay_element(
                         .set(child_replay.pending_tasks.get() - 1.0);
                 }));
                 if let Err(x) = result {
+                    // Where this same element threw, the replay we just added is popped
+                    // before anything else runs here: a stack overflow leaves this
+                    // handler little stack, and one that overflows again must not skip
+                    // it. Each path below pops it there too.
+                    let same_node = js::strict_equals(task.node.get(), current_node);
+                    if same_node {
+                        task.replay.replace(Some(Rc::clone(replay)));
+                    }
                     let thrown_value = thrown_value_of(&*x);
                     if is_suspending(thrown_value) {
                         // Suspend
-                        if js::strict_equals(task.node.get(), current_node) {
+                        if same_node {
                             // This same element suspended so we need to pop the replay we just added.
-                            task.replay.replace(Some(Rc::clone(replay)));
                         } else {
                             // We finished rendering this node, so now we can consume this slot.
                             replay_nodes.borrow_mut().remove(i);
@@ -7947,7 +7947,7 @@ pub fn start_work(request: &Rc<Request>) {
     if SUPPORTS_REQUEST_STORAGE {
         let request = Rc::clone(request);
         schedule_microtask(move || {
-            REQUEST_STORAGE.run(request_store(&request), || perform_work(&request))
+            REQUEST_STORAGE.run(Rc::clone(&request), || perform_work(&request))
         });
     } else {
         let request = Rc::clone(request);
@@ -7971,7 +7971,7 @@ pub fn start_work(request: &Rc<Request>) {
             // postpone before we emit anything.
             // $FlowFixMe[constant-condition]
             if SUPPORTS_REQUEST_STORAGE {
-                REQUEST_STORAGE.run(request_store(&request), || {
+                REQUEST_STORAGE.run(Rc::clone(&request), || {
                     enqueue_early_preloads_after_initial_work(&request)
                 });
             } else {

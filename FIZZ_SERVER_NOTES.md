@@ -143,6 +143,36 @@ Open:
     { return; }` inside a `match` arm or a `catch_unwind` closure, with code
     after the match, prints a labeled block broken out of.
 
+## Deep-tree resume (ReactDOMFizzServer-test, "can recover from very deep trees during resume")
+
+**Cause:** the resume replays 1200 nested `Deep` elements, each through
+replayElement's catch. The stack overflows deep inside; at the innermost
+replayElement whose element threw, the catch must pop the replay set it
+pushed (`task.replay = replay`) before rethrowing, so the retried task
+replays from the right set. Upstream's handler does only property reads
+before that write. The port's ran calls first (`thrownValueOf`,
+`isSuspending`), and the generated catch's own prologue,
+`const x = $unwound(thrown)` (which calls `$isPanic`), runs before any of
+the program's code. With the stack exhausted one of those overflows again,
+the handler throws a fresh RangeError, and `task.replay` stays the child's
+set: "Expected the resume to render <Suspense> .. rendered <Deep>".
+
+**Port fix (in the Rust):** the same-node pop is the handler's first act,
+before `thrown_value_of`/`is_suspending` (semantics unchanged: every path
+that pops it still does, the different-node suspend path still splices).
+Alone this isn't enough: the test then fails with the content missing.
+
+**Compiler gap (needs an id, the coordinator's):** a `catch_unwind`'s
+`Err` arm is lowered as `catch (thrown) { const x = $unwound(thrown); ..;
+throw $unwinding(x); }`, calls before the program's first statement and at
+its rethrow, so no Rust can write state first while the stack is exhausted.
+Moving the pop above `$unwound` by hand in the JS makes both deep-tree tests
+pass (checked). Repro:
+`fn f(d: u32, s: &Cell<u32>) { if d == 0 { return overflow(); } if let Err(e) = catch_unwind(AssertUnwindSafe(|| f(d - 1, s))) { s.set(d); resume_unwind(e); } }`
+prints `catch (thrown) { const e = $unwound(thrown); s.value = d; throw $unwinding(e); }`;
+upstream's form is `catch (x) { s = d; throw x; }`. Suggested: compute the
+payload only where it's read, and rethrow an untouched payload as `throw thrown`.
+
 ## Output differences expected (not built yet; from the Rust's forms)
 
 - `Rc::new_cyclic` + `Weak::upgrade().unwrap()` in the task's ping closures

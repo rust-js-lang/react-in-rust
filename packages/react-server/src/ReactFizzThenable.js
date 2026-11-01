@@ -184,15 +184,16 @@ function captureSuspendedCallSite() {
         'This is a bug in React.',
     );
   }
-  const {value: _15} = $borrow($fieldCell(currentTask, 'componentStack', true));
-  if (_15 == null) {
+  const {value: currentComponentStack} = $borrow(
+    $fieldCell(currentTask, 'componentStack', true),
+  );
+  if (currentComponentStack == null) {
     // eslint-disable-next-line react-internal/prod-error-codes -- not a prod error
     throw new Error(
       'Expected to have a component stack on the current task when ' +
         'tracking a suspended call site. This is a bug in React.',
     );
   }
-  const currentComponentStack = _15;
   suspendedCallSiteStack = {
     parent: currentComponentStack.parent ?? null,
     type: currentComponentStack.type,

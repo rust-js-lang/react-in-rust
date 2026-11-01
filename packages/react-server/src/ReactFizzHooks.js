@@ -28,7 +28,13 @@ import {
 } from './ReactFizzThenable.js';
 import {getTreeId} from './ReactFizzTreeContext.js';
 import {createFastHash} from './ReactServerStreamConfig.js';
-import {$roomFor, $unwrap} from '@rust-js/runtime';
+import {
+  $borrow,
+  $fieldCell,
+  $roomFor,
+  $unborrow,
+  $unwrap,
+} from '@rust-js/runtime';
 
 let currentlyRenderingComponent = null;
 let currentlyRenderingTask = null;
@@ -657,10 +663,7 @@ function useActionState(action, initialState, permalink) {
     const postbackActionState = getFormState(request);
     // $FlowFixMe[prop-missing]
     const isSignatureEqual = action.$$IS_SIGNATURE_EQUAL;
-    if (
-      postbackActionState !== null &&
-      typeof isSignatureEqual === 'function'
-    ) {
+    if (postbackActionState != null && typeof isSignatureEqual === 'function') {
       const postbackKey = postbackActionState[1];
       const postbackReferenceId = postbackActionState[2];
       const postbackBoundArity = postbackActionState[3];
@@ -733,7 +736,13 @@ function useActionState(action, initialState, permalink) {
 
 function useId() {
   const task = $unwrap(currentlyRenderingTask);
-  const treeId = getTreeId(task.treeContext);
+  const borrow = $borrow($fieldCell(task, 'treeContext'), true);
+  let treeId;
+  try {
+    treeId = getTreeId(borrow.value);
+  } finally {
+    $unborrow(borrow);
+  }
 
   const resumableState = currentResumableState;
   if (resumableState == null) {

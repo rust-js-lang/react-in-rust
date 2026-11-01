@@ -186,13 +186,6 @@ import {
   $unwrap,
 } from '@rust-js/runtime';
 
-/** Gives JS's `AsyncLocalStorage::run` the request a caller holds. */
-// GAP rd497: node's `AsyncLocalStorage<T>::run` takes a `&'static T`; a
-// store an `Rc` holds is the object itself, but is that only by a cast.
-function requestStore(request) {
-  return request;
-}
-
 const CLIENT_RENDERED = 4; // if it errors or infinitely suspends
 
 const PENDING = 0;
@@ -849,13 +842,12 @@ function getCurrentStackInDEV() {
     if (currentTaskInDev == null) {
       return '';
     }
-    const {value: _13} = $borrow(
+    const {value: componentStack} = $borrow(
       $fieldCell(currentTaskInDev, 'componentStack', true),
     );
-    if (_13 == null) {
+    if (componentStack == null) {
       return '';
     }
-    const componentStack = _13;
     return getOwnerStackByComponentStackNodeInDev(componentStack);
   }
   return '';
@@ -3268,12 +3260,19 @@ function replayElement(
         childReplay.pendingTasks--;
       } catch (thrown) {
         const x = $unwound(thrown);
+        // Where this same element threw, the replay we just added is popped
+        // before anything else runs here: a stack overflow leaves this
+        // handler little stack, and one that overflows again must not skip
+        // it. Each path below pops it there too.
+        const sameNode = task.node === currentNode;
+        if (sameNode) {
+          task.replay = replay;
+        }
         const thrownValue = thrownValueOf(x);
         if (isSuspending(thrownValue)) {
           // Suspend
-          if (task.node === currentNode) {
+          if (sameNode) {
             // This same element suspended so we need to pop the replay we just added.
-            task.replay = replay;
           } else {
             // We finished rendering this node, so now we can consume this slot.
             $removeAt($borrowMut(replayNodes), i);
@@ -3928,12 +3927,13 @@ function warnForMissingKey(request, task, child) {
       didWarnForKey = new WeakSet();
       request.didWarnForKey = didWarnForKey;
     }
-    const {value: _88} = $borrow($fieldCell(task, 'componentStack', true));
-    if (_88 == null) {
+    const {value: parentStackFrame} = $borrow(
+      $fieldCell(task, 'componentStack', true),
+    );
+    if (parentStackFrame == null) {
       // We already warned for other children in this parent.
       return;
     }
-    const parentStackFrame = _88;
     if (didWarnForKey.has(parentStackFrame)) {
       // We already warned for other children in this parent.
       return;
@@ -6185,14 +6185,13 @@ function preparePreambleFromSegment(
     // We track this boundary's byteSize on the request since it will always flush with
     // the request since it may contribute to the preamble
     request.byteSize += boundary.byteSize;
-    const [_45] = $borrow(boundary.completedSegments);
-    if (_45 == null) {
+    const [boundaryRootSegment] = $borrow(boundary.completedSegments);
+    if (boundaryRootSegment == null) {
       // Using the same error from flushSegment to avoid making a new one since conceptually the problem is still the same
       throw new Error(
         'A previously unvisited boundary must have exactly one root segment. This is a bug in React.',
       );
     }
-    const boundaryRootSegment = _45;
     return preparePreambleFromSubtree(
       request,
       boundaryRootSegment,
@@ -6862,7 +6861,7 @@ export function startWork(request) {
   // $FlowFixMe[constant-condition]
   if (supportsRequestStorage) {
     scheduleMicrotask(() => {
-      requestStorage.run(requestStore(request), () => performWork(request));
+      requestStorage.run(request, () => performWork(request));
     });
   } else {
     scheduleMicrotask(() => performWork(request));
@@ -6884,7 +6883,7 @@ export function startWork(request) {
       // postpone before we emit anything.
       // $FlowFixMe[constant-condition]
       if (supportsRequestStorage) {
-        requestStorage.run(requestStore(request), () =>
+        requestStorage.run(request, () =>
           enqueueEarlyPreloadsAfterInitialWork(request),
         );
       } else {
