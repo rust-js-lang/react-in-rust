@@ -12,14 +12,11 @@ import {
   $displayF64,
   $extend,
   $index,
-  $iter,
   $iterator,
-  $next,
   $rangeFromStep,
   $someGet,
   $someValue,
   $stepBy,
-  $take,
   $unwrap,
 } from '@rust-js/runtime';
 
@@ -401,7 +398,7 @@ export function revealCompletedBoundariesWithViewTransitions(
         types: [], // TODO: Add a hard coded type for Suspense reveals.
       });
       document.__reactViewTransition = transition;
-      const restoreQueue$1 = $take(restoreQueue, []);
+      const restoreQueue$1 = restoreQueue.splice(0);
       transition.ready.finally(() => {
         // Restore all the names/classes that we applied to what they were before.
         // We do it in reverse order in case there were duplicates so the first one wins.
@@ -659,9 +656,9 @@ export function completeBoundaryWithStyles(
   for (const stylesheetDescriptor of stylesheetDescriptors) {
     // Sheet Mode iterates over the stylesheet arguments and constructs them if new or checks them for
     // dependency if they already existed
-    const descriptor = $iter(stylesheetDescriptor);
+    const descriptor = stylesheetDescriptor.values();
     const href = $unwrap(
-      $next(descriptor),
+      descriptor.next().value,
       "a stylesheet's descriptor starts with its href",
     );
 
@@ -683,13 +680,13 @@ export function completeBoundaryWithStyles(
       const link = thisDocument.createElement('link');
       link.href = href;
       link.rel = 'stylesheet';
-      precedence = $next(descriptor);
+      precedence = descriptor.next().value;
       if (precedence != null) {
         link.dataset.precedence = precedence;
       }
       let attr;
-      while ((attr = $next(descriptor))) {
-        link.setAttribute(attr, $next(descriptor));
+      while ((attr = descriptor.next().value)) {
+        link.setAttribute(attr, descriptor.next().value);
       }
       const promise = new Promise((resolve, reject) => {
         link.onload = cleanupWith.bind(link, resolve);
