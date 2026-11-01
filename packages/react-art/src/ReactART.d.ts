@@ -103,4 +103,9 @@ export const Group: string;
 
 export const Shape: string;
 
+declare const slice: (
+  value: number | null | undefined,
+  value2: number | null | undefined,
+) => (unknown | null | undefined)[];
+
 export const Path: object;

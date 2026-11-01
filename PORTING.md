@@ -520,10 +520,15 @@ These differences from upstream's output are accepted:
   `(...args)`, the user's of 2026-11-01): LinearGradient, RadialGradient
   and Pattern take upstream's named parameters, so `.length` is theirs, and
   keep `function::call(slice, Some(js::arguments()), ())` of `use
-  js::array::SLICE as slice;`, printed `Array.prototype.slice.call(arguments)`
-  where upstream reads its module's `const slice = Array.prototype.slice;`
-  (until rust-js prints the `use` as that const). `applyFill` calls the
-  node's method read as a value, `node.fillLinear.apply(node, this._args)`.
+  js::array::SLICE as slice;`, printed `const slice =
+  Array.prototype.slice;` and `slice.call(arguments)` as upstream (rust-js
+  3393c355a, ADR 0622). `applyFill` calls the node's method read as a
+  value, `node.fillLinear.apply(node, this._args)`. Accepted on the user's
+  behalf while away, 2026-11-02: the `const` is where the Rust's `use` is,
+  after the imports, where upstream declares it above LinearGradient,
+  after `Mode.setCurrent(..)`; both read the global as the module loads,
+  and nothing between replaces it. ReactART.d.ts declares the private
+  `slice` with the binding's Rust signature (rd517, P3, rust-js's).
 - **ReactART's JS is `ReactART.jsx`** (the user, 2026-11-01; 8839806):
   rust-js names a module with JSX `.jsx`, so upstream's ReactART.js is
   removed and jest resolves the `jsx` extension

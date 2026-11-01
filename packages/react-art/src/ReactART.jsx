@@ -27,6 +27,7 @@ import {$unwrap} from '@rust-js/runtime';
 export {default as Transform} from 'art/core/transform';
 
 export {default as version} from 'shared/ReactVersion';
+const slice = Array.prototype.slice;
 
 function defaultOnDefaultTransitionIndicator() {
   // Noop
@@ -40,7 +41,7 @@ Mode.setCurrent(
 /* Declarative fill-type objects; API design not finalized */
 
 export function LinearGradient(stops, x1, y1, x2, y2) {
-  this._args = Array.prototype.slice.call(arguments);
+  this._args = slice.call(arguments);
 }
 
 LinearGradient.prototype.applyFill = function (node) {
@@ -48,7 +49,7 @@ LinearGradient.prototype.applyFill = function (node) {
 };
 
 export function RadialGradient(stops, fx, fy, rx, ry, cx, cy) {
-  this._args = Array.prototype.slice.call(arguments);
+  this._args = slice.call(arguments);
 }
 
 RadialGradient.prototype.applyFill = function (node) {
@@ -56,7 +57,7 @@ RadialGradient.prototype.applyFill = function (node) {
 };
 
 export function Pattern(url, width, height, left, top) {
-  this._args = Array.prototype.slice.call(arguments);
+  this._args = slice.call(arguments);
 }
 
 Pattern.prototype.applyFill = function (node) {
