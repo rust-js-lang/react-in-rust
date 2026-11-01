@@ -640,8 +640,8 @@ The port is split between sessions by package:
   can't), its JS beside its `.rs` where React Native's Fabric config imports
   it.
   react-noop-renderer's createReactNoop and ReactFiberConfigNoop are Rust.
-  react-test-renderer's ReactFiberConfigTestHost is Rust (ReactTestRenderer
-  waits on rd324 and rd325); react-art's ReactARTInternals and ReactFiberConfigART are Rust;
+  react-test-renderer's ReactFiberConfigTestHost and ReactTestRenderer are
+  Rust; react-art's ReactARTInternals and ReactFiberConfigART are Rust;
   ReactART waits on class components (rd331) and `arguments` (rd332).
   bindToConsole binds the console's method to its arguments,
   `function::bind(method, Some(&console), args)`, printed
