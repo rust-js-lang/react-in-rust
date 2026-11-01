@@ -31,6 +31,12 @@ pub mod react_flight_async_sequence;
 pub mod react_flight_current_owner;
 #[path = "src/ReactFlightServerConfigDebugNoop.rs"]
 pub mod react_flight_server_config_debug_noop;
+#[path = "src/ReactServerConsoleConfigBrowser.rs"]
+pub mod react_server_console_config_browser;
+#[path = "src/ReactServerConsoleConfigPlain.rs"]
+pub mod react_server_console_config_plain;
+#[path = "src/ReactServerConsoleConfigServer.rs"]
+pub mod react_server_console_config_server;
 #[path = "src/ReactServerStreamConfigBrowser.rs"]
 pub mod react_server_stream_config_browser;
 #[path = "src/ReactServerStreamConfigEdge.rs"]
