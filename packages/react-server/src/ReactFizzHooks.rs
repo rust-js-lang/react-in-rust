@@ -722,7 +722,7 @@ pub fn use_callback(
     callback: Option<&'static Unknown>,
     deps: Option<Deps>,
 ) -> Option<&'static Unknown> {
-    use_memo(Box::leak(Box::new(move || callback)), deps)
+    use_memo(&move || callback, deps)
 }
 
 thread_local! {
@@ -909,9 +909,10 @@ fn use_action_state(
             function::bind(action, Some(&Kind::Null), (state,));
 
         // Wrap the action so the return value is void.
-        let dispatch: &'static ActionDispatch = Box::leak(Box::new(move |payload| {
-            bound_action(payload);
-        }));
+        let dispatch: &'static ActionDispatch =
+            function::with_this(move |_, (payload,): (Option<&'static Unknown>,)| {
+                bound_action(payload);
+            });
 
         // $FlowIgnore[prop-missing]
         if js::type_of(js::get(js::unknown(bound_action), "$$FORM_ACTION")) == "function" {
@@ -965,9 +966,10 @@ fn use_action_state(
         let bound_action: &'static BoundAction =
             function::bind(action, Some(&Kind::Null), (initial_state,));
         // Wrap the action so the return value is void.
-        let dispatch: &'static ActionDispatch = Box::leak(Box::new(move |payload| {
-            bound_action(payload);
-        }));
+        let dispatch: &'static ActionDispatch =
+            function::with_this(move |_, (payload,): (Option<&'static Unknown>,)| {
+                bound_action(payload);
+            });
         (initial_state, dispatch, false)
     }
 }
