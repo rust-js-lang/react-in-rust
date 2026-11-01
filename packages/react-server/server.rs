@@ -35,6 +35,8 @@ pub mod react_flight_call_user_space;
 pub mod react_flight_current_owner;
 #[path = "src/ReactFlightHooks.rs"]
 pub mod react_flight_hooks;
+#[path = "src/ReactFlightReplyServer.rs"]
+pub mod react_flight_reply_server;
 #[path = "src/ReactFlightServerConfigDebugNoop.rs"]
 pub mod react_flight_server_config_debug_noop;
 #[path = "src/ReactFlightServerTemporaryReferences.rs"]
