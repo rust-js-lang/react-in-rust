@@ -385,11 +385,6 @@ thread_local! {
     static START_INLINE_STYLE: &'static PrecomputedChunk = string_to_precomputed_chunk("<style");
 }
 
-/// A chunk a thread-local holds, as JS reads its module's `const`.
-fn chunk(key: &'static std::thread::LocalKey<&'static Chunk>) -> &'static Chunk {
-    key.with(|chunk| *chunk)
-}
-
 /// This escaping function is designed to work with with inline scripts where the entire
 /// contents are escaped. Because we know we are escaping the entire script we can avoid for instance
 /// escaping html comment string sequences that are valid javascript as well because
@@ -569,31 +564,33 @@ fn push_bootstrap_script(
     bootstrap_chunks.borrow_mut().extend([
         start,
         string_to_chunk(&escape_text_for_browser(Some(js::unknown(src)))),
-        chunk(&ATTRIBUTE_END),
+        ATTRIBUTE_END.with(|chunk| *chunk),
     ]);
     if let Some(nonce_script) = nonce_script.filter(|nonce| !nonce.is_empty()) {
         bootstrap_chunks.borrow_mut().extend([
-            chunk(&SCRIPT_NONCE),
+            SCRIPT_NONCE.with(|chunk| *chunk),
             string_to_chunk(&escape_text_for_browser(Some(js::unknown(nonce_script)))),
-            chunk(&ATTRIBUTE_END),
+            ATTRIBUTE_END.with(|chunk| *chunk),
         ]);
     }
     if let Some(integrity) = integrity {
         bootstrap_chunks.borrow_mut().extend([
-            chunk(&SCRIPT_INTEGIRTY),
+            SCRIPT_INTEGIRTY.with(|chunk| *chunk),
             string_to_chunk(&escape_text_for_browser(Some(js::unknown(integrity)))),
-            chunk(&ATTRIBUTE_END),
+            ATTRIBUTE_END.with(|chunk| *chunk),
         ]);
     }
     if let Some(cross_origin) = cross_origin {
         bootstrap_chunks.borrow_mut().extend([
-            chunk(&SCRIPT_CROSS_ORIGIN),
+            SCRIPT_CROSS_ORIGIN.with(|chunk| *chunk),
             string_to_chunk(&escape_text_for_browser(Some(js::unknown(cross_origin)))),
-            chunk(&ATTRIBUTE_END),
+            ATTRIBUTE_END.with(|chunk| *chunk),
         ]);
     }
     push_completed_shell_id_attribute(bootstrap_chunks, resumable_state);
-    bootstrap_chunks.borrow_mut().push(chunk(&END_ASYNC_SCRIPT));
+    bootstrap_chunks
+        .borrow_mut()
+        .push(END_ASYNC_SCRIPT.with(|chunk| *chunk));
 }
 
 // Allows us to keep track of what we've already written so we can refer back to it.
@@ -613,7 +610,7 @@ pub fn create_render_state(
         None => None,
     };
     let inline_script_with_nonce = match nonce_script {
-        None => chunk(&START_INLINE_SCRIPT),
+        None => START_INLINE_SCRIPT.with(|chunk| *chunk),
         Some(nonce_script) => string_to_precomputed_chunk(
             &("<script nonce=\"".to_owned()
                 + &escape_text_for_browser(Some(js::unknown(nonce_script)))
@@ -625,7 +622,7 @@ pub fn create_render_state(
         _ => None,
     };
     let inline_style_with_nonce = match nonce_style {
-        None => chunk(&START_INLINE_STYLE),
+        None => START_INLINE_STYLE.with(|chunk| *chunk),
         Some(nonce_style) => string_to_precomputed_chunk(
             &("<style nonce=\"".to_owned()
                 + &escape_text_for_browser(Some(js::unknown(nonce_style)))
@@ -643,11 +640,11 @@ pub fn create_render_state(
         bootstrap_chunks.borrow_mut().push(inline_script_with_nonce);
         push_completed_shell_id_attribute(&bootstrap_chunks, resumable_state);
         bootstrap_chunks.borrow_mut().extend([
-            chunk(&END_OF_START_TAG),
+            END_OF_START_TAG.with(|chunk| *chunk),
             string_to_chunk(&escape_entire_inline_script_content(
                 bootstrap_script_content,
             )),
-            chunk(&END_INLINE_SCRIPT),
+            END_INLINE_SCRIPT.with(|chunk| *chunk),
         ]);
     }
     if ENABLE_FIZZ_EXTERNAL_RUNTIME.with(|enabled| *enabled)
@@ -676,7 +673,7 @@ pub fn create_render_state(
     let import_map_chunks: Chunks = RefCell::new(Vec::new());
     if let Some(map) = import_map {
         import_map_chunks.borrow_mut().push(match nonce_script {
-            None => chunk(&IMPORT_MAP_SCRIPT_START),
+            None => IMPORT_MAP_SCRIPT_START.with(|chunk| *chunk),
             Some(nonce_script) => string_to_precomputed_chunk(
                 &("<script type=\"importmap\" nonce=\"".to_owned()
                     + &escape_text_for_browser(Some(js::unknown(nonce_script)))
@@ -692,7 +689,7 @@ pub fn create_render_state(
             )));
         import_map_chunks
             .borrow_mut()
-            .push(chunk(&IMPORT_MAP_SCRIPT_END));
+            .push(IMPORT_MAP_SCRIPT_END.with(|chunk| *chunk));
     }
     if __DEV__
         && on_headers.is_some()
@@ -809,7 +806,7 @@ pub fn create_render_state(
             push_bootstrap_script(
                 &render_state.bootstrap_chunks,
                 resumable_state,
-                chunk(&START_SCRIPT_SRC),
+                START_SCRIPT_SRC.with(|chunk| *chunk),
                 (src, integrity, cross_origin),
                 nonce_script,
             );
@@ -843,7 +840,7 @@ pub fn create_render_state(
             push_bootstrap_script(
                 &render_state.bootstrap_chunks,
                 resumable_state,
-                chunk(&START_MODULE_SRC),
+                START_MODULE_SRC.with(|chunk| *chunk),
                 (src, integrity, cross_origin),
                 nonce_script,
             );
@@ -1342,7 +1339,9 @@ pub fn push_text_instance(
         return text_embedded;
     }
     if text_embedded {
-        target.borrow_mut().push(chunk(&TEXT_SEPARATOR));
+        target
+            .borrow_mut()
+            .push(TEXT_SEPARATOR.with(|chunk| *chunk));
     }
     target
         .borrow_mut()
@@ -1359,7 +1358,9 @@ pub fn push_segment_finale(
     text_embedded: bool,
 ) {
     if last_pushed_text && text_embedded {
-        target.borrow_mut().push(chunk(&TEXT_SEPARATOR));
+        target
+            .borrow_mut()
+            .push(TEXT_SEPARATOR.with(|chunk| *chunk));
     }
 }
 
@@ -1525,22 +1526,22 @@ fn push_style_attribute(target: &Chunks, style: &Unknown) {
             is_first = false;
             // If it's first, we don't need any separators prefixed.
             target.borrow_mut().extend([
-                chunk(&STYLE_ATTRIBUTE_START),
+                STYLE_ATTRIBUTE_START.with(|chunk| *chunk),
                 name_chunk,
-                chunk(&STYLE_ASSIGN),
+                STYLE_ASSIGN.with(|chunk| *chunk),
                 value_chunk,
             ]);
         } else {
             target.borrow_mut().extend([
-                chunk(&STYLE_SEPARATOR),
+                STYLE_SEPARATOR.with(|chunk| *chunk),
                 name_chunk,
-                chunk(&STYLE_ASSIGN),
+                STYLE_ASSIGN.with(|chunk| *chunk),
                 value_chunk,
             ]);
         }
     }
     if !is_first {
-        target.borrow_mut().push(chunk(&ATTRIBUTE_END));
+        target.borrow_mut().push(ATTRIBUTE_END.with(|chunk| *chunk));
     }
 }
 
@@ -1561,9 +1562,9 @@ fn push_boolean_attribute(
         && js::type_of(Some(value)) != "symbol"
     {
         target.borrow_mut().extend([
-            chunk(&ATTRIBUTE_SEPARATOR),
+            ATTRIBUTE_SEPARATOR.with(|chunk| *chunk),
             string_to_chunk(name),
-            chunk(&ATTRIBUTE_EMPTY_STRING),
+            ATTRIBUTE_EMPTY_STRING.with(|chunk| *chunk),
         ]);
     }
 }
@@ -1578,11 +1579,11 @@ fn push_string_attribute(
         && js::type_of(Some(value)) != "boolean"
     {
         target.borrow_mut().extend([
-            chunk(&ATTRIBUTE_SEPARATOR),
+            ATTRIBUTE_SEPARATOR.with(|chunk| *chunk),
             string_to_chunk(name),
-            chunk(&ATTRIBUTE_ASSIGN),
+            ATTRIBUTE_ASSIGN.with(|chunk| *chunk),
             string_to_chunk(&escape_text_for_browser(Some(value))),
-            chunk(&ATTRIBUTE_END),
+            ATTRIBUTE_END.with(|chunk| *chunk),
         ]);
     }
 }
@@ -1605,13 +1606,15 @@ thread_local! {
 }
 
 fn push_additional_form_field(target: &Chunks, value: FormDataEntryValue<'_>, key: &str) {
-    target.borrow_mut().push(chunk(&START_HIDDEN_INPUT_CHUNK));
+    target
+        .borrow_mut()
+        .push(START_HIDDEN_INPUT_CHUNK.with(|chunk| *chunk));
     let value = validate_additional_form_field(value, key);
     push_string_attribute(target, "name", js::unknown(key));
     push_string_attribute(target, "value", js::unknown(value));
     target
         .borrow_mut()
-        .push(chunk(&END_OF_START_TAG_SELF_CLOSING));
+        .push(END_OF_START_TAG_SELF_CLOSING.with(|chunk| *chunk));
 }
 
 fn push_additional_form_fields(target: &Chunks, form_data: Option<&FormData>) {
@@ -1771,11 +1774,11 @@ fn push_form_action_attribute(
             // If CSP is used to block javascript: URLs that's fine too. It just won't show this
             // error message but the URL will be logged.
             target.borrow_mut().extend([
-                chunk(&ATTRIBUTE_SEPARATOR),
+                ATTRIBUTE_SEPARATOR.with(|chunk| *chunk),
                 string_to_chunk("formAction"),
-                chunk(&ATTRIBUTE_ASSIGN),
-                chunk(&ACTION_JAVA_SCRIPT_URL),
-                chunk(&ATTRIBUTE_END),
+                ATTRIBUTE_ASSIGN.with(|chunk| *chunk),
+                ACTION_JAVA_SCRIPT_URL.with(|chunk| *chunk),
+                ATTRIBUTE_END.with(|chunk| *chunk),
             ]);
             name = None;
             form_action = None;
@@ -1839,22 +1842,22 @@ fn push_src_object_attribute(target: &Chunks, blob: &'static Blob) {
     }
     let url = thenable.value();
     target.borrow_mut().extend([
-        chunk(&ATTRIBUTE_SEPARATOR),
+        ATTRIBUTE_SEPARATOR.with(|chunk| *chunk),
         string_to_chunk("src"),
-        chunk(&ATTRIBUTE_ASSIGN),
+        ATTRIBUTE_ASSIGN.with(|chunk| *chunk),
         string_to_chunk(&escape_text_for_browser(url)),
-        chunk(&ATTRIBUTE_END),
+        ATTRIBUTE_END.with(|chunk| *chunk),
     ]);
 }
 
 /// `value`'s attribute of `name`, its text escaped.
 fn push_text_attribute(target: &Chunks, name: &str, value: &Unknown) {
     target.borrow_mut().extend([
-        chunk(&ATTRIBUTE_SEPARATOR),
+        ATTRIBUTE_SEPARATOR.with(|chunk| *chunk),
         string_to_chunk(name),
-        chunk(&ATTRIBUTE_ASSIGN),
+        ATTRIBUTE_ASSIGN.with(|chunk| *chunk),
         string_to_chunk(&escape_text_for_browser(Some(value))),
-        chunk(&ATTRIBUTE_END),
+        ATTRIBUTE_END.with(|chunk| *chunk),
     ]);
 }
 
@@ -1865,11 +1868,11 @@ fn push_url_attribute(target: &Chunks, name: &str, attribute_name: &str, value: 
     }
     let sanitized_value = sanitize_url(Some(js::unknown_of(js::concat_text(Some(value)).unwrap())));
     target.borrow_mut().extend([
-        chunk(&ATTRIBUTE_SEPARATOR),
+        ATTRIBUTE_SEPARATOR.with(|chunk| *chunk),
         string_to_chunk(attribute_name),
-        chunk(&ATTRIBUTE_ASSIGN),
+        ATTRIBUTE_ASSIGN.with(|chunk| *chunk),
         string_to_chunk(&escape_text_for_browser(sanitized_value)),
-        chunk(&ATTRIBUTE_END),
+        ATTRIBUTE_END.with(|chunk| *chunk),
     ]);
 }
 
@@ -1983,9 +1986,9 @@ fn push_attribute(
             // Boolean
             if js::truthy(Some(value)) && !callable {
                 target.borrow_mut().extend([
-                    chunk(&ATTRIBUTE_SEPARATOR),
+                    ATTRIBUTE_SEPARATOR.with(|chunk| *chunk),
                     string_to_chunk(name),
-                    chunk(&ATTRIBUTE_EMPTY_STRING),
+                    ATTRIBUTE_EMPTY_STRING.with(|chunk| *chunk),
                 ]);
             }
         }
@@ -1993,9 +1996,9 @@ fn push_attribute(
             // Overloaded Boolean
             if js::strict_equals(Some(value), true) {
                 target.borrow_mut().extend([
-                    chunk(&ATTRIBUTE_SEPARATOR),
+                    ATTRIBUTE_SEPARATOR.with(|chunk| *chunk),
                     string_to_chunk(name),
-                    chunk(&ATTRIBUTE_EMPTY_STRING),
+                    ATTRIBUTE_EMPTY_STRING.with(|chunk| *chunk),
                 ]);
             } else if js::strict_equals(Some(value), false) {
                 // Ignored
@@ -2167,7 +2170,9 @@ fn push_start_anchor(
 
     push_view_transition_attributes(target, format_context);
 
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
     push_inner_html(target, inner_html, children);
     if let Kind::String(children) = js::classify(children) {
         // Special case children as a string to avoid the unnecessary comment.
@@ -2219,11 +2224,11 @@ fn push_start_object(
                         continue;
                     }
                     target.borrow_mut().extend([
-                        chunk(&ATTRIBUTE_SEPARATOR),
+                        ATTRIBUTE_SEPARATOR.with(|chunk| *chunk),
                         string_to_chunk("data"),
-                        chunk(&ATTRIBUTE_ASSIGN),
+                        ATTRIBUTE_ASSIGN.with(|chunk| *chunk),
                         string_to_chunk(&escape_text_for_browser(sanitized_value)),
-                        chunk(&ATTRIBUTE_END),
+                        ATTRIBUTE_END.with(|chunk| *chunk),
                     ]);
                 }
                 _ => push_attribute(target, &prop_key, prop_value),
@@ -2233,7 +2238,9 @@ fn push_start_object(
 
     push_view_transition_attributes(target, format_context);
 
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
     push_inner_html(target, inner_html, children);
     if let Kind::String(children) = js::classify(children) {
         // Special case children as a string to avoid the unnecessary comment.
@@ -2296,7 +2303,9 @@ fn push_start_select(
 
     push_view_transition_attributes(target, format_context);
 
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
     push_inner_html(target, inner_html, children);
     children
 }
@@ -2407,7 +2416,9 @@ fn push_start_option(
                 }
                 let v = js::concat_text(selected).unwrap();
                 if v == string_value {
-                    target.borrow_mut().push(chunk(&SELECTED_MARKER_ATTRIBUTE));
+                    target
+                        .borrow_mut()
+                        .push(SELECTED_MARKER_ATTRIBUTE.with(|chunk| *chunk));
                     break;
                 }
             }
@@ -2416,15 +2427,21 @@ fn push_start_option(
                 check_attribute_string_coercion(selected_value, "select.value");
             }
             if js::concat_text(selected_value).unwrap() == string_value {
-                target.borrow_mut().push(chunk(&SELECTED_MARKER_ATTRIBUTE));
+                target
+                    .borrow_mut()
+                    .push(SELECTED_MARKER_ATTRIBUTE.with(|chunk| *chunk));
             }
         }
     } else if js::truthy(selected) {
-        target.borrow_mut().push(chunk(&SELECTED_MARKER_ATTRIBUTE));
+        target
+            .borrow_mut()
+            .push(SELECTED_MARKER_ATTRIBUTE.with(|chunk| *chunk));
     }
 
     // Options never participate as ViewTransitions.
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
     push_inner_html(target, inner_html, children);
     children
 }
@@ -2458,9 +2475,9 @@ fn inject_form_replaying_runtime(resumable_state: &ResumableState, render_state:
                 .push(render_state.start_inline_script);
             push_completed_shell_id_attribute(bootstrap_chunks, resumable_state);
             bootstrap_chunks.borrow_mut().extend([
-                chunk(&END_OF_START_TAG),
-                chunk(&FORM_REPLAYING_RUNTIME_SCRIPT),
-                chunk(&END_INLINE_SCRIPT),
+                END_OF_START_TAG.with(|chunk| *chunk),
+                FORM_REPLAYING_RUNTIME_SCRIPT.with(|chunk| *chunk),
+                END_INLINE_SCRIPT.with(|chunk| *chunk),
             ]);
         } else {
             // Otherwise we added to the beginning of the scripts. This will mean that it
@@ -2469,9 +2486,9 @@ fn inject_form_replaying_runtime(resumable_state: &ResumableState, render_state:
                 0..0,
                 [
                     render_state.start_inline_script,
-                    chunk(&END_OF_START_TAG),
-                    chunk(&FORM_REPLAYING_RUNTIME_SCRIPT),
-                    chunk(&END_INLINE_SCRIPT),
+                    END_OF_START_TAG.with(|chunk| *chunk),
+                    FORM_REPLAYING_RUNTIME_SCRIPT.with(|chunk| *chunk),
+                    END_INLINE_SCRIPT.with(|chunk| *chunk),
                 ],
             );
         }
@@ -2486,13 +2503,13 @@ thread_local! {
 pub fn push_form_state_marker_is_matching(target: &Chunks) {
     target
         .borrow_mut()
-        .push(chunk(&FORM_STATE_MARKER_IS_MATCHING));
+        .push(FORM_STATE_MARKER_IS_MATCHING.with(|chunk| *chunk));
 }
 
 pub fn push_form_state_marker_is_not_matching(target: &Chunks) {
     target
         .borrow_mut()
-        .push(chunk(&FORM_STATE_MARKER_IS_NOT_MATCHING));
+        .push(FORM_STATE_MARKER_IS_NOT_MATCHING.with(|chunk| *chunk));
 }
 
 fn push_start_form(
@@ -2571,11 +2588,11 @@ fn push_start_form(
             // If CSP is used to block javascript: URLs that's fine too. It just won't show this
             // error message but the URL will be logged.
             target.borrow_mut().extend([
-                chunk(&ATTRIBUTE_SEPARATOR),
+                ATTRIBUTE_SEPARATOR.with(|chunk| *chunk),
                 string_to_chunk("action"),
-                chunk(&ATTRIBUTE_ASSIGN),
-                chunk(&ACTION_JAVA_SCRIPT_URL),
-                chunk(&ATTRIBUTE_END),
+                ATTRIBUTE_ASSIGN.with(|chunk| *chunk),
+                ACTION_JAVA_SCRIPT_URL.with(|chunk| *chunk),
+                ATTRIBUTE_END.with(|chunk| *chunk),
             ]);
             form_action = None;
             form_enc_type = None;
@@ -2599,14 +2616,18 @@ fn push_start_form(
 
     push_view_transition_attributes(target, format_context);
 
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
 
     if let Some(form_action_name) = form_action_name {
-        target.borrow_mut().push(chunk(&START_HIDDEN_INPUT_CHUNK));
+        target
+            .borrow_mut()
+            .push(START_HIDDEN_INPUT_CHUNK.with(|chunk| *chunk));
         push_string_attribute(target, "name", js::unknown(form_action_name));
         target
             .borrow_mut()
-            .push(chunk(&END_OF_START_TAG_SELF_CLOSING));
+            .push(END_OF_START_TAG_SELF_CLOSING.with(|chunk| *chunk));
         push_additional_form_fields(target, form_data);
     }
 
@@ -2742,7 +2763,7 @@ fn push_input(
 
     target
         .borrow_mut()
-        .push(chunk(&END_OF_START_TAG_SELF_CLOSING));
+        .push(END_OF_START_TAG_SELF_CLOSING.with(|chunk| *chunk));
 
     // We place any additional hidden form fields after the input.
     push_additional_form_fields(target, form_data);
@@ -2812,7 +2833,9 @@ fn push_start_button(
 
     push_view_transition_attributes(target, format_context);
 
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
 
     // We place any additional hidden form fields we need to include inside the button itself.
     push_additional_form_fields(target, form_data);
@@ -2879,7 +2902,9 @@ fn push_start_text_area(
 
     push_view_transition_attributes(target, format_context);
 
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
 
     // TODO (yungsters): Remove support for children content in <textarea>.
     if children.is_some() {
@@ -2926,7 +2951,9 @@ fn push_start_text_area(
         // See: <http://www.w3.org/TR/html5/syntax.html#newlines>
         // See: Parsing of "textarea" "listing" and "pre" elements
         //  from <http://www.w3.org/TR/html5/syntax.html#parsing-main-inbody>
-        target.borrow_mut().push(chunk(&LEADING_NEWLINE));
+        target
+            .borrow_mut()
+            .push(LEADING_NEWLINE.with(|chunk| *chunk));
     }
 
     // ToString and push directly instead of recurse over children.
@@ -2964,7 +2991,9 @@ fn push_meta(
         if text_embedded {
             // This link follows text but we aren't writing a tag. while not as efficient as possible we need
             // to be safe and assume text will follow by inserting a textSeparator
-            target.borrow_mut().push(chunk(&TEXT_SEPARATOR));
+            target
+                .borrow_mut()
+                .push(TEXT_SEPARATOR.with(|chunk| *chunk));
         }
 
         if is_fallback != 0 {
@@ -3152,7 +3181,9 @@ fn push_link(
         if text_embedded {
             // This link follows text but we aren't writing a tag. while not as efficient as possible we need
             // to be safe and assume text will follow by inserting a textSeparator
-            target.borrow_mut().push(chunk(&TEXT_SEPARATOR));
+            target
+                .borrow_mut()
+                .push(TEXT_SEPARATOR.with(|chunk| *chunk));
         }
         js::null()
     } else if js::truthy(js::get(props, "onLoad")) || js::truthy(js::get(props, "onError")) {
@@ -3165,7 +3196,9 @@ fn push_link(
         if text_embedded {
             // This link follows text but we aren't writing a tag. while not as efficient as possible we need
             // to be safe and assume text will follow by inserting a textSeparator
-            target.borrow_mut().push(chunk(&TEXT_SEPARATOR));
+            target
+                .borrow_mut()
+                .push(TEXT_SEPARATOR.with(|chunk| *chunk));
         }
 
         if is_fallback != 0 {
@@ -3222,7 +3255,7 @@ fn push_link_impl(target: &Chunks, props: &Unknown) -> Option<&'static Unknown> 
 
     target
         .borrow_mut()
-        .push(chunk(&END_OF_START_TAG_SELF_CLOSING));
+        .push(END_OF_START_TAG_SELF_CLOSING.with(|chunk| *chunk));
     js::null()
 }
 
@@ -3378,7 +3411,9 @@ fn push_style(
     if text_embedded {
         // This link follows text but we aren't writing a tag. while not as efficient as possible we need
         // to be safe and assume text will follow by inserting a textSeparator
-        target.borrow_mut().push(chunk(&TEXT_SEPARATOR));
+        target
+            .borrow_mut()
+            .push(TEXT_SEPARATOR.with(|chunk| *chunk));
     }
     None
 }
@@ -3447,7 +3482,9 @@ fn push_style_impl(target: &Chunks, props: &Unknown) -> Option<&'static Unknown>
     }
 
     // Style never participate as a ViewTransition.
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
 
     push_style_child(target, children);
     push_inner_html(target, inner_html, children);
@@ -3714,7 +3751,7 @@ fn push_self_closing(
 
     target
         .borrow_mut()
-        .push(chunk(&END_OF_START_TAG_SELF_CLOSING));
+        .push(END_OF_START_TAG_SELF_CLOSING.with(|chunk| *chunk));
     js::null()
 }
 
@@ -3741,7 +3778,9 @@ fn push_start_menu_item(
 
     push_view_transition_attributes(target, format_context);
 
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
     js::null()
 }
 
@@ -3847,7 +3886,9 @@ fn push_title_impl(target: &Chunks, props: &Unknown) -> Option<&'static Unknown>
         }
     }
     // Title never participate as a ViewTransition
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
 
     let child = style_child(children);
     if !matches!(js::classify(child), Kind::Function(_) | Kind::Symbol(_)) && child.is_some() {
@@ -3870,34 +3911,6 @@ thread_local! {
     static HTML_PREAMBLE_CONTRIBUTION_CHUNK: &'static PrecomputedChunk = string_to_precomputed_chunk("<!--html-->");
 }
 
-/// A singleton's tag in the preamble, `head`, `body` or `html`: its chunks,
-/// made, and the marker of its contribution.
-fn push_start_preamble_singleton(
-    target: &Chunks,
-    props: &Unknown,
-    preamble: &RefCell<Option<Rc<Chunks>>>,
-    (tag, marker, first): (
-        &str,
-        &'static std::thread::LocalKey<&'static Chunk>,
-        Option<&'static Chunk>,
-    ),
-    in_preamble: bool,
-    format_context: &FormatContext,
-) -> Option<&'static Unknown> {
-    if preamble.borrow().is_some() {
-        panic!("The `<{tag}>` tag may only be rendered once.");
-    }
-
-    // Insert a marker in the body where the contribution to the head was in case we need to clear it.
-    if in_preamble {
-        target.borrow_mut().push(chunk(marker));
-    }
-
-    let chunks = Rc::new(RefCell::new(first.into_iter().collect()));
-    *preamble.borrow_mut() = Some(Rc::clone(&chunks));
-    push_start_singleton_element(&chunks, props, tag, format_context)
-}
-
 fn push_start_head(
     target: &Chunks,
     props: &Unknown,
@@ -3908,14 +3921,21 @@ fn push_start_head(
     if format_context.insertion_mode < HTML_MODE {
         // This <head> is the Document.head and should be part of the preamble
         let preamble = preamble_state.unwrap_or(&render_state.preamble);
-        push_start_preamble_singleton(
-            target,
-            props,
-            &preamble.head_chunks,
-            ("head", &HEAD_PREAMBLE_CONTRIBUTION_CHUNK, None),
-            preamble_state.is_some(),
-            format_context,
-        )
+
+        if preamble.head_chunks.borrow().is_some() {
+            panic!("The `<head>` tag may only be rendered once.");
+        }
+
+        // Insert a marker in the body where the contribution to the head was in case we need to clear it.
+        if preamble_state.is_some() {
+            target
+                .borrow_mut()
+                .push(HEAD_PREAMBLE_CONTRIBUTION_CHUNK.with(|chunk| *chunk));
+        }
+
+        let head_chunks = Rc::new(RefCell::new(Vec::new()));
+        *preamble.head_chunks.borrow_mut() = Some(Rc::clone(&head_chunks));
+        push_start_singleton_element(&head_chunks, props, "head", format_context)
     } else {
         // This <head> is deep and is likely just an error. we emit it inline though.
         // Validation should warn that this tag is the the wrong spot.
@@ -3933,14 +3953,21 @@ fn push_start_body(
     if format_context.insertion_mode < HTML_MODE {
         // This <body> is the Document.body
         let preamble = preamble_state.unwrap_or(&render_state.preamble);
-        push_start_preamble_singleton(
-            target,
-            props,
-            &preamble.body_chunks,
-            ("body", &BODY_PREAMBLE_CONTRIBUTION_CHUNK, None),
-            preamble_state.is_some(),
-            format_context,
-        )
+
+        if preamble.body_chunks.borrow().is_some() {
+            panic!("The `<body>` tag may only be rendered once.");
+        }
+
+        // Insert a marker in the body where the contribution to the body tag was in case we need to clear it.
+        if preamble_state.is_some() {
+            target
+                .borrow_mut()
+                .push(BODY_PREAMBLE_CONTRIBUTION_CHUNK.with(|chunk| *chunk));
+        }
+
+        let body_chunks = Rc::new(RefCell::new(Vec::new()));
+        *preamble.body_chunks.borrow_mut() = Some(Rc::clone(&body_chunks));
+        push_start_singleton_element(&body_chunks, props, "body", format_context)
     } else {
         // This <head> is deep and is likely just an error. we emit it inline though.
         // Validation should warn that this tag is the the wrong spot.
@@ -3958,14 +3985,21 @@ fn push_start_html(
     if format_context.insertion_mode == ROOT_HTML_MODE {
         // This <html> is the Document.documentElement
         let preamble = preamble_state.unwrap_or(&render_state.preamble);
-        push_start_preamble_singleton(
-            target,
-            props,
-            &preamble.html_chunks,
-            ("html", &HTML_PREAMBLE_CONTRIBUTION_CHUNK, Some(DOCTYPE)),
-            preamble_state.is_some(),
-            format_context,
-        )
+
+        if preamble.html_chunks.borrow().is_some() {
+            panic!("The `<html>` tag may only be rendered once.");
+        }
+
+        // Insert a marker in the body where the contribution to the head was in case we need to clear it.
+        if preamble_state.is_some() {
+            target
+                .borrow_mut()
+                .push(HTML_PREAMBLE_CONTRIBUTION_CHUNK.with(|chunk| *chunk));
+        }
+
+        let html_chunks = Rc::new(RefCell::new(vec![DOCTYPE]));
+        *preamble.html_chunks.borrow_mut() = Some(Rc::clone(&html_chunks));
+        push_start_singleton_element(&html_chunks, props, "html", format_context)
     } else {
         // This <html> is deep and is likely just an error. we emit it inline though.
         // Validation should warn that this tag is the the wrong spot.
@@ -4056,7 +4090,9 @@ fn push_script(
     if text_embedded {
         // This script follows text but we aren't writing a tag. while not as efficient as possible we need
         // to be safe and assume text will follow by inserting a textSeparator
-        target.borrow_mut().push(chunk(&TEXT_SEPARATOR));
+        target
+            .borrow_mut()
+            .push(TEXT_SEPARATOR.with(|chunk| *chunk));
     }
     js::null()
 }
@@ -4079,7 +4115,9 @@ fn push_script_impl(target: &Chunks, props: &Unknown) -> Option<&'static Unknown
         }
     }
     // Scripts never participate as a ViewTransition
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
 
     if __DEV__ && children.is_some() && js::type_of(children) != "string" {
         let descriptive_statement = if js::type_of(children) == "number" {
@@ -4135,7 +4173,9 @@ fn push_start_singleton_element(
 
     push_view_transition_attributes(target, format_context);
 
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
     push_inner_html(target, inner_html, children);
     children
 }
@@ -4165,7 +4205,9 @@ fn push_start_generic_element(
 
     push_view_transition_attributes(target, format_context);
 
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
     push_inner_html(target, inner_html, children);
     if let Kind::String(children) = js::classify(children) {
         // Special case children as a string to avoid the unnecessary comment.
@@ -4231,7 +4273,9 @@ fn push_start_custom_element(
     // TODO: ViewTransition attributes gets observed by the Custom Element which is a bit sketchy.
     push_view_transition_attributes(target, format_context);
 
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
     push_inner_html(target, inner_html, children);
     children
 }
@@ -4265,7 +4309,9 @@ fn push_start_preformatted_element(
 
     push_view_transition_attributes(target, format_context);
 
-    target.borrow_mut().push(chunk(&END_OF_START_TAG));
+    target
+        .borrow_mut()
+        .push(END_OF_START_TAG.with(|chunk| *chunk));
 
     // text/html ignores the first character in these tags if it's a newline
     // Prefer to break application/xml over text/html (for now) by adding
@@ -4303,7 +4349,7 @@ fn push_start_preformatted_element(
             {
                 target
                     .borrow_mut()
-                    .extend([chunk(&LEADING_NEWLINE), string_to_chunk(html)]);
+                    .extend([LEADING_NEWLINE.with(|chunk| *chunk), string_to_chunk(html)]);
             } else {
                 if __DEV__ {
                     check_html_string_coercion(html);
@@ -4317,7 +4363,9 @@ fn push_start_preformatted_element(
     if let Kind::String(text) = js::classify(children)
         && js::string::get(text, 0.0) == Some("\n")
     {
-        target.borrow_mut().push(chunk(&LEADING_NEWLINE));
+        target
+            .borrow_mut()
+            .push(LEADING_NEWLINE.with(|chunk| *chunk));
     }
     children
 }
@@ -4554,20 +4602,23 @@ pub fn push_end_instance(
 
 pub fn hoist_preamble_state(render_state: &RenderState, preamble_state: &PreambleState) {
     let root_preamble = &render_state.preamble;
-    if root_preamble.html_chunks.borrow().is_none()
-        && let Some(html_chunks) = preamble_state.html_chunks.borrow().as_ref()
-    {
-        *root_preamble.html_chunks.borrow_mut() = Some(Rc::clone(html_chunks));
+    if root_preamble.html_chunks.borrow().is_none() {
+        let html_chunks = preamble_state.html_chunks.borrow().clone();
+        if html_chunks.is_some() {
+            *root_preamble.html_chunks.borrow_mut() = html_chunks;
+        }
     }
-    if root_preamble.head_chunks.borrow().is_none()
-        && let Some(head_chunks) = preamble_state.head_chunks.borrow().as_ref()
-    {
-        *root_preamble.head_chunks.borrow_mut() = Some(Rc::clone(head_chunks));
+    if root_preamble.head_chunks.borrow().is_none() {
+        let head_chunks = preamble_state.head_chunks.borrow().clone();
+        if head_chunks.is_some() {
+            *root_preamble.head_chunks.borrow_mut() = head_chunks;
+        }
     }
-    if root_preamble.body_chunks.borrow().is_none()
-        && let Some(body_chunks) = preamble_state.body_chunks.borrow().as_ref()
-    {
-        *root_preamble.body_chunks.borrow_mut() = Some(Rc::clone(body_chunks));
+    if root_preamble.body_chunks.borrow().is_none() {
+        let body_chunks = preamble_state.body_chunks.borrow().clone();
+        if body_chunks.is_some() {
+            *root_preamble.body_chunks.borrow_mut() = body_chunks;
+        }
     }
 }
 
@@ -4627,9 +4678,9 @@ fn write_shell_time_instruction(
         .set(resumable_state.instructions.get() | SENT_MARK_SHELL_TIME);
     write_chunk(destination, render_state.start_inline_script);
     write_completed_shell_id_attribute(destination, resumable_state);
-    write_chunk(destination, chunk(&END_OF_START_TAG));
-    write_chunk(destination, chunk(&SHELL_TIME_RUNTIME_SCRIPT));
-    write_chunk_and_return(destination, chunk(&END_INLINE_SCRIPT))
+    write_chunk(destination, END_OF_START_TAG.with(|chunk| *chunk));
+    write_chunk(destination, SHELL_TIME_RUNTIME_SCRIPT.with(|chunk| *chunk));
+    write_chunk_and_return(destination, END_INLINE_SCRIPT.with(|chunk| *chunk))
 }
 
 pub fn write_completed_root(
@@ -4653,7 +4704,7 @@ pub fn write_completed_root(
         {
             write_chunk(destination, start_chunk_for_tag("template"));
             write_completed_shell_id_attribute(destination, resumable_state);
-            write_chunk(destination, chunk(&END_OF_START_TAG));
+            write_chunk(destination, END_OF_START_TAG.with(|chunk| *chunk));
             write_chunk(destination, end_chunk_for_tag("template"));
         }
     }
@@ -4671,12 +4722,12 @@ thread_local! {
 }
 
 pub fn write_placeholder(destination: &Destination, render_state: &RenderState, id: f64) -> bool {
-    write_chunk(destination, chunk(&PLACEHOLDER1));
+    write_chunk(destination, PLACEHOLDER1.with(|chunk| *chunk));
     write_chunk(destination, render_state.placeholder_prefix);
     #[cfg_attr(rust_js, rust_js::name = "formattedID")]
     let formatted_id = string_to_chunk(&js::number::to_string(id, Some(16)));
     write_chunk(destination, formatted_id);
-    write_chunk_and_return(destination, chunk(&PLACEHOLDER2))
+    write_chunk_and_return(destination, PLACEHOLDER2.with(|chunk| *chunk))
 }
 
 thread_local! {
@@ -4686,11 +4737,15 @@ thread_local! {
 }
 
 pub fn push_start_activity_boundary(target: &Chunks, _render_state: &RenderState) {
-    target.borrow_mut().push(chunk(&START_ACTIVITY_BOUNDARY));
+    target
+        .borrow_mut()
+        .push(START_ACTIVITY_BOUNDARY.with(|chunk| *chunk));
 }
 
 pub fn push_end_activity_boundary(target: &Chunks, _render_state: &RenderState) {
-    target.borrow_mut().push(chunk(&END_ACTIVITY_BOUNDARY));
+    target
+        .borrow_mut()
+        .push(END_ACTIVITY_BOUNDARY.with(|chunk| *chunk));
 }
 
 thread_local! {
@@ -4716,7 +4771,10 @@ pub fn write_start_completed_suspense_boundary(
     destination: &Destination,
     _render_state: &RenderState,
 ) -> bool {
-    write_chunk_and_return(destination, chunk(&START_COMPLETED_SUSPENSE_BOUNDARY))
+    write_chunk_and_return(
+        destination,
+        START_COMPLETED_SUSPENSE_BOUNDARY.with(|chunk| *chunk),
+    )
 }
 
 pub fn write_start_pending_suspense_boundary(
@@ -4724,7 +4782,10 @@ pub fn write_start_pending_suspense_boundary(
     render_state: &RenderState,
     id: Option<f64>,
 ) -> bool {
-    write_chunk(destination, chunk(&START_PENDING_SUSPENSE_BOUNDARY1));
+    write_chunk(
+        destination,
+        START_PENDING_SUSPENSE_BOUNDARY1.with(|chunk| *chunk),
+    );
 
     let Some(id) = id else {
         panic!("An ID must have been assigned before we can complete the boundary.");
@@ -4735,7 +4796,10 @@ pub fn write_start_pending_suspense_boundary(
         destination,
         string_to_chunk(&js::number::to_string(id, Some(16))),
     );
-    write_chunk_and_return(destination, chunk(&START_PENDING_SUSPENSE_BOUNDARY2))
+    write_chunk_and_return(
+        destination,
+        START_PENDING_SUSPENSE_BOUNDARY2.with(|chunk| *chunk),
+    )
 }
 
 /// An attribute of a client rendered boundary's error, `data-dgst` say.
@@ -4747,7 +4811,7 @@ fn write_error_attribute(destination: &Destination, start: &'static Chunk, value
     );
     write_chunk(
         destination,
-        chunk(&CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR_ATTR_INTERSTITIAL),
+        CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR_ATTR_INTERSTITIAL.with(|chunk| *chunk),
     );
 }
 
@@ -4759,15 +4823,18 @@ pub fn write_start_client_rendered_suspense_boundary(
     error_stack: Option<&str>,
     error_component_stack: Option<&str>,
 ) -> bool {
-    write_chunk_and_return(destination, chunk(&START_CLIENT_RENDERED_SUSPENSE_BOUNDARY));
+    write_chunk_and_return(
+        destination,
+        START_CLIENT_RENDERED_SUSPENSE_BOUNDARY.with(|chunk| *chunk),
+    );
     write_chunk(
         destination,
-        chunk(&CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR1),
+        CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR1.with(|chunk| *chunk),
     );
     if let Some(error_digest) = error_digest {
         write_error_attribute(
             destination,
-            chunk(&CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR1_A),
+            CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR1_A.with(|chunk| *chunk),
             error_digest,
         );
     }
@@ -4775,28 +4842,28 @@ pub fn write_start_client_rendered_suspense_boundary(
         if let Some(error_message) = error_message.filter(|text| !text.is_empty()) {
             write_error_attribute(
                 destination,
-                chunk(&CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR1_B),
+                CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR1_B.with(|chunk| *chunk),
                 error_message,
             );
         }
         if let Some(error_stack) = error_stack.filter(|text| !text.is_empty()) {
             write_error_attribute(
                 destination,
-                chunk(&CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR1_C),
+                CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR1_C.with(|chunk| *chunk),
                 error_stack,
             );
         }
         if let Some(error_component_stack) = error_component_stack.filter(|text| !text.is_empty()) {
             write_error_attribute(
                 destination,
-                chunk(&CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR1_D),
+                CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR1_D.with(|chunk| *chunk),
                 error_component_stack,
             );
         }
     }
     write_chunk_and_return(
         destination,
-        chunk(&CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR2),
+        CLIENT_RENDERED_SUSPENSE_BOUNDARY_ERROR2.with(|chunk| *chunk),
     )
 }
 
@@ -4804,21 +4871,21 @@ pub fn write_end_completed_suspense_boundary(
     destination: &Destination,
     _render_state: &RenderState,
 ) -> bool {
-    write_chunk_and_return(destination, chunk(&END_SUSPENSE_BOUNDARY))
+    write_chunk_and_return(destination, END_SUSPENSE_BOUNDARY.with(|chunk| *chunk))
 }
 
 pub fn write_end_pending_suspense_boundary(
     destination: &Destination,
     _render_state: &RenderState,
 ) -> bool {
-    write_chunk_and_return(destination, chunk(&END_SUSPENSE_BOUNDARY))
+    write_chunk_and_return(destination, END_SUSPENSE_BOUNDARY.with(|chunk| *chunk))
 }
 
 pub fn write_end_client_rendered_suspense_boundary(
     destination: &Destination,
     _render_state: &RenderState,
 ) -> bool {
-    write_chunk_and_return(destination, chunk(&END_SUSPENSE_BOUNDARY))
+    write_chunk_and_return(destination, END_SUSPENSE_BOUNDARY.with(|chunk| *chunk))
 }
 
 thread_local! {
@@ -4876,13 +4943,13 @@ pub fn write_start_segment(
         HTML_COLGROUP_MODE => (&START_SEGMENT_COL_GROUP, &START_SEGMENT_COL_GROUP2),
         _ => panic!("Unknown insertion mode. This is a bug in React."),
     };
-    write_chunk(destination, chunk(start));
+    write_chunk(destination, start.with(|chunk| *chunk));
     write_chunk(destination, render_state.segment_prefix);
     write_chunk(
         destination,
         string_to_chunk(&js::number::to_string(id, Some(16))),
     );
-    write_chunk_and_return(destination, chunk(end))
+    write_chunk_and_return(destination, end.with(|chunk| *chunk))
 }
 
 pub fn write_end_segment(destination: &Destination, format_context: &FormatContext) -> bool {
@@ -4896,7 +4963,7 @@ pub fn write_end_segment(destination: &Destination, format_context: &FormatConte
         HTML_COLGROUP_MODE => &END_SEGMENT_COL_GROUP,
         _ => panic!("Unknown insertion mode. This is a bug in React."),
     };
-    write_chunk_and_return(destination, chunk(end))
+    write_chunk_and_return(destination, end.with(|chunk| *chunk))
 }
 
 thread_local! {
@@ -4909,7 +4976,7 @@ thread_local! {
     static COMPLETE_SEGMENT_DATA1: &'static PrecomputedChunk =
         string_to_precomputed_chunk("<template data-rsi=\"\" data-sid=\"");
     static COMPLETE_SEGMENT_DATA2: &'static PrecomputedChunk = string_to_precomputed_chunk("\" data-pid=\"");
-    static COMPLETE_SEGMENT_DATA_END: &'static PrecomputedChunk = chunk(&DATA_ELEMENT_QUOTED_END);
+    static COMPLETE_SEGMENT_DATA_END: &'static PrecomputedChunk = DATA_ELEMENT_QUOTED_END.with(|chunk| *chunk);
 }
 
 /// Whether instructions are written as inline scripts, not as the data the
@@ -4940,16 +5007,22 @@ pub fn write_completed_segment_instruction(
     let script_format = script_format(resumable_state);
     if script_format {
         write_chunk(destination, render_state.start_inline_script);
-        write_chunk(destination, chunk(&END_OF_START_TAG));
+        write_chunk(destination, END_OF_START_TAG.with(|chunk| *chunk));
         if send_once(resumable_state, SENT_COMPLETE_SEGMENT_FUNCTION) {
             // The first time we write this, we'll need to include the full implementation.
-            write_chunk(destination, chunk(&COMPLETE_SEGMENT_SCRIPT1_FULL));
+            write_chunk(
+                destination,
+                COMPLETE_SEGMENT_SCRIPT1_FULL.with(|chunk| *chunk),
+            );
         } else {
             // Future calls can just reuse the same function.
-            write_chunk(destination, chunk(&COMPLETE_SEGMENT_SCRIPT1_PARTIAL));
+            write_chunk(
+                destination,
+                COMPLETE_SEGMENT_SCRIPT1_PARTIAL.with(|chunk| *chunk),
+            );
         }
     } else {
-        write_chunk(destination, chunk(&COMPLETE_SEGMENT_DATA1));
+        write_chunk(destination, COMPLETE_SEGMENT_DATA1.with(|chunk| *chunk));
     }
 
     // Write function arguments, which are string literals
@@ -4958,17 +5031,20 @@ pub fn write_completed_segment_instruction(
     let formatted_id = string_to_chunk(&js::number::to_string(content_segment_id, Some(16)));
     write_chunk(destination, formatted_id);
     if script_format {
-        write_chunk(destination, chunk(&COMPLETE_SEGMENT_SCRIPT2));
+        write_chunk(destination, COMPLETE_SEGMENT_SCRIPT2.with(|chunk| *chunk));
     } else {
-        write_chunk(destination, chunk(&COMPLETE_SEGMENT_DATA2));
+        write_chunk(destination, COMPLETE_SEGMENT_DATA2.with(|chunk| *chunk));
     }
     write_chunk(destination, render_state.placeholder_prefix);
     write_chunk(destination, formatted_id);
 
     if script_format {
-        write_chunk_and_return(destination, chunk(&COMPLETE_SEGMENT_SCRIPT_END))
+        write_chunk_and_return(
+            destination,
+            COMPLETE_SEGMENT_SCRIPT_END.with(|chunk| *chunk),
+        )
     } else {
-        write_chunk_and_return(destination, chunk(&COMPLETE_SEGMENT_DATA_END))
+        write_chunk_and_return(destination, COMPLETE_SEGMENT_DATA_END.with(|chunk| *chunk))
     }
 }
 
@@ -4994,7 +5070,7 @@ thread_local! {
         string_to_precomputed_chunk("<template data-rri=\"\" data-bid=\"");
     static COMPLETE_BOUNDARY_DATA2: &'static PrecomputedChunk = string_to_precomputed_chunk("\" data-sid=\"");
     static COMPLETE_BOUNDARY_DATA3A: &'static PrecomputedChunk = string_to_precomputed_chunk("\" data-sty=\"");
-    static COMPLETE_BOUNDARY_DATA_END: &'static PrecomputedChunk = chunk(&DATA_ELEMENT_QUOTED_END);
+    static COMPLETE_BOUNDARY_DATA_END: &'static PrecomputedChunk = DATA_ELEMENT_QUOTED_END.with(|chunk| *chunk);
 }
 
 pub fn write_completed_boundary_instruction(
@@ -5015,53 +5091,68 @@ pub fn write_completed_boundary_instruction(
     let script_format = script_format(resumable_state);
     if script_format {
         write_chunk(destination, render_state.start_inline_script);
-        write_chunk(destination, chunk(&END_OF_START_TAG));
+        write_chunk(destination, END_OF_START_TAG.with(|chunk| *chunk));
         if requires_style_insertion {
             if send_once(resumable_state, SENT_CLIENT_RENDER_FUNCTION) {
                 // The completeBoundaryWithStyles function depends on the client render function.
-                write_chunk(destination, chunk(&CLIENT_RENDER_SCRIPT_FUNCTION_ONLY));
+                write_chunk(
+                    destination,
+                    CLIENT_RENDER_SCRIPT_FUNCTION_ONLY.with(|chunk| *chunk),
+                );
             }
             if send_once(resumable_state, SENT_COMPLETE_BOUNDARY_FUNCTION) {
                 // The completeBoundaryWithStyles function depends on the complete boundary function.
-                write_chunk(destination, chunk(&COMPLETE_BOUNDARY_SCRIPT_FUNCTION_ONLY));
+                write_chunk(
+                    destination,
+                    COMPLETE_BOUNDARY_SCRIPT_FUNCTION_ONLY.with(|chunk| *chunk),
+                );
             }
             if requires_view_transitions
                 && send_once(resumable_state, SENT_UPGRADE_TO_VIEW_TRANSITIONS)
             {
                 write_chunk(
                     destination,
-                    chunk(&COMPLETE_BOUNDARY_UPGRADE_TO_VIEW_TRANSITIONS_INSTRUCTION),
+                    COMPLETE_BOUNDARY_UPGRADE_TO_VIEW_TRANSITIONS_INSTRUCTION.with(|chunk| *chunk),
                 );
             }
             if send_once(resumable_state, SENT_STYLE_INSERTION_FUNCTION) {
                 write_chunk(
                     destination,
-                    chunk(&COMPLETE_BOUNDARY_WITH_STYLES_SCRIPT1_FULL_PARTIAL),
+                    COMPLETE_BOUNDARY_WITH_STYLES_SCRIPT1_FULL_PARTIAL.with(|chunk| *chunk),
                 );
             } else {
                 write_chunk(
                     destination,
-                    chunk(&COMPLETE_BOUNDARY_WITH_STYLES_SCRIPT1_PARTIAL),
+                    COMPLETE_BOUNDARY_WITH_STYLES_SCRIPT1_PARTIAL.with(|chunk| *chunk),
                 );
             }
         } else {
             if send_once(resumable_state, SENT_COMPLETE_BOUNDARY_FUNCTION) {
-                write_chunk(destination, chunk(&COMPLETE_BOUNDARY_SCRIPT_FUNCTION_ONLY));
+                write_chunk(
+                    destination,
+                    COMPLETE_BOUNDARY_SCRIPT_FUNCTION_ONLY.with(|chunk| *chunk),
+                );
             }
             if requires_view_transitions
                 && send_once(resumable_state, SENT_UPGRADE_TO_VIEW_TRANSITIONS)
             {
                 write_chunk(
                     destination,
-                    chunk(&COMPLETE_BOUNDARY_UPGRADE_TO_VIEW_TRANSITIONS_INSTRUCTION),
+                    COMPLETE_BOUNDARY_UPGRADE_TO_VIEW_TRANSITIONS_INSTRUCTION.with(|chunk| *chunk),
                 );
             }
-            write_chunk(destination, chunk(&COMPLETE_BOUNDARY_SCRIPT1_PARTIAL));
+            write_chunk(
+                destination,
+                COMPLETE_BOUNDARY_SCRIPT1_PARTIAL.with(|chunk| *chunk),
+            );
         }
     } else if requires_style_insertion {
-        write_chunk(destination, chunk(&COMPLETE_BOUNDARY_WITH_STYLES_DATA1));
+        write_chunk(
+            destination,
+            COMPLETE_BOUNDARY_WITH_STYLES_DATA1.with(|chunk| *chunk),
+        );
     } else {
-        write_chunk(destination, chunk(&COMPLETE_BOUNDARY_DATA1));
+        write_chunk(destination, COMPLETE_BOUNDARY_DATA1.with(|chunk| *chunk));
     }
 
     let id_chunk = string_to_chunk(&js::number::to_string(id, Some(16)));
@@ -5071,9 +5162,9 @@ pub fn write_completed_boundary_instruction(
 
     // Write function arguments, which are string and array literals
     if script_format {
-        write_chunk(destination, chunk(&COMPLETE_BOUNDARY_SCRIPT2));
+        write_chunk(destination, COMPLETE_BOUNDARY_SCRIPT2.with(|chunk| *chunk));
     } else {
-        write_chunk(destination, chunk(&COMPLETE_BOUNDARY_DATA2));
+        write_chunk(destination, COMPLETE_BOUNDARY_DATA2.with(|chunk| *chunk));
     }
     write_chunk(destination, render_state.segment_prefix);
     write_chunk(destination, id_chunk);
@@ -5084,20 +5175,23 @@ pub fn write_completed_boundary_instruction(
         //  - data writer emits a string literal, which is escaped as html
         //    e.g. [&#34;A&#34;, &#34;B&#34;]
         if script_format {
-            write_chunk(destination, chunk(&COMPLETE_BOUNDARY_SCRIPT3A));
+            write_chunk(destination, COMPLETE_BOUNDARY_SCRIPT3A.with(|chunk| *chunk));
             // hoistableState encodes an array literal
             write_style_resource_dependencies_in_js(destination, hoistable_state);
         } else {
-            write_chunk(destination, chunk(&COMPLETE_BOUNDARY_DATA3A));
+            write_chunk(destination, COMPLETE_BOUNDARY_DATA3A.with(|chunk| *chunk));
             write_style_resource_dependencies_in_attr(destination, hoistable_state);
         }
     } else if script_format {
-        write_chunk(destination, chunk(&COMPLETE_BOUNDARY_SCRIPT3B));
+        write_chunk(destination, COMPLETE_BOUNDARY_SCRIPT3B.with(|chunk| *chunk));
     }
     let write_more = if script_format {
-        write_chunk_and_return(destination, chunk(&COMPLETE_BOUNDARY_SCRIPT_END))
+        write_chunk_and_return(
+            destination,
+            COMPLETE_BOUNDARY_SCRIPT_END.with(|chunk| *chunk),
+        )
     } else {
-        write_chunk_and_return(destination, chunk(&COMPLETE_BOUNDARY_DATA_END))
+        write_chunk_and_return(destination, COMPLETE_BOUNDARY_DATA_END.with(|chunk| *chunk))
     };
     write_bootstrap(destination, render_state) && write_more
 }
@@ -5118,7 +5212,7 @@ thread_local! {
     static CLIENT_RENDER_DATA3: &'static PrecomputedChunk = string_to_precomputed_chunk("\" data-msg=\"");
     static CLIENT_RENDER_DATA4: &'static PrecomputedChunk = string_to_precomputed_chunk("\" data-stck=\"");
     static CLIENT_RENDER_DATA5: &'static PrecomputedChunk = string_to_precomputed_chunk("\" data-cstck=\"");
-    static CLIENT_RENDER_DATA_END: &'static PrecomputedChunk = chunk(&DATA_ELEMENT_QUOTED_END);
+    static CLIENT_RENDER_DATA_END: &'static PrecomputedChunk = DATA_ELEMENT_QUOTED_END.with(|chunk| *chunk);
 }
 
 /// One of a client rendered boundary's error's texts: in a script, a JS
@@ -5133,7 +5227,7 @@ fn write_client_render_error(
         // ,"JSONString"
         write_chunk(
             destination,
-            chunk(&CLIENT_RENDER_ERROR_SCRIPT_ARG_INTERSTITIAL),
+            CLIENT_RENDER_ERROR_SCRIPT_ARG_INTERSTITIAL.with(|chunk| *chunk),
         );
         write_chunk(
             destination,
@@ -5162,17 +5256,20 @@ pub fn write_client_render_boundary_instruction(
     let script_format = script_format(resumable_state);
     if script_format {
         write_chunk(destination, render_state.start_inline_script);
-        write_chunk(destination, chunk(&END_OF_START_TAG));
+        write_chunk(destination, END_OF_START_TAG.with(|chunk| *chunk));
         if send_once(resumable_state, SENT_CLIENT_RENDER_FUNCTION) {
             // The first time we write this, we'll need to include the full implementation.
-            write_chunk(destination, chunk(&CLIENT_RENDER_SCRIPT1_FULL));
+            write_chunk(destination, CLIENT_RENDER_SCRIPT1_FULL.with(|chunk| *chunk));
         } else {
             // Future calls can just reuse the same function.
-            write_chunk(destination, chunk(&CLIENT_RENDER_SCRIPT1_PARTIAL));
+            write_chunk(
+                destination,
+                CLIENT_RENDER_SCRIPT1_PARTIAL.with(|chunk| *chunk),
+            );
         }
     } else {
         // <template data-rxi="" data-bid="
-        write_chunk(destination, chunk(&CLIENT_RENDER_DATA1));
+        write_chunk(destination, CLIENT_RENDER_DATA1.with(|chunk| *chunk));
     }
 
     write_chunk(destination, render_state.boundary_prefix);
@@ -5183,7 +5280,7 @@ pub fn write_client_render_boundary_instruction(
     if script_format {
         // " needs to be inserted for scripts, since ArgInterstitual does not contain
         // leading or trailing quotes
-        write_chunk(destination, chunk(&CLIENT_RENDER_SCRIPT1_A));
+        write_chunk(destination, CLIENT_RENDER_SCRIPT1_A.with(|chunk| *chunk));
     }
 
     let error_message = error_message.filter(|text| !text.is_empty());
@@ -5198,10 +5295,13 @@ pub fn write_client_render_boundary_instruction(
             // ,null or ,"JSONString"
             write_chunk(
                 destination,
-                chunk(&CLIENT_RENDER_ERROR_SCRIPT_ARG_INTERSTITIAL),
+                CLIENT_RENDER_ERROR_SCRIPT_ARG_INTERSTITIAL.with(|chunk| *chunk),
             );
             match error_digest {
-                None => write_chunk(destination, chunk(&CLIENT_RENDER_ERROR_SCRIPT_NULL)),
+                None => write_chunk(
+                    destination,
+                    CLIENT_RENDER_ERROR_SCRIPT_NULL.with(|chunk| *chunk),
+                ),
                 Some(error_digest) => write_chunk(
                     destination,
                     string_to_chunk(&escape_js_strings_for_instruction_scripts(error_digest)),
@@ -5209,7 +5309,7 @@ pub fn write_client_render_boundary_instruction(
             }
         } else if let Some(error_digest) = error_digest {
             // " data-dgst="HTMLString
-            write_chunk(destination, chunk(&CLIENT_RENDER_DATA2));
+            write_chunk(destination, CLIENT_RENDER_DATA2.with(|chunk| *chunk));
             write_chunk(
                 destination,
                 string_to_chunk(&escape_text_for_browser(Some(js::unknown(error_digest)))),
@@ -5220,7 +5320,7 @@ pub fn write_client_render_boundary_instruction(
         write_client_render_error(
             destination,
             script_format,
-            chunk(&CLIENT_RENDER_DATA3),
+            CLIENT_RENDER_DATA3.with(|chunk| *chunk),
             error_message.unwrap_or_default(),
         );
     }
@@ -5228,7 +5328,7 @@ pub fn write_client_render_boundary_instruction(
         write_client_render_error(
             destination,
             script_format,
-            chunk(&CLIENT_RENDER_DATA4),
+            CLIENT_RENDER_DATA4.with(|chunk| *chunk),
             error_stack.unwrap_or_default(),
         );
     }
@@ -5236,17 +5336,17 @@ pub fn write_client_render_boundary_instruction(
         write_client_render_error(
             destination,
             script_format,
-            chunk(&CLIENT_RENDER_DATA5),
+            CLIENT_RENDER_DATA5.with(|chunk| *chunk),
             error_component_stack,
         );
     }
 
     if script_format {
         // ></script>
-        write_chunk_and_return(destination, chunk(&CLIENT_RENDER_SCRIPT_END))
+        write_chunk_and_return(destination, CLIENT_RENDER_SCRIPT_END.with(|chunk| *chunk))
     } else {
         // "></template>
-        write_chunk_and_return(destination, chunk(&CLIENT_RENDER_DATA_END))
+        write_chunk_and_return(destination, CLIENT_RENDER_DATA_END.with(|chunk| *chunk))
     }
 }
 
@@ -5322,23 +5422,32 @@ fn flush_style_tags_late_for_boundary(destination: &Destination, style_queue: &S
             .get()
             .expect("styles flush while a render state flushes");
         write_chunk(destination, render_state.start_inline_style);
-        write_chunk(destination, chunk(&LATE_STYLE_TAG_RESOURCE_OPEN1));
+        write_chunk(
+            destination,
+            LATE_STYLE_TAG_RESOURCE_OPEN1.with(|chunk| *chunk),
+        );
         write_chunk(destination, style_queue.precedence);
-        write_chunk(destination, chunk(&LATE_STYLE_TAG_RESOURCE_OPEN2));
+        write_chunk(
+            destination,
+            LATE_STYLE_TAG_RESOURCE_OPEN2.with(|chunk| *chunk),
+        );
         let mut i = 0;
         while i + 1 < hrefs.borrow().len() {
             write_chunk(destination, hrefs.borrow()[i]);
-            write_chunk(destination, chunk(&SPACE_SEPARATOR));
+            write_chunk(destination, SPACE_SEPARATOR.with(|chunk| *chunk));
             i += 1;
         }
         write_chunk(destination, hrefs.borrow()[i]);
-        write_chunk(destination, chunk(&LATE_STYLE_TAG_RESOURCE_OPEN3));
+        write_chunk(
+            destination,
+            LATE_STYLE_TAG_RESOURCE_OPEN3.with(|chunk| *chunk),
+        );
         for &rule in rules.borrow().iter() {
             write_chunk(destination, rule);
         }
         DESTINATION_HAS_CAPACITY.set(write_chunk_and_return(
             destination,
-            chunk(&LATE_STYLE_TAG_TEMPLATE_CLOSE),
+            LATE_STYLE_TAG_TEMPLATE_CLOSE.with(|chunk| *chunk),
         ));
 
         // We wrote style tags for this boundary and we may need to emit a script
@@ -5447,23 +5556,23 @@ fn flush_styles_in_preamble(destination: &Destination, style_queue: &StyleQueue)
             .get()
             .expect("styles flush while a render state flushes");
         write_chunk(destination, render_state.start_inline_style);
-        write_chunk(destination, chunk(&STYLE_TAG_RESOURCE_OPEN1));
+        write_chunk(destination, STYLE_TAG_RESOURCE_OPEN1.with(|chunk| *chunk));
         write_chunk(destination, style_queue.precedence);
         if !hrefs.borrow().is_empty() {
-            write_chunk(destination, chunk(&STYLE_TAG_RESOURCE_OPEN2));
+            write_chunk(destination, STYLE_TAG_RESOURCE_OPEN2.with(|chunk| *chunk));
             let mut i = 0;
             while i + 1 < hrefs.borrow().len() {
                 write_chunk(destination, hrefs.borrow()[i]);
-                write_chunk(destination, chunk(&SPACE_SEPARATOR));
+                write_chunk(destination, SPACE_SEPARATOR.with(|chunk| *chunk));
                 i += 1;
             }
             write_chunk(destination, hrefs.borrow()[i]);
         }
-        write_chunk(destination, chunk(&STYLE_TAG_RESOURCE_OPEN3));
+        write_chunk(destination, STYLE_TAG_RESOURCE_OPEN3.with(|chunk| *chunk));
         for &rule in rules.borrow().iter() {
             write_chunk(destination, rule);
         }
-        write_chunk(destination, chunk(&STYLE_TAG_RESOURCE_CLOSE));
+        write_chunk(destination, STYLE_TAG_RESOURCE_CLOSE.with(|chunk| *chunk));
 
         // style resources can flush continuously since more rules may be written into
         // them with new hrefs. Instead of marking it flushed, we simply reset the chunks
@@ -5509,14 +5618,17 @@ fn write_blocking_render_instruction(
     if ENABLE_FIZZ_BLOCKING_RENDER.with(|enabled| *enabled) {
         let id_prefix = &resumable_state.id_prefix;
         let shell_id = "_".to_owned() + id_prefix + "R_";
-        write_chunk(destination, chunk(&BLOCKING_RENDER_CHUNK_START));
+        write_chunk(
+            destination,
+            BLOCKING_RENDER_CHUNK_START.with(|chunk| *chunk),
+        );
         write_chunk(
             destination,
             string_to_chunk(&escape_text_for_browser(Some(js::unknown(
                 shell_id.as_str(),
             )))),
         );
-        write_chunk(destination, chunk(&BLOCKING_RENDER_CHUNK_END));
+        write_chunk(destination, BLOCKING_RENDER_CHUNK_END.with(|chunk| *chunk));
     }
 }
 
@@ -5533,14 +5645,17 @@ fn write_completed_shell_id_attribute(destination: &Destination, resumable_state
         .set(resumable_state.instructions.get() | SENT_COMPLETED_SHELL_ID);
     let id_prefix = &resumable_state.id_prefix;
     let shell_id = "_".to_owned() + id_prefix + "R_";
-    write_chunk(destination, chunk(&COMPLETED_SHELL_ID_ATTRIBUTE_START));
+    write_chunk(
+        destination,
+        COMPLETED_SHELL_ID_ATTRIBUTE_START.with(|chunk| *chunk),
+    );
     write_chunk(
         destination,
         string_to_chunk(&escape_text_for_browser(Some(js::unknown(
             shell_id.as_str(),
         )))),
     );
-    write_chunk(destination, chunk(&ATTRIBUTE_END));
+    write_chunk(destination, ATTRIBUTE_END.with(|chunk| *chunk));
 }
 
 fn push_completed_shell_id_attribute(target: &Chunks, resumable_state: &ResumableState) {
@@ -5553,11 +5668,11 @@ fn push_completed_shell_id_attribute(target: &Chunks, resumable_state: &Resumabl
     let id_prefix = &resumable_state.id_prefix;
     let shell_id = "_".to_owned() + id_prefix + "R_";
     target.borrow_mut().extend([
-        chunk(&COMPLETED_SHELL_ID_ATTRIBUTE_START),
+        COMPLETED_SHELL_ID_ATTRIBUTE_START.with(|chunk| *chunk),
         string_to_chunk(&escape_text_for_browser(Some(js::unknown(
             shell_id.as_str(),
         )))),
-        chunk(&ATTRIBUTE_END),
+        ATTRIBUTE_END.with(|chunk| *chunk),
     ]);
 }
 
@@ -5616,7 +5731,7 @@ pub fn write_preamble_start(
         } else {
             // We did not render a head but we emitted an <html> so we emit one now
             write_chunk(destination, start_chunk_for_tag("head"));
-            write_chunk(destination, chunk(&END_OF_START_TAG));
+            write_chunk(destination, END_OF_START_TAG.with(|chunk| *chunk));
         }
     } else if let Some(head_chunks) = &head_chunks {
         // We do not have an <html> but we do have a <head>
@@ -5789,9 +5904,9 @@ fn write_style_resource_dependencies(
     hoistable_state: &HoistableState,
     encode: fn(&str) -> String,
 ) {
-    write_chunk(destination, chunk(&ARRAY_FIRST_OPEN_BRACKET));
+    write_chunk(destination, ARRAY_FIRST_OPEN_BRACKET.with(|chunk| *chunk));
 
-    let next_array_open_brack_chunk = Cell::new(chunk(&ARRAY_FIRST_OPEN_BRACKET));
+    let next_array_open_brack_chunk = Cell::new(ARRAY_FIRST_OPEN_BRACKET.with(|chunk| *chunk));
     hoistable_state.stylesheets.for_each(|resource| {
         if resource.state.get() == PREAMBLE {
             // We can elide this dependency because it was flushed in the shell and
@@ -5806,8 +5921,8 @@ fn write_style_resource_dependencies(
                 js::get(resource.props, "href"),
                 encode,
             );
-            write_chunk(destination, chunk(&ARRAY_CLOSE_BRACKET));
-            next_array_open_brack_chunk.set(chunk(&ARRAY_SUBSEQUENT_OPEN_BRACKET));
+            write_chunk(destination, ARRAY_CLOSE_BRACKET.with(|chunk| *chunk));
+            next_array_open_brack_chunk.set(ARRAY_SUBSEQUENT_OPEN_BRACKET.with(|chunk| *chunk));
         } else {
             // We need to emit the whole resource for insertion on the client
             write_chunk(destination, next_array_open_brack_chunk.get());
@@ -5818,13 +5933,13 @@ fn write_style_resource_dependencies(
                 resource.props,
                 encode,
             );
-            write_chunk(destination, chunk(&ARRAY_CLOSE_BRACKET));
-            next_array_open_brack_chunk.set(chunk(&ARRAY_SUBSEQUENT_OPEN_BRACKET));
+            write_chunk(destination, ARRAY_CLOSE_BRACKET.with(|chunk| *chunk));
+            next_array_open_brack_chunk.set(ARRAY_SUBSEQUENT_OPEN_BRACKET.with(|chunk| *chunk));
 
             resource.state.set(LATE);
         }
     });
-    write_chunk(destination, chunk(&ARRAY_CLOSE_BRACKET));
+    write_chunk(destination, ARRAY_CLOSE_BRACKET.with(|chunk| *chunk));
 }
 
 /* Helper functions */
@@ -5859,7 +5974,7 @@ fn write_style_resource_dependency(
         check_attribute_string_coercion(precedence, "precedence");
     }
     let coerced_precedence = js::concat_text(precedence).unwrap();
-    write_chunk(destination, chunk(&ARRAY_INTERSTITIAL));
+    write_chunk(destination, ARRAY_INTERSTITIAL.with(|chunk| *chunk));
     write_chunk(destination, string_to_chunk(&encode(&coerced_precedence)));
 
     for prop_key in js::keys_in(props) {
@@ -5949,9 +6064,9 @@ fn write_style_resource_attribute(
             js::concat_text(Some(value)).unwrap()
         }
     };
-    write_chunk(destination, chunk(&ARRAY_INTERSTITIAL));
+    write_chunk(destination, ARRAY_INTERSTITIAL.with(|chunk| *chunk));
     write_chunk(destination, string_to_chunk(&encode(&attribute_name)));
-    write_chunk(destination, chunk(&ARRAY_INTERSTITIAL));
+    write_chunk(destination, ARRAY_INTERSTITIAL.with(|chunk| *chunk));
     write_chunk(destination, string_to_chunk(&encode(&attribute_value)));
 }
 
@@ -6025,14 +6140,6 @@ fn fitting_header(
     (remaining >= 0.0).then_some((headers, header))
 }
 
-/// `header` added to a list of headers, `, ` between them.
-fn append_header(list: &RefCell<String>, header: &str) {
-    if !list.borrow().is_empty() {
-        list.borrow_mut().push_str(", ");
-    }
-    list.borrow_mut().push_str(header);
-}
-
 struct PreconnectProps<'a> {
     rel: &'a str,
     href: &'a str,
@@ -6062,14 +6169,16 @@ fn prefetch_dns(href: &str) {
             dict::set(dns_resources, &key, EXISTS.with(|exists| *exists));
 
             // Compute the header since we might be able to fit it in the max length
+            let headers = render_state.headers.borrow().clone();
             if let Some((headers, header)) =
-                fitting_header(render_state.headers.borrow().clone().as_deref(), || {
-                    get_prefetch_dns_as_header(href)
-                })
+                fitting_header(headers.as_deref(), || get_prefetch_dns_as_header(href))
             {
                 // Store this as resettable in case we are prerendering and postpone in the Shell
                 dict::set(render_state.resets.dns, &key, EXISTS.with(|exists| *exists));
-                append_header(&headers.preconnects, &header);
+                if !headers.preconnects.borrow().is_empty() {
+                    headers.preconnects.borrow_mut().push_str(", ");
+                }
+                headers.preconnects.borrow_mut().push_str(&header);
             } else {
                 // Encode as element
                 let resource = Rc::new(RefCell::new(Vec::new()));
@@ -6129,18 +6238,20 @@ fn preconnect(href: &str, cross_origin: Option<&'static Unknown>) {
             dict::set(resources, &key, EXISTS.with(|exists| *exists));
 
             // Compute the header since we might be able to fit it in the max length
-            if let Some((headers, header)) =
-                fitting_header(render_state.headers.borrow().clone().as_deref(), || {
-                    get_preconnect_as_header(href, cross_origin)
-                })
-            {
+            let headers = render_state.headers.borrow().clone();
+            if let Some((headers, header)) = fitting_header(headers.as_deref(), || {
+                get_preconnect_as_header(href, cross_origin)
+            }) {
                 // Store this in resettableState in case we are prerending and postpone in the Shell
                 dict::set(
                     bucket_of(&render_state.resets.connect),
                     &key,
                     EXISTS.with(|exists| *exists),
                 );
-                append_header(&headers.preconnects, &header);
+                if !headers.preconnects.borrow().is_empty() {
+                    headers.preconnects.borrow_mut().push_str(", ");
+                }
+                headers.preconnects.borrow_mut().push_str(&header);
             } else {
                 let resource = Rc::new(RefCell::new(Vec::new()));
                 push_link_impl(
@@ -6241,7 +6352,10 @@ fn preload(href: &str, r#as: &str, options: Option<&'static Unknown>) {
                         &key,
                         Some(PRELOAD_NO_CREDS.with(|preload| *preload)),
                     );
-                    append_header(&headers.high_image_preloads, &header);
+                    if !headers.high_image_preloads.borrow().is_empty() {
+                        headers.high_image_preloads.borrow_mut().push_str(", ");
+                    }
+                    headers.high_image_preloads.borrow_mut().push_str(&header);
                 } else {
                     // If we don't have headers to write to we have to encode as elements to flush in the head
                     // When we have imageSrcSet the browser probably cannot load the right version from headers
@@ -6358,7 +6472,10 @@ fn preload(href: &str, r#as: &str, options: Option<&'static Unknown>) {
                         &key,
                         Some(PRELOAD_NO_CREDS.with(|preload| *preload)),
                     );
-                    append_header(&headers.font_preloads, &header);
+                    if !headers.font_preloads.borrow().is_empty() {
+                        headers.font_preloads.borrow_mut().push_str(", ");
+                    }
+                    headers.font_preloads.borrow_mut().push_str(&header);
                 } else {
                     // We either don't have headers or we are preloading something that does
                     // not warrant elevated priority so we encode as an element.

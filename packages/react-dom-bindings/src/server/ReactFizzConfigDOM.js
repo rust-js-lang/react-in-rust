@@ -60,15 +60,11 @@ import {
   markShellTime,
 } from './fizz-instruction-set/ReactDOMFizzInstructionSetInlineCodeStrings.js';
 import {
-  $borrow,
-  $borrowMut,
   $displayF64,
-  $fieldCell,
   $index,
   $iter,
   $splice,
   $trim,
-  $unborrow,
   $unwrap,
 } from '@rust-js/runtime';
 
@@ -128,11 +124,6 @@ const scriptCrossOrigin = stringToPrecomputedChunk(' crossorigin="');
 const endAsyncScript = stringToPrecomputedChunk(' async=""><\/script>');
 
 const startInlineStyle = stringToPrecomputedChunk('<style');
-
-/** A chunk a thread-local holds, as JS reads its module's `const`. */
-function chunk(key) {
-  return key;
-}
 
 /**
  * This escaping function is designed to work with with inline scripts where the entire
@@ -206,54 +197,34 @@ function pushBootstrapScript(
   [src, integrity, crossOrigin],
   nonceScript,
 ) {
-  const borrowMut = $borrowMut(bootstrapChunks, true);
-  try {
-    borrowMut.push(
-      start,
-      stringToChunk(escapeTextForBrowser(src)),
-      chunk(attributeEnd),
-    );
-  } finally {
-    $unborrow(borrowMut);
-  }
+  bootstrapChunks.push(
+    start,
+    stringToChunk(escapeTextForBrowser(src)),
+    attributeEnd,
+  );
   if (nonceScript) {
-    const value = $borrowMut(bootstrapChunks, true);
-    try {
-      value.push(
-        chunk(scriptNonce),
-        stringToChunk(escapeTextForBrowser(nonceScript)),
-        chunk(attributeEnd),
-      );
-    } finally {
-      $unborrow(value);
-    }
+    bootstrapChunks.push(
+      scriptNonce,
+      stringToChunk(escapeTextForBrowser(nonceScript)),
+      attributeEnd,
+    );
   }
   if (integrity != null) {
-    const value = $borrowMut(bootstrapChunks, true);
-    try {
-      value.push(
-        chunk(scriptIntegirty),
-        stringToChunk(escapeTextForBrowser(integrity)),
-        chunk(attributeEnd),
-      );
-    } finally {
-      $unborrow(value);
-    }
+    bootstrapChunks.push(
+      scriptIntegirty,
+      stringToChunk(escapeTextForBrowser(integrity)),
+      attributeEnd,
+    );
   }
   if (crossOrigin != null) {
-    const value = $borrowMut(bootstrapChunks, true);
-    try {
-      value.push(
-        chunk(scriptCrossOrigin),
-        stringToChunk(escapeTextForBrowser(crossOrigin)),
-        chunk(attributeEnd),
-      );
-    } finally {
-      $unborrow(value);
-    }
+    bootstrapChunks.push(
+      scriptCrossOrigin,
+      stringToChunk(escapeTextForBrowser(crossOrigin)),
+      attributeEnd,
+    );
   }
   pushCompletedShellIdAttribute(bootstrapChunks, resumableState);
-  $borrowMut(bootstrapChunks).push(chunk(endAsyncScript));
+  bootstrapChunks.push(endAsyncScript);
 }
 
 // Allows us to keep track of what we've already written so we can refer back to it.
@@ -275,7 +246,7 @@ export function createRenderState(
   }
   const inlineScriptWithNonce =
     nonceScript == null
-      ? chunk(startInlineScript)
+      ? startInlineScript
       : stringToPrecomputedChunk(
           '<script nonce="' + escapeTextForBrowser(nonceScript) + '"',
         );
@@ -283,7 +254,7 @@ export function createRenderState(
     nonce != null && typeof nonce === 'object' ? nonce.style : undefined;
   const inlineStyleWithNonce =
     nonceStyle == null
-      ? chunk(startInlineStyle)
+      ? startInlineStyle
       : stringToPrecomputedChunk(
           '<style nonce="' + escapeTextForBrowser(nonceStyle) + '"',
         );
@@ -295,18 +266,13 @@ export function createRenderState(
   const bootstrapScripts = resumableState.bootstrapScripts;
   const bootstrapModules = resumableState.bootstrapModules;
   if (bootstrapScriptContent != null) {
-    $borrowMut(bootstrapChunks).push(inlineScriptWithNonce);
+    bootstrapChunks.push(inlineScriptWithNonce);
     pushCompletedShellIdAttribute(bootstrapChunks, resumableState);
-    const borrowMut = $borrowMut(bootstrapChunks, true);
-    try {
-      borrowMut.push(
-        chunk(endOfStartTag),
-        stringToChunk(escapeEntireInlineScriptContent(bootstrapScriptContent)),
-        chunk(endInlineScript),
-      );
-    } finally {
-      $unborrow(borrowMut);
-    }
+    bootstrapChunks.push(
+      endOfStartTag,
+      stringToChunk(escapeEntireInlineScriptContent(bootstrapScriptContent)),
+      endInlineScript,
+    );
   }
   if (enableFizzExternalRuntime && externalRuntimeConfig != null) {
     let src;
@@ -333,33 +299,23 @@ export function createRenderState(
 
   const importMapChunks = [];
   if (importMap != null) {
-    const value = $borrowMut(importMapChunks, true);
-    try {
-      value.push(
-        nonceScript == null
-          ? chunk(importMapScriptStart)
-          : stringToPrecomputedChunk(
-              '<script type="importmap" nonce="' +
-                escapeTextForBrowser(nonceScript) +
-                '">',
-            ),
-      );
-    } finally {
-      $unborrow(value);
-    }
-    const value$1 = $borrowMut(importMapChunks, true);
-    try {
-      value$1.push(
-        stringToChunk(
-          escapeEntireInlineScriptContent(
-            JSON.stringify(importMap, null, 0) ?? '',
+    importMapChunks.push(
+      nonceScript == null
+        ? importMapScriptStart
+        : stringToPrecomputedChunk(
+            '<script type="importmap" nonce="' +
+              escapeTextForBrowser(nonceScript) +
+              '">',
           ),
+    );
+    importMapChunks.push(
+      stringToChunk(
+        escapeEntireInlineScriptContent(
+          JSON.stringify(importMap, null, 0) ?? '',
         ),
-      );
-    } finally {
-      $unborrow(value$1);
-    }
-    $borrowMut(importMapChunks).push(chunk(importMapScriptEnd));
+      ),
+    );
+    importMapChunks.push(importMapScriptEnd);
   }
   if (
     __DEV__ &&
@@ -468,7 +424,7 @@ export function createRenderState(
       pushBootstrapScript(
         renderState.bootstrapChunks,
         resumableState,
-        chunk(startScriptSrc),
+        startScriptSrc,
         [src, integrity, crossOrigin],
         nonceScript,
       );
@@ -500,7 +456,7 @@ export function createRenderState(
       pushBootstrapScript(
         renderState.bootstrapChunks,
         resumableState,
-        chunk(startModuleSrc),
+        startModuleSrc,
         [src, integrity, crossOrigin],
         nonceScript,
       );
@@ -950,14 +906,9 @@ export function pushTextInstance(target, text, renderState, textEmbedded) {
     return textEmbedded;
   }
   if (textEmbedded) {
-    $borrowMut(target).push(chunk(textSeparator));
+    target.push(textSeparator);
   }
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(stringToChunk(encodeHTMLTextNode(text)));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(stringToChunk(encodeHTMLTextNode(text)));
   return true;
 }
 
@@ -970,7 +921,7 @@ export function pushSegmentFinale(
   textEmbedded,
 ) {
   if (lastPushedText && textEmbedded) {
-    $borrowMut(target).push(chunk(textSeparator));
+    target.push(textSeparator);
   }
 }
 
@@ -1105,23 +1056,13 @@ function pushStyleAttribute(target, style) {
     if (isFirst) {
       isFirst = false;
       // If it's first, we don't need any separators prefixed.
-      $borrowMut(target).push(
-        chunk(styleAttributeStart),
-        nameChunk,
-        chunk(styleAssign),
-        valueChunk,
-      );
+      target.push(styleAttributeStart, nameChunk, styleAssign, valueChunk);
     } else {
-      $borrowMut(target).push(
-        chunk(styleSeparator),
-        nameChunk,
-        chunk(styleAssign),
-        valueChunk,
-      );
+      target.push(styleSeparator, nameChunk, styleAssign, valueChunk);
     }
   }
   if (!isFirst) {
-    $borrowMut(target).push(chunk(attributeEnd));
+    target.push(attributeEnd);
   }
 }
 
@@ -1136,11 +1077,7 @@ function pushBooleanAttribute(
   value, // not null or undefined
 ) {
   if (value && typeof value !== 'function' && typeof value !== 'symbol') {
-    $borrowMut(target).push(
-      chunk(attributeSeparator),
-      stringToChunk(name),
-      chunk(attributeEmptyString),
-    );
+    target.push(attributeSeparator, stringToChunk(name), attributeEmptyString);
   }
 }
 
@@ -1154,18 +1091,13 @@ function pushStringAttribute(
     typeof value !== 'symbol' &&
     typeof value !== 'boolean'
   ) {
-    const borrowMut = $borrowMut(target, true);
-    try {
-      borrowMut.push(
-        chunk(attributeSeparator),
-        stringToChunk(name),
-        chunk(attributeAssign),
-        stringToChunk(escapeTextForBrowser(value)),
-        chunk(attributeEnd),
-      );
-    } finally {
-      $unborrow(borrowMut);
-    }
+    target.push(
+      attributeSeparator,
+      stringToChunk(name),
+      attributeAssign,
+      stringToChunk(escapeTextForBrowser(value)),
+      attributeEnd,
+    );
   }
 }
 
@@ -1186,11 +1118,11 @@ const actionJavaScriptUrl = stringToPrecomputedChunk(
 const startHiddenInputChunk = stringToPrecomputedChunk('<input type="hidden"');
 
 function pushAdditionalFormField(target, value, key) {
-  $borrowMut(target).push(chunk(startHiddenInputChunk));
+  target.push(startHiddenInputChunk);
   value = validateAdditionalFormField(value, key);
   pushStringAttribute(target, 'name', key);
   pushStringAttribute(target, 'value', value);
-  $borrowMut(target).push(chunk(endOfStartTagSelfClosing));
+  target.push(endOfStartTagSelfClosing);
 }
 
 function pushAdditionalFormFields(target, formData) {
@@ -1298,12 +1230,12 @@ function pushFormActionAttribute(target, resumableState, renderState, props) {
       // manually submitted or if someone calls stopPropagation before React gets the event.
       // If CSP is used to block javascript: URLs that's fine too. It just won't show this
       // error message but the URL will be logged.
-      $borrowMut(target).push(
-        chunk(attributeSeparator),
+      target.push(
+        attributeSeparator,
         stringToChunk('formAction'),
-        chunk(attributeAssign),
-        chunk(actionJavaScriptUrl),
-        chunk(attributeEnd),
+        attributeAssign,
+        actionJavaScriptUrl,
+        attributeEnd,
       );
       name = undefined;
       formAction = undefined;
@@ -1359,34 +1291,24 @@ function pushSrcObjectAttribute(target, blob) {
     throw thenable;
   }
   const url = thenable.value;
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(
-      chunk(attributeSeparator),
-      stringToChunk('src'),
-      chunk(attributeAssign),
-      stringToChunk(escapeTextForBrowser(url)),
-      chunk(attributeEnd),
-    );
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(
+    attributeSeparator,
+    stringToChunk('src'),
+    attributeAssign,
+    stringToChunk(escapeTextForBrowser(url)),
+    attributeEnd,
+  );
 }
 
 /** `value`'s attribute of `name`, its text escaped. */
 function pushTextAttribute(target, name, value) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(
-      chunk(attributeSeparator),
-      stringToChunk(name),
-      chunk(attributeAssign),
-      stringToChunk(escapeTextForBrowser(value)),
-      chunk(attributeEnd),
-    );
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(
+    attributeSeparator,
+    stringToChunk(name),
+    attributeAssign,
+    stringToChunk(escapeTextForBrowser(value)),
+    attributeEnd,
+  );
 }
 
 /** A URL's attribute of `name`, of `value` sanitized. */
@@ -1395,18 +1317,13 @@ function pushUrlAttribute(target, name, attributeName, value) {
     checkAttributeStringCoercion(value, name);
   }
   const sanitizedValue = sanitizeURL('' + value);
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(
-      chunk(attributeSeparator),
-      stringToChunk(attributeName),
-      chunk(attributeAssign),
-      stringToChunk(escapeTextForBrowser(sanitizedValue)),
-      chunk(attributeEnd),
-    );
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(
+    attributeSeparator,
+    stringToChunk(attributeName),
+    attributeAssign,
+    stringToChunk(escapeTextForBrowser(sanitizedValue)),
+    attributeEnd,
+  );
 }
 
 function pushAttribute(
@@ -1555,10 +1472,10 @@ function pushAttribute(
       }
       // Boolean
       if (value && !callable) {
-        $borrowMut(target).push(
-          chunk(attributeSeparator),
+        target.push(
+          attributeSeparator,
           stringToChunk(name),
-          chunk(attributeEmptyString),
+          attributeEmptyString,
         );
       }
       break;
@@ -1567,10 +1484,10 @@ function pushAttribute(
       // Overloaded Boolean
       switch (value) {
         case true:
-          $borrowMut(target).push(
-            chunk(attributeSeparator),
+          target.push(
+            attributeSeparator,
             stringToChunk(name),
-            chunk(attributeEmptyString),
+            attributeEmptyString,
           );
           break;
         case false:
@@ -1677,12 +1594,7 @@ function pushInnerHTML(target, innerHtml, children) {
       if (__DEV__) {
         checkHtmlStringCoercion(html);
       }
-      const borrowMut = $borrowMut(target, true);
-      try {
-        borrowMut.push(stringToChunk('' + html));
-      } finally {
-        $unborrow(borrowMut);
-      }
+      target.push(stringToChunk('' + html));
     }
   }
 }
@@ -1724,12 +1636,7 @@ function checkSelectProp(props, propName) {
 }
 
 function pushStartAnchor(target, props, formatContext) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('a'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('a'));
 
   let children = null;
   let innerHtml;
@@ -1763,29 +1670,19 @@ function pushStartAnchor(target, props, formatContext) {
 
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
   pushInnerHTML(target, innerHtml, children);
   if (typeof children === 'string') {
     // Special case children as a string to avoid the unnecessary comment.
     // TODO: Remove this special case after the general optimization is in place.
-    const value = $borrowMut(target, true);
-    try {
-      value.push(stringToChunk(encodeHTMLTextNode(children)));
-    } finally {
-      $unborrow(value);
-    }
+    target.push(stringToChunk(encodeHTMLTextNode(children)));
     return null;
   }
   return children;
 }
 
 function pushStartObject(target, props, formatContext) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('object'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('object'));
 
   let children = null;
   let innerHtml;
@@ -1819,18 +1716,13 @@ function pushStartObject(target, props, formatContext) {
             }
             continue;
           }
-          const value = $borrowMut(target, true);
-          try {
-            value.push(
-              chunk(attributeSeparator),
-              stringToChunk('data'),
-              chunk(attributeAssign),
-              stringToChunk(escapeTextForBrowser(sanitizedValue)),
-              chunk(attributeEnd),
-            );
-          } finally {
-            $unborrow(value);
-          }
+          target.push(
+            attributeSeparator,
+            stringToChunk('data'),
+            attributeAssign,
+            stringToChunk(escapeTextForBrowser(sanitizedValue)),
+            attributeEnd,
+          );
           break;
         }
         default:
@@ -1841,17 +1733,12 @@ function pushStartObject(target, props, formatContext) {
 
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
   pushInnerHTML(target, innerHtml, children);
   if (typeof children === 'string') {
     // Special case children as a string to avoid the unnecessary comment.
     // TODO: Remove this special case after the general optimization is in place.
-    const value = $borrowMut(target, true);
-    try {
-      value.push(stringToChunk(encodeHTMLTextNode(children)));
-    } finally {
-      $unborrow(value);
-    }
+    target.push(stringToChunk(encodeHTMLTextNode(children)));
     return null;
   }
   return children;
@@ -1880,12 +1767,7 @@ function pushStartSelect(target, props, formatContext) {
     }
   }
 
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('select'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('select'));
 
   let children = null;
   let innerHtml;
@@ -1916,7 +1798,7 @@ function pushStartSelect(target, props, formatContext) {
 
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
   pushInnerHTML(target, innerHtml, children);
   return children;
 }
@@ -1955,12 +1837,7 @@ const selectedMarkerAttribute = stringToPrecomputedChunk(' selected=""');
 function pushStartOption(target, props, formatContext) {
   const selectedValue = formatContext.selectedValue;
 
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('option'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('option'));
 
   let children = null;
   let value;
@@ -2031,7 +1908,7 @@ function pushStartOption(target, props, formatContext) {
         }
         const v = '' + selected;
         if (v === stringValue) {
-          $borrowMut(target).push(chunk(selectedMarkerAttribute));
+          target.push(selectedMarkerAttribute);
           break;
         }
       }
@@ -2040,15 +1917,15 @@ function pushStartOption(target, props, formatContext) {
         checkAttributeStringCoercion(selectedValue, 'select.value');
       }
       if ('' + selectedValue === stringValue) {
-        $borrowMut(target).push(chunk(selectedMarkerAttribute));
+        target.push(selectedMarkerAttribute);
       }
     }
   } else if (selected) {
-    $borrowMut(target).push(chunk(selectedMarkerAttribute));
+    target.push(selectedMarkerAttribute);
   }
 
   // Options never participate as ViewTransitions.
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
   pushInnerHTML(target, innerHtml, children);
   return children;
 }
@@ -2069,29 +1946,28 @@ function injectFormReplayingRuntime(resumableState, renderState) {
     const preamble = renderState.preamble;
     const bootstrapChunks = renderState.bootstrapChunks;
     if (
-      ($borrow($fieldCell(preamble, 'htmlChunks', true)).value != null ||
-        $borrow($fieldCell(preamble, 'headChunks', true)).value != null) &&
-      $borrow(bootstrapChunks).length === 0
+      (preamble.htmlChunks != null || preamble.headChunks != null) &&
+      bootstrapChunks.length === 0
     ) {
       // If we rendered the whole document, then we emitted a rel="expect" that needs a
       // matching target. If we haven't emitted that yet, we need to include it in this
       // script tag.
-      $borrowMut(bootstrapChunks).push(renderState.startInlineScript);
+      bootstrapChunks.push(renderState.startInlineScript);
       pushCompletedShellIdAttribute(bootstrapChunks, resumableState);
-      $borrowMut(bootstrapChunks).push(
-        chunk(endOfStartTag),
-        chunk(formReplayingRuntimeScript),
-        chunk(endInlineScript),
+      bootstrapChunks.push(
+        endOfStartTag,
+        formReplayingRuntimeScript,
+        endInlineScript,
       );
     } else {
       // Otherwise we added to the beginning of the scripts. This will mean that it
       // appears before the shell ID unfortunately.
       $iter(
-        $splice($borrowMut(bootstrapChunks), 0, 0, [
+        $splice(bootstrapChunks, 0, 0, [
           renderState.startInlineScript,
-          chunk(endOfStartTag),
-          chunk(formReplayingRuntimeScript),
-          chunk(endInlineScript),
+          endOfStartTag,
+          formReplayingRuntimeScript,
+          endInlineScript,
         ]),
       );
     }
@@ -2102,11 +1978,11 @@ const formStateMarkerIsMatching = stringToPrecomputedChunk('<!--F!-->');
 const formStateMarkerIsNotMatching = stringToPrecomputedChunk('<!--F-->');
 
 export function pushFormStateMarkerIsMatching(target) {
-  $borrowMut(target).push(chunk(formStateMarkerIsMatching));
+  target.push(formStateMarkerIsMatching);
 }
 
 export function pushFormStateMarkerIsNotMatching(target) {
-  $borrowMut(target).push(chunk(formStateMarkerIsNotMatching));
+  target.push(formStateMarkerIsNotMatching);
 }
 
 function pushStartForm(
@@ -2116,12 +1992,7 @@ function pushStartForm(
   renderState,
   formatContext,
 ) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('form'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('form'));
 
   let children = null;
   let innerHtml;
@@ -2201,12 +2072,12 @@ function pushStartForm(
       // manually submitted or if someone calls stopPropagation before React gets the event.
       // If CSP is used to block javascript: URLs that's fine too. It just won't show this
       // error message but the URL will be logged.
-      $borrowMut(target).push(
-        chunk(attributeSeparator),
+      target.push(
+        attributeSeparator,
         stringToChunk('action'),
-        chunk(attributeAssign),
-        chunk(actionJavaScriptUrl),
-        chunk(attributeEnd),
+        attributeAssign,
+        actionJavaScriptUrl,
+        attributeEnd,
       );
       formAction = undefined;
       formEncType = undefined;
@@ -2230,12 +2101,12 @@ function pushStartForm(
 
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
 
   if (formActionName != null) {
-    $borrowMut(target).push(chunk(startHiddenInputChunk));
+    target.push(startHiddenInputChunk);
     pushStringAttribute(target, 'name', formActionName);
-    $borrowMut(target).push(chunk(endOfStartTagSelfClosing));
+    target.push(endOfStartTagSelfClosing);
     pushAdditionalFormFields(target, formData);
   }
 
@@ -2243,12 +2114,7 @@ function pushStartForm(
   if (typeof children === 'string') {
     // Special case children as a string to avoid the unnecessary comment.
     // TODO: Remove this special case after the general optimization is in place.
-    const value = $borrowMut(target, true);
-    try {
-      value.push(stringToChunk(encodeHTMLTextNode(children)));
-    } finally {
-      $unborrow(value);
-    }
+    target.push(stringToChunk(encodeHTMLTextNode(children)));
     return null;
   }
   return children;
@@ -2259,12 +2125,7 @@ function pushInput(target, props, resumableState, renderState, formatContext) {
     checkControlledValueProps('input', props);
   }
 
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('input'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('input'));
 
   let name;
   let formAction;
@@ -2397,7 +2258,7 @@ function pushInput(target, props, resumableState, renderState, formatContext) {
 
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTagSelfClosing));
+  target.push(endOfStartTagSelfClosing);
 
   // We place any additional hidden form fields after the input.
   pushAdditionalFormFields(target, formData);
@@ -2412,12 +2273,7 @@ function pushStartButton(
   renderState,
   formatContext,
 ) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('button'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('button'));
 
   let children = null;
   let innerHtml;
@@ -2489,7 +2345,7 @@ function pushStartButton(
 
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
 
   // We place any additional hidden form fields we need to include inside the button itself.
   pushAdditionalFormFields(target, formData);
@@ -2498,12 +2354,7 @@ function pushStartButton(
   if (typeof children === 'string') {
     // Special case children as a string to avoid the unnecessary comment.
     // TODO: Remove this special case after the general optimization is in place.
-    const value = $borrowMut(target, true);
-    try {
-      value.push(stringToChunk(encodeHTMLTextNode(children)));
-    } finally {
-      $unborrow(value);
-    }
+    target.push(stringToChunk(encodeHTMLTextNode(children)));
     return null;
   }
 
@@ -2529,12 +2380,7 @@ function pushStartTextArea(target, props, formatContext) {
     }
   }
 
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('textarea'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('textarea'));
 
   let value;
   let defaultValue;
@@ -2570,7 +2416,7 @@ function pushStartTextArea(target, props, formatContext) {
 
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
 
   // TODO (yungsters): Remove support for children content in <textarea>.
   if (children !== undefined) {
@@ -2616,7 +2462,7 @@ function pushStartTextArea(target, props, formatContext) {
     // See: <http://www.w3.org/TR/html5/syntax.html#newlines>
     // See: Parsing of "textarea" "listing" and "pre" elements
     //  from <http://www.w3.org/TR/html5/syntax.html#parsing-main-inbody>
-    $borrowMut(target).push(chunk(leadingNewline));
+    target.push(leadingNewline);
   }
 
   // ToString and push directly instead of recurse over children.
@@ -2626,12 +2472,7 @@ function pushStartTextArea(target, props, formatContext) {
     if (__DEV__) {
       checkAttributeStringCoercion(value, 'value');
     }
-    const value$1 = $borrowMut(target, true);
-    try {
-      value$1.push(stringToChunk(encodeHTMLTextNode('' + value)));
-    } finally {
-      $unborrow(value$1);
-    }
+    target.push(stringToChunk(encodeHTMLTextNode('' + value)));
   }
 
   return null;
@@ -2650,7 +2491,7 @@ function pushMeta(target, props, renderState, textEmbedded, formatContext) {
     if (textEmbedded) {
       // This link follows text but we aren't writing a tag. while not as efficient as possible we need
       // to be safe and assume text will follow by inserting a textSeparator
-      $borrowMut(target).push(chunk(textSeparator));
+      target.push(textSeparator);
     }
 
     if (isFallback) {
@@ -2759,13 +2600,10 @@ function pushLink(
           }
 
           const preloadResource = renderState.preloads.stylesheets.get(key);
-          if (
-            preloadResource != null &&
-            $borrow(preloadResource).length !== 0
-          ) {
+          if (preloadResource != null && preloadResource.length !== 0) {
             // The Preload for this resource was created in this render pass and has not flushed yet so
             // we need to clear it to avoid it flushing.
-            $borrowMut(preloadResource).length = 0;
+            preloadResource.length = 0;
           } else {
             // Either the preload resource from this render already flushed in this render pass
             // or the preload flushed in a prior pass (prerender). In either case we need to mark
@@ -2801,7 +2639,7 @@ function pushLink(
       if (textEmbedded) {
         // This link follows text but we aren't writing a tag. while not as efficient as possible we need
         // to be safe and assume text will follow by inserting a textSeparator
-        $borrowMut(target).push(chunk(textSeparator));
+        target.push(textSeparator);
       }
       return null;
     }
@@ -2835,7 +2673,7 @@ function pushLink(
     if (textEmbedded) {
       // This link follows text but we aren't writing a tag. while not as efficient as possible we need
       // to be safe and assume text will follow by inserting a textSeparator
-      $borrowMut(target).push(chunk(textSeparator));
+      target.push(textSeparator);
     }
 
     return isFallback
@@ -2866,12 +2704,7 @@ function pushLinkNotHoisted(target, props, href) {
 }
 
 function pushLinkImpl(target, props) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('link'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('link'));
 
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
@@ -2893,7 +2726,7 @@ function pushLinkImpl(target, props) {
 
   // Link never participate as a ViewTransition
 
-  $borrowMut(target).push(chunk(endOfStartTagSelfClosing));
+  target.push(endOfStartTagSelfClosing);
   return null;
 }
 
@@ -3010,12 +2843,7 @@ function pushStyle(
           nonce,
         );
       }
-      const borrowMut = $borrowMut(queue.hrefs, true);
-      try {
-        borrowMut.push(stringToChunk(escapeTextForBrowser(href)));
-      } finally {
-        $unborrow(borrowMut);
-      }
+      queue.hrefs.push(stringToChunk(escapeTextForBrowser(href)));
       pushStyleContents(queue.rules, props);
     } else if (__DEV__) {
       console.error(
@@ -3041,7 +2869,7 @@ function pushStyle(
   if (textEmbedded) {
     // This link follows text but we aren't writing a tag. while not as efficient as possible we need
     // to be safe and assume text will follow by inserting a textSeparator
-    $borrowMut(target).push(chunk(textSeparator));
+    target.push(textSeparator);
   }
 }
 
@@ -3072,22 +2900,12 @@ function pushStyleChild(target, children) {
     typeof child !== 'symbol' &&
     child != null
   ) {
-    const borrowMut = $borrowMut(target, true);
-    try {
-      borrowMut.push(stringToChunk(escapeStyleTextContent(child)));
-    } finally {
-      $unborrow(borrowMut);
-    }
+    target.push(stringToChunk(escapeStyleTextContent(child)));
   }
 }
 
 function pushStyleImpl(target, props) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('style'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('style'));
 
   let children;
   let innerHtml;
@@ -3111,11 +2929,11 @@ function pushStyleImpl(target, props) {
   }
 
   // Style never participate as a ViewTransition.
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
 
   pushStyleChild(target, children);
   pushInnerHTML(target, innerHtml, children);
-  $borrowMut(target).push(endChunkForTag('style'));
+  target.push(endChunkForTag('style'));
   return null;
 }
 
@@ -3220,9 +3038,7 @@ function pushImg(
       resumableState.imageResources[key] = preloadNoCreds;
       const crossOrigin = getCrossOriginString(props.crossOrigin);
 
-      const {value: headers} = $borrow(
-        $fieldCell(renderState, 'headers', true),
-      );
+      const headers = renderState.headers;
       let header;
       if (
         headers == null ||
@@ -3308,12 +3124,7 @@ function pushImg(
 }
 
 function pushSelfClosing(target, props, tag, formatContext) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag(tag));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag(tag));
 
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
@@ -3335,17 +3146,12 @@ function pushSelfClosing(target, props, tag, formatContext) {
 
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTagSelfClosing));
+  target.push(endOfStartTagSelfClosing);
   return null;
 }
 
 function pushStartMenuItem(target, props, formatContext) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('menuitem'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('menuitem'));
 
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
@@ -3367,7 +3173,7 @@ function pushStartMenuItem(target, props, formatContext) {
 
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
   return null;
 }
 
@@ -3435,12 +3241,7 @@ function pushTitle(target, props, renderState, formatContext) {
 }
 
 function pushTitleImpl(target, props) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('title'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('title'));
 
   let children;
   let innerHtml;
@@ -3463,7 +3264,7 @@ function pushTitleImpl(target, props) {
     }
   }
   // Title never participate as a ViewTransition
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
 
   const child = styleChild(children);
   if (
@@ -3471,15 +3272,10 @@ function pushTitleImpl(target, props) {
     typeof child !== 'symbol' &&
     child != null
   ) {
-    const value = $borrowMut(target, true);
-    try {
-      value.push(stringToChunk(escapeTextForBrowser('' + child)));
-    } finally {
-      $unborrow(value);
-    }
+    target.push(stringToChunk(escapeTextForBrowser('' + child)));
   }
   pushInnerHTML(target, innerHtml, children);
-  $borrowMut(target).push(endChunkForTag('title'));
+  target.push(endChunkForTag('title'));
   return null;
 }
 
@@ -3488,32 +3284,6 @@ function pushTitleImpl(target, props) {
 const headPreambleContributionChunk = stringToPrecomputedChunk('<!--head-->');
 const bodyPreambleContributionChunk = stringToPrecomputedChunk('<!--body-->');
 const htmlPreambleContributionChunk = stringToPrecomputedChunk('<!--html-->');
-
-/**
- * A singleton's tag in the preamble, `head`, `body` or `html`: its chunks,
- * made, and the marker of its contribution.
- */
-function pushStartPreambleSingleton(
-  target,
-  props,
-  preamble,
-  [tag, marker, first],
-  inPreamble,
-  formatContext,
-) {
-  if ($borrow(preamble).value != null) {
-    throw new Error(`The \`<${tag}>\` tag may only be rendered once.`);
-  }
-
-  // Insert a marker in the body where the contribution to the head was in case we need to clear it.
-  if (inPreamble) {
-    $borrowMut(target).push(chunk(marker));
-  }
-
-  const chunks = first == null ? [] : [first];
-  $borrowMut(preamble).value = chunks;
-  return pushStartSingletonElement(chunks, props, tag, formatContext);
-}
 
 function pushStartHead(
   target,
@@ -3525,14 +3295,19 @@ function pushStartHead(
   if (formatContext.insertionMode < HTML_MODE) {
     // This <head> is the Document.head and should be part of the preamble
     const preamble = preambleState ?? renderState.preamble;
-    return pushStartPreambleSingleton(
-      target,
-      props,
-      $fieldCell(preamble, 'headChunks', true),
-      ['head', headPreambleContributionChunk, undefined],
-      preambleState != null,
-      formatContext,
-    );
+
+    if (preamble.headChunks != null) {
+      throw new Error('The `<head>` tag may only be rendered once.');
+    }
+
+    // Insert a marker in the body where the contribution to the head was in case we need to clear it.
+    if (preambleState != null) {
+      target.push(headPreambleContributionChunk);
+    }
+
+    const headChunks = [];
+    preamble.headChunks = headChunks;
+    return pushStartSingletonElement(headChunks, props, 'head', formatContext);
   } else {
     // This <head> is deep and is likely just an error. we emit it inline though.
     // Validation should warn that this tag is the the wrong spot.
@@ -3550,14 +3325,19 @@ function pushStartBody(
   if (formatContext.insertionMode < HTML_MODE) {
     // This <body> is the Document.body
     const preamble = preambleState ?? renderState.preamble;
-    return pushStartPreambleSingleton(
-      target,
-      props,
-      $fieldCell(preamble, 'bodyChunks', true),
-      ['body', bodyPreambleContributionChunk, undefined],
-      preambleState != null,
-      formatContext,
-    );
+
+    if (preamble.bodyChunks != null) {
+      throw new Error('The `<body>` tag may only be rendered once.');
+    }
+
+    // Insert a marker in the body where the contribution to the body tag was in case we need to clear it.
+    if (preambleState != null) {
+      target.push(bodyPreambleContributionChunk);
+    }
+
+    const bodyChunks = [];
+    preamble.bodyChunks = bodyChunks;
+    return pushStartSingletonElement(bodyChunks, props, 'body', formatContext);
   } else {
     // This <head> is deep and is likely just an error. we emit it inline though.
     // Validation should warn that this tag is the the wrong spot.
@@ -3575,14 +3355,19 @@ function pushStartHtml(
   if (formatContext.insertionMode === ROOT_HTML_MODE) {
     // This <html> is the Document.documentElement
     const preamble = preambleState ?? renderState.preamble;
-    return pushStartPreambleSingleton(
-      target,
-      props,
-      $fieldCell(preamble, 'htmlChunks', true),
-      ['html', htmlPreambleContributionChunk, doctypeChunk$1],
-      preambleState != null,
-      formatContext,
-    );
+
+    if (preamble.htmlChunks != null) {
+      throw new Error('The `<html>` tag may only be rendered once.');
+    }
+
+    // Insert a marker in the body where the contribution to the head was in case we need to clear it.
+    if (preambleState != null) {
+      target.push(htmlPreambleContributionChunk);
+    }
+
+    const htmlChunks = [doctypeChunk$1];
+    preamble.htmlChunks = htmlChunks;
+    return pushStartSingletonElement(htmlChunks, props, 'html', formatContext);
   } else {
     // This <html> is deep and is likely just an error. we emit it inline though.
     // Validation should warn that this tag is the the wrong spot.
@@ -3651,7 +3436,7 @@ function pushScript(
         // the preload resource exists was created in this render. Now that we have
         // a script resource which will emit earlier than a preload would if it
         // hasn't already flushed we prevent it from flushing by zeroing the length
-        $borrowMut(preloadResource).length = 0;
+        preloadResource.length = 0;
       }
     }
 
@@ -3665,18 +3450,13 @@ function pushScript(
   if (textEmbedded) {
     // This script follows text but we aren't writing a tag. while not as efficient as possible we need
     // to be safe and assume text will follow by inserting a textSeparator
-    $borrowMut(target).push(chunk(textSeparator));
+    target.push(textSeparator);
   }
   return null;
 }
 
 function pushScriptImpl(target, props) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag('script'));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag('script'));
 
   let children;
   let innerHtml;
@@ -3699,7 +3479,7 @@ function pushScriptImpl(target, props) {
     }
   }
   // Scripts never participate as a ViewTransition
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
 
   if (__DEV__ && children !== undefined && typeof children !== 'string') {
     const descriptiveStatement =
@@ -3717,24 +3497,14 @@ function pushScriptImpl(target, props) {
 
   pushInnerHTML(target, innerHtml, children);
   if (typeof children === 'string') {
-    const value = $borrowMut(target, true);
-    try {
-      value.push(stringToChunk(escapeEntireInlineScriptContent(children)));
-    } finally {
-      $unborrow(value);
-    }
+    target.push(stringToChunk(escapeEntireInlineScriptContent(children)));
   }
-  $borrowMut(target).push(endChunkForTag('script'));
+  target.push(endChunkForTag('script'));
   return null;
 }
 
 function pushStartSingletonElement(target, props, tag, formatContext) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag(tag));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag(tag));
 
   let children = null;
   let innerHtml;
@@ -3759,18 +3529,13 @@ function pushStartSingletonElement(target, props, tag, formatContext) {
 
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
   pushInnerHTML(target, innerHtml, children);
   return children;
 }
 
 function pushStartGenericElement(target, props, tag, formatContext) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag(tag));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag(tag));
 
   let children = null;
   let innerHtml;
@@ -3795,29 +3560,19 @@ function pushStartGenericElement(target, props, tag, formatContext) {
 
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
   pushInnerHTML(target, innerHtml, children);
   if (typeof children === 'string') {
     // Special case children as a string to avoid the unnecessary comment.
     // TODO: Remove this special case after the general optimization is in place.
-    const value = $borrowMut(target, true);
-    try {
-      value.push(stringToChunk(encodeHTMLTextNode(children)));
-    } finally {
-      $unborrow(value);
-    }
+    target.push(stringToChunk(encodeHTMLTextNode(children)));
     return null;
   }
   return children;
 }
 
 function pushStartCustomElement(target, props, tag, formatContext) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag(tag));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag(tag));
 
   let children = null;
   let innerHtml;
@@ -3873,7 +3628,7 @@ function pushStartCustomElement(target, props, tag, formatContext) {
   // TODO: ViewTransition attributes gets observed by the Custom Element which is a bit sketchy.
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
   pushInnerHTML(target, innerHtml, children);
   return children;
 }
@@ -3881,12 +3636,7 @@ function pushStartCustomElement(target, props, tag, formatContext) {
 const leadingNewline = stringToPrecomputedChunk('\n');
 
 function pushStartPreformattedElement(target, props, tag, formatContext) {
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(startChunkForTag(tag));
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(startChunkForTag(tag));
 
   let children = null;
   let innerHtml;
@@ -3911,7 +3661,7 @@ function pushStartPreformattedElement(target, props, tag, formatContext) {
 
   pushViewTransitionAttributes(target, formatContext);
 
-  $borrowMut(target).push(chunk(endOfStartTag));
+  target.push(endOfStartTag);
 
   // text/html ignores the first character in these tags if it's a newline
   // Prefer to break application/xml over text/html (for now) by adding
@@ -3943,22 +3693,17 @@ function pushStartPreformattedElement(target, props, tag, formatContext) {
     const html = innerHtml.__html;
     if (html != null) {
       if (typeof html === 'string' && html.length > 0 && html[0] === '\n') {
-        $borrowMut(target).push(chunk(leadingNewline), stringToChunk(html));
+        target.push(leadingNewline, stringToChunk(html));
       } else {
         if (__DEV__) {
           checkHtmlStringCoercion(html);
         }
-        const value = $borrowMut(target, true);
-        try {
-          value.push(stringToChunk('' + html));
-        } finally {
-          $unborrow(value);
-        }
+        target.push(stringToChunk('' + html));
       }
     }
   }
   if (typeof children === 'string' && children[0] === '\n') {
-    $borrowMut(target).push(chunk(leadingNewline));
+    target.push(leadingNewline);
   }
   return children;
 }
@@ -4251,47 +3996,27 @@ export function pushEndInstance(
         return;
       }
   }
-  $borrowMut(target).push(endChunkForTag(type));
+  target.push(endChunkForTag(type));
 }
 
 export function hoistPreambleState(renderState, preambleState) {
   const rootPreamble = renderState.preamble;
-  if ($borrow($fieldCell(rootPreamble, 'htmlChunks', true)).value == null) {
-    const borrow = $borrow($fieldCell(preambleState, 'htmlChunks', true), true);
-    const htmlChunks = borrow.value;
-    try {
-      if (htmlChunks != null) {
-        $borrowMut($fieldCell(rootPreamble, 'htmlChunks', true)).value =
-          htmlChunks;
-      }
-    } finally {
-      $unborrow(borrow);
+  if (rootPreamble.htmlChunks == null) {
+    const htmlChunks = preambleState.htmlChunks;
+    if (htmlChunks != null) {
+      rootPreamble.htmlChunks = htmlChunks;
     }
   }
-  if ($borrow($fieldCell(rootPreamble, 'headChunks', true)).value == null) {
-    const value = $borrow($fieldCell(preambleState, 'headChunks', true), true);
-    const headChunks = value.value;
-    try {
-      if (headChunks != null) {
-        $borrowMut($fieldCell(rootPreamble, 'headChunks', true)).value =
-          headChunks;
-      }
-    } finally {
-      $unborrow(value);
+  if (rootPreamble.headChunks == null) {
+    const headChunks = preambleState.headChunks;
+    if (headChunks != null) {
+      rootPreamble.headChunks = headChunks;
     }
   }
-  if ($borrow($fieldCell(rootPreamble, 'bodyChunks', true)).value == null) {
-    const value = $borrow($fieldCell(preambleState, 'bodyChunks', true), true);
-    const bodyChunks = value.value;
+  if (rootPreamble.bodyChunks == null) {
+    const bodyChunks = preambleState.bodyChunks;
     if (bodyChunks != null) {
-      try {
-        $borrowMut($fieldCell(rootPreamble, 'bodyChunks', true)).value =
-          bodyChunks;
-      } finally {
-        $unborrow(value);
-      }
-    } else {
-      $unborrow(value);
+      rootPreamble.bodyChunks = bodyChunks;
     }
   }
 }
@@ -4309,21 +4034,20 @@ export function isPreambleReady(
   // the preamble is as complete as it is going to get
   return (
     !hasPendingPreambles ||
-    ($borrow($fieldCell(preamble, 'headChunks', true)).value != null &&
-      $borrow($fieldCell(preamble, 'bodyChunks', true)).value != null)
+    (preamble.headChunks != null && preamble.bodyChunks != null)
   );
 }
 
 function writeBootstrap(destination, renderState) {
   const bootstrapChunks = renderState.bootstrapChunks;
   let i = 0;
-  while (i + 1 < $borrow(bootstrapChunks).length) {
-    writeChunk(destination, $borrow(bootstrapChunks)[i]);
+  while (i + 1 < bootstrapChunks.length) {
+    writeChunk(destination, bootstrapChunks[i]);
     i++;
   }
-  if (i < $borrow(bootstrapChunks).length) {
-    const lastChunk = $borrow(bootstrapChunks)[i];
-    $borrowMut(bootstrapChunks).length = 0;
+  if (i < bootstrapChunks.length) {
+    const lastChunk = bootstrapChunks[i];
+    bootstrapChunks.length = 0;
     return writeChunkAndReturn(destination, lastChunk);
   }
   return true;
@@ -4346,9 +4070,9 @@ function writeShellTimeInstruction(destination, resumableState, renderState) {
   resumableState.instructions |= SENT_MARK_SHELL_TIME;
   writeChunk(destination, renderState.startInlineScript);
   writeCompletedShellIdAttribute(destination, resumableState);
-  writeChunk(destination, chunk(endOfStartTag));
-  writeChunk(destination, chunk(shellTimeRuntimeScript));
-  return writeChunkAndReturn(destination, chunk(endInlineScript));
+  writeChunk(destination, endOfStartTag);
+  writeChunk(destination, shellTimeRuntimeScript);
+  return writeChunkAndReturn(destination, endInlineScript);
 }
 
 export function writeCompletedRoot(
@@ -4365,8 +4089,7 @@ export function writeCompletedRoot(
   if (enableFizzBlockingRender) {
     const preamble = renderState.preamble;
     if (
-      ($borrow($fieldCell(preamble, 'htmlChunks', true)).value != null ||
-        $borrow($fieldCell(preamble, 'headChunks', true)).value != null) &&
+      (preamble.htmlChunks != null || preamble.headChunks != null) &&
       // If we rendered the whole document, then we emitted a rel="expect" that needs a
       // matching target. Normally we use one of the bootstrap scripts for this but if
       // there are none, then we need to emit a tag to complete the shell.
@@ -4374,7 +4097,7 @@ export function writeCompletedRoot(
     ) {
       writeChunk(destination, startChunkForTag('template'));
       writeCompletedShellIdAttribute(destination, resumableState);
-      writeChunk(destination, chunk(endOfStartTag));
+      writeChunk(destination, endOfStartTag);
       writeChunk(destination, endChunkForTag('template'));
     }
   }
@@ -4390,11 +4113,11 @@ const placeholder1 = stringToPrecomputedChunk('<template id="');
 const placeholder2 = stringToPrecomputedChunk('"></template>');
 
 export function writePlaceholder(destination, renderState, id) {
-  writeChunk(destination, chunk(placeholder1));
+  writeChunk(destination, placeholder1);
   writeChunk(destination, renderState.placeholderPrefix);
   const formattedID = stringToChunk(id.toString(16));
   writeChunk(destination, formattedID);
-  return writeChunkAndReturn(destination, chunk(placeholder2));
+  return writeChunkAndReturn(destination, placeholder2);
 }
 
 // Activity boundaries are encoded as comments.
@@ -4402,11 +4125,11 @@ const startActivityBoundary = stringToPrecomputedChunk('<!--&-->');
 const endActivityBoundary = stringToPrecomputedChunk('<!--/&-->');
 
 export function pushStartActivityBoundary(target, renderState) {
-  $borrowMut(target).push(chunk(startActivityBoundary));
+  target.push(startActivityBoundary);
 }
 
 export function pushEndActivityBoundary(target, renderState) {
-  $borrowMut(target).push(chunk(endActivityBoundary));
+  target.push(endActivityBoundary);
 }
 
 // Suspense boundaries are encoded as comments.
@@ -4435,10 +4158,7 @@ const clientRenderedSuspenseBoundaryError2 =
   stringToPrecomputedChunk('></template>');
 
 export function writeStartCompletedSuspenseBoundary(destination, renderState) {
-  return writeChunkAndReturn(
-    destination,
-    chunk(startCompletedSuspenseBoundary),
-  );
+  return writeChunkAndReturn(destination, startCompletedSuspenseBoundary);
 }
 
 export function writeStartPendingSuspenseBoundary(
@@ -4446,7 +4166,7 @@ export function writeStartPendingSuspenseBoundary(
   renderState,
   id,
 ) {
-  writeChunk(destination, chunk(startPendingSuspenseBoundary1));
+  writeChunk(destination, startPendingSuspenseBoundary1);
 
   if (id == null) {
     throw new Error(
@@ -4456,17 +4176,14 @@ export function writeStartPendingSuspenseBoundary(
 
   writeChunk(destination, renderState.boundaryPrefix);
   writeChunk(destination, stringToChunk(id.toString(16)));
-  return writeChunkAndReturn(destination, chunk(startPendingSuspenseBoundary2));
+  return writeChunkAndReturn(destination, startPendingSuspenseBoundary2);
 }
 
 /** An attribute of a client rendered boundary's error, `data-dgst` say. */
 function writeErrorAttribute(destination, start, value) {
   writeChunk(destination, start);
   writeChunk(destination, stringToChunk(escapeTextForBrowser(value)));
-  writeChunk(
-    destination,
-    chunk(clientRenderedSuspenseBoundaryErrorAttrInterstitial),
-  );
+  writeChunk(destination, clientRenderedSuspenseBoundaryErrorAttrInterstitial);
 }
 
 export function writeStartClientRenderedSuspenseBoundary(
@@ -4477,12 +4194,12 @@ export function writeStartClientRenderedSuspenseBoundary(
   errorStack,
   errorComponentStack,
 ) {
-  writeChunkAndReturn(destination, chunk(startClientRenderedSuspenseBoundary));
-  writeChunk(destination, chunk(clientRenderedSuspenseBoundaryError1));
+  writeChunkAndReturn(destination, startClientRenderedSuspenseBoundary);
+  writeChunk(destination, clientRenderedSuspenseBoundaryError1);
   if (errorDigest != null) {
     writeErrorAttribute(
       destination,
-      chunk(clientRenderedSuspenseBoundaryError1A),
+      clientRenderedSuspenseBoundaryError1A,
       errorDigest,
     );
   }
@@ -4490,44 +4207,41 @@ export function writeStartClientRenderedSuspenseBoundary(
     if (errorMessage) {
       writeErrorAttribute(
         destination,
-        chunk(clientRenderedSuspenseBoundaryError1B),
+        clientRenderedSuspenseBoundaryError1B,
         errorMessage,
       );
     }
     if (errorStack) {
       writeErrorAttribute(
         destination,
-        chunk(clientRenderedSuspenseBoundaryError1C),
+        clientRenderedSuspenseBoundaryError1C,
         errorStack,
       );
     }
     if (errorComponentStack) {
       writeErrorAttribute(
         destination,
-        chunk(clientRenderedSuspenseBoundaryError1D),
+        clientRenderedSuspenseBoundaryError1D,
         errorComponentStack,
       );
     }
   }
-  return writeChunkAndReturn(
-    destination,
-    chunk(clientRenderedSuspenseBoundaryError2),
-  );
+  return writeChunkAndReturn(destination, clientRenderedSuspenseBoundaryError2);
 }
 
 export function writeEndCompletedSuspenseBoundary(destination, renderState) {
-  return writeChunkAndReturn(destination, chunk(endSuspenseBoundary));
+  return writeChunkAndReturn(destination, endSuspenseBoundary);
 }
 
 export function writeEndPendingSuspenseBoundary(destination, renderState) {
-  return writeChunkAndReturn(destination, chunk(endSuspenseBoundary));
+  return writeChunkAndReturn(destination, endSuspenseBoundary);
 }
 
 export function writeEndClientRenderedSuspenseBoundary(
   destination,
   renderState,
 ) {
-  return writeChunkAndReturn(destination, chunk(endSuspenseBoundary));
+  return writeChunkAndReturn(destination, endSuspenseBoundary);
 }
 
 const startSegmentHtml = stringToPrecomputedChunk('<div hidden id="');
@@ -4596,10 +4310,10 @@ export function writeStartSegment(destination, renderState, formatContext, id) {
   }
   const start = tmp[0];
   const end = tmp[1];
-  writeChunk(destination, chunk(start));
+  writeChunk(destination, start);
   writeChunk(destination, renderState.segmentPrefix);
   writeChunk(destination, stringToChunk(id.toString(16)));
-  return writeChunkAndReturn(destination, chunk(end));
+  return writeChunkAndReturn(destination, end);
 }
 
 export function writeEndSegment(destination, formatContext) {
@@ -4632,7 +4346,7 @@ export function writeEndSegment(destination, formatContext) {
     default:
       throw new Error('Unknown insertion mode. This is a bug in React.');
   }
-  return writeChunkAndReturn(destination, chunk(end));
+  return writeChunkAndReturn(destination, end);
 }
 
 const completeSegmentScript1Full = stringToPrecomputedChunk(
@@ -4646,7 +4360,7 @@ const completeSegmentData1 = stringToPrecomputedChunk(
   '<template data-rsi="" data-sid="',
 );
 const completeSegmentData2 = stringToPrecomputedChunk('" data-pid="');
-const completeSegmentDataEnd = chunk(dataElementQuotedEnd);
+const completeSegmentDataEnd = dataElementQuotedEnd;
 
 /**
  * Whether instructions are written as inline scripts, not as the data the
@@ -4678,16 +4392,16 @@ export function writeCompletedSegmentInstruction(
   const scriptFormat$1 = scriptFormat(resumableState);
   if (scriptFormat$1) {
     writeChunk(destination, renderState.startInlineScript);
-    writeChunk(destination, chunk(endOfStartTag));
+    writeChunk(destination, endOfStartTag);
     if (sendOnce(resumableState, SENT_COMPLETE_SEGMENT_FUNCTION)) {
       // The first time we write this, we'll need to include the full implementation.
-      writeChunk(destination, chunk(completeSegmentScript1Full));
+      writeChunk(destination, completeSegmentScript1Full);
     } else {
       // Future calls can just reuse the same function.
-      writeChunk(destination, chunk(completeSegmentScript1Partial));
+      writeChunk(destination, completeSegmentScript1Partial);
     }
   } else {
-    writeChunk(destination, chunk(completeSegmentData1));
+    writeChunk(destination, completeSegmentData1);
   }
 
   // Write function arguments, which are string literals
@@ -4695,16 +4409,16 @@ export function writeCompletedSegmentInstruction(
   const formattedID = stringToChunk(contentSegmentId.toString(16));
   writeChunk(destination, formattedID);
   if (scriptFormat$1) {
-    writeChunk(destination, chunk(completeSegmentScript2));
+    writeChunk(destination, completeSegmentScript2);
   } else {
-    writeChunk(destination, chunk(completeSegmentData2));
+    writeChunk(destination, completeSegmentData2);
   }
   writeChunk(destination, renderState.placeholderPrefix);
   writeChunk(destination, formattedID);
 
   return scriptFormat$1
-    ? writeChunkAndReturn(destination, chunk(completeSegmentScriptEnd))
-    : writeChunkAndReturn(destination, chunk(completeSegmentDataEnd));
+    ? writeChunkAndReturn(destination, completeSegmentScriptEnd)
+    : writeChunkAndReturn(destination, completeSegmentDataEnd);
 }
 
 const completeBoundaryScriptFunctionOnly = stringToPrecomputedChunk(
@@ -4734,7 +4448,7 @@ const completeBoundaryWithStylesData1 = stringToPrecomputedChunk(
 );
 const completeBoundaryData2 = stringToPrecomputedChunk('" data-sid="');
 const completeBoundaryData3a = stringToPrecomputedChunk('" data-sty="');
-const completeBoundaryDataEnd = chunk(dataElementQuotedEnd);
+const completeBoundaryDataEnd = dataElementQuotedEnd;
 
 export function writeCompletedBoundaryInstruction(
   destination,
@@ -4756,15 +4470,15 @@ export function writeCompletedBoundaryInstruction(
   const scriptFormat$1 = scriptFormat(resumableState);
   if (scriptFormat$1) {
     writeChunk(destination, renderState.startInlineScript);
-    writeChunk(destination, chunk(endOfStartTag));
+    writeChunk(destination, endOfStartTag);
     if (requiresStyleInsertion) {
       if (sendOnce(resumableState, SENT_CLIENT_RENDER_FUNCTION)) {
         // The completeBoundaryWithStyles function depends on the client render function.
-        writeChunk(destination, chunk(clientRenderScriptFunctionOnly));
+        writeChunk(destination, clientRenderScriptFunctionOnly);
       }
       if (sendOnce(resumableState, SENT_COMPLETE_BOUNDARY_FUNCTION)) {
         // The completeBoundaryWithStyles function depends on the complete boundary function.
-        writeChunk(destination, chunk(completeBoundaryScriptFunctionOnly));
+        writeChunk(destination, completeBoundaryScriptFunctionOnly);
       }
       if (
         requiresViewTransitions &&
@@ -4772,23 +4486,17 @@ export function writeCompletedBoundaryInstruction(
       ) {
         writeChunk(
           destination,
-          chunk(completeBoundaryUpgradeToViewTransitionsInstruction),
+          completeBoundaryUpgradeToViewTransitionsInstruction,
         );
       }
       if (sendOnce(resumableState, SENT_STYLE_INSERTION_FUNCTION)) {
-        writeChunk(
-          destination,
-          chunk(completeBoundaryWithStylesScript1FullPartial),
-        );
+        writeChunk(destination, completeBoundaryWithStylesScript1FullPartial);
       } else {
-        writeChunk(
-          destination,
-          chunk(completeBoundaryWithStylesScript1Partial),
-        );
+        writeChunk(destination, completeBoundaryWithStylesScript1Partial);
       }
     } else {
       if (sendOnce(resumableState, SENT_COMPLETE_BOUNDARY_FUNCTION)) {
-        writeChunk(destination, chunk(completeBoundaryScriptFunctionOnly));
+        writeChunk(destination, completeBoundaryScriptFunctionOnly);
       }
       if (
         requiresViewTransitions &&
@@ -4796,15 +4504,15 @@ export function writeCompletedBoundaryInstruction(
       ) {
         writeChunk(
           destination,
-          chunk(completeBoundaryUpgradeToViewTransitionsInstruction),
+          completeBoundaryUpgradeToViewTransitionsInstruction,
         );
       }
-      writeChunk(destination, chunk(completeBoundaryScript1Partial));
+      writeChunk(destination, completeBoundaryScript1Partial);
     }
   } else if (requiresStyleInsertion) {
-    writeChunk(destination, chunk(completeBoundaryWithStylesData1));
+    writeChunk(destination, completeBoundaryWithStylesData1);
   } else {
-    writeChunk(destination, chunk(completeBoundaryData1));
+    writeChunk(destination, completeBoundaryData1);
   }
 
   const idChunk = stringToChunk(id.toString(16));
@@ -4814,9 +4522,9 @@ export function writeCompletedBoundaryInstruction(
 
   // Write function arguments, which are string and array literals
   if (scriptFormat$1) {
-    writeChunk(destination, chunk(completeBoundaryScript2));
+    writeChunk(destination, completeBoundaryScript2);
   } else {
-    writeChunk(destination, chunk(completeBoundaryData2));
+    writeChunk(destination, completeBoundaryData2);
   }
   writeChunk(destination, renderState.segmentPrefix);
   writeChunk(destination, idChunk);
@@ -4827,19 +4535,19 @@ export function writeCompletedBoundaryInstruction(
     //  - data writer emits a string literal, which is escaped as html
     //    e.g. [&#34;A&#34;, &#34;B&#34;]
     if (scriptFormat$1) {
-      writeChunk(destination, chunk(completeBoundaryScript3a));
+      writeChunk(destination, completeBoundaryScript3a);
       // hoistableState encodes an array literal
       writeStyleResourceDependenciesInJs(destination, hoistableState);
     } else {
-      writeChunk(destination, chunk(completeBoundaryData3a));
+      writeChunk(destination, completeBoundaryData3a);
       writeStyleResourceDependenciesInAttr(destination, hoistableState);
     }
   } else if (scriptFormat$1) {
-    writeChunk(destination, chunk(completeBoundaryScript3b));
+    writeChunk(destination, completeBoundaryScript3b);
   }
   const writeMore = scriptFormat$1
-    ? writeChunkAndReturn(destination, chunk(completeBoundaryScriptEnd))
-    : writeChunkAndReturn(destination, chunk(completeBoundaryDataEnd));
+    ? writeChunkAndReturn(destination, completeBoundaryScriptEnd)
+    : writeChunkAndReturn(destination, completeBoundaryDataEnd);
   return writeBootstrap(destination, renderState) && writeMore;
 }
 
@@ -4862,7 +4570,7 @@ const clientRenderData2 = stringToPrecomputedChunk('" data-dgst="');
 const clientRenderData3 = stringToPrecomputedChunk('" data-msg="');
 const clientRenderData4 = stringToPrecomputedChunk('" data-stck="');
 const clientRenderData5 = stringToPrecomputedChunk('" data-cstck="');
-const clientRenderDataEnd = chunk(dataElementQuotedEnd);
+const clientRenderDataEnd = dataElementQuotedEnd;
 
 /**
  * One of a client rendered boundary's error's texts: in a script, a JS
@@ -4871,7 +4579,7 @@ const clientRenderDataEnd = chunk(dataElementQuotedEnd);
 function writeClientRenderError(destination, scriptFormat, data, text) {
   if (scriptFormat) {
     // ,"JSONString"
-    writeChunk(destination, chunk(clientRenderErrorScriptArgInterstitial));
+    writeChunk(destination, clientRenderErrorScriptArgInterstitial);
     writeChunk(
       destination,
       stringToChunk(escapeJSStringsForInstructionScripts(text)),
@@ -4896,17 +4604,17 @@ export function writeClientRenderBoundaryInstruction(
   const scriptFormat$1 = scriptFormat(resumableState);
   if (scriptFormat$1) {
     writeChunk(destination, renderState.startInlineScript);
-    writeChunk(destination, chunk(endOfStartTag));
+    writeChunk(destination, endOfStartTag);
     if (sendOnce(resumableState, SENT_CLIENT_RENDER_FUNCTION)) {
       // The first time we write this, we'll need to include the full implementation.
-      writeChunk(destination, chunk(clientRenderScript1Full));
+      writeChunk(destination, clientRenderScript1Full);
     } else {
       // Future calls can just reuse the same function.
-      writeChunk(destination, chunk(clientRenderScript1Partial));
+      writeChunk(destination, clientRenderScript1Partial);
     }
   } else {
     // <template data-rxi="" data-bid="
-    writeChunk(destination, chunk(clientRenderData1));
+    writeChunk(destination, clientRenderData1);
   }
 
   writeChunk(destination, renderState.boundaryPrefix);
@@ -4914,7 +4622,7 @@ export function writeClientRenderBoundaryInstruction(
   if (scriptFormat$1) {
     // " needs to be inserted for scripts, since ArgInterstitual does not contain
     // leading or trailing quotes
-    writeChunk(destination, chunk(clientRenderScript1A));
+    writeChunk(destination, clientRenderScript1A);
   }
 
   errorMessage = errorMessage || undefined;
@@ -4928,9 +4636,9 @@ export function writeClientRenderBoundaryInstruction(
   ) {
     if (scriptFormat$1) {
       // ,null or ,"JSONString"
-      writeChunk(destination, chunk(clientRenderErrorScriptArgInterstitial));
+      writeChunk(destination, clientRenderErrorScriptArgInterstitial);
       if (errorDigest == null) {
-        writeChunk(destination, chunk(clientRenderErrorScriptNull));
+        writeChunk(destination, clientRenderErrorScriptNull);
       } else {
         writeChunk(
           destination,
@@ -4939,7 +4647,7 @@ export function writeClientRenderBoundaryInstruction(
       }
     } else if (errorDigest != null) {
       // " data-dgst="HTMLString
-      writeChunk(destination, chunk(clientRenderData2));
+      writeChunk(destination, clientRenderData2);
       writeChunk(destination, stringToChunk(escapeTextForBrowser(errorDigest)));
     }
   }
@@ -4951,7 +4659,7 @@ export function writeClientRenderBoundaryInstruction(
     writeClientRenderError(
       destination,
       scriptFormat$1,
-      chunk(clientRenderData3),
+      clientRenderData3,
       errorMessage ?? '',
     );
   }
@@ -4959,7 +4667,7 @@ export function writeClientRenderBoundaryInstruction(
     writeClientRenderError(
       destination,
       scriptFormat$1,
-      chunk(clientRenderData4),
+      clientRenderData4,
       errorStack ?? '',
     );
   }
@@ -4967,16 +4675,16 @@ export function writeClientRenderBoundaryInstruction(
     writeClientRenderError(
       destination,
       scriptFormat$1,
-      chunk(clientRenderData5),
+      clientRenderData5,
       errorComponentStack,
     );
   }
 
   return scriptFormat$1
     ? // ></script>
-      writeChunkAndReturn(destination, chunk(clientRenderScriptEnd))
+      writeChunkAndReturn(destination, clientRenderScriptEnd)
     : // "></template>
-      writeChunkAndReturn(destination, chunk(clientRenderDataEnd));
+      writeChunkAndReturn(destination, clientRenderDataEnd);
 }
 
 const regexForJsStringsInInstructionScripts = new RegExp(
@@ -5045,35 +4753,34 @@ let destinationHasCapacity = true;
 function flushStyleTagsLateForBoundary(destination, styleQueue) {
   const rules = styleQueue.rules;
   const hrefs = styleQueue.hrefs;
-  if (__DEV__ && $borrow(rules).length !== 0 && $borrow(hrefs).length === 0) {
+  if (__DEV__ && rules.length !== 0 && hrefs.length === 0) {
     console.error(
       'React expected to have at least one href for an a hoistable style but found none. This is a bug in React.',
     );
   }
-  if ($borrow(hrefs).length !== 0) {
+  if (hrefs.length !== 0) {
     const renderState = $unwrap(
       currentlyFlushingRenderState,
       'styles flush while a render state flushes',
     );
     writeChunk(destination, renderState.startInlineStyle);
-    writeChunk(destination, chunk(lateStyleTagResourceOpen1));
+    writeChunk(destination, lateStyleTagResourceOpen1);
     writeChunk(destination, styleQueue.precedence);
-    writeChunk(destination, chunk(lateStyleTagResourceOpen2));
+    writeChunk(destination, lateStyleTagResourceOpen2);
     let i = 0;
-    while (i + 1 < $borrow(hrefs).length) {
-      writeChunk(destination, $borrow(hrefs)[i]);
-      writeChunk(destination, chunk(spaceSeparator));
+    while (i + 1 < hrefs.length) {
+      writeChunk(destination, hrefs[i]);
+      writeChunk(destination, spaceSeparator);
       i++;
     }
-    writeChunk(destination, $index($borrow(hrefs), i));
-    writeChunk(destination, chunk(lateStyleTagResourceOpen3));
-    const borrow = $borrow(rules);
-    for (const rule of borrow) {
+    writeChunk(destination, $index(hrefs, i));
+    writeChunk(destination, lateStyleTagResourceOpen3);
+    for (const rule of rules) {
       writeChunk(destination, rule);
     }
     destinationHasCapacity = writeChunkAndReturn(
       destination,
-      chunk(lateStyleTagTemplateClose),
+      lateStyleTagTemplateClose,
     );
 
     // We wrote style tags for this boundary and we may need to emit a script
@@ -5083,8 +4790,8 @@ function flushStyleTagsLateForBoundary(destination, styleQueue) {
     // style resources can flush continuously since more rules may be written into
     // them with new hrefs. Instead of marking it flushed, we simply reset the chunks
     // and hrefs
-    $borrowMut(rules).length = 0;
-    $borrowMut(hrefs).length = 0;
+    rules.length = 0;
+    hrefs.length = 0;
   }
 }
 
@@ -5131,11 +4838,10 @@ export function writeHoistablesForBoundary(
 }
 
 function flushResource(destination, resource) {
-  const borrow = $borrow(resource);
-  for (const chunk of borrow) {
+  for (const chunk of resource) {
     writeChunk(destination, chunk);
   }
-  $borrowMut(resource).length = 0;
+  resource.length = 0;
 }
 
 const stylesheetFlushingQueue = [];
@@ -5146,11 +4852,10 @@ function flushStyleInPreamble(destination, stylesheet) {
   // them during render. This is because if we flush late we have to send a
   // different encoding and we don't want to encode multiple times
   pushLinkImpl(stylesheetFlushingQueue, stylesheet.props);
-  const borrow = $borrow(stylesheetFlushingQueue);
-  for (const chunk of borrow) {
+  for (const chunk of stylesheetFlushingQueue) {
     writeChunk(destination, chunk);
   }
-  $borrowMut(stylesheetFlushingQueue).length = 0;
+  stylesheetFlushingQueue.length = 0;
   stylesheet.state = PREAMBLE;
 }
 
@@ -5173,36 +4878,35 @@ function flushStylesInPreamble(destination, styleQueue) {
   // If we don't emit any stylesheets at this precedence we still need to maintain the precedence
   // order so even if there are no rules for style tags at this precedence we emit an empty style
   // tag with the data-precedence attribute
-  if (!hasStylesheets || $borrow(hrefs).length !== 0) {
+  if (!hasStylesheets || hrefs.length !== 0) {
     const renderState = $unwrap(
       currentlyFlushingRenderState,
       'styles flush while a render state flushes',
     );
     writeChunk(destination, renderState.startInlineStyle);
-    writeChunk(destination, chunk(styleTagResourceOpen1));
+    writeChunk(destination, styleTagResourceOpen1);
     writeChunk(destination, styleQueue.precedence);
-    if ($borrow(hrefs).length !== 0) {
-      writeChunk(destination, chunk(styleTagResourceOpen2));
+    if (hrefs.length !== 0) {
+      writeChunk(destination, styleTagResourceOpen2);
       let i = 0;
-      while (i + 1 < $borrow(hrefs).length) {
-        writeChunk(destination, $borrow(hrefs)[i]);
-        writeChunk(destination, chunk(spaceSeparator));
+      while (i + 1 < hrefs.length) {
+        writeChunk(destination, hrefs[i]);
+        writeChunk(destination, spaceSeparator);
         i++;
       }
-      writeChunk(destination, $index($borrow(hrefs), i));
+      writeChunk(destination, $index(hrefs, i));
     }
-    writeChunk(destination, chunk(styleTagResourceOpen3));
-    const borrow = $borrow(rules);
-    for (const rule of borrow) {
+    writeChunk(destination, styleTagResourceOpen3);
+    for (const rule of rules) {
       writeChunk(destination, rule);
     }
-    writeChunk(destination, chunk(styleTagResourceClose));
+    writeChunk(destination, styleTagResourceClose);
 
     // style resources can flush continuously since more rules may be written into
     // them with new hrefs. Instead of marking it flushed, we simply reset the chunks
     // and hrefs
-    $borrowMut(rules).length = 0;
-    $borrowMut(hrefs).length = 0;
+    rules.length = 0;
+    hrefs.length = 0;
   }
 }
 
@@ -5214,11 +4918,10 @@ function preloadLateStyle(destination, stylesheet) {
       stylesheet.props,
     );
     pushLinkImpl(stylesheetFlushingQueue, preloadProps);
-    const borrow = $borrow(stylesheetFlushingQueue);
-    for (const chunk of borrow) {
+    for (const chunk of stylesheetFlushingQueue) {
       writeChunk(destination, chunk);
     }
-    $borrowMut(stylesheetFlushingQueue).length = 0;
+    stylesheetFlushingQueue.length = 0;
   }
 }
 
@@ -5244,9 +4947,9 @@ function writeBlockingRenderInstruction(
   if (enableFizzBlockingRender) {
     const idPrefix = resumableState.idPrefix;
     const shellId = '_' + idPrefix + 'R_';
-    writeChunk(destination, chunk(blockingRenderChunkStart));
+    writeChunk(destination, blockingRenderChunkStart);
     writeChunk(destination, stringToChunk(escapeTextForBrowser(shellId)));
-    writeChunk(destination, chunk(blockingRenderChunkEnd));
+    writeChunk(destination, blockingRenderChunkEnd);
   }
 }
 
@@ -5262,9 +4965,9 @@ function writeCompletedShellIdAttribute(destination, resumableState) {
   resumableState.instructions |= SENT_COMPLETED_SHELL_ID;
   const idPrefix = resumableState.idPrefix;
   const shellId = '_' + idPrefix + 'R_';
-  writeChunk(destination, chunk(completedShellIdAttributeStart));
+  writeChunk(destination, completedShellIdAttributeStart);
   writeChunk(destination, stringToChunk(escapeTextForBrowser(shellId)));
-  writeChunk(destination, chunk(attributeEnd));
+  writeChunk(destination, attributeEnd);
 }
 
 function pushCompletedShellIdAttribute(target, resumableState) {
@@ -5277,25 +4980,19 @@ function pushCompletedShellIdAttribute(target, resumableState) {
   resumableState.instructions |= SENT_COMPLETED_SHELL_ID;
   const idPrefix = resumableState.idPrefix;
   const shellId = '_' + idPrefix + 'R_';
-  const borrowMut = $borrowMut(target, true);
-  try {
-    borrowMut.push(
-      chunk(completedShellIdAttributeStart),
-      stringToChunk(escapeTextForBrowser(shellId)),
-      chunk(attributeEnd),
-    );
-  } finally {
-    $unborrow(borrowMut);
-  }
+  target.push(
+    completedShellIdAttributeStart,
+    stringToChunk(escapeTextForBrowser(shellId)),
+    attributeEnd,
+  );
 }
 
 /** Each of `chunks` written, and then none left. */
 function flushChunks(destination, chunks) {
-  const borrow = $borrow(chunks);
-  for (const chunk of borrow) {
+  for (const chunk of chunks) {
     writeChunk(destination, chunk);
   }
-  $borrowMut(chunks).length = 0;
+  chunks.length = 0;
 }
 
 /** Each of `resources` flushed, and then none of them held. */
@@ -5328,30 +5025,27 @@ export function writePreambleStart(
 
   const preamble = renderState.preamble;
 
-  const {value: htmlChunks} = $borrow($fieldCell(preamble, 'htmlChunks', true));
-  const {value: headChunks} = $borrow($fieldCell(preamble, 'headChunks', true));
+  const htmlChunks = preamble.htmlChunks;
+  const headChunks = preamble.headChunks;
 
   // Emit open tags before Hoistables and Resources
   if (htmlChunks != null) {
     // We have an <html> to emit as part of the preamble
-    const borrow = $borrow(htmlChunks);
-    for (const chunk of borrow) {
+    for (const chunk of htmlChunks) {
       writeChunk(destination, chunk);
     }
     if (headChunks != null) {
-      const value = $borrow(headChunks);
-      for (const chunk of value) {
+      for (const chunk of headChunks) {
         writeChunk(destination, chunk);
       }
     } else {
       // We did not render a head but we emitted an <html> so we emit one now
       writeChunk(destination, startChunkForTag('head'));
-      writeChunk(destination, chunk(endOfStartTag));
+      writeChunk(destination, endOfStartTag);
     }
   } else if (headChunks != null) {
     // We do not have an <html> but we do have a <head>
-    const value = $borrow(headChunks);
-    for (const chunk of value) {
+    for (const chunk of headChunks) {
       writeChunk(destination, chunk);
     }
   }
@@ -5409,20 +5103,15 @@ export function writePreambleStart(
 // of the flushing code in Fizz.
 export function writePreambleEnd(destination, renderState) {
   const preamble = renderState.preamble;
-  if (
-    $borrow($fieldCell(preamble, 'htmlChunks', true)).value != null ||
-    $borrow($fieldCell(preamble, 'headChunks', true)).value != null
-  ) {
+  if (preamble.htmlChunks != null || preamble.headChunks != null) {
     // we have an <html> but we inserted an implicit <head> tag. We need
     // to close it since the main content won't have it
     writeChunk(destination, endChunkForTag('head'));
   }
 
-  const {value: _23} = $borrow($fieldCell(preamble, 'bodyChunks', true));
-  if (_23 != null) {
-    const bodyChunks = _23;
-    const borrow = $borrow(bodyChunks);
-    for (const chunk of borrow) {
+  const bodyChunks = preamble.bodyChunks;
+  if (bodyChunks != null) {
+    for (const chunk of bodyChunks) {
       writeChunk(destination, chunk);
     }
   }
@@ -5508,9 +5197,9 @@ function writeStyleResourceDependenciesInAttr(destination, hoistableState) {
 }
 
 function writeStyleResourceDependencies(destination, hoistableState, encode) {
-  writeChunk(destination, chunk(arrayFirstOpenBracket));
+  writeChunk(destination, arrayFirstOpenBracket);
 
-  let nextArrayOpenBrackChunk = chunk(arrayFirstOpenBracket);
+  let nextArrayOpenBrackChunk = arrayFirstOpenBracket;
   hoistableState.stylesheets.forEach(resource => {
     if (resource.state === PREAMBLE) {
       // We can elide this dependency because it was flushed in the shell and
@@ -5525,8 +5214,8 @@ function writeStyleResourceDependencies(destination, hoistableState, encode) {
         resource.props.href,
         encode,
       );
-      writeChunk(destination, chunk(arrayCloseBracket));
-      nextArrayOpenBrackChunk = chunk(arraySubsequentOpenBracket);
+      writeChunk(destination, arrayCloseBracket);
+      nextArrayOpenBrackChunk = arraySubsequentOpenBracket;
     } else {
       // We need to emit the whole resource for insertion on the client
       writeChunk(destination, nextArrayOpenBrackChunk);
@@ -5537,13 +5226,13 @@ function writeStyleResourceDependencies(destination, hoistableState, encode) {
         resource.props,
         encode,
       );
-      writeChunk(destination, chunk(arrayCloseBracket));
-      nextArrayOpenBrackChunk = chunk(arraySubsequentOpenBracket);
+      writeChunk(destination, arrayCloseBracket);
+      nextArrayOpenBrackChunk = arraySubsequentOpenBracket;
 
       resource.state = LATE;
     }
   });
-  writeChunk(destination, chunk(arrayCloseBracket));
+  writeChunk(destination, arrayCloseBracket);
 }
 
 /* Helper functions */
@@ -5571,7 +5260,7 @@ function writeStyleResourceDependency(
     checkAttributeStringCoercion(precedence, 'precedence');
   }
   const coercedPrecedence = '' + precedence;
-  writeChunk(destination, chunk(arrayInterstitial));
+  writeChunk(destination, arrayInterstitial);
   writeChunk(destination, stringToChunk(encode(coercedPrecedence)));
 
   for (const propKey in props) {
@@ -5658,9 +5347,9 @@ function writeStyleResourceAttribute(
         }
       }
     }
-    writeChunk(destination, chunk(arrayInterstitial));
+    writeChunk(destination, arrayInterstitial);
     writeChunk(destination, stringToChunk(encode(attributeName)));
-    writeChunk(destination, chunk(arrayInterstitial));
+    writeChunk(destination, arrayInterstitial);
     writeChunk(destination, stringToChunk(encode(attributeValue)));
   }
 }
@@ -5709,14 +5398,6 @@ function fittingHeader(headers, make) {
   return remaining >= 0 ? [headers, header] : undefined;
 }
 
-/** `header` added to a list of headers, `, ` between them. */
-function appendHeader(list, header) {
-  if (list.value) {
-    list.value += ', ';
-  }
-  list.value += header;
-}
-
 function prefetchDNS(href) {
   const request = resolveRequest();
   if (request == null) {
@@ -5736,28 +5417,20 @@ function prefetchDNS(href) {
     const dnsResources = resumableState.dnsResources;
     if (!dnsResources.hasOwnProperty(key)) {
       dnsResources[key] = EXISTS;
-      const borrow = $borrow($fieldCell(renderState, 'headers', true), true);
-      let tmp;
 
       // Compute the header since we might be able to fit it in the max length
-      try {
-        tmp = fittingHeader(borrow.value, () => getPrefetchDNSAsHeader(href));
-      } catch (error) {
-        $unborrow(borrow);
-        throw error;
-      }
-      if (tmp != null) {
-        const headers = tmp[0];
-        const header = tmp[1];
+      const headers = renderState.headers;
+      const value = fittingHeader(headers, () => getPrefetchDNSAsHeader(href));
+      if (value != null) {
+        const headers = value[0];
+        const header = value[1];
         // Store this as resettable in case we are prerendering and postpone in the Shell
         renderState.resets.dns[key] = EXISTS;
-        try {
-          appendHeader($fieldCell(headers, 'preconnects'), header);
-        } finally {
-          $unborrow(borrow);
+        if (headers.preconnects) {
+          headers.preconnects += ', ';
         }
+        headers.preconnects += header;
       } else {
-        $unborrow(borrow);
         // Encode as element
         const resource = [];
         pushLinkImpl(resource, {
@@ -5806,30 +5479,22 @@ function preconnect(href, crossOrigin) {
     const resources = bucketOf(resumableState.connectResources);
     if (!resources.hasOwnProperty(key)) {
       resources[key] = EXISTS;
-      const borrow = $borrow($fieldCell(renderState, 'headers', true), true);
-      let tmp;
 
       // Compute the header since we might be able to fit it in the max length
-      try {
-        tmp = fittingHeader(borrow.value, () =>
-          getPreconnectAsHeader(href, crossOrigin),
-        );
-      } catch (error) {
-        $unborrow(borrow);
-        throw error;
-      }
-      if (tmp != null) {
-        const headers = tmp[0];
-        const header = tmp[1];
+      const headers = renderState.headers;
+      const value = fittingHeader(headers, () =>
+        getPreconnectAsHeader(href, crossOrigin),
+      );
+      if (value != null) {
+        const headers = value[0];
+        const header = value[1];
         // Store this in resettableState in case we are prerending and postpone in the Shell
-        try {
-          bucketOf(renderState.resets.connect)[key] = EXISTS;
-          appendHeader($fieldCell(headers, 'preconnects'), header);
-        } finally {
-          $unborrow(borrow);
+        bucketOf(renderState.resets.connect)[key] = EXISTS;
+        if (headers.preconnects) {
+          headers.preconnects += ', ';
         }
+        headers.preconnects += header;
       } else {
-        $unborrow(borrow);
         const resource = [];
         pushLinkImpl(resource, {
           rel: 'preconnect',
@@ -5891,9 +5556,7 @@ function preload(href, as, options) {
         }
         imageResources[key] = preloadNoCreds;
 
-        let {value: headers} = $borrow(
-          $fieldCell(renderState, 'headers', true),
-        );
+        let headers = renderState.headers;
         headers =
           headers != null &&
           // browsers today don't support preloading responsive images from link headers so we bail out
@@ -5913,7 +5576,10 @@ function preload(href, as, options) {
           // If we postpone in the shell we will still emit a preload as a header so we
           // track this to make sure we don't reset it.
           renderState.resets.image[key] = preloadNoCreds;
-          appendHeader($fieldCell(headers, 'highImagePreloads'), header);
+          if (headers.highImagePreloads) {
+            headers.highImagePreloads += ', ';
+          }
+          headers.highImagePreloads += header;
         } else {
           // If we don't have headers to write to we have to encode as elements to flush in the head
           // When we have imageSrcSet the browser probably cannot load the right version from headers
@@ -5996,9 +5662,7 @@ function preload(href, as, options) {
         }
         resources[key] = preloadNoCreds;
 
-        let {value: headers} = $borrow(
-          $fieldCell(renderState, 'headers', true),
-        );
+        let headers = renderState.headers;
         headers = headers != null && as === 'font' ? headers : undefined;
         const value = fittingHeader(headers, () =>
           // We compute the header here because we might be able to fit it in the max length
@@ -6010,7 +5674,10 @@ function preload(href, as, options) {
           // If we postpone in the shell we will still emit this preload so we
           // track it here to prevent it from being reset.
           renderState.resets.font[key] = preloadNoCreds;
-          appendHeader($fieldCell(headers, 'fontPreloads'), header);
+          if (headers.fontPreloads) {
+            headers.fontPreloads += ', ';
+          }
+          headers.fontPreloads += header;
         } else {
           // We either don't have headers or we are preloading something that does
           // not warrant elevated priority so we encode as an element.
@@ -6164,10 +5831,10 @@ function preinitStyle(href, precedence, options) {
         }
 
         const preloadResource = renderState.preloads.stylesheets.get(key);
-        if (preloadResource != null && $borrow(preloadResource).length !== 0) {
+        if (preloadResource != null && preloadResource.length !== 0) {
           // The Preload for this resource was created in this render pass and has not flushed yet so
           // we need to clear it to avoid it flushing.
-          $borrowMut(preloadResource).length = 0;
+          preloadResource.length = 0;
         } else {
           // Either the preload resource from this render already flushed in this render pass
           // or the preload flushed in a prior pass (prerender). In either case we need to mark
@@ -6231,7 +5898,7 @@ function preinitScript(src, options) {
           // the preload resource exists was created in this render. Now that we have
           // a script resource which will emit earlier than a preload would if it
           // hasn't already flushed we prevent it from flushing by zeroing the length
-          $borrowMut(preloadResource).length = 0;
+          preloadResource.length = 0;
         }
       }
 
@@ -6287,7 +5954,7 @@ function preinitModuleScript(src, options) {
           // the preload resource exists was created in this render. Now that we have
           // a script resource which will emit earlier than a preload would if it
           // hasn't already flushed we prevent it from flushing by zeroing the length
-          $borrowMut(preloadResource).length = 0;
+          preloadResource.length = 0;
         }
       }
 
@@ -6539,11 +6206,11 @@ export function hasSuspenseyContent(hoistableState, flushingInShell) {
 export function emitEarlyPreloads(renderState, resumableState, shellComplete) {
   const onHeaders = renderState.onHeaders;
   if (onHeaders != null) {
-    const {value: headers} = $borrow($fieldCell(renderState, 'headers', true));
+    const headers = renderState.headers;
     if (headers != null) {
       // Even if onHeaders throws we don't want to call this again so
       // we drop the headers state from this point onwards.
-      $borrowMut($fieldCell(renderState, 'headers', true)).value = undefined;
+      renderState.headers = undefined;
 
       let linkHeader = headers.preconnects;
       if (headers.fontPreloads) {
