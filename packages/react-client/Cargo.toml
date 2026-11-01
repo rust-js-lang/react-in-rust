@@ -1,0 +1,19 @@
+[package]
+name = "react-client"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# React's client for consuming streaming models, `react-client` (the Flight
+# client). Its modules are its files, each beside the JS rust-js writes from
+# it; its root declares them and writes no JS of its own.
+[lib]
+path = "client.rs"
+
+[dependencies]
+js.workspace = true
+shared.workspace = true
+webapi.workspace = true
+
+[lints]
+workspace = true
