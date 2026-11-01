@@ -30,6 +30,7 @@ use shared::react_types::{
     JSONValue, ReactAsyncInfo, ReactComponentInfo, ReactDebugInfo, ReactDebugInfoEntry,
     ReactErrorInfoDev, ReactIOInfo, ReactStackTrace, ReactTimeInfo, Thenable,
 };
+#[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
 use shared::react_version::REACT_VERSION;
 use webapi::{ConsoleTask, ReadableStreamController, UnderlyingSource, console, performance};
 

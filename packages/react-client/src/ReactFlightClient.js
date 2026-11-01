@@ -20,7 +20,7 @@ import {
   REACT_FRAGMENT_TYPE,
   REACT_LAZY_TYPE,
 } from 'shared/ReactSymbols';
-import REACT_VERSION from 'shared/ReactVersion';
+import ReactVersion from 'shared/ReactVersion';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import getPrototypeOf from 'shared/getPrototypeOf';
 import hasOwnProperty from 'shared/hasOwnProperty';
@@ -5533,7 +5533,7 @@ export function injectIntoDevTools() {
     currentDispatcherRef: ReactSharedInternals,
     // Enables DevTools to detect reconciler version rather than renderer version
     // which may not match for third party renderers.
-    reconcilerVersion: REACT_VERSION,
+    reconcilerVersion: ReactVersion,
     getCurrentComponentInfo: getCurrentOwnerInDEV,
   };
   return injectInternals(internals);
