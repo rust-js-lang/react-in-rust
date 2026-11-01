@@ -729,6 +729,14 @@ These forms are decided:
   `'shared/ReactFeatureFlags'`, not by its relative file with `.js`. rust-js
   is building it; until it lands, every cross-package import differs, and a
   regeneration then changes them all.
+- **rd365, `extend` of an indexed list** (the user, 2026-11-01): a
+  `Vec::extend` of a NodeList's items, the Fizz instruction set's
+  `suspensey_images.extend(node_list::iter(appearing_images))`, is an
+  index loop pushing each item, where upstream writes
+  `suspenseyImages.push.apply(suspenseyImages, appearingImages)`, which
+  throws a RangeError past the engine's argument limit while Rust's
+  `extend` never fails. rust-js is building it; rd274's inline strings
+  wait for it.
 
 ## Committing
 
