@@ -1,5 +1,11 @@
 //! React's isomorphic package, `react`: its modules, each its file's.
 
+// The experimental channel's entries, which hold code of their own.
+#[path = "index.experimental.rs"]
+pub mod index_experimental;
+#[path = "index.experimental.development.rs"]
+pub mod index_experimental_development;
+
 #[path = "src/BadMapPolyfill.rs"]
 pub mod bad_map_polyfill;
 #[path = "src/ReactAct.rs"]
