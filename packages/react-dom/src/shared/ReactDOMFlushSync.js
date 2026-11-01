@@ -17,8 +17,8 @@ function flushSyncImpl(fn) {
 
   try {
     ReactSharedInternals.T = null;
-    ReactDOMSharedInternals.p =
-      /* ReactDOMCurrentUpdatePriority */ DiscreteEventPriority;
+    ReactDOMSharedInternals.p /* ReactDOMCurrentUpdatePriority */ =
+      DiscreteEventPriority;
     if (fn != null) {
       return fn();
     }

@@ -370,7 +370,6 @@ const xlinkNamespace = 'http://www.w3.org/1999/xlink';
 const xmlNamespace = 'http://www.w3.org/XML/1998/namespace';
 
 function setProp(domElement, tag, key, value, props, prevValue) {
-  // Properties that should not be allowed on custom elements.
   switch (key) {
     case 'children':
       if (typeof value === 'string') {
@@ -888,6 +887,7 @@ function setProp(domElement, tag, key, value, props, prevValue) {
         value,
       );
       break;
+    // Properties that should not be allowed on custom elements.
     case 'is':
       if (__DEV__ && prevValue != null) {
         console.error(

@@ -188,13 +188,11 @@ Object.defineProperty(ReactPromise.prototype, 'then', {
     }
     let reason;
     if (chunk.status === 'fulfilled') {
-      // The status might have changed after initialization.
-      const value = chunk;
-      const value$1 = value.value;
+      const value = chunk.value;
       // A callback may read the chunk again, so it's called once the
       // state is no longer borrowed.
       if (resolve != null) {
-        resolve(value$1);
+        resolve(value);
       }
       return;
     }
@@ -203,15 +201,13 @@ Object.defineProperty(ReactPromise.prototype, 'then', {
       chunk.status === 'pending_weak' ||
       chunk.status === 'blocked'
     ) {
-      const value = chunk;
-      const value$1 = chunk;
       if (resolve != null) {
-        value.value ??= [];
-        value.value.push(resolve);
+        chunk.value ??= [];
+        chunk.value.push(resolve);
       }
       if (reject != null) {
-        value$1.reason ??= [];
-        value$1.reason.push(reject);
+        chunk.reason ??= [];
+        chunk.reason.push(reject);
       }
       return;
     }
@@ -219,11 +215,9 @@ Object.defineProperty(ReactPromise.prototype, 'then', {
       return;
     }
     if (chunk.status === 'rejected') {
-      const value = chunk;
-      reason = value.reason;
+      reason = chunk.reason;
     } else if (chunk.status === 'resolved_model') {
-      const value = chunk;
-      reason = value.reason;
+      reason = chunk.reason;
     } else {
       reason = undefined;
     }
@@ -661,9 +655,8 @@ function triggerErrorOnChunk(response, chunk, error) {
     chunk.status === 'pending_weak' ||
     chunk.status === 'blocked'
   ) {
-    const value = chunk;
-    const old = value.reason;
-    value.reason = null;
+    const old = chunk.reason;
+    chunk.reason = null;
     listeners = old;
   } else {
     listeners = undefined;
@@ -1044,12 +1037,10 @@ function initializeModelChunk(chunk) {
 
       let tmp;
       if (cyclicChunk.status === 'blocked') {
-        const value = cyclicChunk;
-        const value$1 = cyclicChunk;
-        const old = value.value;
-        value.value = null;
-        const old$1 = value$1.reason;
-        value$1.reason = null;
+        const old = cyclicChunk.value;
+        cyclicChunk.value = null;
+        const old$1 = cyclicChunk.reason;
+        cyclicChunk.reason = null;
         tmp = [old, old$1];
       } else {
         tmp = [undefined, undefined];
@@ -1115,9 +1106,8 @@ function initializeModelChunk(chunk) {
           };
           if (borrowMut.value.status === 'blocked') {
             const value = borrowMut.value;
-            const value$1 = borrowMut.value;
-            value.value = deferred;
-            value$1.reason = rejectListeners;
+            borrowMut.value.value = deferred;
+            value.reason = rejectListeners;
           }
         }
         if (cyclic != null) {
@@ -1593,9 +1583,8 @@ function getWeakChunk(response, id) {
 function initializeBlockedChunk(response, chunk, value, reason) {
   let resolveListeners;
   if (chunk.status === 'blocked') {
-    const value = chunk;
-    const old = value.value;
-    value.value = null;
+    const old = chunk.value;
+    chunk.value = null;
     resolveListeners = old;
   } else {
     resolveListeners = undefined;
@@ -1710,18 +1699,16 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
             referencedChunk.status === 'pending' ||
             referencedChunk.status === 'pending_weak'
           ) {
-            const value = referencedChunk;
-            const value$1 = referencedChunk;
-            if (value.value == null) {
-              value.value = [reference];
+            if (referencedChunk.value == null) {
+              referencedChunk.value = [reference];
             } else {
-              const listeners = value.value;
+              const listeners = referencedChunk.value;
               listeners.push(reference);
             }
-            if (value$1.reason == null) {
-              value$1.reason = [reference];
+            if (referencedChunk.reason == null) {
+              referencedChunk.reason = [reference];
             } else {
-              const listeners = value$1.reason;
+              const listeners = referencedChunk.reason;
               listeners.push(reference);
             }
           }
@@ -1962,18 +1949,16 @@ function waitForReference(
     referencedChunk.status === 'pending' ||
     referencedChunk.status === 'pending_weak'
   ) {
-    const value = referencedChunk;
-    const value$1 = referencedChunk;
-    if (value.value == null) {
-      value.value = [reference];
+    if (referencedChunk.value == null) {
+      referencedChunk.value = [reference];
     } else {
-      const listeners = value.value;
+      const listeners = referencedChunk.value;
       listeners.push(reference);
     }
-    if (value$1.reason == null) {
-      value$1.reason = [reference];
+    if (referencedChunk.reason == null) {
+      referencedChunk.reason = [reference];
     } else {
-      const listeners = value$1.reason;
+      const listeners = referencedChunk.reason;
       listeners.push(reference);
     }
   }
@@ -2572,7 +2557,6 @@ function parseModelString(response, parentObject, key, value) {
       return REACT_ELEMENT_TYPE;
     }
     const tag = value[1];
-    // eslint-disable-next-line no-eval
     switch (tag) {
       case '$':
         // This was an escaped string value.
@@ -2769,6 +2753,7 @@ function parseModelString(response, parentObject, key, value) {
           // and name.
           if (!mightHaveStaticConstructor.test(code)) {
             try {
+              // eslint-disable-next-line no-eval
               return (0, eval)(code);
             } catch {}
           }
@@ -3194,12 +3179,10 @@ function resolveModule(response, id, model, streamState) {
       const blockedChunk$1 = chunk;
       let tmp;
       if (blockedChunk$1.status === 'pending') {
-        const value = blockedChunk$1;
-        const value$1 = blockedChunk$1;
-        const old = value.value;
-        value.value = null;
-        const old$1 = value$1.reason;
-        value$1.reason = null;
+        const old = blockedChunk$1.value;
+        blockedChunk$1.value = null;
+        const old$1 = blockedChunk$1.reason;
+        blockedChunk$1.reason = null;
         tmp = [old, old$1];
       } else {
         tmp = [undefined, undefined];
@@ -3253,10 +3236,8 @@ function resolveStream(response, id, stream, controller, streamState) {
     // We already resolved. We didn't expect to see this.
     return;
   }
-
-  const value = chunk;
-  const old = value.value;
-  value.value = null;
+  const old = chunk.value;
+  chunk.value = null;
   const resolveListeners = old;
 
   if (__DEV__) {
@@ -5026,11 +5007,6 @@ function processFullBinaryRow(response, streamState, id, tag, buffer, chunk) {
 }
 
 function processFullStringRow(response, streamState, id, tag, row) {
-  // Fallthrough
-  // Fallthrough
-  // Fallthrough
-  // Fallthrough
-  // Fallthrough
   switch (tag) {
     case 73 /* "I" */:
       resolveModule(response, id, row, streamState);
@@ -5080,18 +5056,23 @@ function processFullStringRow(response, streamState, id, tag, row) {
     case 82 /* "R" */:
       startReadableStream(response, id, undefined, streamState);
       break;
+    // Fallthrough
     case 114 /* "r" */:
       startReadableStream(response, id, 'bytes', streamState);
       break;
+    // Fallthrough
     case 88 /* "X" */:
       startAsyncIterable(response, id, false, streamState);
       break;
+    // Fallthrough
     case 120 /* "x" */:
       startAsyncIterable(response, id, true, streamState);
       break;
+    // Fallthrough
     case 67 /* "C" */:
       stopStream(response, id, row);
       break;
+    // Fallthrough
     default:
       if (__DEV__ && !row) {
         resolveDebugHalt(response, id);
