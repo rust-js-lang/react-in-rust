@@ -1078,10 +1078,8 @@ fn trigger_error_on_chunk(
     {
         // Lazily initialize any debug info and block the initializing chunk on any unresolved entries.
         if chunk._debug_chunk.borrow().is_some() {
-            let _restore = RestoreInitializing {
-                handler: INITIALIZING_HANDLER.take(),
-                chunk: Some(INITIALIZING_CHUNK.with_borrow(Clone::clone)),
-            };
+            let prev_handler = INITIALIZING_HANDLER.take();
+            let prev_chunk = INITIALIZING_CHUNK.with_borrow(Clone::clone);
             let cyclic_chunk = chunk;
             *cyclic_chunk.state.borrow_mut() = ChunkState::Blocked {
                 value: None,
@@ -1093,6 +1091,10 @@ fn trigger_error_on_chunk(
             {
                 INITIALIZING_CHUNK.set(Some(Rc::clone(cyclic_chunk)));
             }
+            let _restore = RestoreInitializingDebug {
+                prev_handler,
+                prev_chunk,
+            };
             initialize_debug_chunk(response, chunk);
             if let Some(initializing_handler) = INITIALIZING_HANDLER.with_borrow(Clone::clone) {
                 if initializing_handler.errored.get() {
@@ -1374,19 +1376,44 @@ thread_local! {
     static IS_INITIALIZING_DEBUG_INFO: Cell<bool> = const { Cell::new(false) };
 }
 
-/// Upstream's `finally { initializingHandler = prevHandler; initializingChunk
-/// = prevChunk; }`: a guard restoring both as it's dropped.
+/// Upstream's `finally { initializingHandler = prevHandler; initializingChunk = prevChunk; }`.
+struct RestoreInitializingDebug {
+    prev_handler: Option<Rc<InitializationHandler>>,
+    prev_chunk: Option<Chunk>,
+}
+
+impl Drop for RestoreInitializingDebug {
+    fn drop(&mut self) {
+        INITIALIZING_HANDLER.set(self.prev_handler.take());
+        INITIALIZING_CHUNK.set(self.prev_chunk.take());
+    }
+}
+
+/// initializeModelChunk's `finally`, whose chunk is restored where it's tracked.
 struct RestoreInitializing {
-    handler: Option<Rc<InitializationHandler>>,
-    chunk: Option<Option<Chunk>>,
+    prev_handler: Option<Rc<InitializationHandler>>,
+    prev_chunk: Option<Chunk>,
 }
 
 impl Drop for RestoreInitializing {
     fn drop(&mut self) {
-        INITIALIZING_HANDLER.set(self.handler.take());
-        if let Some(chunk) = self.chunk.take() {
-            INITIALIZING_CHUNK.set(chunk);
+        INITIALIZING_HANDLER.set(self.prev_handler.take());
+        if (ENABLE_PROFILER_TIMER.with(|&enabled| enabled) && ENABLE_COMPONENT_PERFORMANCE_TRACK)
+            || __DEV__
+        {
+            INITIALIZING_CHUNK.set(self.prev_chunk.take());
         }
+    }
+}
+
+/// resolveModule's `finally { initializingHandler = prevHandler; }`.
+struct RestoreInitializingHandler {
+    prev_handler: Option<Rc<InitializationHandler>>,
+}
+
+impl Drop for RestoreInitializingHandler {
+    fn drop(&mut self) {
+        INITIALIZING_HANDLER.set(self.prev_handler.take());
     }
 }
 
@@ -1504,17 +1531,8 @@ fn map_initialize_debug_info(
 }
 
 fn initialize_model_chunk(chunk: &Chunk) {
-    let _restore = RestoreInitializing {
-        handler: INITIALIZING_HANDLER.take(),
-        chunk: if (ENABLE_PROFILER_TIMER.with(|&enabled| enabled)
-            && ENABLE_COMPONENT_PERFORMANCE_TRACK)
-            || __DEV__
-        {
-            Some(INITIALIZING_CHUNK.with_borrow(Clone::clone))
-        } else {
-            None
-        },
-    };
+    let prev_handler = INITIALIZING_HANDLER.take();
+    let prev_chunk = INITIALIZING_CHUNK.with_borrow(Clone::clone);
 
     let (resolved_model, response_holder) = match &*chunk.state.borrow() {
         ChunkState::ResolvedModel { value, reason } => (value.clone(), *reason),
@@ -1538,6 +1556,10 @@ fn initialize_model_chunk(chunk: &Chunk) {
     {
         INITIALIZING_CHUNK.set(Some(Rc::clone(cyclic_chunk)));
     }
+    let _restore = RestoreInitializing {
+        prev_handler,
+        prev_chunk,
+    };
 
     if __DEV__ {
         // Initialize any debug info and block the initializing chunk on any
@@ -4333,11 +4355,9 @@ fn resolve_module(
 ) {
     let chunks = response._chunks.get().unwrap();
     let chunk = chunks.get(&id);
+    let prev_handler = INITIALIZING_HANDLER.take();
     let client_reference_metadata = {
-        let _restore = RestoreInitializing {
-            handler: INITIALIZING_HANDLER.take(),
-            chunk: None,
-        };
+        let _restore = RestoreInitializingHandler { prev_handler };
         let client_reference_metadata = parse_model(response, &model);
         if INITIALIZING_HANDLER.with_borrow(Option::is_some) {
             // We resolve the client reference below and have nothing to wait on,
@@ -4447,10 +4467,8 @@ fn resolve_stream(
         // Initialize any debug info and block the initializing chunk on any
         // unresolved entries.
         if chunk._debug_chunk.borrow().clone().is_some() {
-            let _restore = RestoreInitializing {
-                handler: INITIALIZING_HANDLER.take(),
-                chunk: Some(INITIALIZING_CHUNK.with_borrow(Clone::clone)),
-            };
+            let prev_handler = INITIALIZING_HANDLER.take();
+            let prev_chunk = INITIALIZING_CHUNK.with_borrow(Clone::clone);
             let cyclic_chunk = &chunk;
             *cyclic_chunk.state.borrow_mut() = ChunkState::Blocked {
                 value: None,
@@ -4462,6 +4480,10 @@ fn resolve_stream(
             {
                 INITIALIZING_CHUNK.set(Some(Rc::clone(cyclic_chunk)));
             }
+            let _restore = RestoreInitializingDebug {
+                prev_handler,
+                prev_chunk,
+            };
             initialize_debug_chunk(response, &chunk);
             if let Some(initializing_handler) = INITIALIZING_HANDLER.with_borrow(Clone::clone) {
                 if initializing_handler.errored.get() {

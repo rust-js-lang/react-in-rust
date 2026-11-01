@@ -75,8 +75,6 @@ import {
   $rangeNextBack,
   $resize,
   $slice,
-  $some,
-  $someValue,
   $splice,
   $truncate,
   $try,
@@ -678,12 +676,9 @@ function triggerErrorOnChunk(response, chunk, error) {
   ) {
     // Lazily initialize any debug info and block the initializing chunk on any unresolved entries.
     if (chunk._debugChunk != null) {
-      const old = initializingHandler;
+      const prevHandler = initializingHandler;
       initializingHandler = null;
-      const _restore = {
-        handler: old,
-        chunk: $some(initializingChunk),
-      };
+      const prevChunk = initializingChunk;
       const cyclicChunk = chunk;
       cyclicChunk.status = 'blocked';
       cyclicChunk.value = null;
@@ -701,13 +696,8 @@ function triggerErrorOnChunk(response, chunk, error) {
           }
         }
       } finally {
-        const old = _restore.handler;
-        initializingHandler = old ?? null;
-        if (_restore.chunk != null) {
-          const old = _restore.chunk;
-          const chunk = $someValue(old);
-          initializingChunk = chunk ?? null;
-        }
+        initializingHandler = prevHandler ?? null;
+        initializingChunk = prevChunk ?? null;
       }
     }
   }
@@ -1013,45 +1003,29 @@ function mapInitializeDebugInfo(response, model, parentObject, key) {
 }
 
 function initializeModelChunk(chunk) {
-  const old = initializingHandler;
+  const prevHandler = initializingHandler;
   initializingHandler = null;
-  const _restore = {
-    handler: old,
-    chunk:
-      (enableProfilerTimer && enableComponentPerformanceTrack) || __DEV__
-        ? $some(initializingChunk)
-        : undefined,
-  };
+  const prevChunk = initializingChunk;
   if (chunk.status !== 'resolved_model') {
-    const old = _restore.handler;
-    _restore.handler = undefined;
-    initializingHandler = old ?? null;
-    if (_restore.chunk != null) {
-      const old = _restore.chunk;
-      _restore.chunk = undefined;
-      const chunk = $someValue(old);
-      initializingChunk = chunk ?? null;
-    }
     throw new Error(
       'internal error: entered unreachable code: a resolved model chunk',
     );
   }
   const {value: resolvedModel, reason: responseHolder} = chunk;
+  const response = responseHolder[RESPONSE_SYMBOL];
+
+  // We go to the BLOCKED state until we've fully resolved this.
+  // We do this before parsing in case we try to initialize the same chunk
+  // while parsing the model. Such as in a cyclic reference.
+  const cyclicChunk = chunk;
+  cyclicChunk.status = 'blocked';
+  cyclicChunk.value = null;
+  cyclicChunk.reason = null;
+
+  if ((enableProfilerTimer && enableComponentPerformanceTrack) || __DEV__) {
+    initializingChunk = cyclicChunk;
+  }
   try {
-    const response = responseHolder[RESPONSE_SYMBOL];
-
-    // We go to the BLOCKED state until we've fully resolved this.
-    // We do this before parsing in case we try to initialize the same chunk
-    // while parsing the model. Such as in a cyclic reference.
-    const cyclicChunk = chunk;
-    cyclicChunk.status = 'blocked';
-    cyclicChunk.value = null;
-    cyclicChunk.reason = null;
-
-    if ((enableProfilerTimer && enableComponentPerformanceTrack) || __DEV__) {
-      initializingChunk = cyclicChunk;
-    }
-
     if (__DEV__) {
       // Initialize any debug info and block the initializing chunk on any
       // unresolved entries.
@@ -1196,12 +1170,10 @@ function initializeModelChunk(chunk) {
       erroredChunk.reason = reason;
     }
   } finally {
-    const old = _restore.handler;
-    initializingHandler = old ?? null;
-    if (_restore.chunk != null) {
-      const old = _restore.chunk;
-      const chunk = $someValue(old);
-      initializingChunk = chunk ?? null;
+    initializingHandler = prevHandler ?? null;
+    if ((enableProfilerTimer && enableComponentPerformanceTrack) || __DEV__) {
+      const old = prevChunk;
+      initializingChunk = old ?? null;
     }
   }
 }
@@ -3223,11 +3195,8 @@ function resolveBuffer(response, id, buffer, streamState) {
 function resolveModule(response, id, model, streamState) {
   const chunks = $unwrap(response._chunks);
   const chunk = chunks.get(id);
-  const old = initializingHandler;
+  const prevHandler = initializingHandler;
   initializingHandler = null;
-  const _restore = {
-    handler: old,
-  };
   let clientReferenceMetadata;
   try {
     const clientReferenceMetadata$1 = parseModel(response, model);
@@ -3241,13 +3210,7 @@ function resolveModule(response, id, model, streamState) {
     }
     clientReferenceMetadata = clientReferenceMetadata$1;
   } finally {
-    const old = _restore.handler;
-    initializingHandler = old ?? null;
-    if (_restore.chunk != null) {
-      const old = _restore.chunk;
-      const chunk = $someValue(old);
-      initializingChunk = chunk ?? null;
-    }
+    initializingHandler = prevHandler ?? null;
   }
   const clientReference = resolveClientReference(
     response._bundlerConfig,
@@ -3351,12 +3314,9 @@ function resolveStream(response, id, stream, controller, streamState) {
     // Initialize any debug info and block the initializing chunk on any
     // unresolved entries.
     if (chunk._debugChunk != null) {
-      const old = initializingHandler;
+      const prevHandler = initializingHandler;
       initializingHandler = null;
-      const _restore = {
-        handler: old,
-        chunk: $some(initializingChunk),
-      };
+      const prevChunk = initializingChunk;
       const cyclicChunk = chunk;
       cyclicChunk.status = 'blocked';
       cyclicChunk.value = null;
@@ -3379,13 +3339,8 @@ function resolveStream(response, id, stream, controller, streamState) {
           }
         }
       } finally {
-        const old = _restore.handler;
-        initializingHandler = old ?? null;
-        if (_restore.chunk != null) {
-          const old = _restore.chunk;
-          const chunk = $someValue(old);
-          initializingChunk = chunk ?? null;
-        }
+        initializingHandler = prevHandler ?? null;
+        initializingChunk = prevChunk ?? null;
       }
     }
   }
