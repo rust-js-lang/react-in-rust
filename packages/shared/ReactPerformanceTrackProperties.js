@@ -179,12 +179,8 @@ export function addValueToProperties(
           if (kind === 'Primitive' || kind === 'Empty') {
             desc = $unwrap(
               didTruncate
-                ? JSON.stringify(
-                    [...value.slice(0, OBJECT_WIDTH_LIMIT), '…'],
-                    null,
-                    0,
-                  )
-                : JSON.stringify(value, null, 0),
+                ? JSON.stringify([...value.slice(0, OBJECT_WIDTH_LIMIT), '…'])
+                : JSON.stringify(value),
             );
             break;
           } else if (kind === 'Entries') {

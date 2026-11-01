@@ -310,9 +310,7 @@ export function createRenderState(
     );
     importMapChunks.push(
       stringToChunk(
-        escapeEntireInlineScriptContent(
-          JSON.stringify(importMap, null, 0) ?? '',
-        ),
+        escapeEntireInlineScriptContent(JSON.stringify(importMap) ?? ''),
       ),
     );
     importMapChunks.push(importMapScriptEnd);
@@ -4729,7 +4727,7 @@ function escapeJSStringsForInstructionScripts(input) {
 const regexForJSStringsInScripts = new RegExp('[&><\u2028\u2029]', 'g');
 
 function escapeJSObjectForInstructionScripts(input) {
-  const escaped = JSON.stringify(input, null, 0) ?? '';
+  const escaped = JSON.stringify(input) ?? '';
   return escaped.replace(regexForJSStringsInScripts, match => {
     switch (match) {
       case '&':

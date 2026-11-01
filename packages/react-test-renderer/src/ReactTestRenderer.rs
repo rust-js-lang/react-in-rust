@@ -434,7 +434,7 @@ impl ReactTestInstance {
             &format!(
                 "with props: {}",
                 js::shown(
-                    js::json::stringify_with(props, None, 0)
+                    js::json::stringify(props)
                         .unwrap()
                         .as_deref()
                         .map(js::unknown)

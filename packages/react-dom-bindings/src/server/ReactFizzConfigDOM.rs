@@ -695,9 +695,7 @@ pub fn create_render_state(
         import_map_chunks
             .borrow_mut()
             .push(string_to_chunk(&escape_entire_inline_script_content(
-                &js::json::stringify_with(map, None, 0)
-                    .unwrap()
-                    .unwrap_or_default(),
+                &js::json::stringify(map).unwrap().unwrap_or_default(),
             )));
         import_map_chunks
             .borrow_mut()
@@ -5431,9 +5429,7 @@ thread_local! {
 
 #[cfg_attr(rust_js, rust_js::name = "escapeJSObjectForInstructionScripts")]
 fn escape_js_object_for_instruction_scripts(input: &Unknown) -> String {
-    let escaped = js::json::stringify_with(input, None, 0)
-        .unwrap()
-        .unwrap_or_default();
+    let escaped = js::json::stringify(input).unwrap().unwrap_or_default();
     REGEX_FOR_JS_STRINGS_IN_SCRIPTS.with(|regex| {
         js::reg_exp::replace(&escaped, regex, |r#match: &str| match r#match {
             // santizing breaking out of strings and script tags

@@ -344,7 +344,7 @@ ReactTestInstance.prototype.findByType = function (type) {
 ReactTestInstance.prototype.findByProps = function (props) {
   return expectOne(
     this.findAllByProps(props, {deep: false}),
-    `with props: ${JSON.stringify(props, null, 0)}`,
+    `with props: ${JSON.stringify(props)}`,
   );
 };
 
