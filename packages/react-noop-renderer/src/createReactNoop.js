@@ -31,14 +31,7 @@ import {
 import ReactVersion from '../../shared/ReactVersion.js';
 import isArray from '../../shared/isArray.js';
 import * as DefaultConfig from './ReactFiberConfigNoop.js';
-import {
-  $displayF64,
-  $extend,
-  $insertAt,
-  $position,
-  $removeAt,
-  $unwrap,
-} from '@rust-js/runtime';
+import {$displayF64, $extend, $unwrap} from '@rust-js/runtime';
 
 const NO_CONTEXT = {};
 const UPPERCASE_CONTEXT = {};
@@ -63,9 +56,9 @@ function createReactNoop(reconciler, useMutation) {
     }
     child.parent = parentId;
     const children = parentInstance.children;
-    const index = $position(children, c => c === child);
-    if (index != null) {
-      $removeAt(children, index);
+    const index = children.indexOf(child);
+    if (index !== -1) {
+      children.splice(index, 1);
     }
     children.push(child);
   }
@@ -96,15 +89,15 @@ function createReactNoop(reconciler, useMutation) {
     beforeChild,
   ) {
     const children = parentInstance.children;
-    const index = $position(children, c => c === child);
-    if (index != null) {
-      $removeAt(children, index);
+    const index = children.indexOf(child);
+    if (index !== -1) {
+      children.splice(index, 1);
     }
-    const beforeIndex = $position(children, c => c === beforeChild);
-    if (beforeIndex == null) {
+    const beforeIndex = children.indexOf(beforeChild);
+    if (beforeIndex === -1) {
       throw new Error('This child does not exist.');
     }
-    $insertAt(children, beforeIndex, child);
+    children.splice(beforeIndex, 0, child);
   }
 
   function insertInContainerBefore(parentInstance, child, beforeChild) {
@@ -133,11 +126,11 @@ function createReactNoop(reconciler, useMutation) {
 
   function removeChildFromContainerOrInstance(parentInstance, child) {
     const children = parentInstance.children;
-    const index = $position(children, c => c === child);
-    if (index == null) {
+    const index = children.indexOf(child);
+    if (index === -1) {
       throw new Error('This child does not exist.');
     }
-    $removeAt(children, index);
+    children.splice(index, 1);
   }
 
   function removeChildFromContainer(parentInstance, child) {

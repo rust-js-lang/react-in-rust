@@ -56,18 +56,19 @@ export function getValueForAttributeOnCustomComponent(node, name, expected) {
       return;
     }
     if (!node.hasAttribute(name)) {
-      if (typeof expected !== 'boolean') {
-        // shouldRemoveAttribute
-        if (typeof expected === 'symbol' || typeof expected === 'object') {
+      // shouldRemoveAttribute
+      switch (typeof expected) {
+        case 'symbol':
+        case 'object':
           // Symbols and objects are ignored when they're emitted so
           // it would be expected that they end up not having an attribute.
           return expected;
-        }
-        if (typeof expected === 'function') {
+        case 'function':
           return expected;
-        }
-      } else if (expected === false) {
-        return expected;
+        case 'boolean':
+          if (expected === false) {
+            return expected;
+          }
       }
       return expected === undefined ? undefined : null;
     }

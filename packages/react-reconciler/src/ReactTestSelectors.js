@@ -23,13 +23,7 @@ import {
   HostSingleton,
   HostText,
 } from './ReactWorkTags.js';
-import {
-  $index,
-  $position,
-  $removeAt,
-  $withBorrow,
-  $withBorrowMut,
-} from '@rust-js/runtime';
+import {$index, $withBorrow, $withBorrowMut} from '@rust-js/runtime';
 
 let COMPONENT_TYPE = 0b000;
 let HAS_PSEUDO_CLASS_TYPE = 0b001;
@@ -541,9 +535,9 @@ export function observeVisibleRects(hostRoot, selectors, callback, options) {
       $withBorrowMut(
         commitHooks,
         commitHooks => {
-          const index = $position(commitHooks, hook => hook === commitHook);
-          if (index != null) {
-            $removeAt(commitHooks, index);
+          const index = commitHooks.indexOf(commitHook);
+          if (index !== -1) {
+            commitHooks.splice(index, 1);
           }
         },
         true,

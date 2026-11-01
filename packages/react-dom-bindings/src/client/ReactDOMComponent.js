@@ -1413,21 +1413,21 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
       let defaultChecked = null;
       for (const propKey in lastProps) {
         const lastProp = lastProps[propKey];
-        if (
-          lastProps.hasOwnProperty(propKey) &&
-          lastProp != null &&
-          propKey !== 'checked'
-        ) {
-          if (propKey === 'value') {
-            // This is handled by updateWrapper below.
-          } else {
-            if (propKey === 'defaultValue') {
-              lastDefaultValue = lastProp;
-            }
-            // defaultChecked and defaultValue are ignored by setProp
-            if (!nextProps.hasOwnProperty(propKey)) {
-              setProp(domElement, tag, propKey, null, nextProps, lastProp);
-            }
+        if (lastProps.hasOwnProperty(propKey) && lastProp != null) {
+          switch (propKey) {
+            case 'checked':
+              break;
+            case 'value':
+              // This is handled by updateWrapper below.
+              break;
+            default:
+              if (propKey === 'defaultValue') {
+                lastDefaultValue = lastProp;
+              }
+              // defaultChecked and defaultValue are ignored by setProp
+              if (!nextProps.hasOwnProperty(propKey)) {
+                setProp(domElement, tag, propKey, null, nextProps, lastProp);
+              }
           }
         }
       }
@@ -1972,16 +1972,19 @@ function hydrateAttribute(
   } else if (value == null) {
     // We had an attribute but shouldn't have had one, so read it
     // for the error message.
-  } else if (
-    typeof value !== 'function' &&
-    typeof value !== 'symbol' &&
-    typeof value !== 'boolean'
-  ) {
-    if (__DEV__) {
-      checkAttributeStringCoercion(value, propKey);
-    }
-    if (serverValue === '' + value) {
-      return;
+  } else {
+    switch (typeof value) {
+      case 'function':
+      case 'symbol':
+      case 'boolean':
+        break;
+      default:
+        if (__DEV__) {
+          checkAttributeStringCoercion(value, propKey);
+        }
+        if (serverValue === '' + value) {
+          return;
+        }
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
@@ -2006,12 +2009,18 @@ function hydrateBooleanAttribute(
     if (!value) {
       return;
     }
-  } else if (typeof value !== 'function' && typeof value !== 'symbol') {
-    if (value) {
-      // If this was a boolean, it doesn't matter what the value is
-      // the fact that we have it is the same as the expected.
-      // As long as it's positive.
-      return;
+  } else {
+    switch (typeof value) {
+      case 'function':
+      case 'symbol':
+        break;
+      default:
+        if (value) {
+          // If this was a boolean, it doesn't matter what the value is
+          // the fact that we have it is the same as the expected.
+          // As long as it's positive.
+          return;
+        }
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
@@ -2040,16 +2049,23 @@ function hydrateOverloadedBooleanAttribute(
   } else if (value == null) {
     // We had an attribute but shouldn't have had one, so read it
     // for the error message.
-  } else if (typeof value === 'boolean') {
-    if (value === true && serverValue === '') {
-      return;
-    }
-  } else if (typeof value !== 'function' && typeof value !== 'symbol') {
-    if (__DEV__) {
-      checkAttributeStringCoercion(value, propKey);
-    }
-    if (serverValue === '' + value) {
-      return;
+  } else {
+    switch (typeof value) {
+      case 'function':
+      case 'symbol':
+        break;
+      case 'boolean':
+        if (value === true && serverValue === '') {
+          return;
+        }
+        break;
+      default:
+        if (__DEV__) {
+          checkAttributeStringCoercion(value, propKey);
+        }
+        if (serverValue === '' + value) {
+          return;
+        }
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
@@ -2075,12 +2091,18 @@ function hydrateBooleanishAttribute(
   } else if (value == null) {
     // We had an attribute but shouldn't have had one, so read it
     // for the error message.
-  } else if (typeof value !== 'function' && typeof value !== 'symbol') {
-    if (__DEV__) {
-      checkAttributeStringCoercion(value, attributeName);
-    }
-    if (serverValue === '' + value) {
-      return;
+  } else {
+    switch (typeof value) {
+      case 'function':
+      case 'symbol':
+        break;
+      default:
+        if (__DEV__) {
+          checkAttributeStringCoercion(value, attributeName);
+        }
+        if (serverValue === '' + value) {
+          return;
+        }
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
@@ -2110,21 +2132,24 @@ function hydrateNumericAttribute(
   } else if (value == null) {
     // We had an attribute but shouldn't have had one, so read it
     // for the error message.
-  } else if (
-    typeof value !== 'function' &&
-    typeof value !== 'symbol' &&
-    typeof value !== 'boolean'
-  ) {
-    if (isNaN(value)) {
-      // We had an attribute but shouldn't have had one, so read it
-      // for the error message.
-    } else {
-      if (__DEV__) {
-        checkAttributeStringCoercion(value, propKey);
-      }
-      if (serverValue === '' + value) {
-        return;
-      }
+  } else {
+    switch (typeof value) {
+      case 'function':
+      case 'symbol':
+      case 'boolean':
+        break;
+      default:
+        if (isNaN(value)) {
+          // We had an attribute but shouldn't have had one, so read it
+          // for the error message.
+        } else {
+          if (__DEV__) {
+            checkAttributeStringCoercion(value, propKey);
+          }
+          if (serverValue === '' + value) {
+            return;
+          }
+        }
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
@@ -2154,21 +2179,24 @@ function hydratePositiveNumericAttribute(
   } else if (value == null) {
     // We had an attribute but shouldn't have had one, so read it
     // for the error message.
-  } else if (
-    typeof value !== 'function' &&
-    typeof value !== 'symbol' &&
-    typeof value !== 'boolean'
-  ) {
-    if (isNaN(value) || value < 1) {
-      // We had an attribute but shouldn't have had one, so read it
-      // for the error message.
-    } else {
-      if (__DEV__) {
-        checkAttributeStringCoercion(value, propKey);
-      }
-      if (serverValue === '' + value) {
-        return;
-      }
+  } else {
+    switch (typeof value) {
+      case 'function':
+      case 'symbol':
+      case 'boolean':
+        break;
+      default:
+        if (isNaN(value) || value < 1) {
+          // We had an attribute but shouldn't have had one, so read it
+          // for the error message.
+        } else {
+          if (__DEV__) {
+            checkAttributeStringCoercion(value, propKey);
+          }
+          if (serverValue === '' + value) {
+            return;
+          }
+        }
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
@@ -2195,17 +2223,21 @@ function hydrateSanitizedAttribute(
   } else if (value == null) {
     // We had an attribute but shouldn't have had one, so read it
     // for the error message.
-  } else if (
-    typeof value !== 'function' &&
-    typeof value !== 'symbol' &&
-    typeof value !== 'boolean'
-  ) {
-    if (__DEV__) {
-      checkAttributeStringCoercion(value, propKey);
-    }
-    const sanitizedValue = sanitizeURL('' + value);
-    if (serverValue === sanitizedValue) {
-      return;
+  } else {
+    switch (typeof value) {
+      case 'function':
+      case 'symbol':
+      case 'boolean':
+        break;
+      default: {
+        if (__DEV__) {
+          checkAttributeStringCoercion(value, propKey);
+        }
+        const sanitizedValue = sanitizeURL('' + value);
+        if (serverValue === sanitizedValue) {
+          return;
+        }
+      }
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
