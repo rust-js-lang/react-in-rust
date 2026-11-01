@@ -87,10 +87,12 @@ fn get_active_element_deep(container_info: Option<&Node>) -> Option<&'static Ele
     element
 }
 
-// @ReactInputSelection: React input selection module. Based on Selection.js,
-// but modified to be suitable for react and has a couple of bug fixes (doesn't
-// assume buttons have range selections allowed).
-// Input selection module for React.
+/*
+ * @ReactInputSelection: React input selection module. Based on Selection.js,
+ * but modified to be suitable for react and has a couple of bug fixes (doesn't
+ * assume buttons have range selections allowed).
+ * Input selection module for React.
+ */
 
 /// @hasSelectionCapabilities: we get the element types that support selection
 /// from https://html.spec.whatwg.org/#do-not-apply, looking at `selectionStart`

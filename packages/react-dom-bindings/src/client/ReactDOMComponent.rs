@@ -32,6 +32,7 @@ use crate::react_controlled_value_prop_types::check_controlled_value_props;
 use crate::react_dom_input::{
     init_input, restore_controlled_input_state, update_input, validate_input_props,
 };
+#[cfg_attr(rust_js, rust_js::name = "validateARIAProperties")]
 use crate::react_dom_invalid_aria_hook::validate_properties as validate_aria_properties;
 use crate::react_dom_null_input_value_prop_hook::validate_properties as validate_input_properties;
 use crate::react_dom_option::validate_option_props;

@@ -7,10 +7,12 @@
 
 import type {Offsets} from './ReactDOMSelection.js';
 
-// @ReactInputSelection: React input selection module. Based on Selection.js,
-// but modified to be suitable for react and has a couple of bug fixes (doesn't
-// assume buttons have range selections allowed).
-// Input selection module for React.
+/*
+ * @ReactInputSelection: React input selection module. Based on Selection.js,
+ * but modified to be suitable for react and has a couple of bug fixes (doesn't
+ * assume buttons have range selections allowed).
+ * Input selection module for React.
+ */
 
 /**
  * @hasSelectionCapabilities: we get the element types that support selection

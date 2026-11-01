@@ -26,7 +26,7 @@ import {
   registrationNameDependencies,
 } from '../events/EventRegistry.js';
 import {checkControlledValueProps} from '../shared/ReactControlledValuePropTypes.js';
-import {validateProperties as validateAriaProperties} from '../shared/ReactDOMInvalidARIAHook.js';
+import {validateProperties as validateARIAProperties} from '../shared/ReactDOMInvalidARIAHook.js';
 import {validateProperties as validateInputProperties} from '../shared/ReactDOMNullInputValuePropHook.js';
 import {validateProperties as validateUnknownProperties} from '../shared/ReactDOMUnknownPropertyHook.js';
 import getAttributeAlias from '../shared/getAttributeAlias.js';
@@ -82,7 +82,7 @@ let didWarnPopoverTargetObject = false;
 
 function validatePropertiesInDevelopment(type, props) {
   if (__DEV__) {
-    validateAriaProperties(type, props);
+    validateARIAProperties(type, props);
     validateInputProperties(type, props);
     validateUnknownProperties(type, props, {
       registrationNameDependencies,
