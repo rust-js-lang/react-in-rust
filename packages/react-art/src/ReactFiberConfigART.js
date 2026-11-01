@@ -352,9 +352,8 @@ export function appendInitialChild(parentInstance, child) {
   if (typeof child === 'string') {
     // Noop for string children of Text (eg <Text>{'foo'}{'bar'}</Text>)
     throw new Error('Text children should already be flattened.');
-  } else {
-    child.inject(parentInstance);
   }
+  child.inject(parentInstance);
 }
 
 export function createInstance(type, props, internalInstanceHandle) {
