@@ -160,9 +160,16 @@ impl PartialEq for Node {
 impl Eq for Node {}
 
 impl Node {
+    /// `node.parentNode`: the group or surface it's in, `null` once it's
+    /// ejected, absent where it was never injected.
+    #[cfg_attr(rust_js, rust_js::link_name = "get parentNode")]
+    pub fn parent_node(&self) -> Option<&'static Unknown> {
+        unreachable!()
+    }
+
     /// `node.inject(container)`: appended to a group or a surface.
     #[cfg_attr(rust_js, rust_js::link_name = "inject")]
-    pub fn inject(&self, container: &JsObject) -> &'static Node {
+    pub fn inject(&self, container: &impl Container) -> &'static Node {
         unreachable!()
     }
 
@@ -203,12 +210,13 @@ impl Node {
     }
 
     /// `node.subscribe(type, fn, bind)`: `fn` called with `bind` as its
-    /// `this` for each event of `type`; what it gives unsubscribes.
+    /// `this` for each event of `type`, an event's name or an object of
+    /// names and their functions; what it gives unsubscribes.
     #[cfg_attr(rust_js, rust_js::link_name = "subscribe")]
     pub fn subscribe(
         &self,
-        r#type: &str,
-        r#fn: &'static dyn Fn(&Unknown),
+        r#type: Option<&Unknown>,
+        r#fn: &'static dyn Fn(&'static Unknown),
         bind: &Node,
     ) -> &'static dyn Fn() {
         unreachable!()
@@ -315,6 +323,13 @@ impl Node {
     }
 }
 
+/// What a node is injected into: a group, another node, or a surface.
+pub trait Container: js::Defined {}
+
+impl Container for Node {}
+
+impl Container for Surface {}
+
 /// A mode's surface: the canvas, SVG or VML element its nodes are drawn
 /// into.
 pub struct Surface(PhantomData<JsObject>);
@@ -344,13 +359,11 @@ pub mod mode {
 
     unsafe extern "Rust" {
         /// `Mode.Path`, the mode's path class.
-        #[cfg_attr(rust_js, rust_js::name = "Mode")]
         #[link_name = "art/modes/current#default.Path"]
         pub safe static PATH: &'static JsObject;
     }
 
     /// `Mode.setCurrent(mode)`: `mode`'s makers the current ones.
-    #[cfg_attr(rust_js, rust_js::name = "Mode")]
     #[cfg_attr(rust_js, rust_js::link_name = "art/modes/current#default.setCurrent")]
     pub fn set_current(mode: &JsObject) {
         unreachable!()
@@ -358,7 +371,6 @@ pub mod mode {
 
     /// `Mode.Surface(width, height, existingElement)`: a surface, of the
     /// element where one is given.
-    #[cfg_attr(rust_js, rust_js::name = "Mode")]
     #[cfg_attr(rust_js, rust_js::link_name = "art/modes/current#default.Surface")]
     pub fn surface(
         width: f64,
@@ -369,7 +381,6 @@ pub mod mode {
     }
 
     /// `Mode.Surface.tagName`: the tag of the element a surface draws into.
-    #[cfg_attr(rust_js, rust_js::name = "Mode")]
     #[cfg_attr(
         rust_js,
         rust_js::link_name = "get art/modes/current#default.Surface.tagName"
@@ -379,21 +390,18 @@ pub mod mode {
     }
 
     /// `Mode.Group()`.
-    #[cfg_attr(rust_js, rust_js::name = "Mode")]
     #[cfg_attr(rust_js, rust_js::link_name = "art/modes/current#default.Group")]
     pub fn group() -> &'static Node {
         unreachable!()
     }
 
     /// `Mode.Shape()`.
-    #[cfg_attr(rust_js, rust_js::name = "Mode")]
     #[cfg_attr(rust_js, rust_js::link_name = "art/modes/current#default.Shape")]
     pub fn shape() -> &'static Node {
         unreachable!()
     }
 
     /// `Mode.ClippingRectangle()`.
-    #[cfg_attr(rust_js, rust_js::name = "Mode")]
     #[cfg_attr(
         rust_js,
         rust_js::link_name = "art/modes/current#default.ClippingRectangle"
@@ -403,7 +411,6 @@ pub mod mode {
     }
 
     /// `Mode.Text(text, font, alignment, path)`.
-    #[cfg_attr(rust_js, rust_js::name = "Mode")]
     #[cfg_attr(rust_js, rust_js::link_name = "art/modes/current#default.Text")]
     pub fn text(
         text: Option<&Unknown>,

@@ -11,7 +11,10 @@ publish.workspace = true
 path = "react_art.rs"
 
 [dependencies]
+art.workspace = true
 js.workspace = true
+react-reconciler = { path = "../react-reconciler" }
+shared.workspace = true
 
 [lints]
 workspace = true
