@@ -27,6 +27,8 @@ pub mod react_fizz_tree_context;
 pub mod react_fizz_view_transition_component;
 #[path = "src/ReactFlightAsyncSequence.rs"]
 pub mod react_flight_async_sequence;
+#[path = "src/flight/ReactFlightCurrentOwner.rs"]
+pub mod react_flight_current_owner;
 #[path = "src/ReactFlightServerConfigDebugNoop.rs"]
 pub mod react_flight_server_config_debug_noop;
 #[path = "src/ReactServerStreamConfigBrowser.rs"]
