@@ -254,7 +254,8 @@ commit message.
   alone asks for its first part too, `typeof performance !== 'undefined' &&
   typeof performance.getEntriesByType === 'function'` (rd320, rust-js
   2f8ab2e73), so a host without the global gives `false` where upstream's
-  bare `typeof performance.getEntriesByType` throws (estimateBandwidth).
+  bare `typeof performance.getEntriesByType` throws (estimateBandwidth,
+  accepted below).
 - **Read a global as upstream does.** A bare global is its webapi binding;
   one upstream reads as the global object's property, `global.scheduler`,
   is `webapi::global_this.scheduler()`, `globalThis.scheduler` (rd319). A
@@ -465,6 +466,19 @@ These differences from upstream's output are accepted:
   bindings getSuspenseInstanceFallbackErrorDetails,
   describeHydratableInstanceForDevWarnings, getBoundingRect and
   setupIntersectionObserver say it too.
+
+- **rd19** (the user, 2026-11-01): React DOM's getLeafNode keeps the
+  Rust's single read of each node's `firstChild`, `let firstChild; while
+  ((firstChild = node?.firstChild) != null) { node = firstChild; }`, where
+  upstream reads it twice, `while (node && node.firstChild) { node =
+  node.firstChild; }`.
+
+- **estimateBandwidth's guard** (the user, 2026-11-01; ADR 0262's rare and
+  harmless, rd320): `js::is_function` of `performance.getEntriesByType`
+  prints `typeof performance !== 'undefined' && typeof
+  performance.getEntriesByType === 'function'`, so a host without
+  `performance` goes on to the `navigator.connection` estimate, where upstream's bare
+  `typeof performance.getEntriesByType` throws a ReferenceError.
 
 These forms are decided:
 
