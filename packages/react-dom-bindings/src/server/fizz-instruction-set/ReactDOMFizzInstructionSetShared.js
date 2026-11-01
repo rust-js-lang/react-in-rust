@@ -163,7 +163,8 @@ export function revealCompletedBoundariesWithViewTransitions(
     for (let i = 1; i < batch.length; i += 2) {
       const contentNode = batch[i];
       const appearingElements = contentNode.querySelectorAll('[vt-share]');
-      for (const appearingElement of appearingElements) {
+      for (let j = 0; j < appearingElements.length; j++) {
+        const appearingElement = appearingElements[j];
         appearingViewTransitions.set(
           appearingElement.getAttribute('vt-name'),
           appearingElement ?? null,
@@ -233,7 +234,8 @@ export function revealCompletedBoundariesWithViewTransitions(
           // Next we'll look inside this element for pairs to trigger "share".
           const disappearingElements =
             exitElement.querySelectorAll('[vt-share]');
-          for (const disappearingElement of disappearingElements) {
+          for (let j = 0; j < disappearingElements.length; j++) {
+            const disappearingElement = disappearingElements[j];
             const name = disappearingElement.getAttribute('vt-name');
             const appearingElement = appearingViewTransitions.get(name);
             if (appearingElement != null) {
@@ -245,7 +247,8 @@ export function revealCompletedBoundariesWithViewTransitions(
           // Relay the exit to nested ViewTransitions that opted in
           const relayExitElements =
             exitElement.querySelectorAll('[vt-parent-exit]');
-          for (const relayExitElement of relayExitElements) {
+          for (let j = 0; j < relayExitElements.length; j++) {
+            const relayExitElement = relayExitElements[j];
             applyViewTransitionName(relayExitElement, 'vt-parent-exit');
           }
         }
@@ -265,7 +268,8 @@ export function revealCompletedBoundariesWithViewTransitions(
         // Relay the enter to nested ViewTransitions that opted in
         const relayEnterElements =
           enterElement.querySelectorAll('[vt-parent-enter]');
-        for (const relayEnterElement of relayEnterElements) {
+        for (let j = 0; j < relayEnterElements.length; j++) {
+          const relayEnterElement = relayEnterElements[j];
           applyViewTransitionName(relayEnterElement, 'vt-parent-enter');
         }
         enterElement = enterElement.nextElementSibling;
@@ -320,7 +324,8 @@ export function revealCompletedBoundariesWithViewTransitions(
           ),
           document.fonts.ready,
         ];
-        for (const suspenseyImage of suspenseyImages) {
+        for (let i = 0; i < suspenseyImages.length; i++) {
+          const suspenseyImage = suspenseyImages[i];
           if (!suspenseyImage.complete) {
             const rect = suspenseyImage.getBoundingClientRect();
             const inViewport =
@@ -597,7 +602,8 @@ export function completeBoundaryWithStyles(
     'link[data-precedence],style[data-precedence]',
   );
   const styleTagsToHoist = [];
-  for (const node of nodes) {
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
     if (node.getAttribute('media') === 'not all') {
       styleTagsToHoist.push(node);
     } else {
@@ -617,9 +623,10 @@ export function completeBoundaryWithStyles(
   }
 
   // Sheets Mode
-  for (const stylesheetDescriptor of stylesheetDescriptors) {
+  for (let i = 0; i < stylesheetDescriptors.length; i++) {
     // Sheet Mode iterates over the stylesheet arguments and constructs them if new or checks them for
     // dependency if they already existed
+    const stylesheetDescriptor = stylesheetDescriptors[i];
     const descriptor = stylesheetDescriptor.values();
     const href = $unwrap(
       descriptor.next().value,
@@ -683,7 +690,8 @@ export function completeBoundaryWithStyles(
   }
 
   // <style> mode iterates over not-yet-hoisted <style> tags with data-precedence and hoists them.
-  for (const resourceEl of styleTagsToHoist) {
+  for (let i = 0; i < styleTagsToHoist.length; i++) {
+    const resourceEl = styleTagsToHoist[i];
     const precedence = resourceEl.getAttribute('data-precedence');
     resourceEl.removeAttribute('media');
     lastResource = insertResource(
