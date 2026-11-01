@@ -19,6 +19,8 @@ pub mod react_fizz_hooks;
 pub mod react_fizz_legacy_context;
 #[path = "src/ReactFizzNewContext.rs"]
 pub mod react_fizz_new_context;
+#[path = "src/ReactFizzServer.rs"]
+pub mod react_fizz_server;
 #[path = "src/ReactFizzThenable.rs"]
 pub mod react_fizz_thenable;
 #[path = "src/ReactFizzTreeContext.rs"]

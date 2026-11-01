@@ -4,6 +4,7 @@
 // LICENSE file in the root directory of this source tree.
 
 use std::cell::Cell;
+use std::rc::Rc;
 
 use js::Unknown;
 use shared::environment::__DEV__;
@@ -17,7 +18,7 @@ use crate::react_fizz_current_task::CURRENT_TASK_IN_DEV;
 type ResourceType = dyn Fn() -> Option<&'static Unknown>;
 
 /// What gives the component rendering now, its stack's node.
-type GetOwner = fn() -> Option<&'static ComponentStackNode>;
+type GetOwner = fn() -> Option<Rc<ComponentStackNode>>;
 
 /// Fizz's `AsyncDispatcher`: what `ReactSharedInternals.A` is while it renders.
 pub struct DefaultAsyncDispatcher {
@@ -48,9 +49,9 @@ thread_local! {
 }
 
 #[cfg_attr(rust_js, rust_js::nullable)]
-fn get_owner() -> Option<&'static ComponentStackNode> {
-    let current_task_in_dev = CURRENT_TASK_IN_DEV.get()?;
-    current_task_in_dev.component_stack()
+fn get_owner() -> Option<Rc<ComponentStackNode>> {
+    let current_task_in_dev = CURRENT_TASK_IN_DEV.with_borrow(Clone::clone)?;
+    current_task_in_dev.component_stack.borrow().clone()
 }
 
 js::on_load! {

@@ -28,18 +28,18 @@ use shared::react_symbols::{
     REACT_CONTEXT_TYPE, REACT_MEMO_CACHE_SENTINEL, REACT_RECOVERABLE_TYPE,
 };
 use shared::react_types::{
-    ReactCustomFormAction, ReactFormState, ReactRecoverable, ReactRecoverableReason, RefObject,
-    Thenable,
+    ReactCustomFormAction, ReactRecoverable, ReactRecoverableReason, RefObject, Thenable,
 };
 use webapi::console;
 
-use crate::react_fizz_current_task::{KeyNode, Request, Task};
 use crate::react_fizz_new_context::{Context, read_context as read_context_impl};
+use crate::react_fizz_server::ResumableState;
+use crate::react_fizz_server::{KeyNode, Request, Task, get_form_state};
 use crate::react_fizz_thenable::{
     ThenableState, create_thenable_state, read_previous_thenable, track_used_thenable,
 };
 use crate::react_fizz_tree_context::get_tree_id;
-use crate::react_fizz_view_transition_component::{ResumableState, make_id};
+use crate::react_fizz_view_transition_component::make_id;
 
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFizzConfig.js#NotPendingTransition"]
@@ -54,15 +54,6 @@ unsafe extern "Rust" {
 )]
 fn create_fast_hash(input: &str) -> String {
     let _ = input;
-    unreachable!()
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFizzServer.js#getFormState")]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn get_form_state(
-    request: &Request,
-) -> Option<&'static ReactFormState<Option<&'static Unknown>, Option<&'static Unknown>>> {
-    let _ = request;
     unreachable!()
 }
 
@@ -91,11 +82,11 @@ thread_local! {
     #[cfg_attr(rust_js, rust_js::nullable)]
     static CURRENTLY_RENDERING_COMPONENT: Cell<Option<&'static Unknown>> = const { Cell::new(None) };
     #[cfg_attr(rust_js, rust_js::nullable)]
-    static CURRENTLY_RENDERING_TASK: Cell<Option<&'static Task>> = const { Cell::new(None) };
+    static CURRENTLY_RENDERING_TASK: RefCell<Option<Rc<Task>>> = const { RefCell::new(None) };
     #[cfg_attr(rust_js, rust_js::nullable)]
-    static CURRENTLY_RENDERING_REQUEST: Cell<Option<&'static Request>> = const { Cell::new(None) };
+    static CURRENTLY_RENDERING_REQUEST: RefCell<Option<Rc<Request>>> = const { RefCell::new(None) };
     #[cfg_attr(rust_js, rust_js::nullable)]
-    static CURRENTLY_RENDERING_KEY_PATH: Cell<Option<&'static KeyNode>> = const { Cell::new(None) };
+    static CURRENTLY_RENDERING_KEY_PATH: RefCell<Option<Rc<KeyNode>>> = const { RefCell::new(None) };
     #[cfg_attr(rust_js, rust_js::nullable)]
     static FIRST_WORK_IN_PROGRESS_HOOK: RefCell<Option<Rc<Hook>>> = const { RefCell::new(None) };
     #[cfg_attr(rust_js, rust_js::nullable)]
@@ -359,15 +350,15 @@ fn create_work_in_progress_hook() -> Rc<Hook> {
 
 #[cfg_attr(rust_js, rust_js::nullable(key_path, prev_thenable_state))]
 pub fn prepare_to_use_hooks(
-    request: &'static Request,
-    task: &'static Task,
-    key_path: Option<&'static KeyNode>,
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: Option<Rc<KeyNode>>,
     component_identity: &'static Unknown,
     prev_thenable_state: Option<Rc<ThenableState>>,
 ) {
     CURRENTLY_RENDERING_COMPONENT.set(Some(component_identity));
-    CURRENTLY_RENDERING_TASK.set(Some(task));
-    CURRENTLY_RENDERING_REQUEST.set(Some(request));
+    CURRENTLY_RENDERING_TASK.set(Some(Rc::clone(task)));
+    CURRENTLY_RENDERING_REQUEST.set(Some(Rc::clone(request)));
     CURRENTLY_RENDERING_KEY_PATH.set(key_path);
     if __DEV__ {
         IS_IN_HOOK_USER_CODE_IN_DEV.set(false);
@@ -797,7 +788,7 @@ fn use_optimistic(
 
 fn create_postback_action_state_key(
     permalink: Option<&str>,
-    component_key_path: Option<&'static KeyNode>,
+    component_key_path: Option<&KeyNode>,
     hook_index: f64,
 ) -> String {
     match permalink {
@@ -847,7 +838,9 @@ fn use_action_state(
     // this component, so we can generate a unique key for each one.
     let action_state_hook_index = ACTION_STATE_COUNTER.get();
     ACTION_STATE_COUNTER.set(action_state_hook_index + 1.0);
-    let request = CURRENTLY_RENDERING_REQUEST.get().unwrap();
+    let request = CURRENTLY_RENDERING_REQUEST
+        .with_borrow(Clone::clone)
+        .unwrap();
 
     // $FlowFixMe[prop-missing]
     let form_action = js::get(js::unknown(action), "$$FORM_ACTION");
@@ -870,8 +863,8 @@ fn use_action_state(
         // Otherwise, we'll use the initial state argument. We will emit a comment
         // marker into the stream that indicates whether the state was reused.
         let mut state = initial_state;
-        let component_key_path = CURRENTLY_RENDERING_KEY_PATH.get();
-        let postback_action_state = get_form_state(request);
+        let component_key_path = CURRENTLY_RENDERING_KEY_PATH.with_borrow(Clone::clone);
+        let postback_action_state = get_form_state(&request);
         // $FlowFixMe[prop-missing]
         let is_signature_equal = js::get(js::unknown(action), "$$IS_SIGNATURE_EQUAL");
         if let Some(postback_action_state) = postback_action_state
@@ -888,7 +881,7 @@ fn use_action_state(
             )) {
                 next_postback_state_key.replace(Some(create_postback_action_state_key(
                     permalink.as_deref(),
-                    component_key_path,
+                    component_key_path.as_deref(),
                     action_state_hook_index,
                 )));
                 if Some(postback_key.as_str()) == next_postback_state_key.borrow().as_deref() {
@@ -939,7 +932,7 @@ fn use_action_state(
                             next_postback_state_key.replace(Some(
                                 create_postback_action_state_key(
                                     permalink.as_deref(),
-                                    component_key_path,
+                                    component_key_path.as_deref(),
                                     action_state_hook_index,
                                 ),
                             ));
@@ -971,8 +964,8 @@ fn use_action_state(
 }
 
 fn use_id() -> String {
-    let task = CURRENTLY_RENDERING_TASK.get().unwrap();
-    let tree_id = get_tree_id(task.tree_context());
+    let task = CURRENTLY_RENDERING_TASK.with_borrow(Clone::clone).unwrap();
+    let tree_id = get_tree_id(&task.tree_context.borrow());
 
     let Some(resumable_state) = CURRENT_RESUMABLE_STATE.get() else {
         panic!(

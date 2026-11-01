@@ -1,7 +1,13 @@
 # Fibers hash and compare by identity (ptr::hash, ptr::eq), so their cells
 # don't change a key; clippy's mutable_key_type would flag every Set of them.
-ignore-interior-mutability = ["react_reconciler::react_internal_types::Fiber"]
+# Fizz's tasks and key paths do too (ReactFizzServer's Sets and Maps of them).
+ignore-interior-mutability = [
+    "react_reconciler::react_internal_types::Fiber",
+    "react_server::react_fizz_server::Task",
+    "react_server::react_fizz_server::KeyNode",
+]
 
 # React's functions are ported with upstream's parameters (ReactFiberWorkLoop's
-# completeRoot takes 15), so a long list is React's signature, not one to bundle.
-too-many-arguments-threshold = 15
+# completeRoot takes 15, ReactFizzServer's createRenderTask 17), so a long list
+# is React's signature, not one to bundle.
+too-many-arguments-threshold = 17

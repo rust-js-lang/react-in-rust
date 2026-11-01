@@ -34,6 +34,8 @@ pub struct ComponentStackNode {
 }
 
 unsafe impl js::Defined for ComponentStackNode {}
+// Safety: a node is an object, a key of the request's `didWarnForKey`.
+unsafe impl js::WeakKey for ComponentStackNode {}
 
 fn should_construct(component: &Unknown) -> bool {
     let prototype = js::get(component, "prototype");
@@ -139,7 +141,7 @@ fn describe_function_component_frame_without_line_number(r#fn: Option<&Unknown>)
 }
 
 pub fn get_owner_stack_by_component_stack_node_in_dev(
-    component_stack: &'static ComponentStackNode,
+    component_stack: &ComponentStackNode,
 ) -> String {
     if !__DEV__ {
         return String::new();
@@ -168,7 +170,7 @@ pub fn get_owner_stack_by_component_stack_node_in_dev(
             info += &describe_component_stack_by_type(component_stack.r#type);
         }
 
-        let mut owner: Option<&'static Unknown> = Some(js::unknown(component_stack));
+        let mut owner: Option<&Unknown> = Some(js::unknown(component_stack));
 
         while js::truthy(owner) {
             let mut owner_stack: Option<String> = None;

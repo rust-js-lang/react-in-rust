@@ -3,15 +3,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use std::marker::PhantomData;
-
-use js::JsObject;
 use shared::react_types::{ViewTransitionClass, ViewTransitionProps};
 
+use crate::react_fizz_server::ResumableState;
 use crate::react_fizz_tree_context::{TreeContext, get_tree_id};
-
-/// The renderer's resumable state, its Fizz config's.
-pub struct ResumableState(PhantomData<JsObject>);
 
 #[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFizzConfig.js#makeId")]
 pub(crate) fn make_id(resumable_state: &ResumableState, tree_id: &str, local_id: f64) -> String {

@@ -208,14 +208,14 @@ fn capture_suspended_call_site() {
     // You can only abort the render in Fizz and Flight.
     // In Fiber we only track suspended use via DevTools.
     // In Flight, we track suspended use via async debug info.
-    let Some(current_task) = CURRENT_TASK_IN_DEV.get() else {
+    let Some(current_task) = CURRENT_TASK_IN_DEV.with_borrow(Clone::clone) else {
         // eslint-disable-next-line react-internal/prod-error-codes -- not a prod error
         panic!(concat!(
             "Expected to have a current task when tracking a suspend call site. ",
             "This is a bug in React."
         ));
     };
-    let Some(current_component_stack) = current_task.component_stack() else {
+    let Some(current_component_stack) = current_task.component_stack.borrow().clone() else {
         // eslint-disable-next-line react-internal/prod-error-codes -- not a prod error
         panic!(concat!(
             "Expected to have a component stack on the current task when ",
@@ -237,7 +237,7 @@ fn capture_suspended_call_site() {
     // Ideally we'd be able to reconstruct the owner ConsoleTask as well.
     // The stack of the debugTask would not point to the suspend location anyway.
     // The focus is really on callsite which should be used in captureOwnerStack().
-    SUSPENDED_CALL_SITE_DEBUG_TASK.set(current_task.debug_task());
+    SUSPENDED_CALL_SITE_DEBUG_TASK.set(current_task.debug_task.get());
 }
 
 #[cfg_attr(
