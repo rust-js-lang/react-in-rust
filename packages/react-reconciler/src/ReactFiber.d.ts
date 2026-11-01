@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ReactElement} from 'react/src/jsx/ReactJSXElement';
+import type {ReactElement} from 'shared/ReactElementType';
 import type {ReactPortal} from 'shared/ReactTypes';
 import type {Lanes} from './ReactFiberLane.js';
 import type {

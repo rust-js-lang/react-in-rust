@@ -8,10 +8,10 @@ use std::panic::{self, AssertUnwindSafe, catch_unwind};
 use std::rc::Rc;
 
 use js::{Dict, Iterator, JsError, Kind, Map, Set, SymbolFor, Unknown};
-use react_isomorphic::react_jsx_element::ReactElement;
 use react_isomorphic::react_lazy::LazyComponent;
 use shared::environment::__DEV__;
 use shared::is_array::is_array;
+use shared::react_element_type::ReactElement;
 use shared::react_feature_flags::{
     DISABLE_LEGACY_MODE, ENABLE_ASYNC_ITERABLE_CHILDREN, ENABLE_OPTIMISTIC_KEY,
 };

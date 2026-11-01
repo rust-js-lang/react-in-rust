@@ -8,10 +8,10 @@ use std::panic::catch_unwind;
 use std::rc::Rc;
 
 use js::{Kind, SymbolFor, Unknown};
-use react_isomorphic::react_jsx_element::ReactElement;
 use shared::environment::__DEV__;
 use shared::get_component_name_from_type::get_component_name_from_type;
 use shared::is_array::is_array;
+use shared::react_element_type::ReactElement;
 use shared::react_feature_flags::{
     DISABLE_LEGACY_MODE, ENABLE_LEGACY_HIDDEN, ENABLE_OPTIMISTIC_KEY, ENABLE_PROFILER_TIMER,
     ENABLE_SCOPE_API, ENABLE_SUSPENSEY_IMAGES, ENABLE_TRANSITION_TRACING, ENABLE_VIEW_TRANSITION,

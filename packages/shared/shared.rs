@@ -39,6 +39,8 @@ pub mod react_component_info_stack;
 pub mod react_component_stack_frame;
 #[path = "ReactDOMSharedInternals.rs"]
 pub mod react_dom_shared_internals;
+#[path = "ReactElementType.rs"]
+pub mod react_element_type;
 #[path = "ReactFeatureFlags.rs"]
 pub mod react_feature_flags;
 #[path = "ReactFlightPropertyAccess.rs"]

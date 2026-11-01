@@ -14,6 +14,7 @@ use shared::environment::__DEV__;
 use shared::get_component_name_from_type::get_component_name_from_type;
 use shared::has_own_property::HAS_OWN_PROPERTY;
 use shared::is_array::is_array;
+use shared::react_element_type::ReactElement;
 use shared::react_feature_flags::{ENABLE_OPTIMISTIC_KEY, OWNER_STACK_LIMIT};
 use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use shared::react_symbols::{
@@ -21,29 +22,6 @@ use shared::react_symbols::{
 };
 use shared::react_types::ReactKey;
 use webapi::{ConsoleTask, console};
-
-/// `shared/ReactElementType`'s `ReactElement`.
-pub struct ReactElement {
-    #[cfg_attr(rust_js, rust_js::name = "$$typeof")]
-    pub r#typeof: SymbolFor<'static>,
-    pub r#type: Option<&'static Unknown>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub key: Option<ReactKey>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub r#ref: Option<&'static Unknown>,
-    pub props: &'static Unknown,
-    // __DEV__ or for string refs
-    #[cfg_attr(rust_js, rust_js::name = "_owner")]
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub owner: Option<&'static Unknown>,
-
-    // __DEV__
-    #[cfg_attr(rust_js, rust_js::name = "_store")]
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub store: Cell<Option<&'static Dict<f64>>>, // 0: not validated, 1: validated, 2: force fail
-}
-
-unsafe impl js::Defined for ReactElement {}
 
 /// What `console.createTask` is: given a name, the task DevTools shows the
 /// stack of where it was made, or `None` where it makes none.
@@ -289,6 +267,9 @@ fn react_element(
             owner,
             r#ref: None,
             store: Cell::new(None),
+            debug_info: None,
+            debug_stack: None,
+            debug_task: None,
         };
         if r#ref.is_some() {
             object::define_property(
@@ -338,6 +319,9 @@ fn react_element(
             props,
             owner: None,
             store: Cell::new(None),
+            debug_info: None,
+            debug_stack: None,
+            debug_task: None,
         };
     }
 

@@ -5,25 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-type ReactKey = string | symbol;
+import type {ReactElement} from 'shared/ReactElementType';
 
-/** `shared/ReactElementType`'s `ReactElement`. */
-export interface ReactElement {
-  $$typeof: symbol;
-  type?: unknown;
-  key?: ReactKey | null | undefined;
-  ref?: unknown | null | undefined;
-  props: unknown;
-  // __DEV__ or for string refs
-  _owner?: unknown | null | undefined;
-  // __DEV__
-  _store?:
-    | {
-        [key: string]: number;
-      }
-    | null
-    | undefined;
-}
+type ReactKey = string | symbol;
 
 /**
  * https://github.com/reactjs/rfcs/pull/107
