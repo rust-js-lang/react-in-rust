@@ -193,11 +193,6 @@ fn create_server_object_reference(id: Option<&'static Unknown>) -> &'static Unkn
     unreachable!()
 }
 
-// TODO: This is an unfortunate hack. We shouldn't feature detect the internals
-// like this. It's just that for now we support the same build of the Flight
-// client both in the RSC environment, in the SSR environments as well as the
-// browser client. We should probably have a separate RSC build. This is DEV
-// only though.
 unsafe extern "Rust" {
     #[link_name = "react#*.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE"]
     safe static SERVER_INTERNALS: Option<&'static Unknown>;
@@ -206,6 +201,11 @@ unsafe extern "Rust" {
 }
 
 thread_local! {
+    // TODO: This is an unfortunate hack. We shouldn't feature detect the internals
+    // like this. It's just that for now we support the same build of the Flight
+    // client both in the RSC environment, in the SSR environments as well as the
+    // browser client. We should probably have a separate RSC build. This is DEV
+    // only though.
     #[cfg_attr(rust_js, rust_js::name = "ReactSharedInteralsServer")]
     static REACT_SHARED_INTERALS_SERVER: Option<&'static Unknown> = SERVER_INTERNALS;
     #[cfg_attr(rust_js, rust_js::name = "ReactSharedInternals")]
@@ -311,8 +311,7 @@ pub enum ChunkState {
     #[cfg_attr(rust_js, rust_js::name = "resolved_model")]
     ResolvedModel {
         value: UninitializedModel,
-        // `{[RESPONSE_SYMBOL]: response}`
-        reason: &'static Unknown,
+        reason: Rc<ResponseHolder>,
     },
     #[cfg_attr(rust_js, rust_js::name = "resolved_module")]
     ResolvedModule {
@@ -488,7 +487,9 @@ impl ReactPromise {
             }
             ChunkState::Halted { .. } => return,
             ChunkState::Errored { reason } => Err(*reason),
-            ChunkState::ResolvedModel { reason, .. } => Err(Some(*reason)),
+            ChunkState::ResolvedModel { reason, .. } => {
+                Err(Some(js::unknown_of(Rc::clone(reason))))
+            }
             ChunkState::ResolvedModule { .. } => Err(None),
         };
         // A callback may read the chunk again, so it's called once the
@@ -638,11 +639,10 @@ fn close_debug_channel(debug_channel: &DebugChannel) {
 
 thread_local! {
     // If FinalizationRegistry doesn't exist, we cannot use the debugChannel.
+    #[cfg_attr(rust_js, rust_js::nullable)]
     static DEBUG_CHANNEL_REGISTRY: Option<&'static FinalizationRegistry<&'static DebugChannel>> =
         if __DEV__ && js::is_function(js::finalization_registry::new::<&'static DebugChannel>) {
-            Some(js::finalization_registry::new(Box::new(|debug_channel| {
-                close_debug_channel(debug_channel)
-            })))
+            Some(js::finalization_registry::new(Box::new(close_debug_channel)))
         } else {
             None
         };
@@ -667,7 +667,9 @@ fn read_chunk(chunk: &Chunk) -> Option<&'static Unknown> {
             js::throw(Some(js::unknown(chunk)))
         }
         ChunkState::Errored { reason } => js::throw(*reason),
-        ChunkState::ResolvedModel { reason, .. } => js::throw(Some(*reason)),
+        ChunkState::ResolvedModel { reason, .. } => {
+            js::throw(Some(js::unknown_of(Rc::clone(reason))))
+        }
         ChunkState::ResolvedModule { .. } => js::throw(js::null::<&Unknown>()),
     }
 }
@@ -1113,7 +1115,7 @@ fn trigger_error_on_chunk(
 fn create_resolved_model_chunk(response: &'static Response, value: UninitializedModel) -> Chunk {
     Rc::new(ReactPromise::new(ChunkState::ResolvedModel {
         value,
-        reason: response_holder(response),
+        reason: Rc::new(ResponseHolder { response }),
     }))
 }
 
@@ -1129,12 +1131,13 @@ fn or_undefined(value: Option<&'static Unknown>) -> &'static Unknown {
     value.unwrap_or(unsafe { js::cast(None) })
 }
 
-/// `{[RESPONSE_SYMBOL]: response}`, a resolved model chunk's `reason`.
-fn response_holder(response: &'static Response) -> &'static Unknown {
-    let holder = object::spread(None);
-    RESPONSE_SYMBOL.with(|&symbol| js::set(holder, symbol, response));
-    js::unknown(holder)
+/// A resolved model chunk's `reason`, `{[RESPONSE_SYMBOL]: response}`.
+pub struct ResponseHolder {
+    #[cfg_attr(rust_js, rust_js::name(RESPONSE_SYMBOL))]
+    response: &'static Response,
 }
+
+unsafe impl js::Defined for ResponseHolder {}
 
 fn create_resolved_module_chunk(_response: &'static Response, value: &'static Unknown) -> Chunk {
     Rc::new(ReactPromise::new(ChunkState::ResolvedModule {
@@ -1219,7 +1222,7 @@ fn create_resolved_iterator_result_chunk(
         + "}";
     Rc::new(ReactPromise::new(ChunkState::ResolvedModel {
         value: iterator_result_json,
-        reason: response_holder(response),
+        reason: Rc::new(ResponseHolder { response }),
     }))
 }
 
@@ -1262,7 +1265,7 @@ fn resolve_model_chunk(response: &'static Response, chunk: &Chunk, value: Uninit
     let resolved_chunk = chunk;
     *resolved_chunk.state.borrow_mut() = ChunkState::ResolvedModel {
         value,
-        reason: response_holder(response),
+        reason: Rc::new(ResponseHolder { response }),
     };
     if let Some(resolve_listeners) = resolve_listeners {
         // This is unfortunate that we're reading this eagerly if
@@ -1405,11 +1408,13 @@ impl Drop for RestoreInitializingHandler {
 }
 
 /// Upstream's `finally { isInitializingDebugInfo = prevIsInitializingDebugInfo; }`.
-struct RestoreIsInitializingDebugInfo(bool);
+struct RestoreIsInitializingDebugInfo {
+    prev_is_initializing_debug_info: bool,
+}
 
 impl Drop for RestoreIsInitializingDebugInfo {
     fn drop(&mut self) {
-        IS_INITIALIZING_DEBUG_INFO.set(self.0);
+        IS_INITIALIZING_DEBUG_INFO.set(self.prev_is_initializing_debug_info);
     }
 }
 
@@ -1425,7 +1430,9 @@ fn initialize_debug_chunk(response: &'static Response, chunk: &Chunk) {
         return;
     };
     let debug_info = Rc::clone(chunk._debug_info.borrow().as_ref().unwrap());
-    let _restore = RestoreIsInitializingDebugInfo(IS_INITIALIZING_DEBUG_INFO.get());
+    let _restore = RestoreIsInitializingDebugInfo {
+        prev_is_initializing_debug_info: IS_INITIALIZING_DEBUG_INFO.get(),
+    };
     IS_INITIALIZING_DEBUG_INFO.set(true);
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         if matches!(
@@ -1516,13 +1523,10 @@ fn initialize_model_chunk(chunk: &Chunk) {
     let prev_handler = INITIALIZING_HANDLER.take();
     let prev_chunk = INITIALIZING_CHUNK.with_borrow(Clone::clone);
 
-    let (resolved_model, response_holder) = match &*chunk.state.borrow() {
-        ChunkState::ResolvedModel { value, reason } => (value.clone(), *reason),
+    let (resolved_model, response) = match &*chunk.state.borrow() {
+        ChunkState::ResolvedModel { value, reason } => (value.clone(), reason.response),
         _ => unreachable!("a resolved model chunk"),
     };
-    // SAFETY: a resolved model chunk's reason holds its response.
-    let response: &'static Response =
-        unsafe { js::cast(RESPONSE_SYMBOL.with(|&symbol| js::get(response_holder, symbol))) };
 
     // We go to the BLOCKED state until we've fully resolved this.
     // We do this before parsing in case we try to initialize the same chunk
@@ -1805,8 +1809,6 @@ fn initialize_element(
     if !__DEV__ {
         return;
     }
-    // A DEV element as createElement makes it, read and written by name
-    // (upstream's `element: any`).
     let stack = js::get(element, "_debugStack");
     let owner: Option<&'static ReactComponentInfo> =
         // SAFETY: an element's owner is a component info or null.
@@ -3265,7 +3267,9 @@ fn apply_constructor(
     parent_object: &'static Unknown,
     _key: &str,
 ) -> Option<&'static Unknown> {
-    object::set_prototype_of(parent_object, js::get(model, "prototype"));
+    // SAFETY: `Unknown` is any value, `undefined` too.
+    let prototype: &Unknown = unsafe { js::cast(js::get(model, "prototype")) };
+    object::set_prototype_of(parent_object, Some(prototype));
     // Delete the property. It was just a placeholder.
     None
 }
@@ -3829,9 +3833,6 @@ type ResponseConstructor = fn(
 ) -> ResponseInstance;
 
 thread_local! {
-    // A constructor function the program writes, `this` its Response (rd64's
-    // form), as `new WeakRef(this)` and `registry.register(this, ..)` need
-    // the Response itself.
     #[cfg_attr(rust_js, rust_js::name = "ResponseInstance")]
     static RESPONSE_INSTANCE: &'static js::Class<ResponseConstructor> =
         js::Class::of(function::with_this(
@@ -3931,20 +3932,23 @@ thread_local! {
                     this._debug_end_time.set(debug_end_time);
                     this._debug_find_source_map_url.set(find_source_map_url);
                     this._debug_channel.set(debug_channel);
-                    this._blocked_console.replace(None);
+                    *this._blocked_console.borrow_mut() = None;
                     this._replay_console.set(Some(replay_console));
                     *this._root_environment_name.borrow_mut() = Some(root_env);
                     if let Some(debug_channel) = debug_channel {
-                        if let Some(debug_channel_registry) = DEBUG_CHANNEL_REGISTRY.with(|&registry| registry) {
-                            // When a Response gets GC:ed because nobody is referring to any of the
-                            // objects that lazily load from the Response anymore, then we can close
-                            // the debug channel.
-                            debug_channel_registry.register(this, debug_channel, Some(this));
-                        } else {
-                            // We can't safely clean things up later, so we immediately close the
-                            // debug channel.
-                            close_debug_channel(debug_channel);
-                            this._debug_channel.set(None);
+                        match DEBUG_CHANNEL_REGISTRY.with(|&registry| registry) {
+                            None => {
+                                // We can't safely clean things up later, so we immediately close the
+                                // debug channel.
+                                close_debug_channel(debug_channel);
+                                this._debug_channel.set(None);
+                            }
+                            Some(debug_channel_registry) => {
+                                // When a Response gets GC:ed because nobody is referring to any of the
+                                // objects that lazily load from the Response anymore, then we can close
+                                // the debug channel.
+                                debug_channel_registry.register(this, debug_channel, Some(this));
+                            }
                         }
                     }
                 }
@@ -3960,7 +3964,6 @@ thread_local! {
             },
         ));
 
-    // `function markIOStarted(this: Response) { this._debugIOStarted = true; }`.
     #[cfg_attr(rust_js, rust_js::name = "markIOStarted")]
     static MARK_IO_STARTED: &'static dyn Fn() = function::with_this(|this, ()| {
         // SAFETY: JS calls it bound to a Response.
@@ -4646,10 +4649,12 @@ fn previous_blocked_chunk_ref(chunk: &Chunk) -> &Chunk {
 }
 
 thread_local! {
-    // Self referencing iterator.
     #[cfg_attr(rust_js, rust_js::name = "asyncIterator")]
     static ASYNC_ITERATOR_SELF: &'static dyn Fn() -> Option<&'static Unknown> =
-        function::with_this(|this, ()| this);
+        function::with_this(|this, ()| {
+            // Self referencing iterator.
+            this
+        });
 }
 
 fn create_iterator(next: &'static dyn Fn(Option<&'static Unknown>) -> Chunk) -> &'static Unknown {
@@ -4996,17 +5001,20 @@ fn resolve_error_model(
     };
     js::set(error, "digest", js::get(error_info, "digest"));
     let error_with_digest = error;
-    if let Some(chunk) = chunk {
-        if __DEV__ {
-            resolve_chunk_debug_info(response, stream_state, &chunk);
+    match chunk {
+        None => {
+            let new_chunk = create_error_chunk(response, Some(error_with_digest));
+            if __DEV__ {
+                resolve_chunk_debug_info(response, stream_state, &new_chunk);
+            }
+            chunks.set(&id, new_chunk);
         }
-        trigger_error_on_chunk(response, &chunk, Some(error_with_digest));
-    } else {
-        let new_chunk = create_error_chunk(response, Some(error_with_digest));
-        if __DEV__ {
-            resolve_chunk_debug_info(response, stream_state, &new_chunk);
+        Some(chunk) => {
+            if __DEV__ {
+                resolve_chunk_debug_info(response, stream_state, &chunk);
+            }
+            trigger_error_on_chunk(response, &chunk, Some(error_with_digest));
         }
-        chunks.set(&id, new_chunk);
     }
 }
 
@@ -5284,7 +5292,6 @@ fn frame_values(frame: &shared::react_types::ReactCallSite) -> Vec<Option<&'stat
     ]
 }
 
-/// `console.createTask.bind(console, name)`.
 #[cfg_attr(rust_js, rust_js::nullable)]
 fn get_root_task(
     response: &'static Response,
@@ -5431,7 +5438,7 @@ const CREATE_FAKE_JSX_CALL_STACK: CreateFakeJSXCallStackFrame = CreateFakeJSXCal
             false,
             FAKE_JSX_CALL_SITE.with(|&f| f),
         );
-        call_stack_for_error().unwrap()
+        call_stack_for_error()
     },
 };
 
@@ -5456,12 +5463,13 @@ thread_local! {
 // The lower the limit, the more likely we'll not reach react_stack_bottom_frame
 // The higher the limit, the slower Error() is when not inspecting with a debugger.
 // When inspecting with a debugger, Error.stackTraceLimit has no impact on Error() performance (in v8).
+#[cfg_attr(rust_js, rust_js::name = "ownerStackTraceLimit")]
 const OWNER_STACK_TRACE_LIMIT: f64 = 10.0;
 
 thread_local! {
     /* @noinline */
     #[cfg_attr(rust_js, rust_js::name = "fakeJSXCallSite")]
-    static FAKE_JSX_CALL_SITE: &'static dyn Fn() -> Option<&'static Unknown> =
+    static FAKE_JSX_CALL_SITE: &'static dyn Fn() -> &'static Unknown =
         function::with_this(|_, ()| {
             // This extra call frame represents the JSX creation function. We always pop this frame
             // off before presenting so it needs to be part of the stack.
@@ -5469,7 +5477,7 @@ thread_local! {
             js_error::set_stack_trace_limit(OWNER_STACK_TRACE_LIMIT);
             let error = js::error::new(Some("react-stack-top-frame"), None); // eslint-disable-line prefer-const
             js_error::set_stack_trace_limit(previous_stack_trace_limit);
-            Some(js::unknown(error))
+            js::unknown(error)
         });
 }
 
@@ -5739,8 +5747,7 @@ fn resolve_console_entry(response: &'static Response, json: UninitializedModel) 
         return;
     }
 
-    let blocked_chunk = response._blocked_console.take();
-    response._blocked_console.replace(blocked_chunk.clone());
+    let blocked_chunk = response._blocked_console.borrow().clone();
     match blocked_chunk {
         None => {
             // If we're not blocked on any other chunks, we can try to eagerly initialize
@@ -5768,7 +5775,7 @@ fn resolve_console_entry(response: &'static Response, json: UninitializedModel) 
                         // Ignore console errors for now. Unnecessary noise.
                     })),
                 );
-                response._blocked_console.replace(Some(chunk));
+                *response._blocked_console.borrow_mut() = Some(chunk);
             }
         }
         Some(blocked_chunk) => {
@@ -5785,16 +5792,17 @@ fn resolve_console_entry(response: &'static Response, json: UninitializedModel) 
                     // Ignore console errors for now. Unnecessary noise.
                 })),
             );
-            response._blocked_console.replace(Some(Rc::clone(&chunk)));
+            *response._blocked_console.borrow_mut() = Some(Rc::clone(&chunk));
             let unblock: Rc<dyn Fn(Option<&'static Unknown>)> = Rc::new(move |_| {
                 if response
                     ._blocked_console
-                    .take()
-                    .is_some_and(|blocked| Rc::ptr_eq(&blocked, &chunk))
+                    .borrow()
+                    .as_ref()
+                    .is_some_and(|blocked| Rc::ptr_eq(blocked, &chunk))
                 {
                     // We were still the last chunk so we can now clear the queue and return
                     // to synchronous emitting.
-                    response._blocked_console.replace(None);
+                    *response._blocked_console.borrow_mut() = None;
                 }
                 resolve_model_chunk(response, &chunk, json.clone());
             });
@@ -5805,8 +5813,6 @@ fn resolve_console_entry(response: &'static Response, json: UninitializedModel) 
 
 #[cfg_attr(rust_js, rust_js::name = "initializeIOInfo")]
 fn initialize_io_info(response: &'static Response, io_info: &'static ReactIOInfo) {
-    // A `null` stack is initialized too (upstream `!== undefined`): its owner's
-    // fake stack still is.
     if !matches!(js::classify(js::get(io_info, "stack")), Kind::Undefined) {
         initialize_fake_task(response, js::unknown(io_info));
         initialize_fake_stack(response, js::unknown(io_info));
@@ -5844,7 +5850,9 @@ fn initialize_io_info(response: &'static Response, io_info: &'static ReactIOInfo
 fn resolve_io_info(response: &'static Response, id: f64, model: UninitializedModel) {
     let chunks = response._chunks.get().unwrap();
     let chunk = {
-        let _restore = RestoreIsInitializingDebugInfo(IS_INITIALIZING_DEBUG_INFO.get());
+        let _restore = RestoreIsInitializingDebugInfo {
+            prev_is_initializing_debug_info: IS_INITIALIZING_DEBUG_INFO.get(),
+        };
         IS_INITIALIZING_DEBUG_INFO.set(true);
         match chunks.get(&id) {
             None => {

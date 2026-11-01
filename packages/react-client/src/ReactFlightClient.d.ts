@@ -8,6 +8,8 @@
 import type {ReactComponentInfo, ReactIOInfo} from 'shared/ReactTypes';
 import type {TemporaryReferenceSet} from './ReactFlightTemporaryReferences.js';
 
+declare const RESPONSE_SYMBOL: unique symbol;
+
 export type CallServerCallback = unknown;
 
 export type EncodeFormActionCallback = unknown;
@@ -66,7 +68,7 @@ export type ChunkState =
   | {
       status: 'resolved_model';
       value: string;
-      reason: unknown;
+      reason: ResponseHolder;
     }
   | {
       status: 'resolved_module';
@@ -182,6 +184,11 @@ export interface WeakResponse {
 }
 
 export function getRoot(weakResponse: WeakResponse): ReactPromise;
+
+/** A resolved model chunk's `reason`, `{[RESPONSE_SYMBOL]: response}`. */
+export interface ResponseHolder {
+  [RESPONSE_SYMBOL]: ResponseInstance;
+}
 
 /** An iterator result, `{done, value}`. */
 export interface IteratorResultValue {

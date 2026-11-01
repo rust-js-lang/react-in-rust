@@ -82,6 +82,11 @@ import {
   $unwrap,
 } from '@rust-js/runtime';
 
+// TODO: This is an unfortunate hack. We shouldn't feature detect the internals
+// like this. It's just that for now we support the same build of the Flight
+// client both in the RSC environment, in the SSR environments as well as the
+// browser client. We should probably have a separate RSC build. This is DEV
+// only though.
 const ReactSharedInteralsServer =
   React.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
 const ReactSharedInternals =
@@ -266,8 +271,8 @@ function closeDebugChannel(debugChannel) {
 // If FinalizationRegistry doesn't exist, we cannot use the debugChannel.
 const debugChannelRegistry =
   __DEV__ && typeof FinalizationRegistry === 'function'
-    ? new FinalizationRegistry(debugChannel => closeDebugChannel(debugChannel))
-    : undefined;
+    ? new FinalizationRegistry(closeDebugChannel)
+    : null;
 
 function readChunk(chunk) {
   // If we have resolved content, we try to initialize it first which
@@ -709,7 +714,9 @@ function triggerErrorOnChunk(response, chunk, error) {
 }
 
 function createResolvedModelChunk(response, value) {
-  return new ReactPromise('resolved_model', value, responseHolder(response));
+  return new ReactPromise('resolved_model', value, {
+    [RESPONSE_SYMBOL]: response,
+  });
 }
 
 /** A value of an object literal, `null` for none. */
@@ -720,13 +727,6 @@ function orNull(value) {
 /** A value of an object literal, `undefined` for none. */
 function orUndefined(value) {
   return value ?? undefined;
-}
-
-/** `{[RESPONSE_SYMBOL]: response}`, a resolved model chunk's `reason`. */
-function responseHolder(response) {
-  const holder = {};
-  holder[RESPONSE_SYMBOL] = response;
-  return holder;
 }
 
 function createResolvedModuleChunk(response, value) {
@@ -763,11 +763,9 @@ function createResolvedIteratorResultChunk(response, value, done) {
   // To reuse code as much code as possible we add the wrapper element as part of the JSON.
   const iteratorResultJson =
     (done ? '{"done":true,"value":' : '{"done":false,"value":') + value + '}';
-  return new ReactPromise(
-    'resolved_model',
-    iteratorResultJson,
-    responseHolder(response),
-  );
+  return new ReactPromise('resolved_model', iteratorResultJson, {
+    [RESPONSE_SYMBOL]: response,
+  });
 }
 
 function resolveIteratorResultChunk(response, chunk, value, done) {
@@ -816,7 +814,7 @@ function resolveModelChunk(response, chunk, value) {
   const resolvedChunk = chunk;
   resolvedChunk.status = 'resolved_model';
   resolvedChunk.value = value;
-  resolvedChunk.reason = responseHolder(response);
+  resolvedChunk.reason = {[RESPONSE_SYMBOL]: response};
   if (resolveListeners != null) {
     // This is unfortunate that we're reading this eagerly if
     // we already have listeners attached since they might no
@@ -902,7 +900,7 @@ function initializeDebugChunk(response, chunk) {
     return;
   }
   const debugInfo = $unwrap($borrow($fieldCell(chunk, '_debugInfo')).value);
-  const restore = isInitializingDebugInfo;
+  const prevIsInitializingDebugInfo = isInitializingDebugInfo;
   isInitializingDebugInfo = true;
   try {
     const result = $catchUnwind(() => {
@@ -978,7 +976,7 @@ function initializeDebugChunk(response, chunk) {
       triggerErrorOnChunk(response, chunk, thrown(error));
     }
   } finally {
-    isInitializingDebugInfo = restore;
+    isInitializingDebugInfo = prevIsInitializingDebugInfo;
   }
 }
 
@@ -996,8 +994,8 @@ function initializeModelChunk(chunk) {
       'internal error: entered unreachable code: a resolved model chunk',
     );
   }
-  const {value: resolvedModel, reason: responseHolder} = chunk;
-  const response = responseHolder[RESPONSE_SYMBOL];
+  const {value: resolvedModel} = chunk;
+  const response = chunk.reason[RESPONSE_SYMBOL];
 
   // We go to the BLOCKED state until we've fully resolved this.
   // We do this before parsing in case we try to initialize the same chunk
@@ -1283,8 +1281,6 @@ function initializeElement(response, element, lazyNode) {
   if (!__DEV__) {
     return;
   }
-  // A DEV element as createElement makes it, read and written by name
-  // (upstream's `element: any`).
   const stack = element._debugStack;
   const owner = element._owner;
   if (owner == null) {
@@ -2467,7 +2463,8 @@ function createFormData(response, model, parentObject, key) {
 }
 
 function applyConstructor(response, model, parentObject, key) {
-  Object.setPrototypeOf(parentObject, model.prototype ?? null);
+  const prototype = model.prototype;
+  Object.setPrototypeOf(parentObject, prototype);
   // Delete the property. It was just a placeholder.
 }
 
@@ -2898,7 +2895,6 @@ function missingCall(id, args) {
   );
 }
 
-// `function markIOStarted(this: Response) { this._debugIOStarted = true; }`.
 function markIOStarted() {
   this._debugIOStarted = true;
 }
@@ -3410,8 +3406,8 @@ function previousBlockedChunkRef(chunk) {
   return chunk;
 }
 
-// Self referencing iterator.
 function asyncIterator() {
+  // Self referencing iterator.
   return this;
 }
 
@@ -3683,17 +3679,17 @@ function resolveErrorModel(response, id, row, streamState) {
     : resolveErrorProd(response);
   error.digest = errorInfo.digest;
   const errorWithDigest = error;
-  if (chunk != null) {
-    if (__DEV__) {
-      resolveChunkDebugInfo(response, streamState, chunk);
-    }
-    triggerErrorOnChunk(response, chunk, errorWithDigest);
-  } else {
+  if (chunk == null) {
     const newChunk = createErrorChunk(response, errorWithDigest);
     if (__DEV__) {
       resolveChunkDebugInfo(response, streamState, newChunk);
     }
     chunks.set(id, newChunk);
+  } else {
+    if (__DEV__) {
+      resolveChunkDebugInfo(response, streamState, chunk);
+    }
+    triggerErrorOnChunk(response, chunk, errorWithDigest);
   }
 }
 
@@ -3704,9 +3700,6 @@ function resolveHint(response, code, model) {
 
 const supportsCreateTask = __DEV__ && console.createTask !== undefined;
 
-// A constructor function the program writes, `this` its Response (rd64's
-// form), as `new WeakRef(this)` and `registry.register(this, ..)` need
-// the Response itself.
 function ResponseInstance(
   bundlerConfig,
   serverReferenceConfig,
@@ -3795,21 +3788,20 @@ function ResponseInstance(
     this._debugEndTime = debugEndTime ?? null;
     this._debugFindSourceMapURL = findSourceMapUrl;
     this._debugChannel = debugChannel;
-    const old = this._blockedConsole;
     this._blockedConsole = null;
     this._replayConsole = replayConsole;
     this._rootEnvironmentName = rootEnv;
     if (debugChannel != null) {
-      if (debugChannelRegistry != null) {
-        // When a Response gets GC:ed because nobody is referring to any of the
-        // objects that lazily load from the Response anymore, then we can close
-        // the debug channel.
-        debugChannelRegistry.register(this, debugChannel, this);
-      } else {
+      if (debugChannelRegistry == null) {
         // We can't safely clean things up later, so we immediately close the
         // debug channel.
         closeDebugChannel(debugChannel);
         this._debugChannel = undefined;
+      } else {
+        // When a Response gets GC:ed because nobody is referring to any of the
+        // objects that lazily load from the Response anymore, then we can close
+        // the debug channel.
+        debugChannelRegistry.register(this, debugChannel, this);
       }
     }
   }
@@ -4056,7 +4048,6 @@ function frameValues(frame) {
   return [name, filename, line, col, enclosingLine, enclosingCol, isAsync];
 }
 
-/** `console.createTask.bind(console, name)`. */
 function getRootTask(response, childEnvironmentName) {
   const rootTask = response._debugRootTask;
   if (rootTask == null) {
@@ -4171,14 +4162,14 @@ function buildFakeTask(
 // The lower the limit, the more likely we'll not reach react_stack_bottom_frame
 // The higher the limit, the slower Error() is when not inspecting with a debugger.
 // When inspecting with a debugger, Error.stackTraceLimit has no impact on Error() performance (in v8).
-const OWNER_STACK_TRACE_LIMIT = 10;
+const ownerStackTraceLimit = 10;
 
 /* @noinline */
 function fakeJSXCallSite() {
   // This extra call frame represents the JSX creation function. We always pop this frame
   // off before presenting so it needs to be part of the stack.
   const previousStackTraceLimit = Error.stackTraceLimit;
-  Error.stackTraceLimit = OWNER_STACK_TRACE_LIMIT;
+  Error.stackTraceLimit = ownerStackTraceLimit;
   const error = new Error('react-stack-top-frame'); // eslint-disable-line prefer-const
   Error.stackTraceLimit = previousStackTraceLimit;
   return error;
@@ -4193,7 +4184,7 @@ const createFakeJSXCallStack = {
       false,
       fakeJSXCallSite,
     );
-    return $unwrap(callStackForError());
+    return callStackForError();
   },
 };
 
@@ -4389,9 +4380,6 @@ function resolveConsoleEntry(response, json) {
   }
 
   const blockedChunk = response._blockedConsole;
-  response._blockedConsole = null;
-  const old = response._blockedConsole;
-  response._blockedConsole = blockedChunk ?? null;
   if (blockedChunk == null) {
     // If we're not blocked on any other chunks, we can try to eagerly initialize
     // this as a fast-path to avoid awaiting them.
@@ -4412,7 +4400,6 @@ function resolveConsoleEntry(response, json) {
           // Ignore console errors for now. Unnecessary noise.
         },
       );
-      const old = response._blockedConsole;
       response._blockedConsole = chunk;
     }
   } else {
@@ -4426,15 +4413,11 @@ function resolveConsoleEntry(response, json) {
         // Ignore console errors for now. Unnecessary noise.
       },
     );
-    const old = response._blockedConsole;
     response._blockedConsole = chunk;
     const unblock = () => {
-      const old = response._blockedConsole;
-      response._blockedConsole = null;
-      if (old === chunk) {
+      if (response._blockedConsole === chunk) {
         // We were still the last chunk so we can now clear the queue and return
         // to synchronous emitting.
-        const old = response._blockedConsole;
         response._blockedConsole = null;
       }
       resolveModelChunk(response, chunk, json);
@@ -4444,8 +4427,6 @@ function resolveConsoleEntry(response, json) {
 }
 
 function initializeIOInfo(response, ioInfo) {
-  // A `null` stack is initialized too (upstream `!== undefined`): its owner's
-  // fake stack still is.
   if (ioInfo.stack !== undefined) {
     initializeFakeTask(response, ioInfo);
     initializeFakeStack(response, ioInfo);
@@ -4484,7 +4465,7 @@ function initializeIOInfo(response, ioInfo) {
 
 function resolveIOInfo(response, id, model) {
   const chunks = $unwrap(response._chunks);
-  const restore = isInitializingDebugInfo;
+  const prevIsInitializingDebugInfo = isInitializingDebugInfo;
   isInitializingDebugInfo = true;
   let chunk;
   try {
@@ -4502,7 +4483,7 @@ function resolveIOInfo(response, id, model) {
       chunk = chunk$1;
     }
   } finally {
-    isInitializingDebugInfo = restore;
+    isInitializingDebugInfo = prevIsInitializingDebugInfo;
   }
   if (chunk.status === 'fulfilled') {
     initializeIOInfo(response, initializedValue(chunk));
