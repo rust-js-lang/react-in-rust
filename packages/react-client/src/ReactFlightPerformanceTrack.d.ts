@@ -91,7 +91,7 @@ export function logComponentAwait(
   startTime: number,
   endTime: number,
   rootEnv: string,
-  value: unknown,
+  value?: unknown | null | undefined,
 ): void;
 
 export function logIOInfoErrored(
@@ -103,5 +103,5 @@ export function logIOInfoErrored(
 export function logIOInfo(
   ioInfo: ReactIOInfo,
   rootEnv: string,
-  value: unknown,
+  value?: unknown | null | undefined,
 ): void;

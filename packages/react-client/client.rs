@@ -13,6 +13,8 @@ pub mod react_client_debug_config_browser;
 pub mod react_client_debug_config_node;
 #[path = "src/ReactClientDebugConfigPlain.rs"]
 pub mod react_client_debug_config_plain;
+#[path = "src/ReactFlightClient.rs"]
+pub mod react_flight_client;
 #[path = "src/ReactFlightClientDevToolsHook.rs"]
 pub mod react_flight_client_dev_tools_hook;
 #[path = "src/ReactFlightClientStreamConfigNode.rs"]

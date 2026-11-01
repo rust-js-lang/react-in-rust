@@ -583,10 +583,10 @@ pub fn log_component_await(
     start_time: f64,
     end_time: f64,
     root_env: &str,
-    value: &Unknown,
+    value: Option<&Unknown>,
 ) {
     if SUPPORTS_USER_TIMING.with(|&supports| supports) && end_time > 0.0 {
-        let description = get_io_description(Some(value));
+        let description = get_io_description(value);
         let name = get_io_short_name(
             &async_info.awaited,
             &description,
@@ -601,10 +601,10 @@ pub fn log_component_await(
             .or(async_info.awaited.debug_task.get());
         if __DEV__ && let Some(debug_task) = debug_task {
             let mut properties: Vec<(String, String)> = Vec::new();
-            if let Some(object) = js::classify(Some(value)).object() {
+            if let Some(object) = js::classify(value).object() {
                 add_object_to_properties(object, &mut properties, 0, "");
-            } else if !matches!(js::classify(Some(value)), Kind::Undefined) {
-                add_value_to_properties("awaited value", Some(value), &mut properties, 0, "");
+            } else if !matches!(js::classify(value), Kind::Undefined) {
+                add_value_to_properties("awaited value", value, &mut properties, 0, "");
             }
             let tooltip_text = get_io_long_name(
                 &async_info.awaited,
@@ -711,21 +711,21 @@ pub fn log_io_info_errored(io_info: &ReactIOInfo, root_env: &str, error: Option<
 }
 
 #[cfg_attr(rust_js, rust_js::name = "logIOInfo")]
-pub fn log_io_info(io_info: &ReactIOInfo, root_env: &str, value: &Unknown) {
+pub fn log_io_info(io_info: &ReactIOInfo, root_env: &str, value: Option<&Unknown>) {
     let start_time = io_info.start.get();
     let end_time = io_info.end.get();
     if SUPPORTS_USER_TIMING.with(|&supports| supports) && end_time >= 0.0 {
-        let description = get_io_description(Some(value));
+        let description = get_io_description(value);
         let entry_name = get_io_short_name(io_info, &description, io_info.env.as_deref(), root_env);
         let color = get_io_color(&entry_name);
         let debug_task = io_info.debug_task.get();
         let measure_name = "\u{200b}".to_owned() + &entry_name;
         if __DEV__ && let Some(debug_task) = debug_task {
             let mut properties: Vec<(String, String)> = Vec::new();
-            if let Some(object) = js::classify(Some(value)).object() {
+            if let Some(object) = js::classify(value).object() {
                 add_object_to_properties(object, &mut properties, 0, "");
-            } else if !matches!(js::classify(Some(value)), Kind::Undefined) {
-                add_value_to_properties("Resolved", Some(value), &mut properties, 0, "");
+            } else if !matches!(js::classify(value), Kind::Undefined) {
+                add_value_to_properties("Resolved", value, &mut properties, 0, "");
             }
             let tooltip_text =
                 get_io_long_name(io_info, &description, io_info.env.as_deref(), root_env);

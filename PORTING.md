@@ -686,6 +686,34 @@ These differences from upstream's output are accepted:
     binding with `$`;
   - ReplyClient's `retry` is an arrow, `() => {..}`, where upstream writes
     `function () {..}`: it reads no `this` or `arguments`.
+- **ReplyClient's forms** (the user, 2026-11-01):
+  - encodeFormData's `resolve` and `reject` are captured as `Option`s the
+    promise's executor fills, `let resolve; let reject;` then
+    `const resolve$1 = $unwrap(resolve);` once `new Promise(..)` has run
+    it, where upstream calls the variables the executor wrote;
+  - parseStackLocation reads `error.stack ?? ''`, where upstream reads
+    `error.stack` (a `string` it never finds missing);
+  - the lazy case's `finally { pendingParts--; }` is a statement after
+    the try/catch, which each of their paths reaches, each returning
+    the value it made after it.
+- **react-art's event handler** (the user, rd335, 2026-11-02): the closure
+  ReactFiberConfigART returns as a node's listener prints as an anonymous
+  function, where upstream names it `function handleEvent`.
+- **Accepted on the user's behalf while away, 2026-11-02** (each changes no
+  result; the coordinator logs them for the user):
+  - the Flight client's DEV `then` holds its wrapper promise in a cell its
+    executor's callbacks read, `let wrapper; .. wrapper = wrapperPromise;`
+    and `$unwrap(wrapper)`, where upstream's callbacks read
+    `wrapperPromise` itself (Rust can't name the promise inside the
+    executor `new Promise` runs); each callback's copy of the chunk is
+    `const chunk = this;` (rd515);
+  - that `then` attaches `wrapperPromise.then(onFulfilled, reason =>
+    {..})`, or `wrapperPromise.then(onFulfilled)` where it's given no
+    `reject`, where upstream writes `wrapperPromise.then(resolveCallback,
+    rejectCallback)` (the binding takes no optional handler, rd516): a
+    missing `reject` leaves the rejection unhandled either way;
+  - clippy's `collapsible_match` makes a `match` arm's nested
+    `if __DEV__` a guard, `"4" if __DEV__ => ..`, as ci1 merges nested ifs.
 
 The audit of 2026-11-01 (Batch 41) listed these; the user accepted them the
 same day:
@@ -939,16 +967,13 @@ The port is split between sessions by package:
   `node::util::text_decoder::new` taking an encoding and options (rd357;
   drafted as StreamConfigWeb's through `node::util`), ReactFlightPerformanceTrack on `lastIndexOf`'s position (rd343;
   drafted, its JS compared with upstream's call for call),
-  ReactFlightReplyClient on `arguments` (rd332), a form for
-  processReply's nested functions (rd345) and a `this` replacer (rd346).
-  ReactFlightClient is drafted out of tree (Batch 43): its chunk is ADR
-  0761's `ReactPromise` class and its Response a constructor function the
+  ReactFlightReplyClient on `js::arguments()` in a `function::with_this`
+  function (rd509), `Array.from` (rd501), an `AsyncIterator` (rd507) and
+  a wrong answer in its lazy case's retry (rd511); it's drafted out of tree.
+  ReactFlightClient is Rust (2026-11-02): its chunk is ADR 0761's
+  `ReactPromise` class and its Response a constructor function the
   program writes, `Class::of(function::with_this(..))`, whose `this` gives
-  `new WeakRef(this)`; it waits on a chunk state rust-js can flatten
-  (rd380), a constructor of 14 parameters (rd400), Blob and FormData parts
-  of any kind (rd397) and others, and on shared/ReactTypes' debug-info types
-  taking `js::Defined` and cells for the fields it writes. At ab0d927 its
-  parseModel takes no reviver, so rd346 doesn't hold it.
+  `new WeakRef(this)`.
 - **The second session** has react-server, react-server-dom-* and
   react-dom-bindings/src/server.
 
