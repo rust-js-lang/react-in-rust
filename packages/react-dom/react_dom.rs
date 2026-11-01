@@ -16,6 +16,8 @@ pub mod react_dom_fizz_server_browser;
 pub mod react_dom_float;
 #[path = "src/shared/ReactDOMFlushSync.rs"]
 pub mod react_dom_flush_sync;
+#[path = "src/server/ReactDOMFizzServerEdge.rs"]
+pub mod react_dom_fizz_server_edge;
 #[path = "src/server/ReactDOMLegacyServerBrowser.rs"]
 pub mod react_dom_legacy_server_browser;
 #[path = "src/server/ReactDOMLegacyServerImpl.rs"]
