@@ -7,5 +7,7 @@ pub mod create_fast_hash_js;
 pub mod react_server_stream_config_browser;
 #[path = "src/ReactServerStreamConfigEdge.rs"]
 pub mod react_server_stream_config_edge;
+#[path = "src/ReactServerStreamConfigFB.rs"]
+pub mod react_server_stream_config_fb;
 #[path = "src/ReactServerStreamConfigNode.rs"]
 pub mod react_server_stream_config_node;
