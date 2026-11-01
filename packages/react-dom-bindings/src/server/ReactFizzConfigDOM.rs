@@ -9,6 +9,7 @@ use std::panic::{self, AssertUnwindSafe};
 use std::rc::Rc;
 
 use js::{Dict, JsObject, Kind, Unknown, dict};
+use react_server::react_fizz_current_task::Request;
 use shared::environment::__DEV__;
 use shared::react_dom_shared_internals::{HostDispatcher, REACT_DOM_SHARED_INTERNALS};
 use shared::react_feature_flags::{
@@ -63,11 +64,6 @@ unsafe impl js::Defined for Chunk {}
 
 /// A chunk the stream config made once, written again and again.
 pub type PrecomputedChunk = Chunk;
-
-/// What a render keeps, React's `Request`, which Fizz's server owns.
-pub struct Request(PhantomData<JsObject>);
-
-unsafe impl js::Defined for Request {}
 
 #[cfg_attr(
     rust_js,
