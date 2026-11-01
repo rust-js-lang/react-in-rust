@@ -576,6 +576,70 @@ These differences from upstream's output are accepted:
   the reconciler's ReactFiberConfig forks do: `export *` re-exports of the
   configs and the `$$$config` shims.
 
+The audit of 2026-11-01 (Batch 41) listed these; the user accepted them the
+same day:
+
+- **Blank lines are the Rust's** (layout): the JS has a blank line where the
+  Rust has one, and rustfmt drops some upstream has (a block's first line, two
+  in a row). Where the Rust can naturally write upstream's blank line, between
+  two statements or items, the port writes it.
+- **rd350, `export function` inline** (layout): a `pub fn` prints `export
+  function name(..)` where it is declared, where upstream declares a plain
+  `function` and lists it in an `export {..}` at the module's end.
+- **ReactDOMDefaultTransitionIndicator's order** (layout): startFakeNavigation
+  is declared before handleNavigateComplete and the listeners are added after
+  both, as Rust makes a closure before the one that captures it; upstream
+  relies on hoisting.
+- **`args.slice()`** for `args.slice(0)` (the ReactClientConsoleConfigs'
+  `to_vec()`).
+- **ReactDOMSharedInternals' `f: () => undefined`** for `f: noop` in the
+  DefaultDispatcher (`f`'s type gives `Option<bool>`; the client replaces `d`
+  when it loads).
+- **ReactDOMRoot and ReactDOMClient's `options ?? null`** for upstream's
+  ternary, and hydrationCallbacks being `options` itself.
+- **ReactTestUtils' `if (!didWarnAboutUsingAct)`** for `=== false` of a bool.
+- **createReactNoop's childToJSX copies the children**, `child.slice()`,
+  before it recurses (a borrow held across calls that may run JS), as
+  ReactTestRenderer's toJSON does.
+- **SchedulerPostTask's forms**: `const {performance: perf, setTimeout} =
+  window;` for two consts; postTask given block arrows, `() => {
+  runTask(..); }`; `_postTaskPriority` named back with `rust_js::name`; and
+  `typeof scheduler.yield !== 'undefined'` for `!== undefined` (opt1's kind).
+- **react-dom shared's four**: `unstable_batchedUpdates` declared under its
+  exported name where upstream exports `batchedUpdates as`; createPortal's
+  `key` without `= null` (createPortalImpl treats undefined and null alike);
+  the error descriptors a typeof switch, not a nested conditional; and
+  ReactDOMTypes' `string | undefined` for Flow's `?string`.
+- **ReactFiberConfigDOM's Observer, onUnsuspend and callback**: Observer an
+  untagged enum compared by `js::unknown(a) != js::unknown(&b)`;
+  onUnsuspend and onUnsuspendImg `const x = function () { const state =
+  this; .. }` thread-locals; requestPostPaintCallback passing `callback`
+  itself for `time => callback(time)` (rd158).
+- **ReactDOMComponent's forms**: `x.multiple = ..` set through `js::set` of
+  an if; `isNaN(value)` and `value >= 1` through `js::cast`; setSrcObject's
+  `try` as `catch_unwind` (`$catchUnwind`, rd130); `const end =
+  style.length`; two-case typeof switches as if chains (ADR 0629);
+  `prevValue?.__html`; `!s.is_empty()` as `s`; and
+  didWarnForNewBooleanPropsWithEmptyValue `{}` in production too. Its
+  `continue` at a case's end printed `break`, and the comments after `try {}
+  catch {}`, are rust-js's control-flow gaps, as ConfigDOM's `$retain` is.
+- **ReactDOMSelection and ReactInputSelection's forms**: isSameOriginFrame
+  reading `href` and returning true in its `try`; containsNode and
+  hasSelectionCapabilities as returns and if chains; `++i === x` as `i++; if
+  (i === x)`; `(next = node.firstChild) === null` as a const and its test;
+  `parentNode == anchorNode`; four consts for the selection's destructuring
+  (r10); `?.` and `??` for `(a && a.defaultView) || window`; the ancestors'
+  `while ((parentNode = ..) !== null)`; and the swap's `t`.
+- **DOMPluginEventSystem and ReactDOMEventReplaying's forms**: the `for (; i
+  < q.length; i += 3)` loop as a `while`; a let chain that swaps its
+  branches and drops a `targetContainer !== null` test (dn1); the queued
+  lists walked by index with a borrow per step; `queuedPointers.get(id)`
+  without `|| null`; and `__DEV__ &&` ifs merged (ci1).
+- **ReactDOMEventHandle's "Do nothing" branches** as one `if (a ||
+  (enableScopeAPI && b))` (clippy's `if_same_then_else`).
+- **ReactFiberConfigART's `.scale(scaleX, scaleY)`**, where upstream also
+  passes originX and originY, which art's `scale` ignores.
+
 These forms are decided:
 
 - **tr1**: test an Option with `== null` or `!= null`, never by truth. Where
@@ -660,6 +724,11 @@ These forms are decided:
 - **setCurrentUpdatePriority**: `impl From<EventPriority> for Lane`, and the
   port writes `set_p(i32::from(p))`.
 - **wl8**: copies named `<name>Boxed` and `<name>Unboxed` are kept.
+- **rd349, imports by workspace specifier** (the user, 2026-11-01): a module
+  of another package is imported as upstream imports it,
+  `'shared/ReactFeatureFlags'`, not by its relative file with `.js`. rust-js
+  is building it; until it lands, every cross-package import differs, and a
+  regeneration then changes them all.
 
 ## Committing
 
