@@ -516,10 +516,14 @@ These differences from upstream's output are accepted:
   only instances, never `null` or a falsy value, so no test tells them
   apart.
 
-- **ReactART's fill classes take `(...args)`** (the user, 2026-11-01;
-  8839806): LinearGradient, RadialGradient and Pattern are written with a
-  rest parameter, so their `.length` is 0 where upstream's is its
-  parameters' count. Nothing reads it.
+- **ReactART's fill classes read `arguments`** (rd332, 2026-11-02; was
+  `(...args)`, the user's of 2026-11-01): LinearGradient, RadialGradient
+  and Pattern take upstream's named parameters, so `.length` is theirs, and
+  keep `function::call(slice, Some(js::arguments()), ())` of `use
+  js::array::SLICE as slice;`, printed `Array.prototype.slice.call(arguments)`
+  where upstream reads its module's `const slice = Array.prototype.slice;`
+  (until rust-js prints the `use` as that const). `applyFill` calls the
+  node's method read as a value, `node.fillLinear.apply(node, this._args)`.
 - **ReactART's JS is `ReactART.jsx`** (the user, 2026-11-01; 8839806):
   rust-js names a module with JSX `.jsx`, so upstream's ReactART.js is
   removed and jest resolves the `jsx` extension
