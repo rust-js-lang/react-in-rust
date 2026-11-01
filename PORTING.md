@@ -633,6 +633,27 @@ These differences from upstream's output are accepted:
   three callers pass `null`, so ReactART's call prints a trailing `null`
   where upstream leaves the argument out. Its type is `?Function`, and the
   reconciler tests it `!= null`.
+- **The Flight client's chunk state** (the user, 2026-11-01), the chunk's
+  `RefCell<ChunkState>` read as Rust's borrow rules allow:
+  - a value or reason is copied out of the chunk's state before a listener
+    or callback is called, `settled = {TAG: 'Ok', _0: chunk.value}` in
+    `then`, and the helpers `initializedValue(chunk)` and
+    `erroredReason(chunk)` read it for a moment, where upstream reads
+    `chunk.value` and `chunk.reason` while the code it calls runs (a
+    `borrow()` held across the call would panic if the listener wrote the
+    chunk);
+  - a blocked chunk's listener list is made `chunk.value ??= []`, where
+    upstream writes `if (chunk.value === null) chunk.value = [];` (the list
+    is `Option<Vec<Listener>>`, `get_or_insert_with`);
+  - createErrorChunk makes `new ReactPromise('rejected', undefined, error)`,
+    where upstream passes `null`: the Errored variant has no value, and
+    its three writes of status and reason are upstream's;
+  - `streamController(chunk)` panics "Expected a stream chunk." where
+    upstream's `chunk.reason.enqueueValue(..)` would throw a TypeError of a
+    chunk that isn't a fulfilled stream (it never is one, by the code that
+    makes them);
+  - resolveStream passes `stream` to wakeChunk, where upstream passes
+    `chunk.value`, the same value it has just written.
 
 The audit of 2026-11-01 (Batch 41) listed these; the user accepted them the
 same day:
