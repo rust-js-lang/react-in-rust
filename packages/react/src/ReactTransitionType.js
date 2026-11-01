@@ -19,7 +19,7 @@ export function addTransitionType(type) {
       const transitionTypes = transition.types;
       if (transitionTypes == null) {
         transition.types = [type];
-      } else if (!transitionTypes.some(t => t === type)) {
+      } else if (!transitionTypes.includes(type)) {
         transitionTypes.push(type);
       }
     } else {

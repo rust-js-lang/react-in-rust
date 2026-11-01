@@ -673,7 +673,6 @@ function cutOffTailIfNeeded(renderState, hasRenderedATailFallback) {
     // so we don't leave any behind.
     return;
   }
-  // Hidden is now the default.
   switch (renderState.tailMode) {
     case 'visible':
       // Everything should remain as it was.
@@ -711,6 +710,7 @@ function cutOffTailIfNeeded(renderState, hasRenderedATailFallback) {
       }
       break;
     }
+    // Hidden is now the default.
     default: {
       // Any insertions at the end of the tail list after this point
       // should be invisible. If there are already mounted boundaries

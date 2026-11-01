@@ -1119,8 +1119,7 @@ function defaultEncodeFormAction(identifierPrefix) {
     // a new identifier each time. So we just append it at the end instead.
     const prefixedData = new FormData();
     encodedFormData.forEach((value, key) => {
-      const name = '$ACTION_' + identifierPrefix + ':' + key;
-      prefixedData.append(name, value);
+      prefixedData.append('$ACTION_' + identifierPrefix + ':' + key, value);
     });
     data = prefixedData;
     // We encode the name of the prefix containing the data.

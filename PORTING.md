@@ -1062,6 +1062,12 @@ The port is split between sessions by package:
     `Reply.serializeModel(reply, root, 0)`, where upstream's functions are
     nested in processReply over its variables (a `Box<dyn Fn>` probe gives
     upstream's form; the port keeps `impl Fn`);
+  - rd541: six fields only JS reads, `ServerObjectReferenceJson`'s `id`,
+    `BoundReferenceJson`'s `id` and `bound` (each given to JSON.stringify
+    or encodeFormData) and `ServerReferenceProperties`' `form_action`,
+    `is_signature_equal` and `bind` (given to `Object.defineProperties`),
+    are `never read` in a native `cargo check`; rust-js's clippy is clean,
+    and no `#[allow]` is added;
   - rd537: a part id, a JS number kept `f64`, is
     `prefix + $displayF64(id)` where upstream writes `prefix + id`;
   - rd425: a reader's or iterator's `progress` is a closure held in a cell

@@ -46,7 +46,7 @@ import {
 import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
 import hasOwnProperty from 'shared/hasOwnProperty';
 import noop from 'shared/noop';
-import {compareDocumentPositionForEmptyFragment} from '../../../shared/ReactDOMFragmentRefShared.js';
+import {compareDocumentPositionForEmptyFragment} from 'shared/ReactDOMFragmentRefShared';
 import {listenToAllSupportedEvents} from '../events/DOMPluginEventSystem.js';
 import {
   isEnabled as ReactBrowserEventEmitterIsEnabled,

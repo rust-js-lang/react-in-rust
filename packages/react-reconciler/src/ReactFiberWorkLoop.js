@@ -2724,7 +2724,6 @@ function renderRootConcurrent(root, lanes) {
                   // Usually this is handled when we instrument the promise to add a
                   // `status` field, but if the promise already has a status, we won't
                   // have added a listener until right here.
-                  const root$1 = root;
                   // Check if the root is still suspended on this promise.
                   // Mark the root as ready to continue rendering.
                   // Ensure the root is scheduled. We should do this even if we're
@@ -2734,12 +2733,12 @@ function renderRootConcurrent(root, lanes) {
                     if (
                       (workInProgressSuspendedReason === SuspendedOnData ||
                         workInProgressSuspendedReason === SuspendedOnAction) &&
-                      workInProgressRoot === root$1
+                      workInProgressRoot === root
                     ) {
                       workInProgressSuspendedReason =
                         SuspendedAndReadyToContinue;
                     }
-                    ensureRootIsScheduled(root$1);
+                    ensureRootIsScheduled(root);
                   }
                   thenable.then(onResolution, onResolution);
                   return;

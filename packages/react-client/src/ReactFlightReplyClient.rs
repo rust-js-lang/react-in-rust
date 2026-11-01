@@ -22,9 +22,8 @@ use shared::react_symbols::{
 };
 use shared::react_types::{ReactCustomFormAction, Thenable, Wakeable};
 use webapi::{
-    AbortController, AbortSignal, Blob, BlobPart, Byob, EventTargetExt, FormData,
-    FormDataEntryValue, ReadableStream, ReadableStreamGetByobReaderOptions,
-    ReadableStreamReadResult, console,
+    AbortController, AbortSignal, Blob, BlobPart, Byob, EventTargetExt, FormData, ReadableStream,
+    ReadableStreamGetByobReaderOptions, ReadableStreamReadResult, console,
 };
 
 use crate::react_flight_temporary_references::{TemporaryReferenceSet, write_temporary_reference};
@@ -283,10 +282,9 @@ impl Reply {
         );
         let blob_id = self.take_part_id();
         let form_data = self.form_data();
-        form_data.append_with_blob(
+        form_data.append(
             &(self.form_field_prefix.clone() + &blob_id.to_string()),
             blob,
-            None,
         );
         "$".to_owned() + tag + &js::number::to_string(blob_id, Some(16))
     }
@@ -318,10 +316,9 @@ impl Reply {
                     .iter()
                     .map(|&chunk| BlobPart::from(chunk))
                     .collect();
-                data.append_with_blob(
+                data.append(
                     &(reply.form_field_prefix.clone() + &blob_id.to_string()),
                     webapi::blob::new(Some(&parts), None),
-                    None,
                 );
                 data.append(
                     &stream_prefix,
@@ -819,16 +816,9 @@ impl Reply {
                 let prefix = self.form_field_prefix.clone() + "_" + &ref_id.to_string() + "_";
                 // SAFETY: an instance of FormData is one.
                 let value: &FormData = unsafe { js::cast(value) };
-                value.for_each(Box::new(
-                    move |original_value, original_key, _| match original_value {
-                        FormDataEntryValue::Str(text) => {
-                            data.append(&(prefix.clone() + original_key), text)
-                        }
-                        FormDataEntryValue::File(file) => {
-                            data.append_with_blob(&(prefix.clone() + original_key), file, None)
-                        }
-                    },
-                ));
+                value.for_each(Box::new(move |original_value, original_key, _| {
+                    data.append(&(prefix.clone() + original_key), original_value);
+                }));
                 return Some(js::unknown_of(serialize_form_data_reference(ref_id)));
             }
             if js::instance_of(object, js::class::<js::Map<Unknown, Unknown>>()) {
@@ -866,10 +856,9 @@ impl Reply {
                 let buffer: &js::ArrayBuffer = unsafe { js::cast(value) };
                 let blob = webapi::blob::new(Some(&[BlobPart::from(buffer)]), None);
                 let blob_id = self.take_part_id();
-                self.form_data().append_with_blob(
+                self.form_data().append(
                     &(self.form_field_prefix.clone() + &blob_id.to_string()),
                     blob,
-                    None,
                 );
                 return Some(js::unknown_of(
                     "$".to_owned() + "A" + &js::number::to_string(blob_id, Some(16)),
@@ -964,10 +953,9 @@ impl Reply {
                 let blob_id = self.take_part_id();
                 // SAFETY: an instance of Blob is one.
                 let blob: &Blob = unsafe { js::cast(value) };
-                self.form_data().append_with_blob(
+                self.form_data().append(
                     &(self.form_field_prefix.clone() + &blob_id.to_string()),
                     blob,
-                    None,
                 );
                 return Some(js::unknown_of(serialize_blob_id(blob_id)));
             }
@@ -1415,11 +1403,7 @@ thread_local! {
                 // a new identifier each time. So we just append it at the end instead.
                 let prefixed_data = webapi::form_data::new(None, None);
                 encoded_form_data.for_each(Box::new(move |value, key, _| {
-                    let name = "$ACTION_".to_owned() + identifier_prefix + ":" + key;
-                    match value {
-                        FormDataEntryValue::Str(text) => prefixed_data.append(&name, text),
-                        FormDataEntryValue::File(file) => prefixed_data.append_with_blob(&name, file, None),
-                    }
+                    prefixed_data.append(&("$ACTION_".to_owned() + identifier_prefix + ":" + key), value);
                 }));
                 data = Some(prefixed_data);
                 // We encode the name of the prefix containing the data.

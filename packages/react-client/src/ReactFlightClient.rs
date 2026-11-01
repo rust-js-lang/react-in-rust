@@ -32,7 +32,10 @@ use shared::react_types::{
 };
 #[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
 use shared::react_version::REACT_VERSION;
-use webapi::{ConsoleTask, ReadableStreamController, UnderlyingSource, console, performance};
+use webapi::{
+    ConsoleTask, FormDataEntryValue, ReadableStreamController, UnderlyingSource, console,
+    performance,
+};
 
 use crate::react_flight_client_dev_tools_hook::inject_internals;
 use crate::react_flight_performance_track::{
@@ -3231,7 +3234,7 @@ fn create_form_data(
     // SAFETY: a FormData's model is its entries.
     let model: &Vec<(String, Option<&'static Unknown>)> = unsafe { js::cast(model) };
     for (name, value) in model {
-        form_data.append(name, unsafe { js::cast(*value) });
+        form_data.append(name, unsafe { js::cast::<FormDataEntryValue>(*value) });
     }
     Some(js::unknown(form_data))
 }

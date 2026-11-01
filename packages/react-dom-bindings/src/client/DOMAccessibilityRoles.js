@@ -123,10 +123,7 @@ function getExplicitRoles(element) {
 // https://w3c.github.io/html-aria/#document-conformance-requirements-for-use-of-aria-attributes-in-html
 export function hasRole(element, role) {
   const explicitRoles = getExplicitRoles(element);
-  if (
-    explicitRoles != null &&
-    explicitRoles.some(explicit => explicit === role)
-  ) {
+  if (explicitRoles != null && explicitRoles.includes(role)) {
     return true;
   }
 
