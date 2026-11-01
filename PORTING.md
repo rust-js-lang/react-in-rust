@@ -655,6 +655,32 @@ same day:
 - **ReactFiberConfigART's `.scale(scaleX, scaleY)`**, where upstream also
   passes originX and originY, which art's `scale` ignores.
 
+The audit's last list (Batch 42) the user accepted on 2026-11-01 too:
+
+- **A detached `/** */` block prints `/* */`** (ReactBaseClasses,
+  ReactChildren, ReactFiberConfigART, ReactInputSelection): a block that
+  documents no declaration. In Rust `/**` is a doc comment, which clippy
+  (`empty_line_after_doc_comments`) and rustc (`unused_doc_comments`)
+  refuse there, so the port writes `/* .. */`.
+- **The small value forms:** ReactComponentInfoStack's
+  getOwnerStackByComponentInfoInDev tests `owner == null` without upstream's
+  `typeof componentInfo.name === 'string'` (`name` is a `String`, dn1's
+  kind); ReactFiberConfigART's `props.opacity ?? 1`, appendInitialChild's
+  `inject` and NO_CONTEXT declared a line before upstream's; `?? noop` for
+  `|| noop` of the default transition indicator's result
+  (ReactFiberAsyncAction, ReactFiberRootScheduler); and ReactDOMRoot's
+  `unstable_scheduleHydration` a wrapper, `function (target) {
+  scheduleHydration(target); }`, where upstream assigns `scheduleHydration`
+  itself (routed to rust-js's forwarding rule; accepted until it lands).
+- **`Date.now()`** in ReactOwnerStackReset and the scheduler, where upstream
+  captures `const localDate = Date` as the module loads: only a `Date`
+  replaced later, on a host without `performance`, tells them apart.
+- **The fiber's `_debug*` fields stored with `?? null`**: `_debugOwner`,
+  `_debugStack`, `_debugTask` and `_debugHookTypes` store `x ?? null` where
+  upstream stores `x`, so a hand-made element without `_debugStack` or
+  `_debugTask` gives the fiber `null` where upstream gives `undefined`.
+  React's own elements always carry them in DEV.
+
 These forms are decided:
 
 - **tr1**: test an Option with `== null` or `!= null`, never by truth. Where
