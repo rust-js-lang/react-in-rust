@@ -6,10 +6,19 @@ this branch until the draft is whole**: a build overwrites upstream's
 `ReactFizzServer.js` with a partial module. The generated JS is not committed.
 
 Check: `cargo fmt -p react-server` and
-`node ../rust-js/tooling/cli.js clippy --package react-server -- -D warnings -A dead_code`
-(clean). `-A dead_code` only while the draft is partial: private items the
-unported sections call are unused until then. The functions not ported yet
-are `todo!()` stubs at the end of the file, under `// DRAFT`.
+`node ../rust-js/tooling/cli.js clippy --package react-server -- -D warnings`:
+clean at the branch's head, the draft whole (no stubs left).
+
+While this was drafted, another session had uncommitted changes in the
+shared `../rust-js` (`js::error::new` taking `Option<&str>`) that break
+react-isomorphic, so clippy was run against rust-js HEAD d02873fe1's
+`builtins`, `webapi`, `node` and `react` crates exported with `git archive`
+to a scratch directory, the worktree's `Cargo.toml` and
+`packages/react-art/Cargo.toml` pointed there only while checking (not
+committed).
+
+**`rust-js build --package react-server` is refused** (rd495 below), so no
+JS has been generated or compared yet.
 
 ## Representation
 
@@ -116,40 +125,83 @@ Each is marked `// GAP rdNNN` in the source.
 - **rd494** `new RequestInstance(..)`: upstream makes the request with a
   constructor function for its hidden class; a Rust struct literal prints an
   object literal. Repro: any struct of >16 fields made by one function.
-- **rd495** an `Rc`-held Rust value, or a `String` a closure made, given to
-  JS as `&'static Unknown` (a ComponentStackNode's `owner`, a getter's
-  result) needs `unsafe { js::cast(..) }`. Repro: `fn f(n: Rc<Node>) -> &'static Unknown { js::unknown(&*n) }` doesn't borrow-check.
+- **rd495 (blocking the build)** ADR 0626's refusal: "this crate's
+  `dyn Fn`s may hold a value with a destructor, which their drop runs, but
+  `react_isomorphic`, a rust-js library whose `dyn Fn`s drop nothing, holds
+  one of them". The server's `dyn Fn`s hold `Rc`s (a task's ping closures
+  capture the `Rc<Request>` and a `Weak<Task>`; the request's callbacks are
+  `Rc<dyn Fn>` of closures an entry makes), and react-server reaches
+  react_isomorphic's `BasicStateAction::Update(&'static dyn Fn(S) -> S)`
+  through ReactFizzHooks. ADR 0626's amendment records this refusal as the
+  recommendation while the user's decision is pending (rust-js's
+  `decisions-pending.md`, rd57). Repro: library crate `dep` exports
+  `pub enum E { F(&'static dyn Fn()) }`; a consumer that uses `dep::E` and
+  makes `let r = Rc::new(1); let f: Rc<dyn Fn()> = Rc::new(move || { let _ = &r; });`
+  is refused. (The draft's earlier rd495, an `Rc` or a `String` given to
+  JS as `&'static Unknown`, was its own mistake: `js::unknown_of(value)`
+  is that form, and the draft uses it.)
 - **rd496 (blocking, a wrong answer)** `ReactSharedInternals.getCurrentStack`:
   its getter gives `Option<&'static dyn Fn() -> String>`, its setter takes
   `Option<fn() -> String>`, so rerenderStalledTask can't put back what it
   read. The draft puts back its own function, wrong where another
   renderer's was set. Repro: `let p = R.get_current_stack(); R.set_get_current_stack(p);` doesn't type-check.
 
-## Output differences seen (not built yet; from the Rust's forms)
+## Output differences expected (not built yet; from the Rust's forms)
 
 - `Rc::new_cyclic` + `Weak::upgrade().unwrap()` in the task's ping closures
-  (rd96's form), where upstream's arrows close over `task`.
-- Counters are `f64` cells: `x.set(x.get() + 1.0)` where upstream writes
-  `x++`.
-- `try {} catch {} finally {}` is `catch_unwind` and code after it,
-  rethrowing with `resume_unwind` (rerenderStalledTask,
-  pushSuspendedCallSiteOnComponentStack).
-- pingTask: `if (isWorkLoopExternallyDriven) return;` then the test, where
-  upstream nests it in an `else` (clippy's `needless_return`).
-- encodeErrorForBoundary: `const [message, stack] = ..` as rd45's two lets.
-- logRecoverableError classifies the digest (`null`/`undefined`, string,
-  other) in a match.
+  (rd96's form), where upstream's arrows close over `const task`.
+- `then(move |_| resolve(), move |error| reject(error))` of the ping's
+  `Rc`s where upstream writes `then(ping.resolve, ping.reject)` (rd491).
+- Counters are `f64` cells: `x.set(x.get() + 1.0)` / `- 1.0` and a test
+  after, where upstream writes `x++` and `--x === 0`.
+- `try {} catch {} finally {}` is `catch_unwind`, the finally's statements,
+  then `resume_unwind`; a `return` inside the `try` is the closure's `bool`
+  (renderSuspenseBoundary, replaySuspenseBoundary); a catch that itself
+  may throw is a second `catch_unwind` (retryRenderTask, retryReplayTask,
+  performWork). What renderNode rethrows is the caught payload, or the
+  suspended thenable `js::throw`n where SuspenseException was caught.
+- `debugTask.run(replayElement.bind(null, ..))` and `onError.bind(null, ..)`
+  are closures, `debugTask.run(() => replayElement(..))`.
+- A Set's `forEach(f)` / `forEach(abortTaskSoft, request)` is a `for`
+  loop over the set's borrow; `pingedTasks.splice(0, i)` and friends are
+  `drain(0..i)`; `segment.children.length = n` is `truncate(n)`;
+  `nodes.length = 0` and `completedSegments.length = 0` are `clear()`.
+- A resume slot's index is the `Dict` key of its text,
+  `js::dict::get(slots, &i.to_string())` / `js::delete(slots, ..)`,
+  where upstream indexes by the number.
+- Port-side helpers upstream doesn't have: `thrown_value_of` (a catch's JS
+  value), `fallback_key_path_of`, `is_backwards`, `is_suspending`,
+  `is_suspense_exception`, `is_current_task`, `next_segment_id`
+  (`request.nextSegmentId++`), `new_replay_node`, `new_thrown_info`
+  (`const errorInfo = {}`), `component_name_or_unknown`
+  (`getComponentNameFromType(C) || 'Unknown'`), and `impl` of none.
+- `renderElement`'s symbol switch is a `match`; ViewTransition falls
+  through to Scope as one arm (rd127); preparePreambleFromSegment's
+  POSTPONED → CLIENT_RENDERED → default fallthrough is one `_` arm with
+  the status tests; flushSubtree's PENDING → POSTPONED is one arm.
+- pingTask and startWork: `if (isWorkLoopExternallyDriven) return;` then
+  the rest, where upstream nests it in an `else` (clippy's
+  `needless_return`).
+- encodeErrorForBoundary and getPostponedState: rd45's two lets of a
+  tuple.
+- logRecoverableError classifies the digest in a match.
 - defaultErrorHandler reads `error.environmentName` once (a let-chain).
+- The request is an object literal (rd494), a task's `legacyContext` and
+  `debugTask` and a boundary's DEV error fields always written (rd493).
+- renderSuspenseList's sync-iterator branch casts `children` to the rows
+  it renders, as upstream passes `children`, not the `rows` it read.
 
 ## Where the draft stands
 
-Ported: imports and bindings, all types, the request (RequestInstance,
-createRequest, createPrerenderRequest, resumeRequest,
-resumeAndPrerenderRequest, resolveRequest), pingTask, pingRejectedTask,
-createSuspenseBoundary, createRenderTask, createReplayTask,
-createPendingSegment, the component stack functions
-(getCurrentStackInDEV .. replaceSuspenseComponentStackWithSuspenseFallbackStack),
-getThrownInfo, encodeErrorForBoundary, logRecoverableError,
-logBrowserBailout, fatalError.
+The whole module is drafted, in upstream's order, and clippy-clean.
+Phase A of the migration is done. Next:
 
-Next: renderSuspenseBoundary (upstream line 1473) onward.
+1. Get rd495 decided (or restructure the pings and callbacks so no `dyn Fn`
+   holds an `Rc`, e.g. `function::bind` of a plain function, rd209), then
+   `rust-js build --package react-server` and compare
+   `scripts/port/fndiff.sh react-server/src/ReactFizzServer.js` function by
+   function.
+2. rd490 (replay nodes' length) and rd496 (getCurrentStack) are wrong
+   answers until fixed; rd491-rd494 are readability.
+3. Phase B of the migration (above), then build react-dom and
+   react-dom-bindings and run the server gates.

@@ -1421,10 +1421,7 @@ fn push_suspended_call_site_on_component_stack(request: &Rc<Request>, task: &Rc<
             .replace(Some(Rc::new(ComponentStackNode {
                 // The owner of the suspended call site would be the owner of this task.
                 // We need the task itself otherwise we'd miss a frame.
-                // GAP rd495: a node an `Rc` holds is no `&'static Unknown`, the
-                // owner field's type, without a cast.
-                owner: owner_stack
-                    .map(|owner_stack| unsafe { js::cast(Some(js::unknown(&*owner_stack))) }),
+                owner: owner_stack.map(js::unknown_of),
                 parent: suspend_call_site_stack.parent.clone(),
                 stack: Cell::new(suspend_call_site_stack.stack.get()),
                 r#type: suspend_call_site_stack.r#type,
@@ -1580,9 +1577,7 @@ fn get_thrown_info(node: Option<Rc<ComponentStackNode>>) -> &'static ThrownInfo 
                     ..Default::default()
                 },
             );
-            // GAP rd495: a getter gives a `&'static Unknown`, which the text
-            // it made is only by a cast.
-            unsafe { js::cast(Some(js::unknown(stack.as_str()))) }
+            Some(js::unknown_of(stack))
         };
         js::object::define_property(
             error_info,
