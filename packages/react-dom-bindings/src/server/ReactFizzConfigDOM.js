@@ -74,19 +74,19 @@ export const isPrimaryRenderer = true;
 
 export const supportsClientAPIs = true;
 
-const SCRIPT_STREAMING_FORMAT = 0;
-const DATA_STREAMING_FORMAT = 1;
+const ScriptStreamingFormat = 0;
+const DataStreamingFormat = 1;
 
-const NOTHING_SENT = /*                      */ 0b000000000;
-const SENT_COMPLETE_SEGMENT_FUNCTION = /*      */ 0b000000001;
-const SENT_COMPLETE_BOUNDARY_FUNCTION = /*     */ 0b000000010;
-const SENT_CLIENT_RENDER_FUNCTION = /*         */ 0b000000100;
-const SENT_STYLE_INSERTION_FUNCTION = /*       */ 0b000001000;
-const SENT_FORM_REPLAYING_RUNTIME = /*         */ 0b000010000;
-const SENT_COMPLETED_SHELL_ID = /*             */ 0b000100000;
-const SENT_MARK_SHELL_TIME = /*                */ 0b001000000;
-const NEED_UPGRADE_TO_VIEW_TRANSITIONS = /*    */ 0b010000000;
-const SENT_UPGRADE_TO_VIEW_TRANSITIONS = /*    */ 0b100000000;
+const NothingSent = /*                      */ 0b000000000;
+const SentCompleteSegmentFunction = /*      */ 0b000000001;
+const SentCompleteBoundaryFunction = /*     */ 0b000000010;
+const SentClientRenderFunction = /*         */ 0b000000100;
+const SentStyleInsertionFunction = /*       */ 0b000001000;
+const SentFormReplayingRuntime = /*         */ 0b000010000;
+const SentCompletedShellId = /*             */ 0b000100000;
+const SentMarkShellTime = /*                */ 0b001000000;
+const NeedUpgradeToViewTransitions = /*    */ 0b010000000;
+const SentUpgradeToViewTransitions = /*    */ 0b100000000;
 
 // Credentials here are things that affect whether a browser will make a request
 // as well as things that affect which connection the browser will use for that request.
@@ -479,9 +479,9 @@ export function createResumableState(
 ) {
   const idPrefix = identifierPrefix ?? '';
 
-  let streamingFormat = SCRIPT_STREAMING_FORMAT;
+  let streamingFormat = ScriptStreamingFormat;
   if (enableFizzExternalRuntime && externalRuntimeConfig != null) {
-    streamingFormat = DATA_STREAMING_FORMAT;
+    streamingFormat = DataStreamingFormat;
   }
   return {
     idPrefix,
@@ -490,7 +490,7 @@ export function createResumableState(
     bootstrapScriptContent,
     bootstrapScripts,
     bootstrapModules,
-    instructions: NOTHING_SENT,
+    instructions: NothingSent,
     hasBody: false,
     hasHtml: false,
 
@@ -526,7 +526,7 @@ export function resetResumableState(resumableState, renderState) {
   resumableState.scriptResources = {};
   resumableState.moduleUnknownResources = {};
   resumableState.moduleScriptResources = {};
-  resumableState.instructions = NOTHING_SENT; // Nothing was flushed so no instructions could've flushed.
+  resumableState.instructions = NothingSent; // Nothing was flushed so no instructions could've flushed.
 }
 
 export function completeResumableState(resumableState) {
@@ -595,11 +595,11 @@ export function canHavePreamble(formatContext) {
   return formatContext.insertionMode < HTML_MODE;
 }
 
-export function createRootFormatContext(namespaceUri) {
+export function createRootFormatContext(namespaceURI) {
   const insertionMode =
-    namespaceUri === 'http://www.w3.org/2000/svg'
+    namespaceURI === 'http://www.w3.org/2000/svg'
       ? SVG_MODE
-      : namespaceUri === 'http://www.w3.org/1998/Math/MathML'
+      : namespaceURI === 'http://www.w3.org/1998/Math/MathML'
         ? MATHML_MODE
         : ROOT_HTML_MODE;
   return createFormatContext(insertionMode, undefined, NO_SCOPE);
@@ -721,7 +721,7 @@ export function getSuspenseFallbackFormatContext(
     // If we're rendering a Suspense in fallback mode and that is inside a ViewTransition,
     // which hasn't disabled updates, then revealing it might animate the parent so we need
     // the ViewTransition instructions.
-    resumableState.instructions |= NEED_UPGRADE_TO_VIEW_TRANSITIONS;
+    resumableState.instructions |= NeedUpgradeToViewTransitions;
   }
   return createFormatContext(
     parentContext.insertionMode,
@@ -787,7 +787,7 @@ export function getViewTransitionFormatContext(
       // If we have an explicit name and share is not disabled, and we're inside
       // a fallback, then that fallback might pair with content and so we might need
       // the ViewTransition instructions to animate between them.
-      resumableState.instructions |= NEED_UPGRADE_TO_VIEW_TRANSITIONS;
+      resumableState.instructions |= NeedUpgradeToViewTransitions;
     }
     tmp = [name, share ?? 'auto'];
   }
@@ -796,12 +796,12 @@ export function getViewTransitionFormatContext(
   if (!(parentContext.tagScope & EXIT_SCOPE)) {
     exit = 'none'; // exit is only relevant for the first ViewTransition inside fallback
   } else {
-    resumableState.instructions |= NEED_UPGRADE_TO_VIEW_TRANSITIONS;
+    resumableState.instructions |= NeedUpgradeToViewTransitions;
   }
   if (!(parentContext.tagScope & ENTER_SCOPE)) {
     enter = 'none'; // enter is only relevant for the first ViewTransition inside content
   } else {
-    resumableState.instructions |= NEED_UPGRADE_TO_VIEW_TRANSITIONS;
+    resumableState.instructions |= NeedUpgradeToViewTransitions;
   }
   const parentEnterExit = enableViewTransitionParentEnterExit;
   let resolvedParentEnter = 'none';
@@ -1109,7 +1109,7 @@ function makeFormFieldPrefix(resumableState) {
 
 // Since this will likely be repeated a lot in the HTML, we use a more concise message
 // than on the client and hopefully it's googleable.
-const actionJavaScriptUrl = stringToPrecomputedChunk(
+const actionJavaScriptURL = stringToPrecomputedChunk(
   escapeTextForBrowser(
     "javascript:throw new Error('React form unexpectedly submitted.')",
   ),
@@ -1234,7 +1234,7 @@ function pushFormActionAttribute(target, resumableState, renderState, props) {
         attributeSeparator,
         stringToChunk('formAction'),
         attributeAssign,
-        actionJavaScriptUrl,
+        actionJavaScriptURL,
         attributeEnd,
       );
       name = undefined;
@@ -1573,15 +1573,15 @@ function pushAttribute(
   }
 }
 
-function pushInnerHTML(target, innerHtml, children) {
-  if (innerHtml != null) {
+function pushInnerHTML(target, innerHTML, children) {
+  if (innerHTML != null) {
     if (children != null) {
       throw new Error(
         'Can only set one of `children` or `props.dangerouslySetInnerHTML`.',
       );
     }
 
-    if (typeof innerHtml !== 'object' || !('__html' in innerHtml)) {
+    if (typeof innerHTML !== 'object' || !('__html' in innerHTML)) {
       throw new Error(
         '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
           'Please visit https://react.dev/link/dangerously-set-inner-html ' +
@@ -1589,7 +1589,7 @@ function pushInnerHTML(target, innerHtml, children) {
       );
     }
 
-    const html = innerHtml.__html;
+    const html = innerHTML.__html;
     if (html != null) {
       if (__DEV__) {
         checkHtmlStringCoercion(html);
@@ -1639,7 +1639,7 @@ function pushStartAnchor(target, props, formatContext) {
   target.push(startChunkForTag('a'));
 
   let children = null;
-  let innerHtml;
+  let innerHTML;
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
       const propValue = props[propKey];
@@ -1651,7 +1651,7 @@ function pushStartAnchor(target, props, formatContext) {
           children = propValue;
           break;
         case 'dangerouslySetInnerHTML':
-          innerHtml = propValue;
+          innerHTML = propValue;
           break;
         case 'href':
           if (propValue === '') {
@@ -1671,7 +1671,7 @@ function pushStartAnchor(target, props, formatContext) {
   pushViewTransitionAttributes(target, formatContext);
 
   target.push(endOfStartTag);
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
   if (typeof children === 'string') {
     // Special case children as a string to avoid the unnecessary comment.
     // TODO: Remove this special case after the general optimization is in place.
@@ -1685,7 +1685,7 @@ function pushStartObject(target, props, formatContext) {
   target.push(startChunkForTag('object'));
 
   let children = null;
-  let innerHtml;
+  let innerHTML;
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
       const propValue = props[propKey];
@@ -1697,7 +1697,7 @@ function pushStartObject(target, props, formatContext) {
           children = propValue;
           break;
         case 'dangerouslySetInnerHTML':
-          innerHtml = propValue;
+          innerHTML = propValue;
           break;
         case 'data': {
           if (__DEV__) {
@@ -1734,7 +1734,7 @@ function pushStartObject(target, props, formatContext) {
   pushViewTransitionAttributes(target, formatContext);
 
   target.push(endOfStartTag);
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
   if (typeof children === 'string') {
     // Special case children as a string to avoid the unnecessary comment.
     // TODO: Remove this special case after the general optimization is in place.
@@ -1770,7 +1770,7 @@ function pushStartSelect(target, props, formatContext) {
   target.push(startChunkForTag('select'));
 
   let children = null;
-  let innerHtml;
+  let innerHTML;
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
       const propValue = props[propKey];
@@ -1784,7 +1784,7 @@ function pushStartSelect(target, props, formatContext) {
         case 'dangerouslySetInnerHTML':
           // TODO: This doesn't really make sense for select since it can't use the controlled
           // value in the innerHTML.
-          innerHtml = propValue;
+          innerHTML = propValue;
           break;
         case 'defaultValue':
         case 'value':
@@ -1799,7 +1799,7 @@ function pushStartSelect(target, props, formatContext) {
   pushViewTransitionAttributes(target, formatContext);
 
   target.push(endOfStartTag);
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
   return children;
 }
 
@@ -1842,7 +1842,7 @@ function pushStartOption(target, props, formatContext) {
   let children = null;
   let value;
   let selected;
-  let innerHtml;
+  let innerHTML;
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
       const propValue = props[propKey];
@@ -1866,7 +1866,7 @@ function pushStartOption(target, props, formatContext) {
           }
           break;
         case 'dangerouslySetInnerHTML':
-          innerHtml = propValue;
+          innerHTML = propValue;
           break;
         default:
           if (propKey === 'value') {
@@ -1888,7 +1888,7 @@ function pushStartOption(target, props, formatContext) {
     } else {
       if (
         __DEV__ &&
-        innerHtml !== undefined &&
+        innerHTML !== undefined &&
         !didWarnInvalidOptionInnerHTML
       ) {
         didWarnInvalidOptionInnerHTML = true;
@@ -1926,7 +1926,7 @@ function pushStartOption(target, props, formatContext) {
 
   // Options never participate as ViewTransitions.
   target.push(endOfStartTag);
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
   return children;
 }
 
@@ -1938,11 +1938,10 @@ function injectFormReplayingRuntime(resumableState, renderState) {
   // for later replaying by Fiber. If we use an external runtime, we don't need
   // to emit anything. It's always used.
   if (
-    (resumableState.instructions & SENT_FORM_REPLAYING_RUNTIME) ===
-      NOTHING_SENT &&
+    (resumableState.instructions & SentFormReplayingRuntime) === NothingSent &&
     (!enableFizzExternalRuntime || renderState.externalRuntimeScript == null)
   ) {
-    resumableState.instructions |= SENT_FORM_REPLAYING_RUNTIME;
+    resumableState.instructions |= SentFormReplayingRuntime;
     const preamble = renderState.preamble;
     const bootstrapChunks = renderState.bootstrapChunks;
     if (
@@ -1995,7 +1994,7 @@ function pushStartForm(
   target.push(startChunkForTag('form'));
 
   let children = null;
-  let innerHtml;
+  let innerHTML;
   let formAction;
   let formEncType;
   let formMethod;
@@ -2012,7 +2011,7 @@ function pushStartForm(
           children = propValue;
           break;
         case 'dangerouslySetInnerHTML':
-          innerHtml = propValue;
+          innerHTML = propValue;
           break;
         case 'action':
           formAction = propValue;
@@ -2076,7 +2075,7 @@ function pushStartForm(
         attributeSeparator,
         stringToChunk('action'),
         attributeAssign,
-        actionJavaScriptUrl,
+        actionJavaScriptURL,
         attributeEnd,
       );
       formAction = undefined;
@@ -2110,7 +2109,7 @@ function pushStartForm(
     pushAdditionalFormFields(target, formData);
   }
 
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
   if (typeof children === 'string') {
     // Special case children as a string to avoid the unnecessary comment.
     // TODO: Remove this special case after the general optimization is in place.
@@ -2276,7 +2275,7 @@ function pushStartButton(
   target.push(startChunkForTag('button'));
 
   let children = null;
-  let innerHtml;
+  let innerHTML;
   let name;
   let formAction;
   let formEncType;
@@ -2294,7 +2293,7 @@ function pushStartButton(
           children = propValue;
           break;
         case 'dangerouslySetInnerHTML':
-          innerHtml = propValue;
+          innerHTML = propValue;
           break;
         case 'name':
           name = propValue;
@@ -2350,7 +2349,7 @@ function pushStartButton(
   // We place any additional hidden form fields we need to include inside the button itself.
   pushAdditionalFormFields(target, formData);
 
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
   if (typeof children === 'string') {
     // Special case children as a string to avoid the unnecessary comment.
     // TODO: Remove this special case after the general optimization is in place.
@@ -2908,7 +2907,7 @@ function pushStyleImpl(target, props) {
   target.push(startChunkForTag('style'));
 
   let children;
-  let innerHtml;
+  let innerHTML;
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
       const propValue = props[propKey];
@@ -2920,7 +2919,7 @@ function pushStyleImpl(target, props) {
           children = propValue;
           break;
         case 'dangerouslySetInnerHTML':
-          innerHtml = propValue;
+          innerHTML = propValue;
           break;
         default:
           pushAttribute(target, propKey, propValue);
@@ -2932,14 +2931,14 @@ function pushStyleImpl(target, props) {
   target.push(endOfStartTag);
 
   pushStyleChild(target, children);
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
   target.push(endChunkForTag('style'));
   return null;
 }
 
 function pushStyleContents(target, props) {
   let children;
-  let innerHtml;
+  let innerHTML;
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
       const propValue = props[propKey];
@@ -2951,13 +2950,13 @@ function pushStyleContents(target, props) {
           children = propValue;
           break;
         case 'dangerouslySetInnerHTML':
-          innerHtml = propValue;
+          innerHTML = propValue;
       }
     }
   }
 
   pushStyleChild(target, children);
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
 }
 
 /**
@@ -3244,7 +3243,7 @@ function pushTitleImpl(target, props) {
   target.push(startChunkForTag('title'));
 
   let children;
-  let innerHtml;
+  let innerHTML;
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
       const propValue = props[propKey];
@@ -3256,7 +3255,7 @@ function pushTitleImpl(target, props) {
           children = propValue;
           break;
         case 'dangerouslySetInnerHTML':
-          innerHtml = propValue;
+          innerHTML = propValue;
           break;
         default:
           pushAttribute(target, propKey, propValue);
@@ -3274,7 +3273,7 @@ function pushTitleImpl(target, props) {
   ) {
     target.push(stringToChunk(escapeTextForBrowser('' + child)));
   }
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
   target.push(endChunkForTag('title'));
   return null;
 }
@@ -3459,7 +3458,7 @@ function pushScriptImpl(target, props) {
   target.push(startChunkForTag('script'));
 
   let children;
-  let innerHtml;
+  let innerHTML;
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
       const propValue = props[propKey];
@@ -3471,7 +3470,7 @@ function pushScriptImpl(target, props) {
           children = propValue;
           break;
         case 'dangerouslySetInnerHTML':
-          innerHtml = propValue;
+          innerHTML = propValue;
           break;
         default:
           pushAttribute(target, propKey, propValue);
@@ -3495,7 +3494,7 @@ function pushScriptImpl(target, props) {
     );
   }
 
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
   if (typeof children === 'string') {
     target.push(stringToChunk(escapeEntireInlineScriptContent(children)));
   }
@@ -3507,7 +3506,7 @@ function pushStartSingletonElement(target, props, tag, formatContext) {
   target.push(startChunkForTag(tag));
 
   let children = null;
-  let innerHtml;
+  let innerHTML;
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
       const propValue = props[propKey];
@@ -3519,7 +3518,7 @@ function pushStartSingletonElement(target, props, tag, formatContext) {
           children = propValue;
           break;
         case 'dangerouslySetInnerHTML':
-          innerHtml = propValue;
+          innerHTML = propValue;
           break;
         default:
           pushAttribute(target, propKey, propValue);
@@ -3530,7 +3529,7 @@ function pushStartSingletonElement(target, props, tag, formatContext) {
   pushViewTransitionAttributes(target, formatContext);
 
   target.push(endOfStartTag);
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
   return children;
 }
 
@@ -3538,7 +3537,7 @@ function pushStartGenericElement(target, props, tag, formatContext) {
   target.push(startChunkForTag(tag));
 
   let children = null;
-  let innerHtml;
+  let innerHTML;
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
       const propValue = props[propKey];
@@ -3550,7 +3549,7 @@ function pushStartGenericElement(target, props, tag, formatContext) {
           children = propValue;
           break;
         case 'dangerouslySetInnerHTML':
-          innerHtml = propValue;
+          innerHTML = propValue;
           break;
         default:
           pushAttribute(target, propKey, propValue);
@@ -3561,7 +3560,7 @@ function pushStartGenericElement(target, props, tag, formatContext) {
   pushViewTransitionAttributes(target, formatContext);
 
   target.push(endOfStartTag);
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
   if (typeof children === 'string') {
     // Special case children as a string to avoid the unnecessary comment.
     // TODO: Remove this special case after the general optimization is in place.
@@ -3575,7 +3574,7 @@ function pushStartCustomElement(target, props, tag, formatContext) {
   target.push(startChunkForTag(tag));
 
   let children = null;
-  let innerHtml;
+  let innerHTML;
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
       const unknown = props[propKey];
@@ -3587,7 +3586,7 @@ function pushStartCustomElement(target, props, tag, formatContext) {
             children = propValue;
             break;
           case 'dangerouslySetInnerHTML':
-            innerHtml = propValue;
+            innerHTML = propValue;
             break;
           case 'style':
             pushStyleAttribute(target, propValue);
@@ -3629,7 +3628,7 @@ function pushStartCustomElement(target, props, tag, formatContext) {
   pushViewTransitionAttributes(target, formatContext);
 
   target.push(endOfStartTag);
-  pushInnerHTML(target, innerHtml, children);
+  pushInnerHTML(target, innerHTML, children);
   return children;
 }
 
@@ -3639,7 +3638,7 @@ function pushStartPreformattedElement(target, props, tag, formatContext) {
   target.push(startChunkForTag(tag));
 
   let children = null;
-  let innerHtml;
+  let innerHTML;
   for (const propKey in props) {
     if (hasOwnProperty.call(props, propKey)) {
       const propValue = props[propKey];
@@ -3651,7 +3650,7 @@ function pushStartPreformattedElement(target, props, tag, formatContext) {
           children = propValue;
           break;
         case 'dangerouslySetInnerHTML':
-          innerHtml = propValue;
+          innerHTML = propValue;
           break;
         default:
           pushAttribute(target, propKey, propValue);
@@ -3675,14 +3674,14 @@ function pushStartPreformattedElement(target, props, tag, formatContext) {
   //  from <http://www.w3.org/TR/html5/syntax.html#parsing-main-inbody>
   // TODO: This doesn't deal with the case where the child is an array
   // or component that returns a string.
-  if (innerHtml !== undefined) {
+  if (innerHTML !== undefined) {
     if (children !== null) {
       throw new Error(
         'Can only set one of `children` or `props.dangerouslySetInnerHTML`.',
       );
     }
 
-    if (typeof innerHtml !== 'object' || !('__html' in innerHtml)) {
+    if (typeof innerHTML !== 'object' || !('__html' in innerHTML)) {
       throw new Error(
         '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
           'Please visit https://react.dev/link/dangerously-set-inner-html ' +
@@ -3690,7 +3689,7 @@ function pushStartPreformattedElement(target, props, tag, formatContext) {
       );
     }
 
-    const html = innerHtml.__html;
+    const html = innerHTML.__html;
     if (html != null) {
       if (typeof html === 'string' && html.length > 0 && html[0] === '\n') {
         target.push(leadingNewline, stringToChunk(html));
@@ -4058,16 +4057,16 @@ const shellTimeRuntimeScript = stringToPrecomputedChunk(markShellTime);
 function writeShellTimeInstruction(destination, resumableState, renderState) {
   if (
     enableFizzExternalRuntime &&
-    resumableState.streamingFormat !== SCRIPT_STREAMING_FORMAT
+    resumableState.streamingFormat !== ScriptStreamingFormat
   ) {
     // External runtime always tracks the shell time in the runtime.
     return true;
   }
-  if ((resumableState.instructions & SENT_MARK_SHELL_TIME) !== NOTHING_SENT) {
+  if ((resumableState.instructions & SentMarkShellTime) !== NothingSent) {
     // We already sent this instruction.
     return true;
   }
-  resumableState.instructions |= SENT_MARK_SHELL_TIME;
+  resumableState.instructions |= SentMarkShellTime;
   writeChunk(destination, renderState.startInlineScript);
   writeCompletedShellIdAttribute(destination, resumableState);
   writeChunk(destination, endOfStartTag);
@@ -4093,7 +4092,7 @@ export function writeCompletedRoot(
       // If we rendered the whole document, then we emitted a rel="expect" that needs a
       // matching target. Normally we use one of the bootstrap scripts for this but if
       // there are none, then we need to emit a tag to complete the shell.
-      (resumableState.instructions & SENT_COMPLETED_SHELL_ID) === NOTHING_SENT
+      (resumableState.instructions & SentCompletedShellId) === NothingSent
     ) {
       writeChunk(destination, startChunkForTag('template'));
       writeCompletedShellIdAttribute(destination, resumableState);
@@ -4244,21 +4243,21 @@ export function writeEndClientRenderedSuspenseBoundary(
   return writeChunkAndReturn(destination, endSuspenseBoundary);
 }
 
-const startSegmentHtml = stringToPrecomputedChunk('<div hidden id="');
-const startSegmentHtml2 = stringToPrecomputedChunk('">');
-const endSegmentHtml = stringToPrecomputedChunk('</div>');
+const startSegmentHTML = stringToPrecomputedChunk('<div hidden id="');
+const startSegmentHTML2 = stringToPrecomputedChunk('">');
+const endSegmentHTML = stringToPrecomputedChunk('</div>');
 
-const startSegmentSvg = stringToPrecomputedChunk(
+const startSegmentSVG = stringToPrecomputedChunk(
   '<svg aria-hidden="true" style="display:none" id="',
 );
-const startSegmentSvg2 = stringToPrecomputedChunk('">');
-const endSegmentSvg = stringToPrecomputedChunk('</svg>');
+const startSegmentSVG2 = stringToPrecomputedChunk('">');
+const endSegmentSVG = stringToPrecomputedChunk('</svg>');
 
-const startSegmentMathMl = stringToPrecomputedChunk(
+const startSegmentMathML = stringToPrecomputedChunk(
   '<math aria-hidden="true" style="display:none" id="',
 );
-const startSegmentMathMl2 = stringToPrecomputedChunk('">');
-const endSegmentMathMl = stringToPrecomputedChunk('</math>');
+const startSegmentMathML2 = stringToPrecomputedChunk('">');
+const endSegmentMathML = stringToPrecomputedChunk('</math>');
 
 const startSegmentTable = stringToPrecomputedChunk('<table hidden id="');
 const startSegmentTable2 = stringToPrecomputedChunk('">');
@@ -4288,11 +4287,11 @@ export function writeStartSegment(destination, renderState, formatContext, id) {
     formatContext.insertionMode === HTML_HEAD_MODE ||
     formatContext.insertionMode === HTML_MODE
   ) {
-    tmp = [startSegmentHtml, startSegmentHtml2];
+    tmp = [startSegmentHTML, startSegmentHTML2];
   } else if (formatContext.insertionMode === SVG_MODE) {
-    tmp = [startSegmentSvg, startSegmentSvg2];
+    tmp = [startSegmentSVG, startSegmentSVG2];
   } else if (formatContext.insertionMode === MATHML_MODE) {
-    tmp = [startSegmentMathMl, startSegmentMathMl2];
+    tmp = [startSegmentMathML, startSegmentMathML2];
   } else if (formatContext.insertionMode === HTML_TABLE_MODE) {
     tmp = [startSegmentTable, startSegmentTable2];
   } else if (formatContext.insertionMode === HTML_TABLE_BODY_MODE) {
@@ -4323,13 +4322,13 @@ export function writeEndSegment(destination, formatContext) {
     case HTML_HTML_MODE:
     case HTML_HEAD_MODE:
     case HTML_MODE:
-      end = endSegmentHtml;
+      end = endSegmentHTML;
       break;
     case SVG_MODE:
-      end = endSegmentSvg;
+      end = endSegmentSVG;
       break;
     case MATHML_MODE:
-      end = endSegmentMathMl;
+      end = endSegmentMathML;
       break;
     case HTML_TABLE_MODE:
       end = endSegmentTable;
@@ -4362,39 +4361,24 @@ const completeSegmentData1 = stringToPrecomputedChunk(
 const completeSegmentData2 = stringToPrecomputedChunk('" data-pid="');
 const completeSegmentDataEnd = dataElementQuotedEnd;
 
-/**
- * Whether instructions are written as inline scripts, not as the data the
- * external runtime reads.
- */
-function scriptFormat(resumableState) {
-  return (
-    !enableFizzExternalRuntime ||
-    resumableState.streamingFormat === SCRIPT_STREAMING_FORMAT
-  );
-}
-
-/** Whether `instruction` hasn't been sent, marking it sent. */
-function sendOnce(resumableState, instruction) {
-  if ((resumableState.instructions & instruction) === NOTHING_SENT) {
-    resumableState.instructions |= instruction;
-    return true;
-  } else {
-    return false;
-  }
-}
-
 export function writeCompletedSegmentInstruction(
   destination,
   resumableState,
   renderState,
-  contentSegmentId,
+  contentSegmentID,
 ) {
-  const scriptFormat$1 = scriptFormat(resumableState);
-  if (scriptFormat$1) {
+  const scriptFormat =
+    !enableFizzExternalRuntime ||
+    resumableState.streamingFormat === ScriptStreamingFormat;
+  if (scriptFormat) {
     writeChunk(destination, renderState.startInlineScript);
     writeChunk(destination, endOfStartTag);
-    if (sendOnce(resumableState, SENT_COMPLETE_SEGMENT_FUNCTION)) {
+    if (
+      (resumableState.instructions & SentCompleteSegmentFunction) ===
+      NothingSent
+    ) {
       // The first time we write this, we'll need to include the full implementation.
+      resumableState.instructions |= SentCompleteSegmentFunction;
       writeChunk(destination, completeSegmentScript1Full);
     } else {
       // Future calls can just reuse the same function.
@@ -4406,9 +4390,9 @@ export function writeCompletedSegmentInstruction(
 
   // Write function arguments, which are string literals
   writeChunk(destination, renderState.segmentPrefix);
-  const formattedID = stringToChunk(contentSegmentId.toString(16));
+  const formattedID = stringToChunk(contentSegmentID.toString(16));
   writeChunk(destination, formattedID);
-  if (scriptFormat$1) {
+  if (scriptFormat) {
     writeChunk(destination, completeSegmentScript2);
   } else {
     writeChunk(destination, completeSegmentData2);
@@ -4416,7 +4400,7 @@ export function writeCompletedSegmentInstruction(
   writeChunk(destination, renderState.placeholderPrefix);
   writeChunk(destination, formattedID);
 
-  return scriptFormat$1
+  return scriptFormat
     ? writeChunkAndReturn(destination, completeSegmentScriptEnd)
     : writeChunkAndReturn(destination, completeSegmentDataEnd);
 }
@@ -4460,48 +4444,70 @@ export function writeCompletedBoundaryInstruction(
   const requiresStyleInsertion = renderState.stylesToHoist;
   const requiresViewTransitions =
     enableViewTransition &&
-    (resumableState.instructions & NEED_UPGRADE_TO_VIEW_TRANSITIONS) !==
-      NOTHING_SENT;
+    (resumableState.instructions & NeedUpgradeToViewTransitions) !==
+      NothingSent;
   // If necessary stylesheets will be flushed with this instruction.
   // Any style tags not yet hoisted in the Document will also be hoisted.
   // We reset this state since after this instruction executes all styles
   // up to this point will have been hoisted
   renderState.stylesToHoist = false;
-  const scriptFormat$1 = scriptFormat(resumableState);
-  if (scriptFormat$1) {
+  const scriptFormat =
+    !enableFizzExternalRuntime ||
+    resumableState.streamingFormat === ScriptStreamingFormat;
+  if (scriptFormat) {
     writeChunk(destination, renderState.startInlineScript);
     writeChunk(destination, endOfStartTag);
     if (requiresStyleInsertion) {
-      if (sendOnce(resumableState, SENT_CLIENT_RENDER_FUNCTION)) {
+      if (
+        (resumableState.instructions & SentClientRenderFunction) ===
+        NothingSent
+      ) {
         // The completeBoundaryWithStyles function depends on the client render function.
+        resumableState.instructions |= SentClientRenderFunction;
         writeChunk(destination, clientRenderScriptFunctionOnly);
       }
-      if (sendOnce(resumableState, SENT_COMPLETE_BOUNDARY_FUNCTION)) {
+      if (
+        (resumableState.instructions & SentCompleteBoundaryFunction) ===
+        NothingSent
+      ) {
         // The completeBoundaryWithStyles function depends on the complete boundary function.
+        resumableState.instructions |= SentCompleteBoundaryFunction;
         writeChunk(destination, completeBoundaryScriptFunctionOnly);
       }
       if (
         requiresViewTransitions &&
-        sendOnce(resumableState, SENT_UPGRADE_TO_VIEW_TRANSITIONS)
+        (resumableState.instructions & SentUpgradeToViewTransitions) ===
+          NothingSent
       ) {
+        resumableState.instructions |= SentUpgradeToViewTransitions;
         writeChunk(
           destination,
           completeBoundaryUpgradeToViewTransitionsInstruction,
         );
       }
-      if (sendOnce(resumableState, SENT_STYLE_INSERTION_FUNCTION)) {
+      if (
+        (resumableState.instructions & SentStyleInsertionFunction) ===
+        NothingSent
+      ) {
+        resumableState.instructions |= SentStyleInsertionFunction;
         writeChunk(destination, completeBoundaryWithStylesScript1FullPartial);
       } else {
         writeChunk(destination, completeBoundaryWithStylesScript1Partial);
       }
     } else {
-      if (sendOnce(resumableState, SENT_COMPLETE_BOUNDARY_FUNCTION)) {
+      if (
+        (resumableState.instructions & SentCompleteBoundaryFunction) ===
+        NothingSent
+      ) {
+        resumableState.instructions |= SentCompleteBoundaryFunction;
         writeChunk(destination, completeBoundaryScriptFunctionOnly);
       }
       if (
         requiresViewTransitions &&
-        sendOnce(resumableState, SENT_UPGRADE_TO_VIEW_TRANSITIONS)
+        (resumableState.instructions & SentUpgradeToViewTransitions) ===
+          NothingSent
       ) {
+        resumableState.instructions |= SentUpgradeToViewTransitions;
         writeChunk(
           destination,
           completeBoundaryUpgradeToViewTransitionsInstruction,
@@ -4521,7 +4527,7 @@ export function writeCompletedBoundaryInstruction(
   writeChunk(destination, idChunk);
 
   // Write function arguments, which are string and array literals
-  if (scriptFormat$1) {
+  if (scriptFormat) {
     writeChunk(destination, completeBoundaryScript2);
   } else {
     writeChunk(destination, completeBoundaryData2);
@@ -4534,18 +4540,18 @@ export function writeCompletedBoundaryInstruction(
     //    escaped for javascript  e.g. ["A", "B"]
     //  - data writer emits a string literal, which is escaped as html
     //    e.g. [&#34;A&#34;, &#34;B&#34;]
-    if (scriptFormat$1) {
+    if (scriptFormat) {
       writeChunk(destination, completeBoundaryScript3a);
       // hoistableState encodes an array literal
-      writeStyleResourceDependenciesInJs(destination, hoistableState);
+      writeStyleResourceDependenciesInJS(destination, hoistableState);
     } else {
       writeChunk(destination, completeBoundaryData3a);
       writeStyleResourceDependenciesInAttr(destination, hoistableState);
     }
-  } else if (scriptFormat$1) {
+  } else if (scriptFormat) {
     writeChunk(destination, completeBoundaryScript3b);
   }
-  const writeMore = scriptFormat$1
+  const writeMore = scriptFormat
     ? writeChunkAndReturn(destination, completeBoundaryScriptEnd)
     : writeChunkAndReturn(destination, completeBoundaryDataEnd);
   return writeBootstrap(destination, renderState) && writeMore;
@@ -4601,12 +4607,18 @@ export function writeClientRenderBoundaryInstruction(
   errorStack,
   errorComponentStack,
 ) {
-  const scriptFormat$1 = scriptFormat(resumableState);
-  if (scriptFormat$1) {
+  const scriptFormat =
+    !enableFizzExternalRuntime ||
+    resumableState.streamingFormat === ScriptStreamingFormat;
+  if (scriptFormat) {
     writeChunk(destination, renderState.startInlineScript);
     writeChunk(destination, endOfStartTag);
-    if (sendOnce(resumableState, SENT_CLIENT_RENDER_FUNCTION)) {
+    if (
+      (resumableState.instructions & SentClientRenderFunction) ===
+      NothingSent
+    ) {
       // The first time we write this, we'll need to include the full implementation.
+      resumableState.instructions |= SentClientRenderFunction;
       writeChunk(destination, clientRenderScript1Full);
     } else {
       // Future calls can just reuse the same function.
@@ -4619,7 +4631,7 @@ export function writeClientRenderBoundaryInstruction(
 
   writeChunk(destination, renderState.boundaryPrefix);
   writeChunk(destination, stringToChunk(id.toString(16)));
-  if (scriptFormat$1) {
+  if (scriptFormat) {
     // " needs to be inserted for scripts, since ArgInterstitual does not contain
     // leading or trailing quotes
     writeChunk(destination, clientRenderScript1A);
@@ -4634,7 +4646,7 @@ export function writeClientRenderBoundaryInstruction(
     errorStack != null ||
     errorComponentStack != null
   ) {
-    if (scriptFormat$1) {
+    if (scriptFormat) {
       // ,null or ,"JSONString"
       writeChunk(destination, clientRenderErrorScriptArgInterstitial);
       if (errorDigest == null) {
@@ -4658,7 +4670,7 @@ export function writeClientRenderBoundaryInstruction(
   ) {
     writeClientRenderError(
       destination,
-      scriptFormat$1,
+      scriptFormat,
       clientRenderData3,
       errorMessage ?? '',
     );
@@ -4666,7 +4678,7 @@ export function writeClientRenderBoundaryInstruction(
   if (errorStack != null || errorComponentStack != null) {
     writeClientRenderError(
       destination,
-      scriptFormat$1,
+      scriptFormat,
       clientRenderData4,
       errorStack ?? '',
     );
@@ -4674,27 +4686,27 @@ export function writeClientRenderBoundaryInstruction(
   if (errorComponentStack != null) {
     writeClientRenderError(
       destination,
-      scriptFormat$1,
+      scriptFormat,
       clientRenderData5,
       errorComponentStack,
     );
   }
 
-  return scriptFormat$1
+  return scriptFormat
     ? // ></script>
       writeChunkAndReturn(destination, clientRenderScriptEnd)
     : // "></template>
       writeChunkAndReturn(destination, clientRenderDataEnd);
 }
 
-const regexForJsStringsInInstructionScripts = new RegExp(
+const regexForJSStringsInInstructionScripts = new RegExp(
   '[<\u2028\u2029]',
   'g',
 );
 
 function escapeJSStringsForInstructionScripts(input) {
   const escaped = JSON.stringify(input);
-  return escaped.replace(regexForJsStringsInInstructionScripts, match => {
+  return escaped.replace(regexForJSStringsInInstructionScripts, match => {
     switch (match) {
       case '<':
         // santizing breaking out of strings and script tags
@@ -4711,11 +4723,11 @@ function escapeJSStringsForInstructionScripts(input) {
   });
 }
 
-const regexForJsStringsInScripts = new RegExp('[&><\u2028\u2029]', 'g');
+const regexForJSStringsInScripts = new RegExp('[&><\u2028\u2029]', 'g');
 
 function escapeJSObjectForInstructionScripts(input) {
   const escaped = JSON.stringify(input, null, 0) ?? '';
-  return escaped.replace(regexForJsStringsInScripts, match => {
+  return escaped.replace(regexForJSStringsInScripts, match => {
     switch (match) {
       case '&':
         // santizing breaking out of strings and script tags
@@ -4956,13 +4968,10 @@ function writeBlockingRenderInstruction(
 const completedShellIdAttributeStart = stringToPrecomputedChunk(' id="');
 
 function writeCompletedShellIdAttribute(destination, resumableState) {
-  if (
-    (resumableState.instructions & SENT_COMPLETED_SHELL_ID) !==
-    NOTHING_SENT
-  ) {
+  if ((resumableState.instructions & SentCompletedShellId) !== NothingSent) {
     return;
   }
-  resumableState.instructions |= SENT_COMPLETED_SHELL_ID;
+  resumableState.instructions |= SentCompletedShellId;
   const idPrefix = resumableState.idPrefix;
   const shellId = '_' + idPrefix + 'R_';
   writeChunk(destination, completedShellIdAttributeStart);
@@ -4971,13 +4980,10 @@ function writeCompletedShellIdAttribute(destination, resumableState) {
 }
 
 function pushCompletedShellIdAttribute(target, resumableState) {
-  if (
-    (resumableState.instructions & SENT_COMPLETED_SHELL_ID) !==
-    NOTHING_SENT
-  ) {
+  if ((resumableState.instructions & SentCompletedShellId) !== NothingSent) {
     return;
   }
-  resumableState.instructions |= SENT_COMPLETED_SHELL_ID;
+  resumableState.instructions |= SentCompletedShellId;
   const idPrefix = resumableState.idPrefix;
   const shellId = '_' + idPrefix + 'R_';
   target.push(
@@ -4985,20 +4991,6 @@ function pushCompletedShellIdAttribute(target, resumableState) {
     stringToChunk(escapeTextForBrowser(shellId)),
     attributeEnd,
   );
-}
-
-/** Each of `chunks` written, and then none left. */
-function flushChunks(destination, chunks) {
-  for (const chunk of chunks) {
-    writeChunk(destination, chunk);
-  }
-  chunks.length = 0;
-}
-
-/** Each of `resources` flushed, and then none of them held. */
-function flushResourcesOf(destination, resources) {
-  resources.forEach(resource => flushResource(destination, resource));
-  resources.clear();
 }
 
 // We don't bother reporting backpressure at the moment because we expect to
@@ -5051,16 +5043,33 @@ export function writePreambleStart(
   }
 
   // Emit high priority Hoistables
-  flushChunks(destination, renderState.charsetChunks);
+  const charsetChunks = renderState.charsetChunks;
+  for (const chunk of charsetChunks) {
+    writeChunk(destination, chunk);
+  }
+  charsetChunks.length = 0;
 
   // emit preconnect resources
-  flushResourcesOf(destination, renderState.preconnects);
+  renderState.preconnects.forEach(resource =>
+    flushResource(destination, resource),
+  );
+  renderState.preconnects.clear();
 
-  flushChunks(destination, renderState.viewportChunks);
+  const viewportChunks = renderState.viewportChunks;
+  for (const chunk of viewportChunks) {
+    writeChunk(destination, chunk);
+  }
+  viewportChunks.length = 0;
 
-  flushResourcesOf(destination, renderState.fontPreloads);
+  renderState.fontPreloads.forEach(resource =>
+    flushResource(destination, resource),
+  );
+  renderState.fontPreloads.clear();
 
-  flushResourcesOf(destination, renderState.highImagePreloads);
+  renderState.highImagePreloads.forEach(resource =>
+    flushResource(destination, resource),
+  );
+  renderState.highImagePreloads.clear();
 
   // Flush unblocked stylesheets by precedence
   currentlyFlushingRenderState = renderState;
@@ -5069,15 +5078,23 @@ export function writePreambleStart(
   );
   currentlyFlushingRenderState = null;
 
-  flushChunks(destination, renderState.importMapChunks);
+  const importMapChunks = renderState.importMapChunks;
+  for (const chunk of importMapChunks) {
+    writeChunk(destination, chunk);
+  }
+  importMapChunks.length = 0;
 
   renderState.bootstrapScripts.forEach(resource =>
     flushResource(destination, resource),
   );
 
-  flushResourcesOf(destination, renderState.scripts);
+  renderState.scripts.forEach(resource => flushResource(destination, resource));
+  renderState.scripts.clear();
 
-  flushResourcesOf(destination, renderState.bulkPreloads);
+  renderState.bulkPreloads.forEach(resource =>
+    flushResource(destination, resource),
+  );
+  renderState.bulkPreloads.clear();
 
   if ((htmlChunks != null || headChunks != null) && !skipBlockingShell) {
     // If we have any html or head chunks we know that we're rendering a full document.
@@ -5090,11 +5107,15 @@ export function writePreambleStart(
   } else {
     // We don't need to add the shell id so mark it as if sent.
     // Currently it might still be sent if it was already added to a bootstrap script.
-    resumableState.instructions |= SENT_COMPLETED_SHELL_ID;
+    resumableState.instructions |= SentCompletedShellId;
   }
 
   // Write embedding hoistableChunks
-  flushChunks(destination, renderState.hoistableChunks);
+  const hoistableChunks = renderState.hoistableChunks;
+  for (const chunk of hoistableChunks) {
+    writeChunk(destination, chunk);
+  }
+  hoistableChunks.length = 0;
 }
 
 // We don't bother reporting backpressure at the moment because we expect to
@@ -5127,13 +5148,26 @@ export function writeHoistables(destination, resumableState, renderState) {
   // We omit charsetChunks because we have already sent the shell and if it wasn't
   // already sent it is too late now.
 
-  flushChunks(destination, renderState.viewportChunks);
+  const viewportChunks = renderState.viewportChunks;
+  for (const chunk of viewportChunks) {
+    writeChunk(destination, chunk);
+  }
+  viewportChunks.length = 0;
 
-  flushResourcesOf(destination, renderState.preconnects);
+  renderState.preconnects.forEach(resource =>
+    flushResource(destination, resource),
+  );
+  renderState.preconnects.clear();
 
-  flushResourcesOf(destination, renderState.fontPreloads);
+  renderState.fontPreloads.forEach(resource =>
+    flushResource(destination, resource),
+  );
+  renderState.fontPreloads.clear();
 
-  flushResourcesOf(destination, renderState.highImagePreloads);
+  renderState.highImagePreloads.forEach(resource =>
+    flushResource(destination, resource),
+  );
+  renderState.highImagePreloads.clear();
 
   // Preload any stylesheets. these will emit in a render instruction that follows this
   // but we want to kick off preloading as soon as possible
@@ -5149,12 +5183,20 @@ export function writeHoistables(destination, resumableState, renderState) {
   // bootstrap scripts should flush above script priority but these can only flush in the preamble
   // so we elide the code here for performance
 
-  flushResourcesOf(destination, renderState.scripts);
+  renderState.scripts.forEach(resource => flushResource(destination, resource));
+  renderState.scripts.clear();
 
-  flushResourcesOf(destination, renderState.bulkPreloads);
+  renderState.bulkPreloads.forEach(resource =>
+    flushResource(destination, resource),
+  );
+  renderState.bulkPreloads.clear();
 
   // Write embedding hoistableChunks
-  flushChunks(destination, renderState.hoistableChunks);
+  const hoistableChunks = renderState.hoistableChunks;
+  for (const chunk of hoistableChunks) {
+    writeChunk(destination, chunk);
+  }
+  hoistableChunks.length = 0;
 }
 
 export function writePostamble(destination, resumableState) {
@@ -5184,7 +5226,7 @@ function encodeInAttr(text) {
 // This function writes a 2D array of strings to be embedded in javascript.
 // E.g.
 //  [["JS_escaped_string1", "JS_escaped_string2"]]
-function writeStyleResourceDependenciesInJs(destination, hoistableState) {
+function writeStyleResourceDependenciesInJS(destination, hoistableState) {
   writeStyleResourceDependencies(destination, hoistableState, encodeInJs);
 }
 
@@ -6101,7 +6143,7 @@ function getStylesheetPreloadAsHeader(stylesheet) {
 // a "Link" header in between `<` and `>` characters. The primary concern with the href is
 // to escape the bounding characters as well as new lines. This is unsafe to use in any other
 // context
-const regexForHrefInLinkHeaderUrlContext = /[<>\r\n]/g;
+const regexForHrefInLinkHeaderURLContext = /[<>\r\n]/g;
 
 function escapeHrefForLinkHeaderURLContext(hrefInput) {
   if (__DEV__) {
@@ -6109,7 +6151,7 @@ function escapeHrefForLinkHeaderURLContext(hrefInput) {
   }
   const coercedHref = '' + hrefInput;
   return coercedHref.replace(
-    regexForHrefInLinkHeaderUrlContext,
+    regexForHrefInLinkHeaderURLContext,
     escapeHrefForLinkHeaderURLContextReplacer,
   );
 }

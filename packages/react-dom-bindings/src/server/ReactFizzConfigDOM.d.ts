@@ -274,7 +274,7 @@ export interface FormatContext {
 export function canHavePreamble(formatContext: FormatContext): boolean;
 
 export function createRootFormatContext(
-  namespaceUri?: string | null | undefined,
+  namespaceURI?: string | null | undefined,
 ): FormatContext;
 
 export function getChildFormatContext(
@@ -442,7 +442,7 @@ export function writeCompletedSegmentInstruction(
   destination: any,
   resumableState: ResumableState,
   renderState: RenderState,
-  contentSegmentId: number,
+  contentSegmentID: number,
 ): boolean;
 
 export function writeCompletedBoundaryInstruction(

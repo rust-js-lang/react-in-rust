@@ -179,19 +179,31 @@ pub const IS_PRIMARY_RENDERER: bool = true;
 pub const SUPPORTS_CLIENT_APIS: bool = true;
 
 pub type StreamingFormat = i32;
+#[cfg_attr(rust_js, rust_js::name = "ScriptStreamingFormat")]
 const SCRIPT_STREAMING_FORMAT: StreamingFormat = 0;
+#[cfg_attr(rust_js, rust_js::name = "DataStreamingFormat")]
 const DATA_STREAMING_FORMAT: StreamingFormat = 1;
 
 pub type InstructionState = i32;
+#[cfg_attr(rust_js, rust_js::name = "NothingSent")]
 const NOTHING_SENT: InstructionState = /*                      */ 0b000000000;
+#[cfg_attr(rust_js, rust_js::name = "SentCompleteSegmentFunction")]
 const SENT_COMPLETE_SEGMENT_FUNCTION: InstructionState = /*      */ 0b000000001;
+#[cfg_attr(rust_js, rust_js::name = "SentCompleteBoundaryFunction")]
 const SENT_COMPLETE_BOUNDARY_FUNCTION: InstructionState = /*     */ 0b000000010;
+#[cfg_attr(rust_js, rust_js::name = "SentClientRenderFunction")]
 const SENT_CLIENT_RENDER_FUNCTION: InstructionState = /*         */ 0b000000100;
+#[cfg_attr(rust_js, rust_js::name = "SentStyleInsertionFunction")]
 const SENT_STYLE_INSERTION_FUNCTION: InstructionState = /*       */ 0b000001000;
+#[cfg_attr(rust_js, rust_js::name = "SentFormReplayingRuntime")]
 const SENT_FORM_REPLAYING_RUNTIME: InstructionState = /*         */ 0b000010000;
+#[cfg_attr(rust_js, rust_js::name = "SentCompletedShellId")]
 const SENT_COMPLETED_SHELL_ID: InstructionState = /*             */ 0b000100000;
+#[cfg_attr(rust_js, rust_js::name = "SentMarkShellTime")]
 const SENT_MARK_SHELL_TIME: InstructionState = /*                */ 0b001000000;
+#[cfg_attr(rust_js, rust_js::name = "NeedUpgradeToViewTransitions")]
 const NEED_UPGRADE_TO_VIEW_TRANSITIONS: InstructionState = /*    */ 0b010000000;
+#[cfg_attr(rust_js, rust_js::name = "SentUpgradeToViewTransitions")]
 const SENT_UPGRADE_TO_VIEW_TRANSITIONS: InstructionState = /*    */ 0b100000000;
 
 /// A nonce given as one string, or one for each of scripts and styles.
@@ -1017,7 +1029,9 @@ pub fn can_have_preamble(format_context: &FormatContext) -> bool {
     format_context.insertion_mode < HTML_MODE
 }
 
-pub fn create_root_format_context(namespace_uri: Option<&str>) -> Rc<FormatContext> {
+pub fn create_root_format_context(
+    #[cfg_attr(rust_js, rust_js::name = "namespaceURI")] namespace_uri: Option<&str>,
+) -> Rc<FormatContext> {
     let insertion_mode = if namespace_uri == Some("http://www.w3.org/2000/svg") {
         SVG_MODE
     } else if namespace_uri == Some("http://www.w3.org/1998/Math/MathML") {
@@ -1598,6 +1612,7 @@ fn make_form_field_prefix(resumable_state: &ResumableState) -> String {
 thread_local! {
     // Since this will likely be repeated a lot in the HTML, we use a more concise message
     // than on the client and hopefully it's googleable.
+    #[cfg_attr(rust_js, rust_js::name = "actionJavaScriptURL")]
     static ACTION_JAVA_SCRIPT_URL: &'static PrecomputedChunk = string_to_precomputed_chunk(&escape_text_for_browser(
         Some(js::unknown("javascript:throw new Error('React form unexpectedly submitted.')")),
     ));
@@ -2063,7 +2078,7 @@ fn push_attribute(
 #[cfg_attr(rust_js, rust_js::name = "pushInnerHTML")]
 fn push_inner_html(
     target: &Chunks,
-    inner_html: Option<&'static Unknown>,
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")] inner_html: Option<&'static Unknown>,
     children: Option<&'static Unknown>,
 ) {
     if let Some(inner_html) = inner_html {
@@ -2145,6 +2160,7 @@ fn push_start_anchor(
     target.borrow_mut().push(start_chunk_for_tag("a"));
 
     let mut children = js::null();
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     for prop_key in js::keys_in(props) {
         if HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(props, &prop_key)) {
@@ -2193,6 +2209,7 @@ fn push_start_object(
     target.borrow_mut().push(start_chunk_for_tag("object"));
 
     let mut children = js::null();
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     for prop_key in js::keys_in(props) {
         if HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(props, &prop_key)) {
@@ -2282,6 +2299,7 @@ fn push_start_select(
     target.borrow_mut().push(start_chunk_for_tag("select"));
 
     let mut children = js::null();
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     for prop_key in js::keys_in(props) {
         if HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(props, &prop_key)) {
@@ -2359,6 +2377,7 @@ fn push_start_option(
     let mut children = js::null();
     let mut value = None;
     let mut selected = None;
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     for prop_key in js::keys_in(props) {
         if HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(props, &prop_key)) {
@@ -2522,6 +2541,7 @@ fn push_start_form(
     target.borrow_mut().push(start_chunk_for_tag("form"));
 
     let mut children = js::null();
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     let mut form_action = None;
     let mut form_enc_type = None;
@@ -2781,6 +2801,7 @@ fn push_start_button(
     target.borrow_mut().push(start_chunk_for_tag("button"));
 
     let mut children = js::null();
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     let mut name = None;
     let mut form_action = None;
@@ -3467,6 +3488,7 @@ fn push_style_impl(target: &Chunks, props: &Unknown) -> Option<&'static Unknown>
     target.borrow_mut().push(start_chunk_for_tag("style"));
 
     let mut children = None;
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     for prop_key in js::keys_in(props) {
         if HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(props, &prop_key)) {
@@ -3494,6 +3516,7 @@ fn push_style_impl(target: &Chunks, props: &Unknown) -> Option<&'static Unknown>
 
 fn push_style_contents(target: &Chunks, props: &Unknown) {
     let mut children = None;
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     for prop_key in js::keys_in(props) {
         if HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(props, &prop_key)) {
@@ -3872,6 +3895,7 @@ fn push_title_impl(target: &Chunks, props: &Unknown) -> Option<&'static Unknown>
     target.borrow_mut().push(start_chunk_for_tag("title"));
 
     let mut children = None;
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     for prop_key in js::keys_in(props) {
         if HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(props, &prop_key)) {
@@ -4101,6 +4125,7 @@ fn push_script_impl(target: &Chunks, props: &Unknown) -> Option<&'static Unknown
     target.borrow_mut().push(start_chunk_for_tag("script"));
 
     let mut children = None;
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     for prop_key in js::keys_in(props) {
         if HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(props, &prop_key)) {
@@ -4157,6 +4182,7 @@ fn push_start_singleton_element(
     target.borrow_mut().push(start_chunk_for_tag(tag));
 
     let mut children = js::null();
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     for prop_key in js::keys_in(props) {
         if HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(props, &prop_key)) {
@@ -4189,6 +4215,7 @@ fn push_start_generic_element(
     target.borrow_mut().push(start_chunk_for_tag(tag));
 
     let mut children = js::null();
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     for prop_key in js::keys_in(props) {
         if HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(props, &prop_key)) {
@@ -4229,6 +4256,7 @@ fn push_start_custom_element(
     target.borrow_mut().push(start_chunk_for_tag(tag));
 
     let mut children = js::null();
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     for prop_key in js::keys_in(props) {
         if HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(props, &prop_key)) {
@@ -4293,6 +4321,7 @@ fn push_start_preformatted_element(
     target.borrow_mut().push(start_chunk_for_tag(tag));
 
     let mut children = js::null();
+    #[cfg_attr(rust_js, rust_js::name = "innerHTML")]
     let mut inner_html = None;
     for prop_key in js::keys_in(props) {
         if HAS_OWN_PROPERTY.with(|has_own_property| has_own_property.call(props, &prop_key)) {
@@ -4889,18 +4918,27 @@ pub fn write_end_client_rendered_suspense_boundary(
 }
 
 thread_local! {
+    #[cfg_attr(rust_js, rust_js::name = "startSegmentHTML")]
     static START_SEGMENT_HTML: &'static PrecomputedChunk = string_to_precomputed_chunk("<div hidden id=\"");
+    #[cfg_attr(rust_js, rust_js::name = "startSegmentHTML2")]
     static START_SEGMENT_HTML2: &'static PrecomputedChunk = string_to_precomputed_chunk("\">");
+    #[cfg_attr(rust_js, rust_js::name = "endSegmentHTML")]
     static END_SEGMENT_HTML: &'static PrecomputedChunk = string_to_precomputed_chunk("</div>");
 
+    #[cfg_attr(rust_js, rust_js::name = "startSegmentSVG")]
     static START_SEGMENT_SVG: &'static PrecomputedChunk =
         string_to_precomputed_chunk("<svg aria-hidden=\"true\" style=\"display:none\" id=\"");
+    #[cfg_attr(rust_js, rust_js::name = "startSegmentSVG2")]
     static START_SEGMENT_SVG2: &'static PrecomputedChunk = string_to_precomputed_chunk("\">");
+    #[cfg_attr(rust_js, rust_js::name = "endSegmentSVG")]
     static END_SEGMENT_SVG: &'static PrecomputedChunk = string_to_precomputed_chunk("</svg>");
 
+    #[cfg_attr(rust_js, rust_js::name = "startSegmentMathML")]
     static START_SEGMENT_MATH_ML: &'static PrecomputedChunk =
         string_to_precomputed_chunk("<math aria-hidden=\"true\" style=\"display:none\" id=\"");
+    #[cfg_attr(rust_js, rust_js::name = "startSegmentMathML2")]
     static START_SEGMENT_MATH_ML2: &'static PrecomputedChunk = string_to_precomputed_chunk("\">");
+    #[cfg_attr(rust_js, rust_js::name = "endSegmentMathML")]
     static END_SEGMENT_MATH_ML: &'static PrecomputedChunk = string_to_precomputed_chunk("</math>");
 
     static START_SEGMENT_TABLE: &'static PrecomputedChunk = string_to_precomputed_chunk("<table hidden id=\"");
@@ -4979,37 +5017,22 @@ thread_local! {
     static COMPLETE_SEGMENT_DATA_END: &'static PrecomputedChunk = DATA_ELEMENT_QUOTED_END.with(|chunk| *chunk);
 }
 
-/// Whether instructions are written as inline scripts, not as the data the
-/// external runtime reads.
-fn script_format(resumable_state: &ResumableState) -> bool {
-    !ENABLE_FIZZ_EXTERNAL_RUNTIME.with(|enabled| *enabled)
-        || resumable_state.streaming_format == SCRIPT_STREAMING_FORMAT
-}
-
-/// Whether `instruction` hasn't been sent, marking it sent.
-fn send_once(resumable_state: &ResumableState, instruction: InstructionState) -> bool {
-    if (resumable_state.instructions.get() & instruction) == NOTHING_SENT {
-        resumable_state
-            .instructions
-            .set(resumable_state.instructions.get() | instruction);
-        true
-    } else {
-        false
-    }
-}
-
 pub fn write_completed_segment_instruction(
     destination: &Destination,
     resumable_state: &ResumableState,
     render_state: &RenderState,
-    content_segment_id: f64,
+    #[cfg_attr(rust_js, rust_js::name = "contentSegmentID")] content_segment_id: f64,
 ) -> bool {
-    let script_format = script_format(resumable_state);
+    let script_format = !ENABLE_FIZZ_EXTERNAL_RUNTIME.with(|enabled| *enabled)
+        || resumable_state.streaming_format == SCRIPT_STREAMING_FORMAT;
     if script_format {
         write_chunk(destination, render_state.start_inline_script);
         write_chunk(destination, END_OF_START_TAG.with(|chunk| *chunk));
-        if send_once(resumable_state, SENT_COMPLETE_SEGMENT_FUNCTION) {
+        if (resumable_state.instructions.get() & SENT_COMPLETE_SEGMENT_FUNCTION) == NOTHING_SENT {
             // The first time we write this, we'll need to include the full implementation.
+            resumable_state
+                .instructions
+                .set(resumable_state.instructions.get() | SENT_COMPLETE_SEGMENT_FUNCTION);
             write_chunk(
                 destination,
                 COMPLETE_SEGMENT_SCRIPT1_FULL.with(|chunk| *chunk),
@@ -5088,34 +5111,51 @@ pub fn write_completed_boundary_instruction(
     // We reset this state since after this instruction executes all styles
     // up to this point will have been hoisted
     render_state.styles_to_hoist.set(false);
-    let script_format = script_format(resumable_state);
+    let script_format = !ENABLE_FIZZ_EXTERNAL_RUNTIME.with(|enabled| *enabled)
+        || resumable_state.streaming_format == SCRIPT_STREAMING_FORMAT;
     if script_format {
         write_chunk(destination, render_state.start_inline_script);
         write_chunk(destination, END_OF_START_TAG.with(|chunk| *chunk));
         if requires_style_insertion {
-            if send_once(resumable_state, SENT_CLIENT_RENDER_FUNCTION) {
+            if (resumable_state.instructions.get() & SENT_CLIENT_RENDER_FUNCTION) == NOTHING_SENT {
                 // The completeBoundaryWithStyles function depends on the client render function.
+                resumable_state
+                    .instructions
+                    .set(resumable_state.instructions.get() | SENT_CLIENT_RENDER_FUNCTION);
                 write_chunk(
                     destination,
                     CLIENT_RENDER_SCRIPT_FUNCTION_ONLY.with(|chunk| *chunk),
                 );
             }
-            if send_once(resumable_state, SENT_COMPLETE_BOUNDARY_FUNCTION) {
+            if (resumable_state.instructions.get() & SENT_COMPLETE_BOUNDARY_FUNCTION)
+                == NOTHING_SENT
+            {
                 // The completeBoundaryWithStyles function depends on the complete boundary function.
+                resumable_state
+                    .instructions
+                    .set(resumable_state.instructions.get() | SENT_COMPLETE_BOUNDARY_FUNCTION);
                 write_chunk(
                     destination,
                     COMPLETE_BOUNDARY_SCRIPT_FUNCTION_ONLY.with(|chunk| *chunk),
                 );
             }
             if requires_view_transitions
-                && send_once(resumable_state, SENT_UPGRADE_TO_VIEW_TRANSITIONS)
+                && (resumable_state.instructions.get() & SENT_UPGRADE_TO_VIEW_TRANSITIONS)
+                    == NOTHING_SENT
             {
+                resumable_state
+                    .instructions
+                    .set(resumable_state.instructions.get() | SENT_UPGRADE_TO_VIEW_TRANSITIONS);
                 write_chunk(
                     destination,
                     COMPLETE_BOUNDARY_UPGRADE_TO_VIEW_TRANSITIONS_INSTRUCTION.with(|chunk| *chunk),
                 );
             }
-            if send_once(resumable_state, SENT_STYLE_INSERTION_FUNCTION) {
+            if (resumable_state.instructions.get() & SENT_STYLE_INSERTION_FUNCTION) == NOTHING_SENT
+            {
+                resumable_state
+                    .instructions
+                    .set(resumable_state.instructions.get() | SENT_STYLE_INSERTION_FUNCTION);
                 write_chunk(
                     destination,
                     COMPLETE_BOUNDARY_WITH_STYLES_SCRIPT1_FULL_PARTIAL.with(|chunk| *chunk),
@@ -5127,15 +5167,24 @@ pub fn write_completed_boundary_instruction(
                 );
             }
         } else {
-            if send_once(resumable_state, SENT_COMPLETE_BOUNDARY_FUNCTION) {
+            if (resumable_state.instructions.get() & SENT_COMPLETE_BOUNDARY_FUNCTION)
+                == NOTHING_SENT
+            {
+                resumable_state
+                    .instructions
+                    .set(resumable_state.instructions.get() | SENT_COMPLETE_BOUNDARY_FUNCTION);
                 write_chunk(
                     destination,
                     COMPLETE_BOUNDARY_SCRIPT_FUNCTION_ONLY.with(|chunk| *chunk),
                 );
             }
             if requires_view_transitions
-                && send_once(resumable_state, SENT_UPGRADE_TO_VIEW_TRANSITIONS)
+                && (resumable_state.instructions.get() & SENT_UPGRADE_TO_VIEW_TRANSITIONS)
+                    == NOTHING_SENT
             {
+                resumable_state
+                    .instructions
+                    .set(resumable_state.instructions.get() | SENT_UPGRADE_TO_VIEW_TRANSITIONS);
                 write_chunk(
                     destination,
                     COMPLETE_BOUNDARY_UPGRADE_TO_VIEW_TRANSITIONS_INSTRUCTION.with(|chunk| *chunk),
@@ -5253,12 +5302,16 @@ pub fn write_client_render_boundary_instruction(
     error_stack: Option<&str>,
     error_component_stack: Option<&str>,
 ) -> bool {
-    let script_format = script_format(resumable_state);
+    let script_format = !ENABLE_FIZZ_EXTERNAL_RUNTIME.with(|enabled| *enabled)
+        || resumable_state.streaming_format == SCRIPT_STREAMING_FORMAT;
     if script_format {
         write_chunk(destination, render_state.start_inline_script);
         write_chunk(destination, END_OF_START_TAG.with(|chunk| *chunk));
-        if send_once(resumable_state, SENT_CLIENT_RENDER_FUNCTION) {
+        if (resumable_state.instructions.get() & SENT_CLIENT_RENDER_FUNCTION) == NOTHING_SENT {
             // The first time we write this, we'll need to include the full implementation.
+            resumable_state
+                .instructions
+                .set(resumable_state.instructions.get() | SENT_CLIENT_RENDER_FUNCTION);
             write_chunk(destination, CLIENT_RENDER_SCRIPT1_FULL.with(|chunk| *chunk));
         } else {
             // Future calls can just reuse the same function.
@@ -5351,6 +5404,7 @@ pub fn write_client_render_boundary_instruction(
 }
 
 thread_local! {
+    #[cfg_attr(rust_js, rust_js::name = "regexForJSStringsInInstructionScripts")]
     static REGEX_FOR_JS_STRINGS_IN_INSTRUCTION_SCRIPTS: &'static js::RegExp = js::reg_exp::new("[<\u{2028}\u{2029}]", "g");
 }
 
@@ -5371,6 +5425,7 @@ fn escape_js_strings_for_instruction_scripts(input: &str) -> String {
 }
 
 thread_local! {
+    #[cfg_attr(rust_js, rust_js::name = "regexForJSStringsInScripts")]
     static REGEX_FOR_JS_STRINGS_IN_SCRIPTS: &'static js::RegExp = js::reg_exp::new("[&><\u{2028}\u{2029}]", "g");
 }
 
@@ -5676,20 +5731,6 @@ fn push_completed_shell_id_attribute(target: &Chunks, resumable_state: &Resumabl
     ]);
 }
 
-/// Each of `chunks` written, and then none left.
-fn flush_chunks(destination: &Destination, chunks: &Chunks) {
-    for &chunk in chunks.borrow().iter() {
-        write_chunk(destination, chunk);
-    }
-    chunks.borrow_mut().clear();
-}
-
-/// Each of `resources` flushed, and then none of them held.
-fn flush_resources_of(destination: &Destination, resources: &js::Set<Rc<Resource>>) {
-    resources.for_each(|resource| flush_resource(destination, resource));
-    resources.clear();
-}
-
 // We don't bother reporting backpressure at the moment because we expect to
 // flush the entire preamble in a single pass. This probably should be modified
 // in the future to be backpressure sensitive but that requires a larger refactor
@@ -5741,16 +5782,33 @@ pub fn write_preamble_start(
     }
 
     // Emit high priority Hoistables
-    flush_chunks(destination, &render_state.charset_chunks);
+    let charset_chunks = &render_state.charset_chunks;
+    for &chunk in charset_chunks.borrow().iter() {
+        write_chunk(destination, chunk);
+    }
+    charset_chunks.borrow_mut().clear();
 
     // emit preconnect resources
-    flush_resources_of(destination, render_state.preconnects);
+    render_state
+        .preconnects
+        .for_each(|resource| flush_resource(destination, resource));
+    render_state.preconnects.clear();
 
-    flush_chunks(destination, &render_state.viewport_chunks);
+    let viewport_chunks = &render_state.viewport_chunks;
+    for &chunk in viewport_chunks.borrow().iter() {
+        write_chunk(destination, chunk);
+    }
+    viewport_chunks.borrow_mut().clear();
 
-    flush_resources_of(destination, render_state.font_preloads);
+    render_state
+        .font_preloads
+        .for_each(|resource| flush_resource(destination, resource));
+    render_state.font_preloads.clear();
 
-    flush_resources_of(destination, render_state.high_image_preloads);
+    render_state
+        .high_image_preloads
+        .for_each(|resource| flush_resource(destination, resource));
+    render_state.high_image_preloads.clear();
 
     // Flush unblocked stylesheets by precedence
     CURRENTLY_FLUSHING_RENDER_STATE.set(Some(render_state));
@@ -5759,15 +5817,25 @@ pub fn write_preamble_start(
         .for_each(|style_queue, _, _| flush_styles_in_preamble(destination, &style_queue));
     CURRENTLY_FLUSHING_RENDER_STATE.set(None);
 
-    flush_chunks(destination, &render_state.import_map_chunks);
+    let import_map_chunks = &render_state.import_map_chunks;
+    for &chunk in import_map_chunks.borrow().iter() {
+        write_chunk(destination, chunk);
+    }
+    import_map_chunks.borrow_mut().clear();
 
     render_state
         .bootstrap_scripts
         .for_each(|resource| flush_resource(destination, resource));
 
-    flush_resources_of(destination, render_state.scripts);
+    render_state
+        .scripts
+        .for_each(|resource| flush_resource(destination, resource));
+    render_state.scripts.clear();
 
-    flush_resources_of(destination, render_state.bulk_preloads);
+    render_state
+        .bulk_preloads
+        .for_each(|resource| flush_resource(destination, resource));
+    render_state.bulk_preloads.clear();
 
     if (html_chunks.is_some() || head_chunks.is_some()) && !skip_blocking_shell {
         // If we have any html or head chunks we know that we're rendering a full document.
@@ -5786,7 +5854,11 @@ pub fn write_preamble_start(
     }
 
     // Write embedding hoistableChunks
-    flush_chunks(destination, &render_state.hoistable_chunks);
+    let hoistable_chunks = &render_state.hoistable_chunks;
+    for &chunk in hoistable_chunks.borrow().iter() {
+        write_chunk(destination, chunk);
+    }
+    hoistable_chunks.borrow_mut().clear();
 }
 
 // We don't bother reporting backpressure at the moment because we expect to
@@ -5822,13 +5894,26 @@ pub fn write_hoistables(
     // We omit charsetChunks because we have already sent the shell and if it wasn't
     // already sent it is too late now.
 
-    flush_chunks(destination, &render_state.viewport_chunks);
+    let viewport_chunks = &render_state.viewport_chunks;
+    for &chunk in viewport_chunks.borrow().iter() {
+        write_chunk(destination, chunk);
+    }
+    viewport_chunks.borrow_mut().clear();
 
-    flush_resources_of(destination, render_state.preconnects);
+    render_state
+        .preconnects
+        .for_each(|resource| flush_resource(destination, resource));
+    render_state.preconnects.clear();
 
-    flush_resources_of(destination, render_state.font_preloads);
+    render_state
+        .font_preloads
+        .for_each(|resource| flush_resource(destination, resource));
+    render_state.font_preloads.clear();
 
-    flush_resources_of(destination, render_state.high_image_preloads);
+    render_state
+        .high_image_preloads
+        .for_each(|resource| flush_resource(destination, resource));
+    render_state.high_image_preloads.clear();
 
     // Preload any stylesheets. these will emit in a render instruction that follows this
     // but we want to kick off preloading as soon as possible
@@ -5844,12 +5929,22 @@ pub fn write_hoistables(
     // bootstrap scripts should flush above script priority but these can only flush in the preamble
     // so we elide the code here for performance
 
-    flush_resources_of(destination, render_state.scripts);
+    render_state
+        .scripts
+        .for_each(|resource| flush_resource(destination, resource));
+    render_state.scripts.clear();
 
-    flush_resources_of(destination, render_state.bulk_preloads);
+    render_state
+        .bulk_preloads
+        .for_each(|resource| flush_resource(destination, resource));
+    render_state.bulk_preloads.clear();
 
     // Write embedding hoistableChunks
-    flush_chunks(destination, &render_state.hoistable_chunks);
+    let hoistable_chunks = &render_state.hoistable_chunks;
+    for &chunk in hoistable_chunks.borrow().iter() {
+        write_chunk(destination, chunk);
+    }
+    hoistable_chunks.borrow_mut().clear();
 }
 
 pub fn write_postamble(destination: &Destination, resumable_state: &ResumableState) {
@@ -5881,6 +5976,7 @@ fn encode_in_attr(text: &str) -> String {
 // This function writes a 2D array of strings to be embedded in javascript.
 // E.g.
 //  [["JS_escaped_string1", "JS_escaped_string2"]]
+#[cfg_attr(rust_js, rust_js::name = "writeStyleResourceDependenciesInJS")]
 fn write_style_resource_dependencies_in_js(
     destination: &Destination,
     hoistable_state: &HoistableState,
@@ -7037,6 +7133,7 @@ thread_local! {
     // a "Link" header in between `<` and `>` characters. The primary concern with the href is
     // to escape the bounding characters as well as new lines. This is unsafe to use in any other
     // context
+    #[cfg_attr(rust_js, rust_js::name = "regexForHrefInLinkHeaderURLContext")]
     static REGEX_FOR_HREF_IN_LINK_HEADER_URL_CONTEXT: &'static js::RegExp = js::reg_exp::new("[<>\\r\\n]", "g");
 }
 
