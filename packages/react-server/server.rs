@@ -25,6 +25,10 @@ pub mod react_fizz_thenable;
 pub mod react_fizz_tree_context;
 #[path = "src/ReactFizzViewTransitionComponent.rs"]
 pub mod react_fizz_view_transition_component;
+#[path = "src/ReactFlightAsyncSequence.rs"]
+pub mod react_flight_async_sequence;
+#[path = "src/ReactFlightServerConfigDebugNoop.rs"]
+pub mod react_flight_server_config_debug_noop;
 #[path = "src/ReactServerStreamConfigBrowser.rs"]
 pub mod react_server_stream_config_browser;
 #[path = "src/ReactServerStreamConfigEdge.rs"]
