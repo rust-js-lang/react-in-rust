@@ -13,10 +13,13 @@ use js::{
     Dict, Iterator, JsError, JsObject, Kind, PropertyDescriptor, SymbolFor, Unknown, WeakSet,
 };
 use react_isomorphic::react_lazy::LazyComponent;
+use shared::assign::assign;
 use shared::environment::__DEV__;
+use shared::get_component_name_from_type::get_component_name_from_type;
 use shared::is_array::is_array;
 use shared::react_feature_flags::{
-    DISABLE_LEGACY_CONTEXT, ENABLE_ASYNC_ITERABLE_CHILDREN, ENABLE_CPU_SUSPENSE,
+    DISABLE_LEGACY_CONTEXT, DISABLE_LEGACY_CONTEXT_FOR_FUNCTION_COMPONENTS,
+    ENABLE_ASYNC_ITERABLE_CHILDREN, ENABLE_CPU_SUSPENSE, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
 };
 use shared::react_owner_stack_reset::reset_owner_stack_limit;
 use shared::react_recoverable::REACT_RECOVERABLE_DIGEST;
@@ -25,30 +28,41 @@ use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use shared::react_symbols::{ASYNC_ITERATOR, REACT_ELEMENT_TYPE, REACT_LAZY_TYPE, get_iterator_fn};
 use shared::react_types::{
     ReactFormState, ReactNodeList, SuspenseListProps, SuspenseListRevealOrder, SuspenseProps,
-    Thenable,
+    Thenable, ViewTransitionProps,
 };
 use webapi::{AbortController, ConsoleTask, console};
 
 use crate::react_fizz_async_dispatcher::DEFAULT_ASYNC_DISPATCHER;
+use crate::react_fizz_call_user_space::{
+    CALL_COMPONENT_IN_DEV, CALL_LAZY_INIT_IN_DEV, CALL_RENDER_IN_DEV, ClassInstance, Component,
+};
+use crate::react_fizz_class_component::{construct_class_instance, mount_class_instance};
 use crate::react_fizz_component_stack::{
     ComponentStackNode, get_owner_stack_by_component_stack_node_in_dev,
     get_stack_by_component_stack_node,
 };
 use crate::react_fizz_current_task::{CURRENT_TASK_IN_DEV, set_current_task_in_dev};
 use crate::react_fizz_hooks::{
-    CURRENT_RESUMABLE_STATE, HOOKS_DISPATCHER, is_recoverable_error, prepare_to_use_thenable_state,
-    read_previous_thenable_from_state, reset_hooks_state, set_current_resumable_state,
-    unwrap_thenable,
+    CURRENT_RESUMABLE_STATE, HOOKS_DISPATCHER, check_did_render_id_hook, finish_hooks,
+    get_action_state_count, get_action_state_matching_index, is_recoverable_error,
+    prepare_to_use_hooks, prepare_to_use_thenable_state, read_previous_thenable_from_state,
+    reset_hooks_state, set_current_resumable_state, unwrap_thenable,
 };
-use crate::react_fizz_legacy_context::{Context as LegacyContext, EMPTY_CONTEXT_OBJECT};
+use crate::react_fizz_legacy_context::{
+    Context as LegacyContext, EMPTY_CONTEXT_OBJECT, get_masked_context, process_child_context,
+};
 use crate::react_fizz_new_context::{
-    ContextSnapshot, ROOT_CONTEXT_SNAPSHOT, get_active_context, switch_context,
+    Context, ContextSnapshot, ROOT_CONTEXT_SNAPSHOT, get_active_context, pop_provider,
+    push_provider, read_context, switch_context,
 };
 use crate::react_fizz_thenable::{
     ThenableState, ensure_suspendable_thenable_state_dev, get_suspended_call_site_debug_task_dev,
     get_suspended_call_site_stack_dev, set_capture_suspended_call_site_dev,
 };
 use crate::react_fizz_tree_context::{EMPTY_TREE_CONTEXT, TreeContext, push_tree_context};
+use crate::react_fizz_view_transition_component::{
+    get_view_transition_class_name, get_view_transition_name,
+};
 
 // ReactServerStreamConfig's types, which its fork for each host defines: a
 // destination, and the chunks written to it.
@@ -2902,6 +2916,860 @@ fn render_preamble(
     }
 }
 
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#pushStartInstance"
+)]
+fn push_start_instance(
+    target: &Chunks,
+    r#type: &str,
+    props: &'static Unknown,
+    resumable_state: &ResumableState,
+    render_state: &RenderState,
+    preamble_state: Option<&PreambleState>,
+    hoistable_state: Option<&HoistableState>,
+    format_context: &FormatContext,
+    text_embedded: bool,
+) -> Option<&'static ReactNodeList> {
+    let _ = (
+        target,
+        r#type,
+        props,
+        resumable_state,
+        render_state,
+        preamble_state,
+        hoistable_state,
+        format_context,
+        text_embedded,
+    );
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#pushEndInstance"
+)]
+fn push_end_instance(
+    target: &Chunks,
+    r#type: &str,
+    props: &Unknown,
+    resumable_state: &ResumableState,
+    format_context: &FormatContext,
+) {
+    let _ = (target, r#type, props, resumable_state, format_context);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#isPreambleContext"
+)]
+fn is_preamble_context(format_context: &FormatContext) -> bool {
+    let _ = format_context;
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#pushFormStateMarkerIsMatching"
+)]
+fn push_form_state_marker_is_matching(target: &Chunks) {
+    let _ = target;
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#pushFormStateMarkerIsNotMatching"
+)]
+fn push_form_state_marker_is_not_matching(target: &Chunks) {
+    let _ = target;
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#pushStartActivityBoundary"
+)]
+fn push_start_activity_boundary(target: &Chunks, render_state: &RenderState) {
+    let _ = (target, render_state);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#pushEndActivityBoundary"
+)]
+fn push_end_activity_boundary(target: &Chunks, render_state: &RenderState) {
+    let _ = (target, render_state);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#getViewTransitionFormatContext"
+)]
+fn get_view_transition_format_context(
+    resumable_state: &ResumableState,
+    parent_context: &FormatContext,
+    update: Option<&str>,
+    enter: Option<&str>,
+    exit: Option<&str>,
+    share: Option<&str>,
+    parent_enter: Option<&Unknown>,
+    parent_exit: Option<&Unknown>,
+    has_parent_enter_handler: bool,
+    has_parent_exit_handler: bool,
+    name: Option<&str>,
+    auto_name: &str,
+) -> &'static FormatContext {
+    let _ = (
+        resumable_state,
+        parent_context,
+        update,
+        enter,
+        exit,
+        share,
+        parent_enter,
+        parent_exit,
+        has_parent_enter_handler,
+        has_parent_exit_handler,
+        name,
+        auto_name,
+    );
+    unreachable!()
+}
+
+fn render_host_element(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    r#type: &str,
+    props: &'static Unknown,
+) {
+    let segment = task.blocked_segment.borrow().clone();
+    match segment {
+        None => {
+            // Replay
+            let children = js::get(props, "children"); // TODO: Make this a Config for replaying.
+            let prev_context = task.format_context.get();
+            let prev_key_path = task.key_path.borrow().clone();
+            task.format_context
+                .set(get_child_format_context(prev_context, r#type, props));
+            task.key_path.replace(Some(Rc::clone(key_path)));
+
+            // We use the non-destructive form because if something suspends, we still
+            // need to pop back up and finish this subtree of HTML.
+            render_node(request, task, children, -1.0);
+
+            // We expect that errors will fatal the whole task and that we don't need
+            // the correct context. Therefore this is not in a finally.
+            task.format_context.set(prev_context);
+            task.key_path.replace(prev_key_path);
+        }
+        Some(segment) => {
+            // Render
+            // RenderTask always has a preambleState
+            let children = push_start_instance(
+                &segment.chunks,
+                r#type,
+                props,
+                request.resumable_state,
+                request.render_state,
+                task.blocked_preamble.get(),
+                task.hoistable_state.get(),
+                task.format_context.get(),
+                segment.last_pushed_text.get(),
+            );
+            segment.last_pushed_text.set(false);
+            let prev_context = task.format_context.get();
+            let prev_key_path = task.key_path.replace(Some(Rc::clone(key_path)));
+
+            let new_context = get_child_format_context(prev_context, r#type, props);
+            task.format_context.set(new_context);
+            if is_preamble_context(new_context) {
+                // $FlowFixMe[incompatible-type]: Refined
+                render_preamble(request, task, &segment, children);
+            } else {
+                // We use the non-destructive form because if something suspends, we still
+                // need to pop back up and finish this subtree of HTML.
+                render_node(request, task, children, -1.0);
+            }
+
+            // We expect that errors will fatal the whole task and that we don't need
+            // the correct context. Therefore this is not in a finally.
+            task.format_context.set(prev_context);
+            task.key_path.replace(prev_key_path);
+            push_end_instance(
+                &segment.chunks,
+                r#type,
+                props,
+                request.resumable_state,
+                prev_context,
+            );
+            segment.last_pushed_text.set(false);
+        }
+    }
+}
+
+fn should_construct(component: &Unknown) -> bool {
+    let prototype = js::get(component, "prototype");
+    js::truthy(prototype) && js::truthy(js::get(prototype, "isReactComponent"))
+}
+
+fn render_with_hooks(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    component: &'static Component,
+    props: Option<&'static Unknown>,
+    second_arg: Option<&'static Unknown>,
+) -> Option<&'static Unknown> {
+    // Reset the task's thenable state before continuing, so that if a later
+    // component suspends we can reuse the same task object. If the same
+    // component suspends again, the thenable state will be restored.
+    let prev_thenable_state = task.thenable_state.take();
+    let component_identity = js::unknown(js::dict::new::<()>());
+    prepare_to_use_hooks(
+        request,
+        task,
+        Some(Rc::clone(key_path)),
+        component_identity,
+        prev_thenable_state,
+    );
+    let result = if __DEV__ {
+        CALL_COMPONENT_IN_DEV.with(|call_component_in_dev| call_component_in_dev.unwrap())(
+            component, props, second_arg,
+        )
+    } else {
+        component(props, second_arg)
+    };
+    finish_hooks(component, props, result, second_arg)
+}
+
+fn finish_class_component(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    instance: &'static Unknown,
+    component: &'static Unknown,
+    props: &'static Unknown,
+) {
+    let instance_of_class: &ClassInstance = unsafe { js::cast(Some(instance)) };
+    let next_children = if __DEV__ {
+        CALL_RENDER_IN_DEV.with(|call_render_in_dev| call_render_in_dev.unwrap())(instance_of_class)
+    } else {
+        instance_of_class.render()
+    };
+    if request.aborted.get() {
+        // eslint-disable-next-line no-throw-literal
+        js::throw(js::null());
+    }
+
+    if __DEV__ && !js::strict_equals(js::get(instance, "props"), Some(props)) {
+        if !DID_WARN_ABOUT_REASSIGNING_PROPS.get() {
+            console::error((
+                concat!(
+                    "It looks like %s is reassigning its own `this.props` while rendering. ",
+                    "This is not supported and can lead to confusing bugs."
+                ),
+                get_component_name_from_type(Some(component))
+                    .filter(|name| !name.is_empty())
+                    .unwrap_or_else(|| "a component".to_owned()),
+            ));
+        }
+        DID_WARN_ABOUT_REASSIGNING_PROPS.set(true);
+    }
+
+    if !DISABLE_LEGACY_CONTEXT {
+        let child_context_types = js::get(component, "childContextTypes");
+        if let Some(child_context_types) = child_context_types {
+            let previous_context = task.legacy_context.get();
+            let merged_context =
+                process_child_context(instance, component, previous_context, child_context_types);
+            task.legacy_context.set(merged_context);
+            render_node_destructive(request, task, next_children, -1.0);
+            task.legacy_context.set(previous_context);
+            return;
+        }
+    }
+
+    let prev_key_path = task.key_path.replace(Some(Rc::clone(key_path)));
+    render_node_destructive(request, task, next_children, -1.0);
+    task.key_path.replace(prev_key_path);
+}
+
+pub fn resolve_class_component_props(
+    component: &'static Unknown,
+    base_props: &'static Unknown,
+) -> &'static Unknown {
+    let mut new_props = base_props;
+
+    // Remove ref from the props object, if it exists.
+    if js::has(base_props, "ref") {
+        new_props = js::unknown(js::dict::new::<()>());
+        for prop_name in js::keys_in(base_props) {
+            if prop_name != "ref" {
+                js::set(new_props, &prop_name, js::get(base_props, &prop_name));
+            }
+        }
+    }
+
+    // Resolve default props.
+    let default_props = js::get(component, "defaultProps");
+    if let Some(default_props) =
+        default_props.filter(|default_props| js::truthy(Some(*default_props)))
+    {
+        // We may have already copied the props object above to remove ref. If so,
+        // we can modify that. Otherwise, copy the props object with Object.assign.
+        if std::ptr::eq(new_props, base_props) {
+            new_props = assign(js::unknown(js::dict::new::<()>()), (new_props, base_props));
+        }
+        // Taken from old JSX runtime, where this used to live.
+        for prop_name in js::keys_in(default_props) {
+            if matches!(
+                js::classify(js::get(new_props, &prop_name)),
+                Kind::Undefined
+            ) {
+                js::set(new_props, &prop_name, js::get(default_props, &prop_name));
+            }
+        }
+    }
+
+    new_props
+}
+
+fn render_class_component(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    component: &'static Unknown,
+    props: &'static Unknown,
+) {
+    let resolved_props = resolve_class_component_props(component, props);
+    let masked_context = if !DISABLE_LEGACY_CONTEXT {
+        Some(js::unknown(get_masked_context(
+            component,
+            task.legacy_context.get(),
+        )))
+    } else {
+        None
+    };
+    let instance = construct_class_instance(component, Some(resolved_props), masked_context);
+    mount_class_instance(instance, component, Some(resolved_props), masked_context);
+    finish_class_component(request, task, key_path, instance, component, resolved_props);
+}
+
+thread_local! {
+    static DID_WARN_ABOUT_BAD_CLASS: &'static Dict<bool> = js::dict::new();
+    static DID_WARN_ABOUT_CONTEXT_TYPES: &'static Dict<bool> = js::dict::new();
+    static DID_WARN_ABOUT_CONTEXT_TYPE_ON_FUNCTION_COMPONENT: &'static Dict<bool> = js::dict::new();
+    static DID_WARN_ABOUT_GET_DERIVED_STATE_ON_FUNCTION_COMPONENT: &'static Dict<bool> =
+        js::dict::new();
+    static DID_WARN_ABOUT_REASSIGNING_PROPS: Cell<bool> = const { Cell::new(false) };
+    static DID_WARN_ABOUT_GENERATORS: Cell<bool> = const { Cell::new(false) };
+    static DID_WARN_ABOUT_MAPS: Cell<bool> = const { Cell::new(false) };
+}
+
+fn component_name_or_unknown(component: &Unknown) -> String {
+    get_component_name_from_type(Some(component))
+        .filter(|name| !name.is_empty())
+        .unwrap_or_else(|| "Unknown".to_owned())
+}
+
+fn render_function_component(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    component: &'static Unknown,
+    props: &'static Unknown,
+) {
+    let mut legacy_context = None;
+    if !DISABLE_LEGACY_CONTEXT && !DISABLE_LEGACY_CONTEXT_FOR_FUNCTION_COMPONENTS {
+        legacy_context = Some(js::unknown(get_masked_context(
+            component,
+            task.legacy_context.get(),
+        )));
+    }
+    if __DEV__ {
+        let prototype = js::get(component, "prototype");
+        if js::truthy(prototype) && js::is_function(js::get(prototype, "render")) {
+            let component_name = component_name_or_unknown(component);
+
+            DID_WARN_ABOUT_BAD_CLASS.with(|&did_warn_about_bad_class| {
+                if !js::dict::get(did_warn_about_bad_class, &component_name)
+                    .copied()
+                    .unwrap_or(false)
+                {
+                    console::error((
+                        concat!(
+                            "The <%s /> component appears to have a render method, but doesn't extend React.Component. ",
+                            "This is likely to cause errors. Change %s to extend React.Component instead."
+                        ),
+                        component_name.as_str(),
+                        component_name.as_str(),
+                    ));
+                    js::dict::set(did_warn_about_bad_class, &component_name, true);
+                }
+            });
+        }
+    }
+
+    let value = render_with_hooks(
+        request,
+        task,
+        key_path,
+        unsafe { js::cast(Some(component)) },
+        Some(props),
+        legacy_context,
+    );
+    if request.aborted.get() {
+        // eslint-disable-next-line no-throw-literal
+        js::throw(js::null());
+    }
+
+    let has_id = check_did_render_id_hook();
+    let action_state_count = get_action_state_count();
+    let action_state_matching_index = get_action_state_matching_index();
+
+    if __DEV__ && js::truthy(js::get(component, "contextTypes")) {
+        let component_name = component_name_or_unknown(component);
+        DID_WARN_ABOUT_CONTEXT_TYPES.with(|&did_warn_about_context_types| {
+            if !js::dict::get(did_warn_about_context_types, &component_name)
+                .copied()
+                .unwrap_or(false)
+            {
+                js::dict::set(did_warn_about_context_types, &component_name, true);
+                if DISABLE_LEGACY_CONTEXT {
+                    console::error((
+                        concat!(
+                            "%s uses the legacy contextTypes API which was removed in React 19. ",
+                            "Use React.createContext() with React.useContext() instead. ",
+                            "(https://react.dev/link/legacy-context)"
+                        ),
+                        component_name.as_str(),
+                    ));
+                } else {
+                    console::error((
+                        concat!(
+                            "%s uses the legacy contextTypes API which will be removed soon. ",
+                            "Use React.createContext() with React.useContext() instead. ",
+                            "(https://react.dev/link/legacy-context)"
+                        ),
+                        component_name.as_str(),
+                    ));
+                }
+            }
+        });
+    }
+    if __DEV__ {
+        validate_function_component_in_dev(component);
+    }
+    finish_function_component(
+        request,
+        task,
+        key_path,
+        value,
+        has_id,
+        action_state_count,
+        action_state_matching_index,
+    );
+}
+
+fn finish_function_component(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    children: Option<&'static ReactNodeList>,
+    has_id: bool,
+    action_state_count: f64,
+    action_state_matching_index: f64,
+) {
+    let mut did_emit_action_state_markers = false;
+    if action_state_count != 0.0 && request.form_state.is_some() {
+        // For each useActionState hook, emit a marker that indicates whether we
+        // rendered using the form state passed at the root. We only emit these
+        // markers if form state is passed at the root.
+        let segment = task.blocked_segment.borrow().clone();
+        if let Some(segment) = segment {
+            did_emit_action_state_markers = true;
+            let target = &segment.chunks;
+            let mut i = 0.0;
+            while i < action_state_count {
+                if i == action_state_matching_index {
+                    push_form_state_marker_is_matching(target);
+                } else {
+                    push_form_state_marker_is_not_matching(target);
+                }
+                i += 1.0;
+            }
+        } else {
+            // Implies we're in reumable mode.
+        }
+    }
+
+    let prev_key_path = task.key_path.replace(Some(Rc::clone(key_path)));
+    if has_id {
+        // This component materialized an id. We treat this as its own level, with
+        // a single "child" slot.
+        let prev_tree_context = Rc::clone(&task.tree_context.borrow());
+        let total_children = 1;
+        let index = 0;
+        // Modify the id context. Because we'll need to reset this if something
+        // suspends or errors, we'll use the non-destructive render path.
+        task.tree_context
+            .replace(push_tree_context(&prev_tree_context, total_children, index));
+        render_node(request, task, children, -1.0);
+        // Like the other contexts, this does not need to be in a finally block
+        // because renderNode takes care of unwinding the stack.
+        task.tree_context.replace(prev_tree_context);
+    } else if did_emit_action_state_markers {
+        // If there were useActionState hooks, we must use the non-destructive path
+        // because this component is not a pure indirection; we emitted markers
+        // to the stream.
+        render_node(request, task, children, -1.0);
+    } else {
+        // We're now successfully past this task, and we haven't modified the
+        // context stack. We don't have to pop back to the previous task every
+        // again, so we can use the destructive recursive form.
+        render_node_destructive(request, task, children, -1.0);
+    }
+    task.key_path.replace(prev_key_path);
+}
+
+fn validate_function_component_in_dev(component: &'static Unknown) {
+    if __DEV__ {
+        if js::truthy(Some(component)) && js::truthy(js::get(component, "childContextTypes")) {
+            let display_name = js::get(component, "displayName");
+            let name = js::get(component, "name");
+            console::error((
+                concat!(
+                    "childContextTypes cannot be defined on a function component.\n",
+                    "  %s.childContextTypes = ..."
+                ),
+                if js::truthy(display_name) {
+                    display_name
+                } else if js::truthy(name) {
+                    name
+                } else {
+                    Some(js::unknown("Component"))
+                },
+            ));
+        }
+
+        if js::is_function(js::get(component, "getDerivedStateFromProps")) {
+            let component_name = component_name_or_unknown(component);
+
+            DID_WARN_ABOUT_GET_DERIVED_STATE_ON_FUNCTION_COMPONENT.with(|&did_warn| {
+                if !js::dict::get(did_warn, &component_name)
+                    .copied()
+                    .unwrap_or(false)
+                {
+                    console::error((
+                        "%s: Function components do not support getDerivedStateFromProps.",
+                        component_name.as_str(),
+                    ));
+                    js::dict::set(did_warn, &component_name, true);
+                }
+            });
+        }
+
+        let context_type = js::get(component, "contextType");
+        if js::type_of(context_type) == "object"
+            && !matches!(js::classify(context_type), Kind::Null)
+        {
+            let component_name = component_name_or_unknown(component);
+
+            DID_WARN_ABOUT_CONTEXT_TYPE_ON_FUNCTION_COMPONENT.with(|&did_warn| {
+                if !js::dict::get(did_warn, &component_name)
+                    .copied()
+                    .unwrap_or(false)
+                {
+                    console::error((
+                        "%s: Function components do not support contextType.",
+                        component_name.as_str(),
+                    ));
+                    js::dict::set(did_warn, &component_name, true);
+                }
+            });
+        }
+    }
+}
+
+fn render_forward_ref(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    r#type: &'static Unknown,
+    props: &'static Unknown,
+    r#ref: Option<&'static Unknown>,
+) {
+    let props_without_ref = if js::has(props, "ref") {
+        // `ref` is just a prop now, but `forwardRef` expects it to not appear in
+        // the props object. This used to happen in the JSX runtime, but now we do
+        // it here.
+        let props_without_ref = js::unknown(js::dict::new::<()>());
+        for key in js::keys_in(props) {
+            // Since `ref` should only appear in props via the JSX transform, we can
+            // assume that this is a plain object. So we don't need a
+            // hasOwnProperty check.
+            if key != "ref" {
+                js::set(props_without_ref, &key, js::get(props, &key));
+            }
+        }
+        props_without_ref
+    } else {
+        props
+    };
+
+    let children = render_with_hooks(
+        request,
+        task,
+        key_path,
+        unsafe { js::cast(js::get(r#type, "render")) },
+        Some(props_without_ref),
+        r#ref,
+    );
+    if request.aborted.get() {
+        // eslint-disable-next-line no-throw-literal
+        js::throw(js::null());
+    }
+    let has_id = check_did_render_id_hook();
+    let action_state_count = get_action_state_count();
+    let action_state_matching_index = get_action_state_matching_index();
+    finish_function_component(
+        request,
+        task,
+        key_path,
+        children,
+        has_id,
+        action_state_count,
+        action_state_matching_index,
+    );
+}
+
+fn render_memo(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    r#type: &'static Unknown,
+    props: &'static Unknown,
+    r#ref: Option<&'static Unknown>,
+) {
+    let inner_type = js::get(r#type, "type");
+    render_element(request, task, key_path, inner_type, props, r#ref);
+}
+
+fn render_context_consumer(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    context: &'static Context,
+    props: &'static Unknown,
+) {
+    let render = js::get(props, "children");
+
+    if __DEV__ && !js::is_function(render) {
+        console::error((concat!(
+            "A context consumer was rendered with multiple children, or a child ",
+            "that isn't a function. A context consumer expects a single child ",
+            "that is a function. If you did pass a function, make sure there ",
+            "is no trailing or leading whitespace around it."
+        ),));
+    }
+
+    let new_value = read_context(context);
+    let render: &dyn Fn(Option<&'static Unknown>) -> Option<&'static ReactNodeList> =
+        unsafe { js::cast(render) };
+    let new_children = render(new_value);
+    if request.aborted.get() {
+        // eslint-disable-next-line no-throw-literal
+        js::throw(js::null());
+    }
+
+    let prev_key_path = task.key_path.replace(Some(Rc::clone(key_path)));
+    render_node_destructive(request, task, new_children, -1.0);
+    task.key_path.replace(prev_key_path);
+}
+
+fn render_context_provider(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    context: &'static Context,
+    props: &'static Unknown,
+) {
+    let value = js::get(props, "value");
+    let children = js::get(props, "children");
+    let mut prev_snapshot = None;
+    if __DEV__ {
+        prev_snapshot = task.context.borrow().clone();
+    }
+    let prev_key_path = task.key_path.borrow().clone();
+    task.context.replace(push_provider(context, value));
+    task.key_path.replace(Some(Rc::clone(key_path)));
+    render_node_destructive(request, task, children, -1.0);
+    task.context.replace(pop_provider(context));
+    task.key_path.replace(prev_key_path);
+    if __DEV__ && prev_snapshot != *task.context.borrow() {
+        console::error((
+            "Popping the context provider did not return back to the original snapshot. This is a bug in React.",
+        ));
+    }
+}
+
+fn render_lazy_component(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    lazy_component: &'static LazyComponent,
+    props: &'static Unknown,
+    r#ref: Option<&'static Unknown>,
+) {
+    let component = if __DEV__ {
+        CALL_LAZY_INIT_IN_DEV.with(|call_lazy_init_in_dev| call_lazy_init_in_dev.unwrap())(
+            lazy_component,
+        )
+    } else {
+        let payload = &lazy_component.payload;
+        let init = lazy_component.init;
+        init(payload)
+    };
+    if request.aborted.get() {
+        // eslint-disable-next-line no-throw-literal
+        js::throw(js::null());
+    }
+    render_element(request, task, key_path, component, props, r#ref);
+}
+
+fn render_activity(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    props: &'static Unknown,
+) {
+    let segment = task.blocked_segment.borrow().clone();
+    match segment {
+        None => {
+            // Replay
+            let mode = js::get(props, "mode");
+            if js::strict_equals(mode, Some(js::unknown("hidden"))) {
+                // A hidden Activity boundary is not server rendered. Prerendering happens
+                // on the client.
+            } else {
+                // A visible Activity boundary has its children rendered inside the boundary.
+                let prev_key_path = task.key_path.replace(Some(Rc::clone(key_path)));
+                render_node(request, task, js::get(props, "children"), -1.0);
+                task.key_path.replace(prev_key_path);
+            }
+        }
+        Some(segment) => {
+            // Render
+            let mode = js::get(props, "mode");
+            if js::strict_equals(mode, Some(js::unknown("hidden"))) {
+                // A hidden Activity boundary is not server rendered. Prerendering happens
+                // on the client.
+            } else {
+                // An Activity boundary is delimited so that we can hydrate it separately.
+                push_start_activity_boundary(&segment.chunks, request.render_state);
+                segment.last_pushed_text.set(false);
+                // A visible Activity boundary has its children rendered inside the boundary.
+                let prev_key_path = task.key_path.replace(Some(Rc::clone(key_path)));
+                // We use the non-destructive form because if something suspends, we still
+                // need to pop back up and finish the end comment.
+                render_node(request, task, js::get(props, "children"), -1.0);
+                task.key_path.replace(prev_key_path);
+                push_end_activity_boundary(&segment.chunks, request.render_state);
+                segment.last_pushed_text.set(false);
+            }
+        }
+    }
+}
+
+fn render_view_transition(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    props: &ViewTransitionProps,
+) {
+    let prev_context = task.format_context.get();
+    let prev_key_path = task.key_path.borrow().clone();
+    // Get the name off props or generate an auto-generated one in case we need it.
+    let auto_name =
+        get_view_transition_name(props, &task.tree_context.borrow(), request.resumable_state);
+    let enable_parent_enter_exit =
+        ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT.with(|&enabled| enabled);
+    // Pass `undefined` (rather than the resolved class) when the prop is absent
+    // so the format context can distinguish "no parentEnter/parentExit" (which
+    // stops the relay) from an explicit "auto"/class (which continues it).
+    let parent_enter = if enable_parent_enter_exit && props.parent_enter.is_some() {
+        Some(get_view_transition_class_name(
+            props.default,
+            props.parent_enter,
+        ))
+    } else {
+        None
+    };
+    let parent_exit = if enable_parent_enter_exit && props.parent_exit.is_some() {
+        Some(get_view_transition_class_name(
+            props.default,
+            props.parent_exit,
+        ))
+    } else {
+        None
+    };
+    task.format_context.set(get_view_transition_format_context(
+        request.resumable_state,
+        prev_context,
+        get_view_transition_class_name(props.default, props.update).as_deref(),
+        get_view_transition_class_name(props.default, props.enter).as_deref(),
+        get_view_transition_class_name(props.default, props.exit).as_deref(),
+        get_view_transition_class_name(props.default, props.share).as_deref(),
+        // GAP rd490's kind: a class, `null` of none, or `undefined` where the
+        // prop is absent, is an `Option<Option<String>>` given as `&Unknown`.
+        match &parent_enter {
+            Some(Some(class_name)) => Some(js::unknown(class_name.as_str())),
+            Some(None) => js::null(),
+            None => None,
+        },
+        match &parent_exit {
+            Some(Some(class_name)) => Some(js::unknown(class_name.as_str())),
+            Some(None) => js::null(),
+            None => None,
+        },
+        // A ViewTransition with an onParentEnter/onParentExit handler but no class
+        // still relays the activation to its descendants, so the relay must continue
+        // through it even though the handler itself emits no annotation.
+        enable_parent_enter_exit && props.on_parent_enter.is_some(),
+        enable_parent_enter_exit && props.on_parent_exit.is_some(),
+        props.name.as_deref(),
+        &auto_name,
+    ));
+    task.key_path.replace(Some(Rc::clone(key_path)));
+    if let Some(name) = &props.name
+        && name != "auto"
+    {
+        render_node_destructive(request, task, props.children, -1.0);
+    } else {
+        // This will be auto-assigned a name which claims a "useId" slot.
+        // This component materialized an id. We treat this as its own level, with
+        // a single "child" slot.
+        let prev_tree_context = Rc::clone(&task.tree_context.borrow());
+        let total_children = 1;
+        let index = 0;
+        // Modify the id context. Because we'll need to reset this if something
+        // suspends or errors, we'll use the non-destructive render path.
+        task.tree_context
+            .replace(push_tree_context(&prev_tree_context, total_children, index));
+        render_node(request, task, props.children, -1.0);
+        // Like the other contexts, this does not need to be in a finally block
+        // because renderNode takes care of unwinding the stack.
+        task.tree_context.replace(prev_tree_context);
+    }
+    task.format_context.set(prev_context);
+    task.key_path.replace(prev_key_path);
+}
+
 // DRAFT: the sections below are not ported yet.
 
 fn render_node(
@@ -3029,6 +3897,17 @@ fn render_node_destructive(
     _task: &Rc<Task>,
     _node: Option<&'static ReactNodeList>,
     _child_index: f64,
+) {
+    todo!()
+}
+
+fn render_element(
+    _request: &Rc<Request>,
+    _task: &Rc<Task>,
+    _key_path: &Rc<KeyNode>,
+    _type: Option<&'static Unknown>,
+    _props: &'static Unknown,
+    _ref: Option<&'static Unknown>,
 ) {
     todo!()
 }
