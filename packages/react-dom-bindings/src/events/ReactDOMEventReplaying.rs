@@ -601,7 +601,7 @@ fn replay_unblocked_form_actions(form_replaying_queue: &'static Unknown) {
         if let Some(form_inst) = form_inst {
             // This is part of our instance.
             // We're ready to replay this. Let's delete it from the queue.
-            js::array::splice(form_replaying_queue, i, 3.0);
+            js::array::splice(form_replaying_queue, i, 3.0, ());
             dispatch_replayed_form_action(
                 &form_inst,
                 unsafe { js::cast(form) },
@@ -742,7 +742,7 @@ pub fn retry_if_blocked_on(unblocked: &'static Unknown) {
                     i += 3.0;
                 } else {
                     // Something went wrong so let's just delete this action.
-                    js::array::splice(form_replaying_queue, i, 3.0);
+                    js::array::splice(form_replaying_queue, i, 3.0, ());
                 }
                 // Schedule a replay in case this unblocked something.
                 schedule_replay_queue_if_needed(form_replaying_queue);

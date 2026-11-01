@@ -814,7 +814,7 @@ js::on_load! {
             };
             if index + 1 == path.len() {
                 if js::array::is_array(Some(updated)) {
-                    js::array::splice(updated, unsafe { js::cast(Some(key)) }, 1.0);
+                    js::array::splice(updated, unsafe { js::cast(Some(key)) }, 1.0, ());
                 } else {
                     js::delete(updated, key);
                 }
@@ -843,7 +843,7 @@ js::on_load! {
                 let new_key = new_path[index];
                 js::set(updated, new_key, js::get(updated, old_key));
                 if js::array::is_array(Some(updated)) {
-                    js::array::splice(updated, unsafe { js::cast(Some(old_key)) }, 1.0);
+                    js::array::splice(updated, unsafe { js::cast(Some(old_key)) }, 1.0, ());
                 } else {
                     js::delete(updated, old_key);
                 }
