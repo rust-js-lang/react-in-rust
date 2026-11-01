@@ -459,6 +459,9 @@ export function create(element, options) {
 
   const entry = {
     _Scheduler: Scheduler,
+
+    root: undefined, // makes flow happy
+    // we define a 'getter' for 'root' below using 'Object.defineProperty'
     toJSON() {
       if (root == null || container == null) {
         return null;

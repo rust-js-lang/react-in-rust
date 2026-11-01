@@ -538,8 +538,7 @@ type FlushSync = dyn Fn(Option<&dyn Fn() -> Option<&'static Unknown>>) -> Option
 pub struct TestRenderer {
     #[cfg_attr(rust_js, rust_js::name = "_Scheduler")]
     pub scheduler: &'static JsObject,
-    pub root: Option<&'static Unknown>, // makes flow happy
-    // we define a 'getter' for 'root' below using 'Object.defineProperty'
+    pub root: Option<&'static Unknown>,
     #[cfg_attr(rust_js, rust_js::name = "toJSON")]
     pub to_json: Box<dyn Fn() -> Option<&'static Unknown>>,
     pub to_tree: Box<dyn Fn() -> Option<&'static Unknown>>,
@@ -621,7 +620,8 @@ pub fn create(
     let entry = js::unknown_of(TestRenderer {
         scheduler: SCHEDULER,
 
-        root: None,
+        root: None, // makes flow happy
+        // we define a 'getter' for 'root' below using 'Object.defineProperty'
         to_json: Box::new({
             let root = Rc::clone(&root);
             let container = Rc::clone(&container);

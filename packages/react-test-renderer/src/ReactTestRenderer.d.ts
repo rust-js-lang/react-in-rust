@@ -68,7 +68,6 @@ export type {ReactTestInstance};
 export interface TestRenderer {
   _Scheduler: object;
   root?: unknown;
-  // we define a 'getter' for 'root' below using 'Object.defineProperty'
   toJSON: () => unknown | null | undefined;
   toTree: () => unknown | null | undefined;
   update: (value: unknown | null | undefined) => void;
