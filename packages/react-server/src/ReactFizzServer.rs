@@ -9,16 +9,16 @@ use std::hash::{Hash, Hasher};
 use std::panic::{AssertUnwindSafe, catch_unwind, resume_unwind};
 use std::rc::{Rc, Weak};
 
-use js::{Dict, JsObject, Kind, PropertyDescriptor, SymbolFor, Unknown, WeakSet};
+use js::{Dict, JsError, JsObject, Kind, PropertyDescriptor, SymbolFor, Unknown, WeakSet};
 use react_isomorphic::react_lazy::LazyComponent;
 use shared::environment::__DEV__;
-use shared::react_feature_flags::DISABLE_LEGACY_CONTEXT;
+use shared::react_feature_flags::{DISABLE_LEGACY_CONTEXT, ENABLE_CPU_SUSPENSE};
 use shared::react_owner_stack_reset::reset_owner_stack_limit;
 use shared::react_recoverable::REACT_RECOVERABLE_DIGEST;
 use shared::react_serialization_errors::describe_object_for_error_message;
 use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use shared::react_symbols::{REACT_ELEMENT_TYPE, REACT_LAZY_TYPE};
-use shared::react_types::{ReactFormState, ReactNodeList};
+use shared::react_types::{ReactFormState, ReactNodeList, SuspenseProps};
 use webapi::{AbortController, ConsoleTask, console};
 
 use crate::react_fizz_async_dispatcher::DEFAULT_ASYNC_DISPATCHER;
@@ -313,8 +313,8 @@ struct SuspenseListRow {
     boundaries: RefCell<Option<Vec<Rc<SuspenseBoundary>>>>, // The boundaries in this row waiting to be unblocked by the previous row. (null means this row is not blocked)
     hoistables: &'static HoistableState, // Any dependencies that this row depends on. Future rows need to also depend on it.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    inherited_hoistables: Option<&'static HoistableState>, // Any dependencies that previous row depend on, that new boundaries of this row needs.
-    together: bool, // All the boundaries within this row must be revealed together.
+    inherited_hoistables: Cell<Option<&'static HoistableState>>, // Any dependencies that previous row depend on, that new boundaries of this row needs.
+    together: Cell<bool>, // All the boundaries within this row must be revealed together.
     #[cfg_attr(rust_js, rust_js::nullable)]
     next: RefCell<Option<Rc<SuspenseListRow>>>, // The next row blocked by this one.
 }
@@ -1066,7 +1066,7 @@ fn create_suspense_boundary(
                 .set(boundary.pending_tasks.get() + 1.0);
             blocked_boundaries.push(Rc::clone(&boundary));
         }
-        let inherited_hoistables = row.inherited_hoistables;
+        let inherited_hoistables = row.inherited_hoistables.get();
         if let Some(inherited_hoistables) = inherited_hoistables {
             hoist_hoistables(boundary.content_state, inherited_hoistables);
         }
@@ -1712,8 +1712,770 @@ fn fatal_error(
     }
 }
 
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#getSuspenseContentFormatContext"
+)]
+fn get_suspense_content_format_context(
+    resumable_state: &ResumableState,
+    parent_context: &FormatContext,
+) -> &'static FormatContext {
+    let _ = (resumable_state, parent_context);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#getSuspenseFallbackFormatContext"
+)]
+fn get_suspense_fallback_format_context(
+    resumable_state: &ResumableState,
+    parent_context: &FormatContext,
+) -> &'static FormatContext {
+    let _ = (resumable_state, parent_context);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#canHavePreamble"
+)]
+fn can_have_preamble(format_context: &FormatContext) -> bool {
+    let _ = format_context;
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFizzConfig.js#pushSegmentFinale"
+)]
+fn push_segment_finale(
+    target: &Chunks,
+    render_state: &RenderState,
+    last_pushed_text: bool,
+    text_embedded: bool,
+) {
+    let _ = (target, render_state, last_pushed_text, text_embedded);
+    unreachable!()
+}
+
+/// What a `catch` is given: the JS value thrown, or `None` of a panic.
+fn thrown_value_of(payload: &(dyn std::any::Any + Send)) -> Option<&'static Unknown> {
+    payload
+        .downcast_ref::<&'static JsError>()
+        .and_then(|error| error.as_unknown())
+}
+
+fn fallback_key_path_of(key_path: &KeyNode) -> Rc<KeyNode> {
+    Rc::new(KeyNode(
+        key_path.0.clone(),
+        Some("Suspense Fallback".to_owned()),
+        key_path.2.clone(),
+    ))
+}
+
+fn render_suspense_boundary(
+    request: &Rc<Request>,
+    some_task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    props: &SuspenseProps,
+) {
+    if some_task.replay.borrow().is_some() {
+        // If we're replaying through this pass, it means we're replaying through
+        // an already completed Suspense boundary. It's too late to do anything about it
+        // so we can just render through it.
+        let prev_key_path = some_task.key_path.replace(Some(Rc::clone(key_path)));
+        let prev_context = some_task.format_context.get();
+        let prev_row = some_task.row.take();
+        some_task
+            .format_context
+            .set(get_suspense_content_format_context(
+                request.resumable_state,
+                prev_context,
+            ));
+        let content = props.children;
+        let result = catch_unwind(AssertUnwindSafe(|| {
+            render_node(request, some_task, content, -1.0);
+        }));
+        some_task.key_path.replace(prev_key_path);
+        some_task.format_context.set(prev_context);
+        some_task.row.replace(prev_row);
+        if let Err(thrown_value) = result {
+            resume_unwind(thrown_value);
+        }
+        return;
+    }
+    // $FlowFixMe[incompatible-type]: Refined.
+    let task = some_task;
+
+    let prev_key_path = task.key_path.borrow().clone();
+    let prev_context = task.format_context.get();
+    let prev_row = task.row.borrow().clone();
+    let parent_boundary = task.blocked_boundary.borrow().clone();
+    let parent_preamble = task.blocked_preamble.get();
+    let parent_hoistable_state = task.hoistable_state.get();
+    let parent_segment = task.blocked_segment.borrow().clone().unwrap();
+
+    // Each time we enter a suspense boundary, we split out into a new segment for
+    // the fallback so that we can later replace that segment with the content.
+    // This also lets us split out the main content even if it doesn't suspend,
+    // in case it ends up generating a large subtree of content.
+    let fallback = props.fallback;
+    let content = props.children;
+    let defer = ENABLE_CPU_SUSPENSE.with(|&enabled| enabled) && props.defer == Some(true);
+
+    let fallback_abort_set: AbortSet = Rc::new(RefCell::new(HashSet::new()));
+    let new_boundary = create_suspense_boundary(
+        request,
+        task.row.borrow().clone(),
+        Rc::clone(&fallback_abort_set),
+        if can_have_preamble(task.format_context.get()) {
+            Some(Rc::new(create_preamble()))
+        } else {
+            None
+        },
+        defer,
+    );
+
+    let insertion_index = parent_segment.chunks.borrow().len() as f64;
+    // The children of the boundary segment is actually the fallback.
+    let boundary_segment = create_pending_segment(
+        request,
+        insertion_index,
+        Some(Rc::clone(&new_boundary)),
+        task.format_context.get(),
+        // boundaries never require text embedding at their edges because comment nodes bound them
+        false,
+        false,
+    );
+    parent_segment
+        .children
+        .borrow_mut()
+        .push(Rc::clone(&boundary_segment));
+    // The parentSegment has a child Segment at this index so we reset the lastPushedText marker on the parent
+    parent_segment.last_pushed_text.set(false);
+
+    // This segment is the actual child content. We can start rendering that immediately.
+    let content_root_segment = create_pending_segment(
+        request,
+        0.0,
+        None,
+        task.format_context.get(),
+        // boundaries never require text embedding at their edges because comment nodes bound them
+        false,
+        false,
+    );
+    // We mark the root segment as having its parent flushed. It's not really flushed but there is
+    // no parent segment so there's nothing to wait on.
+    content_root_segment.parent_flushed.set(true);
+
+    let tracked_postpones = request.tracked_postpones.borrow().clone();
+    if tracked_postpones.is_some() || defer {
+        // This is a prerender or deferred boundary. In this mode we want to render the fallback synchronously
+        // and schedule the content to render later. This is the opposite of what we do during a normal render
+        // where we try to skip rendering the fallback if the content itself can render synchronously
+
+        // Stash the original stack frame.
+        let suspense_component_stack = task.component_stack.borrow().clone();
+
+        let fallback_key_path = fallback_key_path_of(key_path);
+        if let Some(tracked_postpones) = &tracked_postpones {
+            let fallback_replay_node = ReplayNode::Element(Rc::new(ReplayElement(
+                fallback_key_path.1.clone(),
+                fallback_key_path.2.clone(),
+                Rc::new(RefCell::new(vec![])),
+                RefCell::new(ResumeSlots::None),
+            )));
+            tracked_postpones
+                .working_map
+                .borrow_mut()
+                .insert(Rc::clone(&fallback_key_path), fallback_replay_node.clone());
+            new_boundary.tracked.replace(Some(Rc::new(Tracked {
+                content_key_path: RefCell::new(Some(Rc::clone(key_path))),
+                // We are rendering the fallback before the boundary content so we keep track of
+                // the fallback replay node until we determine if the primary content suspends
+                fallback_node: RefCell::new(Some(fallback_replay_node)),
+            })));
+        }
+
+        task.blocked_segment
+            .replace(Some(Rc::clone(&boundary_segment)));
+        task.blocked_preamble.set(
+            new_boundary
+                .preamble
+                .as_ref()
+                .map(|preamble| preamble.fallback),
+        );
+        task.key_path.replace(Some(fallback_key_path));
+        task.format_context
+            .set(get_suspense_fallback_format_context(
+                request.resumable_state,
+                prev_context,
+            ));
+        task.component_stack.replace(
+            replace_suspense_component_stack_with_suspense_fallback_stack(
+                suspense_component_stack.as_ref(),
+            ),
+        );
+        let result = catch_unwind(AssertUnwindSafe(|| {
+            render_node(request, task, fallback, -1.0);
+            push_segment_finale(
+                &boundary_segment.chunks,
+                request.render_state,
+                boundary_segment.last_pushed_text.get(),
+                boundary_segment.text_embedded.get(),
+            );
+            boundary_segment.status.set(COMPLETED);
+            finished_segment(request, parent_boundary.as_ref(), &boundary_segment);
+        }));
+        if result.is_err() {
+            if request.aborted.get() {
+                boundary_segment.status.set(ABORTED);
+            } else {
+                boundary_segment.status.set(ERRORED);
+            }
+        }
+        task.blocked_segment.replace(Some(parent_segment));
+        task.blocked_preamble.set(parent_preamble);
+        task.key_path.replace(prev_key_path);
+        task.format_context.set(prev_context);
+        if let Err(thrown_value) = result {
+            resume_unwind(thrown_value);
+        }
+
+        // We create a suspended task for the primary content because we want to allow
+        // sibling fallbacks to be rendered first.
+        let suspended_primary_task = create_render_task(
+            request,
+            None,
+            content,
+            -1.0,
+            Some(Rc::clone(&new_boundary)),
+            content_root_segment,
+            new_boundary
+                .preamble
+                .as_ref()
+                .map(|preamble| preamble.content),
+            Some(new_boundary.content_state),
+            Rc::clone(&task.abort_set.borrow()),
+            Some(Rc::clone(key_path)),
+            get_suspense_content_format_context(request.resumable_state, task.format_context.get()),
+            task.context.borrow().clone(),
+            Rc::clone(&task.tree_context.borrow()),
+            None, // The row gets reset inside the Suspense boundary.
+            suspense_component_stack,
+            if !DISABLE_LEGACY_CONTEXT {
+                task.legacy_context.get()
+            } else {
+                EMPTY_CONTEXT_OBJECT.with(|empty_context_object| *empty_context_object)
+            },
+            if __DEV__ { task.debug_task.get() } else { None },
+        );
+        push_component_stack(&suspended_primary_task);
+        request
+            .pinged_tasks
+            .borrow_mut()
+            .push(suspended_primary_task);
+    } else {
+        // This is a normal render. We will attempt to synchronously render the boundary content
+        // If it is successful we will elide the fallback task but if it suspends or errors we schedule
+        // the fallback to render. Unlike with prerenders we attempt to deprioritize the fallback render
+
+        // Currently this is running synchronously. We could instead schedule this to pingedTasks.
+        // I suspect that there might be some efficiency benefits from not creating the suspended task
+        // and instead just using the stack if possible.
+        // TODO: Call this directly instead of messing with saving and restoring contexts.
+
+        // We can reuse the current context and task to render the content immediately without
+        // context switching. We just need to temporarily switch which boundary and which segment
+        // we're writing to. If something suspends, it'll spawn new suspended task with that context.
+        task.blocked_boundary
+            .replace(Some(Rc::clone(&new_boundary)));
+        task.blocked_preamble.set(
+            new_boundary
+                .preamble
+                .as_ref()
+                .map(|preamble| preamble.content),
+        );
+        task.hoistable_state.set(Some(new_boundary.content_state));
+        task.blocked_segment
+            .replace(Some(Rc::clone(&content_root_segment)));
+        task.key_path.replace(Some(Rc::clone(key_path)));
+        task.format_context.set(get_suspense_content_format_context(
+            request.resumable_state,
+            prev_context,
+        ));
+        task.row.replace(None);
+        let result = catch_unwind(AssertUnwindSafe(|| {
+            // We use the safe form because we don't handle suspending here. Only error handling.
+            render_node(request, task, content, -1.0);
+            push_segment_finale(
+                &content_root_segment.chunks,
+                request.render_state,
+                content_root_segment.last_pushed_text.get(),
+                content_root_segment.text_embedded.get(),
+            );
+            content_root_segment.status.set(COMPLETED);
+            finished_segment(request, Some(&new_boundary), &content_root_segment);
+            queue_completed_segment(&new_boundary, &content_root_segment);
+            if new_boundary.pending_tasks.get() == 0.0 && new_boundary.status.get() == PENDING {
+                // This must have been the last segment we were waiting on. This boundary is now complete.
+                new_boundary.status.set(COMPLETED);
+                // Therefore we won't need the fallback. We early return so that we don't have to create
+                // the fallback. However, if this boundary ended up big enough to be eligible for outlining
+                // we can't do that because we might still need the fallback if we outline it.
+                if !is_eligible_for_outlining(request, &new_boundary) {
+                    if let Some(prev_row) = &prev_row {
+                        // If we have synchronously completed the boundary and it's not eligible for outlining
+                        // then we don't have to wait for it to be flushed before we unblock future rows.
+                        // This lets us inline small rows in order.
+                        prev_row
+                            .pending_tasks
+                            .set(prev_row.pending_tasks.get() - 1.0);
+                        if prev_row.pending_tasks.get() == 0.0 {
+                            finish_suspense_list_row(request, prev_row);
+                        }
+                    }
+                    if request.pending_root_tasks.get() == 0.0
+                        && task.blocked_preamble.get().is_some()
+                    {
+                        // The root is complete and this boundary may contribute part of the preamble.
+                        // We eagerly attempt to prepare the preamble here because we expect most requests
+                        // to have few boundaries which contribute preambles and it allow us to do this
+                        // preparation work during the work phase rather than the when flushing.
+                        prepare_preamble(request);
+                    }
+                    return true;
+                }
+            } else {
+                let boundary_row = &prev_row;
+                if let Some(boundary_row) = boundary_row
+                    && boundary_row.together.get()
+                {
+                    try_to_resolve_together_row(request, boundary_row);
+                }
+            }
+            false
+        }));
+        if let Err(thrown_value) = &result {
+            new_boundary.status.set(CLIENT_RENDERED);
+            let error = if request.aborted.get() {
+                content_root_segment.status.set(ABORTED);
+                request.fatal_error.get()
+            } else {
+                content_root_segment.status.set(ERRORED);
+                thrown_value_of(&**thrown_value)
+            };
+
+            let thrown_info = get_thrown_info(task.component_stack.borrow().clone());
+            let error_digest = log_recoverable_error(
+                request,
+                error,
+                thrown_info,
+                if __DEV__ { task.debug_task.get() } else { None },
+            );
+            encode_error_for_boundary(&new_boundary, error_digest, error, thrown_info, false);
+
+            untrack_boundary(request, &new_boundary);
+
+            // We don't need to decrement any task numbers because we didn't spawn any new task.
+            // We don't need to schedule any task because we know the parent has written yet.
+            // We do need to fallthrough to create the fallback though.
+        }
+        task.blocked_boundary.replace(parent_boundary.clone());
+        task.blocked_preamble.set(parent_preamble);
+        task.hoistable_state.set(parent_hoistable_state);
+        task.blocked_segment.replace(Some(parent_segment));
+        task.key_path.replace(prev_key_path);
+        task.format_context.set(prev_context);
+        task.row.replace(prev_row);
+        if let Ok(true) = result {
+            return;
+        }
+
+        let fallback_key_path = fallback_key_path_of(key_path);
+        // We create suspended task for the fallback because we don't want to actually work
+        // on it yet in case we finish the main content, so we queue for later.
+        let suspended_fallback_task = create_render_task(
+            request,
+            None,
+            fallback,
+            -1.0,
+            parent_boundary,
+            boundary_segment,
+            new_boundary
+                .preamble
+                .as_ref()
+                .map(|preamble| preamble.fallback),
+            Some(new_boundary.fallback_state),
+            fallback_abort_set,
+            Some(fallback_key_path),
+            get_suspense_fallback_format_context(
+                request.resumable_state,
+                task.format_context.get(),
+            ),
+            task.context.borrow().clone(),
+            Rc::clone(&task.tree_context.borrow()),
+            task.row.borrow().clone(),
+            replace_suspense_component_stack_with_suspense_fallback_stack(
+                task.component_stack.borrow().as_ref(),
+            ),
+            if !DISABLE_LEGACY_CONTEXT {
+                task.legacy_context.get()
+            } else {
+                EMPTY_CONTEXT_OBJECT.with(|empty_context_object| *empty_context_object)
+            },
+            if __DEV__ { task.debug_task.get() } else { None },
+        );
+        push_component_stack(&suspended_fallback_task);
+        // TODO: This should be queued at a separate lower priority queue so that we only work
+        // on preparing fallbacks if we don't have any more main content to task on.
+        request
+            .pinged_tasks
+            .borrow_mut()
+            .push(suspended_fallback_task);
+    }
+}
+
+fn replay_suspense_boundary(
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    key_path: &Rc<KeyNode>,
+    props: &SuspenseProps,
+    id: f64,
+    child_nodes: Rc<RefCell<Vec<ReplayNode>>>,
+    child_slots: ResumeSlots,
+    fallback_nodes: Rc<RefCell<Vec<ReplayNode>>>,
+    fallback_slots: ResumeSlots,
+) {
+    let prev_key_path = task.key_path.borrow().clone();
+    let prev_context = task.format_context.get();
+    let prev_row = task.row.borrow().clone();
+    let previous_replay_set = task.replay.borrow().clone();
+
+    let parent_boundary = task.blocked_boundary.borrow().clone();
+    let parent_hoistable_state = task.hoistable_state.get();
+
+    let content = props.children;
+    let fallback = props.fallback;
+    let defer = ENABLE_CPU_SUSPENSE.with(|&enabled| enabled) && props.defer == Some(true);
+
+    let fallback_abort_set: AbortSet = Rc::new(RefCell::new(HashSet::new()));
+    let resumed_boundary = create_suspense_boundary(
+        request,
+        task.row.borrow().clone(),
+        Rc::clone(&fallback_abort_set),
+        if can_have_preamble(task.format_context.get()) {
+            Some(Rc::new(create_preamble()))
+        } else {
+            None
+        },
+        defer,
+    );
+    resumed_boundary.parent_flushed.set(true);
+    // We restore the same id of this boundary as was used during prerender.
+    resumed_boundary.root_segment_id.set(id);
+
+    let fallback_key_path = fallback_key_path_of(key_path);
+    if let Some(tracked_postpones) = request.tracked_postpones.borrow().as_ref() {
+        let fallback_replay_node = ReplayNode::Element(Rc::new(ReplayElement(
+            fallback_key_path.1.clone(),
+            fallback_key_path.2.clone(),
+            Rc::new(RefCell::new(vec![])),
+            RefCell::new(ResumeSlots::None),
+        )));
+        tracked_postpones
+            .working_map
+            .borrow_mut()
+            .insert(Rc::clone(&fallback_key_path), fallback_replay_node.clone());
+        resumed_boundary.tracked.replace(Some(Rc::new(Tracked {
+            content_key_path: RefCell::new(Some(Rc::clone(key_path))),
+            fallback_node: RefCell::new(Some(fallback_replay_node)),
+        })));
+    }
+
+    // We can reuse the current context and task to render the content immediately without
+    // context switching. We just need to temporarily switch which boundary and replay node
+    // we're writing to. If something suspends, it'll spawn new suspended task with that context.
+    task.blocked_boundary
+        .replace(Some(Rc::clone(&resumed_boundary)));
+    task.hoistable_state
+        .set(Some(resumed_boundary.content_state));
+    task.key_path.replace(Some(Rc::clone(key_path)));
+    task.format_context.set(get_suspense_content_format_context(
+        request.resumable_state,
+        prev_context,
+    ));
+    task.row.replace(None);
+    let replay = Rc::new(ReplaySet {
+        nodes: child_nodes,
+        slots: RefCell::new(child_slots),
+        pending_tasks: Cell::new(1.0),
+    });
+    task.replay.replace(Some(Rc::clone(&replay)));
+
+    let result = catch_unwind(AssertUnwindSafe(|| {
+        // We use the safe form because we don't handle suspending here. Only error handling.
+        render_node(request, task, content, -1.0);
+
+        if replay.pending_tasks.get() == 1.0 && !replay.nodes.borrow().is_empty() {
+            panic!(concat!(
+                "Couldn't find all resumable slots by key/index during replaying. ",
+                "The tree doesn't match so React will fallback to client rendering."
+            ));
+        }
+        replay.pending_tasks.set(replay.pending_tasks.get() - 1.0);
+        if resumed_boundary.pending_tasks.get() == 0.0 && resumed_boundary.status.get() == PENDING {
+            // This must have been the last segment we were waiting on. This boundary is now complete.
+            // Therefore we won't need the fallback. We early return so that we don't have to create
+            // the fallback.
+            resumed_boundary.status.set(COMPLETED);
+            request
+                .completed_boundaries
+                .borrow_mut()
+                .push(Rc::clone(&resumed_boundary));
+            // We restore the parent componentStack. Semantically this is the same as
+            // popComponentStack(task) but we do this instead because it should be slightly
+            // faster
+            return true;
+        }
+        false
+    }));
+    if let Err(thrown_value) = &result {
+        resumed_boundary.status.set(CLIENT_RENDERED);
+        let error = if request.aborted.get() {
+            request.fatal_error.get()
+        } else {
+            thrown_value_of(&**thrown_value)
+        };
+        let thrown_info = get_thrown_info(task.component_stack.borrow().clone());
+        let error_digest = log_recoverable_error(
+            request,
+            error,
+            thrown_info,
+            if __DEV__ { task.debug_task.get() } else { None },
+        );
+        encode_error_for_boundary(&resumed_boundary, error_digest, error, thrown_info, false);
+
+        replay.pending_tasks.set(replay.pending_tasks.get() - 1.0);
+
+        // The parent already flushed in the prerender so we need to schedule this to be emitted.
+        request
+            .client_rendered_boundaries
+            .borrow_mut()
+            .push(Rc::clone(&resumed_boundary));
+
+        // We don't need to decrement any task numbers because we didn't spawn any new task.
+        // We don't need to schedule any task because we know the parent has written yet.
+        // We do need to fallthrough to create the fallback though.
+    }
+    task.blocked_boundary.replace(parent_boundary.clone());
+    task.hoistable_state.set(parent_hoistable_state);
+    task.replay.replace(previous_replay_set);
+    task.key_path.replace(prev_key_path);
+    task.format_context.set(prev_context);
+    task.row.replace(prev_row);
+    if let Ok(true) = result {
+        return;
+    }
+
+    // We create suspended task for the fallback because we don't want to actually work
+    // on it yet in case we finish the main content, so we queue for later.
+    let fallback_replay = Rc::new(ReplaySet {
+        nodes: fallback_nodes,
+        slots: RefCell::new(fallback_slots),
+        pending_tasks: Cell::new(0.0),
+    });
+    let suspended_fallback_task = create_replay_task(
+        request,
+        None,
+        fallback_replay,
+        fallback,
+        -1.0,
+        parent_boundary,
+        Some(resumed_boundary.fallback_state),
+        fallback_abort_set,
+        Some(fallback_key_path),
+        get_suspense_fallback_format_context(request.resumable_state, task.format_context.get()),
+        task.context.borrow().clone(),
+        Rc::clone(&task.tree_context.borrow()),
+        task.row.borrow().clone(),
+        replace_suspense_component_stack_with_suspense_fallback_stack(
+            task.component_stack.borrow().as_ref(),
+        ),
+        if !DISABLE_LEGACY_CONTEXT {
+            task.legacy_context.get()
+        } else {
+            EMPTY_CONTEXT_OBJECT.with(|empty_context_object| *empty_context_object)
+        },
+        if __DEV__ { task.debug_task.get() } else { None },
+    );
+
+    push_component_stack(&suspended_fallback_task);
+    // TODO: This should be queued at a separate lower priority queue so that we only work
+    // on preparing fallbacks if we don't have any more main content to task on.
+    request
+        .pinged_tasks
+        .borrow_mut()
+        .push(suspended_fallback_task);
+}
+
+fn finish_suspense_list_row(request: &Rc<Request>, row: &SuspenseListRow) {
+    // This row finished. Now we have to unblock all the next rows that were blocked on this.
+    unblock_suspense_list_row(request, row.next.borrow().clone(), Some(row.hoistables));
+}
+
+fn unblock_suspense_list_row(
+    request: &Rc<Request>,
+    mut unblocked_row: Option<Rc<SuspenseListRow>>,
+    mut inherited_hoistables: Option<&'static HoistableState>,
+) {
+    // We do this in a loop to avoid stack overflow for very long lists that get unblocked.
+    while let Some(row) = unblocked_row {
+        if let Some(inherited_hoistables) = inherited_hoistables {
+            // Hoist any hoistables from the previous row into the next row so that it can be
+            // later transferred to all the rows.
+            hoist_hoistables(row.hoistables, inherited_hoistables);
+            // Mark the row itself for any newly discovered Suspense boundaries to inherit.
+            // This is different from hoistables because that also includes hoistables from
+            // all the boundaries below this row and not just previous rows.
+            row.inherited_hoistables.set(Some(inherited_hoistables));
+        }
+        // Unblocking the boundaries will decrement the count of this row but we keep it above
+        // zero so they never finish this row recursively.
+        let unblocked_boundaries = row.boundaries.take();
+        if let Some(unblocked_boundaries) = unblocked_boundaries {
+            for unblocked_boundary in &unblocked_boundaries {
+                if let Some(inherited_hoistables) = inherited_hoistables {
+                    hoist_hoistables(unblocked_boundary.content_state, inherited_hoistables);
+                }
+                finished_task(request, Some(unblocked_boundary), None, None);
+            }
+        }
+        // Instead we decrement at the end to keep it all in this loop.
+        row.pending_tasks.set(row.pending_tasks.get() - 1.0);
+        if row.pending_tasks.get() > 0.0 {
+            // Still blocked.
+            break;
+        }
+        inherited_hoistables = Some(row.hoistables);
+        unblocked_row = row.next.borrow().clone();
+    }
+}
+
+fn track_postponed_suspense_list_row(
+    request: &Rc<Request>,
+    tracked_postpones: &PostponedHoles,
+    postponed_row: Option<&Rc<SuspenseListRow>>,
+) {
+    // TODO: Because we unconditionally call this, it will be called by finishedTask
+    // and so ends up recursive which can lead to stack overflow for very long lists.
+    if let Some(postponed_row) = postponed_row {
+        let postponed_boundaries = postponed_row.boundaries.take();
+        if let Some(postponed_boundaries) = postponed_boundaries {
+            for postponed_boundary in &postponed_boundaries {
+                track_postponed_boundary(request, tracked_postpones, postponed_boundary);
+                finished_task(request, Some(postponed_boundary), None, None);
+            }
+        }
+    }
+}
+
+fn try_to_resolve_together_row(request: &Rc<Request>, together_row: &Rc<SuspenseListRow>) {
+    // If we have a "together" row and all the pendingTasks are really the boundaries themselves,
+    // and we won't outline any of them then we can unblock this row early so that we can inline
+    // all the boundaries at once.
+    let all_complete_and_inlinable = {
+        let boundaries = together_row.boundaries.borrow();
+        let Some(boundaries) = boundaries.as_ref() else {
+            return;
+        };
+        if together_row.pending_tasks.get() != boundaries.len() as f64 {
+            return;
+        }
+        boundaries.iter().all(|row_boundary| {
+            !(row_boundary.pending_tasks.get() != 1.0
+                || row_boundary.parent_flushed.get()
+                || is_eligible_for_outlining(request, row_boundary))
+        })
+    };
+    if all_complete_and_inlinable {
+        unblock_suspense_list_row(
+            request,
+            Some(Rc::clone(together_row)),
+            Some(together_row.hoistables),
+        );
+    }
+}
+
+fn create_suspense_list_row(previous_row: Option<&Rc<SuspenseListRow>>) -> Rc<SuspenseListRow> {
+    let new_row = Rc::new(SuspenseListRow {
+        pending_tasks: Cell::new(1.0), // At first the row is blocked on attempting rendering itself.
+        boundaries: RefCell::new(None),
+        hoistables: create_hoistable_state(),
+        inherited_hoistables: Cell::new(None),
+        together: Cell::new(false),
+        next: RefCell::new(None),
+    });
+    if let Some(previous_row) = previous_row
+        && previous_row.pending_tasks.get() > 0.0
+    {
+        // If the previous row is not done yet, we add ourselves to be blocked on it.
+        // When it finishes, we'll decrement our pending tasks.
+        new_row.pending_tasks.set(new_row.pending_tasks.get() + 1.0);
+        new_row.boundaries.replace(Some(vec![]));
+        previous_row.next.replace(Some(Rc::clone(&new_row)));
+    }
+    new_row
+}
+
 // DRAFT: the sections below are not ported yet.
 
+fn render_node(
+    _request: &Rc<Request>,
+    _task: &Rc<Task>,
+    _node: Option<&'static ReactNodeList>,
+    _child_index: f64,
+) {
+    todo!()
+}
+
+fn finished_segment(
+    _request: &Rc<Request>,
+    _boundary: Option<&Rc<SuspenseBoundary>>,
+    _segment: &Rc<Segment>,
+) {
+    todo!()
+}
+
+fn queue_completed_segment(_boundary: &Rc<SuspenseBoundary>, _segment: &Rc<Segment>) {
+    todo!()
+}
+
+fn finished_task(
+    _request: &Rc<Request>,
+    _boundary: Option<&Rc<SuspenseBoundary>>,
+    _row: Option<&Rc<SuspenseListRow>>,
+    _segment: Option<&Rc<Segment>>,
+) {
+    todo!()
+}
+
+fn untrack_boundary(_request: &Request, _boundary: &Rc<SuspenseBoundary>) {
+    todo!()
+}
+
+fn prepare_preamble(_request: &Rc<Request>) {
+    todo!()
+}
+
+fn track_postponed_boundary(
+    _request: &Rc<Request>,
+    _tracked_postpones: &PostponedHoles,
+    _boundary: &Rc<SuspenseBoundary>,
+) {
+    todo!()
+}
 fn retry_node(_request: &Rc<Request>, _task: &Rc<Task>) {
     todo!()
 }
