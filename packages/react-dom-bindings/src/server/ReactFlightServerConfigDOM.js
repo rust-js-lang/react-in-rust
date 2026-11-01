@@ -34,18 +34,22 @@ function processImg(props, formatContext) {
     props.fetchPriority !== 'low' &&
     pictureOrNoScriptTagInScope === 0 &&
     // We exclude data URIs in src and srcSet since these should not be preloaded
-    (typeof src !== 'string' ||
-      src[4] !== ':' ||
-      (src[0] !== 'd' && src[0] !== 'D') ||
-      (src[1] !== 'a' && src[1] !== 'A') ||
-      (src[2] !== 't' && src[2] !== 'T') ||
-      (src[3] !== 'a' && src[3] !== 'A')) &&
-    (typeof srcSet !== 'string' ||
-      srcSet[4] !== ':' ||
-      (srcSet[0] !== 'd' && srcSet[0] !== 'D') ||
-      (srcSet[1] !== 'a' && srcSet[1] !== 'A') ||
-      (srcSet[2] !== 't' && srcSet[2] !== 'T') ||
-      (srcSet[3] !== 'a' && srcSet[3] !== 'A'))
+    !(
+      typeof src === 'string' &&
+      src[4] === ':' &&
+      (src[0] === 'd' || src[0] === 'D') &&
+      (src[1] === 'a' || src[1] === 'A') &&
+      (src[2] === 't' || src[2] === 'T') &&
+      (src[3] === 'a' || src[3] === 'A')
+    ) &&
+    !(
+      typeof srcSet === 'string' &&
+      srcSet[4] === ':' &&
+      (srcSet[0] === 'd' || srcSet[0] === 'D') &&
+      (srcSet[1] === 'a' || srcSet[1] === 'A') &&
+      (srcSet[2] === 't' || srcSet[2] === 'T') &&
+      (srcSet[3] === 'a' || srcSet[3] === 'A')
+    )
   ) {
     // We have a suspensey image and ought to preload it to optimize the loading of display blocking
     // resumableState.
@@ -86,35 +90,39 @@ function processLink(props, formatContext) {
     // We shouldn't preload resources that are in noscript or have no configuration.
     return;
   }
-  if (rel === 'preload') {
-    preload(href, props.as, {
-      crossOrigin: props.crossOrigin,
-      integrity: props.integrity,
-      nonce: props.nonce,
-      type: props.type,
-      fetchPriority: props.fetchPriority,
-      referrerPolicy: props.referrerPolicy,
-      imageSrcSet: props.imageSrcSet,
-      imageSizes: props.imageSizes,
-      media: props.media,
-    });
-  } else if (rel === 'modulepreload') {
-    preloadModule(href, {
-      as: props.as,
-      crossOrigin: props.crossOrigin,
-      integrity: props.integrity,
-      nonce: props.nonce,
-    });
-  } else if (rel === 'stylesheet') {
-    preload(href, 'style', {
-      crossOrigin: props.crossOrigin,
-      integrity: props.integrity,
-      nonce: props.nonce,
-      type: props.type,
-      fetchPriority: props.fetchPriority,
-      referrerPolicy: props.referrerPolicy,
-      media: props.media,
-    });
+
+  switch (rel) {
+    case 'preload':
+      preload(href, props.as, {
+        crossOrigin: props.crossOrigin,
+        integrity: props.integrity,
+        nonce: props.nonce,
+        type: props.type,
+        fetchPriority: props.fetchPriority,
+        referrerPolicy: props.referrerPolicy,
+        imageSrcSet: props.imageSrcSet,
+        imageSizes: props.imageSizes,
+        media: props.media,
+      });
+      break;
+    case 'modulepreload':
+      preloadModule(href, {
+        as: props.as,
+        crossOrigin: props.crossOrigin,
+        integrity: props.integrity,
+        nonce: props.nonce,
+      });
+      break;
+    case 'stylesheet':
+      preload(href, 'style', {
+        crossOrigin: props.crossOrigin,
+        integrity: props.integrity,
+        nonce: props.nonce,
+        type: props.type,
+        fetchPriority: props.fetchPriority,
+        referrerPolicy: props.referrerPolicy,
+        media: props.media,
+      });
   }
 }
 
