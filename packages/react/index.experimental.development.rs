@@ -8,23 +8,14 @@ use webapi::console;
 
 use crate::react_hooks::Dispatch;
 
-#[cfg_attr(rust_js, rust_js::name = "Activity")]
 pub use crate::react_client::ACTIVITY;
-#[cfg_attr(rust_js, rust_js::name = "Fragment")]
 pub use crate::react_client::FRAGMENT;
-#[cfg_attr(rust_js, rust_js::name = "optimisticKey")]
 pub use crate::react_client::OPTIMISTIC_KEY;
-#[cfg_attr(rust_js, rust_js::name = "Profiler")]
 pub use crate::react_client::PROFILER;
-#[cfg_attr(rust_js, rust_js::name = "StrictMode")]
 pub use crate::react_client::STRICT_MODE;
-#[cfg_attr(rust_js, rust_js::name = "Suspense")]
 pub use crate::react_client::SUSPENSE;
-#[cfg_attr(rust_js, rust_js::name = "unstable_SuspenseList")]
 pub use crate::react_client::UNSTABLE_SUSPENSE_LIST;
-#[cfg_attr(rust_js, rust_js::name = "version")]
 pub use crate::react_client::VERSION;
-#[cfg_attr(rust_js, rust_js::name = "ViewTransition")]
 pub use crate::react_client::VIEW_TRANSITION;
 pub use crate::react_client::{
     __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,

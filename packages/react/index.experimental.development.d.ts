@@ -8,24 +8,22 @@
 import type {Dispatch} from './src/ReactHooks.js';
 
 export {
-  REACT_ACTIVITY_TYPE as Activity,
-  REACT_FRAGMENT_TYPE as Fragment,
-  REACT_OPTIMISTIC_KEY as optimisticKey,
-  REACT_PROFILER_TYPE as Profiler,
-  REACT_STRICT_MODE_TYPE as StrictMode,
-  REACT_SUSPENSE_TYPE as Suspense,
-  REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList,
-} from 'shared/ReactSymbols';
-
-export {default as version} from 'shared/ReactVersion';
-
-export {REACT_VIEW_TRANSITION_TYPE as ViewTransition} from 'shared/ReactSymbols';
-
-export {
+  Activity,
+  Fragment,
+  optimisticKey,
+  Profiler,
+  StrictMode,
+  Suspense,
+  unstable_SuspenseList,
+  version,
+  ViewTransition,
   __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+  __COMPILER_RUNTIME,
   cache,
   cacheSignal,
   Children,
+  Component,
+  PureComponent,
   act,
   addTransitionType,
   captureOwnerStack,
@@ -61,10 +59,6 @@ export {
   useSyncExternalStore,
   useTransition,
 } from './src/ReactClient.js';
-
-export * as __COMPILER_RUNTIME from './src/ReactCompilerRuntime.js';
-
-export {Component, PureComponent} from './src/ReactBaseClasses.js';
 
 export function experimental_useOptimistic<S, A>(
   passthrough: S,

@@ -72,7 +72,6 @@ import {
   $fieldCell,
   $index,
   $iterator,
-  $next,
   $rangeNextBack,
   $resize,
   $slice,
@@ -659,23 +658,13 @@ function triggerErrorOnChunk(response, chunk, error) {
     return;
   }
   releasePendingChunk(response, chunk);
-  const borrowMut = {
-    get value() {
-      return chunk;
-    },
-    set value(value) {
-      chunk.status = value.status;
-      chunk.value = value.value;
-      chunk.reason = value.reason;
-    },
-  };
   let listeners;
   if (
-    borrowMut.value.status === 'pending' ||
-    borrowMut.value.status === 'pending_weak' ||
-    borrowMut.value.status === 'blocked'
+    chunk.status === 'pending' ||
+    chunk.status === 'pending_weak' ||
+    chunk.status === 'blocked'
   ) {
-    const value = borrowMut.value;
+    const value = chunk;
     const old = value.reason;
     value.reason = null;
     listeners = old;
@@ -702,34 +691,23 @@ function triggerErrorOnChunk(response, chunk, error) {
       initializingChunk = cyclicChunk;
       try {
         initializeDebugChunk(response, chunk);
-      } catch (error) {
+        if (initializingHandler != null) {
+          if (initializingHandler.errored) {
+            // Ignore error parsing debug info, we'll report the original error instead.
+          } else if (initializingHandler.deps > 0) {
+            // TODO: Block the resolution of the error until all the debug info has loaded.
+            // We currently don't have a way to throw an error after all dependencies have
+            // loaded because we currently treat errors as immediately cancelling the handler.
+          }
+        }
+      } finally {
         const old = _restore.handler;
-        _restore.handler = undefined;
         initializingHandler = old ?? null;
         if (_restore.chunk != null) {
           const old = _restore.chunk;
-          _restore.chunk = undefined;
           const chunk = $someValue(old);
           initializingChunk = chunk ?? null;
         }
-        throw error;
-      }
-      if (initializingHandler != null) {
-        if (initializingHandler.errored) {
-          // Ignore error parsing debug info, we'll report the original error instead.
-        } else if (initializingHandler.deps > 0) {
-          // TODO: Block the resolution of the error until all the debug info has loaded.
-          // We currently don't have a way to throw an error after all dependencies have
-          // loaded because we currently treat errors as immediately cancelling the handler.
-        }
-      }
-      const old$1 = _restore.handler;
-      _restore.handler = undefined;
-      initializingHandler = old$1 ?? null;
-      if (_restore.chunk != null) {
-        const old = _restore.chunk;
-        const chunk = $someValue(old);
-        initializingChunk = chunk ?? null;
       }
     }
   }
@@ -1059,56 +1037,29 @@ function initializeModelChunk(chunk) {
     );
   }
   const {value: resolvedModel, reason: responseHolder} = chunk;
-  let response;
-
-  // We go to the BLOCKED state until we've fully resolved this.
-  // We do this before parsing in case we try to initialize the same chunk
-  // while parsing the model. Such as in a cyclic reference.
   try {
-    response = responseHolder[RESPONSE_SYMBOL];
-  } catch (error) {
-    const old = _restore.handler;
-    _restore.handler = undefined;
-    initializingHandler = old ?? null;
-    if (_restore.chunk != null) {
-      const old = _restore.chunk;
-      _restore.chunk = undefined;
-      const chunk = $someValue(old);
-      initializingChunk = chunk ?? null;
+    const response = responseHolder[RESPONSE_SYMBOL];
+
+    // We go to the BLOCKED state until we've fully resolved this.
+    // We do this before parsing in case we try to initialize the same chunk
+    // while parsing the model. Such as in a cyclic reference.
+    const cyclicChunk = chunk;
+    cyclicChunk.status = 'blocked';
+    cyclicChunk.value = null;
+    cyclicChunk.reason = null;
+
+    if ((enableProfilerTimer && enableComponentPerformanceTrack) || __DEV__) {
+      initializingChunk = cyclicChunk;
     }
-    throw error;
-  }
-  const cyclicChunk = chunk;
-  cyclicChunk.status = 'blocked';
-  cyclicChunk.value = null;
-  cyclicChunk.reason = null;
 
-  if ((enableProfilerTimer && enableComponentPerformanceTrack) || __DEV__) {
-    initializingChunk = cyclicChunk;
-  }
-
-  if (__DEV__) {
-    // TODO: The chunk might have transitioned to ERRORED now.
-    // Should we return early if that happens?
-    try {
+    if (__DEV__) {
       // Initialize any debug info and block the initializing chunk on any
       // unresolved entries.
       initializeDebugChunk(response, chunk);
-    } catch (error) {
-      const old = _restore.handler;
-      _restore.handler = undefined;
-      initializingHandler = old ?? null;
-      if (_restore.chunk != null) {
-        const old = _restore.chunk;
-        _restore.chunk = undefined;
-        const chunk = $someValue(old);
-        initializingChunk = chunk ?? null;
-      }
-      throw error;
+      // TODO: The chunk might have transitioned to ERRORED now.
+      // Should we return early if that happens?
     }
-  }
 
-  try {
     const result = $catchUnwind(() => {
       const value = parseModel(response, resolvedModel);
       const handler = initializingHandler;
@@ -1246,7 +1197,6 @@ function initializeModelChunk(chunk) {
     }
   } finally {
     const old = _restore.handler;
-    _restore.handler = undefined;
     initializingHandler = old ?? null;
     if (_restore.chunk != null) {
       const old = _restore.chunk;
@@ -3292,7 +3242,6 @@ function resolveModule(response, id, model, streamState) {
     clientReferenceMetadata = clientReferenceMetadata$1;
   } finally {
     const old = _restore.handler;
-    _restore.handler = undefined;
     initializingHandler = old ?? null;
     if (_restore.chunk != null) {
       const old = _restore.chunk;
@@ -3415,51 +3364,28 @@ function resolveStream(response, id, stream, controller, streamState) {
       initializingChunk = cyclicChunk;
       try {
         initializeDebugChunk(response, chunk);
-      } catch (error) {
-        const old = _restore.handler;
-        _restore.handler = undefined;
-        initializingHandler = old ?? null;
-        if (_restore.chunk != null) {
-          const old = _restore.chunk;
-          _restore.chunk = undefined;
-          const chunk = $someValue(old);
-          initializingChunk = chunk ?? null;
-        }
-        throw error;
-      }
-      if (initializingHandler != null) {
-        if (initializingHandler.errored) {
-          // Ignore error parsing debug info, we'll report the original error instead.
-        } else if (initializingHandler.deps > 0) {
-          // Leave blocked until we can resolve all the debug info.
-          initializingHandler.value = stream;
-          initializingHandler.reason = controller;
-          try {
+        if (initializingHandler != null) {
+          if (initializingHandler.errored) {
+            // Ignore error parsing debug info, we'll report the original error instead.
+          } else if (initializingHandler.deps > 0) {
+            // Leave blocked until we can resolve all the debug info.
+            initializingHandler.value = stream;
+            initializingHandler.reason = controller;
             $cellReplace(
               $borrowMut($fieldCell(initializingHandler, 'chunk', true)),
               cyclicChunk,
             );
-          } finally {
-            const old = _restore.handler;
-            _restore.handler = undefined;
-            initializingHandler = old ?? null;
-            if (_restore.chunk != null) {
-              const old = _restore.chunk;
-              _restore.chunk = undefined;
-              const chunk = $someValue(old);
-              initializingChunk = chunk ?? null;
-            }
+            return;
           }
-          return;
         }
-      }
-      const old$1 = _restore.handler;
-      _restore.handler = undefined;
-      initializingHandler = old$1 ?? null;
-      if (_restore.chunk != null) {
-        const old = _restore.chunk;
-        const chunk = $someValue(old);
-        initializingChunk = chunk ?? null;
+      } finally {
+        const old = _restore.handler;
+        initializingHandler = old ?? null;
+        if (_restore.chunk != null) {
+          const old = _restore.chunk;
+          const chunk = $someValue(old);
+          initializingChunk = chunk ?? null;
+        }
       }
     }
   }
@@ -4943,185 +4869,82 @@ function flushComponentPerformance(
     let isLastComponent = true;
     let endTime = -1;
     let endTimeIdx = -1;
-    let iter;
     try {
-      iter = $iterator({start: 0, end: debugInfo$1.length}, $rangeNextBack);
-    } catch (error) {
-      $unborrow(debugInfo$1);
-      throw error;
-    }
-    let iter$1;
-    let iter$2;
-    while (true) {
-      let i;
-      try {
-        i = $next(iter);
-      } catch (error) {
-        $unborrow(debugInfo$1);
-        throw error;
-      }
-      if (i == null) {
-        break;
-      }
-      const info = debugInfo$1[i];
-      let tmp;
-      try {
-        tmp = timeOf(info);
-      } catch (error) {
-        $unborrow(debugInfo$1);
-        throw error;
-      }
-      if (tmp != null) {
-        const time = tmp;
+      for (let i = debugInfo$1.length - 1; i >= 0; i--) {
+        const info = debugInfo$1[i];
+        const time = timeOf(info);
+        if (time == null) {
+          continue;
+        }
         if (componentEndTime === 0) {
           // Last timestamp is the end of the last component.
           componentEndTime = time;
         }
         if (endTimeIdx > -1) {
           // Now that we know the start and end time, we can emit the entries between.
-          try {
-            iter$2 = $iterator({start: i + 1, end: endTimeIdx}, $rangeNextBack);
-          } catch (error) {
-            $unborrow(debugInfo$1);
-            throw error;
-          }
-          while (true) {
-            let tmp;
-            try {
-              tmp = $next(iter$2);
-            } catch (error) {
-              $unborrow(debugInfo$1);
-              throw error;
-            }
-            if (tmp == null) {
-              break;
-            }
-            const j = tmp;
+          // Skip awaits on client resources since they didn't block the server component.
+          for (const j of $iterator(
+            {start: i + 1, end: endTimeIdx},
+            $rangeNextBack,
+          )) {
             const candidateInfo = debugInfo$1[j];
-            let awaited;
-            try {
-              awaited = candidateInfo.awaited;
-            } catch (error) {
-              $unborrow(debugInfo$1);
-              throw error;
-            }
-            let kind;
-            try {
-              kind = candidateInfo.name;
-            } catch (error) {
-              $unborrow(debugInfo$1);
-              throw error;
-            }
-            if (typeof kind === 'string') {
+            const awaited = candidateInfo.awaited;
+            if (typeof candidateInfo.name === 'string') {
               if (componentEndTime > childrenEndTime) {
                 childrenEndTime = componentEndTime;
               }
               const componentInfo = candidateInfo;
-              try {
-                logComponentInfo(
-                  response,
-                  root,
-                  componentInfo,
-                  trackIdx,
-                  time,
-                  componentEndTime,
-                  childrenEndTime,
-                  isLastComponent,
-                );
-              } catch (error) {
-                $unborrow(debugInfo$1);
-                throw error;
-              }
+              logComponentInfo(
+                response,
+                root,
+                componentInfo,
+                trackIdx,
+                time,
+                componentEndTime,
+                childrenEndTime,
+                isLastComponent,
+              );
               componentEndTime = time; // The end time of previous component is the start time of the next.
               // Track the root most component of the result for deduping logging.
               result.component = componentInfo;
               isLastComponent = false;
-            } else if (awaited) {
-              // Skip awaits on client resources since they didn't block the server component.
-              let tmp;
-              try {
-                tmp = awaited.env == null;
-              } catch (error) {
-                $unborrow(debugInfo$1);
-                throw error;
+            } else if (awaited && awaited.env != null) {
+              if (endTime > childrenEndTime) {
+                childrenEndTime = endTime;
               }
-              if (!tmp) {
-                if (endTime > childrenEndTime) {
-                  childrenEndTime = endTime;
-                }
-                const asyncInfo = candidateInfo;
-                let env;
-                try {
-                  env = $unwrap(response._rootEnvironmentName);
-                } catch (error) {
-                  $unborrow(debugInfo$1);
-                  throw error;
-                }
-                const promise = asyncInfo.awaited.value;
-                if (promise != null) {
-                  let tmp;
-                  try {
-                    tmp = String(promise.status);
-                  } catch (error) {
-                    $unborrow(debugInfo$1);
-                    throw error;
-                  }
-                  switch (tmp) {
-                    case 'fulfilled':
-                      try {
-                        logComponentAwait(
-                          asyncInfo,
-                          trackIdx,
-                          time,
-                          endTime,
-                          env,
-                          promise.value,
-                        );
-                      } catch (error) {
-                        $unborrow(debugInfo$1);
-                        throw error;
-                      }
-                      break;
-                    case 'rejected':
-                      try {
-                        logComponentAwaitErrored(
-                          asyncInfo,
-                          trackIdx,
-                          time,
-                          endTime,
-                          env,
-                          promise.reason,
-                        );
-                      } catch (error) {
-                        $unborrow(debugInfo$1);
-                        throw error;
-                      }
-                      break;
-                    default:
-                      try {
-                        // We assume that we should have received the data by now since this is logged at the
-                        // end of the response stream. This is more sensitive to ordering so we don't wait
-                        // to log it.
-                        logComponentAwait(
-                          asyncInfo,
-                          trackIdx,
-                          time,
-                          endTime,
-                          env,
-                        );
-                      } catch (error) {
-                        $unborrow(debugInfo$1);
-                        throw error;
-                      }
-                  }
-                } else {
-                  try {
+              const asyncInfo = candidateInfo;
+              const env = $unwrap(response._rootEnvironmentName);
+              const promise = asyncInfo.awaited.value;
+              if (promise != null) {
+                switch (String(promise.status)) {
+                  case 'fulfilled':
+                    logComponentAwait(
+                      asyncInfo,
+                      trackIdx,
+                      time,
+                      endTime,
+                      env,
+                      promise.value,
+                    );
+                    break;
+                  case 'rejected':
+                    logComponentAwaitErrored(
+                      asyncInfo,
+                      trackIdx,
+                      time,
+                      endTime,
+                      env,
+                      promise.reason,
+                    );
+                    break;
+                  default:
+                    // We assume that we should have received the data by now since this is logged at the
+                    // end of the response stream. This is more sensitive to ordering so we don't wait
+                    // to log it.
                     logComponentAwait(asyncInfo, trackIdx, time, endTime, env);
-                  } catch (error) {
-                    $unborrow(debugInfo$1);
-                    throw error;
-                  }
                 }
+              } else {
+                logComponentAwait(asyncInfo, trackIdx, time, endTime, env);
               }
             }
           }
@@ -5129,117 +4952,51 @@ function flushComponentPerformance(
           // Anything between the end and now was aborted if it has no end time.
           // Either because the client stream was aborted reading it or the server stream aborted.
           endTime = time; // If we don't find anything else the endTime is the start time.
-          try {
-            iter$1 = $iterator(
-              {start: i + 1, end: debugInfo$1.length},
-              $rangeNextBack,
-            );
-          } catch (error) {
-            $unborrow(debugInfo$1);
-            throw error;
-          }
-          while (true) {
-            let tmp;
-            try {
-              tmp = $next(iter$1);
-            } catch (error) {
-              $unborrow(debugInfo$1);
-              throw error;
-            }
-            if (tmp == null) {
-              break;
-            }
-            const j = tmp;
+          // Skip awaits on client resources since they didn't block the server component.
+          for (const j of $iterator(
+            {start: i + 1, end: debugInfo$1.length},
+            $rangeNextBack,
+          )) {
             const candidateInfo = debugInfo$1[j];
-            let awaited;
-            try {
-              awaited = candidateInfo.awaited;
-            } catch (error) {
-              $unborrow(debugInfo$1);
-              throw error;
-            }
-            let tmp$1;
-            try {
-              tmp$1 = candidateInfo.name;
-            } catch (error) {
-              $unborrow(debugInfo$1);
-              throw error;
-            }
-            if (typeof tmp$1 === 'string') {
+            const awaited = candidateInfo.awaited;
+            if (typeof candidateInfo.name === 'string') {
               if (componentEndTime > childrenEndTime) {
                 childrenEndTime = componentEndTime;
               }
               const componentInfo = candidateInfo;
-              let env;
-              try {
-                env = $unwrap(response._rootEnvironmentName);
-              } catch (error) {
-                $unborrow(debugInfo$1);
-                throw error;
-              }
-              try {
-                logComponentAborted(
-                  componentInfo,
-                  trackIdx,
-                  time,
-                  componentEndTime,
-                  childrenEndTime,
-                  env,
-                );
-              } catch (error) {
-                $unborrow(debugInfo$1);
-                throw error;
-              }
+              const env = $unwrap(response._rootEnvironmentName);
+              logComponentAborted(
+                componentInfo,
+                trackIdx,
+                time,
+                componentEndTime,
+                childrenEndTime,
+                env,
+              );
               componentEndTime = time; // The end time of previous component is the start time of the next.
               // Track the root most component of the result for deduping logging.
               result.component = componentInfo;
               isLastComponent = false;
-            } else if (awaited) {
-              // Skip awaits on client resources since they didn't block the server component.
-              let tmp;
-              try {
-                tmp = awaited.env == null;
-              } catch (error) {
-                $unborrow(debugInfo$1);
-                throw error;
+            } else if (awaited && awaited.env != null) {
+              // If we don't have an end time for an await, that means we aborted.
+              const asyncInfo = candidateInfo;
+              const env = $unwrap(response._rootEnvironmentName);
+              if (asyncInfo.awaited.end > endTime) {
+                endTime = asyncInfo.awaited.end; // Take the end time of the I/O as the await end.
               }
-              if (!tmp) {
-                // If we don't have an end time for an await, that means we aborted.
-                const asyncInfo = candidateInfo;
-                let env;
-                try {
-                  env = $unwrap(response._rootEnvironmentName);
-                } catch (error) {
-                  $unborrow(debugInfo$1);
-                  throw error;
-                }
-                if (asyncInfo.awaited.end > endTime) {
-                  endTime = asyncInfo.awaited.end; // Take the end time of the I/O as the await end.
-                }
-                if (endTime > childrenEndTime) {
-                  childrenEndTime = endTime;
-                }
-                try {
-                  logComponentAwaitAborted(
-                    asyncInfo,
-                    trackIdx,
-                    time,
-                    endTime,
-                    env,
-                  );
-                } catch (error) {
-                  $unborrow(debugInfo$1);
-                  throw error;
-                }
+              if (endTime > childrenEndTime) {
+                childrenEndTime = endTime;
               }
+              logComponentAwaitAborted(asyncInfo, trackIdx, time, endTime, env);
             }
           }
         }
         endTime = time; // The end time of the next entry is this time.
         endTimeIdx = i | 0;
       }
+    } finally {
+      $unborrow(debugInfo$1);
     }
-    $unborrow(debugInfo$1);
   }
   result.endTime = childrenEndTime;
   return result;

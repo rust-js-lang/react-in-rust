@@ -2234,7 +2234,7 @@ function mergeTranslate(translateA, translateB) {
     if (i > 0) {
       result += ' ';
     }
-    result += 'calc(' + $index(partsA, i) + ' + ' + partsB[i] + ')';
+    result += 'calc(' + partsA[i] + ' + ' + partsB[i] + ')';
     i++;
   }
   while (i < partsA.length) {

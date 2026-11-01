@@ -134,7 +134,7 @@ import {
 import {CacheComponent, HostComponent, HostRoot} from './ReactWorkTags.js';
 import {now} from './Scheduler.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
-import {$index, $roomFor, $unwrap} from '@rust-js/runtime';
+import {$roomFor, $unwrap} from '@rust-js/runtime';
 
 const didWarnAboutMismatchedHooksForComponent = new Set();
 let didWarnUncachedGetSnapshot = false;
@@ -375,7 +375,7 @@ function areHookInputsEqual(
   // $FlowFixMe[incompatible-use] found when upgrading Flow
   for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
     // $FlowFixMe[incompatible-use] found when upgrading Flow
-    if (!is($index(nextDeps, i), $index(prevDeps, i))) {
+    if (!is(nextDeps[i], prevDeps[i])) {
       return false;
     }
   }
