@@ -100,8 +100,8 @@ skipped, measured on the tree at 92e4fac.
 
 | Gate | Command | Expected |
 |---|---|---|
-| dev | `yarn test packages/react-reconciler packages/react/src packages/shared` | 1554 / 0 / 20 (109 suites) |
-| prod | `yarn test --prod packages/react-reconciler packages/react/src packages/shared` | 1531 / 0 / 20 (109 suites) |
+| dev | `yarn test packages/react-reconciler packages/react/src packages/shared` | 1557 / 0 / 20 (110 suites)³ |
+| prod | `yarn test --prod packages/react-reconciler packages/react/src packages/shared` | 1534 / 0 / 20 (110 suites)³ |
 | dom | `yarn test react-dom/src/__tests__/ReactDOM` | 3356 / 1 / 2 (84 suites)¹ |
 | misc | `yarn test PerformanceTrack Profiler TestSelectors ViewTransition ErrorBoundaries Activity SuspenseList Fragment` | 551 / 0 / 1 (28 suites) |
 | sched | `yarn test packages/scheduler` | 63 / 0 / 1 (6 suites) |
@@ -112,6 +112,10 @@ skipped, measured on the tree at 92e4fac.
 ¹ The one failure is ReactDOMServerPartialHydration's `[GATED, SHOULD FAIL]
 renders a hidden LegacyHidden component inside a Suspense boundary`, the
 baseline failure every recorded run of this gate has had.
+
+³ With the port's own `packages/react/src/__tests__/ReactChildrenGiven-test.js`
+(3 tests: Children.map gives back null or undefined children as given),
+added in Batch 42; upstream's suites alone are 1554 and 1531 in 109.
 
 ### Server side
 
@@ -304,6 +308,17 @@ Two more are decided the same way (the user, 2026-10-31):
   `root != null` where upstream tests `=== null` and `!== null`.
   `_internalRoot` is a root or `null`, so only a method called with a
   foreign `this` tells them apart.
+
+**A value given back as it was given is `&Unknown`** (the coordinator,
+2026-11-01, applying the rule above). React.Children.map gives back null or
+undefined children as given, upstream's `if (children == null) { return
+children; }`: `map_children` takes `children: &'static Unknown`, tests
+`js::loose_equals(children, js::null::<&Unknown>())` (printed `children ==
+null`) and returns `MappedChildren`, an untagged enum of the mapped `Vec`
+or, `otherwise`, the `&Unknown` it was given. `Children.map(undefined, f)`
+is `undefined` again; `ReactChildrenGiven-test.js` holds it, as no
+upstream test does. This supersedes 730df40's "Children.map(undefined)
+returns null", accepted before the rule.
 
 ## Accepted differences and forms
 

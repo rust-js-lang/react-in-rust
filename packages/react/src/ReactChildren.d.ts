@@ -25,7 +25,13 @@ declare function mapChildren(
     value2: number,
   ) => unknown | null | undefined,
   context?: unknown | null | undefined,
-): (unknown | null | undefined)[] | null;
+): MappedChildren;
+
+/**
+ * What mapChildren gives: the mapped array, or the `null` or `undefined`
+ * children it was given, as it was given.
+ */
+export type MappedChildren = (unknown | null | undefined)[] | unknown;
 
 /**
  * Count the number of children that are typically specified as

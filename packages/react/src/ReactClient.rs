@@ -5,7 +5,7 @@
 
 use js::Unknown;
 
-use crate::react_children::{count, for_each, map, only, to_array};
+use crate::react_children::{MappedChildren, count, for_each, map, only, to_array};
 
 pub use crate::react_base_classes::{Component, PureComponent};
 pub use crate::react_cache_client::{CACHE, CACHE_SIGNAL};
@@ -76,7 +76,7 @@ type MapChildren = fn(
     Option<&'static Unknown>,
     &dyn Fn(Option<&'static Unknown>, u32) -> Option<&'static Unknown>,
     Option<&'static Unknown>,
-) -> Option<Vec<Option<&'static Unknown>>>;
+) -> MappedChildren;
 
 /// `React.Children.forEach`.
 type ForEachChildren = fn(

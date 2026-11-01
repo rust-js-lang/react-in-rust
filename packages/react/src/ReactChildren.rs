@@ -347,14 +347,16 @@ type MapFunc<'a> = dyn Fn(Option<&'static Unknown>, u32) -> Option<&'static Unkn
 /// @param {function(*, int)} func The map function.
 /// @param {*} context Context for mapFunction.
 /// @return {object} Object containing the ordered map of results.
-#[cfg_attr(rust_js, rust_js::nullable)]
 pub fn map_children(
     children: Option<&'static Unknown>,
     func: &MapFunc<'_>,
     context: Option<&'static Unknown>,
-) -> Option<Vec<Option<&'static Unknown>>> {
-    // $FlowFixMe[incompatible-type] limitation refining abstract types in Flow
-    children?;
+) -> MappedChildren {
+    if children.is_none() {
+        // $FlowFixMe[incompatible-type] limitation refining abstract types in Flow
+        // SAFETY: an absent `children` is the null or undefined JS gave, given back as it is.
+        return MappedChildren::Given(unsafe { js::cast(children) });
+    }
     let mut result = Vec::new();
     let mut count: u32 = 0;
     map_into_array(children, &mut result, "", "", &mut |child| {
@@ -362,7 +364,16 @@ pub fn map_children(
         count += 1;
         function::call(func, Some(&context), (child, index))
     });
-    Some(result)
+    MappedChildren::Mapped(result)
+}
+
+/// What mapChildren gives: the mapped array, or the `null` or `undefined`
+/// children it was given, as it was given.
+#[cfg_attr(rust_js, rust_js::untagged)]
+pub enum MappedChildren {
+    Mapped(Vec<Option<&'static Unknown>>),
+    #[cfg_attr(rust_js, rust_js::otherwise)]
+    Given(&'static Unknown),
 }
 
 /// Count the number of children that are typically specified as
@@ -420,7 +431,10 @@ pub fn for_each_children(
 ///
 /// See https://reactjs.org/docs/react-api.html#reactchildrentoarray
 pub fn to_array(children: Option<&'static Unknown>) -> Vec<Option<&'static Unknown>> {
-    map_children(children, &|child, _| child, None).unwrap_or_default()
+    match map_children(children, &|child, _| child, None) {
+        MappedChildren::Mapped(array) => array,
+        MappedChildren::Given(_) => Vec::new(),
+    }
 }
 
 /// Returns the first child in a collection of children and verifies that there

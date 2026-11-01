@@ -318,9 +318,9 @@ function mapIntoArray(children, array, escapedPrefix, nameSoFar, callback) {
  * @return {object} Object containing the ordered map of results.
  */
 function mapChildren(children, func, context) {
-  // $FlowFixMe[incompatible-type] limitation refining abstract types in Flow
   if (children == null) {
-    return null;
+    // $FlowFixMe[incompatible-type] limitation refining abstract types in Flow
+    return children;
   }
   const result = [];
   let count = 0;
@@ -381,7 +381,8 @@ function forEachChildren(children, forEachFunc, forEachContext) {
  * See https://reactjs.org/docs/react-api.html#reactchildrentoarray
  */
 export function toArray(children) {
-  return mapChildren(children, child => child) ?? [];
+  const array = mapChildren(children, child => child);
+  return Array.isArray(array) ? array : [];
 }
 
 /**

@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {MappedChildren} from './ReactChildren.js';
+
 export {Component, PureComponent} from './ReactBaseClasses.js';
 
 export {cache, cacheSignal} from './ReactCacheClient.js';
@@ -99,7 +101,7 @@ export interface Children {
       value2: number,
     ) => unknown | null | undefined,
     value3: unknown | null | undefined,
-  ) => (unknown | null | undefined)[] | null | undefined;
+  ) => MappedChildren;
   forEach: (
     value: unknown | null | undefined,
     value2: (value: unknown | null | undefined) => void,
