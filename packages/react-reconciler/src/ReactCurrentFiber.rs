@@ -101,7 +101,7 @@ pub fn set_current_fiber(fiber: Option<Rc<Fiber>>) {
         REACT_SHARED_INTERNALS.set_get_current_stack(if fiber.is_none() {
             None
         } else {
-            Some(get_current_fiber_stack_in_dev)
+            Some(&get_current_fiber_stack_in_dev)
         });
         IS_RENDERING.set(false);
     }

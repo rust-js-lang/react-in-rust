@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import ReactFizzServer from 'react-server';
-import {$index, $iter, $splice} from '@rust-js/runtime';
+import {$index, $splice} from '@rust-js/runtime';
 
 const POP = Buffer.from('/', 'utf8');
 
@@ -194,13 +194,11 @@ const ReactNoopServer = ReactFizzServer({
       throw new Error('Missing placeholder.');
     }
     const children = segment.children.slice();
-    $iter(
-      $splice(
-        placeholder.parent.children,
-        placeholder.index,
-        placeholder.index,
-        children,
-      ),
+    $splice(
+      placeholder.parent.children,
+      placeholder.index,
+      placeholder.index,
+      children,
     );
     return true;
   },

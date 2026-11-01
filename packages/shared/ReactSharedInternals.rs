@@ -96,7 +96,7 @@ impl SharedStateClient {
     /// `null`.
     #[cfg_attr(rust_js, rust_js::link_name = "set getCurrentStack")]
     #[cfg_attr(rust_js, rust_js::nullable(get_current_stack))]
-    pub fn set_get_current_stack(&self, get_current_stack: Option<fn() -> String>) {
+    pub fn set_get_current_stack(&self, get_current_stack: Option<&'static dyn Fn() -> String>) {
         let _ = get_current_stack;
         unreachable!()
     }

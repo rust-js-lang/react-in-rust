@@ -63,7 +63,7 @@ pub struct SharedStateClient {
 
     // ReactDebugCurrentFrame
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub get_current_stack: Cell<Option<fn() -> String>>,
+    pub get_current_stack: Cell<Option<&'static dyn Fn() -> String>>,
 
     // ReactOwnerStackReset
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]

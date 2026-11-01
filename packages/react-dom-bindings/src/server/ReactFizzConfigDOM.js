@@ -59,14 +59,7 @@ import {
   formReplaying as formReplayingRuntime,
   markShellTime,
 } from './fizz-instruction-set/ReactDOMFizzInstructionSetInlineCodeStrings.js';
-import {
-  $displayF64,
-  $index,
-  $iter,
-  $splice,
-  $trim,
-  $unwrap,
-} from '@rust-js/runtime';
+import {$displayF64, $index, $splice, $trim, $unwrap} from '@rust-js/runtime';
 
 // Used to distinguish these contexts from ones used in other renderers.
 // E.g. this can be used to distinguish legacy renderers from this modern one.
@@ -1962,14 +1955,12 @@ function injectFormReplayingRuntime(resumableState, renderState) {
     } else {
       // Otherwise we added to the beginning of the scripts. This will mean that it
       // appears before the shell ID unfortunately.
-      $iter(
-        $splice(bootstrapChunks, 0, 0, [
-          renderState.startInlineScript,
-          endOfStartTag,
-          formReplayingRuntimeScript,
-          endInlineScript,
-        ]),
-      );
+      $splice(bootstrapChunks, 0, 0, [
+        renderState.startInlineScript,
+        endOfStartTag,
+        formReplayingRuntimeScript,
+        endInlineScript,
+      ]);
     }
   }
 }
@@ -5431,7 +5422,8 @@ function getImageResourceKey(href, imageSrcSet, imageSizes) {
   return '' + href;
 }
 
-const previousDispatcher = ReactDOMSharedInternals.d;
+const previousDispatcher =
+  ReactDOMSharedInternals.d; /* ReactDOMCurrentDispatcher */
 
 /**
  * Consumes a header's length of the headers' capacity, as each one found
@@ -6346,15 +6338,17 @@ export const NotPendingTransition = NotPending;
 const endOfStartTag = stringToPrecomputedChunk('>');
 const endOfStartTagSelfClosing = stringToPrecomputedChunk('/>');
 
-ReactDOMSharedInternals.d = {
-  f: /* flushSyncWork */ previousDispatcher.f /* flushSyncWork */,
-  r: /* requestFormReset */ previousDispatcher.r /* requestFormReset */,
-  D: prefetchDNS,
-  C: preconnect,
-  L: preload,
-  m: preloadModule,
-  X: preinitScript,
-  S: preinitStyle,
-  M: preinitModuleScript,
-};
+ReactDOMSharedInternals.d =
+  /* ReactDOMCurrentDispatcher */
+  {
+    f: /* flushSyncWork */ previousDispatcher.f /* flushSyncWork */,
+    r: /* requestFormReset */ previousDispatcher.r /* requestFormReset */,
+    D: prefetchDNS,
+    C: preconnect,
+    L: preload,
+    m: preloadModule,
+    X: preinitScript,
+    S: preinitStyle,
+    M: preinitModuleScript,
+  };
 //# sourceMappingURL=ReactFizzConfigDOM.js.map
