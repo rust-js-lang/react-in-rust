@@ -654,6 +654,21 @@ These differences from upstream's output are accepted:
     makes them);
   - resolveStream passes `stream` to wakeChunk, where upstream passes
     `chunk.value`, the same value it has just written.
+- **The Flight clients' names and arms** (the user, 2026-11-01):
+  - readChunk's default arm is split by variant, `throw chunk.reason` of
+    an errored chunk and `throw null` of a resolved module's, where
+    upstream's one `default: throw chunk.reason;` reads a reason that is
+    `null` for the second: the same throw, but the variants type their
+    reason differently;
+  - a local or parameter whose upstream name holds an acronym is
+    camelCased as Rust's snake_case gives it, `iteratorResultJson`,
+    `rowId`, `findSourceMapUrl`, where upstream writes
+    `iteratorResultJSON`, `rowID`, `findSourceMapURL` (rd272's kind;
+    fields and exports keep upstream's names through `#[rust_js::name]`);
+  - a local upstream names `$$typeof` is `typeof$`, as Rust can't name a
+    binding with `$`;
+  - ReplyClient's `retry` is an arrow, `() => {..}`, where upstream writes
+    `function () {..}`: it reads no `this` or `arguments`.
 
 The audit of 2026-11-01 (Batch 41) listed these; the user accepted them the
 same day:
