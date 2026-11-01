@@ -31,7 +31,7 @@ import {
 import ReactVersion from '../../shared/ReactVersion.js';
 import isArray from '../../shared/isArray.js';
 import * as DefaultConfig from './ReactFiberConfigNoop.js';
-import {$displayF64, $extend, $unwrap} from '@rust-js/runtime';
+import {$displayF64, $unwrap} from '@rust-js/runtime';
 
 const NO_CONTEXT = {};
 const UPPERCASE_CONTEXT = {};
@@ -1303,7 +1303,9 @@ function createReactNoop(reconciler, useMutation) {
 
       const bufferedLog = [];
       function log(...args) {
-        $extend(bufferedLog, args);
+        for (let i = 0; i < args.length; i++) {
+          bufferedLog.push(args[i]);
+        }
         bufferedLog.push('\n');
       }
 

@@ -356,8 +356,11 @@ These differences from upstream's output are accepted:
   which prints `export {..each name..} from '..'`.
 - **rd183**: `stack.push(...current.children)` is written
   `stack.extend(webapi::html_collection::iter(current.children()))`, which
-  prints `$extend(stack, Iterator.from(current.children))`; Rust's
-  never-throwing `extend` is kept.
+  prints rd365's index loop, `const items = current.children; for (let i =
+  0; i < items.length; i++) { stack.push(items[i]); }` (rust-js b06243598);
+  Rust's never-throwing `extend` is kept. createReactNoop's log,
+  `buffered_log.extend(args)`, prints the same loop for
+  `bufferedLog.push(...args)`.
 - **A written let stays** (rd189 reverted, a95591661): a `let` the program
   wrote prints as a `const` even where upstream reads the field in place,
   so FragmentInstance's methods keep `const fragmentFiber =
@@ -840,8 +843,15 @@ The port is split between sessions by package:
   drafted as StreamConfigWeb's through `node::util`), ReactFlightPerformanceTrack on `lastIndexOf`'s position (rd343;
   drafted, its JS compared with upstream's call for call),
   ReactFlightReplyClient on `arguments` (rd332), a form for
-  processReply's nested functions (rd345) and a `this` replacer (rd346);
-  ReactFlightClient on rd346 among others.
+  processReply's nested functions (rd345) and a `this` replacer (rd346).
+  ReactFlightClient is drafted out of tree (Batch 43): its chunk is ADR
+  0761's `ReactPromise` class and its Response a constructor function the
+  program writes, `Class::of(function::with_this(..))`, whose `this` gives
+  `new WeakRef(this)`; it waits on a chunk state rust-js can flatten
+  (rd380), a constructor of 14 parameters (rd400), Blob and FormData parts
+  of any kind (rd397) and others, and on shared/ReactTypes' debug-info types
+  taking `js::Defined` and cells for the fields it writes. At ab0d927 its
+  parseModel takes no reviver, so rd346 doesn't hold it.
 - **The second session** has react-server, react-server-dom-* and
   react-dom-bindings/src/server.
 

@@ -4369,7 +4369,10 @@ export function findFiberRoot(node) {
     if (isContainerMarkedAsRoot(current)) {
       return getInstanceFromNodeDOMTree(current);
     }
-    $extend(stack, Iterator.from(current.children));
+    const items = current.children;
+    for (let i = 0; i < items.length; i++) {
+      stack.push(items[i]);
+    }
   }
   return null;
 }
