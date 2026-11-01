@@ -159,5 +159,7 @@ pub mod warn_valid_style;
 pub mod react_dom_fizz_instruction_set_inline_code_strings;
 #[path = "src/server/ReactDOMLegacyServerStreamConfig.rs"]
 pub mod react_dom_legacy_server_stream_config;
+#[path = "src/server/ReactFizzConfigDOM.rs"]
+pub mod react_fizz_config_dom;
 #[path = "src/server/ReactFlightServerConfigDOM.rs"]
 pub mod react_flight_server_config_dom;
