@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use std::panic::catch_unwind;
+use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use js::JsError;
 
@@ -16,7 +16,7 @@ pub fn get_owner_stack_by_component_info_in_dev(component_info: &ReactComponentI
     if !__DEV__ {
         return String::new();
     }
-    match catch_unwind(|| {
+    match catch_unwind(AssertUnwindSafe(|| {
         let mut info = String::new();
 
         // The owner stack of the current component will be where it was created, i.e. inside its owner.
@@ -24,17 +24,17 @@ pub fn get_owner_stack_by_component_info_in_dev(component_info: &ReactComponentI
         // on the regular stack that's currently executing. However, if there is no owner at all, then
         // there's no stack frame so we add the name of the root component to the stack to know which
         // component is currently executing.
-        if component_info.owner.is_none() {
+        if component_info.owner.get().is_none() {
             return describe_built_in_component_frame(&component_info.name);
         }
 
         let mut owner = Some(component_info);
 
         while let Some(current) = owner {
-            let owner_stack = current.debug_stack;
+            let owner_stack = current.debug_stack.get();
             if let Some(owner_stack) = owner_stack {
                 // Server Component
-                owner = current.owner;
+                owner = current.owner.get();
                 if owner.is_some() {
                     // TODO: Should we stash this somewhere for caching purposes?
                     info += "\n";
@@ -45,7 +45,7 @@ pub fn get_owner_stack_by_component_info_in_dev(component_info: &ReactComponentI
             }
         }
         info
-    }) {
+    })) {
         Ok(info) => info,
         Err(x) => match x.downcast_ref::<&'static JsError>() {
             Some(x) => format!(

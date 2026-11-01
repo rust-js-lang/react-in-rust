@@ -306,26 +306,30 @@ pub type ReactFunctionLocation = (String, String, f64, f64);
 pub struct ReactComponentInfo {
     pub name: String,
     pub env: Option<String>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub key: Option<ReactKey>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub owner: Option<&'static ReactComponentInfo>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub stack: Option<ReactStackTrace>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub owner: Cell<Option<&'static ReactComponentInfo>>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub stack: RefCell<Option<ReactStackTrace>>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub props: Option<&'static Dict<Option<&'static Unknown>>>,
     // Stashed Data for the Specific Execution Environment. Not part of the transport protocol
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub debug_stack: Option<&'static JsError>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub debug_task: Option<&'static ConsoleTask>,
-    #[cfg_attr(rust_js, rust_js::nullable)]
-    pub debug_location: Option<&'static JsError>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub debug_stack: Cell<Option<&'static JsError>>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub debug_task: Cell<Option<&'static ConsoleTask>>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub debug_location: Cell<Option<&'static JsError>>,
 }
+
+unsafe impl js::Defined for ReactComponentInfo {}
 
 pub struct ReactEnvironmentInfo {
     pub env: String,
 }
+
+unsafe impl js::Defined for ReactEnvironmentInfo {}
 
 pub struct ReactErrorInfoProd {
     pub digest: String,
@@ -347,6 +351,8 @@ pub struct ReactErrorInfoDev {
     pub errors: Option<&'static JSONValue>,
 }
 
+unsafe impl js::Defined for ReactErrorInfoDev {}
+
 #[cfg_attr(rust_js, rust_js::untagged)]
 pub enum ReactErrorInfo {
     Dev(ReactErrorInfoDev),
@@ -363,26 +369,12 @@ pub struct ReactIOInfo {
     // the end time (this might be different from the time the await was unblocked)
     pub end: Cell<f64>,
     // the byte size of this resource across the network. (should only be included if affecting the client.)
-    pub byte_size: Option<f64>,
+    #[cfg_attr(rust_js, rust_js::optional)]
+    pub byte_size: Cell<Option<f64>>,
     // the Promise that was awaited if any, may be rejected
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub value: Cell<Option<Promise<Option<&'static Unknown>>>>,
     // the environment where this I/O was spawned.
-    pub env: Option<String>,
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub owner: Option<&'static Unknown>,
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub stack: Option<ReactStackTrace>,
-    // Stashed Data for the Specific Execution Environment. Not part of the transport protocol
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub debug_stack: Option<&'static Error>,
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub debug_task: Option<&'static ConsoleTask>,
-}
-
-pub struct ReactAsyncInfo {
-    pub awaited: Rc<ReactIOInfo>,
-    // the environment where this was awaited. This might not be the same as where it was spawned.
     pub env: Option<String>,
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub owner: Option<&'static ReactComponentInfo>,
@@ -390,15 +382,36 @@ pub struct ReactAsyncInfo {
     pub stack: Option<ReactStackTrace>,
     // Stashed Data for the Specific Execution Environment. Not part of the transport protocol
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub debug_stack: Option<&'static Error>,
+    pub debug_stack: Cell<Option<&'static Error>>,
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    pub debug_task: Option<&'static ConsoleTask>,
+    pub debug_task: Cell<Option<&'static ConsoleTask>>,
 }
+
+unsafe impl js::Defined for ReactIOInfo {}
+
+pub struct ReactAsyncInfo {
+    pub awaited: Rc<ReactIOInfo>,
+    // the environment where this was awaited. This might not be the same as where it was spawned.
+    pub env: Option<String>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub owner: Cell<Option<&'static ReactComponentInfo>>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub stack: RefCell<Option<ReactStackTrace>>,
+    // Stashed Data for the Specific Execution Environment. Not part of the transport protocol
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub debug_stack: Cell<Option<&'static Error>>,
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
+    pub debug_task: Cell<Option<&'static ConsoleTask>>,
+}
+
+unsafe impl js::Defined for ReactAsyncInfo {}
 
 pub struct ReactTimeInfo {
     // performance.now
     pub time: f64,
 }
+
+unsafe impl js::Defined for ReactTimeInfo {}
 
 /// A `ReactComponentInfo`, `ReactEnvironmentInfo`, `ReactAsyncInfo` or
 /// `ReactTimeInfo`, which React tells apart by their members, `name`, `env`,

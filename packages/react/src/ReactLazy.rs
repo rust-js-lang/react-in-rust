@@ -218,14 +218,14 @@ pub fn lazy(ctor: &'static dyn Fn() -> &'static Thenable) -> LazyComponent {
             name: Cell::new("lazy"),
             start: Cell::new(-1.0),
             end: Cell::new(-1.0),
-            byte_size: None,
+            byte_size: Cell::new(None),
             value: Cell::new(None),
             env: None,
             owner,
             stack: None,
-            debug_stack: Some(js::error::new("react-stack-top-frame", None)),
+            debug_stack: Cell::new(Some(js::error::new("react-stack-top-frame", None))),
             // eslint-disable-next-line react-internal/no-production-logging
-            debug_task: console::create_task().map(|create_task| create_task("lazy()")),
+            debug_task: Cell::new(console::create_task().map(|create_task| create_task("lazy()"))),
         });
         let _ = payload.io_info.set(Rc::clone(&io_info));
         // Add debug info to the lazy, but this doesn't have an await stack yet.
@@ -233,10 +233,10 @@ pub fn lazy(ctor: &'static dyn Fn() -> &'static Thenable) -> LazyComponent {
         lazy_type.debug_info.replace(Some(vec![ReactAsyncInfo {
             awaited: io_info,
             env: None,
-            owner: None,
-            stack: None,
-            debug_stack: None,
-            debug_task: None,
+            owner: Cell::new(None),
+            stack: RefCell::new(None),
+            debug_stack: Cell::new(None),
+            debug_task: Cell::new(None),
         }]));
     }
 

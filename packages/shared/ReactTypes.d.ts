@@ -198,7 +198,10 @@ export interface ReactComponentInfo {
   env?: string | undefined;
   key?: ReactKey | null | undefined;
   owner?: ReactComponentInfo | null | undefined;
-  stack?: ReactStackTrace | null | undefined;
+  stack?:
+    | [string, string, number, number, number, number, boolean][]
+    | null
+    | undefined;
   props?:
     | {
         [key: string]: unknown | null | undefined;
@@ -249,12 +252,12 @@ export interface ReactIOInfo {
   // the end time (this might be different from the time the await was unblocked)
   end: number;
   // the byte size of this resource across the network. (should only be included if affecting the client.)
-  byteSize?: number | undefined;
+  byteSize: number | null | undefined;
   // the Promise that was awaited if any, may be rejected
   value?: Promise<unknown | null | undefined> | null | undefined;
   // the environment where this I/O was spawned.
   env?: string | undefined;
-  owner?: unknown | null | undefined;
+  owner?: ReactComponentInfo | null | undefined;
   stack?: ReactStackTrace | null | undefined;
   // Stashed Data for the Specific Execution Environment. Not part of the transport protocol
   debugStack?: Error | null | undefined;
@@ -271,7 +274,10 @@ export interface ReactAsyncInfo {
   // the environment where this was awaited. This might not be the same as where it was spawned.
   env?: string | undefined;
   owner?: ReactComponentInfo | null | undefined;
-  stack?: ReactStackTrace | null | undefined;
+  stack?:
+    | [string, string, number, number, number, number, boolean][]
+    | null
+    | undefined;
   // Stashed Data for the Specific Execution Environment. Not part of the transport protocol
   debugStack?: Error | null | undefined;
   debugTask?:
