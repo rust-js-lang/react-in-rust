@@ -12,6 +12,7 @@ path = "react_dom.rs"
 
 [dependencies]
 js.workspace = true
+node.workspace = true
 react-dom-bindings = { path = "../react-dom-bindings" }
 react-isomorphic = { path = "../react" }
 react-reconciler = { path = "../react-reconciler" }

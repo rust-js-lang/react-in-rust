@@ -236,6 +236,15 @@ pub fn get_postponed_state<S: 'static>(request: &Request) -> Option<&'static Pos
 
 #[cfg_attr(
     rust_js,
+    rust_js::link_name = "react-server/src/ReactFizzServer#prepareForStartFlowingIfBeforeAllReady"
+)]
+pub fn prepare_for_start_flowing_if_before_all_ready(request: &Request) {
+    let _ = request;
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
     rust_js::link_name = "react-server/src/ReactFizzServer#startWork"
 )]
 pub fn start_work(request: &Request) {
