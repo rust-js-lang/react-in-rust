@@ -19,5 +19,7 @@ pub mod react_fiber_config_noop_scopes;
 pub mod react_fiber_config_noop_singletons;
 #[path = "src/ReactFiberConfigNoopTestSelectors.rs"]
 pub mod react_fiber_config_noop_test_selectors;
+#[path = "src/ReactNoopFlightServer.rs"]
+pub mod react_noop_flight_server;
 #[path = "src/ReactNoopServer.rs"]
 pub mod react_noop_server;
