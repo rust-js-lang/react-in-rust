@@ -51,9 +51,10 @@ use crate::react_fizz_component_stack::{
 use crate::react_fizz_current_task::{CURRENT_TASK_IN_DEV, set_current_task_in_dev};
 use crate::react_fizz_hooks::{
     CURRENT_RESUMABLE_STATE, HOOKS_DISPATCHER, check_did_render_id_hook, finish_hooks,
-    get_action_state_count, get_action_state_matching_index, is_recoverable_error,
-    prepare_to_use_hooks, prepare_to_use_thenable_state, read_previous_thenable_from_state,
-    reset_hooks_state, set_current_resumable_state, unwrap_thenable,
+    get_action_state_count, get_action_state_matching_index, get_thenable_state_after_suspending,
+    is_recoverable_error, prepare_to_use_hooks, prepare_to_use_thenable_state,
+    read_previous_thenable_from_state, reset_hooks_state, set_current_resumable_state,
+    unwrap_thenable,
 };
 use crate::react_fizz_legacy_context::{
     Context as LegacyContext, EMPTY_CONTEXT_OBJECT, get_masked_context, process_child_context,
@@ -65,7 +66,7 @@ use crate::react_fizz_new_context::{
 use crate::react_fizz_thenable::{
     SUSPENSE_EXCEPTION, ThenableState, ensure_suspendable_thenable_state_dev,
     get_suspended_call_site_debug_task_dev, get_suspended_call_site_stack_dev,
-    set_capture_suspended_call_site_dev,
+    get_suspended_thenable, set_capture_suspended_call_site_dev,
 };
 use crate::react_fizz_tree_context::{EMPTY_TREE_CONTEXT, TreeContext, push_tree_context};
 use crate::react_fizz_view_transition_component::{
@@ -5276,16 +5277,350 @@ fn postpone_new_suspended_render_task(
     }
 }
 
-// DRAFT: the sections below are not ported yet.
-
+// This is a non-destructive form of rendering a node. If it suspends it spawns
+// a new task and restores the context of this task to what it was before.
 fn render_node(
-    _request: &Rc<Request>,
-    _task: &Rc<Task>,
-    _node: Option<&'static ReactNodeList>,
-    _child_index: f64,
+    request: &Rc<Request>,
+    task: &Rc<Task>,
+    node: Option<&'static ReactNodeList>,
+    child_index: f64,
 ) {
-    todo!()
+    // Snapshot the current context in case something throws to interrupt the
+    // process.
+    let previous_format_context = task.format_context.get();
+    let previous_legacy_context = if !DISABLE_LEGACY_CONTEXT {
+        task.legacy_context.get()
+    } else {
+        EMPTY_CONTEXT_OBJECT.with(|empty_context_object| *empty_context_object)
+    };
+    let previous_context = task.context.borrow().clone();
+    let previous_key_path = task.key_path.borrow().clone();
+    let previous_tree_context = Rc::clone(&task.tree_context.borrow());
+    let previous_component_stack = task.component_stack.borrow().clone();
+    let previous_debug_task = if __DEV__ { task.debug_task.get() } else { None };
+    let x;
+    let thrown;
+    // Store how much we've pushed at this point so we can reset it in case something
+    // suspended partially through writing something.
+    let segment = task.blocked_segment.borrow().clone();
+    match segment {
+        None => {
+            // Replay
+            let previous_replay_set = task.replay.borrow().clone();
+            let Err(thrown_value) = catch_unwind(AssertUnwindSafe(|| {
+                render_node_destructive(request, task, node, child_index)
+            })) else {
+                return;
+            };
+            reset_hooks_state();
+
+            let is_suspense_exception = is_suspense_exception(thrown_value_of(&*thrown_value));
+            x = if is_suspense_exception {
+                // This is a special type of exception used for Suspense. For historical
+                // reasons, the rest of the Suspense implementation expects the thrown
+                // value to be a thenable, because before `use` existed that was the
+                // (unstable) API for suspending. This implementation detail can change
+                // later, once we deprecate the old API in favor of `use`.
+                Some(js::unknown(get_suspended_thenable()))
+            } else {
+                thrown_value_of(&*thrown_value)
+            };
+            thrown = thrown_value;
+
+            if request.aborted.get() {
+                // We are aborting so we can just bubble up to the task by falling through
+                // $FlowFixMe[invalid-compare]
+            } else if js::type_of(x) == "object" && !matches!(js::classify(x), Kind::Null) {
+                // $FlowFixMe[method-unbinding]
+                if js::is_function(js::get(x, "then")) {
+                    let thenable: &'static Thenable = unsafe { js::cast(x) };
+                    let thenable_state = if is_suspense_exception {
+                        get_thenable_state_after_suspending()
+                    } else {
+                        None
+                    };
+                    let new_task = spawn_new_suspended_replay_task(
+                        request,
+                        // $FlowFixMe[incompatible-type]: Refined.
+                        task,
+                        thenable_state,
+                    );
+                    // GAP rd491: upstream gives `then` the task's ping functions themselves,
+                    // `wakeable.then(ping.resolve, ping.reject)`.
+                    let ping = &new_task.ping;
+                    let (resolve, reject) = (Rc::clone(&ping.resolve), Rc::clone(&ping.reject));
+                    thenable.then(move |_| resolve(), move |error| reject(error));
+
+                    // Restore the context. We assume that this will be restored by the inner
+                    // functions in case nothing throws so we don't use "finally" here.
+                    task.format_context.set(previous_format_context);
+                    if !DISABLE_LEGACY_CONTEXT {
+                        task.legacy_context.set(previous_legacy_context);
+                    }
+                    task.context.replace(previous_context.clone());
+                    task.key_path.replace(previous_key_path);
+                    task.tree_context.replace(previous_tree_context);
+                    task.component_stack.replace(previous_component_stack);
+                    task.replay.replace(previous_replay_set);
+                    if __DEV__ {
+                        task.debug_task.set(previous_debug_task);
+                    }
+                    // Restore all active ReactContexts to what they were before.
+                    switch_context(previous_context);
+                    return;
+                }
+                if js::strict_equals(
+                    js::get(x, "message"),
+                    Some(js::unknown("Maximum call stack size exceeded")),
+                ) {
+                    // This was a stack overflow. We do a lot of recursion in React by default for
+                    // performance but it can lead to stack overflows in extremely deep trees.
+                    // We do have the ability to create a trampoile if this happens which makes
+                    // this kind of zero-cost.
+                    let thenable_state = if is_suspense_exception {
+                        get_thenable_state_after_suspending()
+                    } else {
+                        None
+                    };
+                    let new_task = spawn_new_suspended_replay_task(
+                        request,
+                        // $FlowFixMe[incompatible-type]: Refined.
+                        task,
+                        thenable_state,
+                    );
+
+                    // Immediately schedule the task for retrying.
+                    request.pinged_tasks.borrow_mut().push(new_task);
+
+                    // Restore the context. We assume that this will be restored by the inner
+                    // functions in case nothing throws so we don't use "finally" here.
+                    task.format_context.set(previous_format_context);
+                    if !DISABLE_LEGACY_CONTEXT {
+                        task.legacy_context.set(previous_legacy_context);
+                    }
+                    task.context.replace(previous_context.clone());
+                    task.key_path.replace(previous_key_path);
+                    task.tree_context.replace(previous_tree_context);
+                    task.component_stack.replace(previous_component_stack);
+                    task.replay.replace(previous_replay_set);
+                    if __DEV__ {
+                        task.debug_task.set(previous_debug_task);
+                    }
+                    // Restore all active ReactContexts to what they were before.
+                    switch_context(previous_context);
+                    return;
+                }
+            }
+
+            // TODO: Abort any undiscovered Suspense boundaries in the ReplayNode.
+        }
+        Some(segment) => {
+            // Render
+            let children_length = segment.children.borrow().len();
+            let chunk_length = segment.chunks.borrow().len();
+            let Err(thrown_value) = catch_unwind(AssertUnwindSafe(|| {
+                render_node_destructive(request, task, node, child_index)
+            })) else {
+                return;
+            };
+            reset_hooks_state();
+
+            // Reset the write pointers to where we started.
+            segment.children.borrow_mut().truncate(children_length);
+            segment.chunks.borrow_mut().truncate(chunk_length);
+
+            let is_suspense_exception = is_suspense_exception(thrown_value_of(&*thrown_value));
+            x = if is_suspense_exception {
+                // This is a special type of exception used for Suspense. For historical
+                // reasons, the rest of the Suspense implementation expects the thrown
+                // value to be a thenable, because before `use` existed that was the
+                // (unstable) API for suspending. This implementation detail can change
+                // later, once we deprecate the old API in favor of `use`.
+                Some(js::unknown(get_suspended_thenable()))
+            } else {
+                thrown_value_of(&*thrown_value)
+            };
+            thrown = thrown_value;
+
+            if request.aborted.get() {
+                // A postponed root cannot flush any shell and must be rendered again in
+                // full, so let it unwind instead of preserving individual holes.
+                if request.tracked_postpones.borrow().is_some()
+                    && task.blocked_boundary.borrow().is_some()
+                {
+                    let thenable_state = if is_suspense_exception {
+                        get_thenable_state_after_suspending()
+                    } else {
+                        None
+                    };
+                    postpone_new_suspended_render_task(
+                        request,
+                        // $FlowFixMe[incompatible-type]: Refined.
+                        task,
+                        thenable_state,
+                    );
+
+                    // Restore the context. We assume that this will be restored by the inner
+                    // functions in case nothing throws so we don't use "finally" here.
+                    task.format_context.set(previous_format_context);
+                    if !DISABLE_LEGACY_CONTEXT {
+                        task.legacy_context.set(previous_legacy_context);
+                    }
+                    task.context.replace(previous_context.clone());
+                    task.key_path.replace(previous_key_path);
+                    task.tree_context.replace(previous_tree_context);
+                    task.component_stack.replace(previous_component_stack);
+                    if __DEV__ {
+                        task.debug_task.set(previous_debug_task);
+                    }
+                    // Restore all active ReactContexts to what they were before.
+                    switch_context(previous_context);
+                    return;
+                }
+            } else if js::type_of(x) == "object"
+                // $FlowFixMe[invalid-compare]
+                && !matches!(js::classify(x), Kind::Null)
+            {
+                // $FlowFixMe[method-unbinding]
+                if js::is_function(js::get(x, "then")) {
+                    let thenable: &'static Thenable = unsafe { js::cast(x) };
+                    let thenable_state = if is_suspense_exception {
+                        get_thenable_state_after_suspending()
+                    } else {
+                        None
+                    };
+                    let new_task = spawn_new_suspended_render_task(
+                        request,
+                        // $FlowFixMe[incompatible-type]: Refined.
+                        task,
+                        thenable_state,
+                    );
+                    // GAP rd491: upstream gives `then` the task's ping functions themselves,
+                    // `wakeable.then(ping.resolve, ping.reject)`.
+                    let ping = &new_task.ping;
+                    let (resolve, reject) = (Rc::clone(&ping.resolve), Rc::clone(&ping.reject));
+                    thenable.then(move |_| resolve(), move |error| reject(error));
+
+                    // Restore the context. We assume that this will be restored by the inner
+                    // functions in case nothing throws so we don't use "finally" here.
+                    task.format_context.set(previous_format_context);
+                    if !DISABLE_LEGACY_CONTEXT {
+                        task.legacy_context.set(previous_legacy_context);
+                    }
+                    task.context.replace(previous_context.clone());
+                    task.key_path.replace(previous_key_path);
+                    task.tree_context.replace(previous_tree_context);
+                    task.component_stack.replace(previous_component_stack);
+                    if __DEV__ {
+                        task.debug_task.set(previous_debug_task);
+                    }
+                    // Restore all active ReactContexts to what they were before.
+                    switch_context(previous_context);
+                    return;
+                }
+                if js::strict_equals(
+                    js::get(x, "message"),
+                    Some(js::unknown("Maximum call stack size exceeded")),
+                ) {
+                    // This was a stack overflow. We do a lot of recursion in React by default for
+                    // performance but it can lead to stack overflows in extremely deep trees.
+                    // We do have the ability to create a trampoile if this happens which makes
+                    // this kind of zero-cost.
+                    let thenable_state = if is_suspense_exception {
+                        get_thenable_state_after_suspending()
+                    } else {
+                        None
+                    };
+                    let new_task = spawn_new_suspended_render_task(
+                        request,
+                        // $FlowFixMe[incompatible-type]: Refined.
+                        task,
+                        thenable_state,
+                    );
+
+                    // Immediately schedule the task for retrying.
+                    request.pinged_tasks.borrow_mut().push(new_task);
+
+                    // Restore the context. We assume that this will be restored by the inner
+                    // functions in case nothing throws so we don't use "finally" here.
+                    task.format_context.set(previous_format_context);
+                    if !DISABLE_LEGACY_CONTEXT {
+                        task.legacy_context.set(previous_legacy_context);
+                    }
+                    task.context.replace(previous_context.clone());
+                    task.key_path.replace(previous_key_path);
+                    task.tree_context.replace(previous_tree_context);
+                    task.component_stack.replace(previous_component_stack);
+                    if __DEV__ {
+                        task.debug_task.set(previous_debug_task);
+                    }
+                    // Restore all active ReactContexts to what they were before.
+                    switch_context(previous_context);
+                    return;
+                }
+            }
+        }
+    }
+
+    // Restore the context. We assume that this will be restored by the inner
+    // functions in case nothing throws so we don't use "finally" here.
+    task.format_context.set(previous_format_context);
+    if !DISABLE_LEGACY_CONTEXT {
+        task.legacy_context.set(previous_legacy_context);
+    }
+    task.context.replace(previous_context.clone());
+    task.key_path.replace(previous_key_path);
+    task.tree_context.replace(previous_tree_context);
+    // We intentionally do not restore the component stack on the error pathway
+    // Whatever handles the error needs to use this stack which is the location of the
+    // error. We must restore the stack wherever we handle this
+
+    // Restore all active ReactContexts to what they were before.
+    switch_context(previous_context);
+
+    // What was thrown, or the thenable that suspended in its place.
+    if js::strict_equals(x, thrown_value_of(&*thrown)) {
+        resume_unwind(thrown);
+    }
+    js::throw(x);
 }
+
+fn is_suspense_exception(thrown_value: Option<&'static Unknown>) -> bool {
+    SUSPENSE_EXCEPTION.with(|&suspense_exception| {
+        js::strict_equals(thrown_value, Some(js::unknown(suspense_exception)))
+    })
+}
+
+fn errored_replay(
+    request: &Rc<Request>,
+    boundary: Option<Rc<SuspenseBoundary>>,
+    error: Option<&'static Unknown>,
+    error_info: &'static ThrownInfo,
+    replay_nodes: &ReplayNodes,
+    resume_slots: &ResumeSlots,
+    debug_task: Option<&'static ConsoleTask>,
+) {
+    // Erroring during a replay doesn't actually cause an error by itself because
+    // that component has already rendered. What causes the error is the resumable
+    // points that we did not yet finish which will be below the point of the reset.
+    // For example, if we're replaying a path to a Suspense boundary that is not done
+    // that doesn't error the parent Suspense boundary.
+    // This might be a bit strange that the error in a parent gets thrown at a child.
+    // We log it only once and reuse the digest.
+    let error_digest = log_recoverable_error(request, error, error_info, debug_task);
+    abort_remaining_replay_nodes(
+        request,
+        boundary,
+        replay_nodes,
+        resume_slots,
+        error,
+        error_digest,
+        error_info,
+        false,
+    );
+}
+
+// DRAFT: the sections below are not ported yet.
 
 fn finished_segment(
     _request: &Rc<Request>,
@@ -5345,18 +5680,6 @@ pub struct PostponedState {
     replay_slots: RefCell<ResumeSlots>,
 }
 
-fn errored_replay(
-    _request: &Rc<Request>,
-    _boundary: Option<Rc<SuspenseBoundary>>,
-    _error: Option<&'static Unknown>,
-    _error_info: &'static ThrownInfo,
-    _replay_nodes: &ReplayNodes,
-    _resume_slots: &ResumeSlots,
-    _debug_task: Option<&'static ConsoleTask>,
-) {
-    todo!()
-}
-
 fn add_to_replay_parent(
     _node: &Rc<ReplayNode>,
     _parent_key_path: Option<&Rc<KeyNode>>,
@@ -5370,5 +5693,18 @@ fn abort_task(_task: &Rc<Task>, _request: &Rc<Request>) {
 }
 
 fn abort_task_dev(_task: &Rc<Task>, _request: &Rc<Request>) {
+    todo!()
+}
+
+fn abort_remaining_replay_nodes(
+    _request: &Rc<Request>,
+    _boundary: Option<Rc<SuspenseBoundary>>,
+    _nodes: &ReplayNodes,
+    _slots: &ResumeSlots,
+    _error: Option<&'static Unknown>,
+    _error_digest: Option<String>,
+    _error_info: &'static ThrownInfo,
+    _aborted: bool,
+) {
     todo!()
 }
