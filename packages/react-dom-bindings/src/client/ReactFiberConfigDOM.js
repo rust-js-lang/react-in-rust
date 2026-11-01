@@ -5571,7 +5571,7 @@ function insertStylesheet(instance, precedence, root) {
     const nodePrecedence = node.dataset.precedence;
     if (nodePrecedence === precedence) {
       prior = node;
-    } else if (prior != last) {
+    } else if (prior !== last) {
       break;
     }
   }

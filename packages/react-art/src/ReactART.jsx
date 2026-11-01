@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import Mode from 'art/modes/current';
-import FAST_NO_SIDE_EFFECTS from 'art/modes/fast-noSideEffects';
+import FastNoSideEffects from 'art/modes/fast-noSideEffects';
 import {Component} from 'react';
 import {
   defaultOnCaughtError,
@@ -35,7 +35,7 @@ function defaultOnDefaultTransitionIndicator() {
 
 Mode.setCurrent(
   // Change to 'art/modes/dom' for easier debugging via SVG
-  FAST_NO_SIDE_EFFECTS
+  FastNoSideEffects
 );
 
 /* Declarative fill-type objects; API design not finalized */
