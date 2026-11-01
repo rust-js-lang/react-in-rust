@@ -161,5 +161,7 @@ pub mod react_dom_fizz_instruction_set_inline_code_strings;
 pub mod react_dom_legacy_server_stream_config;
 #[path = "src/server/ReactFizzConfigDOM.rs"]
 pub mod react_fizz_config_dom;
+#[path = "src/server/ReactFizzConfigDOMLegacy.rs"]
+pub mod react_fizz_config_dom_legacy;
 #[path = "src/server/ReactFlightServerConfigDOM.rs"]
 pub mod react_flight_server_config_dom;

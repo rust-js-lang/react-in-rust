@@ -398,7 +398,8 @@ export function createRenderState(
   };
 
   if (bootstrapScripts != null) {
-    for (const scriptConfig of bootstrapScripts) {
+    for (let i = 0; i < bootstrapScripts.length; i++) {
+      const scriptConfig = bootstrapScripts[i];
       let tmp;
       if (typeof scriptConfig === 'string') {
         tmp = [scriptConfig, undefined, undefined];
@@ -431,7 +432,8 @@ export function createRenderState(
     }
   }
   if (bootstrapModules != null) {
-    for (const scriptConfig of bootstrapModules) {
+    for (let i = 0; i < bootstrapModules.length; i++) {
+      const scriptConfig = bootstrapModules[i];
       let tmp;
       if (typeof scriptConfig === 'string') {
         tmp = [scriptConfig, undefined, undefined];
@@ -1902,7 +1904,8 @@ function pushStartOption(target, props, formatContext) {
     if (isArray(selectedValue)) {
       // multiple
       const selectedValues = selectedValue;
-      for (const selected of selectedValues) {
+      for (let i = 0; i < selectedValues.length; i++) {
+        const selected = selectedValues[i];
         if (__DEV__) {
           checkAttributeStringCoercion(selected, 'value');
         }
@@ -4787,7 +4790,8 @@ function flushStyleTagsLateForBoundary(destination, styleQueue) {
     }
     writeChunk(destination, $index(hrefs, i));
     writeChunk(destination, lateStyleTagResourceOpen3);
-    for (const rule of rules) {
+    for (let j = 0; j < rules.length; j++) {
+      const rule = rules[j];
       writeChunk(destination, rule);
     }
     destinationHasCapacity = writeChunkAndReturn(
@@ -4850,7 +4854,8 @@ export function writeHoistablesForBoundary(
 }
 
 function flushResource(destination, resource) {
-  for (const chunk of resource) {
+  for (let i = 0; i < resource.length; i++) {
+    const chunk = resource[i];
     writeChunk(destination, chunk);
   }
   resource.length = 0;
@@ -4864,7 +4869,8 @@ function flushStyleInPreamble(destination, stylesheet) {
   // them during render. This is because if we flush late we have to send a
   // different encoding and we don't want to encode multiple times
   pushLinkImpl(stylesheetFlushingQueue, stylesheet.props);
-  for (const chunk of stylesheetFlushingQueue) {
+  for (let i = 0; i < stylesheetFlushingQueue.length; i++) {
+    const chunk = stylesheetFlushingQueue[i];
     writeChunk(destination, chunk);
   }
   stylesheetFlushingQueue.length = 0;
@@ -4909,7 +4915,8 @@ function flushStylesInPreamble(destination, styleQueue) {
       writeChunk(destination, $index(hrefs, i));
     }
     writeChunk(destination, styleTagResourceOpen3);
-    for (const rule of rules) {
+    for (let j = 0; j < rules.length; j++) {
+      const rule = rules[j];
       writeChunk(destination, rule);
     }
     writeChunk(destination, styleTagResourceClose);
@@ -4930,7 +4937,8 @@ function preloadLateStyle(destination, stylesheet) {
       stylesheet.props,
     );
     pushLinkImpl(stylesheetFlushingQueue, preloadProps);
-    for (const chunk of stylesheetFlushingQueue) {
+    for (let i = 0; i < stylesheetFlushingQueue.length; i++) {
+      const chunk = stylesheetFlushingQueue[i];
       writeChunk(destination, chunk);
     }
     stylesheetFlushingQueue.length = 0;
@@ -5023,11 +5031,13 @@ export function writePreambleStart(
   // Emit open tags before Hoistables and Resources
   if (htmlChunks != null) {
     // We have an <html> to emit as part of the preamble
-    for (const chunk of htmlChunks) {
+    for (let i = 0; i < htmlChunks.length; i++) {
+      const chunk = htmlChunks[i];
       writeChunk(destination, chunk);
     }
     if (headChunks != null) {
-      for (const chunk of headChunks) {
+      for (let i = 0; i < headChunks.length; i++) {
+        const chunk = headChunks[i];
         writeChunk(destination, chunk);
       }
     } else {
@@ -5037,14 +5047,16 @@ export function writePreambleStart(
     }
   } else if (headChunks != null) {
     // We do not have an <html> but we do have a <head>
-    for (const chunk of headChunks) {
+    for (let i = 0; i < headChunks.length; i++) {
+      const chunk = headChunks[i];
       writeChunk(destination, chunk);
     }
   }
 
   // Emit high priority Hoistables
   const charsetChunks = renderState.charsetChunks;
-  for (const chunk of charsetChunks) {
+  for (let i = 0; i < charsetChunks.length; i++) {
+    const chunk = charsetChunks[i];
     writeChunk(destination, chunk);
   }
   charsetChunks.length = 0;
@@ -5056,7 +5068,8 @@ export function writePreambleStart(
   renderState.preconnects.clear();
 
   const viewportChunks = renderState.viewportChunks;
-  for (const chunk of viewportChunks) {
+  for (let i = 0; i < viewportChunks.length; i++) {
+    const chunk = viewportChunks[i];
     writeChunk(destination, chunk);
   }
   viewportChunks.length = 0;
@@ -5079,7 +5092,8 @@ export function writePreambleStart(
   currentlyFlushingRenderState = null;
 
   const importMapChunks = renderState.importMapChunks;
-  for (const chunk of importMapChunks) {
+  for (let i = 0; i < importMapChunks.length; i++) {
+    const chunk = importMapChunks[i];
     writeChunk(destination, chunk);
   }
   importMapChunks.length = 0;
@@ -5112,7 +5126,8 @@ export function writePreambleStart(
 
   // Write embedding hoistableChunks
   const hoistableChunks = renderState.hoistableChunks;
-  for (const chunk of hoistableChunks) {
+  for (let i = 0; i < hoistableChunks.length; i++) {
+    const chunk = hoistableChunks[i];
     writeChunk(destination, chunk);
   }
   hoistableChunks.length = 0;
@@ -5132,7 +5147,8 @@ export function writePreambleEnd(destination, renderState) {
 
   const bodyChunks = preamble.bodyChunks;
   if (bodyChunks != null) {
-    for (const chunk of bodyChunks) {
+    for (let i = 0; i < bodyChunks.length; i++) {
+      const chunk = bodyChunks[i];
       writeChunk(destination, chunk);
     }
   }
@@ -5149,7 +5165,8 @@ export function writeHoistables(destination, resumableState, renderState) {
   // already sent it is too late now.
 
   const viewportChunks = renderState.viewportChunks;
-  for (const chunk of viewportChunks) {
+  for (let i = 0; i < viewportChunks.length; i++) {
+    const chunk = viewportChunks[i];
     writeChunk(destination, chunk);
   }
   viewportChunks.length = 0;
@@ -5193,7 +5210,8 @@ export function writeHoistables(destination, resumableState, renderState) {
 
   // Write embedding hoistableChunks
   const hoistableChunks = renderState.hoistableChunks;
-  for (const chunk of hoistableChunks) {
+  for (let i = 0; i < hoistableChunks.length; i++) {
+    const chunk = hoistableChunks[i];
     writeChunk(destination, chunk);
   }
   hoistableChunks.length = 0;
