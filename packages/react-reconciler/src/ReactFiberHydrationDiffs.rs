@@ -219,7 +219,8 @@ fn object_name(object: &Unknown) -> String {
 fn describe_value(value: Option<&Unknown>, mut max_length: f64) -> String {
     match js::type_of(value).as_str() {
         "string" => {
-            let encoded = json::stringify(unsafe { js::cast(value) });
+            let value: &str = unsafe { js::cast(value) };
+            let encoded = json::stringify(value);
             if f64::from(string::length(&encoded)) > max_length {
                 if max_length < 5.0 {
                     return "\"...\"".to_string();
