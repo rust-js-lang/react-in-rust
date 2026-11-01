@@ -134,7 +134,7 @@ react-server, react-client, the Fizz suites and react-server-dom-fb,
 | float | `yarn test react-dom/src/__tests__/ReactDOMFloat react-dom/src/__tests__/ReactDOMLegacyFloat` (2 suites) | 143 / 0 / 1 |
 | ssrmisc | `yarn test react-dom/src/__tests__/ReactServerRendering react-dom/src/__tests__/ReactDOMServerLifecycles react-dom/src/__tests__/ReactDOMInReactServer react-dom/src/__tests__/ReactClassComponentPropResolutionFizz packages/react-markup packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShimServer` (9 suites) | 104 / 0 / 0 |
 | server | `yarn test packages/react-server/src/__tests__` (4 suites) | 26 / 0 / 0² |
-| client | `yarn test packages/react-client/src/__tests__` (2 suites) | 95 / 0 / 0 |
+| client | `yarn test packages/react-client/src/__tests__` (3 suites) | 96 / 0 / 0⁴ |
 | webpack | `yarn test packages/react-server-dom-webpack/src/__tests__` (9 suites) | 278 / 0 / 0 |
 | turbopack | `yarn test packages/react-server-dom-turbopack/src/__tests__` (7 suites) | 43 / 0 / 0 |
 | fb | `yarn test packages/react-server-dom-fb/src/__tests__` (1 suite) | 8 / 0 / 0 |
@@ -142,6 +142,11 @@ react-server, react-client, the Fizz suites and react-server-dom-fb,
 The `ssr` gate's 21 suites are the 20 `ReactDOMServerIntegration*` files plus
 `ReactDOMserverIntegrationProgress` (lowercase s), which the same pattern
 matches. Many server suites also run inside `dom` and `domrest`.
+
+⁴ With the port's own `packages/react-client/src/__tests__/ReactFlightReplayOrder-test.js`
+(1 test, DEV: a console entry that arrives while an earlier one is still
+blocked replays after it, as upstream's resolveConsoleEntry does), added in
+Batch 52 with the fix of its unblock; upstream's suites alone are 95 in 2.
 
 ² One run in five of `-r=www-modern packages/react-server/src/__tests__`
 failed one test (25 / 1 / 0) while the machine was loaded. The default
