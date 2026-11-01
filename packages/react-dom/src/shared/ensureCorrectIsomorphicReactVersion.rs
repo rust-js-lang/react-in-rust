@@ -3,6 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+#[cfg_attr(rust_js, rust_js::name = "reactDOMPackageVersion")]
 use shared::react_version::REACT_VERSION as REACT_DOM_PACKAGE_VERSION;
 
 unsafe extern "Rust" {

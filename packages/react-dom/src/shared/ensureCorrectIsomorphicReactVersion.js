@@ -6,13 +6,13 @@
 // LICENSE file in the root directory of this source tree.
 
 import * as IsomorphicReactPackage from 'react';
-import REACT_DOM_PACKAGE_VERSION from '../../../shared/ReactVersion.js';
+import reactDOMPackageVersion from '../../../shared/ReactVersion.js';
 
 export function ensureCorrectIsomorphicReactVersion() {
   const isomorphicReactPackageVersion = IsomorphicReactPackage.version;
-  if (isomorphicReactPackageVersion !== REACT_DOM_PACKAGE_VERSION) {
+  if (isomorphicReactPackageVersion !== reactDOMPackageVersion) {
     throw new Error(
-      `Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ${isomorphicReactPackageVersion}\n  - react-dom:  ${REACT_DOM_PACKAGE_VERSION}\nLearn more: https://react.dev/warnings/version-mismatch`,
+      `Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ${isomorphicReactPackageVersion}\n  - react-dom:  ${reactDOMPackageVersion}\nLearn more: https://react.dev/warnings/version-mismatch`,
     );
   }
 }
