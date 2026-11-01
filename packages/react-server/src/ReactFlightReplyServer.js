@@ -748,17 +748,14 @@ export function reportGlobalError(response, error) {
     // because we won't be getting any new data to resolve it.
     if (chunk.status === 'pending') {
       triggerErrorOnChunk(response, chunk, error);
-    } else {
-      const maybeController =
-        chunk.status === 'fulfilled' &&
-        chunk.reason != null &&
-        typeof chunk.reason.error === 'function'
-          ? chunk.reason
-          : undefined;
-      if (maybeController !== undefined) {
-        const error$1 = maybeController.error;
-        error$1(error);
-      }
+    } else if (
+      chunk.status === 'fulfilled' &&
+      chunk.reason != null &&
+      typeof chunk.reason.error === 'function'
+    ) {
+      const maybeController = chunk.reason;
+      const error$1 = maybeController.error;
+      error$1(error);
     }
   });
 }
@@ -801,57 +798,53 @@ function fulfillReference(response, reference, value, arrayRoot) {
         // The server doesn't have any lazy references so we don't expect to go through a Promise.
         const object =
           typeof value$1 === 'object' && value$1 !== null ? value$1 : undefined;
-        if (object != null) {
-          if (
-            (serverReferenceObjects == null ||
-              !serverReferenceObjects.has(object)) &&
-            (getPrototypeOf(value$1) === ObjectPrototype ||
-              getPrototypeOf(value$1) === ArrayPrototype)
-          ) {
-            if (hasOwnProperty.call(object, name)) {
-              value$1 = object[name];
-              if (isArray(value$1)) {
-                localLength = 0;
-                arrayRoot$1 =
-                  rootArrayContexts.get(
-                    // Our `isArray` typing can't narrow `mixed`
-                    value$1,
-                  ) ?? arrayRoot$1;
-              } else {
-                arrayRoot$1 = undefined;
-                switch (typeof value$1) {
-                  case 'string': {
-                    const value = value$1;
-                    localLength = value.length;
-                    break;
-                  }
-                  case 'bigint': {
-                    const value = value$1;
-                    // Estimate the length to avoid expensive toString() calls on large
-                    // BigInt values. If the value is too large, we get Infinity, which
-                    // will trigger the array size limit error.
-                    // GAP rd489: `Kind::BigInt` is an `i64`, so a wider
-                    // one's `Number(value)` isn't upstream's.
-                    const n = Math.abs(Number(value));
-                    if (n === 0) {
-                      localLength = 1;
-                    } else {
-                      localLength = Math.floor(Math.log10(n)) + 1;
-                    }
-                    break;
-                  }
-                  default:
-                    if (ArrayBuffer.isView(value$1)) {
-                      const view = value$1;
-                      localLength = view.byteLength;
-                    } else {
-                      localLength = 0;
-                    }
-                }
+        if (
+          object != null &&
+          (serverReferenceObjects == null ||
+            !serverReferenceObjects.has(object)) &&
+          (getPrototypeOf(value$1) === ObjectPrototype ||
+            getPrototypeOf(value$1) === ArrayPrototype) &&
+          hasOwnProperty.call(object, name)
+        ) {
+          value$1 = object[name];
+          if (isArray(value$1)) {
+            localLength = 0;
+            arrayRoot$1 =
+              rootArrayContexts.get(
+                // Our `isArray` typing can't narrow `mixed`
+                value$1,
+              ) ?? arrayRoot$1;
+          } else {
+            arrayRoot$1 = undefined;
+            switch (typeof value$1) {
+              case 'string': {
+                const value = value$1;
+                localLength = value.length;
+                break;
               }
-              continue;
+              case 'bigint': {
+                const value = value$1;
+                // Estimate the length to avoid expensive toString() calls on large
+                // BigInt values. If the value is too large, we get Infinity, which
+                // will trigger the array size limit error.
+                const n = Math.abs(Number(value));
+                if (n === 0) {
+                  localLength = 1;
+                } else {
+                  localLength = Math.floor(Math.log10(n)) + 1;
+                }
+                break;
+              }
+              default:
+                if (ArrayBuffer.isView(value$1)) {
+                  const view = value$1;
+                  localLength = view.byteLength;
+                } else {
+                  localLength = 0;
+                }
             }
           }
+          continue;
         }
         throw new Error('Invalid reference.');
       }
@@ -1034,56 +1027,53 @@ function getOutlinedModel(
     for (const name of path.slice(1)) {
       const object =
         typeof value === 'object' && value !== null ? value : undefined;
-      if (object != null) {
-        if (
-          (serverReferenceObjects == null ||
-            !serverReferenceObjects.has(object)) &&
-          (getPrototypeOf(value) === ObjectPrototype ||
-            getPrototypeOf(value) === ArrayPrototype)
-        ) {
-          if (hasOwnProperty.call(object, name)) {
-            value = object[name];
-            if (isArray(value)) {
-              localLength = 0;
-              arrayRoot =
-                rootArrayContexts.get(
-                  // Our `isArray` typing can't narrow `mixed`
-                  value,
-                ) ?? arrayRoot;
-            } else {
-              arrayRoot = undefined;
-              switch (typeof value) {
-                case 'string': {
-                  const value$1 = value;
-                  localLength = value$1.length;
-                  break;
-                }
-                case 'bigint': {
-                  const value$1 = value;
-                  // Estimate the length to avoid expensive toString() calls on large
-                  // BigInt values. If the value is too large, we get Infinity, which
-                  // will trigger the array size limit error.
-                  // GAP rd489: as fulfill_reference's.
-                  const n = Math.abs(Number(value$1));
-                  if (n === 0) {
-                    localLength = 1;
-                  } else {
-                    localLength = Math.floor(Math.log10(n)) + 1;
-                  }
-                  break;
-                }
-                default:
-                  if (ArrayBuffer.isView(value)) {
-                    const view = value;
-                    localLength = view.byteLength;
-                  } else {
-                    localLength = 0;
-                  }
-              }
+      if (
+        object != null &&
+        (serverReferenceObjects == null ||
+          !serverReferenceObjects.has(object)) &&
+        (getPrototypeOf(value) === ObjectPrototype ||
+          getPrototypeOf(value) === ArrayPrototype) &&
+        hasOwnProperty.call(object, name)
+      ) {
+        value = object[name];
+        if (isArray(value)) {
+          localLength = 0;
+          arrayRoot =
+            rootArrayContexts.get(
+              // Our `isArray` typing can't narrow `mixed`
+              value,
+            ) ?? arrayRoot;
+        } else {
+          arrayRoot = undefined;
+          switch (typeof value) {
+            case 'string': {
+              const value$1 = value;
+              localLength = value$1.length;
+              break;
             }
-            continue;
+            case 'bigint': {
+              const value$1 = value;
+              // Estimate the length to avoid expensive toString() calls on large
+              // BigInt values. If the value is too large, we get Infinity, which
+              // will trigger the array size limit error.
+              const n = Math.abs(Number(value$1));
+              if (n === 0) {
+                localLength = 1;
+              } else {
+                localLength = Math.floor(Math.log10(n)) + 1;
+              }
+              break;
+            }
+            default:
+              if (ArrayBuffer.isView(value)) {
+                const view = value;
+                localLength = view.byteLength;
+              } else {
+                localLength = 0;
+              }
           }
         }
+        continue;
       }
       throw new Error('Invalid reference.');
     }

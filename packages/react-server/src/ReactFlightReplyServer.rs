@@ -1205,9 +1205,7 @@ fn fulfill_reference(
                             // Estimate the length to avoid expensive toString() calls on large
                             // BigInt values. If the value is too large, we get Infinity, which
                             // will trigger the array size limit error.
-                            // GAP rd489: `Kind::BigInt` is an `i64`, so a wider
-                            // one's `Number(value)` isn't upstream's.
-                            let n = (value as f64).abs();
+                            let n = js::number::from_big_int(value).abs();
                             if n == 0.0 {
                                 local_length = 1.0;
                             } else {
@@ -1447,8 +1445,7 @@ fn get_outlined_model(
                             // Estimate the length to avoid expensive toString() calls on large
                             // BigInt values. If the value is too large, we get Infinity, which
                             // will trigger the array size limit error.
-                            // GAP rd489: as fulfill_reference's.
-                            let n = (value as f64).abs();
+                            let n = js::number::from_big_int(value).abs();
                             if n == 0.0 {
                                 local_length = 1.0;
                             } else {
