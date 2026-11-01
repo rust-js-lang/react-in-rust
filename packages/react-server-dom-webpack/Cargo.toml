@@ -1,0 +1,20 @@
+[package]
+name = "react-server-dom-webpack"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# React Server Components bindings for DOM using Webpack,
+# `react-server-dom-webpack`. Its modules are its files, each beside the JS
+# rust-js writes from it; its root and `client` declare them and write no JS
+# of their own.
+
+[dependencies]
+js.workspace = true
+node.workspace = true
+react-client = { path = "../react-client" }
+shared.workspace = true
+webapi.workspace = true
+
+[lints]
+workspace = true

@@ -51,8 +51,23 @@ Cargo.toml's `[lib] path`: `shared.rs`, `src/forks/Scheduler.rs`,
 
 The crates are `shared`, `scheduler`, `react-isomorphic` (packages/react),
 `react-reconciler`, `react-dom-bindings`, `react-dom`,
-`react-noop-renderer`, `react-test-renderer`, `react-art` and `react-client`. A new package is a new crate,
+`react-noop-renderer`, `react-test-renderer`, `react-art`, `react-client` and `react-server-dom-webpack`. A new package is a new crate,
 added to the workspace's `members`.
+
+**A react-server-dom-* package is one crate of both sessions' modules**
+(the coordinator, 2026-11-02, with the second session): its root is
+Cargo's default `src/lib.rs`, `pub mod client; pub mod shared;` (the second
+session adds `pub mod server;`), and `src/client.rs` and `src/shared.rs`
+declare their directory's modules, `#[path = "client/X.rs"] pub mod x;`.
+None of the three writes JS. `src/shared/ReactFlightImportMetadata` is the
+first session's (the second's server modules import it): `ImportMetadata`
+is an untagged enum of upstream's two tuples, `Async((id, chunks, name,
+Async))` and `Sync((id, chunks, name))`, told apart by length, so
+`isAsyncImport` prints upstream's `metadata.length === 4`; its chunks, and
+`ImportManifestEntry`'s, are `&'static [String]`, JS's arrays shared as
+upstream shares them. Webpack's runtime globals (`__webpack_require__`,
+`.u`, `__webpack_chunk_load__`, `__webpack_get_script_filename__`) are
+`shared::environment`'s, as `scripts/flow/environment.js` declares them.
 
 **A JS library's binding is a crate of its own** (the user, 2026-11-01):
 `bindings/art` is `@rust-js-bindings/art`, the `art` library's, laid out
@@ -1082,8 +1097,42 @@ The port is split between sessions by package:
   - rd387: a caught error is read off the unwind, `catch (thrown$1) {
     const x = $unwound(thrown$1); .. thrown(x) ..}`, where upstream's is
     `catch (x)`.
-- **The second session** has react-server, react-server-dom-* and
-  react-dom-bindings/src/server.
+  **react-server-dom-*'s client side** (`src/client/**`, the client
+  entries, `src/shared/`) is the first session's (agreed with the second,
+  2026-11-02). Webpack's ReactFlightImportMetadata,
+  ReactFlightClientConfigBundlerWebpackBrowser and -Server and
+  ReactFlightClientConfigTargetWebpackBrowser and -Server are Rust (Batch
+  55). ReactFlightClientConfigBundlerWebpack is held on rd546 (js's
+  `HasOwnProperty::call` takes `&Unknown`, so requireModule's
+  `hasOwnProperty.call(moduleExports, ..)` of what `js::get` gives would
+  need a cast); its draft passes the webpack gate. The plain re-export
+  entries (`client*.js`, `react-flight-dom-client.*.js`) stay JS (rd55).
+  **Pending in rust-js, not accepted** (each changes no result):
+  - rd543: a tuple's element is read by destructuring, `const chunks =
+    metadata[1];`, where upstream reads `metadata[CHUNKS]` in place;
+  - rd544: the async marker, Flow's literal type `1`, is `#[repr(u8)] enum
+    Async { Async = 1 }`, which exports `const Async = 1;` and prints
+    `Async` where upstream writes `1 /* async */`;
+  - rd547: the chunk cache's `HashMap<String, ChunkEntry>` (`null` or a
+    promise) reads `$someGet(chunkCache, chunkId)` where upstream writes
+    `chunkCache.get(chunkId)` and `=== undefined`;
+  - rd548: addChunkDebugInfo's fill-if-missing reads `const cached =
+    chunkIOInfoCache.get(chunkId); let ioInfo; if (cached != null) {..}`
+    where upstream writes `let ioInfo = ..; if (ioInfo === undefined)`;
+  - rd545 (rust-js's control-flow work): the `$FlowFixMe` inside the
+    `try` prints above `let href;`.
+  Port differences (decided for the user while away, 2026-11-02; none
+  changes a result): prepareDestinationWithChunks tests `moduleLoading !=
+  null` where upstream tests `!== null` (ReactDOMRoot's kind); the patched
+  `__webpack_require__.u` is an arrow where upstream writes `function
+  (chunkId)` (it reads no `this`); the chunk map's `flightChunk != null`
+  where upstream tests `!== undefined` (the map holds strings); the fake
+  stack's `(fakeStack.stack ?? '')` (ReplyClient's parseStackLocation
+  kind); `typeof performance !== 'undefined' &&` before
+  `getEntriesByType`'s test (rd320, estimateBandwidth's kind); and the
+  `/**` comment above the patch prints `/*`.
+- **The second session** has react-server, react-server-dom-*'s server
+  side and react-dom-bindings/src/server.
 
 Before editing another session's modules, regeneration included, message
 the coordinator (m1-arch).
