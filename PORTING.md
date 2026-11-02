@@ -817,6 +817,11 @@ These differences from upstream's output are accepted:
   - a task object has no `ping` property (rd495, the user's decision of
     2026-11-01, "Pings made at then()"): `pingOf(request, task)` makes its
     resolve and reject where they're given to `then`.
+  - ReactDOMServerPartialHydration's `[GATED, SHOULD FAIL] renders a hidden
+    LegacyHidden component` trips jest's loop guard ("exceeded 6000
+    iterations") escaping a DEV error stack, whose length is the
+    checkout's path's and the `$catchUnwind` frames': a known gate failure,
+    gone with the first item's gap (the user, 2026-11-02).
 - **Accepted on the user's behalf while away, 2026-11-02** (each changes no
   result; the coordinator logs them for the user):
   - the Flight client's DEV `then` holds its wrapper promise in a cell its
