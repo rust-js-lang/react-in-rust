@@ -1050,16 +1050,6 @@ These differences from upstream's output are accepted:
     `ServerReferenceMetadataDev`, `DebugBlobReading`, `BlobReading`,
     `ErrorValueInfo`, `ComponentDebugInfo`, `IoDebugInfo`,
     `ConstructorReference`, `AsyncDebugInfo` and `AbortedAsyncInfo`;
-  - temporary, until react-in-rust builds on a rust-js past ae7515268,
-    which has their fixes (rd579 46eaf6688, rd576 and rd577 f3af1ed54; the
-    coordinator's follow-up): rd579's `environmentNameOf(request)`, `const
-    environmentName = request.environmentName; return environmentName();`,
-    for upstream's `(0, request.environmentName)()`; and patchConsole's
-    two, `descriptor.value` read as any value, `typeof originalMethod ===
-    'function'` after it, where upstream tests `typeof descriptor.value ===
-    'function'` in the `if` (rd576), and the console it patches read as
-    `const consoleObject = $unwrap(globalThis.console);`, where upstream
-    passes `console` (rd577).
 - **Accepted on the user's behalf while away, 2026-11-02** (each changes no
   result; the coordinator logs them for the user):
   - the Flight client's DEV `then` holds its wrapper promise in a cell its

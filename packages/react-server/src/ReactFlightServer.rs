@@ -677,9 +677,7 @@ fn patch_console(console_inst: &'static Unknown, method_name: &'static str) {
     let descriptor = js::object::get_own_property_descriptor(Some(console_inst), method_name);
     if let Some(descriptor) = descriptor
         && (descriptor.configurable.unwrap_or(false) || descriptor.writable.unwrap_or(false))
-        // GAP rd576: a `PropertyDescriptor`'s `value` is a `&dyn IntoUnknown`,
-        // which no value is read of.
-        && let Kind::Function(original_method) = js::classify(js::get(descriptor, "value"))
+        && let Kind::Function(original_method) = js::classify(descriptor.value)
     {
         let original_name =
             js::object::get_own_property_descriptor(Some(js::unknown(original_method)), "name");
@@ -711,7 +709,7 @@ fn patch_console(console_inst: &'static Unknown, method_name: &'static str) {
                 let mut env = unbadge_console(method_name, args);
                 if env.is_none() {
                     // Otherwise add the current environment.
-                    env = Some(environment_name_of(&request));
+                    env = Some((request.environment_name)());
                 }
 
                 emit_console_chunk(
@@ -753,23 +751,20 @@ fn patch_console(console_inst: &'static Unknown, method_name: &'static str) {
 js::on_load! {
     // $FlowFixMe[invalid-compare]
     if __DEV__ && js::is_object(webapi::console) {
-        // GAP rd577: webapi's `Console` is no `js::Defined` value, so the
-        // object `console` is read as `globalThis.console`.
-        let console_object = js::get(webapi::global_this, "console").unwrap();
         // Instrument console to capture logs for replaying on the client.
-        patch_console(console_object, "assert");
-        patch_console(console_object, "debug");
-        patch_console(console_object, "dir");
-        patch_console(console_object, "dirxml");
-        patch_console(console_object, "error");
-        patch_console(console_object, "group");
-        patch_console(console_object, "groupCollapsed");
-        patch_console(console_object, "groupEnd");
-        patch_console(console_object, "info");
-        patch_console(console_object, "log");
-        patch_console(console_object, "table");
-        patch_console(console_object, "trace");
-        patch_console(console_object, "warn");
+        patch_console(js::unknown(webapi::console), "assert");
+        patch_console(js::unknown(webapi::console), "debug");
+        patch_console(js::unknown(webapi::console), "dir");
+        patch_console(js::unknown(webapi::console), "dirxml");
+        patch_console(js::unknown(webapi::console), "error");
+        patch_console(js::unknown(webapi::console), "group");
+        patch_console(js::unknown(webapi::console), "groupCollapsed");
+        patch_console(js::unknown(webapi::console), "groupEnd");
+        patch_console(js::unknown(webapi::console), "info");
+        patch_console(js::unknown(webapi::console), "log");
+        patch_console(js::unknown(webapi::console), "table");
+        patch_console(js::unknown(webapi::console), "trace");
+        patch_console(js::unknown(webapi::console), "warn");
     }
 }
 
@@ -1007,15 +1002,6 @@ pub struct Request {
     pub written_debug_objects: &'static WeakMap<JsObject, String>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub deferred_debug_objects: Option<DeferredDebugStore>,
-}
-
-/// `(0, request.environmentName)()`: the environment's name, its function
-/// called with no `this`, as upstream calls it.
-// GAP rd579: `(request.environment_name)()` prints `request.environmentName()`,
-// which calls a JS caller's function with the request as its `this`.
-fn environment_name_of(request: &Request) -> String {
-    let environment_name = &request.environment_name;
-    environment_name()
 }
 
 thread_local! {
@@ -2571,7 +2557,7 @@ fn render_function_component(
                     Some(js::unknown("")),
                 ))
             };
-            let component_env = environment_name_of(request);
+            let component_env = (request.environment_name)();
             request
                 .pending_chunks
                 .set(request.pending_chunks.get() + 1.0);
@@ -3224,7 +3210,7 @@ fn render_element(
             let component_debug_info: &'static ReactComponentInfo = unsafe {
                 js::cast(Some(js::unknown_of(ReactComponentInfo {
                     name: "Fragment".to_owned(),
-                    env: Some(environment_name_of(request)),
+                    env: Some((request.environment_name)()),
                     key: key.clone(),
                     owner: Cell::new(js::cast::<Option<&'static ReactComponentInfo>>(
                         task.debug_owner.get(),
@@ -3629,7 +3615,7 @@ fn visit_async_node_impl(
 
                             // We log the environment at the time when the last promise pigned ping which may
                             // be later than what the environment was when we actually started awaiting.
-                            let env = environment_name_of(request);
+                            let env = (request.environment_name)();
                             advance_task_time(request, task, start_time);
                             // Then emit a reference to us awaiting it in the current task.
                             request
@@ -3706,7 +3692,7 @@ fn emit_async_sequence(
                 .set(request.pending_chunks.get() + 1.0);
             // We log the environment at the time when we ping which may be later than what the
             // environment was when we actually started awaiting.
-            let env = environment_name_of(request);
+            let env = (request.environment_name)();
             // If we don't have any thing awaited, the time we started awaiting was internal
             // when we yielded after rendering. The current task time is basically that.
             let debug_info = AsyncInfo {
@@ -3864,7 +3850,7 @@ fn create_task_with_id(
         timed: Cell::new(false),
         time: Cell::new(last_timestamp),
         environment_name: RefCell::new(if __DEV__ {
-            environment_name_of(request)
+            (request.environment_name)()
         } else {
             String::new()
         }),
@@ -4366,7 +4352,7 @@ fn serialize_server_reference(
                 } else {
                     String::new()
                 },
-                env: environment_name_of(request),
+                env: (request.environment_name)(),
                 location,
             })
         } else {
@@ -5845,7 +5831,7 @@ fn serialize_error_value(request: &Rc<Request>, error: &'static Unknown) -> Stri
     if __DEV__ {
         let error: &'static Error = unsafe { js::cast(Some(error)) };
         let mut name = "Error".to_owned();
-        let mut env = environment_name_of(request);
+        let mut env = (request.environment_name)();
         let (message, stack) = describe_error_value(request, error, &mut name, &mut env);
         let error_info = js::unknown_of(ErrorValueInfo {
             name,
@@ -5884,7 +5870,7 @@ fn serialize_debug_error_value(
     if __DEV__ {
         let error: &'static Error = unsafe { js::cast(Some(error)) };
         let mut name = "Error".to_owned();
-        let mut env = environment_name_of(request);
+        let mut env = (request.environment_name)();
         let (message, stack) = describe_error_value(request, error, &mut name, &mut env);
         // +1 compared to the stack alone since errorInfo itself also counts
         // against the limit.
@@ -5935,7 +5921,7 @@ fn emit_error_chunk(
 ) {
     let error_info = if __DEV__ {
         let mut name = "Error".to_owned();
-        let mut env = environment_name_of(request);
+        let mut env = (request.environment_name)();
         let mut cause_reference: Option<String> = None;
         let mut errors_reference: Option<String> = None;
         let described = catch_unwind(AssertUnwindSafe(|| {
@@ -6491,7 +6477,7 @@ fn outline_io_info(request: &Rc<Request>, io_info: &'static ReactIOInfo) {
     if env.is_none() {
         // If we're forwarding IO info from this environment, an empty env is effectively the "client" side.
         // The "client" from the perspective of our client will be this current environment.
-        env = Some(environment_name_of(request));
+        env = Some((request.environment_name)());
     }
     emit_io_info_chunk(
         request,
@@ -6569,7 +6555,7 @@ fn serialize_io_node(
 
     // We log the environment at the time when we serialize the I/O node.
     // The environment name may have changed from when the I/O was actually started.
-    let env = environment_name_of(request);
+    let env = (request.environment_name)();
 
     let end_time = if io_node.tag.get() == UNRESOLVED_PROMISE_NODE {
         // Mark the end time as now. It's arbitrary since it's not resolved but this
@@ -7636,7 +7622,7 @@ fn forward_debug_info(request: &Rc<Request>, task: &Rc<Task>, debug_info: &'stat
                     // If we're forwarding IO info from this environment, an empty env is effectively the "client" side.
                     // The "client" from the perspective of our client will be this current environment.
                     // $FlowFixMe[cannot-write]
-                    js::set(debug_async_info, "env", environment_name_of(request));
+                    js::set(debug_async_info, "env", (request.environment_name)());
                 }
                 if let Some(owner) = info.owner.get() {
                     // $FlowFixMe[cannot-write]
@@ -7763,7 +7749,7 @@ fn forward_debug_info_from_aborted_task(request: &Rc<Request>, task: &Rc<Task>) 
                     request
                         .pending_chunks
                         .set(request.pending_chunks.get() + 1.0);
-                    let env = environment_name_of(request);
+                    let env = (request.environment_name)();
                     let async_info = js::unknown_of(AbortedAsyncInfo { awaited: node, env });
                     // We don't have a start time for this await but in case there was no start time emitted
                     // we need to include something. TODO: We should maybe ideally track the time when we
@@ -8044,7 +8030,7 @@ fn retry_task(request: &Rc<Request>, task: &Rc<Task>) {
         task.implicit_slot.set(false);
 
         if __DEV__ {
-            let current_env = environment_name_of(request);
+            let current_env = (request.environment_name)();
             if current_env != *task.environment_name.borrow() {
                 request
                     .pending_chunks
