@@ -112,6 +112,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "react-server-dom-esm"
+version = "0.0.0"
+dependencies = [
+ "react-client",
+ "rust-js-builtins",
+ "rust-js-node",
+ "rust-js-webapi",
+ "shared",
+]
+
+[[package]]
 name = "react-server-dom-parcel"
 version = "0.0.0"
 dependencies = [
@@ -124,6 +135,17 @@ dependencies = [
 
 [[package]]
 name = "react-server-dom-turbopack"
+version = "0.0.0"
+dependencies = [
+ "react-client",
+ "rust-js-builtins",
+ "rust-js-node",
+ "rust-js-webapi",
+ "shared",
+]
+
+[[package]]
+name = "react-server-dom-unbundled"
 version = "0.0.0"
 dependencies = [
  "react-client",

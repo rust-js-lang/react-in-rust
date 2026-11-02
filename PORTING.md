@@ -51,7 +51,7 @@ Cargo.toml's `[lib] path`: `shared.rs`, `src/forks/Scheduler.rs`,
 
 The crates are `shared`, `scheduler`, `react-isomorphic` (packages/react),
 `react-reconciler`, `react-dom-bindings`, `react-dom`,
-`react-noop-renderer`, `react-test-renderer`, `react-art`, `react-client`, `react-server-dom-webpack`, `react-server-dom-turbopack` and `react-server-dom-parcel`. A new package is a new crate,
+`react-noop-renderer`, `react-test-renderer`, `react-art`, `react-client`, `react-server-dom-webpack`, `react-server-dom-turbopack`, `react-server-dom-parcel`, `react-server-dom-esm` and `react-server-dom-unbundled`. A new package is a new crate,
 added to the workspace's `members`.
 
 **A react-server-dom-* package is one crate of both sessions' modules**
@@ -1131,7 +1131,15 @@ The port is split between sessions by package:
   `const bundle = bundles[i];` where upstream reads it in place.
   BundlerESM (react-server-dom-esm) and BundlerNode
   (react-server-dom-unbundled) are held on rd607: rust-js has no
-  `import()` of a specifier the program has at run time. The plain re-export
+  `import()` of a specifier the program has at run time. react-server-dom-esm's
+  ReactFlightClientConfigTargetESMBrowser and -Server are Rust (its
+  ModuleLoading an untagged `null | string | {prefix, crossOrigin?}`, the
+  object `#[rust_js::otherwise]`, so the tests print upstream's `typeof
+  moduleLoading === 'string'` and `moduleLoading !== null`; the string
+  case's call leaves out upstream's trailing `undefined`, rd271's kind);
+  react-server-dom-unbundled's ReactFlightImportMetadata and
+  ReactFlightClientConfigTargetNodeServer are webpack's, as upstream's
+  are. The plain re-export
   entries (`client*.js`, `react-flight-dom-client.*.js`) stay JS (rd55).
   **Pending in rust-js, not accepted** (each changes no result):
   - rd543: a tuple's element is read by destructuring, `const chunks =
