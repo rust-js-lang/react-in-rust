@@ -9,7 +9,8 @@ export {createFastHashJS as createFastHash} from 'react-server/src/createFastHas
 
 /**
  * What the legacy renderer writes to: each chunk pushed, and `null` at
- * its end; what fails it destroyed with its error.
+ * its end; what fails it destroyed with its error. The request keeps it
+ * while it flows.
  */
 export interface Destination {
   push: (value: string | null | undefined) => boolean;

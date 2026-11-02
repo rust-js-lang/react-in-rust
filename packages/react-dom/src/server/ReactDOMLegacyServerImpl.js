@@ -83,6 +83,8 @@ export function renderToStringImpl(
     );
   }
 
-  return result;
+  const old = result;
+  result = '';
+  return old;
 }
 //# sourceMappingURL=ReactDOMLegacyServerImpl.js.map

@@ -23,7 +23,11 @@ use node::crypto::{BinaryToTextEncoding, create_hash};
 use shared::has_own_property::HAS_OWN_PROPERTY;
 
 /// A destination that might be flushable, `interface MightBeFlushable`.
+#[cfg_attr(rust_js, rust_js::types = "stream#Writable")]
 pub struct Destination(PhantomData<JsObject>);
+
+// Safety: a destination is a JS object, a Writable.
+unsafe impl js::Defined for Destination {}
 
 impl Deref for Destination {
     type Target = Writable;

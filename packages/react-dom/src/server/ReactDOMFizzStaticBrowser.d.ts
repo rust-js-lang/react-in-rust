@@ -9,6 +9,7 @@ import type {
   BootstrapScriptDescriptor,
   NonceOption,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
+import type {PostponedState} from 'react-server/src/ReactFizzServer';
 
 export {default as version} from 'shared/ReactVersion';
 
@@ -28,7 +29,7 @@ export interface Options {
     | ((
         value: unknown | null | undefined,
         value2: any,
-      ) => string | null | undefined)
+      ) => unknown | null | undefined)
     | undefined;
   onBrowserBailout?:
     | ((value: unknown | null | undefined, value2: any) => void)
@@ -40,7 +41,7 @@ export interface Options {
 }
 
 export interface StaticResult {
-  postponed?: any | null | undefined;
+  postponed?: PostponedState | null | undefined;
   prelude: ReadableStream;
 }
 
@@ -56,7 +57,7 @@ export interface ResumeOptions {
     | ((
         value: unknown | null | undefined,
         value2: any,
-      ) => string | null | undefined)
+      ) => unknown | null | undefined)
     | undefined;
   onBrowserBailout?:
     | ((value: unknown | null | undefined, value2: any) => void)
@@ -66,6 +67,6 @@ export interface ResumeOptions {
 
 export function resumeAndPrerender(
   children: unknown | null | undefined,
-  postponedState: any,
+  postponedState: PostponedState,
   options?: ResumeOptions | null | undefined,
 ): Promise<StaticResult>;

@@ -7,24 +7,6 @@
 
 import type {Task} from './ReactFizzServer.js';
 
-/**
- * A request's `onError`: of what was thrown and where, the digest it's
- * sent to the client as, if any.
- */
-export type OnError = (
-  value: unknown | null | undefined,
-  value2: any,
-) => string | null | undefined;
-
-/**
- * A request's `onBrowserBailout`, of what made a boundary render on the
- * client instead, and where.
- */
-export type OnBrowserBailout = (
-  value: unknown | null | undefined,
-  value2: any,
-) => void;
-
 export let currentTaskInDEV: Task | null;
 
 export function setCurrentTaskInDEV(task?: Task | null | undefined): void;

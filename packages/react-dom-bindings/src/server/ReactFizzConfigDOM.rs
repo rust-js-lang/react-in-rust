@@ -991,6 +991,8 @@ pub struct FormatContext {
     pub view_transition: Option<Rc<ViewTransitionContext>>, // tracks if we're inside a ViewTransition outside the first DOM node
 }
 
+unsafe impl js::Defined for FormatContext {}
+
 fn create_format_context(
     insertion_mode: InsertionMode,
     selected_value: SelectedValue,

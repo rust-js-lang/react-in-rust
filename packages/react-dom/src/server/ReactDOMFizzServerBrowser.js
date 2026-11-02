@@ -34,22 +34,25 @@ export function renderToReadableStream(children, options) {
     let onFatalError;
     let onAllReady;
     const allReady = new Promise((res, rej) => {
-      onAllReady = res;
+      onAllReady = () => {
+        res();
+      };
       onFatalError = rej;
     });
 
     let request;
     // TODO: Move to sub-classing ReadableStream.
     function onShellReady() {
+      const request$1 = $unwrap(request);
       const stream = new ReadableStream(
         {
           type: 'bytes',
           pull(controller) {
-            startFlowing($unwrap(request), controller);
+            startFlowing(request$1, controller);
           },
           cancel(reason) {
-            stopFlowing($unwrap(request));
-            abort($unwrap(request), reason);
+            stopFlowing(request$1);
+            abort(request$1, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -84,7 +87,6 @@ export function renderToReadableStream(children, options) {
       options?.bootstrapScripts,
       options?.bootstrapModules,
     );
-    const onAllReady$1 = $unwrap(onAllReady);
     request = createRequest(
       children,
       resumableState,
@@ -100,9 +102,7 @@ export function renderToReadableStream(children, options) {
       options?.progressiveChunkSize,
       options?.onError,
       options?.onBrowserBailout,
-      () => {
-        onAllReady$1();
-      },
+      onAllReady,
       onShellReady,
       onShellError,
       onFatalError,
@@ -121,22 +121,25 @@ export function resume(children, postponedState, options) {
     let onFatalError;
     let onAllReady;
     const allReady = new Promise((res, rej) => {
-      onAllReady = res;
+      onAllReady = () => {
+        res();
+      };
       onFatalError = rej;
     });
 
     let request;
     // TODO: Move to sub-classing ReadableStream.
     function onShellReady() {
+      const request$1 = $unwrap(request);
       const stream = new ReadableStream(
         {
           type: 'bytes',
           pull(controller) {
-            startFlowing($unwrap(request), controller);
+            startFlowing(request$1, controller);
           },
           cancel(reason) {
-            stopFlowing($unwrap(request));
-            abort($unwrap(request), reason);
+            stopFlowing(request$1);
+            abort(request$1, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -155,16 +158,13 @@ export function resume(children, postponedState, options) {
       allReady.catch(() => {});
       reject(error);
     }
-    const onAllReady$1 = $unwrap(onAllReady);
     request = resumeRequest(
       children,
       postponedState,
       resumeRenderState(postponedState.resumableState, options?.nonce),
       options?.onError,
       options?.onBrowserBailout,
-      () => {
-        onAllReady$1();
-      },
+      onAllReady,
       onShellReady,
       onShellError,
       onFatalError,

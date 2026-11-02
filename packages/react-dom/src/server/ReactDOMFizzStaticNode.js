@@ -74,21 +74,19 @@ function createFakeWritableFromReadable(readable) {
 export function prerenderToNodeStream(children, options) {
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
-    let request;
 
+    let request;
     function onAllReady() {
+      const request$1 = $unwrap(request);
       let writable;
       const readable = new Readable({
         read() {
-          startFlowing($unwrap(request), $unwrap(writable));
+          startFlowing(request$1, $unwrap(writable));
         },
       });
-      const value = createFakeWritableFromReadable(readable);
-      if (writable === undefined) {
-        writable = value;
-      }
+      writable = createFakeWritableFromReadable(readable);
       const result = {
-        postponed: getPostponedState($unwrap(request)),
+        postponed: getPostponedState(request$1),
         prelude: readable,
       };
       resolve(result);
@@ -131,26 +129,24 @@ export function prerenderToNodeStream(children, options) {
 export function prerender(children, options) {
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
-    let request;
 
+    let request;
     function onAllReady() {
+      const request$1 = $unwrap(request);
       let writable;
       const stream = new ReadableStream(
         {
           type: 'bytes',
           start(controller) {
-            const value =
+            writable =
               createFakeWritableFromReadableStreamController(controller);
-            if (writable === undefined) {
-              writable = value;
-            }
           },
           pull() {
-            startFlowing($unwrap(request), $unwrap(writable));
+            startFlowing(request$1, $unwrap(writable));
           },
           cancel(reason) {
-            stopFlowing($unwrap(request));
-            abort($unwrap(request), reason);
+            stopFlowing(request$1);
+            abort(request$1, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -160,7 +156,7 @@ export function prerender(children, options) {
         },
       );
       const result = {
-        postponed: getPostponedState($unwrap(request)),
+        postponed: getPostponedState(request$1),
         prelude: stream,
       };
       resolve(result);
@@ -215,21 +211,19 @@ export function resumeAndPrerenderToNodeStream(
 ) {
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
-    let request;
 
+    let request;
     function onAllReady() {
+      const request$1 = $unwrap(request);
       let writable;
       const readable = new Readable({
         read() {
-          startFlowing($unwrap(request), $unwrap(writable));
+          startFlowing(request$1, $unwrap(writable));
         },
       });
-      const value = createFakeWritableFromReadable(readable);
-      if (writable === undefined) {
-        writable = value;
-      }
+      writable = createFakeWritableFromReadable(readable);
       const result = {
-        postponed: getPostponedState($unwrap(request)),
+        postponed: getPostponedState(request$1),
         prelude: readable,
       };
       resolve(result);
@@ -256,26 +250,24 @@ export function resumeAndPrerenderToNodeStream(
 export function resumeAndPrerender(children, postponedState, options) {
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
-    let request;
 
+    let request;
     function onAllReady() {
+      const request$1 = $unwrap(request);
       let writable;
       const stream = new ReadableStream(
         {
           type: 'bytes',
           start(controller) {
-            const value =
+            writable =
               createFakeWritableFromReadableStreamController(controller);
-            if (writable === undefined) {
-              writable = value;
-            }
           },
           pull() {
-            startFlowing($unwrap(request), $unwrap(writable));
+            startFlowing(request$1, $unwrap(writable));
           },
           cancel(reason) {
-            stopFlowing($unwrap(request));
-            abort($unwrap(request), reason);
+            stopFlowing(request$1);
+            abort(request$1, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -285,7 +277,7 @@ export function resumeAndPrerender(children, postponedState, options) {
         },
       );
       const result = {
-        postponed: getPostponedState($unwrap(request)),
+        postponed: getPostponedState(request$1),
         prelude: stream,
       };
       resolve(result);

@@ -3,6 +3,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+use std::rc::Rc;
+
 use js::{ArrayBuffer, ArrayBufferView, Promise, Unknown};
 use node::BufferEncoding;
 use node::buffer::Buffer;
@@ -10,11 +12,19 @@ use webapi::Blob;
 use webapi::global::btoa;
 
 /// What the legacy renderer writes to: each chunk pushed, and `null` at
-/// its end; what fails it destroyed with its error.
-pub struct Destination<'a> {
-    pub push: &'a dyn Fn(Option<&str>) -> bool,
-    pub destroy: &'a dyn Fn(Option<&'static Unknown>),
+/// its end; what fails it destroyed with its error. The request keeps it
+/// while it flows.
+pub struct Destination {
+    pub push: Rc<Push>,
+    pub destroy: Rc<dyn Fn(Option<&'static Unknown>)>,
 }
+
+// Safety: a destination is a JS object of its two functions.
+unsafe impl js::Defined for Destination {}
+
+/// A destination's `push`, of a chunk, `null` at the end: whether it takes
+/// more.
+type Push = dyn Fn(Option<&str>) -> bool;
 
 pub type PrecomputedChunk = String;
 pub type Chunk = String;

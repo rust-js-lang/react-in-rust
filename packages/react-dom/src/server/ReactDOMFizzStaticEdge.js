@@ -31,17 +31,19 @@ ensureCorrectIsomorphicReactVersion();
 export function prerender(children, options) {
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
+
     let request;
     function onAllReady() {
+      const request$1 = $unwrap(request);
       const stream = new ReadableStream(
         {
           type: 'bytes',
           pull(controller) {
-            startFlowing($unwrap(request), controller);
+            startFlowing(request$1, controller);
           },
           cancel(reason) {
-            stopFlowing($unwrap(request));
-            abort($unwrap(request), reason);
+            stopFlowing(request$1);
+            abort(request$1, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -51,7 +53,7 @@ export function prerender(children, options) {
         },
       );
       const result = {
-        postponed: getPostponedState($unwrap(request)),
+        postponed: getPostponedState(request$1),
         prelude: stream,
       };
       resolve(result);
@@ -102,17 +104,19 @@ export function prerender(children, options) {
 export function resumeAndPrerender(children, postponedState, options) {
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
+
     let request;
     function onAllReady() {
+      const request$1 = $unwrap(request);
       const stream = new ReadableStream(
         {
           type: 'bytes',
           pull(controller) {
-            startFlowing($unwrap(request), controller);
+            startFlowing(request$1, controller);
           },
           cancel(reason) {
-            stopFlowing($unwrap(request));
-            abort($unwrap(request), reason);
+            stopFlowing(request$1);
+            abort(request$1, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -122,7 +126,7 @@ export function resumeAndPrerender(children, postponedState, options) {
         },
       );
       const result = {
-        postponed: getPostponedState($unwrap(request)),
+        postponed: getPostponedState(request$1),
         prelude: stream,
       };
       resolve(result);

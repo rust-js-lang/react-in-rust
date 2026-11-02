@@ -11,6 +11,7 @@ import type {
   HeadersDescriptor,
   NonceOption,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
+import type {PostponedState} from 'react-server/src/ReactFizzServer';
 
 export {default as version} from 'shared/ReactVersion';
 
@@ -33,14 +34,16 @@ export interface Options {
     | ((
         value: unknown | null | undefined,
         value2: any,
-      ) => string | null | undefined)
+      ) => unknown | null | undefined)
     | undefined;
   onBrowserBailout?:
     | ((value: unknown | null | undefined, value2: any) => void)
     | undefined;
   unstable_externalRuntimeSrc?: BootstrapScript | undefined;
   importMap?: unknown;
-  formState?: unknown;
+  formState?:
+    | [unknown | null | undefined, string, unknown | null | undefined, number]
+    | undefined;
   onHeaders?: ((descriptor: HeadersDescriptor) => void) | undefined;
   maxHeadersLength?: unknown;
 }
@@ -54,7 +57,7 @@ export interface ResumeOptions {
     | ((
         value: unknown | null | undefined,
         value2: any,
-      ) => string | null | undefined)
+      ) => unknown | null | undefined)
     | undefined;
   onBrowserBailout?:
     | ((value: unknown | null | undefined, value2: any) => void)
@@ -98,14 +101,16 @@ export interface WebStreamsOptions {
     | ((
         value: unknown | null | undefined,
         value2: any,
-      ) => string | null | undefined)
+      ) => unknown | null | undefined)
     | undefined;
   onBrowserBailout?:
     | ((value: unknown | null | undefined, value2: any) => void)
     | undefined;
   unstable_externalRuntimeSrc?: BootstrapScript | undefined;
   importMap?: unknown;
-  formState?: unknown;
+  formState?:
+    | [unknown | null | undefined, string, unknown | null | undefined, number]
+    | undefined;
   maxHeadersLength?: unknown;
   signal?: AbortSignal | undefined;
   onHeaders?: ((headers: Headers) => void) | undefined;
@@ -118,7 +123,7 @@ export function renderToReadableStream(
 
 export function resumeToPipeableStream(
   children: unknown | null | undefined,
-  postponedState: any,
+  postponedState: PostponedState,
   options?: ResumeOptions | null | undefined,
 ): PipeableStream;
 
@@ -128,7 +133,7 @@ export interface WebStreamsResumeOptions {
     | ((
         value: unknown | null | undefined,
         value2: any,
-      ) => string | null | undefined)
+      ) => unknown | null | undefined)
     | undefined;
   onBrowserBailout?:
     | ((value: unknown | null | undefined, value2: any) => void)
@@ -138,6 +143,6 @@ export interface WebStreamsResumeOptions {
 
 export function resume(
   children: unknown | null | undefined,
-  postponedState: any,
+  postponedState: PostponedState,
   options?: WebStreamsResumeOptions | null | undefined,
 ): Promise<ReactDOMServerReadableStream>;

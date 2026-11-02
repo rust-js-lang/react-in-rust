@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {Writable} from 'stream';
+
 export type PrecomputedChunk = Uint8Array<ArrayBuffer>;
 
 export type BinaryChunk = Uint8Array<ArrayBuffer>;
@@ -13,21 +15,24 @@ export function scheduleWork(callback: () => void): void;
 
 export const scheduleMicrotask: (value: () => void) => void;
 
-export function flushBuffered(destination: any): void;
+export function flushBuffered(destination: Writable): void;
 
-export function beginWriting(destination: any): void;
+export function beginWriting(destination: Writable): void;
 
 /**
  * `chunk`, a `PrecomputedChunk | Chunk | BinaryChunk`: a chunk's text, or
  * its bytes.
  */
-export function writeChunk(destination: any, chunk: unknown): void;
+export function writeChunk(destination: Writable, chunk: unknown): void;
 
-export function writeChunkAndReturn(destination: any, chunk: unknown): boolean;
+export function writeChunkAndReturn(
+  destination: Writable,
+  chunk: unknown,
+): boolean;
 
-export function completeWriting(destination: any): void;
+export function completeWriting(destination: Writable): void;
 
-export function close(destination: any): void;
+export function close(destination: Writable): void;
 
 export const textEncoder: TextEncoder;
 
@@ -43,7 +48,7 @@ export function byteLengthOfChunk(chunk: unknown): number;
 export function byteLengthOfBinaryChunk(chunk: BinaryChunk): number;
 
 export function closeWithError(
-  destination: any,
+  destination: Writable,
   error?: unknown | null | undefined,
 ): void;
 
