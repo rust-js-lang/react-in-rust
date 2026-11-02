@@ -316,9 +316,10 @@ and its first binding of each JS-path module sits among them where
 upstream imports that module; `use`s that make no import (std, js, webapi,
 type-only modules) come first, in rustfmt's std / external / crate groups.
 `b55/imp/imports.py` (the first session's scratch) checks and regroups
-them. Pending in rust-js (rd609, not accepted): a `use` of another crate's
-binding (`shared::react_shared_internals::REACT_SHARED_INTERNALS`,
-shared's `assign`) still prints its import last.
+them. A `use` of another crate's binding through the module that holds it
+(`shared::react_shared_internals::REACT_SHARED_INTERNALS`, shared's
+`assign`) places that module's import at the `use` too (rd609, rust-js
+5c63e9442).
 
 ## Null and undefined
 
@@ -704,7 +705,11 @@ These differences from upstream's output are accepted:
     chunk that isn't a fulfilled stream (it never is one, by the code that
     makes them);
   - resolveStream passes `stream` to wakeChunk, where upstream passes
-    `chunk.value`, the same value it has just written.
+    `chunk.value`, the same value it has just written;
+  - rd435 (the user, by name, 2026-11-02): a chunk's status tag prints as
+    its literal, `chunk.status === 'fulfilled'`, `case 'resolved_model':`,
+    where upstream names its constants (`INITIALIZED`, `RESOLVED_MODEL`,
+    ..); the eight status constants are not in the module.
 - **Flight's async debug info** (the user, 2026-11-02):
   ReactFlightServerConfigDebugNode's `pendingOperations` is always
   `new Map()`, where upstream makes it `__DEV__ ? new Map() : null`: every
@@ -1185,8 +1190,6 @@ The port is split between sessions by package:
   upstream's (rd536, rust-js bdfb187df, taken in Batch 55's
   regeneration).
   **Pending in rust-js, not accepted** (each changes no result):
-  - rd537: a part id, a JS number kept `f64`, is
-    `prefix + $displayF64(id)` where upstream writes `prefix + id`;
   - rd425: a reader's or iterator's `progress` is a closure held in a cell
     that hands itself on, `let progress; progress = entry => {..}` and
     `const progress$1 = $unwrap(progress)`, where upstream's `function
@@ -1222,9 +1225,7 @@ The port is split between sessions by package:
   ReactFlightClientConfigTargetParcelBrowser and -Server are Rust;
   `parcelRequire`, `.load`, `.extendImportMap` and `.meta.publicUrl` are
   `shared::environment`'s. Port differences (for the user while away;
-  none changes a result): preloadModule tests `metadata.length === 4`
-  where upstream tests `metadata[IMPORT_MAP]`'s truth (the server sends a
-  fourth item only where it has a map); resolveServerReference's `bundles
+  none changes a result): resolveServerReference's `bundles
   == null` for `!bundles` (an array); TargetParcelServer's loop reads
   `const bundle = bundles[i];` where upstream reads it in place.
   BundlerESM (react-server-dom-esm) and BundlerNode
@@ -1234,7 +1235,7 @@ The port is split between sessions by package:
   ModuleLoading an untagged `null | string | {prefix, crossOrigin?}`, the
   object `#[rust_js::otherwise]`, so the tests print upstream's `typeof
   moduleLoading === 'string'` and `moduleLoading !== null`; the string
-  case's call leaves out upstream's trailing `undefined`, rd271's kind);
+  case's call leaves out upstream's trailing `undefined`, accepted below);
   react-server-dom-unbundled's ReactFlightImportMetadata and
   ReactFlightClientConfigTargetNodeServer are webpack's, as upstream's
   are. The plain re-export
@@ -1244,27 +1245,35 @@ The port is split between sessions by package:
   upstream reads `metadata[CHUNKS]` in place; rd544, the async marker,
   Flow's literal type `1`, is `#[repr(u8)] enum Async { Async = 1 }`, which
   exports `const Async = 1;` and prints `Async` where upstream writes `1 /*
-  async */`.
+  async */`. Also by name (2026-11-02, Batch 56): parcel's preloadModule
+  tests `metadata.length === 4` where upstream tests
+  `metadata[IMPORT_MAP]`'s truth, and extends the map with `metadata[3]`
+  where upstream reads `metadata[IMPORT_MAP]` (rd543's kind): parcel's
+  server pushes the map only `if (clientReference.$$importMap)`, so a
+  fourth item is never falsy; esm's TargetESMServer calls
+  `preinitModuleForSSR(moduleLoading + mod, nonce)` where upstream passes a
+  trailing `undefined` (rd271's kind: a trailing `None` is left out);
+  BundlerWebpack's `chunks[i]; i++;` as two statements for upstream's
+  `chunks[i++]` (Rust has no post-increment); the patched
+  `__webpack_require__.u` as an arrow where upstream writes `function
+  (chunkId)` (it reads no `this`); BundlerWebpack's two errors' messages
+  as template literals of `panic!("..{id}..")` where upstream
+  concatenates.
   **Pending in rust-js, not accepted** (each changes no result):
-  - rd547: the chunk cache's `HashMap<String, ChunkEntry>` (`null` or a
-    promise) reads `$someGet(chunkCache, chunkId)` where upstream writes
-    `chunkCache.get(chunkId)` and `=== undefined`;
   - rd548: addChunkDebugInfo's fill-if-missing reads `const cached =
     chunkIOInfoCache.get(chunkId); let ioInfo; if (cached != null) {..}`
     where upstream writes `let ioInfo = ..; if (ioInfo === undefined)`;
   Port differences (decided for the user while away, 2026-11-02; none
   changes a result): prepareDestinationWithChunks tests `moduleLoading !=
-  null` where upstream tests `!== null` (ReactDOMRoot's kind); the patched
-  `__webpack_require__.u` is an arrow where upstream writes `function
-  (chunkId)` (it reads no `this`); the chunk map's `flightChunk != null`
+  null` where upstream tests `!== null` (ReactDOMRoot's kind; not accepted:
+  our `ModuleLoading` is a plain `Option`, so a manifest without the key
+  reads undefined, which upstream's would throw on; to be `nullable` along
+  the chain, Batch 56); the chunk map's `flightChunk != null`
   where upstream tests `!== undefined` (the map holds strings); the fake
   stack's `(fakeStack.stack ?? '')` (ReplyClient's parseStackLocation
   kind); `typeof performance !== 'undefined' &&` before
   `getEntriesByType`'s test (rd320, estimateBandwidth's kind); and the
-  `/**` comment above the patch prints `/*`. BundlerWebpack's: `chunks[i];
-  i++;` as two statements for upstream's `chunks[i++]` (Rust has no
-  post-increment); its two errors' messages are template literals of
-  `panic!("..{id}..")` where upstream concatenates; `!name` for `name ===
+  `/**` comment above the patch prints `/*`. BundlerWebpack's: `!name` for `name ===
   ''` of a string (clippy's `comparison_to_empty`); resolveServerReference
   throws after its `if`/`else`, `if (resolvedModuleData == null) throw ..`,
   where upstream throws inside the `else` (the `if` branch has the module);

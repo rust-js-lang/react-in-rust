@@ -3565,7 +3565,7 @@ fn throw_and_unwind_work_loop(
     reset_suspended_work_loop_on_unwind(unit_of_work);
 
     let return_fiber = unit_of_work.r#return.borrow().clone();
-    let did_fatal = match catch_unwind(AssertUnwindSafe(|| {
+    match catch_unwind(AssertUnwindSafe(|| {
         // Find and mark the nearest Suspense or error boundary that can handle
         // this "exception".
         let did_fatal = throw_exception(
@@ -3577,10 +3577,12 @@ fn throw_and_unwind_work_loop(
         );
         if did_fatal {
             panic_on_root_error(root, thrown_value);
+            return true;
         }
-        did_fatal
+        false
     })) {
-        Ok(did_fatal) => did_fatal,
+        Ok(true) => return,
+        Ok(false) => {}
         Err(error) => {
             // We had trouble processing the error. An example of this happening is
             // when accessing the `componentDidCatch` property of an error boundary
@@ -3594,9 +3596,6 @@ fn throw_and_unwind_work_loop(
                 return;
             }
         }
-    };
-    if did_fatal {
-        return;
     }
 
     if (unit_of_work.flags.get() & INCOMPLETE) != 0 {

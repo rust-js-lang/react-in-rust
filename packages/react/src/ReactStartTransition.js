@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {
   enableGestureTransition,
   enableTransitionTracing,
@@ -12,7 +13,6 @@ import {
 } from 'shared/ReactFeatureFlags';
 import reportGlobalError from 'shared/reportGlobalError';
 import noop from 'shared/noop';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 function releaseAsyncTransition() {
   if (__DEV__) {

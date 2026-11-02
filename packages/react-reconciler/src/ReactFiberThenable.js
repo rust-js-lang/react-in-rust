@@ -7,10 +7,10 @@
 
 import {callLazyInitInDEV} from './ReactFiberCallUserSpace.js';
 import {getWorkInProgressRoot} from './ReactFiberWorkLoop.js';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {enableConditionalUseWarning} from 'shared/ReactFeatureFlags';
 import noop from 'shared/noop';
 import {HostRoot} from './ReactWorkTags.js';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {$borrow, $fieldCell, $unborrow, $unwrap} from '@rust-js/runtime';
 
 // An error that is thrown (e.g. by `use`) to trigger Suspense. If we

@@ -32,6 +32,7 @@ import {
   disableLegacyMode,
   enableSchedulingProfiler,
 } from 'shared/ReactFeatureFlags';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {
   extraDevToolsConfig,
   getPublicInstance,
@@ -82,7 +83,6 @@ import {
 } from './ReactFiberHotReloading.js';
 import ReactVersion from 'shared/ReactVersion';
 import {registerDefaultIndicator} from './ReactFiberAsyncAction.js';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {$index, $unwrap} from '@rust-js/runtime';
 
 export {createPortal} from './ReactPortal.js';

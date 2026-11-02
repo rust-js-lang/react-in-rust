@@ -68,6 +68,7 @@ import {
   supportsMicrotasks,
   trackSchedulerEvent,
 } from './ReactFiberConfig.js';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {
   resetNestedUpdateFlag,
   syncNestedUpdateFlag,
@@ -81,7 +82,6 @@ import {
 } from './ReactFiberAsyncAction.js';
 import noop from 'shared/noop';
 import reportGlobalError from 'shared/reportGlobalError';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {$unwrap} from '@rust-js/runtime';
 
 // A linked list of all the roots with pending work. In an idiomatic app,

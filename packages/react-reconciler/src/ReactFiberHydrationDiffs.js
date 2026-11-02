@@ -21,9 +21,9 @@ import {
 } from './ReactWorkTags.js';
 import {enableSrcObject} from 'shared/ReactFeatureFlags';
 import {REACT_ELEMENT_TYPE} from 'shared/ReactSymbols';
+import assign from 'shared/assign';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import isArray from 'shared/isArray';
-import assign from 'shared/assign';
 import {$borrow, $index, $unborrow} from '@rust-js/runtime';
 
 const maxRowLength = 120;

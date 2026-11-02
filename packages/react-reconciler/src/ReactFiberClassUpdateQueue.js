@@ -115,11 +115,11 @@ import {
   unsafe_markUpdateLaneFromFiberToRoot,
 } from './ReactFiberConcurrentUpdates.js';
 import {setIsStrictModeForDevtools} from './ReactFiberDevToolsHook.js';
+import assign from 'shared/assign';
 import {
   peekEntangledActionLane,
   peekEntangledActionThenable,
 } from './ReactFiberAsyncAction.js';
-import assign from 'shared/assign';
 import {$unwrap} from '@rust-js/runtime';
 
 export const UpdateState = 0;

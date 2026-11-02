@@ -5,11 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import {
   getCrossOriginString,
   getCrossOriginStringAs,
 } from 'react-dom-bindings/src/shared/crossOriginStrings';
-import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import {$unwrap} from '@rust-js/runtime';
 
 // Each function is given what JS gives, a string or not, and tests it, as

@@ -4,11 +4,11 @@
 // LICENSE file in the root directory of this source tree.
 
 use js::{PropertyDescriptor, Unknown, object};
-use shared::assign::assign;
 use shared::environment::__DEV__;
 use webapi::console;
 
 use crate::react_noop_update_queue::{REACT_NOOP_UPDATE_QUEUE, Updater};
+use shared::assign::assign;
 
 /// An object of no properties.
 pub struct EmptyObject {}

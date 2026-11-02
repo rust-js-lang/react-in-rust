@@ -28,6 +28,7 @@ import {
   enableYieldingBeforePassive,
 } from 'shared/ReactFeatureFlags';
 import {resetOwnerStackLimit} from 'shared/ReactOwnerStackReset';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import objectIs from 'shared/objectIs';
 import reportGlobalError from 'shared/reportGlobalError';
 import {
@@ -372,7 +373,6 @@ import {
   stopCommittedGesture,
 } from './ReactFiberGestureScheduler.js';
 import {claimQueuedTransitionTypes} from './ReactFiberTransitionTypes.js';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {$unwrap} from '@rust-js/runtime';
 
 const PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map;
@@ -3106,11 +3106,10 @@ function throwAndUnwindWorkLoop(
   resetSuspendedWorkLoopOnUnwind(unitOfWork);
 
   const returnFiber = unitOfWork.return;
-  let didFatal;
   try {
     // Find and mark the nearest Suspense or error boundary that can handle
     // this "exception".
-    didFatal = throwException(
+    const didFatal = throwException(
       root,
       returnFiber,
       unitOfWork,
@@ -3119,6 +3118,7 @@ function throwAndUnwindWorkLoop(
     );
     if (didFatal) {
       panicOnRootError(root, thrownValue);
+      return;
     }
   } catch (error) {
     // We had trouble processing the error. An example of this happening is
@@ -3132,9 +3132,6 @@ function throwAndUnwindWorkLoop(
       panicOnRootError(root, thrownValue);
       return;
     }
-  }
-  if (didFatal) {
-    return;
   }
 
   if (unitOfWork.flags & Incomplete) {

@@ -111,8 +111,8 @@ import estimateBandwidth from './estimateBandwidth.js';
 import {requestFormReset as requestFormResetOnFiber} from 'react-reconciler/src/ReactFiberHooks';
 import {getCurrentRootHostContainer} from 'react-reconciler/src/ReactFiberHostContext';
 import {flushSyncWork as flushSyncWorkOnAllRoots} from 'react-reconciler/src/ReactFiberWorkLoop';
-import escapeSelectorAttributeValueInsideDoubleQuotes from './escapeSelectorAttributeValueInsideDoubleQuotes.js';
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
+import escapeSelectorAttributeValueInsideDoubleQuotes from './escapeSelectorAttributeValueInsideDoubleQuotes.js';
 import {
   $borrow,
   $borrowMut,

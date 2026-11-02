@@ -46,9 +46,9 @@ import {
   DiscreteEventPriority,
   IdleEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
 import {attemptSynchronousHydration} from 'react-reconciler/src/ReactFiberReconciler';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 // TODO: can we stop exporting these?
 let _enabled = true;

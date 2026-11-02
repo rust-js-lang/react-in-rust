@@ -5,10 +5,12 @@
 
 use js::Unknown;
 use shared::environment::__DEV__;
-use shared::react_shared_internals::{Dispatcher, REACT_SHARED_INTERNALS};
-use shared::react_symbols::REACT_CONSUMER_TYPE;
 use shared::react_types::{ReactContext, RefObject, StartTransitionOptions, Usable};
 use webapi::console;
+
+use shared::react_symbols::REACT_CONSUMER_TYPE;
+
+use shared::react_shared_internals::{Dispatcher, REACT_SHARED_INTERNALS};
 
 /// The next state, or what makes it of the one before.
 #[cfg_attr(rust_js, rust_js::untagged)]

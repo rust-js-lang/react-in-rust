@@ -23,8 +23,8 @@ import isArray from 'shared/isArray';
 import {checkPropStringCoercion} from 'shared/CheckStringCoercion';
 import * as DefaultConfig from './ReactFiberConfigNoop.js';
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
-import ReactVersion from 'shared/ReactVersion';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+import ReactVersion from 'shared/ReactVersion';
 import {$displayF64, $unwrap} from '@rust-js/runtime';
 
 const NO_CONTEXT = {};

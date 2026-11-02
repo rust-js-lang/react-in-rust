@@ -8,8 +8,8 @@
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {ClassComponent} from './ReactWorkTags.js';
 import reportGlobalError from 'shared/reportGlobalError';
-import {bindToConsole} from './ReactFiberConfig.js';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+import {bindToConsole} from './ReactFiberConfig.js';
 
 // Side-channel since I'm not sure we want to make this part of the public API
 let componentName = null;

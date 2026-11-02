@@ -6,12 +6,12 @@
 // LICENSE file in the root directory of this source tree.
 
 import {canUseDOM} from 'shared/ExecutionEnvironment';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
 import {
   findHostInstance,
   injectIntoDevTools,
 } from 'react-reconciler/src/ReactFiberReconciler';
-import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 
 export {createRoot, hydrateRoot} from './ReactDOMRoot.js';
 export {default as version} from 'shared/ReactVersion';

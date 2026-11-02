@@ -12,7 +12,6 @@ import {
   prepareDestinationWithChunks,
 } from 'react-client/src/ReactFlightClientConfig';
 import hasOwnProperty from 'shared/hasOwnProperty';
-import {$someGet, $someValue} from '@rust-js/runtime';
 
 // The reason this function needs to defined here in this file instead of just
 // being exported directly from the WebpackDestination... file is because the
@@ -146,8 +145,8 @@ export function preloadModule(metadata) {
     i++;
     const chunkFilename = chunks[i];
     i++;
-    const entry = $someGet(chunkCache, chunkId);
-    if (entry == null) {
+    const entry = chunkCache.get(chunkId);
+    if (entry === undefined) {
       const thenable = loadChunk(chunkId, chunkFilename);
       promises.push(thenable);
       // $FlowFixMe[method-unbinding]
@@ -156,9 +155,8 @@ export function preloadModule(metadata) {
       }
       thenable.then(resolve, ignoreReject);
       chunkCache.set(chunkId, thenable);
-    } else if ($someValue(entry) !== null) {
-      const entry$1 = $someValue(entry);
-      promises.push(entry$1);
+    } else if (entry !== null) {
+      promises.push(entry);
     }
   }
   if (isAsyncImport(metadata)) {

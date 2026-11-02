@@ -20,6 +20,7 @@ import {get as getInstance, set as setInstance} from 'shared/ReactInstanceMap';
 import shallowEqual from 'shared/shallowEqual';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
+import assign from 'shared/assign';
 import isArray from 'shared/isArray';
 import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
 import {
@@ -57,7 +58,6 @@ import {
   setIsStrictModeForDevtools,
 } from './ReactFiberDevToolsHook.js';
 import {startUpdateTimerByLane} from './ReactProfilerTimer.js';
-import assign from 'shared/assign';
 
 const fakeInternalInstance = {};
 

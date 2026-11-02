@@ -214,7 +214,7 @@ export function processReply(
     ]);
     const blobId = takePartId();
     const formData$1 = formData();
-    formData$1.append(formFieldPrefix + $displayF64(blobId), blob);
+    formData$1.append(formFieldPrefix + blobId, blob);
     return '$' + tag + blobId.toString(16);
   }
 
@@ -228,14 +228,14 @@ export function processReply(
     const buffer = [];
     // Stream chunks use a dedicated namespace so that the server can tell
     // them apart from one-shot chunks without scanning.
-    const streamPrefix = formFieldPrefix + 'S' + $displayF64(streamId);
+    const streamPrefix = formFieldPrefix + 'S' + streamId;
 
     let progress;
     progress = entry => {
       if (entry.done) {
         const blobId = takePartId();
         const parts = buffer.slice();
-        data.append(formFieldPrefix + $displayF64(blobId), new Blob(parts));
+        data.append(formFieldPrefix + blobId, new Blob(parts));
         data.append(streamPrefix, '"$o' + blobId.toString(16) + '"');
         data.append(streamPrefix, 'C'); // Close signal
         pendingParts--;
@@ -267,7 +267,7 @@ export function processReply(
 
     // Stream chunks use a dedicated namespace so that the server can tell
     // them apart from one-shot chunks without scanning.
-    const streamPrefix = formFieldPrefix + 'S' + $displayF64(streamId);
+    const streamPrefix = formFieldPrefix + 'S' + streamId;
 
     let progress;
     progress = entry => {
@@ -327,7 +327,7 @@ export function processReply(
 
     // Stream chunks use a dedicated namespace so that the server can tell
     // them apart from one-shot chunks without scanning.
-    const streamPrefix = formFieldPrefix + 'S' + $displayF64(streamId);
+    const streamPrefix = formFieldPrefix + 'S' + streamId;
 
     // There's a race condition between when the stream is aborted and when the promise
     // resolves so we track whether we already aborted it to avoid writing twice.
@@ -453,7 +453,7 @@ export function processReply(
           // The reference to this object came from the same client so we can
           // pass it back to the server where it resolves to the object.
           const refId = takePartId();
-          formData$1.set(formFieldPrefix + $displayF64(refId), referenceJson);
+          formData$1.set(formFieldPrefix + refId, referenceJson);
           const serverObjectReferenceId =
             serializeServerObjectReferenceID(refId);
           // Store the reference ID for deduplication.
@@ -501,7 +501,7 @@ export function processReply(
             // because it ensures a more deterministic encoding.
             const lazyId = takePartId();
             const partJson = serializeModel(resolvedModel, lazyId);
-            data.append(formFieldPrefix + $displayF64(lazyId), partJson);
+            data.append(formFieldPrefix + lazyId, partJson);
             return serializeByValueID(lazyId);
           });
           let resolved;
@@ -529,7 +529,7 @@ export function processReply(
                   reject(thrown(reason));
                   return;
                 }
-                data.append(formFieldPrefix + $displayF64(lazyId), partJson);
+                data.append(formFieldPrefix + lazyId, partJson);
                 pendingParts--;
                 if (pendingParts === 0) {
                   resolve(data);
@@ -589,7 +589,7 @@ export function processReply(
               reject(thrown(reason));
               return;
             }
-            data.append(formFieldPrefix + $displayF64(promiseId), partJson);
+            data.append(formFieldPrefix + promiseId, partJson);
             pendingParts--;
             if (pendingParts === 0) {
               resolve(data);
@@ -638,7 +638,7 @@ export function processReply(
         // fields are available before this is referenced.
         // We include a special marker so that the Server can detect FormData entries
         // that are values in referenced FormData objects.
-        const prefix = formFieldPrefix + '_' + $displayF64(refId) + '_';
+        const prefix = formFieldPrefix + '_' + refId + '_';
         const value$1 = value;
         value$1.forEach((originalValue, originalKey) => {
           data.append(prefix + originalKey, originalValue);
@@ -649,14 +649,14 @@ export function processReply(
         const mapId = takePartId();
         const map = value;
         const partJson = serializeModel(Array.from(map), mapId);
-        formData().append(formFieldPrefix + $displayF64(mapId), partJson);
+        formData().append(formFieldPrefix + mapId, partJson);
         return serializeMapID(mapId);
       }
       if (value instanceof Set) {
         const set = value;
         const setId = takePartId();
         const partJson = serializeModel(Array.from(set), setId);
-        formData().append(formFieldPrefix + $displayF64(setId), partJson);
+        formData().append(formFieldPrefix + setId, partJson);
         return serializeSetID(setId);
       }
 
@@ -664,7 +664,7 @@ export function processReply(
         const buffer = value;
         const blob = new Blob([buffer]);
         const blobId = takePartId();
-        formData().append(formFieldPrefix + $displayF64(blobId), blob);
+        formData().append(formFieldPrefix + blobId, blob);
         return '$' + 'A' + blobId.toString(16);
       }
       if (value instanceof Int8Array) {
@@ -719,7 +719,7 @@ export function processReply(
       if (typeof Blob === 'function' && value instanceof Blob) {
         const blobId = takePartId();
         const blob = value;
-        formData().append(formFieldPrefix + $displayF64(blobId), blob);
+        formData().append(formFieldPrefix + blobId, blob);
         return serializeBlobID(blobId);
       }
 
@@ -730,10 +730,7 @@ export function processReply(
           // Iterator, not Iterable
           const iteratorId = takePartId();
           const partJson = serializeModel(Array.from(iterator), iteratorId);
-          formData().append(
-            formFieldPrefix + $displayF64(iteratorId),
-            partJson,
-          );
+          formData().append(formFieldPrefix + iteratorId, partJson);
           return serializeIteratorID(iteratorId);
         }
         return Array.from(iterator);
@@ -843,10 +840,7 @@ export function processReply(
           const formData$2 = formData();
           // The reference to this function came from the same client so we can pass it back.
           const refId = takePartId();
-          formData$2.set(
-            formFieldPrefix + $displayF64(refId),
-            referenceClosureJson,
-          );
+          formData$2.set(formFieldPrefix + refId, referenceClosureJson);
           const serverReferenceId = serializeServerReferenceID(refId);
           // Store the server reference ID for deduplication.
           writtenObjects.set(value, serverReferenceId);

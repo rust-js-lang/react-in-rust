@@ -7,8 +7,8 @@
 
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 import {DiscreteEventPriority} from 'react-reconciler/src/ReactEventPriorities';
-import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 
 function flushSyncImpl(fn) {
   const previousTransition = ReactSharedInternals.T;

@@ -1561,113 +1561,17 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
   const {key, map, path} = reference;
   let value$1 = value;
 
-  let result;
   try {
-    result = (() => {
-      let i = 1;
-      while (i < $borrow(path).length) {
-        while (
-          typeof value$1 === 'object' &&
-          value$1 != null &&
-          value$1.$$typeof === REACT_LAZY_TYPE
-        ) {
-          // We never expect to see a Lazy node on this path because we encode those as
-          // separate models. This must mean that we have inserted an extra lazy node
-          // e.g. to replace a blocked element. We must instead look for it inside.
-          const referencedChunk = value$1._payload;
-          if (
-            referencedChunk ===
-            $borrow($fieldCell(handler, 'chunk', true)).value
-          ) {
-            // This is a reference to the thing we're currently blocking. We can peak
-            // inside of it to get the value.
-            value$1 = handler.value;
-            continue;
-          }
-          if (referencedChunk.status === 'resolved_model') {
-            initializeModelChunk(referencedChunk);
-          } else if (referencedChunk.status === 'resolved_module') {
-            initializeModuleChunk(referencedChunk);
-          }
-          if (referencedChunk.status === 'fulfilled') {
-            value$1 = initializedValue(referencedChunk);
-            continue;
-          } else if (
-            referencedChunk.status === 'blocked' ||
-            referencedChunk.status === 'pending' ||
-            referencedChunk.status === 'pending_weak'
-          ) {
-            if (referencedChunk.status === 'blocked') {
-              // It is possible that we're blocked on our own chunk if it's a cycle.
-              // Before adding the listener to the inner chunk, let's check if it would
-              // result in a cycle.
-              const cyclicHandler = resolveBlockedCycle(
-                referencedChunk,
-                reference,
-              );
-              if (cyclicHandler != null) {
-                // This reference points back to this chunk. We can resolve the cycle by
-                // using the value from that handler.
-                value$1 = cyclicHandler.value;
-                continue;
-              }
-            }
-            // If we're not yet initialized we need to skip what we've already drilled
-            // through and then wait for the next value to become available.
-            $drain($borrowMut(path), 0, i - 1);
-            // Add "listener" to our new chunk dependency.
-            if (
-              referencedChunk.status === 'blocked' ||
-              referencedChunk.status === 'pending' ||
-              referencedChunk.status === 'pending_weak'
-            ) {
-              if (referencedChunk.value == null) {
-                referencedChunk.value = [reference];
-              } else {
-                const listeners = referencedChunk.value;
-                listeners.push(reference);
-              }
-              if (referencedChunk.reason == null) {
-                referencedChunk.reason = [reference];
-              } else {
-                const listeners = referencedChunk.reason;
-                listeners.push(reference);
-              }
-            }
-            return false;
-          } else if (referencedChunk.status === 'halted') {
-            // Do nothing. We couldn't fulfill.
-            // TODO: Mark downstreams as halted too.
-            return false;
-          } else {
-            rejectReference(
-              response,
-              reference.handler,
-              erroredReason(referencedChunk),
-            );
-            return false;
-          }
-        }
-        const name = $index($borrow(path), i);
-        if (
-          typeof value$1 === 'object' &&
-          value$1 != null &&
-          hasOwnProperty.call($unwrap(value$1), name)
-        ) {
-          value$1 = value$1[name];
-          i++;
-          continue;
-        }
-        throw new Error('Invalid reference.');
-      }
-
+    let i = 1;
+    while (i < $borrow(path).length) {
       while (
         typeof value$1 === 'object' &&
         value$1 != null &&
         value$1.$$typeof === REACT_LAZY_TYPE
       ) {
-        // If what we're referencing is a Lazy it must be because we inserted one as a virtual node
-        // while it was blocked by other data. If it's no longer blocked, we can unwrap it.
+        // We never expect to see a Lazy node on this path because we encode those as
+        // separate models. This must mean that we have inserted an extra lazy node
+        // e.g. to replace a blocked element. We must instead look for it inside.
         const referencedChunk = value$1._payload;
         if (
           referencedChunk === $borrow($fieldCell(handler, 'chunk', true)).value
@@ -1685,81 +1589,169 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
         if (referencedChunk.status === 'fulfilled') {
           value$1 = initializedValue(referencedChunk);
           continue;
+        } else if (
+          referencedChunk.status === 'blocked' ||
+          referencedChunk.status === 'pending' ||
+          referencedChunk.status === 'pending_weak'
+        ) {
+          if (referencedChunk.status === 'blocked') {
+            // It is possible that we're blocked on our own chunk if it's a cycle.
+            // Before adding the listener to the inner chunk, let's check if it would
+            // result in a cycle.
+            const cyclicHandler = resolveBlockedCycle(
+              referencedChunk,
+              reference,
+            );
+            if (cyclicHandler != null) {
+              // This reference points back to this chunk. We can resolve the cycle by
+              // using the value from that handler.
+              value$1 = cyclicHandler.value;
+              continue;
+            }
+          }
+          // If we're not yet initialized we need to skip what we've already drilled
+          // through and then wait for the next value to become available.
+          $drain($borrowMut(path), 0, i - 1);
+          // Add "listener" to our new chunk dependency.
+          if (
+            referencedChunk.status === 'blocked' ||
+            referencedChunk.status === 'pending' ||
+            referencedChunk.status === 'pending_weak'
+          ) {
+            if (referencedChunk.value == null) {
+              referencedChunk.value = [reference];
+            } else {
+              const listeners = referencedChunk.value;
+              listeners.push(reference);
+            }
+            if (referencedChunk.reason == null) {
+              referencedChunk.reason = [reference];
+            } else {
+              const listeners = referencedChunk.reason;
+              listeners.push(reference);
+            }
+          }
+          return;
+        } else if (referencedChunk.status === 'halted') {
+          // Do nothing. We couldn't fulfill.
+          // TODO: Mark downstreams as halted too.
+          return;
+        } else {
+          rejectReference(
+            response,
+            reference.handler,
+            erroredReason(referencedChunk),
+          );
+          return;
         }
-        break;
       }
-
-      const mappedValue = map(response, value$1, parentObject, key);
-      if (key !== __PROTO__) {
-        parentObject[key] = mappedValue;
-      }
-
-      // If this is the root object for a model reference, where `handler.value`
-      // is a stale `null`, the resolved value can be used directly.
-      if (!key && handler.value === null) {
-        handler.value = mappedValue;
-      }
-
-      // If the parent object is an unparsed React element tuple, we also need to
-      // update the props and owner of the parsed element object (i.e.
-      // handler.value).
-      const handlerValue = handler.value;
+      const name = $index($borrow(path), i);
       if (
-        parentObject[0] === REACT_ELEMENT_TYPE &&
-        typeof handlerValue === 'object' &&
-        handlerValue != null &&
-        handlerValue.$$typeof === REACT_ELEMENT_TYPE
+        typeof value$1 === 'object' &&
+        value$1 != null &&
+        hasOwnProperty.call($unwrap(value$1), name)
       ) {
-        switch (key) {
-          case '3':
-            if (__DEV__ && reference.isDebug !== true) {
-              const borrow = $borrow($fieldCell(handler, 'chunk', true), true);
-              try {
-                transferReferencedDebugInfo(borrow.value, fulfilledChunk);
-              } finally {
-                $unborrow(borrow);
-              }
-            }
-            handlerValue.props = mappedValue;
-            break;
-          case '4':
-            // This path doesn't call transferReferencedDebugInfo because this reference is to a debug chunk.
-            if (__DEV__) {
-              handlerValue._owner = mappedValue;
-            }
-            break;
-          case '5':
-            // This path doesn't call transferReferencedDebugInfo because this reference is to a debug chunk.
-            if (__DEV__) {
-              handlerValue._debugStack = mappedValue;
-            }
-            break;
-          default:
-            if (__DEV__ && reference.isDebug !== true) {
-              const value = $borrow($fieldCell(handler, 'chunk', true), true);
-              try {
-                transferReferencedDebugInfo(value.value, fulfilledChunk);
-              } finally {
-                $unborrow(value);
-              }
-            }
-        }
-      } else if (__DEV__ && reference.isDebug !== true) {
-        const value = $borrow($fieldCell(handler, 'chunk', true), true);
-        try {
-          transferReferencedDebugInfo(value.value, fulfilledChunk);
-        } finally {
-          $unborrow(value);
-        }
+        value$1 = value$1[name];
+        i++;
+        continue;
       }
-      return true;
-    })();
+      throw new Error('Invalid reference.');
+    }
+
+    while (
+      typeof value$1 === 'object' &&
+      value$1 != null &&
+      value$1.$$typeof === REACT_LAZY_TYPE
+    ) {
+      // If what we're referencing is a Lazy it must be because we inserted one as a virtual node
+      // while it was blocked by other data. If it's no longer blocked, we can unwrap it.
+      const referencedChunk = value$1._payload;
+      if (
+        referencedChunk === $borrow($fieldCell(handler, 'chunk', true)).value
+      ) {
+        // This is a reference to the thing we're currently blocking. We can peak
+        // inside of it to get the value.
+        value$1 = handler.value;
+        continue;
+      }
+      if (referencedChunk.status === 'resolved_model') {
+        initializeModelChunk(referencedChunk);
+      } else if (referencedChunk.status === 'resolved_module') {
+        initializeModuleChunk(referencedChunk);
+      }
+      if (referencedChunk.status === 'fulfilled') {
+        value$1 = initializedValue(referencedChunk);
+        continue;
+      }
+      break;
+    }
+
+    const mappedValue = map(response, value$1, parentObject, key);
+    if (key !== __PROTO__) {
+      parentObject[key] = mappedValue;
+    }
+
+    // If this is the root object for a model reference, where `handler.value`
+    // is a stale `null`, the resolved value can be used directly.
+    if (!key && handler.value === null) {
+      handler.value = mappedValue;
+    }
+
+    // If the parent object is an unparsed React element tuple, we also need to
+    // update the props and owner of the parsed element object (i.e.
+    // handler.value).
+    const handlerValue = handler.value;
+    if (
+      parentObject[0] === REACT_ELEMENT_TYPE &&
+      typeof handlerValue === 'object' &&
+      handlerValue != null &&
+      handlerValue.$$typeof === REACT_ELEMENT_TYPE
+    ) {
+      switch (key) {
+        case '3':
+          if (__DEV__ && reference.isDebug !== true) {
+            const borrow = $borrow($fieldCell(handler, 'chunk', true), true);
+            try {
+              transferReferencedDebugInfo(borrow.value, fulfilledChunk);
+            } finally {
+              $unborrow(borrow);
+            }
+          }
+          handlerValue.props = mappedValue;
+          break;
+        case '4':
+          // This path doesn't call transferReferencedDebugInfo because this reference is to a debug chunk.
+          if (__DEV__) {
+            handlerValue._owner = mappedValue;
+          }
+          break;
+        case '5':
+          // This path doesn't call transferReferencedDebugInfo because this reference is to a debug chunk.
+          if (__DEV__) {
+            handlerValue._debugStack = mappedValue;
+          }
+          break;
+        default:
+          if (__DEV__ && reference.isDebug !== true) {
+            const value = $borrow($fieldCell(handler, 'chunk', true), true);
+            try {
+              transferReferencedDebugInfo(value.value, fulfilledChunk);
+            } finally {
+              $unborrow(value);
+            }
+          }
+      }
+    } else if (__DEV__ && reference.isDebug !== true) {
+      const value = $borrow($fieldCell(handler, 'chunk', true), true);
+      try {
+        transferReferencedDebugInfo(value.value, fulfilledChunk);
+      } finally {
+        $unborrow(value);
+      }
+    }
   } catch (thrown$1) {
     const error = $unwound(thrown$1);
     rejectReference(response, reference.handler, thrown(error));
-    return;
-  }
-  if (!result) {
     return;
   }
 

@@ -28,6 +28,7 @@ import {
   entangledTransitionTypes as entangledTransitionTypes$2,
   queueTransitionTypes,
 } from './ReactFiberTransitionTypes.js';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {
   entangleAsyncAction,
   peekEntangledActionLane,
@@ -38,7 +39,6 @@ import {
   cancelScheduledGesture,
   startScheduledGesture,
 } from './ReactFiberGestureScheduler.js';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {$unwrap} from '@rust-js/runtime';
 
 export const NoTransition = null;

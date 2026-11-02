@@ -6,7 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 import getComponentNameFromType from 'shared/getComponentNameFromType';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import hasOwnProperty from 'shared/hasOwnProperty';
+import assign from 'shared/assign';
 import {
   REACT_ELEMENT_TYPE,
   REACT_FRAGMENT_TYPE,
@@ -16,8 +18,6 @@ import {
 import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
 import isArray from 'shared/isArray';
 import {enableOptimisticKey, ownerStackLimit} from 'shared/ReactFeatureFlags';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
-import assign from 'shared/assign';
 import {$unwrap} from '@rust-js/runtime';
 
 function noTask(name) {
