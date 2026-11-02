@@ -31,7 +31,9 @@ export interface Options {
   temporaryReferences?:
     | WeakMap<() => unknown | null | undefined, string>
     | undefined;
-  onError?: ((value: unknown | null | undefined) => void) | undefined;
+  onError?:
+    | ((value: unknown | null | undefined) => string | null | undefined)
+    | undefined;
   startTime?: number | undefined;
 }
 

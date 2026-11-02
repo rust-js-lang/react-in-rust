@@ -11,12 +11,11 @@ use busboy::{Busboy, FileInfo, FileStream};
 use js::{JsError, Kind, Promise, Uint8Array, Unknown, promise};
 use node::event;
 use node::events::EventEmitterExt;
-// GAP rd592: `readable::new` through its module's path makes no import of
-// this `use`, so `import {Readable} from 'stream'` goes after the others.
 use node::stream::{Readable, ReadableOptions, Writable, readable};
 use webapi::{AbortSignal, EventTargetExt, FormData, MessageEvent, WebSocket, events, form_data};
 
 use shared::environment::__DEV__;
+use shared::react_types::ReactFormState;
 
 use react_server::react_flight_hooks::{
     EnvironmentName, FilterStackFrame, OnError, ReactClientValue, Request, abort,
@@ -29,7 +28,22 @@ use react_server::react_flight_reply_server::{
     resolve_field, resolve_file_chunk, resolve_file_complete, resolve_file_info,
 };
 
-pub use react_server::react_flight_action_server::{decode_action, decode_form_state};
+use react_server::react_flight_action_server;
+
+pub fn decode_action(
+    body: &'static FormData,
+    server_manifest: &'static str,
+) -> Option<Promise<&'static dyn Fn() -> Option<&'static Unknown>>> {
+    react_flight_action_server::decode_action(body, server_manifest)
+}
+
+pub fn decode_form_state(
+    action_result: Option<&'static Unknown>,
+    body: &'static FormData,
+    server_manifest: &'static str,
+) -> Promise<Option<ReactFormState<Option<&'static Unknown>, Option<&'static Unknown>>>> {
+    react_flight_action_server::decode_form_state(action_result, body, server_manifest)
+}
 
 pub use crate::react_flight_esm_references::{
     register_client_reference, register_server_reference,

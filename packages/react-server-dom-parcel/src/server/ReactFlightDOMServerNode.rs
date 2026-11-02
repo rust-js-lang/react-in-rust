@@ -14,8 +14,6 @@ use js::{
 };
 use node::event;
 use node::events::EventEmitterExt;
-// GAP rd592: `readable::new` through its module's path makes no import of
-// this `use`, so `import {Readable} from 'stream'` goes after the others.
 use node::stream::{Readable, ReadableOptions, Writable, readable};
 use webapi::{
     AbortSignal, EventTargetExt, FormData, FormDataEntryValue, MessageEvent, QueuingStrategy,

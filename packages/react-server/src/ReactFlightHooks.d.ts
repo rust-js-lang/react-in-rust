@@ -21,8 +21,10 @@ export type Cache = Map<ResourceType, unknown | null | undefined>;
 /** Any value a server component may render or pass to the client. */
 export type ReactClientValue = unknown;
 
-/** A request's `onError`, told of each error. */
-export type OnError = (value: unknown | null | undefined) => void;
+/** A request's `onError`, told of each error, giving its digest, if any. */
+export type OnError = (
+  value: unknown | null | undefined,
+) => string | null | undefined;
 
 /** A request's `environmentName`: the name itself, or what gives it. */
 export type EnvironmentName = string | (() => string);

@@ -10,11 +10,6 @@ import type {ServerManifest} from '../client/ReactFlightClientConfigBundlerTurbo
 import type {ClientManifest} from './ReactFlightServerConfigTurbopackBundler.js';
 
 export {
-  decodeAction,
-  decodeFormState,
-} from 'react-server/src/ReactFlightActionServer';
-
-export {
   createClientModuleProxy,
   registerClientReference,
   registerServerObjectReference,
@@ -24,6 +19,21 @@ export {
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
 type EnvironmentName = string | (() => string);
+
+export function decodeAction(
+  body: FormData,
+  serverManifest: ServerManifest,
+): Promise<() => unknown | null | undefined> | null | undefined;
+
+export function decodeFormState(
+  actionResult: unknown | null | undefined,
+  body: FormData,
+  serverManifest: ServerManifest,
+): Promise<
+  | [unknown | null | undefined, string, unknown | null | undefined, number]
+  | null
+  | undefined
+>;
 
 export interface DebugChannel {
   readable?: ReadableStream | undefined;
@@ -39,7 +49,9 @@ export interface Options {
   temporaryReferences?:
     | WeakMap<() => unknown | null | undefined, string>
     | undefined;
-  onError?: ((value: unknown | null | undefined) => void) | undefined;
+  onError?:
+    | ((value: unknown | null | undefined) => string | null | undefined)
+    | undefined;
   startTime?: number | undefined;
 }
 

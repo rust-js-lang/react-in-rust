@@ -5,8 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-// GAP rd592: `readable::new` through its module's path makes no import of
-// this `use`, so `import {Readable} from 'stream'` goes after the others.
+import {Readable} from 'stream';
 import noop from 'shared/noop';
 import {
   abort,
@@ -46,7 +45,6 @@ import {
   readPartialStringChunk,
 } from 'react-client/src/ReactFlightClientStreamConfigNode';
 import {textEncoder} from 'react-server/src/ReactServerStreamConfigNode';
-import {Readable} from 'stream';
 import {
   $borrow,
   $borrowMut,

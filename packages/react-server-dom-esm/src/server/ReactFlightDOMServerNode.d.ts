@@ -11,11 +11,6 @@ import type {ReactPromise} from 'react-server/src/ReactFlightReplyServer';
 import type {ClientManifest} from './ReactFlightServerConfigESMBundler.js';
 
 export {
-  decodeAction,
-  decodeFormState,
-} from 'react-server/src/ReactFlightActionServer';
-
-export {
   registerClientReference,
   registerServerReference,
 } from '../ReactFlightESMReferences.js';
@@ -23,6 +18,21 @@ export {
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
 type EnvironmentName = string | (() => string);
+
+export function decodeAction(
+  body: FormData,
+  serverManifest: string,
+): Promise<() => unknown | null | undefined> | null | undefined;
+
+export function decodeFormState(
+  actionResult: unknown | null | undefined,
+  body: FormData,
+  serverManifest: string,
+): Promise<
+  | [unknown | null | undefined, string, unknown | null | undefined, number]
+  | null
+  | undefined
+>;
 
 /**
  * A debug channel, upstream's `Readable | WebSocket` to read or `Readable
@@ -35,7 +45,9 @@ export interface Options {
   debugChannel?: DebugChannel | undefined;
   environmentName?: EnvironmentName | undefined;
   filterStackFrame?: ((value: string, value2: string) => boolean) | undefined;
-  onError?: ((value: unknown | null | undefined) => void) | undefined;
+  onError?:
+    | ((value: unknown | null | undefined) => string | null | undefined)
+    | undefined;
   identifierPrefix?: string | undefined;
   temporaryReferences?:
     | WeakMap<() => unknown | null | undefined, string>
@@ -57,7 +69,9 @@ export function renderToPipeableStream(
 export interface PrerenderOptions {
   environmentName?: EnvironmentName | undefined;
   filterStackFrame?: ((value: string, value2: string) => boolean) | undefined;
-  onError?: ((value: unknown | null | undefined) => void) | undefined;
+  onError?:
+    | ((value: unknown | null | undefined) => string | null | undefined)
+    | undefined;
   identifierPrefix?: string | undefined;
   temporaryReferences?:
     | WeakMap<() => unknown | null | undefined, string>

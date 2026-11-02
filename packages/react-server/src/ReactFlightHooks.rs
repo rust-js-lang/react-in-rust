@@ -74,8 +74,8 @@ pub(crate) fn get_cache(request: &Request) -> &'static Cache {
 /// Any value a server component may render or pass to the client.
 pub type ReactClientValue = Unknown;
 
-/// A request's `onError`, told of each error.
-pub type OnError = dyn Fn(Option<&'static Unknown>);
+/// A request's `onError`, told of each error, giving its digest, if any.
+pub type OnError = dyn Fn(Option<&'static Unknown>) -> Option<String>;
 
 /// A request's `environmentName`: the name itself, or what gives it.
 #[cfg_attr(rust_js, rust_js::untagged)]

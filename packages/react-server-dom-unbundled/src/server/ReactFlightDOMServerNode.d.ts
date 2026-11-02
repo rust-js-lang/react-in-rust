@@ -11,11 +11,6 @@ import type {ReactPromise} from 'react-server/src/ReactFlightReplyServer';
 import type {ClientManifest} from './ReactFlightServerConfigUnbundledBundler.js';
 
 export {
-  decodeAction,
-  decodeFormState,
-} from 'react-server/src/ReactFlightActionServer';
-
-export {
   createClientModuleProxy,
   registerClientReference,
   registerServerReference,
@@ -26,6 +21,21 @@ export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTem
 type EnvironmentName = string | (() => string);
 
 type FormDataEntryValue = File | string;
+
+export function decodeAction(
+  body: FormData,
+  serverManifest: any,
+): Promise<() => unknown | null | undefined> | null | undefined;
+
+export function decodeFormState(
+  actionResult: unknown | null | undefined,
+  body: FormData,
+  serverManifest: any,
+): Promise<
+  | [unknown | null | undefined, string, unknown | null | undefined, number]
+  | null
+  | undefined
+>;
 
 /**
  * A debug channel, upstream's `Readable | WebSocket` to read or `Readable
@@ -38,7 +48,9 @@ export interface Options {
   debugChannel?: DebugChannel | undefined;
   environmentName?: EnvironmentName | undefined;
   filterStackFrame?: ((value: string, value2: string) => boolean) | undefined;
-  onError?: ((value: unknown | null | undefined) => void) | undefined;
+  onError?:
+    | ((value: unknown | null | undefined) => string | null | undefined)
+    | undefined;
   identifierPrefix?: string | undefined;
   temporaryReferences?:
     | WeakMap<() => unknown | null | undefined, string>
@@ -66,7 +78,9 @@ export interface WebStreamsOptions {
   debugChannel?: WebStreamsDebugChannel | undefined;
   environmentName?: EnvironmentName | undefined;
   filterStackFrame?: ((value: string, value2: string) => boolean) | undefined;
-  onError?: ((value: unknown | null | undefined) => void) | undefined;
+  onError?:
+    | ((value: unknown | null | undefined) => string | null | undefined)
+    | undefined;
   identifierPrefix?: string | undefined;
   temporaryReferences?:
     | WeakMap<() => unknown | null | undefined, string>
@@ -84,7 +98,9 @@ export function renderToReadableStream(
 export interface PrerenderOptions {
   environmentName?: EnvironmentName | undefined;
   filterStackFrame?: ((value: string, value2: string) => boolean) | undefined;
-  onError?: ((value: unknown | null | undefined) => void) | undefined;
+  onError?:
+    | ((value: unknown | null | undefined) => string | null | undefined)
+    | undefined;
   identifierPrefix?: string | undefined;
   temporaryReferences?:
     | WeakMap<() => unknown | null | undefined, string>
