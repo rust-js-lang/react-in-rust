@@ -82,9 +82,6 @@ export function renderToStringImpl(
         'updates that suspend should be wrapped with startTransition.',
     );
   }
-
-  const old = result;
-  result = '';
-  return old;
+  return result;
 }
 //# sourceMappingURL=ReactDOMLegacyServerImpl.js.map

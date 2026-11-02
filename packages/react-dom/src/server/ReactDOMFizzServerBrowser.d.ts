@@ -30,7 +30,7 @@ export interface Options {
     | ((
         value: unknown | null | undefined,
         value2: any,
-      ) => unknown | null | undefined)
+      ) => string | null | undefined)
     | undefined;
   onBrowserBailout?:
     | ((value: unknown | null | undefined, value2: any) => void)
@@ -51,7 +51,7 @@ export interface ResumeOptions {
     | ((
         value: unknown | null | undefined,
         value2: any,
-      ) => unknown | null | undefined)
+      ) => string | null | undefined)
     | undefined;
   onBrowserBailout?:
     | ((value: unknown | null | undefined, value2: any) => void)

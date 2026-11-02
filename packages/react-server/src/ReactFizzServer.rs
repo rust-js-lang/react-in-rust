@@ -515,7 +515,7 @@ pub type ErrorInfo = ThrownInfo;
 
 /// A request's `onError`: of what was thrown and where, the digest it's
 /// sent to the client as, if any.
-pub type OnError = dyn Fn(Option<&'static Unknown>, &ErrorInfo) -> Option<&'static Unknown>;
+pub type OnError = dyn Fn(Option<&'static Unknown>, &ErrorInfo) -> Option<String>;
 
 /// A request's `onBrowserBailout`, of what made a boundary render on the
 /// client instead, and where.
@@ -686,7 +686,7 @@ fn is_eligible_for_outlining(_request: &Request, boundary: &SuspenseBoundary) ->
 fn default_error_handler(
     error: Option<&'static Unknown>,
     _error_info: &ErrorInfo,
-) -> Option<&'static Unknown> {
+) -> Option<String> {
     if js::type_of(error) == "object"
         && !matches!(js::classify(error), Kind::Null)
         && let Kind::String(environment_name) =
@@ -1662,21 +1662,19 @@ fn log_recoverable_error(
     } else {
         on_error(error, error_info)
     };
-    let error_digest = match js::classify(error_digest) {
-        Kind::Null | Kind::Undefined => None,
-        Kind::String(error_digest) => Some(error_digest.to_owned()),
-        _ => {
-            // We used to throw here but since this gets called from a variety of unprotected places it
-            // seems better to just warn and discard the returned value.
-            if __DEV__ {
-                console::error((
-                    "onError returned something with a type other than \"string\". onError should return a string and may return null or undefined but must not return anything else. It received something of type \"%s\" instead",
-                    js::type_of(error_digest),
-                ));
-            }
-            return None;
+    if let Some(error_digest) = &error_digest
+        && js::type_of(Some(js::unknown(error_digest))) != "string"
+    {
+        // We used to throw here but since this gets called from a variety of unprotected places it
+        // seems better to just warn and discard the returned value.
+        if __DEV__ {
+            console::error((
+                "onError returned something with a type other than \"string\". onError should return a string and may return null or undefined but must not return anything else. It received something of type \"%s\" instead",
+                js::type_of(Some(js::unknown(error_digest))),
+            ));
         }
-    };
+        return None;
+    }
     // An empty digest is reserved for React's internal client-render signal.
     // Historically an empty digest was omitted from the wire format, so
     // normalizing it to undefined preserves the existing user-space semantics.

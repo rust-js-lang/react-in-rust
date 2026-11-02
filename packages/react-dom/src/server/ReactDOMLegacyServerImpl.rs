@@ -25,7 +25,7 @@ pub struct ServerOptions {
     pub identifier_prefix: Option<String>,
 }
 
-fn on_error(_error: Option<&'static Unknown>, _error_info: &ErrorInfo) -> Option<&'static Unknown> {
+fn on_error(_error: Option<&'static Unknown>, _error_info: &ErrorInfo) -> Option<String> {
     // Non-fatal errors are ignored.
     None
 }

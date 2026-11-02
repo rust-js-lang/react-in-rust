@@ -79,6 +79,7 @@ import {
   REACT_VIEW_TRANSITION_TYPE,
   getIteratorFn,
 } from 'shared/ReactSymbols';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {
   disableLegacyContext,
   disableLegacyContextForFunctionComponents,
@@ -89,6 +90,7 @@ import {
   enableViewTransition,
   enableViewTransitionParentEnterExit as enableParentEnterExit,
 } from 'shared/ReactFeatureFlags';
+import assign from 'shared/assign';
 import noop from 'shared/noop';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import isArray from 'shared/isArray';
@@ -101,8 +103,18 @@ import {
   getSuspendedThenable,
   setCaptureSuspendedCallSiteDEV,
 } from './ReactFizzThenable.js';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
-import assign from 'shared/assign';
+import {
+  beginWriting,
+  byteLengthOfChunk,
+  close,
+  closeWithError,
+  completeWriting,
+  flushBuffered,
+  scheduleMicrotask,
+  scheduleWork,
+  writeChunk,
+  writeChunkAndReturn,
+} from './ReactServerStreamConfig.js';
 import {
   bindToConsole,
   canHavePreamble,
@@ -150,18 +162,6 @@ import {
   writeStartPendingSuspenseBoundary,
   writeStartSegment,
 } from './ReactFizzConfig.js';
-import {
-  beginWriting,
-  byteLengthOfChunk,
-  close,
-  closeWithError,
-  completeWriting,
-  flushBuffered,
-  scheduleMicrotask,
-  scheduleWork,
-  writeChunk,
-  writeChunkAndReturn,
-} from './ReactServerStreamConfig.js';
 import {
   $assign,
   $borrow,
@@ -922,7 +922,7 @@ function rerenderStalledTask(request, task) {
     // we'll to restore the context to what it was before returning.
     switchContext(prevContext);
   }
-  currentRequest = prevRequest ?? null;
+  currentRequest = prevRequest;
   request.status = prevStatus;
   request.aborted = prevAborted;
 }
@@ -1144,27 +1144,20 @@ function logRecoverableError(request, error, errorInfo, debugTask) {
   // If this callback errors, we intentionally let that error bubble up to become a fatal error
   // so that someone fixes the error reporting instead of hiding it.
   const onError = request.onError;
-  let errorDigest =
+  const errorDigest =
     __DEV__ && debugTask != null
       ? debugTask.run(() => onError(error, errorInfo))
       : onError(error, errorInfo);
-  if (errorDigest == null) {
-    errorDigest = undefined;
-  } else {
-    switch (typeof errorDigest) {
-      case 'string':
-        break;
-      default:
-        // We used to throw here but since this gets called from a variety of unprotected places it
-        // seems better to just warn and discard the returned value.
-        if (__DEV__) {
-          console.error(
-            'onError returned something with a type other than "string". onError should return a string and may return null or undefined but must not return anything else. It received something of type "%s" instead',
-            typeof errorDigest,
-          );
-        }
-        return;
+  if (errorDigest != null && typeof errorDigest !== 'string') {
+    // We used to throw here but since this gets called from a variety of unprotected places it
+    // seems better to just warn and discard the returned value.
+    if (__DEV__) {
+      console.error(
+        'onError returned something with a type other than "string". onError should return a string and may return null or undefined but must not return anything else. It received something of type "%s" instead',
+        typeof errorDigest,
+      );
     }
+    return;
   }
   // An empty digest is reserved for React's internal client-render signal.
   // Historically an empty digest was omitted from the wire format, so
@@ -3575,9 +3568,10 @@ function retryNode(request, task) {
   if (typeof node === 'number' || typeof node === 'bigint') {
     const segment = task.blockedSegment;
     if (segment != null) {
+      const value = '' + node;
       segment.lastPushedText = pushTextInstance(
         segment.chunks,
-        '' + node,
+        value,
         request.renderState,
         segment.lastPushedText,
       );
@@ -5729,7 +5723,7 @@ export function performWork(request) {
     // we'll to restore the context to what it was before returning.
     switchContext(prevContext);
   }
-  currentRequest = prevRequest ?? null;
+  currentRequest = prevRequest;
   if (result.TAG === 'Err') {
     const thrownValue = result._0;
     throw $unwinding(thrownValue);

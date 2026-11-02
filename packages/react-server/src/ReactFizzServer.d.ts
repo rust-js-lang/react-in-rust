@@ -176,7 +176,7 @@ export type ErrorInfo = any;
 export type OnError = (
   value: unknown | null | undefined,
   value2: any,
-) => unknown | null | undefined;
+) => string | null | undefined;
 
 /**
  * A request's `onBrowserBailout`, of what made a boundary render on the

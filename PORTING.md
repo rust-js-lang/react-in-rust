@@ -847,8 +847,8 @@ These differences from upstream's output are accepted:
 - **react-art's event handler** (the user, rd335, 2026-11-02): the closure
   ReactFiberConfigART returns as a node's listener prints as an anonymous
   function, where upstream names it `function handleEvent`.
-- **ReactFizzServer's forms** (the user, 2026-11-02), each but the last a
-  filed rust-js gap; none changes a result:
+- **ReactFizzServer's forms** (the user, 2026-11-02), each but the last two
+  a filed rust-js gap; none changes a result:
   - a `try` whose result is read after it is a `$catchUnwind` closure,
     `const result = $catchUnwind(() => rerenderStalledTask(request,
     task)); restoreThenableState(); .. if (result.TAG === 'Err') { throw
@@ -875,6 +875,11 @@ These differences from upstream's output are accepted:
   - a task object has no `ping` property (rd495, the user's decision of
     2026-11-01, "Pings made at then()"): `pingOf(request, task)` makes its
     resolve and reject where they're given to `then`.
+  - an entry's `onAllReady = () => { res(); }`, where upstream gives `res`
+    itself: the server's `Rc<dyn Fn()>` of a `Promise<()>`'s resolve, a
+    readability difference that keeps Rust's behavior, as `res` reads an
+    argument a JS caller may give where the closure gives none (the user,
+    2026-11-02, rd599).
   - ReactDOMServerPartialHydration's `[GATED, SHOULD FAIL] renders a hidden
     LegacyHidden component` trips jest's loop guard ("exceeded 6000
     iterations") escaping a DEV error stack, whose length is the

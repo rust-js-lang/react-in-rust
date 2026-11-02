@@ -50,7 +50,7 @@ import {
 } from './fizz-instruction-set/ReactDOMFizzInstructionSetInlineCodeStrings.js';
 import {getValueDescriptorExpectingObjectForWarning} from '../shared/ReactDOMResourceValidation.js';
 import {NotPending} from '../shared/ReactDOMFormActions.js';
-import {doctypeChunk as doctypeChunk$1} from 'react-server/src/ReactFizzConfig';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import {
   readAsDataURL,
   stringToChunk,
@@ -58,7 +58,7 @@ import {
   writeChunk,
   writeChunkAndReturn,
 } from 'react-server/src/ReactServerStreamConfig';
-import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
+import {doctypeChunk as doctypeChunk$1} from 'react-server/src/ReactFizzConfig';
 import {$displayF64, $index, $splice, $trim, $unwrap} from '@rust-js/runtime';
 
 // Used to distinguish these contexts from ones used in other renderers.
@@ -1826,9 +1826,7 @@ function flattenOptionChildren(children) {
       );
     }
   });
-  const old = content;
-  content = '';
-  return old;
+  return content;
 }
 
 const selectedMarkerAttribute = stringToPrecomputedChunk(' selected=""');
@@ -2441,6 +2439,7 @@ function pushStartTextArea(target, props, formatContext) {
       if (__DEV__) {
         checkHtmlStringCoercion(items[0]);
       }
+      '' + items[0];
     }
     if (__DEV__) {
       checkHtmlStringCoercion(children);
