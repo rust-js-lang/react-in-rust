@@ -928,7 +928,7 @@ These differences from upstream's output are accepted:
     preloadModule(reference))`, is typed of Parcel's thenable itself in the
     Rust, js's `Fulfils` having none of a thenable that isn't a `Promise`
     (the JS is upstream's).
-- **react-markup (2026-11-02, for the user's decision)**: its four modules
+- **react-markup (the user, 2026-11-02: its forms accepted)**: its four modules
   are Rust, a crate of their own (`markup.rs`); the `*.stable.js` entries,
   which only throw, stay JS, as the re-export entries do (rd55).
   ReactFizzConfigMarkup is ReactFizzConfigDOMLegacy's form: a `pub use` of
@@ -1098,9 +1098,18 @@ These differences from upstream's output are accepted:
     `ServerReferenceMetadataDev`, `DebugBlobReading`, `BlobReading`,
     `ErrorValueInfo`, `ComponentDebugInfo`, `IoDebugInfo`,
     `ConstructorReference`, `AsyncDebugInfo` and `AbortedAsyncInfo`;
+- **Fizz's and Flight's `Request` is a class, `RequestInstance`** (rd494,
+  rust-js rd554; the user, 2026-11-02): `fn new(..) -> Rc<Self>` is
+  upstream's constructor function, `function RequestInstance(..) {
+  this.destination = null; .. }`, and each `Request::new(..)` is `new
+  RequestInstance(..)`. Its `.d.ts` type is `RequestInstance`, ADR 0761's
+  one name of a class, where upstream's Flow type is `Request`; ReactFizzHooks
+  and ReactFlightHooks import it by that name.
 - **ReactDOMFlightServerHostDispatcher, ReactFlightReplyBackingFormData and
-  react-server's ReactSharedInternalsServer are Rust** (2026-11-02, the
-  forms below pending the user's acceptance). Each is used: the first by
+  react-server's ReactSharedInternalsServer are Rust** (the user,
+  2026-11-02: the forms below accepted; rd574's `entries()` waits for
+  webapi's `forEach` to give values a callback may keep, then is upstream's
+  `forEach`). Each is used: the first by
   every DOM Flight server's ReactFlightServerConfigDOM, which imports it to
   install its dispatcher; the second by ReactFlightReplyServer; the third
   by ReactFlightServer, react-markup and the `react-server` builds'
