@@ -7,10 +7,10 @@
 
 import type {Dispatcher} from 'react-reconciler/src/ReactInternalTypes';
 import type {ReactComponentInfo} from 'shared/ReactTypes';
-import type {Request} from './ReactFlightServer.js';
+import type {RequestInstance} from './ReactFlightServer.js';
 import type {ThenableState} from './ReactFlightThenable.js';
 
-export function prepareToUseHooksForRequest(request: Request): void;
+export function prepareToUseHooksForRequest(request: RequestInstance): void;
 
 export function resetHooksForRequest(): void;
 

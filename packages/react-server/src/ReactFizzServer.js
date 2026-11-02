@@ -299,10 +299,7 @@ function defaultErrorHandler(error, errorInfo) {
   return null;
 }
 
-// GAP rd494: upstream makes a request with `new RequestInstance(..)`, a
-// constructor function, for its hidden class; a struct literal is an object
-// literal.
-function requestInstance(
+function RequestInstance(
   resumableState,
   renderState,
   rootFormatContext,
@@ -319,41 +316,42 @@ function requestInstance(
   const abortSet = new Set();
   // GAP rd491: `noop` is no callback of one or two parameters, so each
   // default is a closure that ignores them.
-  return {
-    destination: null,
-    flushScheduled: false,
-    resumableState,
-    renderState,
-    rootFormatContext,
-    progressiveChunkSize:
-      progressiveChunkSize ?? DEFAULT_PROGRESSIVE_CHUNK_SIZE,
-    // $FlowFixMe[constant-condition]
-    status: isWorkLoopExternallyDriven ? OPEN : OPENING,
-    fatalError: null,
-    aborted: false,
-    nextSegmentId: 0,
-    allPendingTasks: 0,
-    pendingRootTasks: 0,
-    completedRootSegment: null,
-    completedPreambleSegments: null,
-    byteSize: 0,
-    abortableTasks: abortSet,
-    pingedTasks,
-    currentTask: null,
-    clientRenderedBoundaries: [],
-    completedBoundaries: [],
-    partialBoundaries: [],
-    trackedPostpones: null,
-    postponedState: null,
-    onError: onError ?? defaultErrorHandler,
-    onBrowserBailout: onBrowserBailout ?? (() => {}),
-    onAllReady: onAllReady ?? noop,
-    onShellReady: onShellReady ?? noop,
-    onShellError: onShellError ?? (() => {}),
-    onFatalError: onFatalError ?? (() => {}),
-    renderLifetimeController: null,
-    formState: formState ?? null,
-  };
+  this.destination = null;
+  this.flushScheduled = false;
+  this.resumableState = resumableState;
+  this.renderState = renderState;
+  this.rootFormatContext = rootFormatContext;
+  this.progressiveChunkSize =
+    progressiveChunkSize ?? DEFAULT_PROGRESSIVE_CHUNK_SIZE;
+  // $FlowFixMe[constant-condition]
+  this.status = isWorkLoopExternallyDriven ? OPEN : OPENING;
+  this.fatalError = null;
+  this.aborted = false;
+  this.nextSegmentId = 0;
+  this.allPendingTasks = 0;
+  this.pendingRootTasks = 0;
+  this.completedRootSegment = null;
+  this.completedPreambleSegments = null;
+  this.byteSize = 0;
+  this.abortableTasks = abortSet;
+  this.pingedTasks = pingedTasks;
+  this.currentTask = null;
+  this.clientRenderedBoundaries = [];
+  this.completedBoundaries = [];
+  this.partialBoundaries = [];
+  this.trackedPostpones = null;
+  this.postponedState = null;
+  this.onError = onError ?? defaultErrorHandler;
+  this.onBrowserBailout = onBrowserBailout ?? (() => {});
+  this.onAllReady = onAllReady ?? noop;
+  this.onShellReady = onShellReady ?? noop;
+  this.onShellError = onShellError ?? (() => {});
+  this.onFatalError = onFatalError ?? (() => {});
+  this.renderLifetimeController = null;
+  this.formState = formState ?? null;
+  if (__DEV__) {
+    this.didWarnForKey = null;
+  }
 }
 
 export function createRequest(
@@ -375,7 +373,7 @@ export function createRequest(
   }
 
   // $FlowFixMe[invalid-constructor]: the shapes are exact here but Flow doesn't like constructors
-  const request = requestInstance(
+  const request = new RequestInstance(
     resumableState,
     renderState,
     rootFormatContext,
@@ -475,7 +473,7 @@ export function resumeRequest(
   }
 
   // $FlowFixMe[invalid-constructor]: the shapes are exact here but Flow doesn't like constructors
-  const request = requestInstance(
+  const request = new RequestInstance(
     postponedState.resumableState,
     renderState,
     postponedState.rootFormatContext,

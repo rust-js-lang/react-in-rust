@@ -944,6 +944,7 @@ pub enum EnvironmentName {
 // Safety: a request is a JS object of its fields.
 unsafe impl js::Defined for Request {}
 
+#[cfg_attr(rust_js, rust_js::class, rust_js::name = "RequestInstance")]
 pub struct Request {
     pub status: Cell<i32>,
     pub r#type: i32,
@@ -1051,158 +1052,158 @@ fn default_error_handler(error: Option<&'static Unknown>) -> Option<String> {
     None
 }
 
-#[cfg_attr(rust_js, rust_js::nullable(bundler_config))]
-fn request_instance(
-    r#type: i32,
-    model: Option<&'static ReactClientValue>,
-    bundler_config: Option<&'static ClientManifest>,
-    on_error: Option<Rc<OnError>>,
-    on_all_ready: Rc<OnAllReady>,
-    on_fatal_error: Rc<OnFatalError>,
-    identifier_prefix: Option<&str>,
-    temporary_references: Option<&'static TemporaryReferenceSet>,
-    debug_start_time: Option<f64>,                    // Profiling-only
-    environment_name: Option<EnvironmentName>,        // DEV-only
-    filter_stack_frame: Option<Rc<FilterStackFrame>>, // DEV-only
-    keep_debug_alive: bool,                           // DEV-only
-) -> Rc<Request> {
-    DEFAULT_ASYNC_DISPATCHER.with(|default_async_dispatcher| {
-        if let Some(a) = REACT_SHARED_INTERNALS.a.get()
-            && !js::strict_equals(a, default_async_dispatcher)
-        {
-            panic!("Currently React only supports one RSC renderer at a time.");
-        }
-        REACT_SHARED_INTERNALS.a.set(Some(unsafe {
-            js::cast(Some(js::unknown(default_async_dispatcher)))
-        }));
-    });
-    if __DEV__ {
-        // Unlike Fizz or Fiber, we don't reset this and just keep it on permanently.
-        // This lets it act more like the AsyncDispatcher so that we can get the
-        // stack asynchronously too.
-        REACT_SHARED_INTERNALS
-            .get_current_stack
-            .set(Some(&get_current_stack_in_dev));
-    }
-
-    let abort_set: AbortSet = Rc::new(RefCell::new(HashSet::new()));
-    let pinged_tasks: Vec<Rc<Task>> = vec![];
-    // Safety: a `RequestCleanupQueue` is its array, which the taint registry
-    // holds as long as the request runs.
-    let cleanup_queue: &'static RequestCleanupQueue =
-        unsafe { js::cast(Some(js::unknown_of(Vec::<EntryValue>::new()))) };
-    if ENABLE_TAINT.with(|&enabled| enabled) {
-        TAINT_REGISTRY_PENDING_REQUESTS.with(|pending_requests| {
-            if let Some(pending_requests) = pending_requests {
-                pending_requests.borrow_mut().insert(cleanup_queue);
+#[cfg_attr(rust_js, rust_js::class)]
+impl Request {
+    #[cfg_attr(rust_js, rust_js::nullable(bundler_config))]
+    fn new(
+        r#type: i32,
+        model: Option<&'static ReactClientValue>,
+        bundler_config: Option<&'static ClientManifest>,
+        on_error: Option<Rc<OnError>>,
+        on_all_ready: Rc<OnAllReady>,
+        on_fatal_error: Rc<OnFatalError>,
+        identifier_prefix: Option<&str>,
+        temporary_references: Option<&'static TemporaryReferenceSet>,
+        debug_start_time: Option<f64>,             // Profiling-only
+        environment_name: Option<EnvironmentName>, // DEV-only
+        filter_stack_frame: Option<Rc<FilterStackFrame>>, // DEV-only
+        keep_debug_alive: bool,                    // DEV-only
+    ) -> Rc<Self> {
+        DEFAULT_ASYNC_DISPATCHER.with(|default_async_dispatcher| {
+            if let Some(a) = REACT_SHARED_INTERNALS.a.get()
+                && !js::strict_equals(a, default_async_dispatcher)
+            {
+                panic!("Currently React only supports one RSC renderer at a time.");
             }
+            REACT_SHARED_INTERNALS.a.set(Some(unsafe {
+                js::cast(Some(js::unknown(default_async_dispatcher)))
+            }));
         });
-    }
-    let hints = create_hints();
-    // GAP rd494: upstream makes a request with `new RequestInstance(..)`, a
-    // constructor function, for its hidden class; a struct literal is an
-    // object literal.
-    let request = Rc::new(Request {
-        r#type,
-        status: Cell::new(OPENING),
-        flush_scheduled: Cell::new(false),
-        fatal_error: Cell::new(js::null()),
-        destination: Cell::new(None),
-        bundler_config,
-        cache: js::map::new(None),
-        cache_controller: webapi::abort_controller::new(),
-        next_chunk_id: Cell::new(0.0),
-        pending_chunks: Cell::new(0.0),
-        hints,
-        abortable_tasks: Rc::clone(&abort_set),
-        pinged_tasks: RefCell::new(pinged_tasks),
-        completed_import_chunks: RefCell::new(vec![]),
-        completed_hint_chunks: RefCell::new(vec![]),
-        completed_regular_chunks: RefCell::new(vec![]),
-        completed_error_chunks: RefCell::new(vec![]),
-        written_symbols: js::map::new(None),
-        written_client_references: js::map::new(None),
-        written_server_references: js::map::new(None),
-        written_objects: js::weak_map::new(),
-        written_import_strings: js::map::new(None),
-        written_import_strings_size: Cell::new(0.0),
-        temporary_references,
-        identifier_prefix: identifier_prefix.unwrap_or_default().to_owned(),
-        identifier_count: Cell::new(1.0),
-        taint_cleanup_queue: cleanup_queue,
-        on_error: on_error.unwrap_or_else(|| Rc::new(default_error_handler)),
-        on_all_ready,
-        on_fatal_error,
-
-        time_origin: Cell::new(0.0),
-        abort_time: Cell::new(0.0),
-
-        pending_debug_chunks: Cell::new(0.0),
-        completed_debug_chunks: RefCell::new(vec![]),
-        debug_destination: Cell::new(None),
-        environment_name: match environment_name {
-            None => Rc::new(|| "Server".to_owned()),
-            Some(EnvironmentName::Str(environment_name)) => {
-                Rc::new(move || environment_name.clone())
-            }
-            Some(EnvironmentName::Fn(environment_name)) => environment_name,
-        },
-        filter_stack_frame: filter_stack_frame
-            .unwrap_or_else(|| Rc::new(default_filter_stack_frame)),
-        did_warn_for_key: Cell::new(None),
-        written_debug_objects: js::weak_map::new(),
-        deferred_debug_objects: if keep_debug_alive {
-            Some(DeferredDebugStore {
-                retained: js::map::new(None),
-                existing: js::map::new(None),
-            })
-        } else {
-            None
-        },
-    });
-
-    let time_origin;
-    if ENABLE_PROFILER_TIMER.with(|&enabled| enabled) {
-        // We start by serializing the time origin. Any future timestamps will be
-        // emitted relatively to this origin. Instead of using performance.timeOrigin
-        // as this origin, we use the timestamp at the start of the request.
-        // This avoids leaking unnecessary information like how long the server has
-        // been running and allows for more compact representation of each timestamp.
-        // The time origin is stored as an offset in the time space of this environment.
-        if let Some(debug_start_time) = debug_start_time {
-            // We expect `startTime` to be an absolute timestamp, so relativize it to match the other case.
-            time_origin = debug_start_time -
-                // $FlowFixMe[prop-missing]
-                performance.time_origin();
-        } else {
-            time_origin = performance.now();
+        if __DEV__ {
+            // Unlike Fizz or Fiber, we don't reset this and just keep it on permanently.
+            // This lets it act more like the AsyncDispatcher so that we can get the
+            // stack asynchronously too.
+            REACT_SHARED_INTERNALS
+                .get_current_stack
+                .set(Some(&get_current_stack_in_dev));
         }
-        request.time_origin.set(time_origin);
-        emit_time_origin_chunk(
-            &request,
-            time_origin +
-                // $FlowFixMe[prop-missing]
-                performance.time_origin(),
-        );
-        request.abort_time.set(-0.0);
-    } else {
-        time_origin = 0.0;
-    }
 
-    let root_task = create_task(
-        &request,
-        model,
-        None,
-        false,
-        create_root_format_context(),
-        &abort_set,
-        time_origin,
-        None,
-        None,
-        None,
-    );
-    request.pinged_tasks.borrow_mut().push(root_task);
-    request
+        let abort_set: AbortSet = Rc::new(RefCell::new(HashSet::new()));
+        let pinged_tasks: Vec<Rc<Task>> = vec![];
+        // Safety: a `RequestCleanupQueue` is its array, which the taint registry
+        // holds as long as the request runs.
+        let cleanup_queue: &'static RequestCleanupQueue =
+            unsafe { js::cast(Some(js::unknown_of(Vec::<EntryValue>::new()))) };
+        if ENABLE_TAINT.with(|&enabled| enabled) {
+            TAINT_REGISTRY_PENDING_REQUESTS.with(|pending_requests| {
+                if let Some(pending_requests) = pending_requests {
+                    pending_requests.borrow_mut().insert(cleanup_queue);
+                }
+            });
+        }
+        let hints = create_hints();
+        let request = Rc::new(Request {
+            r#type,
+            status: Cell::new(OPENING),
+            flush_scheduled: Cell::new(false),
+            fatal_error: Cell::new(js::null()),
+            destination: Cell::new(None),
+            bundler_config,
+            cache: js::map::new(None),
+            cache_controller: webapi::abort_controller::new(),
+            next_chunk_id: Cell::new(0.0),
+            pending_chunks: Cell::new(0.0),
+            hints,
+            abortable_tasks: Rc::clone(&abort_set),
+            pinged_tasks: RefCell::new(pinged_tasks),
+            completed_import_chunks: RefCell::new(vec![]),
+            completed_hint_chunks: RefCell::new(vec![]),
+            completed_regular_chunks: RefCell::new(vec![]),
+            completed_error_chunks: RefCell::new(vec![]),
+            written_symbols: js::map::new(None),
+            written_client_references: js::map::new(None),
+            written_server_references: js::map::new(None),
+            written_objects: js::weak_map::new(),
+            written_import_strings: js::map::new(None),
+            written_import_strings_size: Cell::new(0.0),
+            temporary_references,
+            identifier_prefix: identifier_prefix.unwrap_or_default().to_owned(),
+            identifier_count: Cell::new(1.0),
+            taint_cleanup_queue: cleanup_queue,
+            on_error: on_error.unwrap_or_else(|| Rc::new(default_error_handler)),
+            on_all_ready,
+            on_fatal_error,
+
+            time_origin: Cell::new(0.0),
+            abort_time: Cell::new(0.0),
+
+            pending_debug_chunks: Cell::new(0.0),
+            completed_debug_chunks: RefCell::new(vec![]),
+            debug_destination: Cell::new(None),
+            environment_name: match environment_name {
+                None => Rc::new(|| "Server".to_owned()),
+                Some(EnvironmentName::Str(environment_name)) => {
+                    Rc::new(move || environment_name.clone())
+                }
+                Some(EnvironmentName::Fn(environment_name)) => environment_name,
+            },
+            filter_stack_frame: filter_stack_frame
+                .unwrap_or_else(|| Rc::new(default_filter_stack_frame)),
+            did_warn_for_key: Cell::new(None),
+            written_debug_objects: js::weak_map::new(),
+            deferred_debug_objects: if keep_debug_alive {
+                Some(DeferredDebugStore {
+                    retained: js::map::new(None),
+                    existing: js::map::new(None),
+                })
+            } else {
+                None
+            },
+        });
+
+        let time_origin;
+        if ENABLE_PROFILER_TIMER.with(|&enabled| enabled) {
+            // We start by serializing the time origin. Any future timestamps will be
+            // emitted relatively to this origin. Instead of using performance.timeOrigin
+            // as this origin, we use the timestamp at the start of the request.
+            // This avoids leaking unnecessary information like how long the server has
+            // been running and allows for more compact representation of each timestamp.
+            // The time origin is stored as an offset in the time space of this environment.
+            if let Some(debug_start_time) = debug_start_time {
+                // We expect `startTime` to be an absolute timestamp, so relativize it to match the other case.
+                time_origin = debug_start_time -
+                    // $FlowFixMe[prop-missing]
+                    performance.time_origin();
+            } else {
+                time_origin = performance.now();
+            }
+            request.time_origin.set(time_origin);
+            emit_time_origin_chunk(
+                &request,
+                time_origin +
+                    // $FlowFixMe[prop-missing]
+                    performance.time_origin(),
+            );
+            request.abort_time.set(-0.0);
+        } else {
+            time_origin = 0.0;
+        }
+
+        let root_task = create_task(
+            &request,
+            model,
+            None,
+            false,
+            create_root_format_context(),
+            &abort_set,
+            time_origin,
+            None,
+            None,
+            None,
+        );
+        request.pinged_tasks.borrow_mut().push(root_task);
+        request
+    }
 }
 
 #[cfg_attr(rust_js, rust_js::nullable(bundler_config))]
@@ -1222,7 +1223,7 @@ pub fn create_request(
     }
 
     // $FlowFixMe[invalid-constructor]: the shapes are exact here but Flow doesn't like constructors
-    request_instance(
+    Request::new(
         RENDER,
         model,
         bundler_config,
@@ -1257,7 +1258,7 @@ pub fn create_prerender_request(
     }
 
     // $FlowFixMe[invalid-constructor]: the shapes are exact here but Flow doesn't like constructors
-    request_instance(
+    Request::new(
         PRERENDER,
         model,
         bundler_config,

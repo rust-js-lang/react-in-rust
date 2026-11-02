@@ -92,7 +92,7 @@ export type FilterStackFrame = (
 ) => boolean;
 
 export function isAwaitInUserspace(
-  request: Request,
+  request: RequestInstance,
   stack: [string, string, number, number, number, number, boolean][],
 ): boolean;
 
@@ -169,7 +169,7 @@ export type OnFatalError = (value: unknown | null | undefined) => void;
 /** A request's `environmentName`: the name itself, or what gives it. */
 export type EnvironmentName = string | (() => string);
 
-export interface Request {
+declare class RequestInstance {
   status: number;
   type: number;
   flushScheduled: boolean;
@@ -224,6 +224,8 @@ export interface Request {
   deferredDebugObjects?: DeferredDebugStore | null | undefined;
 }
 
+export type {RequestInstance};
+
 export function createRequest(
   model: ReactClientValue | null | undefined,
   bundlerConfig: ClientManifest | null,
@@ -234,7 +236,7 @@ export function createRequest(
   environmentName: EnvironmentName | null | undefined,
   filterStackFrame: FilterStackFrame | null | undefined,
   keepDebugAlive: boolean,
-): Request;
+): RequestInstance;
 
 export function createPrerenderRequest(
   model: ReactClientValue | null | undefined,
@@ -248,30 +250,33 @@ export function createPrerenderRequest(
   environmentName: EnvironmentName | null | undefined,
   filterStackFrame: FilterStackFrame | null | undefined,
   keepDebugAlive: boolean,
-): Request;
+): RequestInstance;
 
-export function resolveRequest(): Request | null;
+export function resolveRequest(): RequestInstance | null;
 
 export function emitHint(
-  request: Request,
+  request: RequestInstance,
   code: string,
   model?: HintModel | null | undefined,
 ): void;
 
-export function getHints(request: Request): Hints;
+export function getHints(request: RequestInstance): Hints;
 
-export function getCache(request: Request): Cache;
+export function getCache(request: RequestInstance): Cache;
 
-export function startWork(request: Request): void;
+export function startWork(request: RequestInstance): void;
 
-export function startFlowing(request: Request, destination: Destination): void;
+export function startFlowing(
+  request: RequestInstance,
+  destination: Destination,
+): void;
 
 export function startFlowingDebug(
-  request: Request,
+  request: RequestInstance,
   debugDestination: Destination,
 ): void;
 
-export function stopFlowing(request: Request): void;
+export function stopFlowing(request: RequestInstance): void;
 
 // Aborts the request when the caller's signal aborts. The cache controller's
 // signal bounds the listener's lifetime, so the runtime removes the listener as
@@ -287,13 +292,19 @@ export function stopFlowing(request: Request): void;
 //
 // A request whose stream is neither consumed nor cancelled never ends, so its
 // listener stays attached for as long as the caller's signal lives.
-export function attachAbortSignal(request: Request, signal: AbortSignal): void;
+export function attachAbortSignal(
+  request: RequestInstance,
+  signal: AbortSignal,
+): void;
 
 export function abort(
-  request: Request,
+  request: RequestInstance,
   reason?: unknown | null | undefined,
 ): void;
 
-export function resolveDebugMessage(request: Request, message: string): void;
+export function resolveDebugMessage(
+  request: RequestInstance,
+  message: string,
+): void;
 
-export function closeDebugChannel(request: Request): void;
+export function closeDebugChannel(request: RequestInstance): void;

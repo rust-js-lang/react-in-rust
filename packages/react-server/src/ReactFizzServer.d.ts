@@ -190,7 +190,7 @@ export type OnBrowserBailout = (
 /** A request's `onShellError` and `onFatalError`, of what was thrown. */
 export type OnFatal = (value: unknown | null | undefined) => void;
 
-export interface Request {
+declare class RequestInstance {
   destination?: unknown | null | undefined;
   flushScheduled: boolean;
   resumableState: ResumableState;
@@ -253,6 +253,8 @@ export interface Request {
   didWarnForKey?: WeakSet<ComponentStackNode> | null | undefined;
 }
 
+export type {RequestInstance};
+
 /** The result of an MPA submission. */
 export type FormState = [
   unknown | null | undefined,
@@ -274,7 +276,7 @@ export function createRequest(
   onShellError?: OnFatal | null | undefined,
   onFatalError?: OnFatal | null | undefined,
   formState?: FormState | null | undefined,
-): Request;
+): RequestInstance;
 
 export function createPrerenderRequest(
   children: unknown | null | undefined,
@@ -288,7 +290,7 @@ export function createPrerenderRequest(
   onShellReady?: (() => void) | null | undefined,
   onShellError?: OnFatal | null | undefined,
   onFatalError?: OnFatal | null | undefined,
-): Request;
+): RequestInstance;
 
 export function resumeRequest(
   children: unknown | null | undefined,
@@ -300,7 +302,7 @@ export function resumeRequest(
   onShellReady?: (() => void) | null | undefined,
   onShellError?: OnFatal | null | undefined,
   onFatalError?: OnFatal | null | undefined,
-): Request;
+): RequestInstance;
 
 export function resumeAndPrerenderRequest(
   children: unknown | null | undefined,
@@ -312,18 +314,18 @@ export function resumeAndPrerenderRequest(
   onShellReady?: (() => void) | null | undefined,
   onShellError?: OnFatal | null | undefined,
   onFatalError?: OnFatal | null | undefined,
-): Request;
+): RequestInstance;
 
-export function resolveRequest(): Request | null;
+export function resolveRequest(): RequestInstance | null;
 
 export function resolveClassComponentProps(
   component: unknown,
   baseProps: unknown,
 ): unknown;
 
-export function performWork(request: Request): void;
+export function performWork(request: RequestInstance): void;
 
-export function startWork(request: Request): void;
+export function startWork(request: RequestInstance): void;
 
 // This function is intented to only be called during the pipe function for the Node builds.
 // The reason we need this is because `renderToPipeableStream` is the only API which allows
@@ -334,11 +336,16 @@ export function startWork(request: Request): void;
 // to put this Node only function directly in ReactFizzServer but it'd be more ackward to factor it
 // by moving the implementation into ReactServerStreamConfigNode and even then we may not be able to
 // eliminate all the wasted branching.
-export function prepareForStartFlowingIfBeforeAllReady(request: Request): void;
+export function prepareForStartFlowingIfBeforeAllReady(
+  request: RequestInstance,
+): void;
 
-export function startFlowing(request: Request, destination: Destination): void;
+export function startFlowing(
+  request: RequestInstance,
+  destination: Destination,
+): void;
 
-export function stopFlowing(request: Request): void;
+export function stopFlowing(request: RequestInstance): void;
 
 // Aborts the request when the caller's signal aborts. The render lifetime
 // bounds the listener, so the runtime removes the listener as soon as the
@@ -352,21 +359,24 @@ export function stopFlowing(request: Request): void;
 //
 // A request whose stream is neither consumed nor cancelled never ends, so its
 // listener stays attached for as long as the caller's signal lives.
-export function attachAbortSignal(request: Request, signal: AbortSignal): void;
+export function attachAbortSignal(
+  request: RequestInstance,
+  signal: AbortSignal,
+): void;
 
 // This is called to early terminate a request. It puts all pending boundaries in client rendered state.
 export function abort(
-  request: Request,
+  request: RequestInstance,
   reason?: unknown | null | undefined,
 ): void;
 
-export function flushResources(request: Request): void;
+export function flushResources(request: RequestInstance): void;
 
-export function getFormState(request: Request): FormState | null;
+export function getFormState(request: RequestInstance): FormState | null;
 
-export function getResumableState<S>(request: Request): S;
+export function getResumableState<S>(request: RequestInstance): S;
 
-export function getRenderState<R>(request: Request): R;
+export function getRenderState<R>(request: RequestInstance): R;
 
 export interface PostponedState {
   nextSegmentId: number;
@@ -378,4 +388,6 @@ export interface PostponedState {
 }
 
 // Returns the state of a postponed request or null if nothing was postponed.
-export function getPostponedState(request: Request): PostponedState | null;
+export function getPostponedState(
+  request: RequestInstance,
+): PostponedState | null;

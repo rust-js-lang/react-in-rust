@@ -557,7 +557,7 @@ function defaultErrorHandler(error) {
   // Don't transform to our wrapper
 }
 
-function requestInstance(
+function RequestInstance(
   type,
   model,
   bundlerConfig,
@@ -598,63 +598,58 @@ function requestInstance(
     }
   }
   const hints = createHints();
-  // GAP rd494: upstream makes a request with `new RequestInstance(..)`, a
-  // constructor function, for its hidden class; a struct literal is an
-  // object literal.
-  const request = {
-    type,
-    status: OPENING,
-    flushScheduled: false,
-    fatalError: null,
-    destination: null,
-    bundlerConfig,
-    cache: new Map(),
-    cacheController: new AbortController(),
-    nextChunkId: 0,
-    pendingChunks: 0,
-    hints,
-    abortableTasks: abortSet,
-    pingedTasks,
-    completedImportChunks: [],
-    completedHintChunks: [],
-    completedRegularChunks: [],
-    completedErrorChunks: [],
-    writtenSymbols: new Map(),
-    writtenClientReferences: new Map(),
-    writtenServerReferences: new Map(),
-    writtenObjects: new WeakMap(),
-    writtenImportStrings: new Map(),
-    writtenImportStringsSize: 0,
-    temporaryReferences,
-    identifierPrefix: identifierPrefix ?? '',
-    identifierCount: 1,
-    taintCleanupQueue: cleanupQueue,
-    onError: onError ?? defaultErrorHandler,
-    onAllReady,
-    onFatalError,
+  this.type = type;
+  this.status = OPENING;
+  this.flushScheduled = false;
+  this.fatalError = null;
+  this.destination = null;
+  this.bundlerConfig = bundlerConfig;
+  this.cache = new Map();
+  this.cacheController = new AbortController();
+  this.nextChunkId = 0;
+  this.pendingChunks = 0;
+  this.hints = hints;
+  this.abortableTasks = abortSet;
+  this.pingedTasks = pingedTasks;
+  this.completedImportChunks = [];
+  this.completedHintChunks = [];
+  this.completedRegularChunks = [];
+  this.completedErrorChunks = [];
+  this.writtenSymbols = new Map();
+  this.writtenClientReferences = new Map();
+  this.writtenServerReferences = new Map();
+  this.writtenObjects = new WeakMap();
+  this.writtenImportStrings = new Map();
+  this.writtenImportStringsSize = 0;
+  this.temporaryReferences = temporaryReferences;
+  this.identifierPrefix = identifierPrefix ?? '';
+  this.identifierCount = 1;
+  this.taintCleanupQueue = cleanupQueue;
+  this.onError = onError ?? defaultErrorHandler;
+  this.onAllReady = onAllReady;
+  this.onFatalError = onFatalError;
 
-    timeOrigin: 0,
-    abortTime: 0,
+  this.timeOrigin = 0;
+  this.abortTime = 0;
 
-    pendingDebugChunks: 0,
-    completedDebugChunks: [],
-    debugDestination: null,
-    environmentName:
-      environmentName == null
-        ? () => 'Server'
-        : typeof environmentName === 'string'
-          ? () => environmentName
-          : environmentName,
-    filterStackFrame: filterStackFrame ?? defaultFilterStackFrame,
-    didWarnForKey: null,
-    writtenDebugObjects: new WeakMap(),
-    deferredDebugObjects: keepDebugAlive
-      ? {
-          retained: new Map(),
-          existing: new Map(),
-        }
-      : null,
-  };
+  this.pendingDebugChunks = 0;
+  this.completedDebugChunks = [];
+  this.debugDestination = null;
+  this.environmentName =
+    environmentName == null
+      ? () => 'Server'
+      : typeof environmentName === 'string'
+        ? () => environmentName
+        : environmentName;
+  this.filterStackFrame = filterStackFrame ?? defaultFilterStackFrame;
+  this.didWarnForKey = null;
+  this.writtenDebugObjects = new WeakMap();
+  this.deferredDebugObjects = keepDebugAlive
+    ? {
+        retained: new Map(),
+        existing: new Map(),
+      }
+    : null;
 
   let timeOrigin;
   if (enableProfilerTimer) {
@@ -673,20 +668,20 @@ function requestInstance(
     } else {
       timeOrigin = performance.now();
     }
-    request.timeOrigin = timeOrigin;
+    this.timeOrigin = timeOrigin;
     emitTimeOriginChunk(
-      request,
+      this,
       timeOrigin +
         // $FlowFixMe[prop-missing]
         performance.timeOrigin,
     );
-    request.abortTime = -0;
+    this.abortTime = -0;
   } else {
     timeOrigin = 0;
   }
 
   const rootTask = createTask(
-    request,
+    this,
     model,
     undefined,
     false,
@@ -697,8 +692,7 @@ function requestInstance(
     null,
     null,
   );
-  request.pingedTasks.push(rootTask);
-  return request;
+  this.pingedTasks.push(rootTask);
 }
 
 export function createRequest(
@@ -717,7 +711,7 @@ export function createRequest(
   }
 
   // $FlowFixMe[invalid-constructor]: the shapes are exact here but Flow doesn't like constructors
-  return requestInstance(
+  return new RequestInstance(
     RENDER,
     model,
     bundlerConfig,
@@ -751,7 +745,7 @@ export function createPrerenderRequest(
   }
 
   // $FlowFixMe[invalid-constructor]: the shapes are exact here but Flow doesn't like constructors
-  return requestInstance(
+  return new RequestInstance(
     PRERENDER,
     model,
     bundlerConfig,

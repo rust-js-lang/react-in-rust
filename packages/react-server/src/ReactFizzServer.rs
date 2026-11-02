@@ -527,6 +527,7 @@ pub type OnFatal = dyn Fn(Option<&'static Unknown>);
 // Safety: a request is a JS object of its fields.
 unsafe impl js::Defined for Request {}
 
+#[cfg_attr(rust_js, rust_js::class, rust_js::name = "RequestInstance")]
 pub struct Request {
     #[cfg_attr(rust_js, rust_js::nullable)]
     destination: Cell<Option<&'static Destination>>,
@@ -701,65 +702,70 @@ fn default_error_handler(
     js::null()
 }
 
-// GAP rd494: upstream makes a request with `new RequestInstance(..)`, a
-// constructor function, for its hidden class; a struct literal is an object
-// literal.
-fn request_instance(
-    resumable_state: &'static ResumableState,
-    render_state: &'static RenderState,
-    root_format_context: &'static FormatContext,
-    progressive_chunk_size: Option<f64>,
-    on_error: Option<Rc<OnError>>,
-    on_browser_bailout: Option<Rc<OnBrowserBailout>>,
-    on_all_ready: Option<Rc<dyn Fn()>>,
-    on_shell_ready: Option<Rc<dyn Fn()>>,
-    on_shell_error: Option<Rc<OnFatal>>,
-    on_fatal_error: Option<Rc<OnFatal>>,
-    form_state: Option<&'static FormState>,
-) -> Rc<Request> {
-    let pinged_tasks: Vec<Rc<Task>> = vec![];
-    let abort_set: AbortSet = Rc::new(RefCell::new(HashSet::new()));
-    // GAP rd491: `noop` is no callback of one or two parameters, so each
-    // default is a closure that ignores them.
-    Rc::new(Request {
-        destination: Cell::new(None),
-        flush_scheduled: Cell::new(false),
-        resumable_state,
-        render_state,
-        root_format_context,
-        progressive_chunk_size: progressive_chunk_size.unwrap_or(DEFAULT_PROGRESSIVE_CHUNK_SIZE),
-        // $FlowFixMe[constant-condition]
-        status: Cell::new(if IS_WORK_LOOP_EXTERNALLY_DRIVEN {
-            OPEN
-        } else {
-            OPENING
-        }),
-        fatal_error: Cell::new(js::null()),
-        aborted: Cell::new(false),
-        next_segment_id: Cell::new(0.0),
-        all_pending_tasks: Cell::new(0.0),
-        pending_root_tasks: Cell::new(0.0),
-        completed_root_segment: RefCell::new(None),
-        completed_preamble_segments: RefCell::new(None),
-        byte_size: Cell::new(0.0),
-        abortable_tasks: abort_set,
-        pinged_tasks: RefCell::new(pinged_tasks),
-        current_task: RefCell::new(None),
-        client_rendered_boundaries: RefCell::new(vec![]),
-        completed_boundaries: RefCell::new(vec![]),
-        partial_boundaries: RefCell::new(vec![]),
-        tracked_postpones: RefCell::new(None),
-        postponed_state: RefCell::new(None),
-        on_error: on_error.unwrap_or_else(|| Rc::new(default_error_handler)),
-        on_browser_bailout: on_browser_bailout.unwrap_or_else(|| Rc::new(|_, _| {})),
-        on_all_ready: on_all_ready.unwrap_or_else(|| Rc::new(noop)),
-        on_shell_ready: on_shell_ready.unwrap_or_else(|| Rc::new(noop)),
-        on_shell_error: on_shell_error.unwrap_or_else(|| Rc::new(|_| {})),
-        on_fatal_error: on_fatal_error.unwrap_or_else(|| Rc::new(|_| {})),
-        render_lifetime_controller: Cell::new(None),
-        form_state,
-        did_warn_for_key: Cell::new(None),
-    })
+#[cfg_attr(rust_js, rust_js::class)]
+impl Request {
+    fn new(
+        resumable_state: &'static ResumableState,
+        render_state: &'static RenderState,
+        root_format_context: &'static FormatContext,
+        progressive_chunk_size: Option<f64>,
+        on_error: Option<Rc<OnError>>,
+        on_browser_bailout: Option<Rc<OnBrowserBailout>>,
+        on_all_ready: Option<Rc<dyn Fn()>>,
+        on_shell_ready: Option<Rc<dyn Fn()>>,
+        on_shell_error: Option<Rc<OnFatal>>,
+        on_fatal_error: Option<Rc<OnFatal>>,
+        form_state: Option<&'static FormState>,
+    ) -> Rc<Self> {
+        let pinged_tasks: Vec<Rc<Task>> = vec![];
+        let abort_set: AbortSet = Rc::new(RefCell::new(HashSet::new()));
+        // GAP rd491: `noop` is no callback of one or two parameters, so each
+        // default is a closure that ignores them.
+        let request = Rc::new(Request {
+            destination: Cell::new(None),
+            flush_scheduled: Cell::new(false),
+            resumable_state,
+            render_state,
+            root_format_context,
+            progressive_chunk_size: progressive_chunk_size
+                .unwrap_or(DEFAULT_PROGRESSIVE_CHUNK_SIZE),
+            // $FlowFixMe[constant-condition]
+            status: Cell::new(if IS_WORK_LOOP_EXTERNALLY_DRIVEN {
+                OPEN
+            } else {
+                OPENING
+            }),
+            fatal_error: Cell::new(js::null()),
+            aborted: Cell::new(false),
+            next_segment_id: Cell::new(0.0),
+            all_pending_tasks: Cell::new(0.0),
+            pending_root_tasks: Cell::new(0.0),
+            completed_root_segment: RefCell::new(None),
+            completed_preamble_segments: RefCell::new(None),
+            byte_size: Cell::new(0.0),
+            abortable_tasks: abort_set,
+            pinged_tasks: RefCell::new(pinged_tasks),
+            current_task: RefCell::new(None),
+            client_rendered_boundaries: RefCell::new(vec![]),
+            completed_boundaries: RefCell::new(vec![]),
+            partial_boundaries: RefCell::new(vec![]),
+            tracked_postpones: RefCell::new(None),
+            postponed_state: RefCell::new(None),
+            on_error: on_error.unwrap_or_else(|| Rc::new(default_error_handler)),
+            on_browser_bailout: on_browser_bailout.unwrap_or_else(|| Rc::new(|_, _| {})),
+            on_all_ready: on_all_ready.unwrap_or_else(|| Rc::new(noop)),
+            on_shell_ready: on_shell_ready.unwrap_or_else(|| Rc::new(noop)),
+            on_shell_error: on_shell_error.unwrap_or_else(|| Rc::new(|_| {})),
+            on_fatal_error: on_fatal_error.unwrap_or_else(|| Rc::new(|_| {})),
+            render_lifetime_controller: Cell::new(None),
+            form_state,
+            did_warn_for_key: Cell::new(None),
+        });
+        if __DEV__ {
+            request.did_warn_for_key.set(js::null());
+        }
+        request
+    }
 }
 
 pub fn create_request(
@@ -781,7 +787,7 @@ pub fn create_request(
     }
 
     // $FlowFixMe[invalid-constructor]: the shapes are exact here but Flow doesn't like constructors
-    let request = request_instance(
+    let request = Request::new(
         resumable_state,
         render_state,
         root_format_context,
@@ -885,7 +891,7 @@ pub fn resume_request(
     }
 
     // $FlowFixMe[invalid-constructor]: the shapes are exact here but Flow doesn't like constructors
-    let request = request_instance(
+    let request = Request::new(
         postponed_state.resumable_state,
         render_state,
         postponed_state.root_format_context,
