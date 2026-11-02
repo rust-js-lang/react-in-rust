@@ -17,6 +17,9 @@ use react_dom_bindings::react_dom_form_actions::{FormStatus, NOT_PENDING};
 
 use shared::has_own_property::HAS_OWN_PROPERTY;
 
+// GAP rd652: these two `const`s, declared between the `use`s, print after
+// all the imports.
+
 // Allow embedding inside another Fizz render.
 #[cfg_attr(rust_js, rust_js::name = "isPrimaryRenderer")]
 pub const IS_PRIMARY_RENDERER: bool = false;

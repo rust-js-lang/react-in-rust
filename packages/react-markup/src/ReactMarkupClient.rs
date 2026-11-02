@@ -17,6 +17,8 @@ use react_server::react_fizz_server::{
     start_work as start_fizz_work,
 };
 
+// GAP rd650: these re-exports of ReactFizzConfigDOM import from it, where
+// upstream imports them from './ReactFizzConfigMarkup'.
 use crate::react_fizz_config_markup::{
     create_render_state, create_resumable_state, create_root_format_context,
 };
@@ -43,6 +45,8 @@ pub fn experimental_render_to_html(
                     buffer.borrow_mut().push_str(chunk);
                 } else {
                     // null indicates that we finished
+                    // GAP rd654: `resolve(buffer.borrow().clone())` is refused (ADR 0863),
+                    // though `resolve` of a string runs none of this crate's code.
                     resolve(buffer.take());
                 }
                 true

@@ -949,12 +949,13 @@ These differences from upstream's output are accepted:
     (ReactDOMDefaultTransitionIndicator's order);
   - the finished `push(null)` resolves `buffer.take()`, `const old =
     buffer; buffer = ''; resolve(old);`, where upstream resolves `buffer`
-    and keeps it: nothing reads it after (`resolve(buffer.borrow().clone())`
-    is refused, a borrow held across `resolve`, ADR 0863);
+    and keeps it: nothing reads it after (rd654:
+    `resolve(buffer.borrow().clone())` is refused, a borrow held across
+    `resolve`, ADR 0863, though `resolve` of a string runs no crate code);
   - noServerCallOrFormAction is generic, `(id, args)`, given as both the
     Flight client's callServer and encodeFormAction;
   - stashErrorIdx is a number, as upstream's, its text `$displayF64(..)`
-    where upstream writes `'' + stashErrorIdx++`;
+    where upstream writes `'' + stashErrorIdx++` (rd653);
   - the webpack server entries' forms: `options?.x` and `!= null`, error
     messages as template literals, trailing `undefined`s left out, `null`
     arguments of an `Option` given `undefined` (createFlightResponse's
@@ -962,18 +963,19 @@ These differences from upstream's output are accepted:
   - ReactFizzConfigDOMLegacy's: the `export {..}` list in rustfmt's order,
     `return;` and `return writePreambleStartImpl(..)` as statements (rd364),
     and `export const isPrimaryRenderer`/`supportsClientAPIs` after the
-    imports, where upstream declares them between two.
+    imports, where upstream declares them between two (rd652).
   Readability gaps (rust-js), not holding: rd557 (a closure printed as a
   function declaration prints its body's comments above it, handleError's,
   or inside its first call, handleFlightError's); rd558 (an `Option` a
   `HashMap` holds is boxed, `$someValue($unwrap($someGet(stashedErrors,
-  id), ..))` for `stashedErrors.get(id)`); the entries import
+  id), ..))` for `stashedErrors.get(id)`); rd650 (the entries import
   createResumableState and the rest from ReactFizzConfigDOM, where
   upstream imports them from './ReactFizzConfigMarkup', which re-exports
-  them; `use .. REACT_SHARED_INTERNALS as REACT_SHARED_INTERNALS_CLIENT`
-  prints `import ReactSharedInternals`, where upstream names it
-  `ReactSharedInternalsClient`; and `getCurrentStack = .. ?? null`, the
-  Fizz server's form of a nullable field set from an `Option`.
+  them); rd651 (`use .. REACT_SHARED_INTERNALS as
+  REACT_SHARED_INTERNALS_CLIENT` prints `import ReactSharedInternals`,
+  where upstream names it `ReactSharedInternalsClient`); rd652, rd653 and
+  rd654 above; and `getCurrentStack = .. ?? null`, the Fizz server's
+  form of a nullable field set from an `Option` (no id).
 - **The Flight clients' names and arms** (the user, 2026-11-01; its
   acronym rule extended to the servers, the user, 2026-11-02, ESM's
   resolveClientReferenceMetadata's `baseUrl` and `fullUrl`):

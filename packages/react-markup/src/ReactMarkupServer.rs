@@ -24,6 +24,8 @@ unsafe extern "Rust" {
     safe static REACT_SHARED_INTERNALS_SERVER: &'static SharedStateServer;
 }
 
+// GAP rd651: the alias prints `import ReactSharedInternals`, where upstream
+// names it `ReactSharedInternalsClient`.
 use shared::react_shared_internals::REACT_SHARED_INTERNALS as REACT_SHARED_INTERNALS_CLIENT;
 
 use react_server::react_flight_server::{
@@ -44,6 +46,8 @@ use react_server::react_fizz_server::{
     start_work as start_fizz_work,
 };
 
+// GAP rd650: these re-exports of ReactFizzConfigDOM import from it, where
+// upstream imports them from './ReactFizzConfigMarkup'.
 use crate::react_fizz_config_markup::{
     create_render_state, create_resumable_state, create_root_format_context,
 };
@@ -107,6 +111,8 @@ pub fn experimental_render_to_html(
                 // For Flight errors we don't immediately reject, because they might not matter
                 // to the output of the HTML. We stash the error with a digest in case we need
                 // to get to the original error from the Fizz render.
+                // GAP rd653: an f64's text prints `$displayF64(..)`, where upstream
+                // writes `'' + stashErrorIdx++`.
                 let id = stash_error_idx.get().to_string();
                 stash_error_idx.set(stash_error_idx.get() + 1.0);
                 stashed_errors.borrow_mut().insert(id.clone(), error);
@@ -226,6 +232,8 @@ pub fn experimental_render_to_html(
                     buffer.borrow_mut().push_str(chunk);
                 } else {
                     // null indicates that we finished
+                    // GAP rd654: `resolve(buffer.borrow().clone())` is refused (ADR 0863),
+                    // though `resolve` of a string runs none of this crate's code.
                     resolve(buffer.take());
                 }
                 true
