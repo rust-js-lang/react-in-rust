@@ -91,6 +91,17 @@ export type ChunkState =
     };
 
 declare class ReactPromise {
+  status:
+    | 'pending'
+    | 'pending_weak'
+    | 'blocked'
+    | 'resolved_model'
+    | 'resolved_module'
+    | 'fulfilled'
+    | 'rejected'
+    | 'halted';
+  value: any;
+  reason: any;
   // Profiling-only
   _children: Children | null | undefined;
   // DEV-only

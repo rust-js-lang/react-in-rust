@@ -5,16 +5,27 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import Transform from 'art/core/transform';
+import Mode from 'art/modes/current';
+import {EVENT_TYPES, TYPES, childrenAsString} from './ReactARTInternals.js';
 import {
   DefaultEventPriority,
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
-import {EVENT_TYPES, TYPES, childrenAsString} from './ReactARTInternals.js';
 import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
-import Transform from 'art/core/transform';
-import Mode from 'art/modes/current';
 
 export {default as rendererVersion} from 'shared/ReactVersion';
+
+export {
+  supportsPersistence,
+  cloneInstance,
+  createContainerChildSet,
+  appendChildToContainerChildSet,
+  finalizeContainerChildren,
+  replaceContainerChildren,
+  cloneHiddenInstance,
+  cloneHiddenTextInstance,
+} from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
 
 export {
   supportsHydration,
@@ -62,20 +73,25 @@ export {
 } from 'react-reconciler/src/ReactFiberConfigWithNoHydration';
 
 export {
+  prepareScopeUpdate,
+  getInstanceFromScope,
+} from 'react-reconciler/src/ReactFiberConfigWithNoScopes';
+
+export {
+  supportsTestSelectors,
+  findFiberRoot,
+  getBoundingRect,
+  getTextContent,
+  isHiddenSubtree,
+  matchAccessibilityRole,
+  setFocusIfFocusable,
+  setupIntersectionObserver,
+} from 'react-reconciler/src/ReactFiberConfigWithNoTestSelectors';
+
+export {
   supportsMicrotasks,
   scheduleMicrotask,
 } from 'react-reconciler/src/ReactFiberConfigWithNoMicrotasks';
-
-export {
-  supportsPersistence,
-  cloneInstance,
-  createContainerChildSet,
-  appendChildToContainerChildSet,
-  finalizeContainerChildren,
-  replaceContainerChildren,
-  cloneHiddenInstance,
-  cloneHiddenTextInstance,
-} from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
 
 export {
   supportsResources,
@@ -95,11 +111,6 @@ export {
 } from 'react-reconciler/src/ReactFiberConfigWithNoResources';
 
 export {
-  prepareScopeUpdate,
-  getInstanceFromScope,
-} from 'react-reconciler/src/ReactFiberConfigWithNoScopes';
-
-export {
   supportsSingletons,
   resolveSingletonInstance,
   acquireSingletonInstance,
@@ -107,17 +118,6 @@ export {
   isHostSingletonType,
   isSingletonScope,
 } from 'react-reconciler/src/ReactFiberConfigWithNoSingletons';
-
-export {
-  supportsTestSelectors,
-  findFiberRoot,
-  getBoundingRect,
-  getTextContent,
-  isHiddenSubtree,
-  matchAccessibilityRole,
-  setFocusIfFocusable,
-  setupIntersectionObserver,
-} from 'react-reconciler/src/ReactFiberConfigWithNoTestSelectors';
 
 export const rendererPackageName = 'react-art';
 export const extraDevToolsConfig = null;

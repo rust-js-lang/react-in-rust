@@ -7,6 +7,7 @@
 
 import {NotPending} from '../shared/ReactDOMFormActions.js';
 import {setSrcObject} from './ReactDOMSrcObject.js';
+import {getCurrentRootHostContainer} from 'react-reconciler/src/ReactFiberHostContext';
 import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
 import hasOwnProperty from 'shared/hasOwnProperty';
 import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
@@ -106,13 +107,12 @@ import {
 } from 'react-reconciler/src/ReactWorkTags';
 import {listenToAllSupportedEvents} from '../events/DOMPluginEventSystem.js';
 import {validateLinkPropsForStyleResource} from '../shared/ReactDOMResourceValidation.js';
+import escapeSelectorAttributeValueInsideDoubleQuotes from './escapeSelectorAttributeValueInsideDoubleQuotes.js';
+import {flushSyncWork as flushSyncWorkOnAllRoots} from 'react-reconciler/src/ReactFiberWorkLoop';
+import {requestFormReset as requestFormResetOnFiber} from 'react-reconciler/src/ReactFiberHooks';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import noop from 'shared/noop';
 import estimateBandwidth from './estimateBandwidth.js';
-import {requestFormReset as requestFormResetOnFiber} from 'react-reconciler/src/ReactFiberHooks';
-import {getCurrentRootHostContainer} from 'react-reconciler/src/ReactFiberHostContext';
-import {flushSyncWork as flushSyncWorkOnAllRoots} from 'react-reconciler/src/ReactFiberWorkLoop';
-import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
-import escapeSelectorAttributeValueInsideDoubleQuotes from './escapeSelectorAttributeValueInsideDoubleQuotes.js';
 import {
   $borrow,
   $borrowMut,
@@ -3149,8 +3149,7 @@ FragmentInstance.prototype.compareDocumentPosition = function (otherNode) {
     result = $f64ToInt(16, 0, 4294967295);
   } else {
     result = otherNodeIsFirstOrLastChildDisconnected
-      ? // otherNode has been portaled into another container
-        $f64ToInt(32, 0, 4294967295)
+      ? $f64ToInt(32, 0, 4294967295)
       : firstResult;
   }
 

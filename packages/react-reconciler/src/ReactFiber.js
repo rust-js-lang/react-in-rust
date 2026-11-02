@@ -11,7 +11,6 @@ import {
   supportsResources,
   supportsSingletons,
 } from './ReactFiberConfig.js';
-import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
 import {
   disableLegacyMode,
   enableLegacyHidden,
@@ -54,6 +53,7 @@ import {
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
 import {getComponentNameFromOwner} from './getComponentNameFromFiber.js';
+import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
 import {resolveTypeForHotReloading} from './ReactFiberHotReloading.js';
 import {NoLanes} from './ReactFiberLane.js';
 import {

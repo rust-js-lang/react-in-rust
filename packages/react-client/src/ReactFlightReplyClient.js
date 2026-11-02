@@ -146,7 +146,7 @@ export function processReply(
   const writtenObjects = new WeakMap();
   let modelRoot = root;
   let settled = false;
-  let replyLifetimeController$1;
+  let replyLifetimeController;
   let json$1;
 
   // Ending the lifetime makes the runtime remove the caller's abort listener.
@@ -155,7 +155,6 @@ export function processReply(
   // AbortSignal.any() is itself retained by the runtime while it has any abort
   // listener attached.
   function endReplyLifetime() {
-    const replyLifetimeController = replyLifetimeController$1;
     if (replyLifetimeController != null) {
       replyLifetimeController.abort(REPLY_ENDED);
     }
@@ -178,8 +177,7 @@ export function processReply(
       abort(abortSignal.reason);
       return;
     }
-    const replyLifetimeController = new AbortController();
-    replyLifetimeController$1 = replyLifetimeController;
+    replyLifetimeController = new AbortController();
     abortSignal.addEventListener(
       'abort',
       () => {

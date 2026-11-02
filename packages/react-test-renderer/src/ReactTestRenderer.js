@@ -5,13 +5,21 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import * as React from 'react';
+import * as Scheduler from 'scheduler/unstable_mock';
 import {
   defaultOnCaughtError,
   defaultOnRecoverableError,
   defaultOnUncaughtError,
 } from 'react-reconciler/src/ReactFiberErrorLogger';
-import * as Scheduler from 'scheduler/unstable_mock';
-import * as React from 'react';
+import {
+  batchedUpdates,
+  createContainer,
+  flushSyncFromReconciler,
+  getPublicRootInstance,
+  injectIntoDevTools,
+  updateContainer,
+} from 'react-reconciler/src/ReactFiberReconciler';
 import {findCurrentFiberUsingSlowPath} from 'react-reconciler/src/ReactFiberTreeReflection';
 import {
   ClassComponent,
@@ -41,15 +49,7 @@ import {
   disableLegacyMode,
   enableReactTestRendererWarning,
 } from 'shared/ReactFeatureFlags';
-import {
-  batchedUpdates,
-  createContainer,
-  flushSyncFromReconciler,
-  getPublicRootInstance,
-  injectIntoDevTools,
-  updateContainer,
-} from 'react-reconciler/src/ReactFiberReconciler';
-import {$extend, $index, $unwrap} from '@rust-js/runtime';
+import {$index, $unwrap} from '@rust-js/runtime';
 
 export * as _Scheduler from 'scheduler/unstable_mock';
 export {default as version} from 'shared/ReactVersion';
@@ -376,7 +376,10 @@ function findAll(root, predicate, options) {
     if (typeof child !== 'object') {
       continue;
     }
-    $extend(results, findAll(child, predicate, options));
+    const items = findAll(child, predicate, options);
+    for (let i = 0; i < items.length; i++) {
+      results.push(items[i]);
+    }
   }
 
   return results;

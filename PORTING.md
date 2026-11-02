@@ -319,7 +319,12 @@ type-only modules) come first, in rustfmt's std / external / crate groups.
 them. A `use` of another crate's binding through the module that holds it
 (`shared::react_shared_internals::REACT_SHARED_INTERNALS`, shared's
 `assign`) places that module's import at the `use` too (rd609, rust-js
-5c63e9442).
+5c63e9442), and so does a `use` of another crate's namespace
+(`ReactFiberReconciler`) or of a binding crate's module (`art::{mode,
+transform}`) (rd611, 40051fd39). Pending in rust-js (rd620, not accepted):
+a `use crate::module;` of the crate's own module called qualified
+(ReactFiberReconciler's `react_portal`, `react_fiber_error_logger`, ..)
+still prints its import after the others.
 
 ## Null and undefined
 
@@ -509,6 +514,17 @@ These differences from upstream's output are accepted:
   `ReactNoop.renderToRootWithID` no longer reaches the other methods; none
   does.
 
+- **ReactNoop and ReactNoopPersistent** (Batch 56, rust-js 83c345b71,
+  rd610): each is a `#[rust_js::namespace]` thread-local of its own exports
+  struct (`ReactNoopExports`, `ReactNoopPersistentExports`), upstream's
+  list in upstream's order, built `x: noop.x` from createReactNoop's
+  `ReactNoop`, so each prints upstream's `export const {..} =
+  createReactNoop(ReactFiberReconciler, true);`. `act` and
+  `flushDiscreteUpdates` are `None` fields of `ReactNoop`, which the literal
+  leaves out, so they are exports that are `undefined`, as upstream's are.
+  Pending in rust-js, not accepted: the list's comments (`// TODO: Remove
+  this ..`, `// $FlowFixMe[signature-verification-failure]`) print in the
+  `.d.ts` but not yet in the destructuring.
 - **createReactNoop's createRoot** (the user, 2026-10-31): its error
   handlers are `options?.onUncaughtError ?? NoopRenderer.defaultOnUncaughtError`
   (and `onCaughtError`), where upstream tests truth, `options &&
@@ -632,7 +648,9 @@ These differences from upstream's output are accepted:
   held draft): `env != null && !isPrimaryEnv ? name + .. : name`, a match
   with a guard, where upstream writes `isPrimaryEnv || env === undefined ?
   name : ..`; `??` where upstream writes `||` of a debugTask, which is an
-  object or absent.
+  object or absent. By name (2026-11-02, Batch 56): the extra `const rootEnv
+  = response._rootEnvironmentName;` before the call at its three sites
+  (`let root_env = ..`).
 
 - **ReactTestRenderer's forms** (the user, 2026-11-01, 9421ead's list):
   `{...inst.props}` then `delete props.children` for upstream's `const
@@ -1301,7 +1319,15 @@ The port is split between sessions by package:
   `__webpack_require__.u` as an arrow where upstream writes `function
   (chunkId)` (it reads no `this`); BundlerWebpack's two errors' messages
   as template literals of `panic!("..{id}..")` where upstream
-  concatenates.
+  concatenates; BundlerWebpack's `!name` for `name === ''` of a string, and
+  the DOM clients' `if (!message)` for `message === ''` (clippy's
+  `comparison_to_empty`); the DOM clients' optional chaining and `?? false`
+  (`options?.callServer`, `options?.unstable_allowPartialStream ?? false`)
+  where upstream writes `options && x ? x : undefined` (or `: false`), and
+  `const body = r.body;` (rd87's kind) for `r.body as any`; the DOM
+  clients' `.catch(error => console.error(error))` where upstream passes
+  `console.error`, and inline `export function f` where upstream declares
+  `function f` and ends with an `export {..}` list (rd616's, by name).
   **Pending in rust-js, not accepted** (each changes no result):
   - rd548: addChunkDebugInfo's fill-if-missing reads `const cached =
     chunkIOInfoCache.get(chunkId); let ioInfo; if (cached != null) {..}`
@@ -1310,14 +1336,14 @@ The port is split between sessions by package:
   changes a result): prepareDestinationWithChunks tests `moduleLoading !=
   null` where upstream tests `!== null` (ReactDOMRoot's kind; not accepted:
   our `ModuleLoading` is a plain `Option`, so a manifest without the key
-  reads undefined, which upstream's would throw on; to be `nullable` along
-  the chain, Batch 56); the chunk map's `flightChunk != null`
+  reads undefined, which upstream's would throw on; a
+  `#[rust_js::nullable(module_loading)]` parameter still tests `!= null`,
+  rd613, pending); the chunk map's `flightChunk != null`
   where upstream tests `!== undefined` (the map holds strings); the fake
   stack's `(fakeStack.stack ?? '')` (ReplyClient's parseStackLocation
   kind); `typeof performance !== 'undefined' &&` before
   `getEntriesByType`'s test (rd320, estimateBandwidth's kind); and the
-  `/**` comment above the patch prints `/*`. BundlerWebpack's: `!name` for `name ===
-  ''` of a string (clippy's `comparison_to_empty`); resolveServerReference
+  `/**` comment above the patch prints `/*`. BundlerWebpack's: resolveServerReference
   throws after its `if`/`else`, `if (resolvedModuleData == null) throw ..`,
   where upstream throws inside the `else` (the `if` branch has the module);
   `resolvedModuleData.async === true` where upstream tests truth (an

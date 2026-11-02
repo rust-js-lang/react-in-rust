@@ -11,11 +11,11 @@ use js::{JsObject, Kind, TimeoutId, Unknown, object};
 use shared::environment::__DEV__;
 use shared::react_types::ReactContext;
 
+use crate::react_art_internals::{EVENT_TYPES, TYPES, children_as_string};
+
 use react_reconciler::react_event_priorities::{
     DEFAULT_EVENT_PRIORITY, EventPriority, NO_EVENT_PRIORITY,
 };
-
-use crate::react_art_internals::{EVENT_TYPES, TYPES, children_as_string};
 use shared::react_symbols::REACT_CONTEXT_TYPE;
 
 #[cfg_attr(rust_js, rust_js::name = "rendererVersion")]
@@ -356,13 +356,15 @@ fn apply_text_props(instance: &'static Instance, props: &Props, prev_props: Opti
     }
 }
 
-pub use react_reconciler::react_fiber_config_with_no_hydration::*;
-pub use react_reconciler::react_fiber_config_with_no_microtasks::*;
 pub use react_reconciler::react_fiber_config_with_no_persistence::*;
-pub use react_reconciler::react_fiber_config_with_no_resources::*;
+
+pub use react_reconciler::react_fiber_config_with_no_hydration::*;
 pub use react_reconciler::react_fiber_config_with_no_scopes::*;
-pub use react_reconciler::react_fiber_config_with_no_singletons::*;
 pub use react_reconciler::react_fiber_config_with_no_test_selectors::*;
+
+pub use react_reconciler::react_fiber_config_with_no_microtasks::*;
+pub use react_reconciler::react_fiber_config_with_no_resources::*;
+pub use react_reconciler::react_fiber_config_with_no_singletons::*;
 
 pub fn append_initial_child(parent_instance: &Instance, child: Child) {
     match child {

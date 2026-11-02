@@ -17,10 +17,6 @@ use crate::react_internal_types::{
     CaughtErrorInfo, ErrorInfo, Fiber, FiberRoot, OnCaughtError, OnDefaultTransitionIndicator,
     OnError, SuspenseHydrationCallbacks, TransitionTracingCallbacks,
 };
-use crate::{
-    react_fiber_error_logger, react_fiber_hooks, react_fiber_work_loop, react_portal,
-    react_test_selectors,
-};
 
 use crate::react_root_tags::{LEGACY_ROOT, RootTag};
 
@@ -71,7 +67,7 @@ use crate::react_fiber_dev_tools_hook::{
 use crate::react_profiler_timer::start_update_timer_by_lane;
 
 use crate::react_fiber_work_loop::{
-    flush_pending_effects, flush_root, flush_sync_work, request_update_lane,
+    self, flush_pending_effects, flush_root, flush_sync_work, request_update_lane,
     schedule_initial_hydration_on_root, schedule_update_on_fiber,
 };
 
@@ -99,13 +95,15 @@ use crate::react_fiber_hot_reloading::{
 #[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
 use shared::react_version::REACT_VERSION;
 
+use crate::react_portal;
 use crate::react_test_selectors::{
-    BoundingRect, IntersectionObserverOptions, ObserveVisibleRectsCallback, Selector,
+    self, BoundingRect, IntersectionObserverOptions, ObserveVisibleRectsCallback, Selector,
     VisibleRectsObserver,
 };
 
-use crate::react_fiber_hooks::FormAction;
-use crate::react_fiber_hooks::Hook;
+use crate::react_fiber_hooks::{self, FormAction, Hook};
+
+use crate::react_fiber_error_logger;
 
 use crate::react_fiber_async_action::register_default_indicator;
 

@@ -8,7 +8,6 @@
 use js::{Kind, Unknown, function};
 use shared::environment::__DEV__;
 use shared::react_feature_flags::ENABLE_PROFILER_TIMER;
-use shared::react_io_description::get_io_description;
 use shared::react_performance_track_properties::{
     add_object_to_properties, add_value_to_properties,
 };
@@ -17,6 +16,8 @@ use webapi::{
     IntoStrOrNumber, IntoStrOrPerformanceMeasureOptions, Performance, PerformanceMeasureOptions,
     console, performance,
 };
+
+use shared::react_io_description::get_io_description;
 
 /// What DevTools' performance panel reads of a measure's `detail.devtools`:
 /// the entry's track, its color, and what its tooltip shows.

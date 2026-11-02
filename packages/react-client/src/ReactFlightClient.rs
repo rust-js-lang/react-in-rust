@@ -4318,10 +4318,9 @@ fn resolve_module(
     let client_reference =
         resolve_client_reference(response._bundler_config.get(), client_reference_metadata);
 
-    let nonce = response._nonce.borrow().clone();
     prepare_destination_for_module(
         response._module_loading.get(),
-        nonce.as_deref(),
+        response._nonce.borrow().as_deref(),
         client_reference_metadata,
     );
 

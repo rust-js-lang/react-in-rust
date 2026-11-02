@@ -8,21 +8,23 @@ use shared::environment::__DEV__;
 use shared::react_types::{ReactNodeList, ReactPortal};
 use webapi::console;
 
-use react_dom_bindings::react_dom_container::is_valid_container;
-use react_reconciler::react_portal::create_portal as create_portal_impl;
-
 #[cfg_attr(rust_js, rust_js::name = "version")]
 pub use shared::react_version::REACT_VERSION as VERSION;
 
-pub use crate::react_dom_browser::browser;
+use react_dom_bindings::react_dom_container::is_valid_container;
+use react_reconciler::react_portal::create_portal as create_portal_impl;
+
+#[cfg_attr(rust_js, rust_js::name = "flushSync")]
+pub use crate::react_dom_flush_sync::FLUSH_SYNC;
+
 pub use crate::react_dom_float::{
     preconnect, prefetch_dns, preinit, preinit_module, preload, preload_module,
 };
-#[cfg_attr(rust_js, rust_js::name = "flushSync")]
-pub use crate::react_dom_flush_sync::FLUSH_SYNC;
 pub use react_dom_bindings::react_dom_form_actions::{
     request_form_reset, use_form_state, use_form_status,
 };
+
+pub use crate::react_dom_browser::browser;
 
 js::on_load! {
     if __DEV__

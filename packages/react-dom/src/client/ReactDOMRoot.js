@@ -24,8 +24,6 @@ import {
 } from 'react-dom-bindings/src/client/ReactDOMComponentTree';
 import {listenToAllSupportedEvents} from 'react-dom-bindings/src/events/DOMPluginEventSystem';
 import {COMMENT_NODE} from 'react-dom-bindings/src/client/HTMLNodeType';
-import {defaultOnDefaultTransitionIndicator} from './ReactDOMDefaultTransitionIndicator.js';
-import {ConcurrentRoot} from 'react-reconciler/src/ReactRootTags';
 import {
   createContainer,
   createHydrationContainer,
@@ -34,6 +32,8 @@ import {
   updateContainer,
   updateContainerSync,
 } from 'react-reconciler/src/ReactFiberReconciler';
+import {defaultOnDefaultTransitionIndicator} from './ReactDOMDefaultTransitionIndicator.js';
+import {ConcurrentRoot} from 'react-reconciler/src/ReactRootTags';
 
 function ReactDOMRoot(internalRoot) {
   this._internalRoot = internalRoot;

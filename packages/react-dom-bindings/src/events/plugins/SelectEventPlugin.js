@@ -171,7 +171,18 @@ export function extractEvents(
       mouseDown = false;
       constructSelectEvent(dispatchQueue, nativeEvent, nativeEventTarget);
     } else if (
-      (domEventName === 'selectionchange' && !skipSelectionChangeEvent) ||
+      (domEventName ===
+        // Chrome and IE fire non-standard event when selection is changed (and
+        // sometimes when it hasn't). IE's event fires out of order with respect
+        // to key and input events on deletion, so we discard it.
+        //
+        // Firefox doesn't support selectionchange, so check selection status
+        // after each key entry. The selection changes after keydown and before
+        // keyup, but we check on keydown as well in the case of holding down a
+        // key, when multiple keydown events are fired but only one keyup is.
+        // This is also our approach for IE handling, for the reason above.
+        'selectionchange' &&
+        !skipSelectionChangeEvent) ||
       domEventName === 'keydown' ||
       domEventName === 'keyup'
     ) {

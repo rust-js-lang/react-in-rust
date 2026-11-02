@@ -51,6 +51,22 @@ export {
 } from './ReactFiberConfigNoopHydration.js';
 
 export {
+  prepareScopeUpdate,
+  getInstanceFromScope,
+} from './ReactFiberConfigNoopScopes.js';
+
+export {
+  supportsTestSelectors,
+  findFiberRoot,
+  getBoundingRect,
+  getTextContent,
+  isHiddenSubtree,
+  matchAccessibilityRole,
+  setFocusIfFocusable,
+  setupIntersectionObserver,
+} from './ReactFiberConfigNoopTestSelectors.js';
+
+export {
   supportsResources,
   isHostHoistableType,
   getHoistableRoot,
@@ -68,11 +84,6 @@ export {
 } from './ReactFiberConfigNoopResources.js';
 
 export {
-  prepareScopeUpdate,
-  getInstanceFromScope,
-} from './ReactFiberConfigNoopScopes.js';
-
-export {
   supportsSingletons,
   resolveSingletonInstance,
   acquireSingletonInstance,
@@ -80,17 +91,6 @@ export {
   isHostSingletonType,
   isSingletonScope,
 } from './ReactFiberConfigNoopSingletons.js';
-
-export {
-  supportsTestSelectors,
-  findFiberRoot,
-  getBoundingRect,
-  getTextContent,
-  isHiddenSubtree,
-  matchAccessibilityRole,
-  setFocusIfFocusable,
-  setupIntersectionObserver,
-} from './ReactFiberConfigNoopTestSelectors.js';
 
 export {
   supportsMutation,

@@ -8,11 +8,11 @@
 /* eslint-disable react-internal/no-production-logging */
 
 import {enableProfilerTimer} from 'shared/ReactFeatureFlags';
-import {getIODescription} from 'shared/ReactIODescription';
 import {
   addObjectToProperties,
   addValueToProperties,
 } from 'shared/ReactPerformanceTrackProperties';
+import {getIODescription} from 'shared/ReactIODescription';
 
 const supportsUserTiming =
   enableProfilerTimer &&

@@ -5,14 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {
-  flushPendingEffects,
-  flushRoot,
-  flushSyncWork,
-  requestUpdateLane,
-  scheduleInitialHydrationOnRoot,
-  scheduleUpdateOnFiber,
-} from './ReactFiberWorkLoop.js';
 import {LegacyRoot} from './ReactRootTags.js';
 import {
   findCurrentHostFiber,
@@ -54,6 +46,14 @@ import {
   onScheduleRoot,
 } from './ReactFiberDevToolsHook.js';
 import {startUpdateTimerByLane} from './ReactProfilerTimer.js';
+import {
+  flushPendingEffects,
+  flushRoot,
+  flushSyncWork,
+  requestUpdateLane,
+  scheduleInitialHydrationOnRoot,
+  scheduleUpdateOnFiber,
+} from './ReactFiberWorkLoop.js';
 import {enqueueConcurrentRenderForLane} from './ReactFiberConcurrentUpdates.js';
 import {
   createUpdate,

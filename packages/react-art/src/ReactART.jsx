@@ -5,23 +5,23 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import Mode from 'art/modes/current';
 import FastNoSideEffects from 'art/modes/fast-noSideEffects';
 import {
   defaultOnCaughtError,
   defaultOnRecoverableError,
   defaultOnUncaughtError,
 } from 'react-reconciler/src/ReactFiberErrorLogger';
-import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
-import {disableLegacyMode} from 'shared/ReactFeatureFlags';
-import {TYPES, childrenAsString} from './ReactARTInternals.js';
-import Mode from 'art/modes/current';
-import {Component} from 'react';
 import {
   createContainer,
   flushSyncWork,
   injectIntoDevTools,
   updateContainerSync,
 } from 'react-reconciler/src/ReactFiberReconciler';
+import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
+import {disableLegacyMode} from 'shared/ReactFeatureFlags';
+import {TYPES, childrenAsString} from './ReactARTInternals.js';
+import {Component} from 'react';
 import {$unwrap} from '@rust-js/runtime';
 
 export {default as Transform} from 'art/core/transform';

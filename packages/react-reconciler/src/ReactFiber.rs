@@ -42,8 +42,6 @@ unsafe extern "Rust" {
     safe static SUPPORTS_RESOURCES: bool;
     #[link_name = "./src/ReactFiberConfig.js#supportsSingletons"]
     safe static SUPPORTS_SINGLETONS: bool;
-    #[link_name = "./src/ReactFiberDevToolsHook.js#isDevToolsPresent"]
-    safe static IS_DEV_TOOLS_PRESENT: bool;
 }
 
 use shared::react_feature_flags::{
@@ -63,6 +61,12 @@ use crate::react_work_tags::{
 };
 
 use crate::get_component_name_from_fiber::get_component_name_from_owner;
+
+unsafe extern "Rust" {
+    #[link_name = "./src/ReactFiberDevToolsHook.js#isDevToolsPresent"]
+    safe static IS_DEV_TOOLS_PRESENT: bool;
+}
+
 use crate::react_fiber_hot_reloading::resolve_type_for_hot_reloading;
 use crate::react_fiber_lane::{Lanes, NO_LANES};
 use crate::react_type_of_mode::{

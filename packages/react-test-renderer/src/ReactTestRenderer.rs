@@ -8,25 +8,25 @@ use std::collections::HashSet;
 use std::rc::Rc;
 
 use js::{JsObject, Kind, PropertyDescriptor, SymbolFor, Unknown, WeakMap, object};
-use react_reconciler::react_fiber_error_logger::{
-    default_on_caught_error, default_on_recoverable_error, default_on_uncaught_error,
-};
 use react_reconciler::react_internal_types::Fiber;
 use shared::environment::__DEV__;
 use shared::react_types::ReactNodeList;
 use webapi::console;
 
 unsafe extern "Rust" {
-    #[link_name = "scheduler/unstable_mock#* as Scheduler"]
-    pub safe static SCHEDULER: &'static JsObject;
     // This is only in the development export.
     #[link_name = "react#*.act"]
     safe static REACT_ACT: Option<&'static Unknown>;
+    #[link_name = "scheduler/unstable_mock#* as Scheduler"]
+    pub safe static SCHEDULER: &'static JsObject;
     // What a React Native test environment sets.
     #[link_name = "global.IS_REACT_NATIVE_TEST_ENVIRONMENT"]
     safe static IS_REACT_NATIVE_TEST_ENVIRONMENT: Option<&'static Unknown>;
 }
 
+use react_reconciler::react_fiber_error_logger::{
+    default_on_caught_error, default_on_recoverable_error, default_on_uncaught_error,
+};
 use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
 use react_reconciler::react_fiber_tree_reflection::find_current_fiber_using_slow_path;
 use react_reconciler::react_work_tags::{

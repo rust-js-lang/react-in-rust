@@ -38,11 +38,11 @@ import {
   resolveUpdatePriority,
   runWithPriority as attemptHydrationAtPriority,
 } from '../client/ReactDOMUpdatePriority.js';
-import {enableHydrationChangeEvent} from 'shared/ReactFeatureFlags';
 import {
   attemptContinuousHydration,
   attemptHydrationAtCurrentPriority,
 } from 'react-reconciler/src/ReactFiberReconciler';
+import {enableHydrationChangeEvent} from 'shared/ReactFeatureFlags';
 import {$insertAt, $removeAt, $unwrap} from '@rust-js/runtime';
 
 let hasScheduledReplayAttempt = false;

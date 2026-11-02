@@ -2199,6 +2199,7 @@ function mountActionState(action, initialStateProp, permalink) {
   // to detect when the action function changes so we can update it in
   // an effect.
   actionQueueHook.memoizedState = action;
+
   return [initialState, dispatch, false];
 }
 
@@ -2270,6 +2271,7 @@ function updateActionStateImpl(
       },
     );
   }
+
   return [state, dispatch, isPending];
 }
 
@@ -2310,6 +2312,8 @@ function rerenderActionState(action, initialState, permalink) {
 
   // This may have changed during the rerender.
   actionQueueHook.memoizedState = action;
+
+  // For mount, pending is always false.
   return [state, dispatch, false];
 }
 

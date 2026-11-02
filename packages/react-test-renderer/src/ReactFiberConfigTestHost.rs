@@ -130,12 +130,14 @@ pub type EventResponder = Unknown;
 
 pub type TransitionStatus = Option<&'static Unknown>;
 
-pub use react_reconciler::react_fiber_config_with_no_hydration::*;
-pub use react_reconciler::react_fiber_config_with_no_microtasks::*;
 pub use react_reconciler::react_fiber_config_with_no_persistence::*;
+
+pub use react_reconciler::react_fiber_config_with_no_hydration::*;
+pub use react_reconciler::react_fiber_config_with_no_test_selectors::*;
+
+pub use react_reconciler::react_fiber_config_with_no_microtasks::*;
 pub use react_reconciler::react_fiber_config_with_no_resources::*;
 pub use react_reconciler::react_fiber_config_with_no_singletons::*;
-pub use react_reconciler::react_fiber_config_with_no_test_selectors::*;
 
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "NO_CONTEXT")]

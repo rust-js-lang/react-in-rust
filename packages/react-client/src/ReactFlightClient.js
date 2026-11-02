@@ -67,7 +67,6 @@ import {
   $catchUnwind,
   $cellReplace,
   $drain,
-  $extend,
   $f64ToInt,
   $fieldCell,
   $index,
@@ -119,7 +118,7 @@ function ReactPromise(status, value, reason) {
   }
   if (__DEV__) {
     this._debugChunk = null;
-    $borrowMut($fieldCell(this, '_debugInfo')).value = [];
+    this._debugInfo = [];
     this._receivedDebugInfo = null;
   }
 }
@@ -155,17 +154,11 @@ Object.defineProperty(ReactPromise.prototype, 'then', {
       let wrapper;
       const wrapperPromise = new Promise((res, rej) => {
         resolve = value => {
-          const promise = $unwrap(wrapper);
-          const borrow = $borrow($fieldCell(this, '_debugInfo'), true);
-          promise._debugInfo = borrow.value;
-          $unborrow(borrow);
+          $unwrap(wrapper)._debugInfo = this._debugInfo;
           res(value);
         };
         reject = reason => {
-          const promise = $unwrap(wrapper);
-          const borrow = $borrow($fieldCell(this, '_debugInfo'), true);
-          promise._debugInfo = borrow.value;
-          $unborrow(borrow);
+          $unwrap(wrapper)._debugInfo = this._debugInfo;
           rej(reason);
         };
       });
@@ -377,9 +370,7 @@ function filterDebugInfo(response, value) {
   // but it doesn't need to be resolved before the end time.
   const relativeEndTime = debugEndTime - performance.timeOrigin;
   const debugInfo = [];
-  const valueDebugInfo = $unwrap(
-    $borrow($fieldCell(value, '_debugInfo')).value,
-  );
+  const valueDebugInfo = $unwrap(value._debugInfo);
   const borrow = $borrow(valueDebugInfo);
   for (let i = 0; i < borrow.length; i++) {
     const info = borrow[i];
@@ -389,7 +380,7 @@ function filterDebugInfo(response, value) {
     }
     debugInfo.push(info);
   }
-  $borrowMut($fieldCell(value, '_debugInfo')).value = debugInfo;
+  value._debugInfo = debugInfo;
 }
 
 function pruneDebugInfoAfterError(response, chunk) {
@@ -399,7 +390,7 @@ function pruneDebugInfoAfterError(response, chunk) {
   }
 
   const relativeEndTime = debugEndTime - performance.timeOrigin;
-  let debugInfo = $unwrap($borrow($fieldCell(chunk, '_debugInfo')).value);
+  let debugInfo = $unwrap(chunk._debugInfo);
   debugInfo = $borrowMut(debugInfo, true);
   try {
     const end = debugInfo.length;
@@ -430,10 +421,7 @@ function moveDebugInfoFromChunkToInnerValue(chunk, value) {
       resolvedValue.$$typeof === REACT_ELEMENT_TYPE ||
       resolvedValue.$$typeof === REACT_LAZY_TYPE)
   ) {
-    const debugInfo = $drain(
-      $borrowMut($unwrap($borrow($fieldCell(chunk, '_debugInfo')).value)),
-      0,
-    );
+    const debugInfo = $drain($borrowMut($unwrap(chunk._debugInfo)), 0);
     const valueDebugInfo = resolvedValue._debugInfo;
     if (isArray(valueDebugInfo)) {
       $splice($borrowMut(valueDebugInfo), 0, 0, debugInfo);
@@ -578,7 +566,9 @@ function wakeChunkIfInitialized(
     if (chunk.status === 'blocked' || chunk.status === 'pending') {
       if (chunk.value != null) {
         const value = chunk.value;
-        $extend(value, resolveListeners);
+        for (let i = 0; i < resolveListeners.length; i++) {
+          value.push(resolveListeners[i]);
+        }
       } else {
         chunk.value = resolveListeners;
       }
@@ -586,7 +576,9 @@ function wakeChunkIfInitialized(
       if (chunk.reason != null) {
         const reason = chunk.reason;
         if (rejectListeners != null) {
-          $extend(reason, rejectListeners);
+          for (let i = 0; i < rejectListeners.length; i++) {
+            reason.push(rejectListeners[i]);
+          }
         }
       } else {
         chunk.reason = rejectListeners;
@@ -816,12 +808,10 @@ function resolveModuleChunk(response, chunk, value) {
     const debugInfo = getModuleDebugInfo(value);
     if (debugInfo !== null) {
       // Add to the live set if it was already initialized.
-      $extend(
-        $borrowMut(
-          $unwrap($borrow($fieldCell(resolvedChunk, '_debugInfo')).value),
-        ),
-        debugInfo,
-      );
+      const borrowMut = $borrowMut($unwrap(resolvedChunk._debugInfo));
+      for (let i = 0; i < debugInfo.length; i++) {
+        borrowMut.push(debugInfo[i]);
+      }
     }
   }
   if (resolveListeners != null) {
@@ -844,7 +834,7 @@ function initializeDebugChunk(response, chunk) {
   if (debugChunk == null) {
     return;
   }
-  const debugInfo = $unwrap($borrow($fieldCell(chunk, '_debugInfo')).value);
+  const debugInfo = $unwrap(chunk._debugInfo);
   const prevIsInitializingDebugInfo = isInitializingDebugInfo;
   isInitializingDebugInfo = true;
   try {
@@ -1375,9 +1365,7 @@ function createElement(
         if (supportsCreateTask) {
           erroredComponent.debugTask = element._debugTask ?? null;
         }
-        $borrowMut($fieldCell(erroredChunk, '_debugInfo')).value = [
-          erroredComponent,
-        ];
+        erroredChunk._debugInfo = [erroredComponent];
       }
       return createLazyChunkWrapper(erroredChunk, validated);
     }
@@ -1447,9 +1435,7 @@ function createLazyChunkWrapper(
   };
   if (__DEV__) {
     // Forward the live array
-    const borrow = $borrow($fieldCell(chunk, '_debugInfo'), true);
-    lazyType._debugInfo = borrow.value;
-    $unborrow(borrow);
+    lazyType._debugInfo = chunk._debugInfo;
     // Initialize a store for key validation by the JSX runtime. It can only
     // validate the lazy node itself, because the value it refers to might not
     // exist yet at that point, e.g. if it's an outlined row that hasn't been
@@ -1679,11 +1665,10 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
       } else if (referencedChunk.status === 'resolved_module') {
         initializeModuleChunk(referencedChunk);
       }
-      if (referencedChunk.status === 'fulfilled') {
-        value$1 = initializedValue(referencedChunk);
-        continue;
+      if (referencedChunk.status !== 'fulfilled') {
+        break;
       }
-      break;
+      value$1 = initializedValue(referencedChunk);
     }
 
     const mappedValue = map(response, value$1, parentObject, key);
@@ -1797,9 +1782,7 @@ function rejectReference(response, handler, error) {
     if (supportsCreateTask) {
       erroredComponent.debugTask = blockedValue._debugTask ?? null;
     }
-    $borrowMut($unwrap($borrow($fieldCell(chunk, '_debugInfo')).value)).push(
-      erroredComponent,
-    );
+    $borrowMut($unwrap(chunk._debugInfo)).push(erroredComponent);
   }
 
   triggerErrorOnChunk(response, chunk, error);
@@ -2042,9 +2025,7 @@ function loadServerReference(response, metaData, parentObject, key) {
       if (supportsCreateTask) {
         erroredComponent.debugTask = blockedValue._debugTask ?? null;
       }
-      $borrowMut($unwrap($borrow($fieldCell(chunk, '_debugInfo')).value)).push(
-        erroredComponent,
-      );
+      $borrowMut($unwrap(chunk._debugInfo)).push(erroredComponent);
     }
 
     triggerErrorOnChunk(response, chunk, error);
@@ -2098,12 +2079,8 @@ function transferReferencedDebugInfo(receivingChunk, referencedChunk) {
     // the root is rendered as is.
     receivingChunk != null
   ) {
-    const referencedDebugInfo = $unwrap(
-      $borrow($fieldCell(referencedChunk, '_debugInfo')).value,
-    );
-    const receivingDebugInfo = $unwrap(
-      $borrow($fieldCell(receivingChunk, '_debugInfo')).value,
-    );
+    const referencedDebugInfo = $unwrap(referencedChunk._debugInfo);
+    const receivingDebugInfo = $unwrap(receivingChunk._debugInfo);
     // The receiving chunk takes each entry only once. A repeated entry
     // carries no information. An entry repeats in two ways:
     //
@@ -2950,9 +2927,7 @@ function addAsyncInfo(chunk, asyncInfo) {
       });
     }
   } else {
-    $borrowMut($unwrap($borrow($fieldCell(chunk, '_debugInfo')).value)).push(
-      asyncInfo,
-    );
+    $borrowMut($unwrap(chunk._debugInfo)).push(asyncInfo);
   }
 }
 
@@ -3082,10 +3057,9 @@ function resolveModule(response, id, model, streamState) {
     clientReferenceMetadata,
   );
 
-  const nonce = response._nonce;
   prepareDestinationForModule(
     response._moduleLoading,
-    nonce,
+    response._nonce,
     clientReferenceMetadata,
   );
 
@@ -4546,8 +4520,7 @@ function flushComponentPerformance(
   // in parallel with the previous.
   let debugInfo;
   if (__DEV__) {
-    const {value: _83} = $borrow($fieldCell(root, '_debugInfo'));
-    debugInfo = _83;
+    debugInfo = root._debugInfo;
     if (
       $borrow($unwrap(debugInfo)).length === 0 &&
       root.status === 'fulfilled'

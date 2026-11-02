@@ -10,7 +10,7 @@ import {createPortal as createPortalImpl} from 'react-reconciler/src/ReactPortal
 
 export {default as version} from 'shared/ReactVersion';
 
-export {browser} from './ReactDOMBrowser.js';
+export {flushSync} from './ReactDOMFlushSync.js';
 
 export {
   preconnect,
@@ -21,13 +21,13 @@ export {
   preloadModule,
 } from './ReactDOMFloat.js';
 
-export {flushSync} from './ReactDOMFlushSync.js';
-
 export {
   requestFormReset,
   useFormState,
   useFormStatus,
 } from 'react-dom-bindings/src/shared/ReactDOMFormActions';
+
+export {browser} from './ReactDOMBrowser.js';
 
 if (
   __DEV__ &&

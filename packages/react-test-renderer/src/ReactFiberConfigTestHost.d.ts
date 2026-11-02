@@ -11,6 +11,17 @@ import type {ReactContext} from 'shared/ReactTypes';
 export {default as rendererVersion} from 'shared/ReactVersion';
 
 export {
+  supportsPersistence,
+  cloneInstance,
+  createContainerChildSet,
+  appendChildToContainerChildSet,
+  finalizeContainerChildren,
+  replaceContainerChildren,
+  cloneHiddenInstance,
+  cloneHiddenTextInstance,
+} from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
+
+export {
   supportsHydration,
   isSuspenseInstancePending,
   isSuspenseInstanceFallback,
@@ -56,20 +67,20 @@ export {
 } from 'react-reconciler/src/ReactFiberConfigWithNoHydration';
 
 export {
+  supportsTestSelectors,
+  findFiberRoot,
+  getBoundingRect,
+  getTextContent,
+  isHiddenSubtree,
+  matchAccessibilityRole,
+  setFocusIfFocusable,
+  setupIntersectionObserver,
+} from 'react-reconciler/src/ReactFiberConfigWithNoTestSelectors';
+
+export {
   supportsMicrotasks,
   scheduleMicrotask,
 } from 'react-reconciler/src/ReactFiberConfigWithNoMicrotasks';
-
-export {
-  supportsPersistence,
-  cloneInstance,
-  createContainerChildSet,
-  appendChildToContainerChildSet,
-  finalizeContainerChildren,
-  replaceContainerChildren,
-  cloneHiddenInstance,
-  cloneHiddenTextInstance,
-} from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
 
 export {
   supportsResources,
@@ -96,17 +107,6 @@ export {
   isHostSingletonType,
   isSingletonScope,
 } from 'react-reconciler/src/ReactFiberConfigWithNoSingletons';
-
-export {
-  supportsTestSelectors,
-  findFiberRoot,
-  getBoundingRect,
-  getTextContent,
-  isHiddenSubtree,
-  matchAccessibilityRole,
-  setFocusIfFocusable,
-  setupIntersectionObserver,
-} from 'react-reconciler/src/ReactFiberConfigWithNoTestSelectors';
 
 export const rendererPackageName: string;
 

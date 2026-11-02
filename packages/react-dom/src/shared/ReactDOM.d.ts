@@ -9,7 +9,7 @@ import type {ReactPortal} from 'shared/ReactTypes';
 
 export {default as version} from 'shared/ReactVersion';
 
-export {browser} from './ReactDOMBrowser.js';
+export {flushSync} from './ReactDOMFlushSync.js';
 
 export {
   preconnect,
@@ -20,13 +20,13 @@ export {
   preloadModule,
 } from './ReactDOMFloat.js';
 
-export {flushSync} from './ReactDOMFlushSync.js';
-
 export {
   requestFormReset,
   useFormState,
   useFormStatus,
 } from 'react-dom-bindings/src/shared/ReactDOMFormActions';
+
+export {browser} from './ReactDOMBrowser.js';
 
 export function unstable_batchedUpdates<A, R>(fn: (a: A) => R, a: A): R;
 
