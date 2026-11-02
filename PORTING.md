@@ -690,6 +690,10 @@ These differences from upstream's output are accepted:
     makes them);
   - resolveStream passes `stream` to wakeChunk, where upstream passes
     `chunk.value`, the same value it has just written.
+- **Flight's async debug info** (the user, 2026-11-02):
+  ReactFlightServerConfigDebugNode's `pendingOperations` is always
+  `new Map()`, where upstream makes it `__DEV__ ? new Map() : null`: every
+  read is DEV-only, so production allocates one empty map nothing reads.
 - **The Flight reply server's names and types** (the user, 2026-11-02),
   each gap left open for rust-js:
   - a chunk's `then` is named `value`, where upstream's is

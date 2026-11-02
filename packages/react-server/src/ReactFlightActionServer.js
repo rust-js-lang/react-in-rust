@@ -103,11 +103,8 @@ export function decodeAction(body, serverManifest) {
 
   let maybeActionKey = null;
 
-  // GAP rd560: upstream's `body.forEach((value, key) => {..})`: webapi's
-  // `for_each` takes a `Box<dyn FnMut>`, `'static`, which can't write the
-  // key found to a local, so it's a loop of the form data's entries.
   // $FlowFixMe[prop-missing]
-  for (const [key, value] of body) {
+  body.forEach((value, key) => {
     if (!key.startsWith('$ACTION_')) {
       // $FlowFixMe[incompatible-type]
       formData.append(key, value);
@@ -121,7 +118,7 @@ export function decodeAction(body, serverManifest) {
       // if a button specifies the same action as the default form action.
       maybeActionKey = key;
     }
-  }
+  });
 
   if (maybeActionKey == null) {
     return null;
@@ -160,15 +157,14 @@ export function decodeFormState(actionResult, body, serverManifest) {
   // Search through the form data object to get the reference id and the number
   // of bound arguments. This repeats some of the work done in decodeAction.
   let actionKey = null;
-  // GAP rd560: as decode_action's.
   // $FlowFixMe[prop-missing]
-  for (const [key] of body) {
+  body.forEach((_, key) => {
     if (key.startsWith('$ACTION_REF_')) {
       actionKey = key;
     }
     // We don't check for the simple $ACTION_ID_ case because form state actions
     // are always bound to the state argument.
-  }
+  });
   if (actionKey == null) {
     // Should be unreachable.
     return Promise.resolve(null);

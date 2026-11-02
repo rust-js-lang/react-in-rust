@@ -130,25 +130,22 @@ pub fn decode_action(
 
     let mut maybe_action_key: Option<String> = js::null();
 
-    // GAP rd560: upstream's `body.forEach((value, key) => {..})`: webapi's
-    // `for_each` takes a `Box<dyn FnMut>`, `'static`, which can't write the
-    // key found to a local, so it's a loop of the form data's entries.
     // $FlowFixMe[prop-missing]
-    for (key, value) in form_data::iter(body) {
+    body.for_each(|value, key, _| {
         if !key.starts_with("$ACTION_") {
             // $FlowFixMe[incompatible-type]
-            form_data.append(&key, value);
+            form_data.append(key, value);
         } else if key.starts_with("$ACTION_REF_") {
             // Later actions may override earlier actions if a button is used to
             // override the default form action. However, we don't expect the same
             // action ref field to be sent multiple times in legitimate form data.
-            maybe_action_key = Some(key);
+            maybe_action_key = Some(key.to_owned());
         } else if key.starts_with("$ACTION_ID_") {
             // A simple action with no bound arguments may appear twice in the form data
             // if a button specifies the same action as the default form action.
-            maybe_action_key = Some(key);
+            maybe_action_key = Some(key.to_owned());
         }
-    }
+    });
 
     let action_key = maybe_action_key?;
 
@@ -192,15 +189,14 @@ pub fn decode_form_state(
     // Search through the form data object to get the reference id and the number
     // of bound arguments. This repeats some of the work done in decodeAction.
     let mut action_key: Option<String> = js::null();
-    // GAP rd560: as decode_action's.
     // $FlowFixMe[prop-missing]
-    for (key, _) in form_data::iter(body) {
+    body.for_each(|_, key, _| {
         if key.starts_with("$ACTION_REF_") {
-            action_key = Some(key);
+            action_key = Some(key.to_owned());
         }
         // We don't check for the simple $ACTION_ID_ case because form state actions
         // are always bound to the state argument.
-    }
+    });
     let Some(action_key) = action_key else {
         // Should be unreachable.
         return js::promise::resolve(js::null());
