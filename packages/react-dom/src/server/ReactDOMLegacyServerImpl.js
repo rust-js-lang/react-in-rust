@@ -16,7 +16,6 @@ import {
   createRootFormatContext,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 import {createRenderState} from 'react-dom-bindings/src/server/ReactFizzConfigDOMLegacy';
-
 export {default as version} from 'shared/ReactVersion';
 
 function onError(error, errorInfo) {

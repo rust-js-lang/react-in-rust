@@ -50,6 +50,9 @@ export {
   writeStartSegment,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 
+// GAP rd652: these two `const`s, declared between the `use`s, print after
+// all the imports.
+
 // Allow embedding inside another Fizz render.
 export const isPrimaryRenderer: boolean;
 

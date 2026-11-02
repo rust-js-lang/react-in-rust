@@ -73,7 +73,7 @@ function describeComponentStackByType(type) {
       if (enableViewTransition) {
         return describeBuiltInComponentFrame('ViewTransition');
       }
-    // Fallthrough
+    // falls through
     default:
       return '';
   }

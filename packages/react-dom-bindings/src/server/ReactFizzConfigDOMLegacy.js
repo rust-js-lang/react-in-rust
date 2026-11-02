@@ -23,7 +23,6 @@ import {
 } from './ReactFizzConfigDOM.js';
 import {NotPending} from '../shared/ReactDOMFormActions.js';
 import escapeTextForBrowser from './escapeTextForBrowser.js';
-
 export {
   supportsClientAPIs,
   completeResumableState,

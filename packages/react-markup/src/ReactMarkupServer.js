@@ -5,7 +5,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+export {default as version} from 'shared/ReactVersion';
 import ReactSharedInternalsServer from 'react-server/src/ReactSharedInternalsServer';
+// GAP rd651: the alias prints `import ReactSharedInternals`, where upstream
+// names it `ReactSharedInternalsClient`.
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {
   abort as abortFlight,
@@ -28,14 +31,14 @@ import {
   startFlowing as startFizzFlowing,
   startWork as startFizzWork,
 } from 'react-server/src/ReactFizzServer';
+// GAP rd650: these re-exports of ReactFizzConfigDOM import from it, where
+// upstream imports them from './ReactFizzConfigMarkup'.
 import {
   createRenderState,
   createResumableState,
   createRootFormatContext,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 import {$displayF64, $someGet, $someValue, $unwrap} from '@rust-js/runtime';
-
-export {default as version} from 'shared/ReactVersion';
 
 function noServerCallOrFormAction(id, args) {
   throw new Error(
@@ -68,6 +71,8 @@ export function experimental_renderToHTML(children, options) {
         // For Flight errors we don't immediately reject, because they might not matter
         // to the output of the HTML. We stash the error with a digest in case we need
         // to get to the original error from the Fizz render.
+        // GAP rd653: an f64's text prints `$displayF64(..)`, where upstream
+        // writes `'' + stashErrorIdx++`.
         stashErrorIdx,
       );
       stashErrorIdx++;
@@ -161,6 +166,8 @@ export function experimental_renderToHTML(children, options) {
           buffer += chunk;
         } else {
           // null indicates that we finished
+          // GAP rd654: `resolve(buffer.borrow().clone())` is refused (ADR 0863),
+          // though `resolve` of a string runs none of this crate's code.
           const old = buffer;
           buffer = '';
           resolve(old);

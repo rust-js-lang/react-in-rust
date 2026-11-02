@@ -6,9 +6,8 @@
 // LICENSE file in the root directory of this source tree.
 
 import hasOwnProperty from 'shared/hasOwnProperty';
-import {$unwrap} from '@rust-js/runtime';
-
 export {createFastHashJS as createFastHash} from './createFastHashJS.js';
+import {$unwrap} from '@rust-js/runtime';
 
 const supportsArrayBufferDetached = hasOwnProperty.call(
   ArrayBuffer.prototype,

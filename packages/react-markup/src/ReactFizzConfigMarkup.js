@@ -12,8 +12,6 @@ import {
 import {NotPending} from 'react-dom-bindings/src/shared/ReactDOMFormActions';
 import hasOwnProperty from 'shared/hasOwnProperty';
 import {stringToChunk} from 'react-server/src/ReactServerStreamConfig';
-import escapeTextForBrowser from 'react-dom-bindings/src/server/escapeTextForBrowser';
-
 export {
   doctypeChunk,
   canHavePreamble,
@@ -49,6 +47,10 @@ export {
   writeStartPendingSuspenseBoundary,
   writeStartSegment,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
+import escapeTextForBrowser from 'react-dom-bindings/src/server/escapeTextForBrowser';
+
+// GAP rd652: these two `const`s, declared between the `use`s, print after
+// all the imports.
 
 // Allow embedding inside another Fizz render.
 export const isPrimaryRenderer = false;

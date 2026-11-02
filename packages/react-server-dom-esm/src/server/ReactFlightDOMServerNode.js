@@ -28,11 +28,20 @@ import {
   resolveFileComplete,
   resolveFileInfo,
 } from 'react-server/src/ReactFlightReplyServer';
+export {
+  decodeAction,
+  decodeFormState,
+} from 'react-server/src/ReactFlightActionServer';
+export {
+  registerClientReference,
+  registerServerReference,
+} from '../ReactFlightESMReferences.js';
 import {
   createStringDecoder,
   readFinalStringChunk,
   readPartialStringChunk,
 } from 'react-client/src/ReactFlightClientStreamConfigNode';
+export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 import {
   $borrow,
   $borrowMut,
@@ -41,18 +50,6 @@ import {
   $unborrow,
   $unwrap,
 } from '@rust-js/runtime';
-
-export {
-  decodeAction,
-  decodeFormState,
-} from 'react-server/src/ReactFlightActionServer';
-
-export {
-  registerClientReference,
-  registerServerReference,
-} from '../ReactFlightESMReferences.js';
-
-export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
 // GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
 

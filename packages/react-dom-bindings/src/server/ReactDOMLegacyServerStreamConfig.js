@@ -56,8 +56,7 @@ export function byteLengthOfBinaryChunk(chunk) {
 }
 
 export function closeWithError(destination, error) {
-  const destroy = destination.destroy;
-  destroy(error);
+  (0, destination.destroy)(error);
 }
 
 export function readAsDataURL(blob) {

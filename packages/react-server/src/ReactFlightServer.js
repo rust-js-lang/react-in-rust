@@ -370,53 +370,53 @@ initAsyncDebugInfo();
 
 function patchConsole(consoleInst, methodName) {
   const descriptor = Object.getOwnPropertyDescriptor(consoleInst, methodName);
-  if (descriptor != null && (descriptor.configurable || descriptor.writable)) {
-    // GAP rd576: a `PropertyDescriptor`'s `value` is a `&dyn IntoUnknown`,
-    // which no value is read of.
-    const originalMethod = descriptor.value;
-    if (typeof originalMethod === 'function') {
-      const originalName = Object.getOwnPropertyDescriptor(
-        originalMethod,
-        'name',
-      );
-      // Otherwise add the current environment.
-      function wrapperMethod() {
-        const request = resolveRequest();
-        if (methodName === 'assert' && arguments[0]) {
-          // assert doesn't emit anything unless first argument is falsy so we can skip it.
-        } else if (request != null) {
-          // Extract the stack. Not all console logs print the full stack but they have at
-          // least the line it was called from. We could optimize transfer by keeping just
-          // one stack frame but keeping it simple for now and include all frames.
-          const stack = filterStackTrace(
-            request,
-            parseStackTracePrivate(new Error('react-stack-top-frame'), 1) ?? [],
-          );
-          request.pendingDebugChunks++;
-          const owner = resolveOwner();
-          const args = Array.from(arguments);
-          // Extract the env if this is a console log that was replayed from another env.
-          const env =
-            unbadgeConsole(methodName, args) ?? environmentNameOf(request);
-
-          emitConsoleChunk(request, methodName, owner, env ?? '', stack, args);
-        }
-        // $FlowFixMe[incompatible-call]
-        // $FlowFixMe[incompatible-type]
-        return originalMethod.apply(this, arguments);
-      }
-      if (originalName != null) {
-        Object.defineProperty(
-          wrapperMethod,
-          // $FlowFixMe[cannot-write] yes it is
-          'name',
-          originalName,
+  if (
+    descriptor != null &&
+    (descriptor.configurable || descriptor.writable) &&
+    typeof descriptor.value === 'function'
+  ) {
+    const originalName = Object.getOwnPropertyDescriptor(
+      descriptor.value,
+      'name',
+    );
+    const captured = descriptor.value;
+    // Otherwise add the current environment.
+    function wrapperMethod() {
+      const request = resolveRequest();
+      if (methodName === 'assert' && arguments[0]) {
+        // assert doesn't emit anything unless first argument is falsy so we can skip it.
+      } else if (request != null) {
+        // Extract the stack. Not all console logs print the full stack but they have at
+        // least the line it was called from. We could optimize transfer by keeping just
+        // one stack frame but keeping it simple for now and include all frames.
+        const stack = filterStackTrace(
+          request,
+          parseStackTracePrivate(new Error('react-stack-top-frame'), 1) ?? [],
         );
+        request.pendingDebugChunks++;
+        const owner = resolveOwner();
+        const args = Array.from(arguments);
+        // Extract the env if this is a console log that was replayed from another env.
+        const env =
+          unbadgeConsole(methodName, args) ?? (0, request.environmentName)();
+
+        emitConsoleChunk(request, methodName, owner, env ?? '', stack, args);
       }
-      Object.defineProperty(consoleInst, methodName, {
-        value: wrapperMethod,
-      });
+      // $FlowFixMe[incompatible-call]
+      // $FlowFixMe[incompatible-type]
+      return captured.apply(this, arguments);
     }
+    if (originalName != null) {
+      Object.defineProperty(
+        wrapperMethod,
+        // $FlowFixMe[cannot-write] yes it is
+        'name',
+        originalName,
+      );
+    }
+    Object.defineProperty(consoleInst, methodName, {
+      value: wrapperMethod,
+    });
   }
 }
 
@@ -507,17 +507,6 @@ const PRERENDER = 21;
 // entries must be written atomically — see emitTextChunk and
 // emitTypedArrayChunk for why, and flushCompletedChunks for how it's read.
 const NEXT_TWO_CHUNKS_ARE_ATOMIC = Symbol();
-
-/**
- * `(0, request.environmentName)()`: the environment's name, its function
- * called with no `this`, as upstream calls it.
- */
-// GAP rd579: `(request.environment_name)()` prints `request.environmentName()`,
-// which calls a JS caller's function with the request as its `this`.
-function environmentNameOf(request) {
-  const environmentName = request.environmentName;
-  return environmentName();
-}
 
 const {
   TaintRegistryObjects,
@@ -1070,7 +1059,7 @@ function serializeThenable(request, task, thenable) {
         );
         return id;
       }
-    // Fallthrough
+    // falls through
     default: {
       const newTask = createThenableTask(request, task, thenable);
       if (request.status === ABORTING) {
@@ -1729,7 +1718,7 @@ function renderFunctionComponent(
       const value = component.displayName;
       const fallback = component.name;
       const componentName = value || fallback || '';
-      const componentEnv = environmentNameOf(request);
+      const componentEnv = (0, request.environmentName)();
       request.pendingChunks++;
       const newDebugInfo = {
         name: componentName,
@@ -2281,7 +2270,7 @@ function renderElement(
       // Create a fake owner node for the error stack.
       const componentDebugInfo = {
         name: 'Fragment',
-        env: environmentNameOf(request),
+        env: (0, request.environmentName)(),
         key: key ?? null,
         owner: task.debugOwner ?? null,
         stack: taskDebugStackTrace(request, task) ?? null,
@@ -2630,7 +2619,7 @@ function visitAsyncNodeImpl(
 
             // We log the environment at the time when the last promise pigned ping which may
             // be later than what the environment was when we actually started awaiting.
-            const env = environmentNameOf(request);
+            const env = (0, request.environmentName)();
             advanceTaskTime(request, task, startTime);
             // Then emit a reference to us awaiting it in the current task.
             request.pendingChunks++;
@@ -2691,7 +2680,7 @@ function emitAsyncSequence(
     request.pendingChunks++;
     // We log the environment at the time when we ping which may be later than what the
     // environment was when we actually started awaiting.
-    const env = environmentNameOf(request);
+    const env = (0, request.environmentName)();
     // If we don't have any thing awaited, the time we started awaiting was internal
     // when we yielded after rendering. The current task time is basically that.
     const debugInfo = {
@@ -2823,7 +2812,7 @@ function createTaskWithID(
     thenableState: null,
     timed: false,
     time: lastTimestamp,
-    environmentName: __DEV__ ? environmentNameOf(request) : '',
+    environmentName: __DEV__ ? (0, request.environmentName)() : '',
     debugOwner,
     debugStack,
     debugTask,
@@ -3238,7 +3227,7 @@ function serializeServerReference(request, serverReference) {
             bound,
             name:
               typeof serverReference === 'function' ? serverReference.name : '',
-            env: environmentNameOf(request),
+            env: (0, request.environmentName)(),
             location,
           }
         : {id, bound};
@@ -4406,7 +4395,7 @@ function describeErrorValue(request, error, name, env) {
 function serializeErrorValue(request, error) {
   if (__DEV__) {
     let name = 'Error';
-    let env = environmentNameOf(request);
+    let env = (0, request.environmentName)();
     const name$1 = {value: name};
     const env$1 = {value: env};
     const value = describeErrorValue(request, error, name$1, env$1);
@@ -4447,7 +4436,7 @@ function serializeErrorValue(request, error) {
 function serializeDebugErrorValue(request, counter, error) {
   if (__DEV__) {
     let name = 'Error';
-    let env = environmentNameOf(request);
+    let env = (0, request.environmentName)();
     const name$1 = {value: name};
     const env$1 = {value: env};
     const value = describeErrorValue(request, error, name$1, env$1);
@@ -4506,7 +4495,7 @@ function emitErrorChunk(
   let errorInfo;
   if (__DEV__) {
     let name = 'Error';
-    let env = environmentNameOf(request);
+    let env = (0, request.environmentName)();
     let causeReference;
     let errorsReference;
     const described = $catchUnwind(() => {
@@ -4976,7 +4965,7 @@ function outlineIOInfo(request, ioInfo) {
             item[6],
           ]);
   }
-  const env = ioInfo.env ?? environmentNameOf(request);
+  const env = ioInfo.env ?? (0, request.environmentName)();
   emitIOInfoChunk(
     request,
     id,
@@ -5048,7 +5037,7 @@ function serializeIONode(request, ioNode, promiseRef) {
 
   // We log the environment at the time when we serialize the I/O node.
   // The environment name may have changed from when the I/O was actually started.
-  const env = environmentNameOf(request);
+  const env = (0, request.environmentName)();
 
   const endTime =
     ioNode.tag === UNRESOLVED_PROMISE_NODE
@@ -5944,7 +5933,7 @@ function forwardDebugInfo(request, task, debugInfo) {
           // If we're forwarding IO info from this environment, an empty env is effectively the "client" side.
           // The "client" from the perspective of our client will be this current environment.
           // $FlowFixMe[cannot-write]
-          debugAsyncInfo.env = environmentNameOf(request);
+          debugAsyncInfo.env = (0, request.environmentName)();
         }
         owner = info.owner;
         if (owner != null) {
@@ -6055,7 +6044,7 @@ function forwardDebugInfoFromAbortedTask(request, task) {
           // The best we can do is try to emit the stack of where this Promise was created.
           serializeIONode(request, node);
           request.pendingChunks++;
-          const env = environmentNameOf(request);
+          const env = (0, request.environmentName)();
           const asyncInfo = {awaited: node, env};
           // We don't have a start time for this await but in case there was no start time emitted
           // we need to include something. TODO: We should maybe ideally track the time when we
@@ -6258,23 +6247,20 @@ const emptyRoot = {};
 
 // $FlowFixMe[invalid-compare]
 if (__DEV__ && typeof console === 'object') {
-  // GAP rd577: webapi's `Console` is no `js::Defined` value, so the
-  // object `console` is read as `globalThis.console`.
-  const consoleObject = $unwrap(globalThis.console);
   // Instrument console to capture logs for replaying on the client.
-  patchConsole(consoleObject, 'assert');
-  patchConsole(consoleObject, 'debug');
-  patchConsole(consoleObject, 'dir');
-  patchConsole(consoleObject, 'dirxml');
-  patchConsole(consoleObject, 'error');
-  patchConsole(consoleObject, 'group');
-  patchConsole(consoleObject, 'groupCollapsed');
-  patchConsole(consoleObject, 'groupEnd');
-  patchConsole(consoleObject, 'info');
-  patchConsole(consoleObject, 'log');
-  patchConsole(consoleObject, 'table');
-  patchConsole(consoleObject, 'trace');
-  patchConsole(consoleObject, 'warn');
+  patchConsole(console, 'assert');
+  patchConsole(console, 'debug');
+  patchConsole(console, 'dir');
+  patchConsole(console, 'dirxml');
+  patchConsole(console, 'error');
+  patchConsole(console, 'group');
+  patchConsole(console, 'groupCollapsed');
+  patchConsole(console, 'groupEnd');
+  patchConsole(console, 'info');
+  patchConsole(console, 'log');
+  patchConsole(console, 'table');
+  patchConsole(console, 'trace');
+  patchConsole(console, 'warn');
 }
 
 function retryTask(request, task) {
@@ -6326,7 +6312,7 @@ function retryTask(request, task) {
     task.implicitSlot = false;
 
     if (__DEV__) {
-      const currentEnv = environmentNameOf(request);
+      const currentEnv = (0, request.environmentName)();
       if (currentEnv !== task.environmentName) {
         request.pendingChunks++;
         // The environment changed since we last emitted any debug information for this

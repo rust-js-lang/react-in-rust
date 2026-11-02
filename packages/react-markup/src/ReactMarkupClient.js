@@ -11,12 +11,13 @@ import {
   startFlowing as startFizzFlowing,
   startWork as startFizzWork,
 } from 'react-server/src/ReactFizzServer';
+// GAP rd650: these re-exports of ReactFizzConfigDOM import from it, where
+// upstream imports them from './ReactFizzConfigMarkup'.
 import {
   createRenderState,
   createResumableState,
   createRootFormatContext,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
-
 export {default as version} from 'shared/ReactVersion';
 
 export function experimental_renderToHTML(children, options) {
@@ -28,6 +29,8 @@ export function experimental_renderToHTML(children, options) {
           buffer += chunk;
         } else {
           // null indicates that we finished
+          // GAP rd654: `resolve(buffer.borrow().clone())` is refused (ADR 0863),
+          // though `resolve` of a string runs none of this crate's code.
           const old = buffer;
           buffer = '';
           resolve(old);
