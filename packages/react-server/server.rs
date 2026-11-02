@@ -41,6 +41,8 @@ pub mod react_flight_current_owner;
 pub mod react_flight_hooks;
 #[path = "src/ReactFlightReplyServer.rs"]
 pub mod react_flight_reply_server;
+#[path = "src/ReactFlightServer.rs"]
+pub mod react_flight_server;
 #[path = "src/ReactFlightServerConfigDebugNode.rs"]
 pub mod react_flight_server_config_debug_node;
 #[path = "src/ReactFlightServerConfigDebugNoop.rs"]

@@ -1,10 +1,12 @@
 # Fibers hash and compare by identity (ptr::hash, ptr::eq), so their cells
 # don't change a key; clippy's mutable_key_type would flag every Set of them.
-# Fizz's tasks and key paths do too (ReactFizzServer's Sets and Maps of them).
+# Fizz's tasks and key paths do too (ReactFizzServer's Sets and Maps of them),
+# and Flight's tasks (ReactFlightServer's abortable Set).
 ignore-interior-mutability = [
     "react_reconciler::react_internal_types::Fiber",
     "react_server::react_fizz_server::Task",
     "react_server::react_fizz_server::KeyNode",
+    "react_server::react_flight_server::Task",
 ]
 
 # React's functions are ported with upstream's parameters (ReactFiberWorkLoop's

@@ -28,6 +28,9 @@ pub struct DefaultAsyncDispatcher {
     pub get_owner: Cell<Option<GetOwner>>,
 }
 
+// Safety: a JS object of its fields.
+unsafe impl js::Defined for DefaultAsyncDispatcher {}
+
 impl CacheDispatcher for DefaultAsyncDispatcher {}
 
 fn resolve_cache() -> &'static Cache {
