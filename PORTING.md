@@ -711,6 +711,56 @@ These differences from upstream's output are accepted:
   - createResponse's `backingFormData` and `arraySizeLimit` are declared
     `unknown`, where upstream's are `FormData` and `number`: each is told
     `undefined` from `null` as upstream's defaults are.
+- **react-server-dom-webpack's server (the user, 2026-11-02)**:
+  ReactFlightWebpackReferences, ReactFlightServerConfigWebpackBundler and
+  ReactFlightDOMServerBrowser, -Edge and -Node are Rust; the plain
+  re-export entries `react-flight-dom-server.*.js` stay JS (rd55), as do
+  ReactFlightWebpackPlugin, NodeLoader and NodeRegister. ReactFlightServer's
+  functions an entry calls are bound once, in react_server's
+  ReactFlightHooks beside its Flight `Request`, each bundler's client
+  manifest a type parameter, as ReactFizzCurrentTask binds ReactFizzServer's.
+  These differences from upstream are accepted, each gap left open:
+  - `options?.x` where upstream writes `options ? options.x : undefined`,
+    and `!= null` where upstream tests `!== undefined` or truth (an option
+    given as `null` is absent, ReactDOMRoot's kind);
+  - each error message is one template literal where upstream
+    concatenates its parts;
+  - decodeReplyFromAsyncIterable's `iterable[Symbol.asyncIterator]()`,
+    `js::AsyncIterable::async_iterator`, where upstream writes
+    `iterable[ASYNC_ITERATOR]()`;
+  - bind's and registerServerReference's descriptor locals are `typeof$`
+    and `id` where upstream names them `$$typeof` and `$$id`, and their two
+    property maps are two `Object.defineProperties(..)` calls under `__DEV__
+    ? .. : ..`, where upstream passes `__DEV__ ? {..} : {..}` to one;
+  - bind's bound arguments are `[...bound, ...args]` where upstream writes
+    `this.$$bound.concat(args)`;
+  - prerender's and prerenderToNodeStream's request, and the web streams'
+    writable, made after the closures that read them, are read
+    `$unwrap(request)` (the Fizz entries' form);
+  - decodeReplyFromBusboy copies a file's queued fields out before
+    resolving them, `current.queuedFields.slice()`, so no `RefCell` borrow
+    is held across resolveField; its file handle's borrows are counted,
+    `$borrow(current.file, true)` (rd590);
+  - the fake Writables (of a WebSocket, a web stream's controller and a
+    Node Readable) are object literals of `write`, `end` and `destroy`,
+    cast to a `Writable` as upstream's `as any`;
+  - types: Node's `debugChannel` is `unknown`, told apart by what it has as
+    upstream does, where upstream types `Readable | Writable | Duplex |
+    WebSocket`; `environmentName` is an untagged `string | (() => string)`;
+    `arraySizeLimit` is `unknown`, as createResponse's; and
+    registerServerReference's `exportName` is `unknown`, so `exportName ===
+    null` keeps a missing name's `id#undefined`;
+  - readability gaps: rd582 (a conditional's text named after a callee,
+    `readPartialStringChunk$1`), rd583 (`$someValue(value)` of a read),
+    rd587 (no `export type {..}` of a re-exported type), rd589
+    (getReference's `switch` of a string or a symbol is a string `switch`
+    and an `if` of each symbol; `then`'s function is unnamed, `function
+    (resolve, _reject)`), rd591 (`readable.on('end', () => onClose())`
+    where upstream passes `onClose`), rd592 (`import {Readable} from
+    'stream'` last) and rd593 (ReactFlightReplyServer's createFileFromHandle
+    writes `handle.filename ?? 'undefined'` and two `append`s, webapi's
+    `new File` naming by `&str` and FormData's optional file name a second
+    method).
 - **The Flight clients' names and arms** (the user, 2026-11-01):
   - readChunk's default arm is split by variant, `throw chunk.reason` of
     an errored chunk and `throw null` of a resolved module's, where

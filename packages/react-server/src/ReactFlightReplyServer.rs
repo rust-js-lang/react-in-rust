@@ -2630,7 +2630,7 @@ fn create_file_from_handle(handle: &FileHandle) -> &'static File {
     if js::is_function(file::new) {
         return file::new(
             &handle.chunks,
-            // GAP (id requested): `new File(..)`'s name is `&str`, so a name that's
+            // GAP rd593: `new File(..)`'s name is `&str`, so a name that's
             // `undefined` is written as the text WebIDL makes of it.
             handle.filename.as_deref().unwrap_or("undefined"),
             Some(FilePropertyBag {
@@ -2647,7 +2647,7 @@ fn create_file_from_handle(handle: &FileHandle) -> &'static File {
             endings: None,
         }),
     );
-    // GAP (id requested): FormData's `append` of a blob and an optional file name is
+    // GAP rd593: FormData's `append` of a blob and an optional file name is
     // two methods, so a name that's `undefined` appends the blob alone, named
     // "blob", as upstream's `append('file', blob, undefined)` does.
     match &handle.filename {

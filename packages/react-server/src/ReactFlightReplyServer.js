@@ -1921,7 +1921,7 @@ function createFileFromHandle(handle) {
   if (typeof File === 'function') {
     return new File(
       handle.chunks,
-      // GAP (id requested): `new File(..)`'s name is `&str`, so a name that's
+      // GAP rd593: `new File(..)`'s name is `&str`, so a name that's
       // `undefined` is written as the text WebIDL makes of it.
       handle.filename ?? 'undefined',
       {
@@ -1933,7 +1933,7 @@ function createFileFromHandle(handle) {
   const blob = new Blob(handle.chunks, {
     type: handle.mime,
   });
-  // GAP (id requested): FormData's `append` of a blob and an optional file name is
+  // GAP rd593: FormData's `append` of a blob and an optional file name is
   // two methods, so a name that's `undefined` appends the blob alone, named
   // "blob", as upstream's `append('file', blob, undefined)` does.
   if (handle.filename != null) {
