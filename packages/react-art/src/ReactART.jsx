@@ -7,12 +7,10 @@
 
 import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
 import {
+  createContainer,
   defaultOnCaughtError,
   defaultOnRecoverableError,
   defaultOnUncaughtError,
-} from 'react-reconciler/src/ReactFiberErrorLogger';
-import {
-  createContainer,
   flushSyncWork,
   injectIntoDevTools,
   updateContainerSync,

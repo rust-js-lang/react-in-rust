@@ -47,7 +47,7 @@ function isSameOriginFrame(iframe) {
     // Which might result in "SecurityError" DOM Exception and it is compatible to Safari.
     // https://html.spec.whatwg.org/multipage/browsers.html#integration-with-idl
 
-    $unwrap(iframe.contentWindow).location.href;
+    iframe.contentWindow.location.href;
     return true;
   } catch {
     return false;

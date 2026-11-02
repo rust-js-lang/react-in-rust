@@ -958,7 +958,7 @@ export function appendChildToContainer(container, child) {
   } else {
     parentNode =
       container.nodeName === 'HTML'
-        ? $unwrap($unwrap(container.ownerDocument).body)
+        ? $unwrap(container.ownerDocument.body)
         : container;
   }
   if (supportsMoveBefore && child.parentNode !== null) {
@@ -1004,7 +1004,7 @@ export function insertInContainerBefore(container, child, beforeChild) {
   ) {
     parentNode = $unwrap(container.parentNode);
   } else if (container.nodeName === 'HTML') {
-    parentNode = $unwrap($unwrap(container.ownerDocument).body);
+    parentNode = $unwrap(container.ownerDocument.body);
   } else {
     parentNode = container;
   }
@@ -1063,7 +1063,7 @@ export function removeChildFromContainer(container, child) {
   ) {
     parentNode = $unwrap(container.parentNode);
   } else if (container.nodeName === 'HTML') {
-    parentNode = $unwrap($unwrap(container.ownerDocument).body);
+    parentNode = $unwrap(container.ownerDocument.body);
   } else {
     parentNode = container;
   }
@@ -1143,7 +1143,7 @@ function clearHydrationBoundaryFromContainer(container, hydrationInstance) {
   ) {
     parentNode = $unwrap(container.parentNode);
   } else if (container.nodeName === 'HTML') {
-    parentNode = $unwrap($unwrap(container.ownerDocument).body);
+    parentNode = $unwrap(container.ownerDocument.body);
   } else {
     parentNode = container;
   }
@@ -1464,7 +1464,7 @@ export function cancelRootViewTransitionName(rootContainer) {
   const documentElement =
     rootContainer.nodeType === DOCUMENT_NODE
       ? rootContainer.documentElement
-      : $unwrap(rootContainer.ownerDocument).documentElement;
+      : rootContainer.ownerDocument.documentElement;
 
   if (
     !disableCommentsAsDOMContainers &&
@@ -1519,7 +1519,7 @@ export function restoreRootViewTransitionName(rootContainer) {
   if (rootContainer.nodeType === DOCUMENT_NODE) {
     containerInstance = $unwrap(rootContainer.body);
   } else if (rootContainer.nodeName === 'HTML') {
-    containerInstance = $unwrap($unwrap(rootContainer.ownerDocument).body);
+    containerInstance = $unwrap(rootContainer.ownerDocument.body);
   } else {
     // If the container is not the whole document, then we ideally should probably
     // clone the whole document outside of the React too.
@@ -1626,7 +1626,7 @@ export function cloneRootViewTransitionContainer(rootContainer) {
   const documentElement =
     rootContainer.nodeType === DOCUMENT_NODE
       ? rootContainer.documentElement
-      : $unwrap(rootContainer.ownerDocument).documentElement;
+      : rootContainer.ownerDocument.documentElement;
   if (
     documentElement !== null &&
     // $FlowFixMe[prop-missing]
@@ -1640,7 +1640,7 @@ export function cloneRootViewTransitionContainer(rootContainer) {
   if (rootContainer.nodeType === DOCUMENT_NODE) {
     containerInstance = $unwrap(rootContainer.body);
   } else if (rootContainer.nodeName === 'HTML') {
-    containerInstance = $unwrap($unwrap(rootContainer.ownerDocument).body);
+    containerInstance = $unwrap(rootContainer.ownerDocument.body);
   } else if (
     !disableCommentsAsDOMContainers &&
     rootContainer.nodeType === COMMENT_NODE
@@ -1740,7 +1740,7 @@ export function cloneRootViewTransitionContainer(rootContainer) {
   // as the next sibling of an existing body. document.body will still point to the
   // first one and any id selectors will still find the first one. That's why it's
   // important that it's after the existing node.
-  $unwrap(containerInstance.parentNode).insertBefore(
+  containerInstance.parentNode.insertBefore(
     clone,
     containerInstance.nextSibling,
   );
@@ -1753,7 +1753,7 @@ export function removeRootViewTransitionClone(rootContainer, clone) {
   if (rootContainer.nodeType === DOCUMENT_NODE) {
     containerInstance = $unwrap(rootContainer.body);
   } else if (rootContainer.nodeName === 'HTML') {
-    containerInstance = $unwrap($unwrap(rootContainer.ownerDocument).body);
+    containerInstance = $unwrap(rootContainer.ownerDocument.body);
   } else {
     // If the container is not the whole document, then we ideally should probably
     // clone the whole document outside of the React too.
@@ -1927,7 +1927,7 @@ function customizeViewTransitionError(error, ignoreAbort) {
 /** @noinline */
 function forceLayout(ownerDocument) {
   // This function exists to trick minifiers to not remove this unused member expression.
-  return $unwrap(ownerDocument.documentElement).clientHeight;
+  return ownerDocument.documentElement.clientHeight;
 }
 
 function waitForImageToLoad(image, resolve) {
@@ -2088,7 +2088,7 @@ export function startViewTransition(
       });
       for (let i = 0; i < animations.length; i++) {
         const animation = animations[i];
-        const effect = $unwrap(animation.effect);
+        const effect = animation.effect;
         // $FlowFixMe[prop-missing]
         const pseudoElement = effect.pseudoElement;
         if (
@@ -2437,7 +2437,7 @@ export function startGestureTransition(
       let longestDuration = 0;
       for (let i = 0; i < animations.length; i++) {
         const animation = animations[i];
-        const effect = $unwrap(animation.effect);
+        const effect = animation.effect;
         // $FlowFixMe[prop-missing]
         const pseudoElement = effect.pseudoElement;
         if (
@@ -2472,7 +2472,7 @@ export function startGestureTransition(
         if (anim.playState !== 'running') {
           continue;
         }
-        const effect = $unwrap(anim.effect);
+        const effect = anim.effect;
         // $FlowFixMe[prop-missing]
         const pseudoElement = effect.pseudoElement;
         if (
@@ -2598,13 +2598,9 @@ export function startGestureTransition(
     // TODO: Think of a feature detection for this instead.
     const readyForAnimations = navigator.userAgent.includes('Chrome')
       ? () => {
-          requestAnimationFrame(() => {
-            readyCallback();
-          });
+          requestAnimationFrame(readyCallback);
         }
-      : () => {
-          readyCallback();
-        };
+      : readyCallback;
     function handleError(error) {
       // $FlowFixMe[prop-missing]
       if (ownerDocument.__reactViewTransition === transition) {
@@ -4097,7 +4093,7 @@ export function getFirstHydratableChildWithinContainer(parentContainer) {
   if (parentContainer.nodeType === 9) {
     parentElement = $unwrap(parentContainer.body);
   } else if (parentContainer.nodeName === 'HTML') {
-    parentElement = $unwrap($unwrap(parentContainer.ownerDocument).body);
+    parentElement = $unwrap(parentContainer.ownerDocument.body);
   } else {
     parentElement = parentContainer;
   }
@@ -4708,7 +4704,7 @@ export function getHoistableRoot(container) {
   }
   return container.nodeType === DOCUMENT_NODE
     ? container
-    : $unwrap(container.ownerDocument);
+    : container.ownerDocument;
 }
 
 function getCurrentResourceRoot() {
@@ -5583,7 +5579,7 @@ function insertStylesheet(instance, precedence, root) {
     // We get the prior from the document so we know it is in the tree.
     // We also know that links can't be the topmost Node so the parentNode
     // must exist.
-    $unwrap(prior.parentNode).insertBefore(instance, prior.nextSibling);
+    prior.parentNode.insertBefore(instance, prior.nextSibling);
   } else {
     const parent = root.nodeType === DOCUMENT_NODE ? $unwrap(root.head) : root;
     parent.insertBefore(instance, parent.firstChild);
@@ -5785,7 +5781,7 @@ export function mountHoistable(hoistableRoot, type, instance) {
 }
 
 export function unmountHoistable(instance) {
-  $unwrap(instance.parentNode).removeChild(instance);
+  instance.parentNode.removeChild(instance);
 }
 
 export function isHostHoistableType(type, props, hostContext) {
@@ -6375,7 +6371,7 @@ function insertStylesheetIntoRoot(state, root, resource, map) {
   instance.addEventListener('error', onComplete);
 
   if (prior != null) {
-    $unwrap(prior.parentNode).insertBefore(instance, prior.nextSibling);
+    prior.parentNode.insertBefore(instance, prior.nextSibling);
   } else {
     const parent = root.nodeType === DOCUMENT_NODE ? $unwrap(root.head) : root;
     parent.insertBefore(instance, parent.firstChild);

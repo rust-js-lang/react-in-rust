@@ -974,12 +974,8 @@ function createReactNoop(reconciler, useMutation) {
         false,
         false,
         '',
-        (error, errorInfo) => {
-          NoopRenderer.defaultOnUncaughtError(error, errorInfo);
-        },
-        (error, errorInfo) => {
-          NoopRenderer.defaultOnCaughtError(error, errorInfo);
-        },
+        NoopRenderer.defaultOnUncaughtError,
+        NoopRenderer.defaultOnCaughtError,
         onRecoverableError,
         onDefaultTransitionIndicator,
         null,
@@ -1051,14 +1047,8 @@ function createReactNoop(reconciler, useMutation) {
         false,
         false,
         '',
-        options?.onUncaughtError ??
-          ((error, errorInfo) => {
-            NoopRenderer.defaultOnUncaughtError(error, errorInfo);
-          }),
-        options?.onCaughtError ??
-          ((error, errorInfo) => {
-            NoopRenderer.defaultOnCaughtError(error, errorInfo);
-          }),
+        options?.onUncaughtError ?? NoopRenderer.defaultOnUncaughtError,
+        options?.onCaughtError ?? NoopRenderer.defaultOnCaughtError,
         onRecoverableError,
         options?.onDefaultTransitionIndicator ?? onDefaultTransitionIndicator,
         options?.unstable_transitionCallbacks ?? null,
@@ -1095,12 +1085,8 @@ function createReactNoop(reconciler, useMutation) {
         false,
         null,
         '',
-        (error, errorInfo) => {
-          NoopRenderer.defaultOnUncaughtError(error, errorInfo);
-        },
-        (error, errorInfo) => {
-          NoopRenderer.defaultOnCaughtError(error, errorInfo);
-        },
+        NoopRenderer.defaultOnUncaughtError,
+        NoopRenderer.defaultOnCaughtError,
         onRecoverableError,
         onDefaultTransitionIndicator,
         null,

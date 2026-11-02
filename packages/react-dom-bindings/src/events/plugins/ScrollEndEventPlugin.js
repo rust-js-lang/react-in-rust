@@ -114,7 +114,7 @@ export function extractEvents(
     if (!isScrollEndEventSupported && inCapturePhase) {
       switch (domEventName) {
         case 'scroll':
-          if (nativeEventTarget !== null) {
+          if (nativeEventTarget != null) {
             debounceScrollEnd(targetInst, nativeEvent, nativeEventTarget);
           }
           break;
@@ -137,7 +137,7 @@ export function extractEvents(
     return;
   }
 
-  if (!isScrollEndEventSupported && nativeEventTarget !== null) {
+  if (!isScrollEndEventSupported && nativeEventTarget != null) {
     const existingTimer = getScrollEndTimer(nativeEventTarget);
     if (existingTimer != null) {
       // If we do get a native scrollend event fired, we cancel the polyfill.

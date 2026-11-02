@@ -31,7 +31,7 @@ export function commitNewChildToFragmentInstances(
   ) {
     return;
   }
-  if (parentFragmentInstances === null) {
+  if (parentFragmentInstances == null) {
     return;
   }
   for (let i = 0; i < parentFragmentInstances.length; i++) {

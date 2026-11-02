@@ -486,11 +486,12 @@ These differences from upstream's output are accepted:
   function's, as rd196's are (rust-js 2e20abe4d). Its scope is only a
   namespace's function called through a value: a closure that forwards to a
   plain function is that function only where rd158, rd196 or rd212 says so.
-  rust-js keeps a closure an `Rc` is made of as an arrow (its pointer is
-  what `Rc::ptr_eq` compares), so the `Rc` handlers still print
-  `(error, errorInfo) => { NoopRenderer.defaultOnUncaughtError(..); }`.
-  rd313, pending in rust-js, treats an `Rc` whose pointer the crate never
-  compares like a `Box`.
+  An `Rc` made of such a closure is the function too where the crate
+  compares no `Rc`'s pointer (rd313, rust-js 51934f325, option A), so
+  createReactNoop's `Rc` handlers print upstream's
+  `NoopRenderer.defaultOnUncaughtError`, and
+  `options?.onUncaughtError ?? NoopRenderer.defaultOnUncaughtError`. A
+  thunk, a closure of no parameters, stays an arrow (ADR 0605).
 - **rd158** (the user; rust-js's guide, difference 32): a closure that
   captures nothing, held as a `fn`, and only calls one host function with
   what it's given (its optional parameters `None`) is that function:

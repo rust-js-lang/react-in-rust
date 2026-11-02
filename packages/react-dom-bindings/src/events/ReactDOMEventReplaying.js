@@ -43,7 +43,7 @@ import {
   attemptHydrationAtCurrentPriority,
 } from 'react-reconciler/src/ReactFiberReconciler';
 import {enableHydrationChangeEvent} from 'shared/ReactFeatureFlags';
-import {$insertAt, $removeAt, $unwrap} from '@rust-js/runtime';
+import {$insertAt, $removeAt} from '@rust-js/runtime';
 
 let hasScheduledReplayAttempt = false;
 
@@ -355,7 +355,7 @@ function attemptReplayContinuousQueuedEvent(queuedEvent) {
         nativeEvent,
       );
       setReplayingEvent(nativeEventClone);
-      $unwrap(nativeEvent.target).dispatchEvent(nativeEventClone);
+      nativeEvent.target.dispatchEvent(nativeEventClone);
       resetReplayingEvent();
     } else {
       // We're still blocked. Try again later.

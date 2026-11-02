@@ -1219,7 +1219,7 @@ function initializeElement(response, element, lazyNode) {
   element._debugStack = normalizedStackTrace;
   let task = null;
   if (supportsCreateTask && stack != null) {
-    const createTaskFn = $unwrap(console.createTask).bind(
+    const createTaskFn = console.createTask.bind(
       console,
       getTaskName(element.type),
     );
@@ -3641,8 +3641,8 @@ function ResponseInstance(
       // elements created by the server. We use the "use server" string to indicate that
       // this is where we enter the server from the client.
       // TODO: Make this string configurable.
-      const value = $unwrap(console.createTask);
-      this._debugRootTask = value('"use ' + rootEnv.toLowerCase() + '"');
+      const createTask = console.createTask;
+      this._debugRootTask = createTask('"use ' + rootEnv.toLowerCase() + '"');
     }
     // Track the start of the fetch to the best of our knowledge.
     // Note: createFromFetch allows this to be marked at the start of the fetch
@@ -3925,7 +3925,7 @@ function getRootTask(response, childEnvironmentName) {
     // If the root most owner component is itself in a different environment than the requested
     // environment then we create an extra task to indicate that we're transitioning into it.
     // Like if one environment just requests another environment.
-    const createTaskFn = $unwrap(console.createTask).bind(
+    const createTaskFn = console.createTask.bind(
       console,
       '"use ' + childEnvironmentName.toLowerCase() + '"',
     );
@@ -4006,7 +4006,7 @@ function buildFakeTask(
   env,
   useEnclosingLine,
 ) {
-  const createTaskFn = $unwrap(console.createTask).bind(console, taskName);
+  const createTaskFn = console.createTask.bind(console, taskName);
   const callStack = buildFakeCallStack(
     response,
     stack,

@@ -887,7 +887,7 @@ function measureViewTransitionHostInstancesRecursive(
     if (current.tag === HostComponent) {
       const instance = current.stateNode;
       if (
-        previousMeasurements !== null &&
+        previousMeasurements != null &&
         viewTransitionHostInstanceIdx < previousMeasurements.length
       ) {
         // The previous measurement of the Instance in this location within the ViewTransition.
