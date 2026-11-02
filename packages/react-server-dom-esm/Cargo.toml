@@ -6,13 +6,15 @@ publish.workspace = true
 
 # React Server Components bindings for DOM using native ES modules,
 # `react-server-dom-esm`. Its modules are its files, each beside the JS
-# rust-js writes from it; its root and `client` declare them and write no JS
-# of their own.
+# rust-js writes from it; its root, `client` and `server` declare them and
+# write no JS of their own.
 
 [dependencies]
+busboy.workspace = true
 js.workspace = true
 node.workspace = true
 react-client = { path = "../react-client" }
+react-server = { path = "../react-server" }
 shared.workspace = true
 webapi.workspace = true
 
