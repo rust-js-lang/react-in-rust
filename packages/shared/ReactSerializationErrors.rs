@@ -23,8 +23,8 @@ use crate::react_feature_flags::ENABLE_VIEW_TRANSITION;
 thread_local! {
     // Used for DEV messages to keep track of which parent rendered some props,
     // in case they error.
-    pub static JSX_PROPS_PARENTS: &'static WeakMap<JsObject, &'static Unknown> = js::weak_map::new();
-    pub static JSX_CHILDREN_PARENTS: &'static WeakMap<JsObject, &'static Unknown> = js::weak_map::new();
+    pub static JSX_PROPS_PARENTS: &'static WeakMap<JsObject, Option<&'static Unknown>> = js::weak_map::new();
+    pub static JSX_CHILDREN_PARENTS: &'static WeakMap<JsObject, Option<&'static Unknown>> = js::weak_map::new();
 }
 
 fn is_object_prototype(object: Option<&Unknown>) -> bool {
@@ -213,7 +213,9 @@ pub fn describe_object_for_error_message(
     if let Kind::Array(array) = js::classify(Some(object_or_array)) {
         if __DEV__ && JSX_CHILDREN_PARENTS.with(|parents| parents.has(key)) {
             // Print JSX Children
-            let r#type = JSX_CHILDREN_PARENTS.with(|parents| parents.get(key));
+            let r#type = JSX_CHILDREN_PARENTS
+                .with(|parents| parents.get(key))
+                .flatten();
             str = "<".to_string() + &describe_element_type(r#type) + ">";
             for (i, &value) in array.iter().enumerate() {
                 let substr = if let Kind::String(value) = js::classify(value) {
@@ -279,7 +281,7 @@ pub fn describe_object_for_error_message(
             return describe_client_reference(object_or_array);
         } else if __DEV__ && JSX_PROPS_PARENTS.with(|parents| parents.has(key)) {
             // Print JSX
-            let r#type = JSX_PROPS_PARENTS.with(|parents| parents.get(key));
+            let r#type = JSX_PROPS_PARENTS.with(|parents| parents.get(key)).flatten();
             str = "<".to_string()
                 + Some(describe_element_type(r#type))
                     .filter(|name| !name.is_empty())

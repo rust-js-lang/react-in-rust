@@ -340,6 +340,8 @@ pub struct ReactErrorInfoProd {
     pub digest: String,
 }
 
+unsafe impl js::Defined for ReactErrorInfoProd {}
+
 /// A string, boolean, number, `null`, or an object or array of them.
 pub type JSONValue = Unknown;
 
@@ -364,6 +366,8 @@ pub enum ReactErrorInfo {
     #[cfg_attr(rust_js, rust_js::otherwise)]
     Prod(ReactErrorInfoProd),
 }
+
+unsafe impl js::Defined for ReactErrorInfo {}
 
 // The point where the Async Info started which might not be the same place it was awaited.
 pub struct ReactIOInfo {

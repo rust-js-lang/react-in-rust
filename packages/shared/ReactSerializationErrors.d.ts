@@ -5,9 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export const jsxPropsParents: WeakMap<object, unknown>;
+export const jsxPropsParents: WeakMap<object, unknown | null | undefined>;
 
-export const jsxChildrenParents: WeakMap<object, unknown>;
+export const jsxChildrenParents: WeakMap<object, unknown | null | undefined>;
 
 export function isGetter(
   object: unknown | null | undefined,
