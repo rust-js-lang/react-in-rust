@@ -6,9 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 import {disableLogs, reenableLogs} from './ConsolePatchingDev.js';
+import ReactSharedInternals from './ReactSharedInternals.js';
 import DefaultPrepareStackTrace from './DefaultPrepareStackTrace.js';
 import {formatOwnerStack} from './ReactOwnerStackFrames.js';
-import ReactSharedInternals from './ReactSharedInternals.js';
 
 let prefix;
 let suffix = '';

@@ -5,11 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import ReactSharedInternals from 'shared/ReactSharedInternals';
+import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+import {ClassComponent} from './ReactWorkTags.js';
 import reportGlobalError from 'shared/reportGlobalError';
 import {bindToConsole} from './ReactFiberConfig.js';
-import {ClassComponent} from './ReactWorkTags.js';
-import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 // Side-channel since I'm not sure we want to make this part of the public API
 let componentName = null;

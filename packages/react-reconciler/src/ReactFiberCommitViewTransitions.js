@@ -6,11 +6,18 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  enableComponentPerformanceTrack,
-  enableProfilerTimer,
-  enableViewTransitionForPersistenceMode,
-  enableViewTransitionParentEnterExit,
-} from 'shared/ReactFeatureFlags';
+  HostComponent,
+  OffscreenComponent,
+  ViewTransitionComponent,
+} from './ReactWorkTags.js';
+import {
+  AffectedParentLayout,
+  NoFlags,
+  Update,
+  ViewTransitionNamedStatic,
+  ViewTransitionStatic,
+  ViewTransitionStaticParent,
+} from './ReactFiberFlags.js';
 import {
   applyViewTransitionName,
   hasInstanceAffectedParent,
@@ -22,27 +29,20 @@ import {
   wasInstanceInViewport,
 } from './ReactFiberConfig.js';
 import {
-  AffectedParentLayout,
-  NoFlags,
-  Update,
-  ViewTransitionNamedStatic,
-  ViewTransitionStatic,
-  ViewTransitionStaticParent,
-} from './ReactFiberFlags.js';
+  scheduleGestureTransitionEvent,
+  scheduleViewTransitionEvent,
+} from './ReactFiberWorkLoop.js';
 import {
   getViewTransitionClassName,
   getViewTransitionName,
 } from './ReactFiberViewTransitionComponent.js';
-import {
-  scheduleGestureTransitionEvent,
-  scheduleViewTransitionEvent,
-} from './ReactFiberWorkLoop.js';
 import {trackAnimatingTask} from './ReactProfilerTimer.js';
 import {
-  HostComponent,
-  OffscreenComponent,
-  ViewTransitionComponent,
-} from './ReactWorkTags.js';
+  enableComponentPerformanceTrack,
+  enableProfilerTimer,
+  enableViewTransitionForPersistenceMode,
+  enableViewTransitionParentEnterExit,
+} from 'shared/ReactFeatureFlags';
 import {$index, $unwrap} from '@rust-js/runtime';
 
 export let shouldStartViewTransition = false;

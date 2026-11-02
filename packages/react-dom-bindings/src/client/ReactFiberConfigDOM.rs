@@ -9,34 +9,18 @@ use std::marker::PhantomData;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::rc::Rc;
 
+use js::Promise;
 use js::{Class, Dict, ErrorOptions, JsError, JsObject, Kind, TimeoutId, Unknown, dict, function};
 use react_isomorphic::react_transition_type::TransitionTypes;
-use react_reconciler::react_current_fiber::run_with_fiber_in_dev;
-use react_reconciler::react_fiber_tree_reflection::{
-    fiber_is_portaled_into_host, get_fragment_instance_or_text_instance_siblings,
-    get_fragment_parent_instance_or_container_fiber, get_fragment_portal_container_info,
-    get_fragment_root_container_info, get_instance_from_host_fiber, is_fiber_contained_by_fragment,
-    is_fiber_following, is_fiber_preceding, is_fragment_contained_by_fiber,
-    traverse_fragment_instances_and_text_instances,
-    traverse_fragment_instances_and_text_instances_deeply,
-};
 use react_reconciler::react_internal_types::Fiber;
 use react_reconciler::react_test_selectors::BoundingRect;
-use react_reconciler::react_work_tags::{
-    HOST_COMPONENT, HOST_HOISTABLE, HOST_SINGLETON, HOST_TEXT,
-};
-use shared::check_string_coercion::check_attribute_string_coercion;
+use react_reconciler::react_test_selectors::{Intersection, ObserveVisibleRectsCallback};
 use shared::environment::__DEV__;
-use shared::has_own_property::HAS_OWN_PROPERTY;
-use shared::react_feature_flags::{
-    DISABLE_COMMENTS_AS_DOM_CONTAINERS, ENABLE_CREATE_EVENT_HANDLE_API,
-    ENABLE_HYDRATION_CHANGE_EVENT, ENABLE_MOVE_BEFORE, ENABLE_PROFILER_TIMER, ENABLE_SCOPE_API,
-    ENABLE_SRC_OBJECT,
-};
 use shared::react_types::ReactContext;
 use webapi::global;
 use webapi::global::btoa;
 use webapi::window_global::get_computed_style;
+use webapi::window_global::match_media;
 use webapi::{
     AbortSignal, AddEventListenerOptions, AddEventListenerOptionsOrBool, Animation,
     AnimationTimeline, CSSNumberish, CSSStyleDeclaration, CSSStyleProperties, Comment, DOMRect,
@@ -49,54 +33,49 @@ use webapi::{
     css_unit_value, document, html_element, html_image_element, html_link_element,
     html_select_element, keyframe_effect, navigator, node, window, window_global,
 };
-
-use crate::estimate_bandwidth::estimate_bandwidth;
-use crate::react_dom_component_tree::is_owned_instance;
-use crate::react_dom_form_actions::{FormStatus, NOT_PENDING};
-use crate::react_dom_fragment_ref_shared::compare_document_position_for_empty_fragment;
-use crate::react_dom_resource_validation::validate_link_props_for_style_resource;
-use js::Promise;
-use react_reconciler::react_test_selectors::{Intersection, ObserveVisibleRectsCallback};
-use shared::noop::noop;
-use shared::react_feature_flags::{ENABLE_SUSPENSEY_IMAGES, ENABLE_VIEW_TRANSITION};
-use shared::react_symbols::REACT_CONTEXT_TYPE;
-use webapi::window_global::match_media;
 use webapi::{
     HTMLImageElement, IntersectionObserverEntry, IntersectionObserverInit, intersection_observer,
 };
 
-pub use crate::react_dom_update_priority::{
-    get_current_update_priority, resolve_update_priority, set_current_update_priority,
-};
+use crate::react_dom_form_actions::{FormStatus, NOT_PENDING};
+use crate::react_dom_src_object::set_src_object;
+use react_reconciler::react_current_fiber::run_with_fiber_in_dev;
+use shared::has_own_property::HAS_OWN_PROPERTY;
 
-use crate::dom_accessibility_roles::has_role;
-use crate::dom_namespaces::{MATH_NAMESPACE, SVG_NAMESPACE};
-use crate::dom_plugin_event_system::listen_to_all_supported_events;
-use crate::html_node_type::{
-    COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE,
-    TEXT_NODE,
-};
-use crate::react_dom_component::{
-    clear_click_listener, clear_singleton_properties, diff_hydrated_properties, diff_hydrated_text,
-    get_props_from_element, hydrate_properties, hydrate_text, set_initial_properties,
-    trap_click_on_non_interactive_element, update_properties,
-};
+use shared::check_string_coercion::check_attribute_string_coercion;
+use shared::react_symbols::REACT_CONTEXT_TYPE;
+
+use crate::react_dom_component_tree::is_owned_instance;
+
 #[cfg_attr(rust_js, rust_js::name = "getInstanceFromNodeDOMTree")]
 use crate::react_dom_component_tree::get_instance_from_node as get_instance_from_node_dom_tree;
+
 use crate::react_dom_component_tree::{
     get_closest_instance_from_node, get_fiber_current_props_from_node,
     get_fiber_from_scope_instance, is_container_marked_as_root, is_marked_hoistable,
     mark_node_as_hoistable, precache_fiber_node, update_fiber_props,
 };
-#[cfg_attr(rust_js, rust_js::name = "ReactBrowserEventEmitterIsEnabled")]
-use crate::react_dom_event_listener::is_enabled as react_browser_event_emitter_is_enabled;
-#[cfg_attr(rust_js, rust_js::name = "ReactBrowserEventEmitterSetEnabled")]
-use crate::react_dom_event_listener::set_enabled as react_browser_event_emitter_set_enabled;
-use crate::react_dom_event_replaying::{flush_event_replaying, retry_if_blocked_on};
+use react_reconciler::react_fiber_tree_reflection::{
+    fiber_is_portaled_into_host, get_fragment_instance_or_text_instance_siblings,
+    get_fragment_parent_instance_or_container_fiber, get_fragment_portal_container_info,
+    get_fragment_root_container_info, get_instance_from_host_fiber, is_fiber_contained_by_fragment,
+    is_fiber_following, is_fiber_preceding, is_fragment_contained_by_fiber,
+    traverse_fragment_instances_and_text_instances,
+    traverse_fragment_instances_and_text_instances_deeply,
+};
+
+use crate::react_dom_fragment_ref_shared::compare_document_position_for_empty_fragment;
+
+use crate::dom_accessibility_roles::has_role;
+use crate::react_dom_component::{
+    clear_click_listener, clear_singleton_properties, diff_hydrated_properties, diff_hydrated_text,
+    get_props_from_element, hydrate_properties, hydrate_text, set_initial_properties,
+    trap_click_on_non_interactive_element, update_properties,
+};
 use crate::react_dom_input::hydrate_input;
-use crate::react_dom_select::hydrate_select;
-use crate::react_dom_src_object::set_src_object;
 use crate::react_dom_textarea::hydrate_textarea;
+
+use crate::react_dom_select::hydrate_select;
 use crate::react_input_selection::{
     SelectionInformation, get_selection_information, restore_selection,
 };
@@ -105,8 +84,39 @@ use crate::validate_dom_nesting::{
     AncestorInfoDev, updated_ancestor_info_dev, validate_dom_nesting, validate_text_nesting,
 };
 
-pub use crate::react_dom_component_tree::detach_deleted_instance;
+#[cfg_attr(rust_js, rust_js::name = "ReactBrowserEventEmitterIsEnabled")]
+use crate::react_dom_event_listener::is_enabled as react_browser_event_emitter_is_enabled;
+#[cfg_attr(rust_js, rust_js::name = "ReactBrowserEventEmitterSetEnabled")]
+use crate::react_dom_event_listener::set_enabled as react_browser_event_emitter_set_enabled;
 
+use crate::dom_namespaces::{MATH_NAMESPACE, SVG_NAMESPACE};
+use crate::html_node_type::{
+    COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE,
+    TEXT_NODE,
+};
+use crate::react_dom_event_replaying::{flush_event_replaying, retry_if_blocked_on};
+use shared::react_feature_flags::{
+    DISABLE_COMMENTS_AS_DOM_CONTAINERS, ENABLE_CREATE_EVENT_HANDLE_API,
+    ENABLE_HYDRATION_CHANGE_EVENT, ENABLE_MOVE_BEFORE, ENABLE_PROFILER_TIMER, ENABLE_SCOPE_API,
+    ENABLE_SRC_OBJECT,
+};
+use shared::react_feature_flags::{ENABLE_SUSPENSEY_IMAGES, ENABLE_VIEW_TRANSITION};
+
+use react_reconciler::react_work_tags::{
+    HOST_COMPONENT, HOST_HOISTABLE, HOST_SINGLETON, HOST_TEXT,
+};
+
+use crate::dom_plugin_event_system::listen_to_all_supported_events;
+use crate::react_dom_resource_validation::validate_link_props_for_style_resource;
+use shared::noop::noop;
+
+use crate::estimate_bandwidth::estimate_bandwidth;
+
+pub use crate::react_dom_update_priority::{
+    get_current_update_priority, resolve_update_priority, set_current_update_priority,
+};
+
+pub use crate::react_dom_component_tree::detach_deleted_instance;
 #[cfg_attr(rust_js, rust_js::name = "rendererVersion")]
 pub use shared::react_version::REACT_VERSION as RENDERER_VERSION;
 

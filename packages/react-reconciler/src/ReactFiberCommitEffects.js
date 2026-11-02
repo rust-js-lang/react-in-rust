@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {getViewTransitionName} from './ReactFiberViewTransitionComponent.js';
 import {
   enableProfilerCommitHooks,
   enableProfilerNestedUpdatePhase,
@@ -12,16 +13,23 @@ import {
   enableSchedulingProfiler,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
-import {runWithFiberInDEV} from './ReactCurrentFiber.js';
-import {didWarnAboutReassigningProps} from './ReactFiberBeginWork.js';
 import {
-  callComponentDidMountInDEV,
-  callComponentDidUpdateInDEV,
-  callComponentWillUnmountInDEV,
-  callCreateInDEV,
-  callDestroyInDEV,
-} from './ReactFiberCallUserSpace.js';
+  ClassComponent,
+  Fragment,
+  HostComponent,
+  HostHoistable,
+  HostSingleton,
+  ViewTransitionComponent,
+} from './ReactWorkTags.js';
+import {NoFlags} from './ReactFiberFlags.js';
+import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {resolveClassComponentProps} from './ReactFiberClassComponent.js';
+import {
+  isCurrentUpdateNested,
+  recordEffectDuration,
+  startEffectTimer,
+} from './ReactProfilerTimer.js';
+import {NoMode, ProfileMode} from './ReactTypeOfMode.js';
 import {
   commitCallbacks,
   commitHiddenCallbacks,
@@ -32,18 +40,6 @@ import {
   getPublicInstance,
 } from './ReactFiberConfig.js';
 import {
-  markComponentLayoutEffectMountStarted,
-  markComponentLayoutEffectMountStopped,
-  markComponentLayoutEffectUnmountStarted,
-  markComponentLayoutEffectUnmountStopped,
-  markComponentPassiveEffectMountStarted,
-  markComponentPassiveEffectMountStopped,
-  markComponentPassiveEffectUnmountStarted,
-  markComponentPassiveEffectUnmountStopped,
-} from './ReactFiberDevToolsHook.js';
-import {NoFlags} from './ReactFiberFlags.js';
-import {getViewTransitionName} from './ReactFiberViewTransitionComponent.js';
-import {
   captureCommitPhaseError,
   setIsRunningInsertionEffect,
 } from './ReactFiberWorkLoop.js';
@@ -53,21 +49,25 @@ import {
   NoFlags as NoHookEffect,
   Passive as HookPassive,
 } from './ReactHookEffectTags.js';
+import {didWarnAboutReassigningProps} from './ReactFiberBeginWork.js';
 import {
-  isCurrentUpdateNested,
-  recordEffectDuration,
-  startEffectTimer,
-} from './ReactProfilerTimer.js';
-import {NoMode, ProfileMode} from './ReactTypeOfMode.js';
+  markComponentLayoutEffectMountStarted,
+  markComponentLayoutEffectMountStopped,
+  markComponentLayoutEffectUnmountStarted,
+  markComponentLayoutEffectUnmountStopped,
+  markComponentPassiveEffectMountStarted,
+  markComponentPassiveEffectMountStopped,
+  markComponentPassiveEffectUnmountStarted,
+  markComponentPassiveEffectUnmountStopped,
+} from './ReactFiberDevToolsHook.js';
 import {
-  ClassComponent,
-  Fragment,
-  HostComponent,
-  HostHoistable,
-  HostSingleton,
-  ViewTransitionComponent,
-} from './ReactWorkTags.js';
-import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+  callComponentDidMountInDEV,
+  callComponentDidUpdateInDEV,
+  callComponentWillUnmountInDEV,
+  callCreateInDEV,
+  callDestroyInDEV,
+} from './ReactFiberCallUserSpace.js';
+import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {$unwrap} from '@rust-js/runtime';
 
 function shouldProfile(current) {

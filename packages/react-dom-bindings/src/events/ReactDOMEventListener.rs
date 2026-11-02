@@ -8,36 +8,41 @@ use std::rc::Rc;
 
 use js::{Kind, Unknown, function};
 use react_isomorphic::react_start_transition::{set_t, t};
-use react_reconciler::react_event_priorities::{
-    CONTINUOUS_EVENT_PRIORITY, DEFAULT_EVENT_PRIORITY, DISCRETE_EVENT_PRIORITY, EventPriority,
-    IDLE_EVENT_PRIORITY,
+use react_reconciler::react_internal_types::{Fiber, FiberRoot};
+use webapi::{EventTarget, Node};
+
+use crate::plugin_module_type::AnyNativeEvent;
+
+use crate::react_dom_event_replaying::{
+    clear_if_continuous_event, is_discrete_event_that_requires_hydration, queue_if_continuous_event,
 };
 use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
-use react_reconciler::react_fiber_shell_hydration::is_root_dehydrated;
 use react_reconciler::react_fiber_tree_reflection::{
     get_activity_instance_from_fiber, get_container_from_fiber, get_nearest_mounted_fiber,
     get_suspense_instance_from_fiber,
 };
-use react_reconciler::react_internal_types::{Fiber, FiberRoot};
 use react_reconciler::react_work_tags::{ACTIVITY_COMPONENT, HOST_ROOT, SUSPENSE_COMPONENT};
+
+use crate::event_system_flags::{EventSystemFlags, IS_CAPTURE_PHASE};
+use crate::get_event_target::get_event_target;
+use crate::react_dom_component_tree::{get_closest_instance_from_node, get_instance_from_node};
+
+use crate::dom_plugin_event_system::dispatch_event_for_plugin_event_system;
+use crate::react_dom_update_priority::{get_current_update_priority, set_current_update_priority};
 use react_reconciler::scheduler::{
     GET_CURRENT_PRIORITY_LEVEL as GET_CURRENT_SCHEDULER_PRIORITY_LEVEL,
     IDLE_PRIORITY as IDLE_SCHEDULER_PRIORITY, IMMEDIATE_PRIORITY as IMMEDIATE_SCHEDULER_PRIORITY,
     LOW_PRIORITY as LOW_SCHEDULER_PRIORITY, NORMAL_PRIORITY as NORMAL_SCHEDULER_PRIORITY,
     USER_BLOCKING_PRIORITY as USER_BLOCKING_SCHEDULER_PRIORITY,
 };
-use shared::react_shared_internals::REACT_SHARED_INTERNALS;
-use webapi::{EventTarget, Node};
 
-use crate::dom_plugin_event_system::dispatch_event_for_plugin_event_system;
-use crate::event_system_flags::{EventSystemFlags, IS_CAPTURE_PHASE};
-use crate::get_event_target::get_event_target;
-use crate::plugin_module_type::AnyNativeEvent;
-use crate::react_dom_component_tree::{get_closest_instance_from_node, get_instance_from_node};
-use crate::react_dom_event_replaying::{
-    clear_if_continuous_event, is_discrete_event_that_requires_hydration, queue_if_continuous_event,
+use react_reconciler::react_event_priorities::{
+    CONTINUOUS_EVENT_PRIORITY, DEFAULT_EVENT_PRIORITY, DISCRETE_EVENT_PRIORITY, EventPriority,
+    IDLE_EVENT_PRIORITY,
 };
-use crate::react_dom_update_priority::{get_current_update_priority, set_current_update_priority};
+use shared::react_shared_internals::REACT_SHARED_INTERNALS;
+
+use react_reconciler::react_fiber_shell_hydration::is_root_dehydrated;
 
 thread_local! {
     // TODO: can we stop exporting these?

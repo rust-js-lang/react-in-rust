@@ -5,23 +5,23 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {registerTwoPhaseEvent} from '../EventRegistry.js';
+import {SyntheticUIEvent} from '../SyntheticEvent.js';
 import {canUseDOM} from 'shared/ExecutionEnvironment';
-import {enableScrollEndPolyfill} from 'shared/ReactFeatureFlags';
-import {
-  clearScrollEndTimer,
-  getScrollEndTimer,
-  setScrollEndTimer,
-} from '../../client/ReactDOMComponentTree.js';
+import isEventSupported from '../isEventSupported.js';
+import {IS_CAPTURE_PHASE} from '../EventSystemFlags.js';
+import {batchedUpdates} from '../ReactDOMUpdateBatching.js';
 import {
   accumulateSinglePhaseListeners,
   accumulateTwoPhaseListeners,
   processDispatchQueue,
 } from '../DOMPluginEventSystem.js';
-import {registerTwoPhaseEvent} from '../EventRegistry.js';
-import {IS_CAPTURE_PHASE} from '../EventSystemFlags.js';
-import {batchedUpdates} from '../ReactDOMUpdateBatching.js';
-import {SyntheticUIEvent} from '../SyntheticEvent.js';
-import isEventSupported from '../isEventSupported.js';
+import {
+  clearScrollEndTimer,
+  getScrollEndTimer,
+  setScrollEndTimer,
+} from '../../client/ReactDOMComponentTree.js';
+import {enableScrollEndPolyfill} from 'shared/ReactFeatureFlags';
 
 const isScrollEndEventSupported =
   enableScrollEndPolyfill && canUseDOM && isEventSupported('scrollend');

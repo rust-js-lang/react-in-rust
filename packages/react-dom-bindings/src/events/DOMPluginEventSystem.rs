@@ -9,51 +9,63 @@ use std::panic::{self, AssertUnwindSafe};
 use std::rc::Rc;
 
 use js::{JsError, Unknown, math, number, string};
-use react_reconciler::react_current_fiber::run_with_fiber_in_dev;
-use react_reconciler::react_fiber_tree_reflection::get_lowest_common_ancestor;
 use react_reconciler::react_internal_types::Fiber;
-use react_reconciler::react_work_tags::{
-    HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL, HOST_ROOT, HOST_SINGLETON, HOST_TEXT,
-    SCOPE_COMPONENT,
-};
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{
-    DISABLE_COMMENTS_AS_DOM_CONTAINERS, ENABLE_CREATE_EVENT_HANDLE_API, ENABLE_LEGACY_FB_SUPPORT,
-    ENABLE_SCOPE_API, ENABLE_SCROLL_END_POLYFILL,
-};
-use shared::report_global_error::REPORT_GLOBAL_ERROR;
 use webapi::{Element, Event, EventTarget, Node, console, node};
 
-use crate::before_input_event_plugin;
-use crate::change_event_plugin;
-use crate::check_passive_events::PASSIVE_BROWSER_EVENTS_SUPPORTED;
-use crate::current_replaying_event::is_replaying_event;
-use crate::enter_leave_event_plugin;
-use crate::event_listener::{
-    add_event_bubble_listener, add_event_bubble_listener_with_passive_flag,
-    add_event_capture_listener, add_event_capture_listener_with_passive_flag,
-    remove_event_listener,
-};
+use crate::plugin_module_type::AnyNativeEvent;
+use crate::react_synthetic_event_type::{KnownReactSyntheticEvent, ReactSyntheticEvent};
+
 use crate::event_registry::ALL_NATIVE_EVENTS;
 use crate::event_system_flags::{
     EventSystemFlags, IS_CAPTURE_PHASE, IS_EVENT_HANDLE_NON_MANAGED_NODE,
     IS_LEGACY_FB_SUPPORT_MODE, IS_NON_DELEGATED, SHOULD_NOT_DEFER_CLICK_FOR_FB_SUPPORT_MODE,
     SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS,
 };
-use crate::form_action_event_plugin;
+
+use crate::current_replaying_event::is_replaying_event;
+use react_reconciler::react_work_tags::{
+    HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL, HOST_ROOT, HOST_SINGLETON, HOST_TEXT,
+    SCOPE_COMPONENT,
+};
+
+use react_reconciler::react_fiber_tree_reflection::get_lowest_common_ancestor;
+
 use crate::get_event_target::get_event_target;
-use crate::get_listener::get_listener;
-use crate::html_node_type::{COMMENT_NODE, DOCUMENT_NODE};
-use crate::plugin_module_type::AnyNativeEvent;
 use crate::react_dom_component_tree::{
     get_closest_instance_from_node, get_event_handler_listeners, get_event_listener_set,
 };
-use crate::react_dom_event_listener::create_event_listener_wrapper_with_priority;
+
+use crate::html_node_type::{COMMENT_NODE, DOCUMENT_NODE};
 use crate::react_dom_update_batching::batched_updates;
-use crate::react_synthetic_event_type::{KnownReactSyntheticEvent, ReactSyntheticEvent};
-use crate::scroll_end_event_plugin;
+
+use crate::get_listener::get_listener;
+
+use crate::check_passive_events::PASSIVE_BROWSER_EVENTS_SUPPORTED;
+use shared::react_feature_flags::{
+    DISABLE_COMMENTS_AS_DOM_CONTAINERS, ENABLE_CREATE_EVENT_HANDLE_API, ENABLE_LEGACY_FB_SUPPORT,
+    ENABLE_SCOPE_API, ENABLE_SCROLL_END_POLYFILL,
+};
+
+use crate::react_dom_event_listener::create_event_listener_wrapper_with_priority;
+
+use crate::event_listener::{
+    add_event_bubble_listener, add_event_bubble_listener_with_passive_flag,
+    add_event_capture_listener, add_event_capture_listener_with_passive_flag,
+    remove_event_listener,
+};
+
+use crate::before_input_event_plugin;
+use crate::change_event_plugin;
+use crate::enter_leave_event_plugin;
 use crate::select_event_plugin;
 use crate::simple_event_plugin;
+
+use crate::form_action_event_plugin;
+use crate::scroll_end_event_plugin;
+use shared::report_global_error::REPORT_GLOBAL_ERROR;
+
+use react_reconciler::react_current_fiber::run_with_fiber_in_dev;
 
 pub struct DispatchListener {
     #[cfg_attr(rust_js, rust_js::nullable)]

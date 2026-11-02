@@ -10,7 +10,6 @@
 // and for testing semantics of reconciliation separate from the host
 // environment.
 
-import * as Scheduler from 'scheduler/unstable_mock';
 import {
   DefaultEventPriority,
   DiscreteEventPriority,
@@ -18,13 +17,14 @@ import {
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
-import {checkPropStringCoercion} from 'shared/CheckStringCoercion';
-import {disableLegacyMode} from 'shared/ReactFeatureFlags';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
+import * as Scheduler from 'scheduler/unstable_mock';
 import {REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE} from 'shared/ReactSymbols';
-import ReactVersion from 'shared/ReactVersion';
 import isArray from 'shared/isArray';
+import {checkPropStringCoercion} from 'shared/CheckStringCoercion';
 import * as DefaultConfig from './ReactFiberConfigNoop.js';
+import {disableLegacyMode} from 'shared/ReactFeatureFlags';
+import ReactVersion from 'shared/ReactVersion';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {$displayF64, $unwrap} from '@rust-js/runtime';
 
 const NO_CONTEXT = {};

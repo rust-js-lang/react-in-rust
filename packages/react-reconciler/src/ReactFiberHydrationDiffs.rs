@@ -8,20 +8,22 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::rc::Rc;
 
 use js::{Kind, Map, RegExp, SymbolFor, Unknown, json, object, string};
-use shared::assign::assign;
 use shared::environment::__DEV__;
-use shared::get_component_name_from_type::get_component_name_from_type;
-use shared::is_array::is_array;
-use shared::react_feature_flags::ENABLE_SRC_OBJECT;
-use shared::react_symbols::REACT_ELEMENT_TYPE;
 use webapi::console;
 
 use crate::react_internal_types::Fiber;
+
 use crate::react_work_tags::{
     ACTIVITY_COMPONENT, CLASS_COMPONENT, FORWARD_REF, FUNCTION_COMPONENT, HOST_COMPONENT,
     HOST_HOISTABLE, HOST_SINGLETON, HOST_TEXT, LAZY_COMPONENT, SIMPLE_MEMO_COMPONENT,
     SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT,
 };
+use shared::react_feature_flags::ENABLE_SRC_OBJECT;
+use shared::react_symbols::REACT_ELEMENT_TYPE;
+
+use shared::assign::assign;
+use shared::get_component_name_from_type::get_component_name_from_type;
+use shared::is_array::is_array;
 
 /// What the server rendered where a fiber is.
 #[derive(Clone, Copy)]

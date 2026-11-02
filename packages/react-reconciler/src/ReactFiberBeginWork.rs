@@ -9,132 +9,16 @@ use std::rc::Rc;
 use js::{Dict, Error, Kind, SymbolFor, Unknown};
 use react_isomorphic::react_lazy::LazyComponent;
 use shared::environment::__DEV__;
-use shared::get_component_name_from_type::get_component_name_from_type;
-use shared::react_feature_flags::{
-    DISABLE_LEGACY_CONTEXT, DISABLE_LEGACY_CONTEXT_FOR_FUNCTION_COMPONENTS, DISABLE_LEGACY_MODE,
-    ENABLE_CPU_SUSPENSE, ENABLE_LEGACY_HIDDEN, ENABLE_PROFILER_COMMIT_HOOKS, ENABLE_PROFILER_TIMER,
-    ENABLE_SCHEDULING_PROFILER, ENABLE_SCOPE_API, ENABLE_TRANSITION_TRACING,
-    ENABLE_VIEW_TRANSITION,
-};
 use shared::react_recoverable::REACT_RECOVERABLE_DIGEST;
-use shared::react_symbols::{
-    REACT_CONTEXT_TYPE, REACT_FORWARD_REF_TYPE, REACT_LAZY_TYPE, REACT_MEMO_TYPE,
-};
 use shared::react_types::{ReactContext, ReactNodeList, SuspenseListTailMode, ViewTransitionProps};
-use shared::shallow_equal::shallow_equal;
 use webapi::console;
 
-use crate::get_component_name_from_fiber::get_component_name_from_fiber;
-use crate::react_captured_value::{
-    create_captured_value_at_fiber, create_captured_value_from_error,
-};
-use crate::react_child_fiber::{
-    MOUNT_CHILD_FIBERS, RECONCILE_CHILD_FIBERS, clone_child_fibers, validate_suspense_list_children,
-};
-use crate::react_current_fiber::set_current_fiber;
-use crate::react_fiber::{
-    PortalStateNode, ProfilerStateNode, ViewTransitionState, create_fiber_from_fragment,
-    create_fiber_from_offscreen, create_fiber_from_type_and_props, create_work_in_progress,
-    is_function_class_component, is_simple_function_component,
-};
 use crate::react_fiber_activity_component::ActivityState;
-use crate::react_fiber_cache_component::{
-    CACHE_CONTEXT, Cache, CacheComponentState, SpawnedCachePool, push_cache_provider,
-};
-use crate::react_fiber_call_user_space::{
-    CALL_COMPONENT_IN_DEV, CALL_RENDER_IN_DEV, ClassInstance,
-};
-use crate::react_fiber_class_component::{
-    ClassComponentUpdater, construct_class_instance, mount_class_instance,
-    resolve_class_component_props, resume_mount_class_instance, update_class_instance,
-};
-use crate::react_fiber_class_update_queue::{
-    UpdateQueue, clone_update_queue, enqueue_captured_update, initialize_update_queue,
-    process_update_queue, suspend_if_update_read_from_entangled_async_action,
-};
-use crate::react_fiber_concurrent_updates::enqueue_concurrent_render_for_lane;
+use crate::react_fiber_root::RootState;
+use crate::react_internal_types::{Fiber, FiberRoot};
+
 use crate::react_fiber_dev_tools_hook::{
     mark_component_render_started, mark_component_render_stopped, set_is_strict_mode_for_devtools,
-};
-use crate::react_fiber_flags::{
-    CALLBACK, CHILD_DELETION, CONTENT_RESET, DID_CAPTURE, DID_DEFER, FORCE_CLIENT_RENDER,
-    FORCE_UPDATE_FOR_LEGACY_SUSPENSE, HYDRATING, LAYOUT_STATIC, NO_FLAGS, PASSIVE, PERFORMED_WORK,
-    PLACEMENT, PLACEMENT_DEV, REF, REF_STATIC, SHOULD_CAPTURE, STATIC_MASK, UPDATE,
-    VIEW_TRANSITION_NAMED_MOUNT, VIEW_TRANSITION_NAMED_STATIC,
-};
-use crate::react_fiber_hidden_context::{
-    HiddenContext, is_current_tree_hidden, push_hidden_context, reuse_hidden_context_on_stack,
-};
-use crate::react_fiber_hooks::{
-    bailout_hooks, check_did_render_id_hook, render_transition_aware_host_component_with_hooks,
-    render_with_hooks, replay_suspended_component_with_hooks,
-};
-use crate::react_fiber_host_context::{
-    get_root_host_container, push_host_container, push_host_context,
-};
-use crate::react_fiber_hot_reloading::resolve_type_for_hot_reloading;
-use crate::react_fiber_hydration_context::{
-    claim_hydratable_singleton, claim_next_hydratable_activity_instance,
-    claim_next_hydratable_suspense_instance, enter_hydration_state, get_is_hydrating,
-    queue_hydration_error, reenter_hydration_state_from_dehydrated_activity_instance,
-    reenter_hydration_state_from_dehydrated_suspense_instance, reset_hydration_state,
-    try_to_claim_next_hydratable_instance, try_to_claim_next_hydratable_text_instance,
-    warn_if_hydrating,
-};
-use crate::react_fiber_lane::{
-    DEFAULT_LANE, Lanes, NO_LANE, NO_LANES, OFFSCREEN_LANE, SOME_RETRY_LANE,
-    get_bumped_lane_for_hydration, includes_only_retries, includes_some_lane, lane_to_lanes,
-    merge_lanes, pick_arbitrary_lane, remove_lanes,
-};
-use crate::react_fiber_legacy_context::{
-    get_masked_context, get_unmasked_context, has_context_changed as has_legacy_context_changed,
-    invalidate_context_provider, is_context_provider as is_legacy_context_provider,
-    push_context_provider as push_legacy_context_provider, push_top_level_context_object,
-};
-use crate::react_fiber_new_context::{
-    check_if_context_changed, lazily_propagate_parent_context_changes, prepare_to_read_context,
-    propagate_context_change, propagate_parent_context_changes_to_deferred_tree, push_provider,
-    read_context, schedule_context_work_on_parent_path,
-};
-use crate::react_fiber_offscreen_component::{
-    LegacyHiddenProps, OFFSCREEN_VISIBLE, OffscreenInstance, OffscreenMode, OffscreenProps,
-    OffscreenQueue, OffscreenState,
-};
-use crate::react_fiber_reconciler::ReactFiberReconciler;
-use crate::react_fiber_root::RootState;
-use crate::react_fiber_suspense_component::{
-    SuspenseListRenderState, SuspenseState, find_first_suspended,
-};
-use crate::react_fiber_suspense_context::{
-    FORCE_SUSPENSE_FALLBACK, SUSPENSE_STACK_CURSOR, SuspenseContext, has_suspense_list_context,
-    pop_suspense_handler, push_dehydrated_activity_suspense_handler,
-    push_fallback_tree_suspense_handler, push_offscreen_suspense_handler,
-    push_primary_tree_suspense_handler, push_suspense_list_context,
-    reuse_suspense_handler_on_stack, set_default_shallow_suspense_list_context,
-    set_shallow_suspense_list_context,
-};
-use crate::react_fiber_thenable::resolve_lazy;
-use crate::react_fiber_throw::{create_class_error_update, initialize_class_error_update};
-use crate::react_fiber_tracing_marker_component::{
-    TRANSITION_TRACING_MARKER, TracingMarkerInstance, get_marker_instances, push_marker_instance,
-    push_root_marker_instance,
-};
-use crate::react_fiber_transition::{
-    get_offscreen_deferred_cache, get_pending_transitions, get_suspended_cache,
-    push_root_transition, push_transition, request_cache_from_pool,
-};
-use crate::react_fiber_tree_context::{
-    get_forks_at_level, is_forked_child, push_materialized_tree_id, push_tree_id,
-};
-use crate::react_fiber_work_loop::{
-    get_work_in_progress_root, mark_render_derived_cause, mark_skipped_update_lanes,
-    peek_deferred_lane, render_did_suspend_delay_if_possible, schedule_update_on_fiber,
-};
-use crate::react_internal_types::{Fiber, FiberRoot};
-use crate::react_profiler_timer::stop_profiler_timer_if_running;
-use crate::react_strict_mode_warnings::REACT_STRICT_MODE_WARNINGS;
-use crate::react_type_of_mode::{
-    CONCURRENT_MODE, NO_MODE, PROFILE_MODE, STRICT_LEGACY_MODE, TypeOfMode,
 };
 use crate::react_work_tags::{
     ACTIVITY_COMPONENT, CACHE_COMPONENT, CLASS_COMPONENT, CONTEXT_CONSUMER, CONTEXT_PROVIDER,
@@ -143,6 +27,47 @@ use crate::react_work_tags::{
     INCOMPLETE_FUNCTION_COMPONENT, LAZY_COMPONENT, LEGACY_HIDDEN_COMPONENT, MEMO_COMPONENT, MODE,
     OFFSCREEN_COMPONENT, PROFILER, SCOPE_COMPONENT, SIMPLE_MEMO_COMPONENT, SUSPENSE_COMPONENT,
     SUSPENSE_LIST_COMPONENT, THROW, TRACING_MARKER_COMPONENT, VIEW_TRANSITION_COMPONENT,
+};
+
+use crate::react_fiber_flags::{
+    CALLBACK, CHILD_DELETION, CONTENT_RESET, DID_CAPTURE, DID_DEFER, FORCE_CLIENT_RENDER,
+    FORCE_UPDATE_FOR_LEGACY_SUSPENSE, HYDRATING, LAYOUT_STATIC, NO_FLAGS, PASSIVE, PERFORMED_WORK,
+    PLACEMENT, PLACEMENT_DEV, REF, REF_STATIC, SHOULD_CAPTURE, STATIC_MASK, UPDATE,
+    VIEW_TRANSITION_NAMED_MOUNT, VIEW_TRANSITION_NAMED_STATIC,
+};
+use shared::react_feature_flags::{
+    DISABLE_LEGACY_CONTEXT, DISABLE_LEGACY_CONTEXT_FOR_FUNCTION_COMPONENTS, DISABLE_LEGACY_MODE,
+    ENABLE_CPU_SUSPENSE, ENABLE_LEGACY_HIDDEN, ENABLE_PROFILER_COMMIT_HOOKS, ENABLE_PROFILER_TIMER,
+    ENABLE_SCHEDULING_PROFILER, ENABLE_SCOPE_API, ENABLE_TRANSITION_TRACING,
+    ENABLE_VIEW_TRANSITION,
+};
+use shared::shallow_equal::shallow_equal;
+
+use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+use shared::get_component_name_from_type::get_component_name_from_type;
+
+use crate::react_strict_mode_warnings::REACT_STRICT_MODE_WARNINGS;
+use shared::react_symbols::{
+    REACT_CONTEXT_TYPE, REACT_FORWARD_REF_TYPE, REACT_LAZY_TYPE, REACT_MEMO_TYPE,
+};
+
+use crate::react_current_fiber::set_current_fiber;
+use crate::react_fiber_hot_reloading::resolve_type_for_hot_reloading;
+
+use crate::react_child_fiber::{
+    MOUNT_CHILD_FIBERS, RECONCILE_CHILD_FIBERS, clone_child_fibers, validate_suspense_list_children,
+};
+use crate::react_fiber_class_update_queue::{
+    UpdateQueue, clone_update_queue, enqueue_captured_update, initialize_update_queue,
+    process_update_queue, suspend_if_update_read_from_entangled_async_action,
+};
+use crate::react_fiber_lane::{
+    DEFAULT_LANE, Lanes, NO_LANE, NO_LANES, OFFSCREEN_LANE, SOME_RETRY_LANE,
+    get_bumped_lane_for_hydration, includes_only_retries, includes_some_lane, lane_to_lanes,
+    merge_lanes, pick_arbitrary_lane, remove_lanes,
+};
+use crate::react_type_of_mode::{
+    CONCURRENT_MODE, NO_MODE, PROFILE_MODE, STRICT_LEGACY_MODE, TypeOfMode,
 };
 
 unsafe extern "Rust" {
@@ -187,6 +112,102 @@ fn is_suspense_instance_pending(instance: &Unknown) -> bool {
 fn is_suspense_instance_fallback(instance: &Unknown) -> bool {
     unreachable!()
 }
+
+use crate::react_fiber_reconciler::ReactFiberReconciler;
+
+use crate::react_fiber_host_context::{
+    get_root_host_container, push_host_container, push_host_context,
+};
+use crate::react_fiber_suspense_context::{
+    FORCE_SUSPENSE_FALLBACK, SUSPENSE_STACK_CURSOR, SuspenseContext, has_suspense_list_context,
+    pop_suspense_handler, push_dehydrated_activity_suspense_handler,
+    push_fallback_tree_suspense_handler, push_offscreen_suspense_handler,
+    push_primary_tree_suspense_handler, push_suspense_list_context,
+    reuse_suspense_handler_on_stack, set_default_shallow_suspense_list_context,
+    set_shallow_suspense_list_context,
+};
+
+use crate::react_fiber_hidden_context::{
+    HiddenContext, is_current_tree_hidden, push_hidden_context, reuse_hidden_context_on_stack,
+};
+use crate::react_fiber_suspense_component::{
+    SuspenseListRenderState, SuspenseState, find_first_suspended,
+};
+
+use crate::react_fiber_new_context::{
+    check_if_context_changed, lazily_propagate_parent_context_changes, prepare_to_read_context,
+    propagate_context_change, propagate_parent_context_changes_to_deferred_tree, push_provider,
+    read_context, schedule_context_work_on_parent_path,
+};
+
+use crate::react_fiber_hooks::{
+    bailout_hooks, check_did_render_id_hook, render_transition_aware_host_component_with_hooks,
+    render_with_hooks, replay_suspended_component_with_hooks,
+};
+use crate::react_profiler_timer::stop_profiler_timer_if_running;
+
+use crate::react_fiber_legacy_context::{
+    get_masked_context, get_unmasked_context, has_context_changed as has_legacy_context_changed,
+    invalidate_context_provider, is_context_provider as is_legacy_context_provider,
+    push_context_provider as push_legacy_context_provider, push_top_level_context_object,
+};
+
+use crate::react_fiber_hydration_context::{
+    claim_hydratable_singleton, claim_next_hydratable_activity_instance,
+    claim_next_hydratable_suspense_instance, enter_hydration_state, get_is_hydrating,
+    queue_hydration_error, reenter_hydration_state_from_dehydrated_activity_instance,
+    reenter_hydration_state_from_dehydrated_suspense_instance, reset_hydration_state,
+    try_to_claim_next_hydratable_instance, try_to_claim_next_hydratable_text_instance,
+    warn_if_hydrating,
+};
+
+use crate::react_fiber_class_component::{
+    ClassComponentUpdater, construct_class_instance, mount_class_instance,
+    resolve_class_component_props, resume_mount_class_instance, update_class_instance,
+};
+
+use crate::react_fiber::{
+    PortalStateNode, ProfilerStateNode, ViewTransitionState, create_fiber_from_fragment,
+    create_fiber_from_offscreen, create_fiber_from_type_and_props, create_work_in_progress,
+    is_function_class_component, is_simple_function_component,
+};
+use crate::react_fiber_work_loop::{
+    get_work_in_progress_root, mark_render_derived_cause, mark_skipped_update_lanes,
+    peek_deferred_lane, render_did_suspend_delay_if_possible, schedule_update_on_fiber,
+};
+
+use crate::react_fiber_concurrent_updates::enqueue_concurrent_render_for_lane;
+
+use crate::react_fiber_cache_component::{
+    CACHE_CONTEXT, Cache, CacheComponentState, SpawnedCachePool, push_cache_provider,
+};
+
+use crate::react_captured_value::{
+    create_captured_value_at_fiber, create_captured_value_from_error,
+};
+use crate::react_fiber_offscreen_component::{
+    LegacyHiddenProps, OFFSCREEN_VISIBLE, OffscreenInstance, OffscreenMode, OffscreenProps,
+    OffscreenQueue, OffscreenState,
+};
+use crate::react_fiber_throw::{create_class_error_update, initialize_class_error_update};
+use crate::react_fiber_tree_context::{
+    get_forks_at_level, is_forked_child, push_materialized_tree_id, push_tree_id,
+};
+
+use crate::react_fiber_transition::{
+    get_offscreen_deferred_cache, get_pending_transitions, get_suspended_cache,
+    push_root_transition, push_transition, request_cache_from_pool,
+};
+
+use crate::react_fiber_tracing_marker_component::{
+    TRANSITION_TRACING_MARKER, TracingMarkerInstance, get_marker_instances, push_marker_instance,
+    push_root_marker_instance,
+};
+
+use crate::react_fiber_call_user_space::{
+    CALL_COMPONENT_IN_DEV, CALL_RENDER_IN_DEV, ClassInstance,
+};
+use crate::react_fiber_thenable::resolve_lazy;
 
 /// What the server said of a Suspense boundary it couldn't finish.
 struct SuspenseInstanceFallbackErrorDetails {

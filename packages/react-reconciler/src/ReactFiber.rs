@@ -9,54 +9,19 @@ use std::rc::Rc;
 
 use js::{Kind, SymbolFor, Unknown};
 use shared::environment::__DEV__;
-use shared::get_component_name_from_type::get_component_name_from_type;
-use shared::is_array::is_array;
 use shared::react_element_type::ReactElement;
-use shared::react_feature_flags::{
-    DISABLE_LEGACY_MODE, ENABLE_LEGACY_HIDDEN, ENABLE_OPTIMISTIC_KEY, ENABLE_PROFILER_TIMER,
-    ENABLE_SCOPE_API, ENABLE_SUSPENSEY_IMAGES, ENABLE_TRANSITION_TRACING, ENABLE_VIEW_TRANSITION,
-};
-use shared::react_symbols::{
-    REACT_ACTIVITY_TYPE, REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE, REACT_ELEMENT_TYPE,
-    REACT_FORWARD_REF_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE, REACT_LEGACY_HIDDEN_TYPE,
-    REACT_MEMO_TYPE, REACT_PROFILER_TYPE, REACT_SCOPE_TYPE, REACT_STRICT_MODE_TYPE,
-    REACT_SUSPENSE_LIST_TYPE, REACT_SUSPENSE_TYPE, REACT_TRACING_MARKER_TYPE,
-    REACT_VIEW_TRANSITION_TYPE,
-};
 use shared::react_types::{ReactKey, ReactPortal};
 use webapi::console;
 
-use crate::get_component_name_from_fiber::get_component_name_from_owner;
-use crate::react_fiber_flags::{NO_FLAGS, PLACEMENT, STATIC_MASK};
-use crate::react_fiber_host_context::get_host_context;
-use crate::react_fiber_hot_reloading::resolve_type_for_hot_reloading;
-use crate::react_fiber_lane::{Lanes, NO_LANES};
 use crate::react_fiber_offscreen_component::{LegacyHiddenProps, OffscreenProps};
-use crate::react_fiber_tracing_marker_component::{
-    TRANSITION_TRACING_MARKER, TracingMarkerInstance,
-};
 use crate::react_internal_types::{Dependencies, Fiber};
-use crate::react_root_tags::{CONCURRENT_ROOT, RootTag};
-use crate::react_type_of_mode::{
-    CONCURRENT_MODE, NO_MODE, PROFILE_MODE, STRICT_EFFECTS_MODE, STRICT_LEGACY_MODE,
-    SUSPENSEY_IMAGES_MODE, TypeOfMode,
-};
-use crate::react_work_tags::{
-    ACTIVITY_COMPONENT, CLASS_COMPONENT, CONTEXT_CONSUMER, CONTEXT_PROVIDER, DEHYDRATED_FRAGMENT,
-    FORWARD_REF, FRAGMENT, FUNCTION_COMPONENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL,
-    HOST_ROOT, HOST_SINGLETON, HOST_TEXT, LAZY_COMPONENT, LEGACY_HIDDEN_COMPONENT, MEMO_COMPONENT,
-    MODE, OFFSCREEN_COMPONENT, PROFILER, SCOPE_COMPONENT, SIMPLE_MEMO_COMPONENT,
-    SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT, THROW, TRACING_MARKER_COMPONENT,
-    VIEW_TRANSITION_COMPONENT, WorkTag,
-};
 
-unsafe extern "Rust" {
-    #[link_name = "./src/ReactFiberConfig.js#supportsResources"]
-    safe static SUPPORTS_RESOURCES: bool;
-    #[link_name = "./src/ReactFiberConfig.js#supportsSingletons"]
-    safe static SUPPORTS_SINGLETONS: bool;
-    #[link_name = "./src/ReactFiberDevToolsHook.js#isDevToolsPresent"]
-    safe static IS_DEV_TOOLS_PRESENT: bool;
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#isHostSingletonType"
+)]
+fn is_host_singleton_type(r#type: &str) -> bool {
+    unreachable!()
 }
 
 // ReactFiberConfig's `HostContext`.
@@ -72,13 +37,54 @@ fn is_host_hoistable_type(
     unreachable!()
 }
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#isHostSingletonType"
-)]
-fn is_host_singleton_type(r#type: &str) -> bool {
-    unreachable!()
+unsafe extern "Rust" {
+    #[link_name = "./src/ReactFiberConfig.js#supportsResources"]
+    safe static SUPPORTS_RESOURCES: bool;
+    #[link_name = "./src/ReactFiberConfig.js#supportsSingletons"]
+    safe static SUPPORTS_SINGLETONS: bool;
+    #[link_name = "./src/ReactFiberDevToolsHook.js#isDevToolsPresent"]
+    safe static IS_DEV_TOOLS_PRESENT: bool;
 }
+
+use shared::react_feature_flags::{
+    DISABLE_LEGACY_MODE, ENABLE_LEGACY_HIDDEN, ENABLE_OPTIMISTIC_KEY, ENABLE_PROFILER_TIMER,
+    ENABLE_SCOPE_API, ENABLE_SUSPENSEY_IMAGES, ENABLE_TRANSITION_TRACING, ENABLE_VIEW_TRANSITION,
+};
+
+use crate::react_fiber_flags::{NO_FLAGS, PLACEMENT, STATIC_MASK};
+use crate::react_root_tags::{CONCURRENT_ROOT, RootTag};
+use crate::react_work_tags::{
+    ACTIVITY_COMPONENT, CLASS_COMPONENT, CONTEXT_CONSUMER, CONTEXT_PROVIDER, DEHYDRATED_FRAGMENT,
+    FORWARD_REF, FRAGMENT, FUNCTION_COMPONENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL,
+    HOST_ROOT, HOST_SINGLETON, HOST_TEXT, LAZY_COMPONENT, LEGACY_HIDDEN_COMPONENT, MEMO_COMPONENT,
+    MODE, OFFSCREEN_COMPONENT, PROFILER, SCOPE_COMPONENT, SIMPLE_MEMO_COMPONENT,
+    SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT, THROW, TRACING_MARKER_COMPONENT,
+    VIEW_TRANSITION_COMPONENT, WorkTag,
+};
+
+use crate::get_component_name_from_fiber::get_component_name_from_owner;
+use crate::react_fiber_hot_reloading::resolve_type_for_hot_reloading;
+use crate::react_fiber_lane::{Lanes, NO_LANES};
+use crate::react_type_of_mode::{
+    CONCURRENT_MODE, NO_MODE, PROFILE_MODE, STRICT_EFFECTS_MODE, STRICT_LEGACY_MODE,
+    SUSPENSEY_IMAGES_MODE, TypeOfMode,
+};
+use shared::react_symbols::{
+    REACT_ACTIVITY_TYPE, REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE, REACT_ELEMENT_TYPE,
+    REACT_FORWARD_REF_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE, REACT_LEGACY_HIDDEN_TYPE,
+    REACT_MEMO_TYPE, REACT_PROFILER_TYPE, REACT_SCOPE_TYPE, REACT_STRICT_MODE_TYPE,
+    REACT_SUSPENSE_LIST_TYPE, REACT_SUSPENSE_TYPE, REACT_TRACING_MARKER_TYPE,
+    REACT_VIEW_TRANSITION_TYPE,
+};
+
+use crate::react_fiber_tracing_marker_component::{
+    TRANSITION_TRACING_MARKER, TracingMarkerInstance,
+};
+
+use crate::react_fiber_host_context::get_host_context;
+use shared::is_array::is_array;
+
+use shared::get_component_name_from_type::get_component_name_from_type;
 
 /// A Profiler's `stateNode`: the time its effects took.
 pub struct ProfilerStateNode {

@@ -5,8 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import hasOwnProperty from './hasOwnProperty.js';
 import is from './objectIs.js';
+import hasOwnProperty from './hasOwnProperty.js';
 
 /**
  * Performs equality by iterating through keys on an object and returning false

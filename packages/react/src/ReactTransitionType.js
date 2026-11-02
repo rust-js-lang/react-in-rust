@@ -9,8 +9,8 @@ import {
   enableGestureTransition,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {startTransition} from './ReactStartTransition.js';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 export function addTransitionType(type) {
   if (enableViewTransition) {

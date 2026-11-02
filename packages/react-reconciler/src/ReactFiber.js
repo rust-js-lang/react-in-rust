@@ -6,6 +6,13 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
+  isHostHoistableType,
+  isHostSingletonType,
+  supportsResources,
+  supportsSingletons,
+} from './ReactFiberConfig.js';
+import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
+import {
   disableLegacyMode,
   enableLegacyHidden,
   enableOptimisticKey,
@@ -15,47 +22,8 @@ import {
   enableTransitionTracing,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
-import {
-  REACT_ACTIVITY_TYPE,
-  REACT_CONSUMER_TYPE,
-  REACT_CONTEXT_TYPE,
-  REACT_ELEMENT_TYPE,
-  REACT_FORWARD_REF_TYPE,
-  REACT_FRAGMENT_TYPE,
-  REACT_LAZY_TYPE,
-  REACT_LEGACY_HIDDEN_TYPE,
-  REACT_MEMO_TYPE,
-  REACT_PROFILER_TYPE,
-  REACT_SCOPE_TYPE,
-  REACT_STRICT_MODE_TYPE,
-  REACT_SUSPENSE_LIST_TYPE,
-  REACT_SUSPENSE_TYPE,
-  REACT_TRACING_MARKER_TYPE,
-  REACT_VIEW_TRANSITION_TYPE,
-} from 'shared/ReactSymbols';
-import getComponentNameFromType from 'shared/getComponentNameFromType';
-import isArray from 'shared/isArray';
-import {
-  isHostHoistableType,
-  isHostSingletonType,
-  supportsResources,
-  supportsSingletons,
-} from './ReactFiberConfig.js';
-import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
 import {NoFlags, Placement, StaticMask} from './ReactFiberFlags.js';
-import {getHostContext} from './ReactFiberHostContext.js';
-import {resolveTypeForHotReloading} from './ReactFiberHotReloading.js';
-import {NoLanes} from './ReactFiberLane.js';
-import {TransitionTracingMarker} from './ReactFiberTracingMarkerComponent.js';
 import {ConcurrentRoot} from './ReactRootTags.js';
-import {
-  ConcurrentMode,
-  NoMode,
-  ProfileMode,
-  StrictEffectsMode,
-  StrictLegacyMode,
-  SuspenseyImagesMode,
-} from './ReactTypeOfMode.js';
 import {
   ActivityComponent,
   ClassComponent,
@@ -86,6 +54,38 @@ import {
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
 import {getComponentNameFromOwner} from './getComponentNameFromFiber.js';
+import {resolveTypeForHotReloading} from './ReactFiberHotReloading.js';
+import {NoLanes} from './ReactFiberLane.js';
+import {
+  ConcurrentMode,
+  NoMode,
+  ProfileMode,
+  StrictEffectsMode,
+  StrictLegacyMode,
+  SuspenseyImagesMode,
+} from './ReactTypeOfMode.js';
+import {
+  REACT_ACTIVITY_TYPE,
+  REACT_CONSUMER_TYPE,
+  REACT_CONTEXT_TYPE,
+  REACT_ELEMENT_TYPE,
+  REACT_FORWARD_REF_TYPE,
+  REACT_FRAGMENT_TYPE,
+  REACT_LAZY_TYPE,
+  REACT_LEGACY_HIDDEN_TYPE,
+  REACT_MEMO_TYPE,
+  REACT_PROFILER_TYPE,
+  REACT_SCOPE_TYPE,
+  REACT_STRICT_MODE_TYPE,
+  REACT_SUSPENSE_LIST_TYPE,
+  REACT_SUSPENSE_TYPE,
+  REACT_TRACING_MARKER_TYPE,
+  REACT_VIEW_TRANSITION_TYPE,
+} from 'shared/ReactSymbols';
+import {TransitionTracingMarker} from './ReactFiberTracingMarkerComponent.js';
+import {getHostContext} from './ReactFiberHostContext.js';
+import isArray from 'shared/isArray';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
 import {
   $borrow,
   $borrowMut,

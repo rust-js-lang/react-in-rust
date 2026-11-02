@@ -26,41 +26,15 @@ use react_reconciler::react_reconciler_constants::{
     LEGACY_ROOT, NO_EVENT_PRIORITY,
 };
 use react_reconciler::react_root_tags::RootTag;
-use shared::check_string_coercion::check_prop_string_coercion;
 use shared::environment::__DEV__;
-use shared::is_array::is_array;
-use shared::react_feature_flags::DISABLE_LEGACY_MODE;
-use shared::react_shared_internals::REACT_SHARED_INTERNALS;
-use shared::react_symbols::{REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE};
 use shared::react_types::ReactPortal;
-#[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
-use shared::react_version::REACT_VERSION;
 use webapi::console;
 
-#[cfg_attr(rust_js, rust_js::name = "DefaultConfig")]
-use crate::react_fiber_config_noop::ReactFiberConfigNoop as DefaultConfig;
-use crate::react_fiber_config_noop::{
-    Child, Container, HostContext, Instance, PublicInstance, TextInstance,
-};
-
-unsafe extern "Rust" {
-    #[link_name = "scheduler/unstable_mock#* as Scheduler"]
-    safe static SCHEDULER: &'static JsObject;
-}
-
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "scheduler/unstable_mock#* as Scheduler.unstable_now"
+    rust_js::link_name = "scheduler/unstable_mock#* as Scheduler.unstable_advanceTime"
 )]
-fn unstable_now() -> f64 {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "scheduler/unstable_mock#* as Scheduler.unstable_flushNumberOfYields"
-)]
-fn unstable_flush_number_of_yields(count: f64) {
+fn unstable_advance_time(ms: f64) {
     unreachable!()
 }
 
@@ -74,19 +48,49 @@ fn unstable_clear_log() -> Vec<Option<&'static Unknown>> {
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "scheduler/unstable_mock#* as Scheduler.unstable_advanceTime"
-)]
-fn unstable_advance_time(ms: f64) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
     rust_js::link_name = "scheduler/unstable_mock#* as Scheduler.unstable_flushExpired"
 )]
 fn unstable_flush_expired() -> Vec<Option<&'static Unknown>> {
     unreachable!()
 }
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "scheduler/unstable_mock#* as Scheduler.unstable_flushNumberOfYields"
+)]
+fn unstable_flush_number_of_yields(count: f64) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "scheduler/unstable_mock#* as Scheduler.unstable_now"
+)]
+fn unstable_now() -> f64 {
+    unreachable!()
+}
+
+unsafe extern "Rust" {
+    #[link_name = "scheduler/unstable_mock#* as Scheduler"]
+    safe static SCHEDULER: &'static JsObject;
+}
+
+use shared::react_symbols::{REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE};
+
+use shared::is_array::is_array;
+
+use shared::check_string_coercion::check_prop_string_coercion;
+
+#[cfg_attr(rust_js, rust_js::name = "DefaultConfig")]
+use crate::react_fiber_config_noop::ReactFiberConfigNoop as DefaultConfig;
+
+use crate::react_fiber_config_noop::{
+    Child, Container, HostContext, Instance, PublicInstance, TextInstance,
+};
+use shared::react_feature_flags::DISABLE_LEGACY_MODE;
+use shared::react_shared_internals::REACT_SHARED_INTERNALS;
+#[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
+use shared::react_version::REACT_VERSION;
 
 /// A host component's props, as JS gives them.
 pub struct Props {

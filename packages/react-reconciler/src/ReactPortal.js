@@ -5,8 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
 import {REACT_OPTIMISTIC_KEY, REACT_PORTAL_TYPE} from 'shared/ReactSymbols';
+import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
 
 export function createPortal(
   children,

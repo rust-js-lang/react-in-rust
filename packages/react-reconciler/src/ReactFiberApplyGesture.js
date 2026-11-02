@@ -6,28 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  enableComponentPerformanceTrack,
-  enableProfilerTimer,
-  enableViewTransitionParentEnterExit,
-} from 'shared/ReactFeatureFlags';
-import {
-  commitHookEffectListMount,
-  commitHookEffectListUnmount,
-} from './ReactFiberCommitEffects.js';
-import {
-  appearingViewTransitions,
-  commitEnterViewTransitions,
-  commitParentExitViewTransitions,
-  measureNestedViewTransitions,
-  measureUpdateViewTransition,
-  popViewTransitionCancelableScope,
-  pushViewTransitionCancelableScope,
-  restoreEnterOrExitViewTransitions,
-  restoreNestedViewTransitions,
-  restoreUpdateViewTransitionForGesture,
-  viewTransitionCancelableChildren,
-} from './ReactFiberCommitViewTransitions.js';
-import {
   appendChild,
   applyViewTransitionName,
   cancelRootViewTransitionName,
@@ -46,6 +24,12 @@ import {
   unhideTextInstance,
 } from './ReactFiberConfig.js';
 import {
+  popMutationContext,
+  pushMutationContext,
+  trackHostMutation,
+  viewTransitionMutationContext,
+} from './ReactFiberMutationTracking.js';
+import {
   AffectedParentLayout,
   ContentReset,
   MutationMask,
@@ -57,21 +41,9 @@ import {
   Visibility,
 } from './ReactFiberFlags.js';
 import {
-  popMutationContext,
-  pushMutationContext,
-  trackHostMutation,
-  viewTransitionMutationContext,
-} from './ReactFiberMutationTracking.js';
-import {
-  getViewTransitionClassName,
-  getViewTransitionName,
-} from './ReactFiberViewTransitionComponent.js';
-import {scheduleGestureTransitionEvent} from './ReactFiberWorkLoop.js';
-import {
   HasEffect as HookHasEffect,
   Insertion as HookInsertion,
 } from './ReactHookEffectTags.js';
-import {trackAnimatingTask} from './ReactProfilerTimer.js';
 import {
   ForwardRef,
   FunctionComponent,
@@ -85,6 +57,34 @@ import {
   SimpleMemoComponent,
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
+import {
+  appearingViewTransitions,
+  commitEnterViewTransitions,
+  commitParentExitViewTransitions,
+  measureNestedViewTransitions,
+  measureUpdateViewTransition,
+  popViewTransitionCancelableScope,
+  pushViewTransitionCancelableScope,
+  restoreEnterOrExitViewTransitions,
+  restoreNestedViewTransitions,
+  restoreUpdateViewTransitionForGesture,
+  viewTransitionCancelableChildren,
+} from './ReactFiberCommitViewTransitions.js';
+import {
+  commitHookEffectListMount,
+  commitHookEffectListUnmount,
+} from './ReactFiberCommitEffects.js';
+import {
+  getViewTransitionClassName,
+  getViewTransitionName,
+} from './ReactFiberViewTransitionComponent.js';
+import {
+  enableComponentPerformanceTrack,
+  enableProfilerTimer,
+  enableViewTransitionParentEnterExit,
+} from 'shared/ReactFeatureFlags';
+import {trackAnimatingTask} from './ReactProfilerTimer.js';
+import {scheduleGestureTransitionEvent} from './ReactFiberWorkLoop.js';
 import {$index, $unwrap} from '@rust-js/runtime';
 
 // Used during the apply phase to track whether a parent ViewTransition component

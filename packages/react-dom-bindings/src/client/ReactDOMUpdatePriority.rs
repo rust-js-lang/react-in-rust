@@ -5,13 +5,13 @@
 
 use std::convert::Infallible;
 
+use webapi::window;
+
+use crate::react_dom_event_listener::get_event_priority;
 use react_reconciler::react_event_priorities::{
     DEFAULT_EVENT_PRIORITY, EventPriority, NO_EVENT_PRIORITY,
 };
 use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS;
-use webapi::window;
-
-use crate::react_dom_event_listener::get_event_priority;
 
 pub fn set_current_update_priority(
     new_priority: EventPriority,

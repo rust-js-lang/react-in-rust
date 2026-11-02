@@ -7,7 +7,6 @@ use std::rc::Rc;
 
 use js::{Dict, Unknown, dict};
 use shared::environment::{parcel_require, parcel_require_extend_import_map, parcel_require_load};
-use shared::has_own_property::HAS_OWN_PROPERTY;
 use shared::react_types::{ReactDebugInfo, Thenable};
 
 use crate::shared::react_flight_import_metadata::ImportMetadata;
@@ -23,6 +22,8 @@ fn prepare_destination_with_chunks(
 ) {
     unreachable!()
 }
+
+use shared::has_own_property::HAS_OWN_PROPERTY;
 
 pub type ServerManifest = Dict<&'static [String]>;
 

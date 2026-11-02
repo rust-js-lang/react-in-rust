@@ -7,18 +7,19 @@ use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 
 use js::{Kind, Unknown};
-use shared::react_feature_flags::{ENABLE_CREATE_EVENT_HANDLE_API, ENABLE_SCOPE_API};
 use webapi::EventTarget;
 
 use crate::dom_event_names::DOMEventName;
+use crate::react_dom_event_handle_types::{ReactDOMEventHandle, ReactDOMEventHandleListener};
+use crate::react_synthetic_event_type::ReactSyntheticEvent;
+
 use crate::event_registry::ALL_NATIVE_EVENTS;
-use crate::html_node_type::ELEMENT_NODE;
 use crate::react_dom_component_tree::{
     add_event_handle_to_target, does_target_have_event_handle, get_event_handler_listeners,
     set_event_handler_listeners,
 };
-use crate::react_dom_event_handle_types::{ReactDOMEventHandle, ReactDOMEventHandleListener};
-use crate::react_synthetic_event_type::ReactSyntheticEvent;
+
+use crate::html_node_type::ELEMENT_NODE;
 
 #[cfg_attr(
     rust_js,
@@ -32,6 +33,8 @@ fn listen_to_native_event_for_non_managed_event_target(
     let _ = (dom_event_name, is_capture_phase_listener, target);
     unreachable!()
 }
+
+use shared::react_feature_flags::{ENABLE_CREATE_EVENT_HANDLE_API, ENABLE_SCOPE_API};
 
 pub struct EventHandleOptions {
     pub capture: Option<&'static Unknown>,

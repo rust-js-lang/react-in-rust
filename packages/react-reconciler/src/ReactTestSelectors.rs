@@ -8,10 +8,11 @@ use std::cmp::Ordering;
 use std::rc::Rc;
 
 use js::{JsObject, Kind, SymbolFor, Unknown};
-use shared::get_component_name_from_type::get_component_name_from_type;
 
 use crate::react_internal_types::{Fiber, FiberRoot};
+
 use crate::react_work_tags::{HOST_COMPONENT, HOST_HOISTABLE, HOST_SINGLETON, HOST_TEXT};
+use shared::get_component_name_from_type::get_component_name_from_type;
 
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFiberConfig.js#supportsTestSelectors"]

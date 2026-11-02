@@ -8,49 +8,58 @@ use std::rc::Rc;
 
 use js::{ErrorOptions, Unknown, function};
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{DISABLE_LEGACY_MODE, ENABLE_UPDATER_TRACKING};
 use webapi::console;
 
+use crate::react_fiber_offscreen_component::{OffscreenQueue, OffscreenState};
+use crate::react_fiber_suspense_component::RetryQueue;
+use crate::react_internal_types::{Fiber, FiberRoot};
+
 use crate::get_component_name_from_fiber::get_component_name_from_fiber;
-use crate::react_captured_value::{CapturedValue, create_captured_value_at_fiber};
-use crate::react_current_fiber::run_with_fiber_in_dev;
-use crate::react_fiber_call_user_space::{
-    CALL_COMPONENT_DID_CATCH_IN_DEV, ClassInstance, DidCatchInfo,
+use crate::react_work_tags::{
+    ACTIVITY_COMPONENT, CLASS_COMPONENT, FORWARD_REF, FUNCTION_COMPONENT, HOST_ROOT,
+    INCOMPLETE_CLASS_COMPONENT, INCOMPLETE_FUNCTION_COMPONENT, OFFSCREEN_COMPONENT,
+    SIMPLE_MEMO_COMPONENT, SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT,
 };
-use crate::react_fiber_class_update_queue::{
-    CAPTURE_UPDATE, FORCE_UPDATE, Update, create_update, enqueue_captured_update, enqueue_update,
-};
-use crate::react_fiber_dev_tools_hook::IS_DEV_TOOLS_PRESENT;
-use crate::react_fiber_error_logger::{log_caught_error, log_uncaught_error};
+
 use crate::react_fiber_flags::{
     DID_CAPTURE, FORCE_CLIENT_RENDER, FORCE_UPDATE_FOR_LEGACY_SUSPENSE, INCOMPLETE,
     LIFECYCLE_EFFECT_MASK, NO_FLAGS, SCHEDULE_RETRY, SHOULD_CAPTURE,
 };
+use crate::react_type_of_mode::{CONCURRENT_MODE, NO_MODE};
+use shared::react_feature_flags::{DISABLE_LEGACY_MODE, ENABLE_UPDATER_TRACKING};
+
+use crate::react_captured_value::{CapturedValue, create_captured_value_at_fiber};
+use crate::react_fiber_class_update_queue::{
+    CAPTURE_UPDATE, FORCE_UPDATE, Update, create_update, enqueue_captured_update, enqueue_update,
+};
 use crate::react_fiber_hot_reloading::mark_failed_error_boundary_for_hot_reloading;
-use crate::react_fiber_hydration_context::{
-    HYDRATION_MISMATCH_EXCEPTION, get_is_hydrating, mark_did_throw_while_hydrating_dev,
-    queue_hydration_error,
-};
-use crate::react_fiber_lane::{
-    Lane, Lanes, SYNC_LANE, includes_some_lane, merge_lanes, pick_arbitrary_lane,
-};
-use crate::react_fiber_new_context::propagate_parent_context_changes_to_deferred_tree;
-use crate::react_fiber_offscreen_component::{OffscreenQueue, OffscreenState};
-use crate::react_fiber_suspense_component::RetryQueue;
 use crate::react_fiber_suspense_context::{get_shell_boundary, get_suspense_handler};
-use crate::react_fiber_thenable::NOOP_SUSPENSEY_COMMIT_THENABLE;
 use crate::react_fiber_work_loop::{
     attach_ping_listener, is_already_failed_legacy_error_boundary,
     mark_legacy_error_boundary_as_failed, queue_concurrent_error, render_did_error,
     render_did_suspend, render_did_suspend_delay_if_possible, restore_pending_updaters,
 };
-use crate::react_internal_types::{Fiber, FiberRoot};
+
+use crate::react_fiber_new_context::propagate_parent_context_changes_to_deferred_tree;
+
+use crate::react_fiber_error_logger::{log_caught_error, log_uncaught_error};
+
+use crate::react_fiber_dev_tools_hook::IS_DEV_TOOLS_PRESENT;
+use crate::react_fiber_lane::{
+    Lane, Lanes, SYNC_LANE, includes_some_lane, merge_lanes, pick_arbitrary_lane,
+};
+
+use crate::react_fiber_hydration_context::{
+    HYDRATION_MISMATCH_EXCEPTION, get_is_hydrating, mark_did_throw_while_hydrating_dev,
+    queue_hydration_error,
+};
 use crate::react_root_tags::CONCURRENT_ROOT;
-use crate::react_type_of_mode::{CONCURRENT_MODE, NO_MODE};
-use crate::react_work_tags::{
-    ACTIVITY_COMPONENT, CLASS_COMPONENT, FORWARD_REF, FUNCTION_COMPONENT, HOST_ROOT,
-    INCOMPLETE_CLASS_COMPONENT, INCOMPLETE_FUNCTION_COMPONENT, OFFSCREEN_COMPONENT,
-    SIMPLE_MEMO_COMPONENT, SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT,
+
+use crate::react_fiber_thenable::NOOP_SUSPENSEY_COMMIT_THENABLE;
+
+use crate::react_current_fiber::run_with_fiber_in_dev;
+use crate::react_fiber_call_user_space::{
+    CALL_COMPONENT_DID_CATCH_IN_DEV, ClassInstance, DidCatchInfo,
 };
 
 /// The payload of a root's error update: the element it renders, none.

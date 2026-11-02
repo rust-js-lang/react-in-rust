@@ -82,22 +82,6 @@
 // regardless of priority. Intermediate state may vary according to system
 // resources, but the final state is always the same.
 
-import assign from 'shared/assign';
-import {
-  peekEntangledActionLane,
-  peekEntangledActionThenable,
-} from './ReactFiberAsyncAction.js';
-import {
-  enqueueConcurrentClassUpdate,
-  unsafe_markUpdateLaneFromFiberToRoot,
-} from './ReactFiberConcurrentUpdates.js';
-import {setIsStrictModeForDevtools} from './ReactFiberDevToolsHook.js';
-import {
-  Callback,
-  DidCapture,
-  ShouldCapture,
-  Visibility,
-} from './ReactFiberFlags.js';
 import {
   NoLane,
   NoLanes,
@@ -114,12 +98,28 @@ import {
   exitDisallowedContextReadInDEV,
 } from './ReactFiberNewContext.js';
 import {
+  Callback,
+  DidCapture,
+  ShouldCapture,
+  Visibility,
+} from './ReactFiberFlags.js';
+import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+import {StrictLegacyMode} from './ReactTypeOfMode.js';
+import {
   getWorkInProgressRootRenderLanes,
   isUnsafeClassRenderPhaseUpdate,
   markSkippedUpdateLanes,
 } from './ReactFiberWorkLoop.js';
-import {StrictLegacyMode} from './ReactTypeOfMode.js';
-import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+import {
+  enqueueConcurrentClassUpdate,
+  unsafe_markUpdateLaneFromFiberToRoot,
+} from './ReactFiberConcurrentUpdates.js';
+import {setIsStrictModeForDevtools} from './ReactFiberDevToolsHook.js';
+import {
+  peekEntangledActionLane,
+  peekEntangledActionThenable,
+} from './ReactFiberAsyncAction.js';
+import assign from 'shared/assign';
 import {$unwrap} from '@rust-js/runtime';
 
 export const UpdateState = 0;

@@ -8,14 +8,15 @@ use std::rc::Weak;
 
 use art::{Node, Surface, Transform, mode, transform};
 use js::{JsObject, Kind, TimeoutId, Unknown, object};
+use shared::environment::__DEV__;
+use shared::react_types::ReactContext;
+
 use react_reconciler::react_event_priorities::{
     DEFAULT_EVENT_PRIORITY, EventPriority, NO_EVENT_PRIORITY,
 };
-use shared::environment::__DEV__;
-use shared::react_symbols::REACT_CONTEXT_TYPE;
-use shared::react_types::ReactContext;
 
 use crate::react_art_internals::{EVENT_TYPES, TYPES, children_as_string};
+use shared::react_symbols::REACT_CONTEXT_TYPE;
 
 #[cfg_attr(rust_js, rust_js::name = "rendererVersion")]
 pub use shared::react_version::REACT_VERSION as RENDERER_VERSION;

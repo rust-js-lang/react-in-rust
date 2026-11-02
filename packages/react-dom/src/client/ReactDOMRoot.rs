@@ -7,30 +7,34 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use js::{Kind, SymbolFor, Unknown};
-use react_dom_bindings::dom_plugin_event_system::listen_to_all_supported_events;
-use react_dom_bindings::html_node_type::COMMENT_NODE;
-use react_dom_bindings::react_dom_component_tree::{
-    is_container_marked_as_root, mark_container_as_root, unmark_container_as_root,
-};
-use react_dom_bindings::react_dom_container::is_valid_container;
-use react_dom_bindings::react_dom_event_replaying::queue_explicit_hydration_target;
 use react_reconciler::react_fiber_error_logger::{
     default_on_caught_error, default_on_recoverable_error, default_on_uncaught_error,
 };
-use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
 use react_reconciler::react_internal_types::{
     FiberRoot, OnCaughtError, OnDefaultTransitionIndicator, OnError, TransitionTracingCallbacks,
 };
-use react_reconciler::react_root_tags::CONCURRENT_ROOT;
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{
-    DISABLE_COMMENTS_AS_DOM_CONTAINERS, ENABLE_DEFAULT_TRANSITION_INDICATOR,
-};
-use shared::react_symbols::REACT_ELEMENT_TYPE;
 use shared::react_types::ReactNodeList;
 use webapi::{EventTarget, Node, console};
 
+use react_dom_bindings::react_dom_container::is_valid_container;
+use react_dom_bindings::react_dom_event_replaying::queue_explicit_hydration_target;
+use shared::react_symbols::REACT_ELEMENT_TYPE;
+
+use shared::react_feature_flags::{
+    DISABLE_COMMENTS_AS_DOM_CONTAINERS, ENABLE_DEFAULT_TRANSITION_INDICATOR,
+};
+
+use react_dom_bindings::react_dom_component_tree::{
+    is_container_marked_as_root, mark_container_as_root, unmark_container_as_root,
+};
+
+use react_dom_bindings::dom_plugin_event_system::listen_to_all_supported_events;
+use react_dom_bindings::html_node_type::COMMENT_NODE;
+use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
+
 use crate::react_dom_default_transition_indicator::default_on_default_transition_indicator;
+use react_reconciler::react_root_tags::CONCURRENT_ROOT;
 
 /// What `createRoot` and `hydrateRoot` give: a root to render into and
 /// unmount, the same two methods each.

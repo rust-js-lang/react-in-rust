@@ -8,47 +8,11 @@ use std::rc::Rc;
 
 use js::Unknown;
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{
-    ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_PROFILER_TIMER,
-    ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
-};
 use shared::react_types::ViewTransitionProps;
 use webapi::console;
 
 use crate::react_fiber::ViewTransitionState;
-use crate::react_fiber_commit_effects::{
-    commit_hook_effect_list_mount, commit_hook_effect_list_unmount,
-};
-use crate::react_fiber_commit_view_transitions::{
-    APPEARING_VIEW_TRANSITIONS, VIEW_TRANSITION_CANCELABLE_CHILDREN, commit_enter_view_transitions,
-    commit_parent_exit_view_transitions, measure_nested_view_transitions,
-    measure_update_view_transition, pop_view_transition_cancelable_scope,
-    push_view_transition_cancelable_scope, restore_enter_or_exit_view_transitions,
-    restore_nested_view_transitions, restore_update_view_transition_for_gesture,
-};
-use crate::react_fiber_flags::{
-    AFFECTED_PARENT_LAYOUT, CONTENT_RESET, MUTATION_MASK, NO_FLAGS, PLACEMENT, UPDATE,
-    VIEW_TRANSITION_NAMED_STATIC, VIEW_TRANSITION_STATIC, VISIBILITY,
-};
-use crate::react_fiber_mutation_tracking::{
-    VIEW_TRANSITION_MUTATION_CONTEXT, pop_mutation_context, push_mutation_context,
-    track_host_mutation,
-};
-use crate::react_fiber_view_transition_component::{
-    get_view_transition_class_name, get_view_transition_name,
-};
-use crate::react_fiber_work_loop::schedule_gesture_transition_event;
-#[cfg_attr(rust_js, rust_js::name = "HookHasEffect")]
-use crate::react_hook_effect_tags::HAS_EFFECT as HOOK_HAS_EFFECT;
-#[cfg_attr(rust_js, rust_js::name = "HookInsertion")]
-use crate::react_hook_effect_tags::INSERTION as HOOK_INSERTION;
 use crate::react_internal_types::{Fiber, FiberRoot};
-use crate::react_profiler_timer::track_animating_task;
-use crate::react_work_tags::{
-    FORWARD_REF, FUNCTION_COMPONENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL, HOST_SINGLETON,
-    HOST_TEXT, MEMO_COMPONENT, OFFSCREEN_COMPONENT, SIMPLE_MEMO_COMPONENT,
-    VIEW_TRANSITION_COMPONENT,
-};
 
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFiberConfig.js#supportsResources"]
@@ -174,6 +138,48 @@ fn unhide_instance(instance: &'static Unknown, props: Option<&'static Unknown>) 
 fn unhide_text_instance(text_instance: &'static Unknown, text: Option<&'static Unknown>) {
     unreachable!()
 }
+
+use crate::react_fiber_mutation_tracking::{
+    VIEW_TRANSITION_MUTATION_CONTEXT, pop_mutation_context, push_mutation_context,
+    track_host_mutation,
+};
+
+use crate::react_fiber_flags::{
+    AFFECTED_PARENT_LAYOUT, CONTENT_RESET, MUTATION_MASK, NO_FLAGS, PLACEMENT, UPDATE,
+    VIEW_TRANSITION_NAMED_STATIC, VIEW_TRANSITION_STATIC, VISIBILITY,
+};
+#[cfg_attr(rust_js, rust_js::name = "HookHasEffect")]
+use crate::react_hook_effect_tags::HAS_EFFECT as HOOK_HAS_EFFECT;
+#[cfg_attr(rust_js, rust_js::name = "HookInsertion")]
+use crate::react_hook_effect_tags::INSERTION as HOOK_INSERTION;
+use crate::react_work_tags::{
+    FORWARD_REF, FUNCTION_COMPONENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL, HOST_SINGLETON,
+    HOST_TEXT, MEMO_COMPONENT, OFFSCREEN_COMPONENT, SIMPLE_MEMO_COMPONENT,
+    VIEW_TRANSITION_COMPONENT,
+};
+
+use crate::react_fiber_commit_view_transitions::{
+    APPEARING_VIEW_TRANSITIONS, VIEW_TRANSITION_CANCELABLE_CHILDREN, commit_enter_view_transitions,
+    commit_parent_exit_view_transitions, measure_nested_view_transitions,
+    measure_update_view_transition, pop_view_transition_cancelable_scope,
+    push_view_transition_cancelable_scope, restore_enter_or_exit_view_transitions,
+    restore_nested_view_transitions, restore_update_view_transition_for_gesture,
+};
+
+use crate::react_fiber_commit_effects::{
+    commit_hook_effect_list_mount, commit_hook_effect_list_unmount,
+};
+use crate::react_fiber_view_transition_component::{
+    get_view_transition_class_name, get_view_transition_name,
+};
+use shared::react_feature_flags::{
+    ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_PROFILER_TIMER,
+    ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
+};
+
+use crate::react_profiler_timer::track_animating_task;
+
+use crate::react_fiber_work_loop::schedule_gesture_transition_event;
 
 thread_local! {
     // Used during the apply phase to track whether a parent ViewTransition component

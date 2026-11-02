@@ -10,7 +10,6 @@ use shared::environment::__DEV__;
 use shared::react_types::ReactContext;
 use webapi::console;
 
-use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
 use crate::react_internal_types::Fiber;
 
 unsafe extern "Rust" {
@@ -44,6 +43,8 @@ fn get_child_host_context(
 fn get_root_host_context(root_container_instance: &'static Unknown) -> Option<&'static Unknown> {
     unreachable!()
 }
+
+use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
 
 thread_local! {
     // ReactFiberConfig's `HostContext`.

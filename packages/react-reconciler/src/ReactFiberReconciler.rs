@@ -9,70 +9,105 @@ use std::rc::Rc;
 
 use js::{Dict, Kind, Unknown};
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{DISABLE_LEGACY_MODE, ENABLE_SCHEDULING_PROFILER};
-use shared::react_instance_map::get as get_instance;
-use shared::react_shared_internals::{REACT_SHARED_INTERNALS, SharedStateClient};
 use shared::react_types::{ReactNodeList, ReactPortal};
-#[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
-use shared::react_version::REACT_VERSION;
 use webapi::console;
 
+use crate::react_fiber_suspense_component::SuspenseState;
+use crate::react_internal_types::{
+    CaughtErrorInfo, ErrorInfo, Fiber, FiberRoot, OnCaughtError, OnDefaultTransitionIndicator,
+    OnError, SuspenseHydrationCallbacks, TransitionTracingCallbacks,
+};
+use crate::{
+    react_fiber_error_logger, react_fiber_hooks, react_fiber_work_loop, react_portal,
+    react_test_selectors,
+};
+
+use crate::react_root_tags::{LEGACY_ROOT, RootTag};
+
+use crate::react_fiber_tree_reflection::{
+    find_current_host_fiber, find_current_host_fiber_with_no_portals,
+};
+use shared::react_instance_map::get as get_instance;
+
+use crate::react_work_tags::{
+    ACTIVITY_COMPONENT, CLASS_COMPONENT, HOST_COMPONENT, HOST_ROOT, HOST_SINGLETON,
+    SUSPENSE_COMPONENT,
+};
+
 use crate::get_component_name_from_fiber::get_component_name_from_fiber;
-#[cfg_attr(rust_js, rust_js::name = "ReactCurrentFiberCurrent")]
-use crate::react_current_fiber::CURRENT as REACT_CURRENT_FIBER_CURRENT;
-#[cfg_attr(rust_js, rust_js::name = "ReactCurrentFiberIsRendering")]
-use crate::react_current_fiber::IS_RENDERING as REACT_CURRENT_FIBER_IS_RENDERING;
-use crate::react_current_fiber::run_with_fiber_in_dev;
-use crate::react_fiber_async_action::register_default_indicator;
-use crate::react_fiber_class_update_queue::{create_update, enqueue_update, entangle_transitions};
-use crate::react_fiber_concurrent_updates::enqueue_concurrent_render_for_lane;
-use crate::react_fiber_dev_tools_hook::{
-    inject_internals, inject_profiling_hooks, mark_render_scheduled, on_schedule_root,
-};
-use crate::react_fiber_hooks::FormAction;
-use crate::react_fiber_hooks::Hook;
-use crate::react_fiber_hot_reloading::{
-    ScheduleRefresh, ScheduleRoot, SetRefreshHandler, schedule_refresh, schedule_root,
-    set_refresh_handler,
-};
-use crate::react_fiber_lane::{
-    Lane, SELECTIVE_HYDRATION_LANE, SYNC_LANE, TOTAL_LANES, claim_next_retry_lane,
-    get_bumped_lane_for_hydration_by_lane, get_highest_priority_pending_lanes, get_label_for_lane,
-    higher_priority_lane,
-};
+use shared::react_feature_flags::{DISABLE_LEGACY_MODE, ENABLE_SCHEDULING_PROFILER};
+use shared::react_shared_internals::{REACT_SHARED_INTERNALS, SharedStateClient};
+
+// ReactFiberConfig's `Instance`'s public instance.
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#getPublicInstance",
+    rust_js::nullable
+)]
+fn get_public_instance(instance: Option<&'static Unknown>) -> Option<&'static Unknown> {
+    unreachable!()
+}
+
+unsafe extern "Rust" {
+    #[link_name = "./src/ReactFiberConfig.js#rendererVersion"]
+    safe static RENDERER_VERSION: &'static str;
+    #[link_name = "./src/ReactFiberConfig.js#rendererPackageName"]
+    safe static RENDERER_PACKAGE_NAME: &'static str;
+    // ReactFiberConfig's `RendererInspectionConfig`.
+    #[link_name = "./src/ReactFiberConfig.js#extraDevToolsConfig"]
+    safe static EXTRA_DEV_TOOLS_CONFIG: Option<&'static Unknown>;
+}
+
 use crate::react_fiber_legacy_context::{
     Context, EMPTY_CONTEXT_OBJECT, find_current_unmasked_context,
     is_context_provider as is_legacy_context_provider, process_child_context,
 };
 use crate::react_fiber_root::create_fiber_root;
 use crate::react_fiber_shell_hydration::is_root_dehydrated;
-use crate::react_fiber_suspense_component::SuspenseState;
-use crate::react_fiber_tree_reflection::{
-    find_current_host_fiber, find_current_host_fiber_with_no_portals,
+
+use crate::react_fiber_dev_tools_hook::{
+    inject_internals, inject_profiling_hooks, mark_render_scheduled, on_schedule_root,
 };
+use crate::react_profiler_timer::start_update_timer_by_lane;
+
 use crate::react_fiber_work_loop::{
     flush_pending_effects, flush_root, flush_sync_work, request_update_lane,
     schedule_initial_hydration_on_root, schedule_update_on_fiber,
 };
-use crate::react_internal_types::{
-    CaughtErrorInfo, ErrorInfo, Fiber, FiberRoot, OnCaughtError, OnDefaultTransitionIndicator,
-    OnError, SuspenseHydrationCallbacks, TransitionTracingCallbacks,
+
+use crate::react_fiber_concurrent_updates::enqueue_concurrent_render_for_lane;
+
+use crate::react_fiber_class_update_queue::{create_update, enqueue_update, entangle_transitions};
+
+#[cfg_attr(rust_js, rust_js::name = "ReactCurrentFiberCurrent")]
+use crate::react_current_fiber::CURRENT as REACT_CURRENT_FIBER_CURRENT;
+#[cfg_attr(rust_js, rust_js::name = "ReactCurrentFiberIsRendering")]
+use crate::react_current_fiber::IS_RENDERING as REACT_CURRENT_FIBER_IS_RENDERING;
+use crate::react_current_fiber::run_with_fiber_in_dev;
+use crate::react_type_of_mode::STRICT_LEGACY_MODE;
+
+use crate::react_fiber_lane::{
+    Lane, SELECTIVE_HYDRATION_LANE, SYNC_LANE, TOTAL_LANES, claim_next_retry_lane,
+    get_bumped_lane_for_hydration_by_lane, get_highest_priority_pending_lanes, get_label_for_lane,
+    higher_priority_lane,
 };
-use crate::react_profiler_timer::start_update_timer_by_lane;
-use crate::react_root_tags::{LEGACY_ROOT, RootTag};
+
+use crate::react_fiber_hot_reloading::{
+    ScheduleRefresh, ScheduleRoot, SetRefreshHandler, schedule_refresh, schedule_root,
+    set_refresh_handler,
+};
+#[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
+use shared::react_version::REACT_VERSION;
+
 use crate::react_test_selectors::{
     BoundingRect, IntersectionObserverOptions, ObserveVisibleRectsCallback, Selector,
     VisibleRectsObserver,
 };
-use crate::react_type_of_mode::STRICT_LEGACY_MODE;
-use crate::react_work_tags::{
-    ACTIVITY_COMPONENT, CLASS_COMPONENT, HOST_COMPONENT, HOST_ROOT, HOST_SINGLETON,
-    SUSPENSE_COMPONENT,
-};
-use crate::{
-    react_fiber_error_logger, react_fiber_hooks, react_fiber_work_loop, react_portal,
-    react_test_selectors,
-};
+
+use crate::react_fiber_hooks::FormAction;
+use crate::react_fiber_hooks::Hook;
+
+use crate::react_fiber_async_action::register_default_indicator;
 
 #[cfg_attr(rust_js, rust_js::namespace)]
 impl ReactFiberReconciler {
@@ -187,26 +222,6 @@ impl ReactFiberReconciler {
     ) {
         react_fiber_error_logger::default_on_uncaught_error(error, error_info)
     }
-}
-
-unsafe extern "Rust" {
-    #[link_name = "./src/ReactFiberConfig.js#rendererVersion"]
-    safe static RENDERER_VERSION: &'static str;
-    #[link_name = "./src/ReactFiberConfig.js#rendererPackageName"]
-    safe static RENDERER_PACKAGE_NAME: &'static str;
-    // ReactFiberConfig's `RendererInspectionConfig`.
-    #[link_name = "./src/ReactFiberConfig.js#extraDevToolsConfig"]
-    safe static EXTRA_DEV_TOOLS_CONFIG: Option<&'static Unknown>;
-}
-
-// ReactFiberConfig's `Instance`'s public instance.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#getPublicInstance",
-    rust_js::nullable
-)]
-fn get_public_instance(instance: Option<&'static Unknown>) -> Option<&'static Unknown> {
-    unreachable!()
 }
 
 type OpaqueRoot = FiberRoot;

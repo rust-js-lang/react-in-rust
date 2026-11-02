@@ -11,15 +11,19 @@ use std::rc::Rc;
 use js::{Error, JsError, Kind, Unknown};
 use react_isomorphic::react_lazy::LazyComponent;
 use shared::environment::__DEV__;
-use shared::noop::noop;
-use shared::react_feature_flags::ENABLE_CONDITIONAL_USE_WARNING;
-use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use shared::react_types::{ReactAsyncInfo, ReactIOInfo, Thenable};
 use webapi::{console, performance};
 
+use crate::react_internal_types::Fiber;
+
 use crate::react_fiber_call_user_space::CALL_LAZY_INIT_IN_DEV;
 use crate::react_fiber_work_loop::get_work_in_progress_root;
-use crate::react_internal_types::Fiber;
+use shared::react_shared_internals::REACT_SHARED_INTERNALS;
+
+use shared::react_feature_flags::ENABLE_CONDITIONAL_USE_WARNING;
+
+use shared::noop::noop;
+
 use crate::react_work_tags::HOST_ROOT;
 
 /// The thenables a component used, in the order it used them, and whether

@@ -5,12 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {NoLanes, mergeLanes} from './ReactFiberLane.js';
 import {createCursor, pop, push} from './ReactFiberStack.js';
 import {
   getEntangledRenderLanes,
   setEntangledRenderLanes,
 } from './ReactFiberWorkLoop.js';
+import {NoLanes, mergeLanes} from './ReactFiberLane.js';
 
 // TODO: This isn't being used yet, but it's intended to replace the
 // InvisibleParentContext that is currently managed by SuspenseContext.

@@ -6,17 +6,17 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  commitNewChildToFragmentInstance,
-  deleteChildFromFragmentInstance,
-  supportsSingletons,
-} from './ReactFiberConfig.js';
-import {
   Fragment,
   HostComponent,
   HostRoot,
   HostSingleton,
   HostText,
 } from './ReactWorkTags.js';
+import {
+  commitNewChildToFragmentInstance,
+  deleteChildFromFragmentInstance,
+  supportsSingletons,
+} from './ReactFiberConfig.js';
 
 export function commitNewChildToFragmentInstances(
   fiber,

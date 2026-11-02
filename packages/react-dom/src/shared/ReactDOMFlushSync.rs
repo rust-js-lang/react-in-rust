@@ -5,12 +5,15 @@
 
 use js::Unknown;
 use react_isomorphic::react_start_transition::{Transition, set_t, t};
-use react_reconciler::react_event_priorities::DISCRETE_EVENT_PRIORITY;
 use shared::environment::__DEV__;
-use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS;
-use shared::react_feature_flags::DISABLE_LEGACY_MODE;
-use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use webapi::console;
+
+use shared::react_feature_flags::DISABLE_LEGACY_MODE;
+
+use react_reconciler::react_event_priorities::DISCRETE_EVENT_PRIORITY;
+use shared::react_shared_internals::REACT_SHARED_INTERNALS;
+
+use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS;
 
 /// `flushSync(fn)`: what `fn` gives, or nothing where it's given none.
 pub type FlushSync = fn(Option<&dyn Fn() -> Option<&'static Unknown>>) -> Option<&'static Unknown>;

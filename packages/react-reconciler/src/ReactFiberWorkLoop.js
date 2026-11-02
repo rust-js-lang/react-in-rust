@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {REACT_STRICT_MODE_TYPE} from 'shared/ReactSymbols';
+import {getViewTransitionName} from './ReactFiberViewTransitionComponent.js';
 import {
   alwaysThrottleRetries,
   disableLegacyContext,
@@ -26,70 +28,41 @@ import {
   enableYieldingBeforePassive,
 } from 'shared/ReactFeatureFlags';
 import {resetOwnerStackLimit} from 'shared/ReactOwnerStackReset';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
-import {REACT_STRICT_MODE_TYPE} from 'shared/ReactSymbols';
 import objectIs from 'shared/objectIs';
 import reportGlobalError from 'shared/reportGlobalError';
-import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
-import {resetChildReconcilerOnUnwind} from './ReactChildFiber.js';
 import {
-  isRendering,
-  resetCurrentFiber,
-  runWithFiberInDEV,
-} from './ReactCurrentFiber.js';
+  IdlePriority as IdleSchedulerPriority,
+  NormalPriority as NormalSchedulerPriority,
+  now,
+  requestPaint,
+  scheduleCallback as Scheduler_scheduleCallback,
+  shouldYield,
+} from './Scheduler.js';
 import {
-  DefaultEventPriority,
-  DiscreteEventPriority,
-  eventPriorityToLane,
-  lanesToEventPriority,
-  lowerEventPriority,
-} from './ReactEventPriorities.js';
-import {createWorkInProgress, resetWorkInProgress} from './ReactFiber.js';
-import {
-  isConcurrentActEnvironment,
-  isLegacyActEnvironment,
-} from './ReactFiberAct.js';
-import {
-  applyDepartureTransitions,
-  insertDestinationClones,
-  startGestureAnimations,
-} from './ReactFiberApplyGesture.js';
-import {DefaultAsyncDispatcher} from './ReactFiberAsyncDispatcher.js';
-import {
-  SelectiveHydrationException,
-  beginWork,
-  replayFunctionComponent,
-} from './ReactFiberBeginWork.js';
-import {releaseCache} from './ReactFiberCacheComponent.js';
-import {enqueueUpdate} from './ReactFiberClassUpdateQueue.js';
-import {
-  resetShouldStartViewTransition,
-  shouldStartViewTransition,
-} from './ReactFiberCommitViewTransitions.js';
-import {
-  accumulateSuspenseyCommit,
-  commitAfterMutationEffects,
-  commitBeforeMutationEffects,
-  commitLayoutEffects,
-  commitMutationEffects,
-  commitPassiveMountEffects,
-  commitPassiveUnmountEffects,
-  disappearLayoutEffectsForDEVValidation,
-  disconnectPassiveEffect,
-  invokeLayoutEffectMountInDEV,
-  invokeLayoutEffectUnmountInDEV,
-  invokePassiveEffectMountInDEV,
-  invokePassiveEffectUnmountInDEV,
-  reappearLayoutEffectsForDEVValidation,
-  reconnectPassiveEffects,
-  shouldFireAfterActiveInstanceBlur,
-} from './ReactFiberCommitWork.js';
-import {completeWork} from './ReactFiberCompleteWork.js';
-import {
-  enqueueConcurrentRenderForLane,
-  finishQueueingConcurrentUpdates,
-  getConcurrentlyUpdatedLanes,
-} from './ReactFiberConcurrentUpdates.js';
+  logActionYieldTime,
+  logAnimatingPhase,
+  logApplyGesturePhase,
+  logBlockingStart,
+  logCommitPhase,
+  logErroredRenderPhase,
+  logGestureStart,
+  logInconsistentRender,
+  logInterruptedRenderPhase,
+  logPaintYieldPhase,
+  logPassiveCommitPhase,
+  logRecoveredRenderPhase,
+  logRenderPhase,
+  logStartViewTransitionYieldPhase,
+  logSuspendedCommitPhase,
+  logSuspendedRenderPhase,
+  logSuspendedViewTransitionPhase,
+  logSuspendedWithDelayPhase,
+  logSuspendedYieldTime,
+  logTransitionStart,
+  logYieldTime,
+  markAllLanesInOrder,
+  setCurrentTrackFromLanes,
+} from './ReactFiberPerformanceTrack.js';
 import {
   addViewTransitionFinishedListener,
   afterActiveInstanceBlur,
@@ -114,25 +87,35 @@ import {
   trackSchedulerEvent,
   waitForCommitToBeReady,
 } from './ReactFiberConfig.js';
+import {createWorkInProgress, resetWorkInProgress} from './ReactFiber.js';
+import {isRootDehydrated} from './ReactFiberShellHydration.js';
 import {
-  isDevToolsPresent,
-  markCommitStarted,
-  markCommitStopped,
-  markComponentErrored,
-  markComponentRenderStopped,
-  markComponentSuspended,
-  markLayoutEffectsStarted,
-  markLayoutEffectsStopped,
-  markPassiveEffectsStarted,
-  markPassiveEffectsStopped,
-  markRenderStarted,
-  markRenderStopped,
-  markRenderYielded,
-  onCommitRoot as onCommitRootDevTools,
-  onPostCommitRoot as onPostCommitRootDevTools,
-  setIsStrictModeForDevtools,
-} from './ReactFiberDevToolsHook.js';
-import {logUncaughtError} from './ReactFiberErrorLogger.js';
+  getIsHydrating,
+  popHydrationStateOnInterruptedWork,
+} from './ReactFiberHydrationContext.js';
+import {
+  ConcurrentMode,
+  NoMode,
+  ProfileMode,
+  StrictEffectsMode,
+  StrictLegacyMode,
+} from './ReactTypeOfMode.js';
+import {
+  ActivityComponent,
+  ClassComponent,
+  ForwardRef,
+  FunctionComponent,
+  HostComponent,
+  HostHoistable,
+  HostRoot,
+  HostSingleton,
+  MemoComponent,
+  OffscreenComponent,
+  SimpleMemoComponent,
+  SuspenseComponent,
+  SuspenseListComponent,
+} from './ReactWorkTags.js';
+import {ConcurrentRoot, LegacyRoot} from './ReactRootTags.js';
 import {
   BeforeMutationMask,
   DidDefer,
@@ -153,19 +136,6 @@ import {
   StoreConsistency,
   Visibility,
 } from './ReactFiberFlags.js';
-import {
-  scheduleGestureCommit,
-  stopCommittedGesture,
-} from './ReactFiberGestureScheduler.js';
-import {
-  ContextOnlyDispatcher,
-  resetHooksAfterThrow,
-  resetHooksOnUnwind,
-} from './ReactFiberHooks.js';
-import {
-  getIsHydrating,
-  popHydrationStateOnInterruptedWork,
-} from './ReactFiberHydrationContext.js';
 import {
   GestureLane,
   IdleLane,
@@ -210,67 +180,67 @@ import {
   upgradePendingLanesToSync,
 } from './ReactFiberLane.js';
 import {
-  getMaskedContext,
-  getUnmaskedContext,
-} from './ReactFiberLegacyContext.js';
-import {resetContextDependencies} from './ReactFiberNewContext.js';
+  DefaultEventPriority,
+  DiscreteEventPriority,
+  eventPriorityToLane,
+  lanesToEventPriority,
+  lowerEventPriority,
+} from './ReactEventPriorities.js';
+import {requestCurrentTransition} from './ReactFiberTransition.js';
 import {
-  logActionYieldTime,
-  logAnimatingPhase,
-  logApplyGesturePhase,
-  logBlockingStart,
-  logCommitPhase,
-  logErroredRenderPhase,
-  logGestureStart,
-  logInconsistentRender,
-  logInterruptedRenderPhase,
-  logPaintYieldPhase,
-  logPassiveCommitPhase,
-  logRecoveredRenderPhase,
-  logRenderPhase,
-  logStartViewTransitionYieldPhase,
-  logSuspendedCommitPhase,
-  logSuspendedRenderPhase,
-  logSuspendedViewTransitionPhase,
-  logSuspendedWithDelayPhase,
-  logSuspendedYieldTime,
-  logTransitionStart,
-  logYieldTime,
-  markAllLanesInOrder,
-  setCurrentTrackFromLanes,
-} from './ReactFiberPerformanceTrack.js';
-import {
-  ensureRootIsScheduled,
-  flushSyncWorkOnAllRoots,
-  flushSyncWorkOnLegacyRootsOnly,
-  requestTransitionLane,
-} from './ReactFiberRootScheduler.js';
-import {isRootDehydrated} from './ReactFiberShellHydration.js';
-import {
-  getShellBoundary,
-  getSuspenseHandler,
-} from './ReactFiberSuspenseContext.js';
-import {
-  SuspenseActionException,
-  SuspenseException,
-  SuspenseyCommitException,
-  clearUseWarnings,
-  getSuspendedThenable,
-  hasPotentialUseWarnings,
-  isThenableResolved,
-} from './ReactFiberThenable.js';
+  SelectiveHydrationException,
+  beginWork,
+  replayFunctionComponent,
+} from './ReactFiberBeginWork.js';
+import {completeWork} from './ReactFiberCompleteWork.js';
+import {unwindInterruptedWork, unwindWork} from './ReactFiberUnwindWork.js';
 import {
   createClassErrorUpdate,
   createRootErrorUpdate,
   initializeClassErrorUpdate,
   throwException,
 } from './ReactFiberThrow.js';
-import {processTransitionCallbacks} from './ReactFiberTracingMarkerComponent.js';
-import {requestCurrentTransition} from './ReactFiberTransition.js';
-import {claimQueuedTransitionTypes} from './ReactFiberTransitionTypes.js';
-import {unwindInterruptedWork, unwindWork} from './ReactFiberUnwindWork.js';
-import {getViewTransitionName} from './ReactFiberViewTransitionComponent.js';
-import {schedulePostPaintCallback} from './ReactPostPaintCallback.js';
+import {
+  accumulateSuspenseyCommit,
+  commitAfterMutationEffects,
+  commitBeforeMutationEffects,
+  commitLayoutEffects,
+  commitMutationEffects,
+  commitPassiveMountEffects,
+  commitPassiveUnmountEffects,
+  disappearLayoutEffectsForDEVValidation,
+  disconnectPassiveEffect,
+  invokeLayoutEffectMountInDEV,
+  invokeLayoutEffectUnmountInDEV,
+  invokePassiveEffectMountInDEV,
+  invokePassiveEffectUnmountInDEV,
+  reappearLayoutEffectsForDEVValidation,
+  reconnectPassiveEffects,
+  shouldFireAfterActiveInstanceBlur,
+} from './ReactFiberCommitWork.js';
+import {
+  resetShouldStartViewTransition,
+  shouldStartViewTransition,
+} from './ReactFiberCommitViewTransitions.js';
+import {
+  applyDepartureTransitions,
+  insertDestinationClones,
+  startGestureAnimations,
+} from './ReactFiberApplyGesture.js';
+import {enqueueUpdate} from './ReactFiberClassUpdateQueue.js';
+import {resetContextDependencies} from './ReactFiberNewContext.js';
+import {
+  ContextOnlyDispatcher,
+  resetHooksAfterThrow,
+  resetHooksOnUnwind,
+} from './ReactFiberHooks.js';
+import {DefaultAsyncDispatcher} from './ReactFiberAsyncDispatcher.js';
+import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
+import {
+  enqueueConcurrentRenderForLane,
+  finishQueueingConcurrentUpdates,
+  getConcurrentlyUpdatedLanes,
+} from './ReactFiberConcurrentUpdates.js';
 import {
   PINGED_UPDATE,
   SPAWNED_UPDATE,
@@ -339,40 +309,70 @@ import {
   yieldReason,
   yieldStartTime,
 } from './ReactProfilerTimer.js';
-import {ConcurrentRoot, LegacyRoot} from './ReactRootTags.js';
-import ReactStrictModeWarnings from './ReactStrictModeWarnings.js';
-import {onCommitRoot as onCommitRootTestSelector} from './ReactTestSelectors.js';
-import {
-  ConcurrentMode,
-  NoMode,
-  ProfileMode,
-  StrictEffectsMode,
-  StrictLegacyMode,
-} from './ReactTypeOfMode.js';
-import {
-  ActivityComponent,
-  ClassComponent,
-  ForwardRef,
-  FunctionComponent,
-  HostComponent,
-  HostHoistable,
-  HostRoot,
-  HostSingleton,
-  MemoComponent,
-  OffscreenComponent,
-  SimpleMemoComponent,
-  SuspenseComponent,
-  SuspenseListComponent,
-} from './ReactWorkTags.js';
-import {
-  IdlePriority as IdleSchedulerPriority,
-  NormalPriority as NormalSchedulerPriority,
-  now,
-  requestPaint,
-  scheduleCallback as Scheduler_scheduleCallback,
-  shouldYield,
-} from './Scheduler.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+import ReactStrictModeWarnings from './ReactStrictModeWarnings.js';
+import {
+  isRendering,
+  resetCurrentFiber,
+  runWithFiberInDEV,
+} from './ReactCurrentFiber.js';
+import {
+  isDevToolsPresent,
+  markCommitStarted,
+  markCommitStopped,
+  markComponentErrored,
+  markComponentRenderStopped,
+  markComponentSuspended,
+  markLayoutEffectsStarted,
+  markLayoutEffectsStopped,
+  markPassiveEffectsStarted,
+  markPassiveEffectsStopped,
+  markRenderStarted,
+  markRenderStopped,
+  markRenderYielded,
+  onCommitRoot as onCommitRootDevTools,
+  onPostCommitRoot as onPostCommitRootDevTools,
+  setIsStrictModeForDevtools,
+} from './ReactFiberDevToolsHook.js';
+import {onCommitRoot as onCommitRootTestSelector} from './ReactTestSelectors.js';
+import {releaseCache} from './ReactFiberCacheComponent.js';
+import {
+  isConcurrentActEnvironment,
+  isLegacyActEnvironment,
+} from './ReactFiberAct.js';
+import {processTransitionCallbacks} from './ReactFiberTracingMarkerComponent.js';
+import {
+  SuspenseActionException,
+  SuspenseException,
+  SuspenseyCommitException,
+  clearUseWarnings,
+  getSuspendedThenable,
+  hasPotentialUseWarnings,
+  isThenableResolved,
+} from './ReactFiberThenable.js';
+import {schedulePostPaintCallback} from './ReactPostPaintCallback.js';
+import {
+  getShellBoundary,
+  getSuspenseHandler,
+} from './ReactFiberSuspenseContext.js';
+import {resetChildReconcilerOnUnwind} from './ReactChildFiber.js';
+import {
+  ensureRootIsScheduled,
+  flushSyncWorkOnAllRoots,
+  flushSyncWorkOnLegacyRootsOnly,
+  requestTransitionLane,
+} from './ReactFiberRootScheduler.js';
+import {
+  getMaskedContext,
+  getUnmaskedContext,
+} from './ReactFiberLegacyContext.js';
+import {logUncaughtError} from './ReactFiberErrorLogger.js';
+import {
+  scheduleGestureCommit,
+  stopCommittedGesture,
+} from './ReactFiberGestureScheduler.js';
+import {claimQueuedTransitionTypes} from './ReactFiberTransitionTypes.js';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {$unwrap} from '@rust-js/runtime';
 
 const PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map;
@@ -1620,8 +1620,7 @@ function isRenderConsistentWithExternalStores(finishedWork) {
             const getSnapshot = check.getSnapshot;
             const renderedValue = check.value;
             try {
-              const catchUnwind = objectIs(getSnapshot(), renderedValue);
-              if (!catchUnwind) {
+              if (!objectIs(getSnapshot(), renderedValue)) {
                 // Found an inconsistent store.
                 return false;
               }
@@ -3111,17 +3110,16 @@ function throwAndUnwindWorkLoop(
   try {
     // Find and mark the nearest Suspense or error boundary that can handle
     // this "exception".
-    const didFatal$1 = throwException(
+    didFatal = throwException(
       root,
       returnFiber,
       unitOfWork,
       thrownValue,
       workInProgressRootRenderLanes,
     );
-    if (didFatal$1) {
+    if (didFatal) {
       panicOnRootError(root, thrownValue);
     }
-    didFatal = didFatal$1;
   } catch (error) {
     // We had trouble processing the error. An example of this happening is
     // when accessing the `componentDidCatch` property of an error boundary

@@ -8,17 +8,19 @@ use std::marker::PhantomData;
 
 use js::{JsError, JsObject, Unknown};
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{ENABLE_PROFILER_TIMER, ENABLE_SCHEDULING_PROFILER};
 use shared::react_types::ReactNodeList;
 use webapi::console;
+
+use crate::react_fiber_lane::{Lane, Lanes};
+use crate::react_internal_types::{Fiber, FiberRoot};
+
+use crate::react_fiber_flags::DID_CAPTURE;
+use shared::react_feature_flags::{ENABLE_PROFILER_TIMER, ENABLE_SCHEDULING_PROFILER};
 
 use crate::react_event_priorities::{
     CONTINUOUS_EVENT_PRIORITY, DEFAULT_EVENT_PRIORITY, DISCRETE_EVENT_PRIORITY, EventPriority,
     IDLE_EVENT_PRIORITY,
 };
-use crate::react_fiber_flags::DID_CAPTURE;
-use crate::react_fiber_lane::{Lane, Lanes};
-use crate::react_internal_types::{Fiber, FiberRoot};
 #[cfg_attr(rust_js, rust_js::name = "IdleSchedulerPriority")]
 use crate::scheduler::IDLE_PRIORITY as IDLE_SCHEDULER_PRIORITY;
 #[cfg_attr(rust_js, rust_js::name = "ImmediateSchedulerPriority")]
@@ -27,6 +29,7 @@ use crate::scheduler::IMMEDIATE_PRIORITY as IMMEDIATE_SCHEDULER_PRIORITY;
 use crate::scheduler::NORMAL_PRIORITY as NORMAL_SCHEDULER_PRIORITY;
 #[cfg_attr(rust_js, rust_js::name = "UserBlockingSchedulerPriority")]
 use crate::scheduler::USER_BLOCKING_PRIORITY as USER_BLOCKING_SCHEDULER_PRIORITY;
+
 use crate::scheduler::{LOG, PriorityLevel, UNSTABLE_SET_DISABLE_YIELD_VALUE};
 
 /// React DevTools' global hook, as the reconciler reads it: what DevTools,

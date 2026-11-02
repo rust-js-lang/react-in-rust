@@ -11,10 +11,13 @@ use shared::environment::__DEV__;
 use shared::react_shared_internals::CacheDispatcher;
 use webapi::AbortSignal;
 
-use crate::react_current_fiber::CURRENT as CURRENT_OWNER;
-use crate::react_fiber_cache_component::{CACHE_CONTEXT, Cache};
-use crate::react_fiber_new_context::read_context;
 use crate::react_internal_types::Fiber;
+
+use crate::react_fiber_new_context::read_context;
+
+use crate::react_fiber_cache_component::{CACHE_CONTEXT, Cache};
+
+use crate::react_current_fiber::CURRENT as CURRENT_OWNER;
 
 /// What a resource type of `cache()` makes: any value, made once per cache.
 type ResourceType = dyn Fn() -> Option<&'static Unknown>;

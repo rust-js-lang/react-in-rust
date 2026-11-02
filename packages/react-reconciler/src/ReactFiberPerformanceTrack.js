@@ -7,16 +7,8 @@
 
 // eslint-disable react-internal/no-production-logging
 
-import {
-  enableGestureTransition,
-  enablePerformanceIssueReporting,
-  enableProfilerTimer,
-} from 'shared/ReactFeatureFlags';
-import {
-  addObjectDiffToProperties,
-  addObjectToProperties,
-  addValueToProperties,
-} from 'shared/ReactPerformanceTrackProperties';
+import {SuspenseComponent} from './ReactWorkTags.js';
+import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {
   getGroupNameOfHighestPriorityLane,
   includesOnlyHydrationLanes,
@@ -24,8 +16,16 @@ import {
   includesOnlyOffscreenLanes,
   includesSomeLane,
 } from './ReactFiberLane.js';
-import {SuspenseComponent} from './ReactWorkTags.js';
-import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+import {
+  addObjectDiffToProperties,
+  addObjectToProperties,
+  addValueToProperties,
+} from 'shared/ReactPerformanceTrackProperties';
+import {
+  enableGestureTransition,
+  enablePerformanceIssueReporting,
+  enableProfilerTimer,
+} from 'shared/ReactFeatureFlags';
 import {$borrow, $fieldCell, $unborrow, $unwrap} from '@rust-js/runtime';
 
 const supportsUserTiming =

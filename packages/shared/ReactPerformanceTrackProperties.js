@@ -6,9 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 import {OMITTED_PROP_ERROR} from './ReactFlightPropertyAccess.js';
+import hasOwnProperty from './hasOwnProperty.js';
 import {REACT_ELEMENT_TYPE} from './ReactSymbols.js';
 import getComponentNameFromType from './getComponentNameFromType.js';
-import hasOwnProperty from './hasOwnProperty.js';
 import {$unwrap} from '@rust-js/runtime';
 
 // Showing wider objects in the devtools is not useful.

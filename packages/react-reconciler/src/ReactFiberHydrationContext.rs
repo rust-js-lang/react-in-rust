@@ -10,147 +10,64 @@ use js::{Error, Unknown};
 use shared::environment::__DEV__;
 use webapi::console;
 
-use crate::react_captured_value::{CapturedValue, create_captured_value_at_fiber};
-use crate::react_current_fiber::run_with_fiber_in_dev;
-use crate::react_fiber::create_fiber_from_dehydrated_fragment;
 use crate::react_fiber_activity_component::ActivityState;
-use crate::react_fiber_host_context::{get_host_context, get_root_host_container};
-use crate::react_fiber_hydration_diffs::{
-    HydrationDiffNode, ServerProps, ServerTailNode, describe_diff,
-};
-use crate::react_fiber_lane::OFFSCREEN_LANE;
 use crate::react_fiber_suspense_component::SuspenseState;
-use crate::react_fiber_tree_context::{
-    TreeContext, get_suspended_tree_context, restore_suspended_tree_context,
-};
-use crate::react_fiber_work_loop::queue_recoverable_errors;
 use crate::react_internal_types::{Fiber, FiberRoot};
+
 use crate::react_work_tags::{
     ACTIVITY_COMPONENT, HOST_COMPONENT, HOST_ROOT, HOST_SINGLETON, SUSPENSE_COMPONENT,
 };
 
-/// The errors thrown while hydrating a boundary: one array, which the work
-/// loop's recoverable errors and the boundary's state may share.
-pub type HydrationErrors = Rc<RefCell<Vec<Rc<CapturedValue<Option<&'static Unknown>>>>>>;
-
-unsafe extern "Rust" {
-    #[link_name = "./src/ReactFiberConfig.js#supportsHydration"]
-    safe static SUPPORTS_HYDRATION: bool;
-    #[link_name = "./src/ReactFiberConfig.js#supportsSingletons"]
-    safe static SUPPORTS_SINGLETONS: bool;
-}
+use crate::react_captured_value::{CapturedValue, create_captured_value_at_fiber};
+use crate::react_fiber::create_fiber_from_dehydrated_fragment;
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#shouldSetTextContent"
-)]
-fn should_set_text_content(r#type: &str, props: Option<&'static Unknown>) -> bool {
-    unreachable!()
-}
-
-// ReactFiberConfig's `HydratableInstance`s.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#getNextHydratableSibling",
+    rust_js::link_name = "./src/ReactFiberConfig.js#canHydrateActivityInstance",
     rust_js::nullable
 )]
-fn get_next_hydratable_sibling(instance: Option<&'static Unknown>) -> Option<&'static Unknown> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#getNextHydratableSiblingAfterSingleton",
-    rust_js::nullable
-)]
-fn get_next_hydratable_sibling_after_singleton(
-    r#type: &str,
-    current_hydratable_instance: Option<&'static Unknown>,
+fn can_hydrate_activity_instance(
+    instance: &'static Unknown,
+    in_root_or_singleton: bool,
 ) -> Option<&'static Unknown> {
     unreachable!()
 }
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#getFirstHydratableChild",
+    rust_js::link_name = "./src/ReactFiberConfig.js#canHydrateInstance",
     rust_js::nullable
 )]
-fn get_first_hydratable_child(parent_instance: &'static Unknown) -> Option<&'static Unknown> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#getFirstHydratableChildWithinContainer",
-    rust_js::nullable
-)]
-fn get_first_hydratable_child_within_container(
-    parent_container: &'static Unknown,
-) -> Option<&'static Unknown> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#getFirstHydratableChildWithinActivityInstance",
-    rust_js::nullable
-)]
-fn get_first_hydratable_child_within_activity_instance(
-    parent_instance: &'static Unknown,
-) -> Option<&'static Unknown> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#getFirstHydratableChildWithinSuspenseInstance",
-    rust_js::nullable
-)]
-fn get_first_hydratable_child_within_suspense_instance(
-    parent_instance: &'static Unknown,
-) -> Option<&'static Unknown> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#getFirstHydratableChildWithinSingleton",
-    rust_js::nullable
-)]
-fn get_first_hydratable_child_within_singleton(
-    r#type: &str,
-    singleton_instance: &'static Unknown,
-    current_hydratable_instance: Option<&'static Unknown>,
-) -> Option<&'static Unknown> {
-    unreachable!()
-}
-
-// ReactFiberConfig's `Instance` and `HostContext`.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#hydrateInstance"
-)]
-fn hydrate_instance(
-    instance: Option<&'static Unknown>,
-    r#type: &str,
-    props: Option<&'static Unknown>,
-    host_context: Option<&'static Unknown>,
-    internal_instance_handle: &Fiber,
-) -> bool {
-    unreachable!()
-}
-
-// The props that differ, if any.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#diffHydratedPropsForDevWarnings",
-    rust_js::nullable
-)]
-fn diff_hydrated_props_for_dev_warnings(
+fn can_hydrate_instance(
     instance: &'static Unknown,
     r#type: &str,
     props: Option<&'static Unknown>,
-    host_context: Option<&'static Unknown>,
+    in_root_or_singleton: bool,
+) -> Option<&'static Unknown> {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#canHydrateSuspenseInstance",
+    rust_js::nullable
+)]
+fn can_hydrate_suspense_instance(
+    instance: &'static Unknown,
+    in_root_or_singleton: bool,
+) -> Option<&'static Unknown> {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#canHydrateTextInstance",
+    rust_js::nullable
+)]
+fn can_hydrate_text_instance(
+    instance: &'static Unknown,
+    text: &str,
+    in_root_or_singleton: bool,
 ) -> Option<&'static Unknown> {
     unreachable!()
 }
@@ -161,19 +78,6 @@ fn diff_hydrated_props_for_dev_warnings(
     rust_js::gives_plain_data
 )]
 fn describe_hydratable_instance_for_dev_warnings(instance: &'static Unknown) -> ServerTailNode {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#hydrateTextInstance"
-)]
-fn hydrate_text_instance(
-    text_instance: Option<&'static Unknown>,
-    text: &str,
-    internal_instance_handle: &Fiber,
-    parent_instance_props: Option<&'static Unknown>,
-) -> bool {
     unreachable!()
 }
 
@@ -192,23 +96,56 @@ fn diff_hydrated_text_for_dev_warnings(
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#hydrateActivityInstance"
+    rust_js::link_name = "./src/ReactFiberConfig.js#getFirstHydratableChild",
+    rust_js::nullable
 )]
-fn hydrate_activity_instance(
-    activity_instance: &'static Unknown,
-    internal_instance_handle: &Fiber,
-) {
+fn get_first_hydratable_child(parent_instance: &'static Unknown) -> Option<&'static Unknown> {
     unreachable!()
 }
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#hydrateSuspenseInstance"
+    rust_js::link_name = "./src/ReactFiberConfig.js#getFirstHydratableChildWithinActivityInstance",
+    rust_js::nullable
 )]
-fn hydrate_suspense_instance(
-    suspense_instance: &'static Unknown,
-    internal_instance_handle: &Fiber,
-) {
+fn get_first_hydratable_child_within_activity_instance(
+    parent_instance: &'static Unknown,
+) -> Option<&'static Unknown> {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#getFirstHydratableChildWithinContainer",
+    rust_js::nullable
+)]
+fn get_first_hydratable_child_within_container(
+    parent_container: &'static Unknown,
+) -> Option<&'static Unknown> {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#getFirstHydratableChildWithinSingleton",
+    rust_js::nullable
+)]
+fn get_first_hydratable_child_within_singleton(
+    r#type: &str,
+    singleton_instance: &'static Unknown,
+    current_hydratable_instance: Option<&'static Unknown>,
+) -> Option<&'static Unknown> {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#getFirstHydratableChildWithinSuspenseInstance",
+    rust_js::nullable
+)]
+fn get_first_hydratable_child_within_suspense_instance(
+    parent_instance: &'static Unknown,
+) -> Option<&'static Unknown> {
     unreachable!()
 }
 
@@ -236,88 +173,48 @@ fn get_next_hydratable_instance_after_suspense_instance(
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#shouldDeleteUnhydratedTailInstances"
-)]
-fn should_delete_unhydrated_tail_instances(parent_type: &str) -> bool {
-    unreachable!()
-}
-
-// ReactFiberConfig's `Instance`, of a `Container`.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#resolveSingletonInstance"
-)]
-fn resolve_singleton_instance(
-    r#type: &str,
-    props: Option<&'static Unknown>,
-    root_container_instance: Option<&'static Unknown>,
-    host_context: Option<&'static Unknown>,
-    validate_dom_nesting_dev: bool,
-) -> &'static Unknown {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#canHydrateInstance",
+    rust_js::link_name = "./src/ReactFiberConfig.js#getNextHydratableSiblingAfterSingleton",
     rust_js::nullable
 )]
-fn can_hydrate_instance(
-    instance: &'static Unknown,
+fn get_next_hydratable_sibling_after_singleton(
     r#type: &str,
-    props: Option<&'static Unknown>,
-    in_root_or_singleton: bool,
+    current_hydratable_instance: Option<&'static Unknown>,
 ) -> Option<&'static Unknown> {
     unreachable!()
 }
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#canHydrateTextInstance",
-    rust_js::nullable
+    rust_js::link_name = "./src/ReactFiberConfig.js#hydrateActivityInstance"
 )]
-fn can_hydrate_text_instance(
-    instance: &'static Unknown,
+fn hydrate_activity_instance(
+    activity_instance: &'static Unknown,
+    internal_instance_handle: &Fiber,
+) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#hydrateSuspenseInstance"
+)]
+fn hydrate_suspense_instance(
+    suspense_instance: &'static Unknown,
+    internal_instance_handle: &Fiber,
+) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#hydrateTextInstance"
+)]
+fn hydrate_text_instance(
+    text_instance: Option<&'static Unknown>,
     text: &str,
-    in_root_or_singleton: bool,
-) -> Option<&'static Unknown> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#canHydrateActivityInstance",
-    rust_js::nullable
-)]
-fn can_hydrate_activity_instance(
-    instance: &'static Unknown,
-    in_root_or_singleton: bool,
-) -> Option<&'static Unknown> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#canHydrateSuspenseInstance",
-    rust_js::nullable
-)]
-fn can_hydrate_suspense_instance(
-    instance: &'static Unknown,
-    in_root_or_singleton: bool,
-) -> Option<&'static Unknown> {
-    unreachable!()
-}
-
-// ReactFiberConfig's `FormStateMarkerInstance`.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#canHydrateFormStateMarker",
-    rust_js::nullable
-)]
-fn can_hydrate_form_state_marker(
-    instance: &'static Unknown,
-    in_root_or_singleton: bool,
-) -> Option<&'static Unknown> {
+    internal_instance_handle: &Fiber,
+    parent_instance_props: Option<&'static Unknown>,
+) -> bool {
     unreachable!()
 }
 
@@ -326,6 +223,22 @@ fn can_hydrate_form_state_marker(
     rust_js::link_name = "./src/ReactFiberConfig.js#isFormStateMarkerMatching"
 )]
 fn is_form_state_marker_matching(marker_instance: &'static Unknown) -> bool {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#shouldDeleteUnhydratedTailInstances"
+)]
+fn should_delete_unhydrated_tail_instances(parent_type: &str) -> bool {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#shouldSetTextContent"
+)]
+fn should_set_text_content(r#type: &str, props: Option<&'static Unknown>) -> bool {
     unreachable!()
 }
 
@@ -348,6 +261,98 @@ fn validate_hydratable_instance(
 fn validate_hydratable_text_instance(text: &str, host_context: Option<&'static Unknown>) -> bool {
     unreachable!()
 }
+
+// ReactFiberConfig's `FormStateMarkerInstance`.
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#canHydrateFormStateMarker",
+    rust_js::nullable
+)]
+fn can_hydrate_form_state_marker(
+    instance: &'static Unknown,
+    in_root_or_singleton: bool,
+) -> Option<&'static Unknown> {
+    unreachable!()
+}
+
+// ReactFiberConfig's `HydratableInstance`s.
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#getNextHydratableSibling",
+    rust_js::nullable
+)]
+fn get_next_hydratable_sibling(instance: Option<&'static Unknown>) -> Option<&'static Unknown> {
+    unreachable!()
+}
+
+// ReactFiberConfig's `Instance` and `HostContext`.
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#hydrateInstance"
+)]
+fn hydrate_instance(
+    instance: Option<&'static Unknown>,
+    r#type: &str,
+    props: Option<&'static Unknown>,
+    host_context: Option<&'static Unknown>,
+    internal_instance_handle: &Fiber,
+) -> bool {
+    unreachable!()
+}
+
+// ReactFiberConfig's `Instance`, of a `Container`.
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#resolveSingletonInstance"
+)]
+fn resolve_singleton_instance(
+    r#type: &str,
+    props: Option<&'static Unknown>,
+    root_container_instance: Option<&'static Unknown>,
+    host_context: Option<&'static Unknown>,
+    validate_dom_nesting_dev: bool,
+) -> &'static Unknown {
+    unreachable!()
+}
+
+// The props that differ, if any.
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#diffHydratedPropsForDevWarnings",
+    rust_js::nullable
+)]
+fn diff_hydrated_props_for_dev_warnings(
+    instance: &'static Unknown,
+    r#type: &str,
+    props: Option<&'static Unknown>,
+    host_context: Option<&'static Unknown>,
+) -> Option<&'static Unknown> {
+    unreachable!()
+}
+
+unsafe extern "Rust" {
+    #[link_name = "./src/ReactFiberConfig.js#supportsHydration"]
+    safe static SUPPORTS_HYDRATION: bool;
+    #[link_name = "./src/ReactFiberConfig.js#supportsSingletons"]
+    safe static SUPPORTS_SINGLETONS: bool;
+}
+
+use crate::react_fiber_lane::OFFSCREEN_LANE;
+use crate::react_fiber_tree_context::{
+    TreeContext, get_suspended_tree_context, restore_suspended_tree_context,
+};
+use crate::react_fiber_work_loop::queue_recoverable_errors;
+
+use crate::react_fiber_host_context::{get_host_context, get_root_host_container};
+use crate::react_fiber_hydration_diffs::{
+    HydrationDiffNode, ServerProps, ServerTailNode, describe_diff,
+};
+
+use crate::react_current_fiber::run_with_fiber_in_dev;
+
+/// The errors thrown while hydrating a boundary: one array, which the work
+/// loop's recoverable errors and the boundary's state may share.
+pub type HydrationErrors = Rc<RefCell<Vec<Rc<CapturedValue<Option<&'static Unknown>>>>>>;
 
 thread_local! {
     // The deepest Fiber on the stack involved in a hydration context.

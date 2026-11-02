@@ -8,20 +8,24 @@ use std::panic;
 
 use js::{Dict, Error, Kind, PropertyDescriptor, SymbolFor, Unknown, object};
 use node::js_error;
-use shared::assign::assign;
-use shared::check_string_coercion::check_key_string_coercion;
 use shared::environment::__DEV__;
-use shared::get_component_name_from_type::get_component_name_from_type;
-use shared::has_own_property::HAS_OWN_PROPERTY;
-use shared::is_array::is_array;
 use shared::react_element_type::ReactElement;
-use shared::react_feature_flags::{ENABLE_OPTIMISTIC_KEY, OWNER_STACK_LIMIT};
+use shared::react_types::ReactKey;
+use webapi::{ConsoleTask, console};
+
+use shared::get_component_name_from_type::get_component_name_from_type;
 use shared::react_shared_internals::REACT_SHARED_INTERNALS;
+
+use shared::has_own_property::HAS_OWN_PROPERTY;
+
+use shared::assign::assign;
 use shared::react_symbols::{
     REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE, REACT_OPTIMISTIC_KEY,
 };
-use shared::react_types::ReactKey;
-use webapi::{ConsoleTask, console};
+
+use shared::check_string_coercion::check_key_string_coercion;
+use shared::is_array::is_array;
+use shared::react_feature_flags::{ENABLE_OPTIMISTIC_KEY, OWNER_STACK_LIMIT};
 
 /// What `console.createTask` is: given a name, the task DevTools shows the
 /// stack of where it was made, or `None` where it makes none.

@@ -6,12 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  enableLegacyHidden,
-  enableScopeAPI,
-  enableTransitionTracing,
-  enableViewTransition,
-} from 'shared/ReactFeatureFlags';
-import {
   REACT_CONSUMER_TYPE,
   REACT_CONTEXT_TYPE,
   REACT_ELEMENT_TYPE,
@@ -29,6 +23,12 @@ import {
   REACT_TRACING_MARKER_TYPE,
   REACT_VIEW_TRANSITION_TYPE,
 } from 'shared/ReactSymbols';
+import {
+  enableLegacyHidden,
+  enableScopeAPI,
+  enableTransitionTracing,
+  enableViewTransition,
+} from 'shared/ReactFeatureFlags';
 
 const REACT_CLIENT_REFERENCE = Symbol.for('react.client.reference');
 

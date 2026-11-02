@@ -5,21 +5,21 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {getNearestMountedFiber} from 'react-reconciler/src/ReactFiberTreeReflection';
-import {
-  HostComponent,
-  HostSingleton,
-  HostText,
-} from 'react-reconciler/src/ReactWorkTags';
+import {registerDirectEvent} from '../EventRegistry.js';
+import {isReplayingEvent} from '../CurrentReplayingEvent.js';
+import {SyntheticMouseEvent, SyntheticPointerEvent} from '../SyntheticEvent.js';
 import {
   getClosestInstanceFromNode,
   getNodeFromInstance,
   isContainerMarkedAsRoot,
 } from '../../client/ReactDOMComponentTree.js';
-import {isReplayingEvent} from '../CurrentReplayingEvent.js';
 import {accumulateEnterLeaveTwoPhaseListeners} from '../DOMPluginEventSystem.js';
-import {registerDirectEvent} from '../EventRegistry.js';
-import {SyntheticMouseEvent, SyntheticPointerEvent} from '../SyntheticEvent.js';
+import {
+  HostComponent,
+  HostSingleton,
+  HostText,
+} from 'react-reconciler/src/ReactWorkTags';
+import {getNearestMountedFiber} from 'react-reconciler/src/ReactFiberTreeReflection';
 
 export function registerEvents() {
   registerDirectEvent('onMouseEnter', ['mouseout', 'mouseover']);

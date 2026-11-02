@@ -6,22 +6,22 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  enableComponentPerformanceTrack,
-  enableDefaultTransitionIndicator,
-  enableProfilerTimer,
-} from 'shared/ReactFeatureFlags';
-import noop from 'shared/noop';
-import reportGlobalError from 'shared/reportGlobalError';
-import {NoLane} from './ReactFiberLane.js';
-import {
   ensureScheduleIsScheduled,
   requestTransitionLane,
 } from './ReactFiberRootScheduler.js';
-import {clearEntangledAsyncTransitionTypes} from './ReactFiberTransitionTypes.js';
+import {NoLane} from './ReactFiberLane.js';
 import {
   clearAsyncTransitionTimer,
   hasScheduledTransitionWork,
 } from './ReactProfilerTimer.js';
+import {
+  enableComponentPerformanceTrack,
+  enableDefaultTransitionIndicator,
+  enableProfilerTimer,
+} from 'shared/ReactFeatureFlags';
+import {clearEntangledAsyncTransitionTypes} from './ReactFiberTransitionTypes.js';
+import noop from 'shared/noop';
+import reportGlobalError from 'shared/reportGlobalError';
 
 // If there are multiple, concurrent async actions, they are entangled. All
 // transition updates that occur while the async action is still in progress

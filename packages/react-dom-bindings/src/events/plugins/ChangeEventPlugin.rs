@@ -8,25 +8,30 @@ use std::rc::Rc;
 
 use js::Unknown;
 use react_reconciler::react_internal_types::Fiber;
-use shared::execution_environment::CAN_USE_DOM;
 use webapi::{Event, EventTarget, Node, document, window};
+
+use crate::event_system_flags::EventSystemFlags;
+use crate::plugin_module_type::AnyNativeEvent;
+use crate::react_synthetic_event_type::ReactSyntheticEvent;
+
+use crate::event_registry::register_two_phase_event;
+use crate::synthetic_event::SYNTHETIC_EVENT;
+
+use crate::is_text_input_element::is_text_input_element;
+use shared::execution_environment::CAN_USE_DOM;
+
+use crate::get_event_target::get_event_target;
+use crate::is_event_supported::is_event_supported;
+use crate::react_dom_component_tree::get_node_from_instance;
+
+use crate::input_value_tracking::update_value_if_changed;
+use crate::react_dom_controlled_component::enqueue_state_restore;
+use crate::react_dom_update_batching::batched_updates;
 
 use crate::dom_plugin_event_system::{
     DispatchEntry, DispatchQueue, accumulate_two_phase_listeners, process_dispatch_queue,
 };
-use crate::event_registry::register_two_phase_event;
-use crate::event_system_flags::EventSystemFlags;
-use crate::get_event_target::get_event_target;
-use crate::input_value_tracking::update_value_if_changed;
 use crate::is_custom_element::is_custom_element;
-use crate::is_event_supported::is_event_supported;
-use crate::is_text_input_element::is_text_input_element;
-use crate::plugin_module_type::AnyNativeEvent;
-use crate::react_dom_component_tree::get_node_from_instance;
-use crate::react_dom_controlled_component::enqueue_state_restore;
-use crate::react_dom_update_batching::batched_updates;
-use crate::react_synthetic_event_type::ReactSyntheticEvent;
-use crate::synthetic_event::SYNTHETIC_EVENT;
 
 /// IE's `element.attachEvent(type, listener)`.
 #[cfg_attr(rust_js, rust_js::link_name = "attachEvent")]

@@ -4,11 +4,12 @@
 // LICENSE file in the root directory of this source tree.
 
 use js::{Map, Set, Unknown};
-use react_dom_bindings::react_dom_container::is_valid_container;
-use react_reconciler::react_portal::create_portal as create_portal_impl;
 use shared::environment::__DEV__;
 use shared::react_types::{ReactNodeList, ReactPortal};
 use webapi::console;
+
+use react_dom_bindings::react_dom_container::is_valid_container;
+use react_reconciler::react_portal::create_portal as create_portal_impl;
 
 #[cfg_attr(rust_js, rust_js::name = "version")]
 pub use shared::react_version::REACT_VERSION as VERSION;

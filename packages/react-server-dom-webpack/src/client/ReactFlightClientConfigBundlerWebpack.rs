@@ -9,7 +9,6 @@ use std::rc::Rc;
 
 use js::{Dict, Promise, Unknown, dict};
 use shared::environment::{__DEV__, webpack_require};
-use shared::has_own_property::HAS_OWN_PROPERTY;
 use shared::react_types::{FulfilledThenable, ReactDebugInfo, Thenable};
 
 use crate::shared::react_flight_import_metadata::{
@@ -43,6 +42,8 @@ fn load_chunk(chunk_id: &str, filename: Option<&str>) -> Promise<Option<&'static
 fn add_chunk_debug_info(target: &mut ReactDebugInfo, chunk_id: &str, filename: Option<&str>) {
     unreachable!()
 }
+
+use shared::has_own_property::HAS_OWN_PROPERTY;
 
 pub type ServerConsumerModuleMap =
     Option<&'static Dict<&'static Dict<ClientReferenceManifestEntry>>>;

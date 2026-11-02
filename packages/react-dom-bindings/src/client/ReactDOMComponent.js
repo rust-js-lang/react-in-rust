@@ -5,39 +5,16 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {trackHostMutation} from 'react-reconciler/src/ReactFiberMutationTracking';
-import {
-  checkAttributeStringCoercion,
-  checkHtmlStringCoercion,
-} from 'shared/CheckStringCoercion';
-import {
-  enableHydrationChangeEvent,
-  enableScrollEndPolyfill,
-  enableSrcObject,
-  enableViewTransition,
-  enableViewTransitionParentEnterExit,
-} from 'shared/ReactFeatureFlags';
-import {
-  listenToNonDelegatedEvent,
-  mediaEventTypes,
-} from '../events/DOMPluginEventSystem.js';
+import {HostContextNamespaceNone} from './ReactFiberConfigDOM.js';
 import {
   possibleRegistrationNames,
   registrationNameDependencies,
 } from '../events/EventRegistry.js';
-import {checkControlledValueProps} from '../shared/ReactControlledValuePropTypes.js';
-import {validateProperties as validateARIAProperties} from '../shared/ReactDOMInvalidARIAHook.js';
-import {validateProperties as validateInputProperties} from '../shared/ReactDOMNullInputValuePropHook.js';
-import {validateProperties as validateUnknownProperties} from '../shared/ReactDOMUnknownPropertyHook.js';
-import getAttributeAlias from '../shared/getAttributeAlias.js';
-import isCustomElement from '../shared/isCustomElement.js';
-import possibleStandardNames from '../shared/possibleStandardNames.js';
-import sanitizeURL from '../shared/sanitizeURL.js';
 import {
-  createDangerousStringForStyles,
-  setValueForStyles,
-} from './CSSPropertyOperations.js';
-import {MATH_NAMESPACE, SVG_NAMESPACE} from './DOMNamespaces.js';
+  checkAttributeStringCoercion,
+  checkHtmlStringCoercion,
+} from 'shared/CheckStringCoercion';
+import {checkControlledValueProps} from '../shared/ReactControlledValuePropTypes.js';
 import {
   getValueForAttribute,
   getValueForAttributeOnCustomComponent,
@@ -59,16 +36,39 @@ import {
   updateSelect,
   validateSelectProps,
 } from './ReactDOMSelect.js';
-import {setSrcObject} from './ReactDOMSrcObject.js';
 import {
   initTextarea,
   restoreControlledTextareaState,
   updateTextarea,
   validateTextareaProps,
 } from './ReactDOMTextarea.js';
-import {HostContextNamespaceNone} from './ReactFiberConfigDOM.js';
-import setTextContent from './setTextContent.js';
+import {setSrcObject} from './ReactDOMSrcObject.js';
 import {validateTextNesting} from './validateDOMNesting.js';
+import setTextContent from './setTextContent.js';
+import {
+  createDangerousStringForStyles,
+  setValueForStyles,
+} from './CSSPropertyOperations.js';
+import {MATH_NAMESPACE, SVG_NAMESPACE} from './DOMNamespaces.js';
+import isCustomElement from '../shared/isCustomElement.js';
+import getAttributeAlias from '../shared/getAttributeAlias.js';
+import possibleStandardNames from '../shared/possibleStandardNames.js';
+import {validateProperties as validateARIAProperties} from '../shared/ReactDOMInvalidARIAHook.js';
+import {validateProperties as validateInputProperties} from '../shared/ReactDOMNullInputValuePropHook.js';
+import {validateProperties as validateUnknownProperties} from '../shared/ReactDOMUnknownPropertyHook.js';
+import sanitizeURL from '../shared/sanitizeURL.js';
+import {trackHostMutation} from 'react-reconciler/src/ReactFiberMutationTracking';
+import {
+  enableHydrationChangeEvent,
+  enableScrollEndPolyfill,
+  enableSrcObject,
+  enableViewTransition,
+  enableViewTransitionParentEnterExit,
+} from 'shared/ReactFeatureFlags';
+import {
+  listenToNonDelegatedEvent,
+  mediaEventTypes,
+} from '../events/DOMPluginEventSystem.js';
 import {$catchUnwind, $unwrap} from '@rust-js/runtime';
 
 let didWarnControlledToUncontrolled = false;
@@ -2541,7 +2541,7 @@ function diffHydratedGenericElement(
                 extraAttributes,
                 serverDifferences,
               );
-              break;
+              continue;
             } catch {
               // If not, just fall through to the normal toString flow.
             }
@@ -2589,7 +2589,7 @@ function diffHydratedGenericElement(
               );
             }
           }
-          break;
+          continue;
         }
         hydrateSanitizedAttribute(
           domElement,
@@ -2623,7 +2623,7 @@ function diffHydratedGenericElement(
           // We can check if the function has the $FORM_ACTION property on the client
           // and if it's not, warn, but that's an unnecessary constraint that they
           // have to have the extra extension that doesn't do anything on the client.
-          break;
+          continue;
         } else {
           if (serverValue === EXPECTED_FORM_ACTION_URL) {
             extraAttributes.delete(propKey.toLowerCase());
@@ -2633,7 +2633,7 @@ function diffHydratedGenericElement(
               value,
               serverDifferences,
             );
-            break;
+            continue;
           }
           hydrateSanitizedAttribute(
             domElement,
@@ -2903,7 +2903,7 @@ function diffHydratedGenericElement(
           (propKey[0] === 'o' || propKey[0] === 'O') &&
           (propKey[1] === 'n' || propKey[1] === 'N')
         ) {
-          break;
+          continue;
         }
         const attributeName = getAttributeAlias(propKey);
         let isMismatchDueToBadCasing = false;
@@ -3103,9 +3103,9 @@ export function diffHydratedProperties(domElement, tag, props, hostContext) {
     const attributes = domElement.attributes;
     for (let i = 0; i < attributes.length; i++) {
       const name = attributes[i].name.toLowerCase();
-      // Controlled attributes are not validated
-      // TODO: Only ignore them on controlled tags.
       switch (name) {
+        // Controlled attributes are not validated
+        // TODO: Only ignore them on controlled tags.
         case 'value':
           break;
         case 'checked':

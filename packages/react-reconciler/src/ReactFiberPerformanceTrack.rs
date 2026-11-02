@@ -10,25 +10,28 @@ use std::rc::Rc;
 
 use js::{Kind, Unknown, function};
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{
-    ENABLE_GESTURE_TRANSITION, ENABLE_PERFORMANCE_ISSUE_REPORTING, ENABLE_PROFILER_TIMER,
-};
-use shared::react_performance_track_properties::{
-    add_object_diff_to_properties, add_object_to_properties, add_value_to_properties,
-};
 use webapi::{
     ConsoleTask, IntoStrOrNumber, IntoStrOrPerformanceMeasureOptions, Performance,
     PerformanceMeasureOptions, console, performance,
 };
 
-use crate::get_component_name_from_fiber::get_component_name_from_fiber;
 use crate::react_captured_value::CapturedValue;
+use crate::react_internal_types::Fiber;
+
+use crate::react_work_tags::SUSPENSE_COMPONENT;
+
+use crate::get_component_name_from_fiber::get_component_name_from_fiber;
 use crate::react_fiber_lane::{
     Lanes, get_group_name_of_highest_priority_lane, includes_only_hydration_lanes,
     includes_only_hydration_or_offscreen_lanes, includes_only_offscreen_lanes, includes_some_lane,
 };
-use crate::react_internal_types::Fiber;
-use crate::react_work_tags::SUSPENSE_COMPONENT;
+use shared::react_performance_track_properties::{
+    add_object_diff_to_properties, add_object_to_properties, add_value_to_properties,
+};
+
+use shared::react_feature_flags::{
+    ENABLE_GESTURE_TRANSITION, ENABLE_PERFORMANCE_ISSUE_REPORTING, ENABLE_PROFILER_TIMER,
+};
 
 /// What a phase captured: shared arrays, as upstream's live ones.
 type CapturedValues = RefCell<Vec<Rc<CapturedValue<Option<&'static Unknown>>>>>;

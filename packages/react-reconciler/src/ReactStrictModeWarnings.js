@@ -6,8 +6,8 @@
 // LICENSE file in the root directory of this source tree.
 
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
-import {NoMode, StrictLegacyMode} from './ReactTypeOfMode.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+import {NoMode, StrictLegacyMode} from './ReactTypeOfMode.js';
 import {
   $assign,
   $borrowMut,

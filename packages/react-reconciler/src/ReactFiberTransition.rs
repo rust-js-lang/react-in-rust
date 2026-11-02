@@ -9,35 +9,41 @@ use js::Unknown;
 use react_isomorphic::react_start_transition::{
     OnStartTransitionFinish, Transition, g, s, set_g, set_s, t,
 };
+use shared::react_types::Thenable;
+
+use crate::react_internal_types::{Fiber, FiberRoot};
+
+use crate::react_fiber_lane::{Lanes, NO_LANE};
 use shared::react_feature_flags::{
     ENABLE_GESTURE_TRANSITION, ENABLE_TRANSITION_TRACING, ENABLE_VIEW_TRANSITION,
 };
-use shared::react_shared_internals::REACT_SHARED_INTERNALS;
-use shared::react_types::Thenable;
-
-use crate::react_fiber_async_action::{entangle_async_action, peek_entangled_action_lane};
-use crate::react_fiber_cache_component::{
-    CACHE_CONTEXT, Cache, SpawnedCachePool, create_cache, retain_cache,
-};
-use crate::react_fiber_gesture_scheduler::{
-    ScheduledGesture, cancel_scheduled_gesture, start_scheduled_gesture,
-};
-use crate::react_fiber_lane::{Lanes, NO_LANE};
-use crate::react_fiber_root_scheduler::FIRST_SCHEDULED_ROOT;
-use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
-use crate::react_fiber_transition_types::{
-    ENTANGLED_TRANSITION_TYPES, entangle_async_transition_types, queue_transition_types,
-};
-use crate::react_fiber_work_loop::{
-    get_work_in_progress_root, get_work_in_progress_transitions, mark_transition_started,
-};
-use crate::react_internal_types::{Fiber, FiberRoot};
-use crate::react_profiler_timer::start_async_transition_timer;
 
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFiberConfig.js#isPrimaryRenderer"]
     safe static IS_PRIMARY_RENDERER: bool;
 }
+
+use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
+use crate::react_fiber_work_loop::{
+    get_work_in_progress_root, get_work_in_progress_transitions, mark_transition_started,
+};
+
+use crate::react_fiber_cache_component::{
+    CACHE_CONTEXT, Cache, SpawnedCachePool, create_cache, retain_cache,
+};
+use crate::react_fiber_transition_types::{
+    ENTANGLED_TRANSITION_TYPES, entangle_async_transition_types, queue_transition_types,
+};
+use shared::react_shared_internals::REACT_SHARED_INTERNALS;
+
+use crate::react_fiber_async_action::{entangle_async_action, peek_entangled_action_lane};
+use crate::react_profiler_timer::start_async_transition_timer;
+
+use crate::react_fiber_root_scheduler::FIRST_SCHEDULED_ROOT;
+
+use crate::react_fiber_gesture_scheduler::{
+    ScheduledGesture, cancel_scheduled_gesture, start_scheduled_gesture,
+};
 
 #[cfg_attr(rust_js, rust_js::name = "NoTransition")]
 #[cfg_attr(rust_js, rust_js::nullable)]

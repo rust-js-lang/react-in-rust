@@ -5,11 +5,14 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {
-  disableLegacyMode,
-  enableAsyncIterableChildren,
-  enableOptimisticKey,
-} from 'shared/ReactFeatureFlags';
+  ChildDeletion,
+  Forked,
+  Placement,
+  PlacementDEV,
+} from './ReactFiberFlags.js';
+import {ConcurrentMode, NoMode} from './ReactTypeOfMode.js';
 import {
   ASYNC_ITERATOR,
   REACT_CONTEXT_TYPE,
@@ -21,8 +24,19 @@ import {
   REACT_PORTAL_TYPE,
   getIteratorFn,
 } from 'shared/ReactSymbols';
+import {
+  Fragment,
+  FunctionComponent,
+  HostPortal,
+  HostRoot,
+  HostText,
+} from './ReactWorkTags.js';
 import isArray from 'shared/isArray';
-import {runWithFiberInDEV} from './ReactCurrentFiber.js';
+import {
+  disableLegacyMode,
+  enableAsyncIterableChildren,
+  enableOptimisticKey,
+} from 'shared/ReactFeatureFlags';
 import {
   createFiberFromElement,
   createFiberFromFragment,
@@ -32,15 +46,9 @@ import {
   createWorkInProgress,
   resetWorkInProgress,
 } from './ReactFiber.js';
-import {
-  ChildDeletion,
-  Forked,
-  Placement,
-  PlacementDEV,
-} from './ReactFiberFlags.js';
 import {isCompatibleFamilyForHotReloading} from './ReactFiberHotReloading.js';
 import {getIsHydrating} from './ReactFiberHydrationContext.js';
-import {readContextDuringReconciliation} from './ReactFiberNewContext.js';
+import {pushTreeFork} from './ReactFiberTreeContext.js';
 import {
   SuspenseActionException,
   SuspenseException,
@@ -48,16 +56,8 @@ import {
   resolveLazy,
   trackUsedThenable,
 } from './ReactFiberThenable.js';
-import {pushTreeFork} from './ReactFiberTreeContext.js';
-import {ConcurrentMode, NoMode} from './ReactTypeOfMode.js';
-import {
-  Fragment,
-  FunctionComponent,
-  HostPortal,
-  HostRoot,
-  HostText,
-} from './ReactWorkTags.js';
-import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+import {readContextDuringReconciliation} from './ReactFiberNewContext.js';
+import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {
   $borrow,
   $borrowMut,
@@ -2093,7 +2093,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       }
       result = throwFiber;
     } finally {
-      currentDebugInfo = restore ?? null;
+      currentDebugInfo = restore;
     }
     return result;
   };

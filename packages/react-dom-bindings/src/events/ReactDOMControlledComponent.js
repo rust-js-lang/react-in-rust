@@ -5,11 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {restoreControlledState} from '../client/ReactDOMComponent.js';
 import {
   getFiberCurrentPropsFromNode,
   getInstanceFromNode,
 } from '../client/ReactDOMComponentTree.js';
+import {restoreControlledState} from '../client/ReactDOMComponent.js';
 
 // Use to restore controlled state after a change event has fired.
 

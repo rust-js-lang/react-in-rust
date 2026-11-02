@@ -7,49 +7,57 @@ use std::cell::Cell;
 use std::panic;
 
 use js::{Dict, Kind, RegExp, Set, Unknown, dict, reg_exp};
-use react_reconciler::react_fiber_mutation_tracking::track_host_mutation;
-use shared::check_string_coercion::{check_attribute_string_coercion, check_html_string_coercion};
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{
-    ENABLE_HYDRATION_CHANGE_EVENT, ENABLE_SCROLL_END_POLYFILL, ENABLE_SRC_OBJECT,
-    ENABLE_VIEW_TRANSITION, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
-};
 use webapi::{Element, HTMLElement, PointerEvent, Text, console, html_element, url};
 
-use crate::css_property_operations::{create_dangerous_string_for_styles, set_value_for_styles};
-use crate::dom_namespaces::{MATH_NAMESPACE, SVG_NAMESPACE};
-use crate::dom_plugin_event_system::{MEDIA_EVENT_TYPES, listen_to_non_delegated_event};
+use crate::react_fiber_config_dom::HOST_CONTEXT_NAMESPACE_NONE;
+
+use crate::event_registry::{POSSIBLE_REGISTRATION_NAMES, REGISTRATION_NAME_DEPENDENCIES};
+use shared::check_string_coercion::{check_attribute_string_coercion, check_html_string_coercion};
+
+use crate::react_controlled_value_prop_types::check_controlled_value_props;
+
 use crate::dom_property_operations::{
     get_value_for_attribute, get_value_for_attribute_on_custom_component, set_value_for_attribute,
     set_value_for_known_attribute, set_value_for_namespaced_attribute,
     set_value_for_property_on_custom_component,
 };
-use crate::event_registry::{POSSIBLE_REGISTRATION_NAMES, REGISTRATION_NAME_DEPENDENCIES};
-use crate::get_attribute_alias::get_attribute_alias;
-use crate::is_custom_element::is_custom_element;
-use crate::possible_standard_names::POSSIBLE_STANDARD_NAMES;
-use crate::react_controlled_value_prop_types::check_controlled_value_props;
 use crate::react_dom_input::{
     init_input, restore_controlled_input_state, update_input, validate_input_props,
 };
-#[cfg_attr(rust_js, rust_js::name = "validateARIAProperties")]
-use crate::react_dom_invalid_aria_hook::validate_properties as validate_aria_properties;
-use crate::react_dom_null_input_value_prop_hook::validate_properties as validate_input_properties;
 use crate::react_dom_option::validate_option_props;
 use crate::react_dom_select::{
     init_select, restore_controlled_select_state, update_select, validate_select_props,
 };
-use crate::react_dom_src_object::set_src_object;
 use crate::react_dom_textarea::{
     init_textarea, restore_controlled_textarea_state, update_textarea, validate_textarea_props,
 };
+
+use crate::react_dom_src_object::set_src_object;
+use crate::validate_dom_nesting::validate_text_nesting;
+
+use crate::set_text_content::set_text_content;
+
+use crate::css_property_operations::{create_dangerous_string_for_styles, set_value_for_styles};
+use crate::dom_namespaces::{MATH_NAMESPACE, SVG_NAMESPACE};
+use crate::is_custom_element::is_custom_element;
+
+use crate::get_attribute_alias::get_attribute_alias;
+use crate::possible_standard_names::POSSIBLE_STANDARD_NAMES;
+#[cfg_attr(rust_js, rust_js::name = "validateARIAProperties")]
+use crate::react_dom_invalid_aria_hook::validate_properties as validate_aria_properties;
+use crate::react_dom_null_input_value_prop_hook::validate_properties as validate_input_properties;
 use crate::react_dom_unknown_property_hook::{
     EventRegistry, validate_properties as validate_unknown_properties,
 };
-use crate::react_fiber_config_dom::HOST_CONTEXT_NAMESPACE_NONE;
 use crate::sanitize_url::sanitize_url;
-use crate::set_text_content::set_text_content;
-use crate::validate_dom_nesting::validate_text_nesting;
+use react_reconciler::react_fiber_mutation_tracking::track_host_mutation;
+use shared::react_feature_flags::{
+    ENABLE_HYDRATION_CHANGE_EVENT, ENABLE_SCROLL_END_POLYFILL, ENABLE_SRC_OBJECT,
+    ENABLE_VIEW_TRANSITION, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
+};
+
+use crate::dom_plugin_event_system::{MEDIA_EVENT_TYPES, listen_to_non_delegated_event};
 
 thread_local! {
     static DID_WARN_CONTROLLED_TO_UNCONTROLLED: Cell<bool> = const { Cell::new(false) };

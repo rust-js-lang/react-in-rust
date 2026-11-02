@@ -15,30 +15,6 @@ import {
   enableProfilerTimer,
   enableYieldingBeforePassive,
 } from 'shared/ReactFeatureFlags';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
-import noop from 'shared/noop';
-import reportGlobalError from 'shared/reportGlobalError';
-import {
-  ContinuousEventPriority,
-  DefaultEventPriority,
-  DiscreteEventPriority,
-  IdleEventPriority,
-  lanesToEventPriority,
-} from './ReactEventPriorities.js';
-import {
-  hasOngoingIsomorphicIndicator,
-  markIsomorphicIndicatorHandled,
-  peekEntangledActionLane,
-  retainIsomorphicIndicator,
-  startIsomorphicDefaultIndicatorIfNeeded,
-} from './ReactFiberAsyncAction.js';
-import {
-  noTimeout,
-  scheduleMicrotask,
-  shouldAttemptEagerTransition,
-  supportsMicrotasks,
-  trackSchedulerEvent,
-} from './ReactFiberConfig.js';
 import {
   DefaultLane,
   NoLane,
@@ -68,10 +44,6 @@ import {
   isWorkLoopSuspendedOnData,
   performWorkOnRoot,
 } from './ReactFiberWorkLoop.js';
-import {
-  resetNestedUpdateFlag,
-  syncNestedUpdateFlag,
-} from './ReactProfilerTimer.js';
 import {LegacyRoot} from './ReactRootTags.js';
 import {
   IdlePriority as IdleSchedulerPriority,
@@ -82,6 +54,34 @@ import {
   now,
   scheduleCallback as Scheduler_scheduleCallback,
 } from './Scheduler.js';
+import {
+  ContinuousEventPriority,
+  DefaultEventPriority,
+  DiscreteEventPriority,
+  IdleEventPriority,
+  lanesToEventPriority,
+} from './ReactEventPriorities.js';
+import {
+  noTimeout,
+  scheduleMicrotask,
+  shouldAttemptEagerTransition,
+  supportsMicrotasks,
+  trackSchedulerEvent,
+} from './ReactFiberConfig.js';
+import {
+  resetNestedUpdateFlag,
+  syncNestedUpdateFlag,
+} from './ReactProfilerTimer.js';
+import {
+  hasOngoingIsomorphicIndicator,
+  markIsomorphicIndicatorHandled,
+  peekEntangledActionLane,
+  retainIsomorphicIndicator,
+  startIsomorphicDefaultIndicatorIfNeeded,
+} from './ReactFiberAsyncAction.js';
+import noop from 'shared/noop';
+import reportGlobalError from 'shared/reportGlobalError';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {$unwrap} from '@rust-js/runtime';
 
 // A linked list of all the roots with pending work. In an idiomatic app,

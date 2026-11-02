@@ -8,18 +8,11 @@ use std::rc::Rc;
 
 use js::Unknown;
 use shared::environment::__DEV__;
-#[cfg_attr(rust_js, rust_js::name = "is")]
-use shared::object_is::OBJECT_IS;
 use shared::react_types::ReactContext;
 use webapi::console;
 
-use crate::react_fiber_flags::{DID_PROPAGATE_CONTEXT, NEEDS_PROPAGATION, NO_FLAGS};
-use crate::react_fiber_host_context::get_host_transition_provider;
-use crate::react_fiber_lane::{Lanes, NO_LANES, is_subset_of_lanes, merge_lanes};
-use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
 use crate::react_fiber_suspense_component::SuspenseState;
 use crate::react_internal_types::{ContextDependency, Dependencies, Fiber};
-use crate::react_work_tags::{CONTEXT_PROVIDER, DEHYDRATED_FRAGMENT, SUSPENSE_COMPONENT};
 
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFiberConfig.js#isPrimaryRenderer"]
@@ -28,6 +21,17 @@ unsafe extern "Rust" {
     #[link_name = "./src/ReactFiberConfig.js#HostTransitionContext"]
     safe static HOST_TRANSITION_CONTEXT: ReactContext<Option<&'static Unknown>>;
 }
+
+use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
+use crate::react_work_tags::{CONTEXT_PROVIDER, DEHYDRATED_FRAGMENT, SUSPENSE_COMPONENT};
+
+use crate::react_fiber_lane::{Lanes, NO_LANES, is_subset_of_lanes, merge_lanes};
+
+use crate::react_fiber_flags::{DID_PROPAGATE_CONTEXT, NEEDS_PROPAGATION, NO_FLAGS};
+#[cfg_attr(rust_js, rust_js::name = "is")]
+use shared::object_is::OBJECT_IS;
+
+use crate::react_fiber_host_context::get_host_transition_provider;
 
 thread_local! {
     #[cfg_attr(rust_js, rust_js::nullable)]

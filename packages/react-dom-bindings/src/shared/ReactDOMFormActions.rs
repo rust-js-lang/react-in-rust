@@ -7,9 +7,11 @@ use js::{Unknown, object};
 use react_reconciler::react_fiber_hooks::{Action, ActionStateAndDispatch};
 use react_reconciler::react_internal_types::Dispatcher;
 use shared::environment::__DEV__;
-use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS;
-use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use webapi::{FormData, HTMLFormElement, console};
+
+use shared::react_shared_internals::REACT_SHARED_INTERNALS;
+
+use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS;
 
 /// A form's status: whether it's pending, and if so the data, method and
 /// action it's submitted with.

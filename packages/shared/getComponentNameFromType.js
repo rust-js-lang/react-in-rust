@@ -6,10 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  enableTransitionTracing,
-  enableViewTransition,
-} from './ReactFeatureFlags.js';
-import {
   REACT_ACTIVITY_TYPE,
   REACT_CONSUMER_TYPE,
   REACT_CONTEXT_TYPE,
@@ -25,6 +21,10 @@ import {
   REACT_TRACING_MARKER_TYPE,
   REACT_VIEW_TRANSITION_TYPE,
 } from './ReactSymbols.js';
+import {
+  enableTransitionTracing,
+  enableViewTransition,
+} from './ReactFeatureFlags.js';
 
 // Keep in sync with react-reconciler/getComponentNameFromFiber
 function getWrappedName(outerType, innerType, wrapperName) {

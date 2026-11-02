@@ -5,21 +5,21 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {registerTwoPhaseEvent} from '../EventRegistry.js';
+import {SyntheticEvent} from '../SyntheticEvent.js';
+import isTextInputElement from '../isTextInputElement.js';
 import {canUseDOM} from 'shared/ExecutionEnvironment';
+import getEventTarget from '../getEventTarget.js';
+import isEventSupported from '../isEventSupported.js';
 import {getNodeFromInstance} from '../../client/ReactDOMComponentTree.js';
 import {updateValueIfChanged} from '../../client/inputValueTracking.js';
-import isCustomElement from '../../shared/isCustomElement.js';
+import {enqueueStateRestore} from '../ReactDOMControlledComponent.js';
+import {batchedUpdates} from '../ReactDOMUpdateBatching.js';
 import {
   accumulateTwoPhaseListeners,
   processDispatchQueue,
 } from '../DOMPluginEventSystem.js';
-import {registerTwoPhaseEvent} from '../EventRegistry.js';
-import {enqueueStateRestore} from '../ReactDOMControlledComponent.js';
-import {batchedUpdates} from '../ReactDOMUpdateBatching.js';
-import {SyntheticEvent} from '../SyntheticEvent.js';
-import getEventTarget from '../getEventTarget.js';
-import isEventSupported from '../isEventSupported.js';
-import isTextInputElement from '../isTextInputElement.js';
+import isCustomElement from '../../shared/isCustomElement.js';
 import {$unwrap} from '@rust-js/runtime';
 
 export function registerEvents() {

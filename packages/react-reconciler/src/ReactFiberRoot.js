@@ -5,6 +5,15 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {noTimeout} from './ReactFiberConfig.js';
+import {createHostRootFiber} from './ReactFiber.js';
+import {
+  NoLane,
+  NoLanes,
+  NoTimestamp,
+  TotalLanes,
+  createLaneMap,
+} from './ReactFiberLane.js';
 import {
   disableLegacyMode,
   enableDefaultTransitionIndicator,
@@ -16,18 +25,9 @@ import {
   enableUpdaterTracking,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
-import {createHostRootFiber} from './ReactFiber.js';
-import {createCache, retainCache} from './ReactFiberCacheComponent.js';
 import {initializeUpdateQueue} from './ReactFiberClassUpdateQueue.js';
-import {noTimeout} from './ReactFiberConfig.js';
-import {
-  NoLane,
-  NoLanes,
-  NoTimestamp,
-  TotalLanes,
-  createLaneMap,
-} from './ReactFiberLane.js';
 import {ConcurrentRoot, LegacyRoot} from './ReactRootTags.js';
+import {createCache, retainCache} from './ReactFiberCacheComponent.js';
 
 export function createFiberRoot(
   // ReactFiberConfig's `Container`.

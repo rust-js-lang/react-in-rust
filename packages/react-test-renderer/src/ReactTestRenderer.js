@@ -5,23 +5,14 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import * as React from 'react';
-import * as Scheduler from 'scheduler/unstable_mock';
 import {
   defaultOnCaughtError,
   defaultOnRecoverableError,
   defaultOnUncaughtError,
 } from 'react-reconciler/src/ReactFiberErrorLogger';
-import {
-  batchedUpdates,
-  createContainer,
-  flushSyncFromReconciler,
-  getPublicRootInstance,
-  injectIntoDevTools,
-  updateContainer,
-} from 'react-reconciler/src/ReactFiberReconciler';
+import * as Scheduler from 'scheduler/unstable_mock';
+import * as React from 'react';
 import {findCurrentFiberUsingSlowPath} from 'react-reconciler/src/ReactFiberTreeReflection';
-import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
 import {
   ClassComponent,
   ContextConsumer,
@@ -42,13 +33,22 @@ import {
   ScopeComponent,
   SimpleMemoComponent,
 } from 'react-reconciler/src/ReactWorkTags';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
 import {checkPropStringCoercion} from 'shared/CheckStringCoercion';
+import {getPublicInstance} from './ReactFiberConfigTestHost.js';
+import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
 import {
   disableLegacyMode,
   enableReactTestRendererWarning,
 } from 'shared/ReactFeatureFlags';
-import getComponentNameFromType from 'shared/getComponentNameFromType';
-import {getPublicInstance} from './ReactFiberConfigTestHost.js';
+import {
+  batchedUpdates,
+  createContainer,
+  flushSyncFromReconciler,
+  getPublicRootInstance,
+  injectIntoDevTools,
+  updateContainer,
+} from 'react-reconciler/src/ReactFiberReconciler';
 import {$extend, $index, $unwrap} from '@rust-js/runtime';
 
 export * as _Scheduler from 'scheduler/unstable_mock';

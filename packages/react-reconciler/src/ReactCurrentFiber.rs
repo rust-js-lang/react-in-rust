@@ -7,10 +7,10 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use shared::environment::__DEV__;
-use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 
-use crate::get_component_name_from_fiber::get_component_name_from_owner;
 use crate::react_internal_types::Fiber;
+
+use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 
 #[cfg_attr(
     rust_js,
@@ -19,6 +19,8 @@ use crate::react_internal_types::Fiber;
 fn get_owner_stack_by_fiber_in_dev(work_in_progress: &Fiber) -> String {
     unreachable!()
 }
+
+use crate::get_component_name_from_fiber::get_component_name_from_owner;
 
 thread_local! {
     #[cfg_attr(rust_js, rust_js::nullable)]

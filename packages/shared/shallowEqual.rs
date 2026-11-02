@@ -5,8 +5,9 @@
 
 use js::Unknown;
 
-use crate::has_own_property::HAS_OWN_PROPERTY;
 use crate::object_is::OBJECT_IS as IS;
+
+use crate::has_own_property::HAS_OWN_PROPERTY;
 
 js::export_default! {
     /// Performs equality by iterating through keys on an object and returning false

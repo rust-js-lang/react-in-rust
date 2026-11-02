@@ -62,10 +62,12 @@ use std::rc::Rc;
 use shared::environment::__DEV__;
 use webapi::console;
 
+use crate::react_internal_types::Fiber;
+
+use crate::react_fiber_hydration_context::get_is_hydrating;
+
 use crate::clz32::CLZ32;
 use crate::react_fiber_flags::{FORKED, NO_FLAGS};
-use crate::react_fiber_hydration_context::get_is_hydrating;
-use crate::react_internal_types::Fiber;
 
 pub struct TreeContext {
     pub id: i32,

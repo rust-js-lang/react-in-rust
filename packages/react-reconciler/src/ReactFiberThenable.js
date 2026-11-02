@@ -5,12 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {enableConditionalUseWarning} from 'shared/ReactFeatureFlags';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
-import noop from 'shared/noop';
 import {callLazyInitInDEV} from './ReactFiberCallUserSpace.js';
 import {getWorkInProgressRoot} from './ReactFiberWorkLoop.js';
+import {enableConditionalUseWarning} from 'shared/ReactFeatureFlags';
+import noop from 'shared/noop';
 import {HostRoot} from './ReactWorkTags.js';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {$borrow, $fieldCell, $unborrow, $unwrap} from '@rust-js/runtime';
 
 // An error that is thrown (e.g. by `use`) to trigger Suspense. If we

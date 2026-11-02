@@ -10,25 +10,16 @@ use std::rc::Rc;
 use js::{Dict, JsError, Unknown};
 use react_isomorphic::react_start_transition::Transition;
 use shared::environment::__DEV__;
-use shared::noop::noop;
+
+use crate::react_internal_types::FiberRoot;
+
 use shared::react_feature_flags::{
     DISABLE_LEGACY_MODE, DISABLE_SCHEDULER_TIMEOUT_IN_WORK_LOOP,
     ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_DEFAULT_TRANSITION_INDICATOR,
     ENABLE_GESTURE_TRANSITION, ENABLE_PROFILER_NESTED_UPDATE_PHASE, ENABLE_PROFILER_TIMER,
     ENABLE_YIELDING_BEFORE_PASSIVE,
 };
-use shared::react_shared_internals::REACT_SHARED_INTERNALS;
-use shared::report_global_error::REPORT_GLOBAL_ERROR;
 
-use crate::react_event_priorities::{
-    CONTINUOUS_EVENT_PRIORITY, DEFAULT_EVENT_PRIORITY, DISCRETE_EVENT_PRIORITY,
-    IDLE_EVENT_PRIORITY, lanes_to_event_priority,
-};
-use crate::react_fiber_async_action::{
-    has_ongoing_isomorphic_indicator, mark_isomorphic_indicator_handled,
-    peek_entangled_action_lane, retain_isomorphic_indicator,
-    start_isomorphic_default_indicator_if_needed,
-};
 use crate::react_fiber_lane::{
     DEFAULT_LANE, Lane, Lanes, NO_LANE, NO_LANES, SYNC_LANE, check_if_root_is_prerendering,
     claim_next_transition_update_lane, get_highest_priority_lane, get_next_lanes,
@@ -42,8 +33,6 @@ use crate::react_fiber_work_loop::{
     get_work_in_progress_root_render_lanes, has_pending_commit_effects,
     is_work_loop_suspended_on_data, perform_work_on_root,
 };
-use crate::react_internal_types::FiberRoot;
-use crate::react_profiler_timer::{reset_nested_update_flag, sync_nested_update_flag};
 use crate::react_root_tags::LEGACY_ROOT;
 #[cfg_attr(rust_js, rust_js::name = "Scheduler_cancelCallback")]
 use crate::scheduler::CANCEL_CALLBACK as SCHEDULER_CANCEL_CALLBACK;
@@ -57,15 +46,13 @@ use crate::scheduler::NORMAL_PRIORITY as NORMAL_SCHEDULER_PRIORITY;
 use crate::scheduler::SCHEDULE_CALLBACK as SCHEDULER_SCHEDULE_CALLBACK;
 #[cfg_attr(rust_js, rust_js::name = "UserBlockingSchedulerPriority")]
 use crate::scheduler::USER_BLOCKING_PRIORITY as USER_BLOCKING_SCHEDULER_PRIORITY;
+
 use crate::scheduler::{NOW as now, PriorityLevel, SchedulerCallback};
 
-unsafe extern "Rust" {
-    #[link_name = "./src/ReactFiberConfig.js#supportsMicrotasks"]
-    safe static SUPPORTS_MICROTASKS: bool;
-    // ReactFiberConfig's `TimeoutHandle`'s none.
-    #[link_name = "./src/ReactFiberConfig.js#noTimeout"]
-    safe static NO_TIMEOUT: &'static Unknown;
-}
+use crate::react_event_priorities::{
+    CONTINUOUS_EVENT_PRIORITY, DEFAULT_EVENT_PRIORITY, DISCRETE_EVENT_PRIORITY,
+    IDLE_EVENT_PRIORITY, lanes_to_event_priority,
+};
 
 #[cfg_attr(
     rust_js,
@@ -90,6 +77,26 @@ fn should_attempt_eager_transition() -> bool {
 fn track_scheduler_event() {
     unreachable!()
 }
+
+unsafe extern "Rust" {
+    #[link_name = "./src/ReactFiberConfig.js#supportsMicrotasks"]
+    safe static SUPPORTS_MICROTASKS: bool;
+    // ReactFiberConfig's `TimeoutHandle`'s none.
+    #[link_name = "./src/ReactFiberConfig.js#noTimeout"]
+    safe static NO_TIMEOUT: &'static Unknown;
+}
+
+use shared::react_shared_internals::REACT_SHARED_INTERNALS;
+
+use crate::react_profiler_timer::{reset_nested_update_flag, sync_nested_update_flag};
+
+use crate::react_fiber_async_action::{
+    has_ongoing_isomorphic_indicator, mark_isomorphic_indicator_handled,
+    peek_entangled_action_lane, retain_isomorphic_indicator,
+    start_isomorphic_default_indicator_if_needed,
+};
+use shared::noop::noop;
+use shared::report_global_error::REPORT_GLOBAL_ERROR;
 
 thread_local! {
     // A linked list of all the roots with pending work. In an idiomatic app,

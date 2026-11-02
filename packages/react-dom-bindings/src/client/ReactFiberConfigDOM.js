@@ -5,81 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
-import {requestFormReset as requestFormResetOnFiber} from 'react-reconciler/src/ReactFiberHooks';
-import {getCurrentRootHostContainer} from 'react-reconciler/src/ReactFiberHostContext';
-import {
-  fiberIsPortaledIntoHost,
-  getFragmentInstanceOrTextInstanceSiblings,
-  getFragmentParentInstanceOrContainerFiber,
-  getFragmentPortalContainerInfo,
-  getFragmentRootContainerInfo,
-  getInstanceFromHostFiber,
-  isFiberContainedByFragment,
-  isFiberFollowing,
-  isFiberPreceding,
-  isFragmentContainedByFiber,
-  traverseFragmentInstancesAndTextInstances,
-  traverseFragmentInstancesAndTextInstancesDeeply,
-} from 'react-reconciler/src/ReactFiberTreeReflection';
-import {flushSyncWork as flushSyncWorkOnAllRoots} from 'react-reconciler/src/ReactFiberWorkLoop';
-import {
-  HostComponent,
-  HostHoistable,
-  HostSingleton,
-  HostText,
-} from 'react-reconciler/src/ReactWorkTags';
-import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
-import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
-import {
-  disableCommentsAsDOMContainers,
-  disableLegacyMode,
-  enableCreateEventHandleAPI,
-  enableHydrationChangeEvent,
-  enableMoveBefore,
-  enableProfilerTimer,
-  enableScopeAPI,
-  enableSrcObject,
-  enableSuspenseyImages,
-  enableViewTransition,
-} from 'shared/ReactFeatureFlags';
-import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
-import hasOwnProperty from 'shared/hasOwnProperty';
-import noop from 'shared/noop';
-import {compareDocumentPositionForEmptyFragment} from 'shared/ReactDOMFragmentRefShared';
-import {listenToAllSupportedEvents} from '../events/DOMPluginEventSystem.js';
-import {
-  isEnabled as ReactBrowserEventEmitterIsEnabled,
-  setEnabled as ReactBrowserEventEmitterSetEnabled,
-} from '../events/ReactDOMEventListener.js';
-import {
-  flushEventReplaying,
-  retryIfBlockedOn,
-} from '../events/ReactDOMEventReplaying.js';
 import {NotPending} from '../shared/ReactDOMFormActions.js';
-import {validateLinkPropsForStyleResource} from '../shared/ReactDOMResourceValidation.js';
-import {hasRole} from './DOMAccessibilityRoles.js';
-import {MATH_NAMESPACE, SVG_NAMESPACE} from './DOMNamespaces.js';
-import {
-  COMMENT_NODE,
-  DOCUMENT_FRAGMENT_NODE,
-  DOCUMENT_NODE,
-  DOCUMENT_TYPE_NODE,
-  ELEMENT_NODE,
-  TEXT_NODE,
-} from './HTMLNodeType.js';
-import {
-  clearClickListener,
-  clearSingletonProperties,
-  diffHydratedProperties,
-  diffHydratedText,
-  getPropsFromElement,
-  hydrateProperties,
-  hydrateText,
-  setInitialProperties,
-  trapClickOnNonInteractiveElement,
-  updateProperties,
-} from './ReactDOMComponent.js';
+import {setSrcObject} from './ReactDOMSrcObject.js';
+import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
+import hasOwnProperty from 'shared/hasOwnProperty';
+import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
+import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
 import {
   clearPendingLoadOnNode,
   detachDeletedInstance,
@@ -97,22 +28,91 @@ import {
   precacheFiberNode,
   updateFiberProps,
 } from './ReactDOMComponentTree.js';
+import {
+  fiberIsPortaledIntoHost,
+  getFragmentInstanceOrTextInstanceSiblings,
+  getFragmentParentInstanceOrContainerFiber,
+  getFragmentPortalContainerInfo,
+  getFragmentRootContainerInfo,
+  getInstanceFromHostFiber,
+  isFiberContainedByFragment,
+  isFiberFollowing,
+  isFiberPreceding,
+  isFragmentContainedByFiber,
+  traverseFragmentInstancesAndTextInstances,
+  traverseFragmentInstancesAndTextInstancesDeeply,
+} from 'react-reconciler/src/ReactFiberTreeReflection';
+import {compareDocumentPositionForEmptyFragment} from 'shared/ReactDOMFragmentRefShared';
+import {hasRole} from './DOMAccessibilityRoles.js';
+import {
+  clearClickListener,
+  clearSingletonProperties,
+  diffHydratedProperties,
+  diffHydratedText,
+  getPropsFromElement,
+  hydrateProperties,
+  hydrateText,
+  setInitialProperties,
+  trapClickOnNonInteractiveElement,
+  updateProperties,
+} from './ReactDOMComponent.js';
 import {hydrateInput} from './ReactDOMInput.js';
-import {hydrateSelect} from './ReactDOMSelect.js';
-import {setSrcObject} from './ReactDOMSrcObject.js';
 import {hydrateTextarea} from './ReactDOMTextarea.js';
+import {hydrateSelect} from './ReactDOMSelect.js';
 import {
   getSelectionInformation,
   restoreSelection,
 } from './ReactInputSelection.js';
-import escapeSelectorAttributeValueInsideDoubleQuotes from './escapeSelectorAttributeValueInsideDoubleQuotes.js';
-import estimateBandwidth from './estimateBandwidth.js';
 import setTextContent from './setTextContent.js';
 import {
   updatedAncestorInfoDev,
   validateDOMNesting,
   validateTextNesting,
 } from './validateDOMNesting.js';
+import {
+  isEnabled as ReactBrowserEventEmitterIsEnabled,
+  setEnabled as ReactBrowserEventEmitterSetEnabled,
+} from '../events/ReactDOMEventListener.js';
+import {MATH_NAMESPACE, SVG_NAMESPACE} from './DOMNamespaces.js';
+import {
+  COMMENT_NODE,
+  DOCUMENT_FRAGMENT_NODE,
+  DOCUMENT_NODE,
+  DOCUMENT_TYPE_NODE,
+  ELEMENT_NODE,
+  TEXT_NODE,
+} from './HTMLNodeType.js';
+import {
+  flushEventReplaying,
+  retryIfBlockedOn,
+} from '../events/ReactDOMEventReplaying.js';
+import {
+  disableCommentsAsDOMContainers,
+  disableLegacyMode,
+  enableCreateEventHandleAPI,
+  enableHydrationChangeEvent,
+  enableMoveBefore,
+  enableProfilerTimer,
+  enableScopeAPI,
+  enableSrcObject,
+  enableSuspenseyImages,
+  enableViewTransition,
+} from 'shared/ReactFeatureFlags';
+import {
+  HostComponent,
+  HostHoistable,
+  HostSingleton,
+  HostText,
+} from 'react-reconciler/src/ReactWorkTags';
+import {listenToAllSupportedEvents} from '../events/DOMPluginEventSystem.js';
+import {validateLinkPropsForStyleResource} from '../shared/ReactDOMResourceValidation.js';
+import noop from 'shared/noop';
+import estimateBandwidth from './estimateBandwidth.js';
+import {requestFormReset as requestFormResetOnFiber} from 'react-reconciler/src/ReactFiberHooks';
+import {getCurrentRootHostContainer} from 'react-reconciler/src/ReactFiberHostContext';
+import {flushSyncWork as flushSyncWorkOnAllRoots} from 'react-reconciler/src/ReactFiberWorkLoop';
+import escapeSelectorAttributeValueInsideDoubleQuotes from './escapeSelectorAttributeValueInsideDoubleQuotes.js';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import {
   $borrow,
   $borrowMut,
@@ -136,7 +136,6 @@ export {
 } from './ReactDOMUpdatePriority.js';
 
 export {detachDeletedInstance} from './ReactDOMComponentTree.js';
-
 export {default as rendererVersion} from 'shared/ReactVersion';
 
 export {

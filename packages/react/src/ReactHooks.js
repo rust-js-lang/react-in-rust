@@ -5,8 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {REACT_CONSUMER_TYPE} from 'shared/ReactSymbols';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 function resolveDispatcher() {
   const dispatcher = ReactSharedInternals.H;

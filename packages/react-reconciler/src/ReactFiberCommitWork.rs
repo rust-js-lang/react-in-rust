@@ -10,6 +10,21 @@ use std::rc::Rc;
 use js::{Class, JsError, JsObject, Kind, Set, Unknown, WeakSet, function};
 use react_isomorphic::react_start_transition::Transition;
 use shared::environment::__DEV__;
+use shared::react_types::{ViewTransitionProps, Wakeable};
+use webapi::console;
+
+use crate::react_fiber::{ProfilerStateNode, ViewTransitionState};
+use crate::react_fiber_activity_component::ActivityState;
+use crate::react_fiber_call_user_space::ClassInstance;
+use crate::react_fiber_hooks::{EventFunctionPayload, FunctionComponentUpdateQueue};
+use crate::react_fiber_root::RootState;
+use crate::react_fiber_suspense_component::{RetryQueue, SuspenseState};
+use crate::react_internal_types::{Fiber, FiberRoot};
+
+use crate::react_fiber_lane::{
+    Lanes, clear_transitions_for_lanes, includes_loading_indicator_lanes,
+    includes_only_suspensey_commit_eligible_lanes, includes_only_view_transition_eligible_lanes,
+};
 use shared::react_feature_flags::{
     ALWAYS_THROTTLE_RETRIES, DISABLE_LEGACY_MODE, ENABLE_COMPONENT_PERFORMANCE_TRACK,
     ENABLE_CREATE_EVENT_HANDLE_API, ENABLE_DEFAULT_TRANSITION_INDICATOR, ENABLE_LEGACY_HIDDEN,
@@ -17,48 +32,15 @@ use shared::react_feature_flags::{
     ENABLE_SUSPENSE_CALLBACK, ENABLE_TRANSITION_TRACING, ENABLE_UPDATER_TRACKING,
     ENABLE_VIEW_TRANSITION,
 };
-use shared::react_types::{ViewTransitionProps, Wakeable};
-use webapi::console;
 
-use crate::react_fiber::{ProfilerStateNode, ViewTransitionState};
-use crate::react_fiber_activity_component::ActivityState;
-use crate::react_fiber_cache_component::{
-    Cache, CacheComponentState, SpawnedCachePool, release_cache, retain_cache,
+use crate::react_work_tags::{
+    ACTIVITY_COMPONENT, CACHE_COMPONENT, CLASS_COMPONENT, DEHYDRATED_FRAGMENT, FORWARD_REF,
+    FRAGMENT, FUNCTION_COMPONENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL, HOST_ROOT,
+    HOST_SINGLETON, HOST_TEXT, INCOMPLETE_CLASS_COMPONENT, LEGACY_HIDDEN_COMPONENT, MEMO_COMPONENT,
+    OFFSCREEN_COMPONENT, PROFILER, SCOPE_COMPONENT, SIMPLE_MEMO_COMPONENT, SUSPENSE_COMPONENT,
+    SUSPENSE_LIST_COMPONENT, TRACING_MARKER_COMPONENT, VIEW_TRANSITION_COMPONENT,
 };
-use crate::react_fiber_call_user_space::ClassInstance;
-use crate::react_fiber_class_update_queue::{UpdateQueue, defer_hidden_callbacks};
-use crate::react_fiber_commit_effects::{
-    commit_class_callbacks, commit_class_did_mount, commit_class_hidden_callbacks,
-    commit_class_layout_lifecycles, commit_class_snapshot, commit_hook_effect_list_mount,
-    commit_hook_effect_list_unmount, commit_hook_layout_effects,
-    commit_hook_layout_unmount_effects, commit_hook_passive_mount_effects,
-    commit_hook_passive_unmount_effects, commit_profiler_post_commit, commit_profiler_update,
-    commit_root_callbacks, safely_attach_ref, safely_call_component_will_unmount,
-    safely_detach_ref,
-};
-use crate::react_fiber_commit_host_effects::{
-    commit_host_hydrated_activity, commit_host_hydrated_container, commit_host_hydrated_instance,
-    commit_host_hydrated_suspense, commit_host_mount, commit_host_placement,
-    commit_host_portal_container_children, commit_host_remove_child,
-    commit_host_remove_child_from_container, commit_host_reset_text_content,
-    commit_host_root_container_children, commit_host_singleton_acquisition,
-    commit_host_singleton_release, commit_host_text_update, commit_host_update,
-    commit_show_hide_host_instance, commit_show_hide_host_text_instance,
-    commit_show_hide_suspense_boundary,
-};
-use crate::react_fiber_commit_view_transitions::{
-    VIEW_TRANSITION_CANCELABLE_CHILDREN, commit_before_update_view_transition,
-    commit_enter_view_transitions, commit_exit_view_transitions, commit_nested_view_transitions,
-    measure_nested_view_transitions, measure_update_view_transition,
-    pop_view_transition_cancelable_scope, push_view_transition_cancelable_scope,
-    reset_appearing_view_transitions, restore_enter_or_exit_view_transitions,
-    restore_nested_view_transitions, restore_update_view_transition,
-    track_appearing_view_transition, track_enter_view_transitions,
-};
-use crate::react_fiber_dev_tools_hook::{IS_DEV_TOOLS_PRESENT, on_commit_unmount};
-use crate::react_fiber_duplicate_view_transitions::{
-    track_named_view_transition, untrack_named_view_transition,
-};
+
 use crate::react_fiber_flags::{
     AFFECTED_PARENT_LAYOUT, BEFORE_AND_AFTER_MUTATION_TRANSITION_MASK, BEFORE_MUTATION_MASK,
     CALLBACK, CHILD_DELETION, CLONED, CONTENT_RESET, DID_CAPTURE, FORCE_CLIENT_RENDER, FORM_RESET,
@@ -66,55 +48,6 @@ use crate::react_fiber_flags::{
     PASSIVE_MASK, PASSIVE_TRANSITION_MASK, PERFORMED_WORK, PLACEMENT, PORTAL_STATIC, REF,
     SHOULD_SUSPEND_COMMIT, SNAPSHOT, UPDATE, VIEW_TRANSITION_NAMED_STATIC, VISIBILITY,
 };
-use crate::react_fiber_fragment_instance::{
-    commit_fragment_instance_deletion_effects, commit_fragment_instance_insertion_effects,
-};
-use crate::react_fiber_hooks::{EventFunctionPayload, FunctionComponentUpdateQueue};
-use crate::react_fiber_lane::{
-    Lanes, clear_transitions_for_lanes, includes_loading_indicator_lanes,
-    includes_only_suspensey_commit_eligible_lanes, includes_only_view_transition_eligible_lanes,
-};
-use crate::react_fiber_mutation_tracking::{
-    ROOT_MUTATION_CONTEXT, VIEW_TRANSITION_MUTATION_CONTEXT, pop_mutation_context,
-    push_mutation_context, push_root_mutation_context,
-};
-use crate::react_fiber_offscreen_component::{
-    OFFSCREEN_PASSIVE_EFFECTS_CONNECTED, OFFSCREEN_VISIBLE, OffscreenInstance, OffscreenQueue,
-    OffscreenState,
-};
-use crate::react_fiber_performance_track::{
-    log_component_disappeared, log_component_effect, log_component_errored, log_component_mount,
-    log_component_reappeared, log_component_render, log_component_unmount, pop_deep_equality,
-    push_deep_equality,
-};
-use crate::react_fiber_root::RootState;
-use crate::react_fiber_root_scheduler::mark_indicator_handled;
-use crate::react_fiber_suspense_component::{RetryQueue, SuspenseState};
-use crate::react_fiber_tracing_marker_component::{
-    SuspenseInfo, TRANSITION_ROOT, TRANSITION_TRACING_MARKER, TracingMarkerInstance,
-    TransitionAbort, TransitionAbortReason, TransitionAborts,
-};
-use crate::react_fiber_tree_reflection::does_fiber_contain;
-use crate::react_fiber_view_transition_component::get_view_transition_class_name;
-use crate::react_fiber_work_loop::{
-    add_marker_complete_callback_to_pending_transition,
-    add_marker_incomplete_callback_to_pending_transition,
-    add_marker_progress_callback_to_pending_transition,
-    add_transition_complete_callback_to_pending_transition,
-    add_transition_progress_callback_to_pending_transition,
-    add_transition_start_callback_to_pending_transition, capture_commit_phase_error,
-    mark_commit_time_of_fallback, resolve_retry_wakeable, restore_pending_updaters,
-    retry_dehydrated_suspense_boundary, schedule_view_transition_event,
-};
-#[cfg_attr(rust_js, rust_js::name = "HookHasEffect")]
-use crate::react_hook_effect_tags::HAS_EFFECT as HOOK_HAS_EFFECT;
-#[cfg_attr(rust_js, rust_js::name = "HookInsertion")]
-use crate::react_hook_effect_tags::INSERTION as HOOK_INSERTION;
-#[cfg_attr(rust_js, rust_js::name = "HookLayout")]
-use crate::react_hook_effect_tags::LAYOUT as HOOK_LAYOUT;
-#[cfg_attr(rust_js, rust_js::name = "HookPassive")]
-use crate::react_hook_effect_tags::PASSIVE as HOOK_PASSIVE;
-use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_profiler_timer::{
     COMMIT_START_TIME, COMPONENT_EFFECT_DURATION, COMPONENT_EFFECT_END_TIME,
     COMPONENT_EFFECT_ERRORS, COMPONENT_EFFECT_SPAWNED_UPDATE, COMPONENT_EFFECT_START_TIME,
@@ -124,39 +57,61 @@ use crate::react_profiler_timer::{
     push_component_effect_duration, push_component_effect_errors, push_component_effect_start,
     push_nested_effect_durations, reset_component_effect_timers,
 };
-use crate::react_type_of_mode::{CONCURRENT_MODE, NO_MODE, PROFILE_MODE};
-use crate::react_work_tags::{
-    ACTIVITY_COMPONENT, CACHE_COMPONENT, CLASS_COMPONENT, DEHYDRATED_FRAGMENT, FORWARD_REF,
-    FRAGMENT, FUNCTION_COMPONENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL, HOST_ROOT,
-    HOST_SINGLETON, HOST_TEXT, INCOMPLETE_CLASS_COMPONENT, LEGACY_HIDDEN_COMPONENT, MEMO_COMPONENT,
-    OFFSCREEN_COMPONENT, PROFILER, SCOPE_COMPONENT, SIMPLE_MEMO_COMPONENT, SUSPENSE_COMPONENT,
-    SUSPENSE_LIST_COMPONENT, TRACING_MARKER_COMPONENT, VIEW_TRANSITION_COMPONENT,
+
+use crate::react_fiber_performance_track::{
+    log_component_disappeared, log_component_effect, log_component_errored, log_component_mount,
+    log_component_reappeared, log_component_render, log_component_unmount, pop_deep_equality,
+    push_deep_equality,
 };
+use crate::react_type_of_mode::{CONCURRENT_MODE, NO_MODE, PROFILE_MODE};
 
-unsafe extern "Rust" {
-    #[link_name = "./src/ReactFiberConfig.js#supportsMutation"]
-    safe static SUPPORTS_MUTATION: bool;
-    #[link_name = "./src/ReactFiberConfig.js#supportsPersistence"]
-    safe static SUPPORTS_PERSISTENCE: bool;
-    #[link_name = "./src/ReactFiberConfig.js#supportsHydration"]
-    safe static SUPPORTS_HYDRATION: bool;
-    #[link_name = "./src/ReactFiberConfig.js#supportsResources"]
-    safe static SUPPORTS_RESOURCES: bool;
-    #[link_name = "./src/ReactFiberConfig.js#supportsSingletons"]
-    safe static SUPPORTS_SINGLETONS: bool;
-}
+use crate::react_fiber_class_update_queue::{UpdateQueue, defer_hidden_callbacks};
 
-// ReactFiberConfig's host operations, on its `Instance`, `TextInstance`,
-// `Container`, `HoistableRoot`, `Resource`, `SuspenseInstance`,
-// `FormInstance`, `Props` and `SuspendedState`.
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#clearSuspenseBoundary"
+    rust_js::link_name = "./src/ReactFiberConfig.js#acquireResource"
 )]
-fn clear_suspense_boundary(
-    parent_instance: &'static Unknown,
-    suspense_instance: Option<&'static Unknown>,
+fn acquire_resource(
+    hoistable_root: &'static Unknown,
+    resource: &'static Unknown,
+    props: Option<&'static Unknown>,
+) -> &'static Unknown {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#beforeActiveInstanceBlur"
+)]
+fn before_active_instance_blur(internal_instance_handle: &Fiber) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#cancelRootViewTransitionName"
+)]
+fn cancel_root_view_transition_name(root_container: &'static Unknown) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#cancelViewTransitionName"
+)]
+fn cancel_view_transition_name(
+    instance: Option<&'static Unknown>,
+    old_name: &str,
+    props: Option<&'static Unknown>,
 ) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#clearContainer"
+)]
+fn clear_container(container: &'static Unknown) {
     unreachable!()
 }
 
@@ -181,34 +136,14 @@ fn create_container_child_set() -> &'static Unknown {
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#clearContainer"
+    rust_js::link_name = "./src/ReactFiberConfig.js#createHoistableInstance"
 )]
-fn clear_container(container: &'static Unknown) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#prepareScopeUpdate"
-)]
-fn prepare_scope_update(scope_instance: Option<&'static Unknown>, instance: &Fiber) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#prepareForCommit"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-fn prepare_for_commit(container_info: &'static Unknown) -> Option<Rc<Fiber>> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#beforeActiveInstanceBlur"
-)]
-fn before_active_instance_blur(internal_instance_handle: &Fiber) {
+fn create_hoistable_instance(
+    r#type: Option<&'static Unknown>,
+    props: Option<&'static Unknown>,
+    root_container_instance: Option<&'static Unknown>,
+    internal_instance_handle: &Fiber,
+) -> &'static Unknown {
     unreachable!()
 }
 
@@ -230,26 +165,6 @@ fn get_hoistable_root(container: &'static Unknown) -> &'static Unknown {
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#acquireResource"
-)]
-fn acquire_resource(
-    hoistable_root: &'static Unknown,
-    resource: &'static Unknown,
-    props: Option<&'static Unknown>,
-) -> &'static Unknown {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#releaseResource"
-)]
-fn release_resource(resource: Option<&'static Unknown>) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#hydrateHoistable"
 )]
 fn hydrate_hoistable(
@@ -263,14 +178,20 @@ fn hydrate_hoistable(
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#createHoistableInstance"
+    rust_js::link_name = "./src/ReactFiberConfig.js#isSingletonScope"
 )]
-fn create_hoistable_instance(
+fn is_singleton_scope(r#type: Option<&'static Unknown>) -> bool {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#maySuspendCommitInSyncRender"
+)]
+fn may_suspend_commit_in_sync_render(
     r#type: Option<&'static Unknown>,
     props: Option<&'static Unknown>,
-    root_container_instance: Option<&'static Unknown>,
-    internal_instance_handle: &Fiber,
-) -> &'static Unknown {
+) -> bool {
     unreachable!()
 }
 
@@ -288,9 +209,18 @@ fn mount_hoistable(
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#unmountHoistable"
+    rust_js::link_name = "./src/ReactFiberConfig.js#prepareForCommit"
 )]
-fn unmount_hoistable(instance: Option<&'static Unknown>) {
+#[cfg_attr(rust_js, rust_js::nullable)]
+fn prepare_for_commit(container_info: &'static Unknown) -> Option<Rc<Fiber>> {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#prepareScopeUpdate"
+)]
+fn prepare_scope_update(scope_instance: Option<&'static Unknown>, instance: &Fiber) {
     unreachable!()
 }
 
@@ -304,12 +234,33 @@ fn prepare_to_commit_hoistables() {
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#maySuspendCommitInSyncRender"
+    rust_js::link_name = "./src/ReactFiberConfig.js#registerSuspenseInstanceRetry"
 )]
-fn may_suspend_commit_in_sync_render(
-    r#type: Option<&'static Unknown>,
-    props: Option<&'static Unknown>,
-) -> bool {
+fn register_suspense_instance_retry(instance: &'static Unknown, callback: &'static dyn Fn()) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#releaseResource"
+)]
+fn release_resource(resource: Option<&'static Unknown>) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#resetFormInstance"
+)]
+fn reset_form_instance(form: Option<&'static Unknown>) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#restoreRootViewTransitionName"
+)]
+fn restore_root_view_transition_name(root_container: &'static Unknown) {
     unreachable!()
 }
 
@@ -341,53 +292,9 @@ fn suspend_resource(
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#resetFormInstance"
+    rust_js::link_name = "./src/ReactFiberConfig.js#unmountHoistable"
 )]
-fn reset_form_instance(form: Option<&'static Unknown>) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#registerSuspenseInstanceRetry"
-)]
-fn register_suspense_instance_retry(instance: &'static Unknown, callback: &'static dyn Fn()) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#cancelViewTransitionName"
-)]
-fn cancel_view_transition_name(
-    instance: Option<&'static Unknown>,
-    old_name: &str,
-    props: Option<&'static Unknown>,
-) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#cancelRootViewTransitionName"
-)]
-fn cancel_root_view_transition_name(root_container: &'static Unknown) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#restoreRootViewTransitionName"
-)]
-fn restore_root_view_transition_name(root_container: &'static Unknown) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#isSingletonScope"
-)]
-fn is_singleton_scope(r#type: Option<&'static Unknown>) -> bool {
+fn unmount_hoistable(instance: Option<&'static Unknown>) {
     unreachable!()
 }
 
@@ -398,6 +305,111 @@ fn is_singleton_scope(r#type: Option<&'static Unknown>) -> bool {
 fn update_fragment_instance_fiber(fiber: &Fiber, instance: &'static Unknown) {
     unreachable!()
 }
+
+// ReactFiberConfig's host operations, on its `Instance`, `TextInstance`,
+// `Container`, `HoistableRoot`, `Resource`, `SuspenseInstance`,
+// `FormInstance`, `Props` and `SuspendedState`.
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#clearSuspenseBoundary"
+)]
+fn clear_suspense_boundary(
+    parent_instance: &'static Unknown,
+    suspense_instance: Option<&'static Unknown>,
+) {
+    unreachable!()
+}
+
+unsafe extern "Rust" {
+    #[link_name = "./src/ReactFiberConfig.js#supportsMutation"]
+    safe static SUPPORTS_MUTATION: bool;
+    #[link_name = "./src/ReactFiberConfig.js#supportsPersistence"]
+    safe static SUPPORTS_PERSISTENCE: bool;
+    #[link_name = "./src/ReactFiberConfig.js#supportsHydration"]
+    safe static SUPPORTS_HYDRATION: bool;
+    #[link_name = "./src/ReactFiberConfig.js#supportsResources"]
+    safe static SUPPORTS_RESOURCES: bool;
+    #[link_name = "./src/ReactFiberConfig.js#supportsSingletons"]
+    safe static SUPPORTS_SINGLETONS: bool;
+}
+
+use crate::react_fiber_work_loop::{
+    add_marker_complete_callback_to_pending_transition,
+    add_marker_incomplete_callback_to_pending_transition,
+    add_marker_progress_callback_to_pending_transition,
+    add_transition_complete_callback_to_pending_transition,
+    add_transition_progress_callback_to_pending_transition,
+    add_transition_start_callback_to_pending_transition, capture_commit_phase_error,
+    mark_commit_time_of_fallback, resolve_retry_wakeable, restore_pending_updaters,
+    retry_dehydrated_suspense_boundary, schedule_view_transition_event,
+};
+#[cfg_attr(rust_js, rust_js::name = "HookHasEffect")]
+use crate::react_hook_effect_tags::HAS_EFFECT as HOOK_HAS_EFFECT;
+#[cfg_attr(rust_js, rust_js::name = "HookInsertion")]
+use crate::react_hook_effect_tags::INSERTION as HOOK_INSERTION;
+#[cfg_attr(rust_js, rust_js::name = "HookLayout")]
+use crate::react_hook_effect_tags::LAYOUT as HOOK_LAYOUT;
+#[cfg_attr(rust_js, rust_js::name = "HookPassive")]
+use crate::react_hook_effect_tags::PASSIVE as HOOK_PASSIVE;
+
+use crate::react_fiber_tree_reflection::does_fiber_contain;
+
+use crate::react_fiber_dev_tools_hook::{IS_DEV_TOOLS_PRESENT, on_commit_unmount};
+
+use crate::react_fiber_cache_component::{
+    Cache, CacheComponentState, SpawnedCachePool, release_cache, retain_cache,
+};
+use crate::react_fiber_offscreen_component::{
+    OFFSCREEN_PASSIVE_EFFECTS_CONNECTED, OFFSCREEN_VISIBLE, OffscreenInstance, OffscreenQueue,
+    OffscreenState,
+};
+use crate::react_fiber_tracing_marker_component::{
+    SuspenseInfo, TRANSITION_ROOT, TRANSITION_TRACING_MARKER, TracingMarkerInstance,
+    TransitionAbort, TransitionAbortReason, TransitionAborts,
+};
+use crate::react_fiber_view_transition_component::get_view_transition_class_name;
+
+use crate::react_fiber_commit_effects::{
+    commit_class_callbacks, commit_class_did_mount, commit_class_hidden_callbacks,
+    commit_class_layout_lifecycles, commit_class_snapshot, commit_hook_effect_list_mount,
+    commit_hook_effect_list_unmount, commit_hook_layout_effects,
+    commit_hook_layout_unmount_effects, commit_hook_passive_mount_effects,
+    commit_hook_passive_unmount_effects, commit_profiler_post_commit, commit_profiler_update,
+    commit_root_callbacks, safely_attach_ref, safely_call_component_will_unmount,
+    safely_detach_ref,
+};
+use crate::react_fiber_commit_host_effects::{
+    commit_host_hydrated_activity, commit_host_hydrated_container, commit_host_hydrated_instance,
+    commit_host_hydrated_suspense, commit_host_mount, commit_host_placement,
+    commit_host_portal_container_children, commit_host_remove_child,
+    commit_host_remove_child_from_container, commit_host_reset_text_content,
+    commit_host_root_container_children, commit_host_singleton_acquisition,
+    commit_host_singleton_release, commit_host_text_update, commit_host_update,
+    commit_show_hide_host_instance, commit_show_hide_host_text_instance,
+    commit_show_hide_suspense_boundary,
+};
+use crate::react_fiber_fragment_instance::{
+    commit_fragment_instance_deletion_effects, commit_fragment_instance_insertion_effects,
+};
+
+use crate::react_fiber_commit_view_transitions::{
+    VIEW_TRANSITION_CANCELABLE_CHILDREN, commit_before_update_view_transition,
+    commit_enter_view_transitions, commit_exit_view_transitions, commit_nested_view_transitions,
+    measure_nested_view_transitions, measure_update_view_transition,
+    pop_view_transition_cancelable_scope, push_view_transition_cancelable_scope,
+    reset_appearing_view_transitions, restore_enter_or_exit_view_transitions,
+    restore_nested_view_transitions, restore_update_view_transition,
+    track_appearing_view_transition, track_enter_view_transitions,
+};
+use crate::react_fiber_mutation_tracking::{
+    ROOT_MUTATION_CONTEXT, VIEW_TRANSITION_MUTATION_CONTEXT, pop_mutation_context,
+    push_mutation_context, push_root_mutation_context,
+};
+
+use crate::react_fiber_duplicate_view_transitions::{
+    track_named_view_transition, untrack_named_view_transition,
+};
+use crate::react_fiber_root_scheduler::mark_indicator_handled;
 
 // shared/ReactTypes' `Wakeable`.
 type LayoutEffectTraversalFlags = i32;

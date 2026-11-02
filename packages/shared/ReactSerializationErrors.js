@@ -5,7 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {enableViewTransition} from './ReactFeatureFlags.js';
 import {
   REACT_ELEMENT_TYPE,
   REACT_FORWARD_REF_TYPE,
@@ -15,8 +14,9 @@ import {
   REACT_SUSPENSE_TYPE,
   REACT_VIEW_TRANSITION_TYPE,
 } from './ReactSymbols.js';
-import getPrototypeOf from './getPrototypeOf.js';
 import isArray from './isArray.js';
+import getPrototypeOf from './getPrototypeOf.js';
+import {enableViewTransition} from './ReactFeatureFlags.js';
 
 // Used for DEV messages to keep track of which parent rendered some props,
 // in case they error.

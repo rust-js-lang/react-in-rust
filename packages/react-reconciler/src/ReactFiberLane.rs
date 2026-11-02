@@ -8,17 +8,25 @@ use std::rc::Rc;
 
 use react_isomorphic::react_start_transition::Transition;
 use shared::environment::__DEV__;
+use webapi::console;
+
+use crate::react_fiber_concurrent_updates::ConcurrentUpdate;
+use crate::react_internal_types::{Fiber, FiberRoot};
+
 use shared::react_feature_flags::{
     DISABLE_LEGACY_MODE, ENABLE_DEFAULT_TRANSITION_INDICATOR, ENABLE_GESTURE_TRANSITION,
     ENABLE_RETRY_LANE_EXPIRATION, ENABLE_SCHEDULING_PROFILER, ENABLE_TRANSITION_TRACING,
     ENABLE_UPDATER_TRACKING, RETRY_LANE_EXPIRATION_MS, SYNC_LANE_EXPIRATION_MS,
     TRANSITION_LANE_EXPIRATION_MS,
 };
-use webapi::console;
+
+unsafe extern "Rust" {
+    #[cfg_attr(rust_js, rust_js::name = "isDevToolsPresent")]
+    #[link_name = "./src/ReactFiberDevToolsHook.js#isDevToolsPresent"]
+    safe static IS_DEV_TOOLS_PRESENT: bool;
+}
 
 use crate::clz32::CLZ32;
-use crate::react_fiber_concurrent_updates::ConcurrentUpdate;
-use crate::react_internal_types::{Fiber, FiberRoot};
 use crate::react_root_tags::LEGACY_ROOT;
 
 // TODO: Ideally these types would be opaque but that doesn't work well with
@@ -27,12 +35,6 @@ use crate::react_root_tags::LEGACY_ROOT;
 pub type Lanes = i32;
 pub type Lane = i32;
 pub type LaneMap<T> = Vec<T>;
-
-unsafe extern "Rust" {
-    #[cfg_attr(rust_js, rust_js::name = "isDevToolsPresent")]
-    #[link_name = "./src/ReactFiberDevToolsHook.js#isDevToolsPresent"]
-    safe static IS_DEV_TOOLS_PRESENT: bool;
-}
 
 // Lane values below should be kept in sync with getLabelForLane(), used by react-devtools-timeline.
 // If those values are changed that package should be rebuilt and redeployed.

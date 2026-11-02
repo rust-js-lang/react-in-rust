@@ -5,9 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {current as currentOwner} from './ReactCurrentFiber.js';
-import {CacheContext} from './ReactFiberCacheComponent.js';
 import {readContext} from './ReactFiberNewContext.js';
+import {CacheContext} from './ReactFiberCacheComponent.js';
+import {current as currentOwner} from './ReactCurrentFiber.js';
 import {$unwrap} from '@rust-js/runtime';
 
 function getCacheForType(resourceType) {

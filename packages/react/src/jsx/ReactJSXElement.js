@@ -5,19 +5,19 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
-import {enableOptimisticKey, ownerStackLimit} from 'shared/ReactFeatureFlags';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
+import hasOwnProperty from 'shared/hasOwnProperty';
 import {
   REACT_ELEMENT_TYPE,
   REACT_FRAGMENT_TYPE,
   REACT_LAZY_TYPE,
   REACT_OPTIMISTIC_KEY,
 } from 'shared/ReactSymbols';
-import assign from 'shared/assign';
-import getComponentNameFromType from 'shared/getComponentNameFromType';
-import hasOwnProperty from 'shared/hasOwnProperty';
+import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
 import isArray from 'shared/isArray';
+import {enableOptimisticKey, ownerStackLimit} from 'shared/ReactFeatureFlags';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
+import assign from 'shared/assign';
 import {$unwrap} from '@rust-js/runtime';
 
 function noTask(name) {

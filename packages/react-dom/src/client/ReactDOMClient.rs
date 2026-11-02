@@ -4,15 +4,16 @@
 // LICENSE file in the root directory of this source tree.
 
 use js::{Map, Set, Unknown, reg_exp};
-use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
 use shared::environment::__DEV__;
-use shared::execution_environment::CAN_USE_DOM;
-use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS as INTERNALS;
 use webapi::{console, window};
 
-use crate::ensure_correct_isomorphic_react_version::ensure_correct_isomorphic_react_version;
-pub use crate::react_dom_root::{create_root, hydrate_root};
+use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
+use shared::execution_environment::CAN_USE_DOM;
+use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS as INTERNALS;
 
+use crate::ensure_correct_isomorphic_react_version::ensure_correct_isomorphic_react_version;
+
+pub use crate::react_dom_root::{create_root, hydrate_root};
 #[cfg_attr(rust_js, rust_js::name = "version")]
 pub use shared::react_version::REACT_VERSION as VERSION;
 

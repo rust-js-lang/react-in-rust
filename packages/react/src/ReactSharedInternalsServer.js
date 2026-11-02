@@ -5,13 +5,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {enableTaint} from 'shared/ReactFeatureFlags';
 import {
   TaintRegistryByteLengths,
   TaintRegistryObjects,
   TaintRegistryPendingRequests,
   TaintRegistryValues,
 } from './ReactTaintRegistry.js';
+import {enableTaint} from 'shared/ReactFeatureFlags';
 
 const ReactSharedInternals = {
   H: null,

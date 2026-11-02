@@ -6,24 +6,32 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
+  flushPendingEffects,
+  flushRoot,
+  flushSyncWork,
+  requestUpdateLane,
+  scheduleInitialHydrationOnRoot,
+  scheduleUpdateOnFiber,
+} from './ReactFiberWorkLoop.js';
+import {LegacyRoot} from './ReactRootTags.js';
+import {
+  findCurrentHostFiber,
+  findCurrentHostFiberWithNoPortals,
+} from './ReactFiberTreeReflection.js';
+import {get as getInstance} from 'shared/ReactInstanceMap';
+import {
+  ActivityComponent,
+  ClassComponent,
+  HostComponent,
+  HostRoot,
+  HostSingleton,
+  SuspenseComponent,
+} from './ReactWorkTags.js';
+import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+import {
   disableLegacyMode,
   enableSchedulingProfiler,
 } from 'shared/ReactFeatureFlags';
-import {get as getInstance} from 'shared/ReactInstanceMap';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
-import ReactVersion from 'shared/ReactVersion';
-import {
-  current as ReactCurrentFiberCurrent,
-  isRendering as ReactCurrentFiberIsRendering,
-  runWithFiberInDEV,
-} from './ReactCurrentFiber.js';
-import {registerDefaultIndicator} from './ReactFiberAsyncAction.js';
-import {
-  createUpdate,
-  enqueueUpdate,
-  entangleTransitions,
-} from './ReactFiberClassUpdateQueue.js';
-import {enqueueConcurrentRenderForLane} from './ReactFiberConcurrentUpdates.js';
 import {
   extraDevToolsConfig,
   getPublicInstance,
@@ -31,16 +39,32 @@ import {
   rendererVersion,
 } from './ReactFiberConfig.js';
 import {
+  emptyContextObject,
+  findCurrentUnmaskedContext,
+  isContextProvider as isLegacyContextProvider,
+  processChildContext,
+} from './ReactFiberLegacyContext.js';
+import {createFiberRoot} from './ReactFiberRoot.js';
+import {isRootDehydrated} from './ReactFiberShellHydration.js';
+import {
   injectInternals,
   injectProfilingHooks,
   markRenderScheduled,
   onScheduleRoot,
 } from './ReactFiberDevToolsHook.js';
+import {startUpdateTimerByLane} from './ReactProfilerTimer.js';
+import {enqueueConcurrentRenderForLane} from './ReactFiberConcurrentUpdates.js';
 import {
-  scheduleRefresh,
-  scheduleRoot,
-  setRefreshHandler,
-} from './ReactFiberHotReloading.js';
+  createUpdate,
+  enqueueUpdate,
+  entangleTransitions,
+} from './ReactFiberClassUpdateQueue.js';
+import {
+  current as ReactCurrentFiberCurrent,
+  isRendering as ReactCurrentFiberIsRendering,
+  runWithFiberInDEV,
+} from './ReactCurrentFiber.js';
+import {StrictLegacyMode} from './ReactTypeOfMode.js';
 import {
   SelectiveHydrationLane,
   SyncLane,
@@ -52,37 +76,13 @@ import {
   higherPriorityLane,
 } from './ReactFiberLane.js';
 import {
-  emptyContextObject,
-  findCurrentUnmaskedContext,
-  isContextProvider as isLegacyContextProvider,
-  processChildContext,
-} from './ReactFiberLegacyContext.js';
-import {createFiberRoot} from './ReactFiberRoot.js';
-import {isRootDehydrated} from './ReactFiberShellHydration.js';
-import {
-  findCurrentHostFiber,
-  findCurrentHostFiberWithNoPortals,
-} from './ReactFiberTreeReflection.js';
-import {
-  flushPendingEffects,
-  flushRoot,
-  flushSyncWork,
-  requestUpdateLane,
-  scheduleInitialHydrationOnRoot,
-  scheduleUpdateOnFiber,
-} from './ReactFiberWorkLoop.js';
-import {startUpdateTimerByLane} from './ReactProfilerTimer.js';
-import {LegacyRoot} from './ReactRootTags.js';
-import {StrictLegacyMode} from './ReactTypeOfMode.js';
-import {
-  ActivityComponent,
-  ClassComponent,
-  HostComponent,
-  HostRoot,
-  HostSingleton,
-  SuspenseComponent,
-} from './ReactWorkTags.js';
-import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+  scheduleRefresh,
+  scheduleRoot,
+  setRefreshHandler,
+} from './ReactFiberHotReloading.js';
+import ReactVersion from 'shared/ReactVersion';
+import {registerDefaultIndicator} from './ReactFiberAsyncAction.js';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {$index, $unwrap} from '@rust-js/runtime';
 
 export {createPortal} from './ReactPortal.js';

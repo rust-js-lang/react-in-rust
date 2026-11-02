@@ -8,13 +8,15 @@ use std::marker::PhantomData;
 use js::{JsError, JsObject, SymbolFor, Unknown};
 
 use crate::environment::__DEV__;
-use crate::react_feature_flags::{ENABLE_TRANSITION_TRACING, ENABLE_VIEW_TRANSITION};
+
 use crate::react_symbols::{
     REACT_ACTIVITY_TYPE, REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE, REACT_FORWARD_REF_TYPE,
     REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE, REACT_MEMO_TYPE, REACT_PORTAL_TYPE, REACT_PROFILER_TYPE,
     REACT_STRICT_MODE_TYPE, REACT_SUSPENSE_LIST_TYPE, REACT_SUSPENSE_TYPE,
     REACT_TRACING_MARKER_TYPE, REACT_VIEW_TRANSITION_TYPE,
 };
+
+use crate::react_feature_flags::{ENABLE_TRANSITION_TRACING, ENABLE_VIEW_TRANSITION};
 
 // Keep in sync with react-reconciler/getComponentNameFromFiber
 fn get_wrapped_name(outer_type: &Unknown, inner_type: &Unknown, wrapper_name: &str) -> String {

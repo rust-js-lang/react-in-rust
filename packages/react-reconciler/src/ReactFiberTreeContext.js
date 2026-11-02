@@ -58,9 +58,9 @@
 // log2(32) = 5 bits. That means we can lop bits off the end 5 at a time without
 // affecting the final result.
 
-import {Forked, NoFlags} from './ReactFiberFlags.js';
 import {getIsHydrating} from './ReactFiberHydrationContext.js';
 import {clz32} from './clz32.js';
+import {Forked, NoFlags} from './ReactFiberFlags.js';
 import {$pad, $unwrap} from '@rust-js/runtime';
 
 // A pushed id: its tree context's id, overflow and provider.

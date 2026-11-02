@@ -4,10 +4,12 @@
 // LICENSE file in the root directory of this source tree.
 
 use js::{SymbolFor, Unknown};
-use shared::check_string_coercion::check_key_string_coercion;
 use shared::environment::__DEV__;
-use shared::react_symbols::{REACT_OPTIMISTIC_KEY, REACT_PORTAL_TYPE};
 use shared::react_types::{ReactKey, ReactPortal};
+
+use shared::react_symbols::{REACT_OPTIMISTIC_KEY, REACT_PORTAL_TYPE};
+
+use shared::check_string_coercion::check_key_string_coercion;
 
 pub fn create_portal(
     children: Option<&'static Unknown>,

@@ -5,14 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import * as Scheduler from 'scheduler';
-import {
-  enableComponentPerformanceTrack,
-  enableProfilerCommitHooks,
-  enableProfilerNestedUpdatePhase,
-  enableProfilerTimer,
-} from 'shared/ReactFeatureFlags';
-import {resolveEventTimeStamp, resolveEventType} from './ReactFiberConfig.js';
 import {
   NoLanes,
   includesBlockingLane,
@@ -21,8 +13,16 @@ import {
   isGestureRender,
   isTransitionLane,
 } from './ReactFiberLane.js';
-import {isAlreadyRendering} from './ReactFiberWorkLoop.js';
+import {resolveEventTimeStamp, resolveEventType} from './ReactFiberConfig.js';
+import {
+  enableComponentPerformanceTrack,
+  enableProfilerCommitHooks,
+  enableProfilerNestedUpdatePhase,
+  enableProfilerTimer,
+} from 'shared/ReactFeatureFlags';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+import {isAlreadyRendering} from './ReactFiberWorkLoop.js';
+import * as Scheduler from 'scheduler';
 
 function noTask(name) {
   return null;

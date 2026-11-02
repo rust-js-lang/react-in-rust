@@ -6,10 +6,10 @@
 // LICENSE file in the root directory of this source tree.
 
 import {startHostTransition} from 'react-reconciler/src/ReactFiberHooks';
-import {didCurrentEventScheduleTransition} from 'react-reconciler/src/ReactFiberRootScheduler';
-import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
 import {getFiberCurrentPropsFromNode} from '../../client/ReactDOMComponentTree.js';
+import {didCurrentEventScheduleTransition} from 'react-reconciler/src/ReactFiberRootScheduler';
 import sanitizeURL from '../../shared/sanitizeURL.js';
+import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
 import {SyntheticEvent} from '../SyntheticEvent.js';
 
 function coerceFormActionProp(actionProp) {

@@ -84,17 +84,11 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::{Kind, Unknown};
-use shared::assign::assign;
 use shared::environment::__DEV__;
 use webapi::console;
 
-use crate::get_component_name_from_fiber::get_component_name_from_fiber;
-use crate::react_fiber_async_action::{peek_entangled_action_lane, peek_entangled_action_thenable};
-use crate::react_fiber_concurrent_updates::{
-    enqueue_concurrent_class_update, unsafe_mark_update_lane_from_fiber_to_root,
-};
-use crate::react_fiber_dev_tools_hook::set_is_strict_mode_for_devtools;
-use crate::react_fiber_flags::{CALLBACK, DID_CAPTURE, SHOULD_CAPTURE, VISIBILITY};
+use crate::react_internal_types::{Fiber, FiberRoot};
+
 use crate::react_fiber_lane::{
     Lane, Lanes, NO_LANE, NO_LANES, OFFSCREEN_LANE, intersect_lanes, is_subset_of_lanes,
     is_transition_lane, mark_root_entangled, merge_lanes, remove_lanes,
@@ -102,12 +96,24 @@ use crate::react_fiber_lane::{
 use crate::react_fiber_new_context::{
     enter_disallowed_context_read_in_dev, exit_disallowed_context_read_in_dev,
 };
+
+use crate::react_fiber_flags::{CALLBACK, DID_CAPTURE, SHOULD_CAPTURE, VISIBILITY};
+
+use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+use crate::react_type_of_mode::STRICT_LEGACY_MODE;
+
 use crate::react_fiber_work_loop::{
     get_work_in_progress_root_render_lanes, is_unsafe_class_render_phase_update,
     mark_skipped_update_lanes,
 };
-use crate::react_internal_types::{Fiber, FiberRoot};
-use crate::react_type_of_mode::STRICT_LEGACY_MODE;
+
+use crate::react_fiber_concurrent_updates::{
+    enqueue_concurrent_class_update, unsafe_mark_update_lane_from_fiber_to_root,
+};
+use crate::react_fiber_dev_tools_hook::set_is_strict_mode_for_devtools;
+use shared::assign::assign;
+
+use crate::react_fiber_async_action::{peek_entangled_action_lane, peek_entangled_action_thenable};
 
 pub type UpdateTag = u8;
 

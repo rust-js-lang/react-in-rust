@@ -8,21 +8,24 @@ use std::rc::Rc;
 
 use js::{Unknown, string};
 use react_reconciler::react_internal_types::Fiber;
-use shared::execution_environment::CAN_USE_DOM;
 use webapi::{EventTarget, document, keyboard_event, window};
 
-use crate::dom_plugin_event_system::{
-    DispatchEntry, DispatchQueue, accumulate_two_phase_listeners,
-};
-use crate::event_registry::register_two_phase_event;
 use crate::event_system_flags::EventSystemFlags;
+use crate::plugin_module_type::AnyNativeEvent;
+use crate::react_synthetic_event_type::ReactSyntheticEvent;
+
+use shared::execution_environment::CAN_USE_DOM;
+
+use crate::event_registry::register_two_phase_event;
 use crate::fallback_composition_state::{
     get_data as fallback_composition_state_get_data,
     initialize as fallback_composition_state_initialize, reset as fallback_composition_state_reset,
 };
-use crate::plugin_module_type::AnyNativeEvent;
-use crate::react_synthetic_event_type::ReactSyntheticEvent;
 use crate::synthetic_event::{SYNTHETIC_COMPOSITION_EVENT, SYNTHETIC_INPUT_EVENT};
+
+use crate::dom_plugin_event_system::{
+    DispatchEntry, DispatchQueue, accumulate_two_phase_listeners,
+};
 
 const END_KEYCODES: [f64; 4] = [9.0, 13.0, 27.0, 32.0]; // Tab, Return, Esc, Space
 const START_KEYCODE: f64 = 229.0;

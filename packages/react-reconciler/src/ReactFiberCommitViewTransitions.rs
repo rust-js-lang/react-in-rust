@@ -8,43 +8,47 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use js::Unknown;
-use shared::react_feature_flags::{
-    ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_PROFILER_TIMER,
-    ENABLE_VIEW_TRANSITION_FOR_PERSISTENCE_MODE, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
-};
 use shared::react_types::ViewTransitionProps;
 
 use crate::react_fiber::ViewTransitionState;
+use crate::react_internal_types::Fiber;
+
+use crate::react_work_tags::{HOST_COMPONENT, OFFSCREEN_COMPONENT, VIEW_TRANSITION_COMPONENT};
+
 use crate::react_fiber_flags::{
     AFFECTED_PARENT_LAYOUT, NO_FLAGS, UPDATE, VIEW_TRANSITION_NAMED_STATIC, VIEW_TRANSITION_STATIC,
     VIEW_TRANSITION_STATIC_PARENT,
 };
-use crate::react_fiber_view_transition_component::{
-    get_view_transition_class_name, get_view_transition_name,
-};
-use crate::react_fiber_work_loop::{
-    schedule_gesture_transition_event, schedule_view_transition_event,
-};
-use crate::react_internal_types::Fiber;
-use crate::react_profiler_timer::track_animating_task;
-use crate::react_work_tags::{HOST_COMPONENT, OFFSCREEN_COMPONENT, VIEW_TRANSITION_COMPONENT};
 
-unsafe extern "Rust" {
-    #[link_name = "./src/ReactFiberConfig.js#supportsMutation"]
-    safe static SUPPORTS_MUTATION: bool;
-}
-
-// ReactFiberConfig's view transition operations, on its `Instance`, its
-// `Props` and its `InstanceMeasurement`.
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#applyViewTransitionName"
+    rust_js::link_name = "./src/ReactFiberConfig.js#hasInstanceAffectedParent"
 )]
-fn apply_view_transition_name(
-    instance: Option<&'static Unknown>,
-    name: &str,
-    class_name: Option<&str>,
-) {
+fn has_instance_affected_parent(old_measurement: &Unknown, new_measurement: &Unknown) -> bool {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#hasInstanceChanged"
+)]
+fn has_instance_changed(old_measurement: &Unknown, new_measurement: &Unknown) -> bool {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#measureClonedInstance"
+)]
+fn measure_cloned_instance(instance: &'static Unknown) -> &'static Unknown {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#measureInstance"
+)]
+fn measure_instance(instance: Option<&'static Unknown>) -> &'static Unknown {
     unreachable!()
 }
 
@@ -61,43 +65,43 @@ fn restore_view_transition_name(
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#measureInstance"
-)]
-fn measure_instance(instance: Option<&'static Unknown>) -> &'static Unknown {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#measureClonedInstance"
-)]
-fn measure_cloned_instance(instance: &'static Unknown) -> &'static Unknown {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#hasInstanceChanged"
-)]
-fn has_instance_changed(old_measurement: &Unknown, new_measurement: &Unknown) -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#hasInstanceAffectedParent"
-)]
-fn has_instance_affected_parent(old_measurement: &Unknown, new_measurement: &Unknown) -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#wasInstanceInViewport"
 )]
 fn was_instance_in_viewport(measurement: &Unknown) -> bool {
     unreachable!()
 }
+
+// ReactFiberConfig's view transition operations, on its `Instance`, its
+// `Props` and its `InstanceMeasurement`.
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#applyViewTransitionName"
+)]
+fn apply_view_transition_name(
+    instance: Option<&'static Unknown>,
+    name: &str,
+    class_name: Option<&str>,
+) {
+    unreachable!()
+}
+
+unsafe extern "Rust" {
+    #[link_name = "./src/ReactFiberConfig.js#supportsMutation"]
+    safe static SUPPORTS_MUTATION: bool;
+}
+
+use crate::react_fiber_work_loop::{
+    schedule_gesture_transition_event, schedule_view_transition_event,
+};
+
+use crate::react_fiber_view_transition_component::{
+    get_view_transition_class_name, get_view_transition_name,
+};
+use crate::react_profiler_timer::track_animating_task;
+use shared::react_feature_flags::{
+    ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_PROFILER_TIMER,
+    ENABLE_VIEW_TRANSITION_FOR_PERSISTENCE_MODE, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
+};
 
 thread_local! {
     pub static SHOULD_START_VIEW_TRANSITION: Cell<bool> = const { Cell::new(false) };

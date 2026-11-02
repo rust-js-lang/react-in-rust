@@ -6,19 +6,14 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  REACT_FORWARD_REF_TYPE,
-  REACT_LAZY_TYPE,
-  REACT_MEMO_TYPE,
-} from 'shared/ReactSymbols';
-import {enqueueConcurrentRenderForLane} from './ReactFiberConcurrentUpdates.js';
-import {SyncLane} from './ReactFiberLane.js';
-import {emptyContextObject} from './ReactFiberLegacyContext.js';
-import {updateContainerSync} from './ReactFiberReconciler.js';
-import {
   flushPendingEffects,
   flushSyncWork,
   scheduleUpdateOnFiber,
 } from './ReactFiberWorkLoop.js';
+import {enqueueConcurrentRenderForLane} from './ReactFiberConcurrentUpdates.js';
+import {updateContainerSync} from './ReactFiberReconciler.js';
+import {emptyContextObject} from './ReactFiberLegacyContext.js';
+import {SyncLane} from './ReactFiberLane.js';
 import {
   ClassComponent,
   ForwardRef,
@@ -26,6 +21,11 @@ import {
   MemoComponent,
   SimpleMemoComponent,
 } from './ReactWorkTags.js';
+import {
+  REACT_FORWARD_REF_TYPE,
+  REACT_LAZY_TYPE,
+  REACT_MEMO_TYPE,
+} from 'shared/ReactSymbols';
 
 let resolveFamily = null;
 let failedBoundaries = null;

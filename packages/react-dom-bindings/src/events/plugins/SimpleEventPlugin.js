@@ -5,23 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {enableCreateEventHandleAPI} from 'shared/ReactFeatureFlags';
-import {
-  ANIMATION_CANCEL,
-  ANIMATION_END,
-  ANIMATION_ITERATION,
-  ANIMATION_START,
-  TRANSITION_END,
-} from '../DOMEventNames.js';
-import {topLevelEventsToReactNames as topLevelEventsToReactNames$1} from '../DOMEventProperties.js';
-import {
-  accumulateEventHandleNonManagedNodeListeners,
-  accumulateSinglePhaseListeners,
-} from '../DOMPluginEventSystem.js';
-import {
-  IS_CAPTURE_PHASE,
-  IS_EVENT_HANDLE_NON_MANAGED_NODE,
-} from '../EventSystemFlags.js';
 import {
   SyntheticAnimationEvent,
   SyntheticClipboardEvent,
@@ -38,7 +21,24 @@ import {
   SyntheticUIEvent,
   SyntheticWheelEvent,
 } from '../SyntheticEvent.js';
+import {
+  ANIMATION_CANCEL,
+  ANIMATION_END,
+  ANIMATION_ITERATION,
+  ANIMATION_START,
+  TRANSITION_END,
+} from '../DOMEventNames.js';
+import {topLevelEventsToReactNames as topLevelEventsToReactNames$1} from '../DOMEventProperties.js';
+import {
+  accumulateEventHandleNonManagedNodeListeners,
+  accumulateSinglePhaseListeners,
+} from '../DOMPluginEventSystem.js';
+import {
+  IS_CAPTURE_PHASE,
+  IS_EVENT_HANDLE_NON_MANAGED_NODE,
+} from '../EventSystemFlags.js';
 import getEventCharCode from '../getEventCharCode.js';
+import {enableCreateEventHandleAPI} from 'shared/ReactFeatureFlags';
 import {$someGet, $someValue, $withBorrow} from '@rust-js/runtime';
 
 export {registerSimpleEvents as registerEvents} from '../DOMEventProperties.js';

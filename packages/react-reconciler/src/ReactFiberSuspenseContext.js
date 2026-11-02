@@ -6,8 +6,8 @@
 // LICENSE file in the root directory of this source tree.
 
 import {enableSuspenseAvoidThisFallback} from 'shared/ReactFeatureFlags';
-import {isCurrentTreeHidden} from './ReactFiberHiddenContext.js';
 import {createCursor, pop, push} from './ReactFiberStack.js';
+import {isCurrentTreeHidden} from './ReactFiberHiddenContext.js';
 import {OffscreenComponent} from './ReactWorkTags.js';
 
 // The Suspense handler is the boundary that should capture if something

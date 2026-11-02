@@ -12,46 +12,69 @@ use js::{IntoUnknown, JsError, Kind, Rest, Set, SymbolFor, Unknown, function};
 use react_isomorphic::react_hooks::BasicStateAction;
 use react_isomorphic::react_start_transition::{Transition, s, set_t, t};
 use shared::environment::__DEV__;
-use shared::is_array::is_array;
-#[cfg_attr(rust_js, rust_js::name = "is")]
-use shared::object_is::OBJECT_IS;
-use shared::react_feature_flags::{
-    DISABLE_LEGACY_MODE, ENABLE_GESTURE_TRANSITION, ENABLE_LEGACY_CACHE,
-    ENABLE_NO_CLONING_MEMO_CACHE, ENABLE_SCHEDULING_PROFILER, ENABLE_TRANSITION_TRACING,
-    ENABLE_VIEW_TRANSITION,
-};
-use shared::react_shared_internals::{Dispatcher as SharedDispatcher, REACT_SHARED_INTERNALS};
-use shared::react_symbols::{
-    REACT_CONTEXT_TYPE, REACT_MEMO_CACHE_SENTINEL, REACT_RECOVERABLE_TYPE,
-};
 use shared::react_types::{
     ReactContext, RefObject, RejectedThenable, StartTransitionOptions, Thenable,
 };
 use webapi::console;
 
-use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+use crate::react_internal_types::{
+    Dependencies, Dispatcher, Fiber, FiberRoot, HookType, MemoCache, MemoCacheArray,
+};
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#getCurrentUpdatePriority"
+)]
+fn get_current_update_priority() -> EventPriority {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#setCurrentUpdatePriority"
+)]
+fn set_current_update_priority(new_priority: EventPriority) {
+    unreachable!()
+}
+
+unsafe extern "Rust" {
+    // ReactFiberConfig's `ReactContext<TransitionStatus>`.
+    #[link_name = "./src/ReactFiberConfig.js#HostTransitionContext"]
+    safe static HOST_TRANSITION_CONTEXT: Rc<ReactContext<Option<&'static Unknown>>>;
+    // ReactFiberConfig's `TransitionStatus`.
+    #[cfg_attr(rust_js, rust_js::name = "NoPendingHostTransition")]
+    #[link_name = "./src/ReactFiberConfig.js#NotPendingTransition"]
+    safe static NO_PENDING_HOST_TRANSITION: Option<&'static Unknown>;
+}
+
+use shared::react_shared_internals::{Dispatcher as SharedDispatcher, REACT_SHARED_INTERNALS};
+
+use shared::react_feature_flags::{
+    DISABLE_LEGACY_MODE, ENABLE_GESTURE_TRANSITION, ENABLE_LEGACY_CACHE,
+    ENABLE_NO_CLONING_MEMO_CACHE, ENABLE_SCHEDULING_PROFILER, ENABLE_TRANSITION_TRACING,
+    ENABLE_VIEW_TRANSITION,
+};
+use shared::react_symbols::{
+    REACT_CONTEXT_TYPE, REACT_MEMO_CACHE_SENTINEL, REACT_RECOVERABLE_TYPE,
+};
+
+use crate::react_type_of_mode::{
+    CONCURRENT_MODE, NO_MODE, STRICT_EFFECTS_MODE, STRICT_LEGACY_MODE,
+};
+
+use crate::react_fiber_lane::{
+    DEFERRED_LANE, GESTURE_LANE, Lane, Lanes, NO_LANE, NO_LANES, OFFSCREEN_LANE, SYNC_LANE,
+    UPDATE_LANES, includes_blocking_lane, includes_only_non_urgent_lanes, includes_some_lane,
+    intersect_lanes, is_gesture_render, is_subset_of_lanes, is_transition_lane,
+    mark_root_entangled, merge_lanes, remove_lanes,
+};
+
 use crate::react_event_priorities::{
     CONTINUOUS_EVENT_PRIORITY, EventPriority, higher_event_priority,
 };
-use crate::react_fiber_async_action::{
-    chain_thenable_value, peek_entangled_action_lane, peek_entangled_action_thenable,
-};
-use crate::react_fiber_begin_work::{
-    check_if_work_in_progress_received_update, mark_work_in_progress_received_update,
-};
-use crate::react_fiber_cache_component::{Cache, create_cache};
-use crate::react_fiber_call_user_space::{CALL_COMPONENT_IN_DEV, Component, Destroy};
-use crate::react_fiber_class_update_queue::{
-    create_update as create_legacy_queue_update, enqueue_update as enqueue_legacy_queue_update,
-    entangle_transitions as entangle_legacy_queue_transitions,
-};
-use crate::react_fiber_concurrent_updates::{
-    enqueue_concurrent_hook_update, enqueue_concurrent_hook_update_and_eagerly_bailout,
-    enqueue_concurrent_render_for_lane,
-};
-use crate::react_fiber_dev_tools_hook::{
-    mark_state_update_scheduled, set_is_strict_mode_for_devtools,
-};
+use crate::react_fiber_new_context::{check_if_context_changed, read_context};
+use crate::react_work_tags::{CACHE_COMPONENT, HOST_COMPONENT, HOST_ROOT};
+
 #[cfg_attr(rust_js, rust_js::name = "LayoutStaticEffect")]
 use crate::react_fiber_flags::LAYOUT_STATIC as LAYOUT_STATIC_EFFECT;
 #[cfg_attr(rust_js, rust_js::name = "MountLayoutDevEffect")]
@@ -66,31 +89,8 @@ use crate::react_fiber_flags::PASSIVE_STATIC as PASSIVE_STATIC_EFFECT;
 use crate::react_fiber_flags::STATIC_MASK as STATIC_MASK_EFFECT;
 #[cfg_attr(rust_js, rust_js::name = "UpdateEffect")]
 use crate::react_fiber_flags::UPDATE as UPDATE_EFFECT;
+
 use crate::react_fiber_flags::{FORM_RESET, Flags, STORE_CONSISTENCY};
-use crate::react_fiber_gesture_scheduler::{ScheduledGesture, schedule_gesture};
-use crate::react_fiber_hidden_context::is_current_tree_hidden;
-use crate::react_fiber_hydration_context::{
-    get_is_hydrating, try_to_claim_next_hydratable_form_marker_instance,
-};
-use crate::react_fiber_lane::{
-    DEFERRED_LANE, GESTURE_LANE, Lane, Lanes, NO_LANE, NO_LANES, OFFSCREEN_LANE, SYNC_LANE,
-    UPDATE_LANES, includes_blocking_lane, includes_only_non_urgent_lanes, includes_some_lane,
-    intersect_lanes, is_gesture_render, is_subset_of_lanes, is_transition_lane,
-    mark_root_entangled, merge_lanes, remove_lanes,
-};
-use crate::react_fiber_new_context::{check_if_context_changed, read_context};
-use crate::react_fiber_root_scheduler::request_transition_lane;
-use crate::react_fiber_thenable::{
-    SUSPENSE_ACTION_EXCEPTION, SUSPENSE_EXCEPTION, ThenableState, check_if_use_was_used_before,
-    check_if_use_wrapped_in_try_catch, create_thenable_state, track_used_thenable,
-};
-use crate::react_fiber_transition::request_current_transition;
-use crate::react_fiber_tree_context::get_tree_id;
-use crate::react_fiber_work_loop::{
-    get_work_in_progress_root, get_work_in_progress_root_render_lanes,
-    is_invalid_execution_context_for_event_function, mark_skipped_update_lanes,
-    request_deferred_lane, request_update_lane, schedule_update_on_fiber,
-};
 #[cfg_attr(rust_js, rust_js::name = "HookHasEffect")]
 use crate::react_hook_effect_tags::HAS_EFFECT as HOOK_HAS_EFFECT;
 use crate::react_hook_effect_tags::HookFlags;
@@ -102,41 +102,58 @@ use crate::react_hook_effect_tags::LAYOUT as HOOK_LAYOUT;
 use crate::react_hook_effect_tags::NO_FLAGS as HOOK_NO_FLAGS;
 #[cfg_attr(rust_js, rust_js::name = "HookPassive")]
 use crate::react_hook_effect_tags::PASSIVE as HOOK_PASSIVE;
-use crate::react_internal_types::{
-    Dependencies, Dispatcher, Fiber, FiberRoot, HookType, MemoCache, MemoCacheArray,
+
+use crate::react_fiber_work_loop::{
+    get_work_in_progress_root, get_work_in_progress_root_render_lanes,
+    is_invalid_execution_context_for_event_function, mark_skipped_update_lanes,
+    request_deferred_lane, request_update_lane, schedule_update_on_fiber,
+};
+
+use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+#[cfg_attr(rust_js, rust_js::name = "is")]
+use shared::object_is::OBJECT_IS;
+
+use shared::is_array::is_array;
+
+use crate::react_fiber_begin_work::{
+    check_if_work_in_progress_received_update, mark_work_in_progress_received_update,
+};
+use crate::react_fiber_hydration_context::{
+    get_is_hydrating, try_to_claim_next_hydratable_form_marker_instance,
+};
+
+use crate::react_fiber_dev_tools_hook::{
+    mark_state_update_scheduled, set_is_strict_mode_for_devtools,
 };
 use crate::react_profiler_timer::{start_host_action_timer, start_update_timer_by_lane};
-use crate::react_type_of_mode::{
-    CONCURRENT_MODE, NO_MODE, STRICT_EFFECTS_MODE, STRICT_LEGACY_MODE,
+
+use crate::react_fiber_cache_component::{Cache, create_cache};
+use crate::react_fiber_class_update_queue::{
+    create_update as create_legacy_queue_update, enqueue_update as enqueue_legacy_queue_update,
+    entangle_transitions as entangle_legacy_queue_transitions,
 };
-use crate::react_work_tags::{CACHE_COMPONENT, HOST_COMPONENT, HOST_ROOT};
+use crate::react_fiber_concurrent_updates::{
+    enqueue_concurrent_hook_update, enqueue_concurrent_hook_update_and_eagerly_bailout,
+    enqueue_concurrent_render_for_lane,
+};
+use crate::react_fiber_tree_context::get_tree_id;
 use crate::scheduler::NOW as now;
 
-unsafe extern "Rust" {
-    // ReactFiberConfig's `ReactContext<TransitionStatus>`.
-    #[link_name = "./src/ReactFiberConfig.js#HostTransitionContext"]
-    safe static HOST_TRANSITION_CONTEXT: Rc<ReactContext<Option<&'static Unknown>>>;
-    // ReactFiberConfig's `TransitionStatus`.
-    #[cfg_attr(rust_js, rust_js::name = "NoPendingHostTransition")]
-    #[link_name = "./src/ReactFiberConfig.js#NotPendingTransition"]
-    safe static NO_PENDING_HOST_TRANSITION: Option<&'static Unknown>;
-}
+use crate::react_fiber_thenable::{
+    SUSPENSE_ACTION_EXCEPTION, SUSPENSE_EXCEPTION, ThenableState, check_if_use_was_used_before,
+    check_if_use_wrapped_in_try_catch, create_thenable_state, track_used_thenable,
+};
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#setCurrentUpdatePriority"
-)]
-fn set_current_update_priority(new_priority: EventPriority) {
-    unreachable!()
-}
+use crate::react_fiber_async_action::{
+    chain_thenable_value, peek_entangled_action_lane, peek_entangled_action_thenable,
+};
+use crate::react_fiber_root_scheduler::request_transition_lane;
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#getCurrentUpdatePriority"
-)]
-fn get_current_update_priority() -> EventPriority {
-    unreachable!()
-}
+use crate::react_fiber_hidden_context::is_current_tree_hidden;
+use crate::react_fiber_transition::request_current_transition;
+
+use crate::react_fiber_call_user_space::{CALL_COMPONENT_IN_DEV, Component, Destroy};
+use crate::react_fiber_gesture_scheduler::{ScheduledGesture, schedule_gesture};
 
 pub struct Update {
     pub lane: Cell<Lane>,

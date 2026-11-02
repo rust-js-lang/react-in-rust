@@ -11,9 +11,11 @@ use js::{Set, Unknown};
 use shared::environment::__DEV__;
 use webapi::console;
 
-use crate::get_component_name_from_fiber::get_component_name_from_fiber;
-use crate::react_current_fiber::run_with_fiber_in_dev;
 use crate::react_internal_types::Fiber;
+
+use crate::react_current_fiber::run_with_fiber_in_dev;
+
+use crate::get_component_name_from_fiber::get_component_name_from_fiber;
 use crate::react_type_of_mode::{NO_MODE, STRICT_LEGACY_MODE};
 
 type FiberArray = Vec<Rc<Fiber>>;

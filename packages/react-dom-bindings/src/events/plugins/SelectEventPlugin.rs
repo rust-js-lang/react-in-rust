@@ -8,23 +8,29 @@ use std::rc::Rc;
 
 use js::Unknown;
 use react_reconciler::react_internal_types::Fiber;
-use shared::execution_environment::CAN_USE_DOM;
-use shared::shallow_equal::shallow_equal;
 use webapi::{Element, EventTarget, Node, document, window};
+
+use crate::event_system_flags::EventSystemFlags;
+use crate::plugin_module_type::AnyNativeEvent;
+use crate::react_synthetic_event_type::ReactSyntheticEvent;
+
+use shared::execution_environment::CAN_USE_DOM;
+
+use crate::synthetic_event::SYNTHETIC_EVENT;
+
+use crate::is_text_input_element::is_text_input_element;
+use shared::shallow_equal::shallow_equal;
+
+use crate::event_registry::register_two_phase_event;
+use crate::get_active_element::get_active_element;
+use crate::react_dom_component_tree::get_node_from_instance;
+use crate::react_input_selection::has_selection_capabilities;
+
+use crate::html_node_type::DOCUMENT_NODE;
 
 use crate::dom_plugin_event_system::{
     DispatchEntry, DispatchQueue, accumulate_two_phase_listeners,
 };
-use crate::event_registry::register_two_phase_event;
-use crate::event_system_flags::EventSystemFlags;
-use crate::get_active_element::get_active_element;
-use crate::html_node_type::DOCUMENT_NODE;
-use crate::is_text_input_element::is_text_input_element;
-use crate::plugin_module_type::AnyNativeEvent;
-use crate::react_dom_component_tree::get_node_from_instance;
-use crate::react_input_selection::has_selection_capabilities;
-use crate::react_synthetic_event_type::ReactSyntheticEvent;
-use crate::synthetic_event::SYNTHETIC_EVENT;
 
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "skipSelectionChangeEvent")]

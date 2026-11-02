@@ -5,14 +5,14 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import Transform from 'art/core/transform';
-import Mode from 'art/modes/current';
 import {
   DefaultEventPriority,
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
-import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
 import {EVENT_TYPES, TYPES, childrenAsString} from './ReactARTInternals.js';
+import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+import Transform from 'art/core/transform';
+import Mode from 'art/modes/current';
 
 export {default as rendererVersion} from 'shared/ReactVersion';
 

@@ -6,11 +6,13 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate::react_internal_types::Fiber;
+
 use shared::react_feature_flags::ENABLE_SUSPENSE_AVOID_THIS_FALLBACK;
 
-use crate::react_fiber_hidden_context::is_current_tree_hidden;
 use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
-use crate::react_internal_types::Fiber;
+
+use crate::react_fiber_hidden_context::is_current_tree_hidden;
 use crate::react_work_tags::OFFSCREEN_COMPONENT;
 
 thread_local! {

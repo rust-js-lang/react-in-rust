@@ -5,11 +5,11 @@
 
 use js::{Dict, RegExp, Unknown, dict, reg_exp};
 use shared::environment::__DEV__;
-use shared::has_own_property::HAS_OWN_PROPERTY;
 use webapi::console;
 
 use crate::is_attribute_name_safe::ATTRIBUTE_NAME_CHAR;
 use crate::valid_aria_properties::ARIA_PROPERTIES as VALID_ARIA_PROPERTIES;
+use shared::has_own_property::HAS_OWN_PROPERTY;
 
 thread_local! {
     static WARNED_PROPERTIES: &'static Dict<bool> = dict::new();

@@ -9,16 +9,20 @@ use std::rc::Rc;
 use shared::environment::__DEV__;
 
 use crate::react_fiber_class_update_queue::{SharedQueue as ClassQueue, Update as ClassUpdate};
-use crate::react_fiber_flags::{HYDRATING, NO_FLAGS, PLACEMENT};
 use crate::react_fiber_hooks::{Update as HookUpdate, UpdateQueue as HookQueue};
-use crate::react_fiber_lane::{Lane, Lanes, NO_LANE, NO_LANES, mark_hidden_update, merge_lanes};
-use crate::react_fiber_offscreen_component::{OFFSCREEN_VISIBLE, OffscreenInstance};
+use crate::react_internal_types::{Fiber, FiberRoot};
+
 use crate::react_fiber_work_loop::{
     get_work_in_progress_root, throw_if_infinite_update_loop_detected,
     warn_about_update_on_not_yet_mounted_fiber_in_dev,
 };
-use crate::react_internal_types::{Fiber, FiberRoot};
+
+use crate::react_fiber_lane::{Lane, Lanes, NO_LANE, NO_LANES, mark_hidden_update, merge_lanes};
+
+use crate::react_fiber_flags::{HYDRATING, NO_FLAGS, PLACEMENT};
 use crate::react_work_tags::{HOST_ROOT, OFFSCREEN_COMPONENT};
+
+use crate::react_fiber_offscreen_component::{OFFSCREEN_VISIBLE, OffscreenInstance};
 
 pub struct ConcurrentUpdate {
     pub next: RefCell<Rc<ConcurrentUpdate>>,

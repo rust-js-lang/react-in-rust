@@ -10,8 +10,6 @@ import {
   enableLegacyHidden,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
-import {REACT_STRICT_MODE_TYPE} from 'shared/ReactSymbols';
-import getComponentNameFromType from 'shared/getComponentNameFromType';
 import {
   ActivityComponent,
   CacheComponent,
@@ -44,6 +42,8 @@ import {
   TracingMarkerComponent,
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
+import {REACT_STRICT_MODE_TYPE} from 'shared/ReactSymbols';
 
 // Keep in sync with shared/getComponentNameFromType
 function getWrappedName(outerType, innerType, wrapperName) {

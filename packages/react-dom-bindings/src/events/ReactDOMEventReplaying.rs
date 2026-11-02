@@ -7,39 +7,44 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::{Class, Map, Unknown};
-use react_reconciler::react_event_priorities::{EventPriority, is_higher_event_priority};
-use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
-use react_reconciler::react_fiber_shell_hydration::is_root_dehydrated;
-use react_reconciler::react_fiber_tree_reflection::{
-    get_activity_instance_from_fiber, get_container_from_fiber, get_nearest_mounted_fiber,
-    get_suspense_instance_from_fiber,
-};
 use react_reconciler::react_internal_types::FiberRoot;
-use react_reconciler::react_work_tags::{ACTIVITY_COMPONENT, HOST_ROOT, SUSPENSE_COMPONENT};
 use scheduler::{
     Callback, UNSTABLE_NORMAL_PRIORITY as NORMAL_PRIORITY,
     unstable_schedule_callback as schedule_callback,
 };
-use shared::react_feature_flags::ENABLE_HYDRATION_CHANGE_EVENT;
 use webapi::{
     Event, EventInit, EventTarget, InputEventInit, Node, PointerEvent, element, event, focus_event,
     html_input_element, input_event, mouse_event, pointer_event,
 };
 
-use crate::current_replaying_event::{reset_replaying_event, set_replaying_event};
 use crate::dom_event_names::DOMEventName;
 use crate::event_system_flags::EventSystemFlags;
-use crate::form_action_event_plugin::dispatch_replayed_form_action;
 use crate::plugin_module_type::AnyNativeEvent;
-use crate::react_dom_component_tree::{
-    get_closest_instance_from_node, get_fiber_current_props_from_node, get_instance_from_node,
+
+use react_reconciler::react_fiber_tree_reflection::{
+    get_activity_instance_from_fiber, get_container_from_fiber, get_nearest_mounted_fiber,
+    get_suspense_instance_from_fiber,
 };
+
 use crate::react_dom_event_listener::{
     find_instance_blocking_event, find_instance_blocking_target,
 };
+
+use crate::current_replaying_event::{reset_replaying_event, set_replaying_event};
+use crate::react_dom_component_tree::{
+    get_closest_instance_from_node, get_fiber_current_props_from_node, get_instance_from_node,
+};
+use react_reconciler::react_work_tags::{ACTIVITY_COMPONENT, HOST_ROOT, SUSPENSE_COMPONENT};
+
+use react_reconciler::react_event_priorities::{EventPriority, is_higher_event_priority};
+use react_reconciler::react_fiber_shell_hydration::is_root_dehydrated;
+
+use crate::form_action_event_plugin::dispatch_replayed_form_action;
 use crate::react_dom_update_priority::{
     resolve_update_priority, run_with_priority as attempt_hydration_at_priority,
 };
+use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
+use shared::react_feature_flags::ENABLE_HYDRATION_CHANGE_EVENT;
 
 // TODO: Upgrade this definition once we're on a newer version of Flow that
 // has this definition built-in.

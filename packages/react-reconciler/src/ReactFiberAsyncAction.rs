@@ -10,17 +10,19 @@ use std::rc::Rc;
 
 use js::{JsError, Unknown};
 use react_isomorphic::react_start_transition::Transition;
-use shared::noop::noop;
+use shared::react_types::Thenable;
+
+use crate::react_fiber_root_scheduler::{ensure_schedule_is_scheduled, request_transition_lane};
+
+use crate::react_fiber_lane::{Lane, NO_LANE};
+use crate::react_profiler_timer::{clear_async_transition_timer, has_scheduled_transition_work};
 use shared::react_feature_flags::{
     ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_DEFAULT_TRANSITION_INDICATOR, ENABLE_PROFILER_TIMER,
 };
-use shared::react_types::Thenable;
-use shared::report_global_error::REPORT_GLOBAL_ERROR;
 
-use crate::react_fiber_lane::{Lane, NO_LANE};
-use crate::react_fiber_root_scheduler::{ensure_schedule_is_scheduled, request_transition_lane};
 use crate::react_fiber_transition_types::clear_entangled_async_transition_types;
-use crate::react_profiler_timer::{clear_async_transition_timer, has_scheduled_transition_work};
+use shared::noop::noop;
+use shared::report_global_error::REPORT_GLOBAL_ERROR;
 
 /// What a thenable's `then` is given, called once it settles.
 type Listener = &'static dyn Fn(Option<&'static Unknown>);

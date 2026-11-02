@@ -5,13 +5,13 @@
 
 use js::{SymbolFor, Unknown};
 use shared::environment::__DEV__;
-use shared::get_component_name_from_type::get_component_name_from_type;
+
+use crate::react_internal_types::Fiber;
+
 use shared::react_feature_flags::{
     DISABLE_LEGACY_MODE, ENABLE_LEGACY_HIDDEN, ENABLE_VIEW_TRANSITION,
 };
-use shared::react_symbols::REACT_STRICT_MODE_TYPE;
 
-use crate::react_internal_types::Fiber;
 use crate::react_work_tags::{
     ACTIVITY_COMPONENT, CACHE_COMPONENT, CLASS_COMPONENT, CONTEXT_CONSUMER, CONTEXT_PROVIDER,
     DEHYDRATED_FRAGMENT, FORWARD_REF, FRAGMENT, FUNCTION_COMPONENT, HOST_COMPONENT, HOST_HOISTABLE,
@@ -20,6 +20,8 @@ use crate::react_work_tags::{
     OFFSCREEN_COMPONENT, PROFILER, SCOPE_COMPONENT, SIMPLE_MEMO_COMPONENT, SUSPENSE_COMPONENT,
     SUSPENSE_LIST_COMPONENT, THROW, TRACING_MARKER_COMPONENT, VIEW_TRANSITION_COMPONENT,
 };
+use shared::get_component_name_from_type::get_component_name_from_type;
+use shared::react_symbols::REACT_STRICT_MODE_TYPE;
 
 // Keep in sync with shared/getComponentNameFromType
 fn get_wrapped_name(

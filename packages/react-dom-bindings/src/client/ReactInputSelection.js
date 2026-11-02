@@ -5,9 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {ELEMENT_NODE, TEXT_NODE} from './HTMLNodeType.js';
-import {getOffsets, setOffsets} from './ReactDOMSelection.js';
 import getActiveElement from './getActiveElement.js';
+import {getOffsets, setOffsets} from './ReactDOMSelection.js';
+import {ELEMENT_NODE, TEXT_NODE} from './HTMLNodeType.js';
 import {$some, $someValue, $unwrap} from '@rust-js/runtime';
 
 function isTextNode(node) {

@@ -6,10 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  getCurrentGestureOffset,
-  stopViewTransition,
-} from './ReactFiberConfig.js';
-import {
   GestureLane,
   NoLane,
   NoLanes,
@@ -20,6 +16,10 @@ import {
   ensureRootIsScheduled,
   requestTransitionLane,
 } from './ReactFiberRootScheduler.js';
+import {
+  getCurrentGestureOffset,
+  stopViewTransition,
+} from './ReactFiberConfig.js';
 import {pingGestureRoot, restartGestureRoot} from './ReactFiberWorkLoop.js';
 
 export function scheduleGesture(root, provider) {

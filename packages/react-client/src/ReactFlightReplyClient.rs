@@ -11,33 +11,25 @@ use js::{
     WeakKey, function, json,
 };
 use shared::environment::__DEV__;
-use shared::get_prototype_of::GET_PROTOTYPE_OF;
-use shared::is_array::is_array;
-use shared::react_feature_flags::ENABLE_FLIGHT_OBJECT_REFERENCES;
-use shared::react_serialization_errors::{
-    describe_object_for_error_message, is_simple_object, object_name,
-};
-use shared::react_symbols::{
-    ASYNC_ITERATOR, REACT_CONTEXT_TYPE, REACT_ELEMENT_TYPE, REACT_LAZY_TYPE, get_iterator_fn,
-};
 use shared::react_types::{ReactCustomFormAction, Thenable, Wakeable};
 use webapi::{
     AbortController, AbortSignal, Blob, BlobPart, Byob, EventTargetExt, FormData, ReadableStream,
     ReadableStreamGetByobReaderOptions, ReadableStreamReadResult, console,
 };
 
+use shared::react_symbols::{
+    ASYNC_ITERATOR, REACT_CONTEXT_TYPE, REACT_ELEMENT_TYPE, REACT_LAZY_TYPE, get_iterator_fn,
+};
+
+use shared::react_serialization_errors::{
+    describe_object_for_error_message, is_simple_object, object_name,
+};
+
 use crate::react_flight_temporary_references::{TemporaryReferenceSet, write_temporary_reference};
+use shared::is_array::is_array;
 
-thread_local! {
-    #[cfg_attr(rust_js, rust_js::name = "ObjectPrototype")]
-    static OBJECT_PROTOTYPE: &'static Unknown = js::object::prototype;
-}
-
-// Passed to replyLifetimeController.abort(). Nothing reads the reason, but a
-// call to abort() without one constructs an AbortError DOMException. Capturing
-// the stack trace dominates that cost, and the cost grows with the depth of the
-// stack.
-const REPLY_ENDED: &str = "The reply ended.";
+use shared::get_prototype_of::GET_PROTOTYPE_OF;
+use shared::react_feature_flags::ENABLE_FLIGHT_OBJECT_REFERENCES;
 
 #[cfg_attr(
     rust_js,
@@ -51,6 +43,17 @@ unsafe extern "Rust" {
     #[link_name = "./src/ReactFlightClientConfig.js#usedWithSSR"]
     safe static USED_WITH_SSR: bool;
 }
+
+thread_local! {
+    #[cfg_attr(rust_js, rust_js::name = "ObjectPrototype")]
+    static OBJECT_PROTOTYPE: &'static Unknown = js::object::prototype;
+}
+
+// Passed to replyLifetimeController.abort(). Nothing reads the reason, but a
+// call to abort() without one constructs an AbortError DOMException. Capturing
+// the stack trace dominates that cost, and the cost grows with the depth of the
+// stack.
+const REPLY_ENDED: &str = "The reply ended.";
 
 /// TypeScript's `Function`, what a server reference is.
 type ServerFunction = dyn Fn() -> Option<&'static Unknown>;

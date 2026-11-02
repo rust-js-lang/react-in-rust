@@ -6,22 +6,23 @@
 use std::rc::Rc;
 
 use js::{Kind, Unknown};
+use shared::react_types::{ReactContext, SuspenseListTailMode};
+
+use crate::react_fiber::PortalStateNode;
+use crate::react_fiber_activity_component::ActivityState;
+use crate::react_fiber_offscreen_component::{OffscreenQueue, OffscreenState};
+use crate::react_fiber_root::RootState;
+use crate::react_internal_types::{Fiber, FiberRoot};
+
 use shared::react_feature_flags::{
     DISABLE_LEGACY_MODE, ENABLE_LEGACY_HIDDEN, ENABLE_PROFILER_TIMER, ENABLE_SCOPE_API,
     ENABLE_SUSPENSE_CALLBACK, ENABLE_SUSPENSEY_IMAGES, ENABLE_TRANSITION_TRACING,
     ENABLE_VIEW_TRANSITION, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
     PASS_CHILDREN_WHEN_CLONING_PERSISTED_NODES,
 };
-use shared::react_types::{ReactContext, SuspenseListTailMode};
 
 use crate::scheduler::NOW as now;
 
-use crate::react_fiber_flags::{
-    CHILD_DELETION, CLONED, DID_CAPTURE, FORCE_CLIENT_RENDER, Flags, HYDRATE, MAY_SUSPEND_COMMIT,
-    NO_FLAGS, PASSIVE, PLACEMENT, PORTAL_STATIC, SCHEDULE_RETRY, SHOULD_SUSPEND_COMMIT, SNAPSHOT,
-    STATIC_MASK, UPDATE, VIEW_TRANSITION_STATIC, VIEW_TRANSITION_STATIC_PARENT, VISIBILITY,
-};
-use crate::react_type_of_mode::{CONCURRENT_MODE, NO_MODE, PROFILE_MODE, SUSPENSEY_IMAGES_MODE};
 use crate::react_work_tags::{
     ACTIVITY_COMPONENT, CACHE_COMPONENT, CLASS_COMPONENT, CONTEXT_CONSUMER, CONTEXT_PROVIDER,
     FORWARD_REF, FRAGMENT, FUNCTION_COMPONENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL,
@@ -31,106 +32,22 @@ use crate::react_work_tags::{
     SUSPENSE_LIST_COMPONENT, THROW, TRACING_MARKER_COMPONENT, VIEW_TRANSITION_COMPONENT,
 };
 
-use crate::react_child_fiber::reset_child_fibers;
-use crate::react_fiber::PortalStateNode;
-use crate::react_fiber_activity_component::ActivityState;
-use crate::react_fiber_cache_component::{
-    Cache, CacheComponentState, SpawnedCachePool, pop_cache_provider,
-};
-use crate::react_fiber_hidden_context::pop_hidden_context;
-use crate::react_fiber_host_context::{
-    get_host_context, get_root_host_container, pop_host_container, pop_host_context,
-};
-use crate::react_fiber_hydration_context::{
-    emit_pending_hydration_warnings, get_is_hydrating, pop_hydration_state,
-    prepare_to_hydrate_host_activity_instance, prepare_to_hydrate_host_instance,
-    prepare_to_hydrate_host_suspense_instance, prepare_to_hydrate_host_text_instance,
-    reset_hydration_state, upgrade_hydration_errors_to_recoverable,
-};
-use crate::react_fiber_lane::{
-    Lanes, NO_LANES, OFFSCREEN_LANE, SOME_RETRY_LANE, claim_next_retry_lane,
-    includes_only_suspensey_commit_eligible_lanes, includes_some_lane, merge_lanes,
-};
-use crate::react_fiber_legacy_context::{
-    is_context_provider as is_legacy_context_provider, pop_context as pop_legacy_context,
-    pop_top_level_context_object as pop_top_level_legacy_context_object,
-};
-use crate::react_fiber_new_context::pop_provider;
-use crate::react_fiber_offscreen_component::{OffscreenQueue, OffscreenState};
-use crate::react_fiber_root::RootState;
-use crate::react_fiber_scope::create_scope_instance;
-use crate::react_fiber_suspense_component::{
-    RetryQueue, SuspenseListRenderState, SuspenseState, find_first_suspended,
-};
-use crate::react_fiber_suspense_context::{
-    FORCE_SUSPENSE_FALLBACK, SUSPENSE_STACK_CURSOR, pop_suspense_handler,
-    pop_suspense_list_context, push_suspense_list_catch, push_suspense_list_context,
-    set_default_shallow_suspense_list_context, set_shallow_suspense_list_context,
-};
-use crate::react_fiber_thenable::suspend_commit;
-use crate::react_fiber_tracing_marker_component::{
-    TracingMarkerInstance, pop_marker_instance, pop_root_marker_instance,
-};
-use crate::react_fiber_transition::{pop_root_transition, pop_transition};
-use crate::react_fiber_tree_context::{pop_tree_context, push_tree_fork};
-use crate::react_fiber_work_loop::{
-    get_render_target_time, get_work_in_progress_transitions, mark_spawned_retry_lane,
-    render_has_not_suspended_yet, should_remain_on_previous_screen,
-};
-use crate::react_internal_types::{Fiber, FiberRoot};
-use crate::react_profiler_timer::transfer_actual_duration;
+use crate::react_type_of_mode::{CONCURRENT_MODE, NO_MODE, PROFILE_MODE, SUSPENSEY_IMAGES_MODE};
 
-unsafe extern "Rust" {
-    #[link_name = "./src/ReactFiberConfig.js#supportsMutation"]
-    safe static SUPPORTS_MUTATION: bool;
-    #[link_name = "./src/ReactFiberConfig.js#supportsPersistence"]
-    safe static SUPPORTS_PERSISTENCE: bool;
-    #[link_name = "./src/ReactFiberConfig.js#supportsResources"]
-    safe static SUPPORTS_RESOURCES: bool;
-    #[link_name = "./src/ReactFiberConfig.js#supportsSingletons"]
-    safe static SUPPORTS_SINGLETONS: bool;
-}
-
-// ReactFiberConfig's host operations, on its `Instance`, `TextInstance`,
-// `Type`, `Props`, `Container`, `HostContext`, `ChildSet` and `Resource`.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#createInstance"
-)]
-fn create_instance(
-    r#type: Option<&'static Unknown>,
-    props: Option<&'static Unknown>,
-    root_container_instance: Option<&'static Unknown>,
-    host_context: Option<&'static Unknown>,
-    internal_instance_handle: &Fiber,
-) -> &'static Unknown {
-    unreachable!()
-}
+use crate::react_fiber_flags::{
+    CHILD_DELETION, CLONED, DID_CAPTURE, FORCE_CLIENT_RENDER, Flags, HYDRATE, MAY_SUSPEND_COMMIT,
+    NO_FLAGS, PASSIVE, PLACEMENT, PORTAL_STATIC, SCHEDULE_RETRY, SHOULD_SUSPEND_COMMIT, SNAPSHOT,
+    STATIC_MASK, UPDATE, VIEW_TRANSITION_STATIC, VIEW_TRANSITION_STATIC_PARENT, VISIBILITY,
+};
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#createTextInstance"
+    rust_js::link_name = "./src/ReactFiberConfig.js#appendChildToContainerChildSet"
 )]
-fn create_text_instance(
-    text: Option<&'static Unknown>,
-    root_container_instance: Option<&'static Unknown>,
-    host_context: Option<&'static Unknown>,
-    internal_instance_handle: &Fiber,
-) -> &'static Unknown {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#resolveSingletonInstance"
-)]
-fn resolve_singleton_instance(
-    r#type: Option<&'static Unknown>,
-    props: Option<&'static Unknown>,
-    root_container_instance: Option<&'static Unknown>,
-    host_context: Option<&'static Unknown>,
-    validate_dom_nesting_dev: bool,
-) -> &'static Unknown {
+fn append_child_to_container_child_set(
+    child_set: &'static Unknown,
+    child: Option<&'static Unknown>,
+) {
     unreachable!()
 }
 
@@ -142,47 +59,6 @@ fn append_initial_child(
     parent_instance: Option<&'static Unknown>,
     child: Option<&'static Unknown>,
 ) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#finalizeInitialChildren"
-)]
-fn finalize_initial_children(
-    instance: Option<&'static Unknown>,
-    r#type: Option<&'static Unknown>,
-    props: Option<&'static Unknown>,
-    host_context: Option<&'static Unknown>,
-) -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#finalizeHydratedChildren"
-)]
-fn finalize_hydrated_children(
-    instance: Option<&'static Unknown>,
-    r#type: Option<&'static Unknown>,
-    props: Option<&'static Unknown>,
-    host_context: Option<&'static Unknown>,
-) -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#cloneInstance"
-)]
-fn clone_instance(
-    instance: Option<&'static Unknown>,
-    r#type: Option<&'static Unknown>,
-    old_props: Option<&'static Unknown>,
-    new_props: Option<&'static Unknown>,
-    keep_children: bool,
-    new_child_set: Option<&'static Unknown>,
-) -> &'static Unknown {
     unreachable!()
 }
 
@@ -211,6 +87,21 @@ fn clone_hidden_text_instance(
 
 #[cfg_attr(
     rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#cloneInstance"
+)]
+fn clone_instance(
+    instance: Option<&'static Unknown>,
+    r#type: Option<&'static Unknown>,
+    old_props: Option<&'static Unknown>,
+    new_props: Option<&'static Unknown>,
+    keep_children: bool,
+    new_child_set: Option<&'static Unknown>,
+) -> &'static Unknown {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#createContainerChildSet"
 )]
 fn create_container_child_set() -> &'static Unknown {
@@ -219,12 +110,14 @@ fn create_container_child_set() -> &'static Unknown {
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#appendChildToContainerChildSet"
+    rust_js::link_name = "./src/ReactFiberConfig.js#createTextInstance"
 )]
-fn append_child_to_container_child_set(
-    child_set: &'static Unknown,
-    child: Option<&'static Unknown>,
-) {
+fn create_text_instance(
+    text: Option<&'static Unknown>,
+    root_container_instance: Option<&'static Unknown>,
+    host_context: Option<&'static Unknown>,
+    internal_instance_handle: &Fiber,
+) -> &'static Unknown {
     unreachable!()
 }
 
@@ -238,17 +131,35 @@ fn finalize_container_children(container: &'static Unknown, new_children: &'stat
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#preparePortalMount"
+    rust_js::link_name = "./src/ReactFiberConfig.js#finalizeHydratedChildren"
 )]
-fn prepare_portal_mount(portal_instance: Option<&'static Unknown>) {
+fn finalize_hydrated_children(
+    instance: Option<&'static Unknown>,
+    r#type: Option<&'static Unknown>,
+    props: Option<&'static Unknown>,
+    host_context: Option<&'static Unknown>,
+) -> bool {
     unreachable!()
 }
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#prepareScopeUpdate"
+    rust_js::link_name = "./src/ReactFiberConfig.js#finalizeInitialChildren"
 )]
-fn prepare_scope_update(scope_instance: &'static Unknown, instance: &Fiber) {
+fn finalize_initial_children(
+    instance: Option<&'static Unknown>,
+    r#type: Option<&'static Unknown>,
+    props: Option<&'static Unknown>,
+    host_context: Option<&'static Unknown>,
+) -> bool {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#mayResourceSuspendCommit"
+)]
+fn may_resource_suspend_commit(resource: &'static Unknown) -> bool {
     unreachable!()
 }
 
@@ -257,18 +168,6 @@ fn prepare_scope_update(scope_instance: &'static Unknown, instance: &Fiber) {
     rust_js::link_name = "./src/ReactFiberConfig.js#maySuspendCommit"
 )]
 fn may_suspend_commit(r#type: Option<&'static Unknown>, props: Option<&'static Unknown>) -> bool {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#maySuspendCommitOnUpdate"
-)]
-fn may_suspend_commit_on_update(
-    r#type: Option<&'static Unknown>,
-    old_props: &'static Unknown,
-    new_props: Option<&'static Unknown>,
-) -> bool {
     unreachable!()
 }
 
@@ -285,9 +184,13 @@ fn may_suspend_commit_in_sync_render(
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#mayResourceSuspendCommit"
+    rust_js::link_name = "./src/ReactFiberConfig.js#maySuspendCommitOnUpdate"
 )]
-fn may_resource_suspend_commit(resource: &'static Unknown) -> bool {
+fn may_suspend_commit_on_update(
+    r#type: Option<&'static Unknown>,
+    old_props: &'static Unknown,
+    new_props: Option<&'static Unknown>,
+) -> bool {
     unreachable!()
 }
 
@@ -310,6 +213,116 @@ fn preload_instance(
 fn preload_resource(resource: &'static Unknown) -> bool {
     unreachable!()
 }
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#preparePortalMount"
+)]
+fn prepare_portal_mount(portal_instance: Option<&'static Unknown>) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#prepareScopeUpdate"
+)]
+fn prepare_scope_update(scope_instance: &'static Unknown, instance: &Fiber) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#resolveSingletonInstance"
+)]
+fn resolve_singleton_instance(
+    r#type: Option<&'static Unknown>,
+    props: Option<&'static Unknown>,
+    root_container_instance: Option<&'static Unknown>,
+    host_context: Option<&'static Unknown>,
+    validate_dom_nesting_dev: bool,
+) -> &'static Unknown {
+    unreachable!()
+}
+
+// ReactFiberConfig's host operations, on its `Instance`, `TextInstance`,
+// `Type`, `Props`, `Container`, `HostContext`, `ChildSet` and `Resource`.
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#createInstance"
+)]
+fn create_instance(
+    r#type: Option<&'static Unknown>,
+    props: Option<&'static Unknown>,
+    root_container_instance: Option<&'static Unknown>,
+    host_context: Option<&'static Unknown>,
+    internal_instance_handle: &Fiber,
+) -> &'static Unknown {
+    unreachable!()
+}
+
+unsafe extern "Rust" {
+    #[link_name = "./src/ReactFiberConfig.js#supportsMutation"]
+    safe static SUPPORTS_MUTATION: bool;
+    #[link_name = "./src/ReactFiberConfig.js#supportsPersistence"]
+    safe static SUPPORTS_PERSISTENCE: bool;
+    #[link_name = "./src/ReactFiberConfig.js#supportsResources"]
+    safe static SUPPORTS_RESOURCES: bool;
+    #[link_name = "./src/ReactFiberConfig.js#supportsSingletons"]
+    safe static SUPPORTS_SINGLETONS: bool;
+}
+
+use crate::react_fiber_host_context::{
+    get_host_context, get_root_host_container, pop_host_container, pop_host_context,
+};
+use crate::react_fiber_suspense_context::{
+    FORCE_SUSPENSE_FALLBACK, SUSPENSE_STACK_CURSOR, pop_suspense_handler,
+    pop_suspense_list_context, push_suspense_list_catch, push_suspense_list_context,
+    set_default_shallow_suspense_list_context, set_shallow_suspense_list_context,
+};
+
+use crate::react_fiber_hidden_context::pop_hidden_context;
+use crate::react_fiber_suspense_component::{
+    RetryQueue, SuspenseListRenderState, SuspenseState, find_first_suspended,
+};
+
+use crate::react_fiber_legacy_context::{
+    is_context_provider as is_legacy_context_provider, pop_context as pop_legacy_context,
+    pop_top_level_context_object as pop_top_level_legacy_context_object,
+};
+use crate::react_fiber_new_context::pop_provider;
+
+use crate::react_fiber_hydration_context::{
+    emit_pending_hydration_warnings, get_is_hydrating, pop_hydration_state,
+    prepare_to_hydrate_host_activity_instance, prepare_to_hydrate_host_instance,
+    prepare_to_hydrate_host_suspense_instance, prepare_to_hydrate_host_text_instance,
+    reset_hydration_state, upgrade_hydration_errors_to_recoverable,
+};
+use crate::react_fiber_work_loop::{
+    get_render_target_time, get_work_in_progress_transitions, mark_spawned_retry_lane,
+    render_has_not_suspended_yet, should_remain_on_previous_screen,
+};
+
+use crate::react_fiber_lane::{
+    Lanes, NO_LANES, OFFSCREEN_LANE, SOME_RETRY_LANE, claim_next_retry_lane,
+    includes_only_suspensey_commit_eligible_lanes, includes_some_lane, merge_lanes,
+};
+
+use crate::react_child_fiber::reset_child_fibers;
+use crate::react_fiber_scope::create_scope_instance;
+use crate::react_profiler_timer::transfer_actual_duration;
+
+use crate::react_fiber_cache_component::{
+    Cache, CacheComponentState, SpawnedCachePool, pop_cache_provider,
+};
+use crate::react_fiber_tree_context::{pop_tree_context, push_tree_fork};
+
+use crate::react_fiber_transition::{pop_root_transition, pop_transition};
+
+use crate::react_fiber_tracing_marker_component::{
+    TracingMarkerInstance, pop_marker_instance, pop_root_marker_instance,
+};
+
+use crate::react_fiber_thenable::suspend_commit;
 
 /// A HostRoot's or a HostPortal's `stateNode`, as one is the other here.
 struct PortalOrRoot {

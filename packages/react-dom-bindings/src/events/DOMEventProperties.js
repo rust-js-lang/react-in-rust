@@ -5,10 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {
-  enableCreateEventHandleAPI,
-  enableScrollEndPolyfill,
-} from 'shared/ReactFeatureFlags';
+import {registerTwoPhaseEvent} from './EventRegistry.js';
 import {
   ANIMATION_CANCEL,
   ANIMATION_END,
@@ -19,7 +16,10 @@ import {
   TRANSITION_RUN,
   TRANSITION_START,
 } from './DOMEventNames.js';
-import {registerTwoPhaseEvent} from './EventRegistry.js';
+import {
+  enableCreateEventHandleAPI,
+  enableScrollEndPolyfill,
+} from 'shared/ReactFeatureFlags';
 import {$unwrap} from '@rust-js/runtime';
 
 export const topLevelEventsToReactNames = new Map();

@@ -5,63 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {
-  disableLegacyMode,
-  enableUpdaterTracking,
-} from 'shared/ReactFeatureFlags';
-import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
-import {runWithFiberInDEV} from './ReactCurrentFiber.js';
-import {callComponentDidCatchInDEV} from './ReactFiberCallUserSpace.js';
-import {
-  CaptureUpdate,
-  ForceUpdate,
-  createUpdate,
-  enqueueCapturedUpdate,
-  enqueueUpdate,
-} from './ReactFiberClassUpdateQueue.js';
-import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
-import {logCaughtError, logUncaughtError} from './ReactFiberErrorLogger.js';
-import {
-  DidCapture,
-  ForceClientRender,
-  ForceUpdateForLegacySuspense,
-  Incomplete,
-  LifecycleEffectMask,
-  NoFlags,
-  ScheduleRetry,
-  ShouldCapture,
-} from './ReactFiberFlags.js';
-import {markFailedErrorBoundaryForHotReloading} from './ReactFiberHotReloading.js';
-import {
-  HydrationMismatchException,
-  getIsHydrating,
-  markDidThrowWhileHydratingDEV,
-  queueHydrationError,
-} from './ReactFiberHydrationContext.js';
-import {
-  SyncLane,
-  includesSomeLane,
-  mergeLanes,
-  pickArbitraryLane,
-} from './ReactFiberLane.js';
-import {propagateParentContextChangesToDeferredTree} from './ReactFiberNewContext.js';
-import {
-  getShellBoundary,
-  getSuspenseHandler,
-} from './ReactFiberSuspenseContext.js';
-import {noopSuspenseyCommitThenable} from './ReactFiberThenable.js';
-import {
-  attachPingListener,
-  isAlreadyFailedLegacyErrorBoundary,
-  markLegacyErrorBoundaryAsFailed,
-  queueConcurrentError,
-  renderDidError,
-  renderDidSuspend,
-  renderDidSuspendDelayIfPossible,
-  restorePendingUpdaters,
-} from './ReactFiberWorkLoop.js';
-import {ConcurrentRoot} from './ReactRootTags.js';
-import {ConcurrentMode, NoMode} from './ReactTypeOfMode.js';
+import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {
   ActivityComponent,
   ClassComponent,
@@ -75,7 +19,63 @@ import {
   SuspenseComponent,
   SuspenseListComponent,
 } from './ReactWorkTags.js';
-import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+import {
+  DidCapture,
+  ForceClientRender,
+  ForceUpdateForLegacySuspense,
+  Incomplete,
+  LifecycleEffectMask,
+  NoFlags,
+  ScheduleRetry,
+  ShouldCapture,
+} from './ReactFiberFlags.js';
+import {ConcurrentMode, NoMode} from './ReactTypeOfMode.js';
+import {
+  disableLegacyMode,
+  enableUpdaterTracking,
+} from 'shared/ReactFeatureFlags';
+import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
+import {
+  CaptureUpdate,
+  ForceUpdate,
+  createUpdate,
+  enqueueCapturedUpdate,
+  enqueueUpdate,
+} from './ReactFiberClassUpdateQueue.js';
+import {markFailedErrorBoundaryForHotReloading} from './ReactFiberHotReloading.js';
+import {
+  getShellBoundary,
+  getSuspenseHandler,
+} from './ReactFiberSuspenseContext.js';
+import {
+  attachPingListener,
+  isAlreadyFailedLegacyErrorBoundary,
+  markLegacyErrorBoundaryAsFailed,
+  queueConcurrentError,
+  renderDidError,
+  renderDidSuspend,
+  renderDidSuspendDelayIfPossible,
+  restorePendingUpdaters,
+} from './ReactFiberWorkLoop.js';
+import {propagateParentContextChangesToDeferredTree} from './ReactFiberNewContext.js';
+import {logCaughtError, logUncaughtError} from './ReactFiberErrorLogger.js';
+import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
+import {
+  SyncLane,
+  includesSomeLane,
+  mergeLanes,
+  pickArbitraryLane,
+} from './ReactFiberLane.js';
+import {
+  HydrationMismatchException,
+  getIsHydrating,
+  markDidThrowWhileHydratingDEV,
+  queueHydrationError,
+} from './ReactFiberHydrationContext.js';
+import {ConcurrentRoot} from './ReactRootTags.js';
+import {noopSuspenseyCommitThenable} from './ReactFiberThenable.js';
+import {runWithFiberInDEV} from './ReactCurrentFiber.js';
+import {callComponentDidCatchInDEV} from './ReactFiberCallUserSpace.js';
 import {$unwrap} from '@rust-js/runtime';
 
 export function createRootErrorUpdate(root, errorInfo, lane) {

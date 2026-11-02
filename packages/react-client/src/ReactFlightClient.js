@@ -5,26 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import * as React from 'react';
-import {getOwnerStackByComponentInfoInDev} from 'shared/ReactComponentInfoStack';
 import {
   enableComponentPerformanceTrack,
   enableFlightObjectReferences,
   enableFlightWeakThenables,
   enableProfilerTimer,
 } from 'shared/ReactFeatureFlags';
-import {OMITTED_PROP_ERROR} from 'shared/ReactFlightPropertyAccess';
-import {
-  ASYNC_ITERATOR,
-  REACT_ELEMENT_TYPE,
-  REACT_FRAGMENT_TYPE,
-  REACT_LAZY_TYPE,
-} from 'shared/ReactSymbols';
-import ReactVersion from 'shared/ReactVersion';
-import getComponentNameFromType from 'shared/getComponentNameFromType';
-import getPrototypeOf from 'shared/getPrototypeOf';
-import hasOwnProperty from 'shared/hasOwnProperty';
-import isArray from 'shared/isArray';
 import {
   bindToConsole,
   checkEvalAvailabilityOnceDev,
@@ -41,7 +27,12 @@ import {
   resolveClientReference,
   resolveServerReference,
 } from './ReactFlightClientConfig.js';
-import {injectInternals} from './ReactFlightClientDevToolsHook.js';
+import {
+  createBoundServerReference,
+  createServerObjectReference,
+  registerBoundServerReference,
+} from './ReactFlightReplyClient.js';
+import {readTemporaryReference} from './ReactFlightTemporaryReferences.js';
 import {
   logComponentAborted,
   logComponentAwait,
@@ -55,11 +46,20 @@ import {
   markAllTracksInOrder,
 } from './ReactFlightPerformanceTrack.js';
 import {
-  createBoundServerReference,
-  createServerObjectReference,
-  registerBoundServerReference,
-} from './ReactFlightReplyClient.js';
-import {readTemporaryReference} from './ReactFlightTemporaryReferences.js';
+  ASYNC_ITERATOR,
+  REACT_ELEMENT_TYPE,
+  REACT_FRAGMENT_TYPE,
+  REACT_LAZY_TYPE,
+} from 'shared/ReactSymbols';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
+import {getOwnerStackByComponentInfoInDev} from 'shared/ReactComponentInfoStack';
+import hasOwnProperty from 'shared/hasOwnProperty';
+import getPrototypeOf from 'shared/getPrototypeOf';
+import {injectInternals} from './ReactFlightClientDevToolsHook.js';
+import {OMITTED_PROP_ERROR} from 'shared/ReactFlightPropertyAccess';
+import ReactVersion from 'shared/ReactVersion';
+import isArray from 'shared/isArray';
+import * as React from 'react';
 import {
   $at,
   $borrow,
@@ -670,8 +670,8 @@ function triggerErrorOnChunk(response, chunk, error) {
           }
         }
       } finally {
-        initializingHandler = prevHandler ?? null;
-        initializingChunk = prevChunk ?? null;
+        initializingHandler = prevHandler;
+        initializingChunk = prevChunk;
       }
     }
   }
@@ -902,13 +902,13 @@ function initializeDebugChunk(response, chunk) {
       // Signal to the caller that we need to wait.
       waitForReference(
         debugChunk,
-        {},
+        {}, // noop, since we'll have already added an entry to debug info
         'debug', // noop, but we need it to not be empty string since that indicates the root object
         response,
         mapInitializeDebugInfo,
         [''], // path
         true,
-      ); // noop, since we'll have already added an entry to debug info
+      );
     } else {
       throw erroredReason(debugChunk);
     }
@@ -1070,9 +1070,9 @@ function initializeModelChunk(chunk) {
     erroredChunk.status = 'rejected';
     erroredChunk.reason = reason;
   } finally {
-    initializingHandler = prevHandler ?? null;
+    initializingHandler = prevHandler;
     if ((enableProfilerTimer && enableComponentPerformanceTrack) || __DEV__) {
-      initializingChunk = prevChunk ?? null;
+      initializingChunk = prevChunk;
     }
   }
 }
@@ -3083,7 +3083,7 @@ function resolveModule(response, id, model, streamState) {
     }
     clientReferenceMetadata = clientReferenceMetadata$1;
   } finally {
-    initializingHandler = prevHandler ?? null;
+    initializingHandler = prevHandler;
   }
   const clientReference = resolveClientReference(
     response._bundlerConfig,
@@ -3205,8 +3205,8 @@ function resolveStream(response, id, stream, controller, streamState) {
           }
         }
       } finally {
-        initializingHandler = prevHandler ?? null;
-        initializingChunk = prevChunk ?? null;
+        initializingHandler = prevHandler;
+        initializingChunk = prevChunk;
       }
     }
   }

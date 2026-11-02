@@ -4,16 +4,18 @@
 // LICENSE file in the root directory of this source tree.
 
 use js::{Kind, Unknown};
-use react_dom_bindings::cross_origin_strings::{
-    get_cross_origin_string, get_cross_origin_string_as,
-};
 use shared::environment::__DEV__;
-use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS;
 use webapi::console;
 
 use crate::react_dom_types::{
     PreinitModuleScriptOptions, PreinitScriptOptions, PreinitStyleOptions, PreloadImplOptions,
     PreloadModuleImplOptions,
+};
+
+use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS;
+
+use react_dom_bindings::cross_origin_strings::{
+    get_cross_origin_string, get_cross_origin_string_as,
 };
 
 // Each function is given what JS gives, a string or not, and tests it, as

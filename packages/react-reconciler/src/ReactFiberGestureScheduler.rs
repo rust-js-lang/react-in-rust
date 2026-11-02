@@ -9,15 +9,14 @@ use std::rc::Rc;
 use js::Unknown;
 use react_isomorphic::react_start_transition::GestureTransitionOptions;
 use react_isomorphic::react_transition_type::TransitionTypes;
-
 use shared::react_types::GestureProvider;
+
+use crate::react_internal_types::FiberRoot;
 
 use crate::react_fiber_lane::{
     GESTURE_LANE, Lane, NO_LANE, NO_LANES, mark_root_entangled, mark_root_finished,
 };
 use crate::react_fiber_root_scheduler::{ensure_root_is_scheduled, request_transition_lane};
-use crate::react_fiber_work_loop::{ping_gesture_root, restart_gesture_root};
-use crate::react_internal_types::FiberRoot;
 
 // ReactFiberConfig's `GestureTimeline`.
 #[cfg_attr(
@@ -36,6 +35,8 @@ fn get_current_gesture_offset(provider: &GestureProvider) -> f64 {
 fn stop_view_transition(transition: &'static Unknown) {
     unreachable!()
 }
+
+use crate::react_fiber_work_loop::{ping_gesture_root, restart_gesture_root};
 
 // This type keeps track of any scheduled or active gestures.
 pub struct ScheduledGesture {

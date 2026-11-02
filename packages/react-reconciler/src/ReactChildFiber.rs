@@ -10,38 +10,44 @@ use std::rc::Rc;
 use js::{Dict, Iterator, JsError, Kind, Map, Set, SymbolFor, Unknown};
 use react_isomorphic::react_lazy::LazyComponent;
 use shared::environment::__DEV__;
-use shared::is_array::is_array;
 use shared::react_element_type::ReactElement;
-use shared::react_feature_flags::{
-    DISABLE_LEGACY_MODE, ENABLE_ASYNC_ITERABLE_CHILDREN, ENABLE_OPTIMISTIC_KEY,
-};
+use shared::react_types::{ReactContext, ReactKey, ReactPortal, Thenable};
+use webapi::{ConsoleTask, console};
+
+use crate::react_fiber_lane::Lanes;
+use crate::react_internal_types::Fiber;
+
+use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+use crate::react_fiber_flags::{CHILD_DELETION, FORKED, PLACEMENT, PLACEMENT_DEV};
+use crate::react_type_of_mode::{CONCURRENT_MODE, NO_MODE};
 use shared::react_symbols::{
     ASYNC_ITERATOR, REACT_CONTEXT_TYPE, REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE,
     REACT_LEGACY_ELEMENT_TYPE, REACT_OPTIMISTIC_KEY, REACT_PORTAL_TYPE, get_iterator_fn,
 };
-use shared::react_types::{ReactContext, ReactKey, ReactPortal, Thenable};
-use webapi::{ConsoleTask, console};
 
-use crate::get_component_name_from_fiber::get_component_name_from_fiber;
-use crate::react_current_fiber::run_with_fiber_in_dev;
+use crate::react_work_tags::{FRAGMENT, FUNCTION_COMPONENT, HOST_PORTAL, HOST_ROOT, HOST_TEXT};
+use shared::is_array::is_array;
+use shared::react_feature_flags::{
+    DISABLE_LEGACY_MODE, ENABLE_ASYNC_ITERABLE_CHILDREN, ENABLE_OPTIMISTIC_KEY,
+};
+
 use crate::react_fiber::{
     PortalStateNode, create_fiber_from_element, create_fiber_from_fragment,
     create_fiber_from_portal, create_fiber_from_text, create_fiber_from_throw,
     create_work_in_progress, reset_work_in_progress,
 };
-use crate::react_fiber_flags::{CHILD_DELETION, FORKED, PLACEMENT, PLACEMENT_DEV};
 use crate::react_fiber_hot_reloading::is_compatible_family_for_hot_reloading;
 use crate::react_fiber_hydration_context::get_is_hydrating;
-use crate::react_fiber_lane::Lanes;
-use crate::react_fiber_new_context::read_context_during_reconciliation;
+use crate::react_fiber_tree_context::push_tree_fork;
+
 use crate::react_fiber_thenable::{
     SUSPENSE_ACTION_EXCEPTION, SUSPENSE_EXCEPTION, ThenableState, create_thenable_state,
     resolve_lazy, track_used_thenable,
 };
-use crate::react_fiber_tree_context::push_tree_fork;
-use crate::react_internal_types::Fiber;
-use crate::react_type_of_mode::{CONCURRENT_MODE, NO_MODE};
-use crate::react_work_tags::{FRAGMENT, FUNCTION_COMPONENT, HOST_PORTAL, HOST_ROOT, HOST_TEXT};
+
+use crate::react_fiber_new_context::read_context_during_reconciliation;
+
+use crate::react_current_fiber::run_with_fiber_in_dev;
 
 thread_local! {
     // This tracks the thenables that are unwrapped during reconcilation.

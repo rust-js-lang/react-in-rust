@@ -4,13 +4,14 @@
 // LICENSE file in the root directory of this source tree.
 
 use js::{Kind, Unknown};
-use react_reconciler::react_fiber_mutation_tracking::track_host_mutation;
-use shared::check_string_coercion::check_attribute_string_coercion;
 use shared::environment::__DEV__;
 use webapi::{Element, Event, EventTargetExt};
 
 use crate::is_attribute_name_safe::is_attribute_name_safe;
+use shared::check_string_coercion::check_attribute_string_coercion;
+
 use crate::react_dom_component_tree::get_fiber_current_props_from_node;
+use react_reconciler::react_fiber_mutation_tracking::track_host_mutation;
 
 /**
  * Get the value for a attribute on a node. Only used in DEV for SSR validation.

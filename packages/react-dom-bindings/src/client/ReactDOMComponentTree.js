@@ -14,11 +14,11 @@ import {
   HostText,
   SuspenseComponent,
 } from 'react-reconciler/src/ReactWorkTags';
+import {getParentHydrationBoundary} from './ReactFiberConfigDOM.js';
 import {
   enableInternalInstanceMap,
   enableScopeAPI,
 } from 'shared/ReactFeatureFlags';
-import {getParentHydrationBoundary} from './ReactFiberConfigDOM.js';
 
 const randomKey = Math.random().toString(36).slice(2);
 const internalInstanceKey = '__reactFiber$' + randomKey;

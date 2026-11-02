@@ -7,14 +7,16 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::{Set, Unknown};
+use shared::react_types::SuspenseListTailMode;
 
-use crate::react_fiber_flags::{DID_CAPTURE, NO_FLAGS};
 use crate::react_fiber_hydration_context::HydrationErrors;
 use crate::react_fiber_lane::Lane;
 use crate::react_fiber_tree_context::TreeContext;
 use crate::react_internal_types::Fiber;
+
 use crate::react_work_tags::{SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT};
-use shared::react_types::SuspenseListTailMode;
+
+use crate::react_fiber_flags::{DID_CAPTURE, NO_FLAGS};
 
 // ReactFiberConfig's, of its `SuspenseInstance`.
 #[cfg_attr(

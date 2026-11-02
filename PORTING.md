@@ -305,6 +305,21 @@ commit message.
   `index.js`, keeps only plain JS re-exports, and its Flow types move to
   `index.d.ts` (rd55).
 
+## Imports in upstream's order
+
+rust-js prints each JS import where the first `use` that makes it sits, and
+an import a module's own binding makes (`link_name = "./ReactFiberConfig.js#.."`)
+where that binding is declared (ADRs 1063, rd570 and rd608). So a module's
+`use`s are written in upstream's import order, one rustfmt group (a run
+between blank lines, which rustfmt keeps in order) per stretch that sorts,
+and its first binding of each JS-path module sits among them where
+upstream imports that module; `use`s that make no import (std, js, webapi,
+type-only modules) come first, in rustfmt's std / external / crate groups.
+`b55/imp/imports.py` (the first session's scratch) checks and regroups
+them. Pending in rust-js (rd609, not accepted): a `use` of another crate's
+binding (`shared::react_shared_internals::REACT_SHARED_INTERNALS`,
+shared's `assign`) still prints its import last.
+
 ## Null and undefined
 
 rust-js's rule (the user, 2026-10-31): **`None` is absent. On write, the
@@ -1224,27 +1239,19 @@ The port is split between sessions by package:
   ReactFlightClientConfigTargetNodeServer are webpack's, as upstream's
   are. The plain re-export
   entries (`client*.js`, `react-flight-dom-client.*.js`) stay JS (rd55).
+  **Accepted by the user** (2026-11-02, by name): rd543, a tuple's
+  element is read by destructuring, `const chunks = metadata[1];`, where
+  upstream reads `metadata[CHUNKS]` in place; rd544, the async marker,
+  Flow's literal type `1`, is `#[repr(u8)] enum Async { Async = 1 }`, which
+  exports `const Async = 1;` and prints `Async` where upstream writes `1 /*
+  async */`.
   **Pending in rust-js, not accepted** (each changes no result):
-  - rd543: a tuple's element is read by destructuring, `const chunks =
-    metadata[1];`, where upstream reads `metadata[CHUNKS]` in place;
-  - rd544: the async marker, Flow's literal type `1`, is `#[repr(u8)] enum
-    Async { Async = 1 }`, which exports `const Async = 1;` and prints
-    `Async` where upstream writes `1 /* async */`;
   - rd547: the chunk cache's `HashMap<String, ChunkEntry>` (`null` or a
     promise) reads `$someGet(chunkCache, chunkId)` where upstream writes
     `chunkCache.get(chunkId)` and `=== undefined`;
   - rd548: addChunkDebugInfo's fill-if-missing reads `const cached =
     chunkIOInfoCache.get(chunkId); let ioInfo; if (cached != null) {..}`
     where upstream writes `let ioInfo = ..; if (ioInfo === undefined)`;
-  **Regressions of the regeneration on rust-js e0f88d00f, pending in
-  rust-js** (its control-flow work; neither changes a result):
-  - rd604: ReactDOMComponent's diffHydratedGenericElement prints `break;`
-    for the Rust's `continue;` in its switch's arms, where upstream (and
-    63877bcaf's JS) has `continue;`: the same only because the switch
-    ends the loop's body;
-  - rd605: BeforeInputEventPlugin's `END_KEYCODES` prints one item a line
-    with its trailing `// Tab, Return, Esc, Space` inside the array, where
-    upstream's is `[9, 13, 27, 32]; // ..`.
   Port differences (decided for the user while away, 2026-11-02; none
   changes a result): prepareDestinationWithChunks tests `moduleLoading !=
   null` where upstream tests `!== null` (ReactDOMRoot's kind); the patched

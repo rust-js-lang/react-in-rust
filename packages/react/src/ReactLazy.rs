@@ -8,10 +8,12 @@ use std::rc::Rc;
 
 use js::{Kind, Promise, SymbolFor, Unknown};
 use shared::environment::__DEV__;
-use shared::noop::noop;
-use shared::react_symbols::REACT_LAZY_TYPE;
 use shared::react_types::{ReactAsyncInfo, ReactIOInfo, Thenable};
 use webapi::{console, performance};
+
+use shared::react_symbols::REACT_LAZY_TYPE;
+
+use shared::noop::noop;
 
 #[derive(Clone, Copy, PartialEq)]
 #[repr(i8)]

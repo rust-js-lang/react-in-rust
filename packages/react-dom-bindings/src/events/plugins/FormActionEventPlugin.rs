@@ -7,19 +7,22 @@ use std::rc::Rc;
 
 use js::{Unknown, object};
 use react_reconciler::react_fiber_hooks::{FormAction, start_host_transition};
-use react_reconciler::react_fiber_root_scheduler::did_current_event_schedule_transition;
 use react_reconciler::react_internal_types::Fiber;
-use shared::check_string_coercion::check_attribute_string_coercion;
 use shared::environment::__DEV__;
 use webapi::{EventTarget, FormData, HTMLFormElement, form_data, submit_event};
 
 use crate::dom_plugin_event_system::{DispatchEntry, DispatchListener, DispatchQueue};
 use crate::event_system_flags::EventSystemFlags;
 use crate::plugin_module_type::AnyNativeEvent;
-use crate::react_dom_component_tree::get_fiber_current_props_from_node;
 use crate::react_dom_form_actions::FormStatus;
 use crate::react_synthetic_event_type::ReactSyntheticEvent;
+
+use crate::react_dom_component_tree::get_fiber_current_props_from_node;
+use react_reconciler::react_fiber_root_scheduler::did_current_event_schedule_transition;
+
 use crate::sanitize_url::sanitize_url;
+use shared::check_string_coercion::check_attribute_string_coercion;
+
 use crate::synthetic_event::SYNTHETIC_EVENT;
 
 #[cfg_attr(rust_js, rust_js::nullable)]

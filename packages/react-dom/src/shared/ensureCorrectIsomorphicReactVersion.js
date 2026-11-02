@@ -5,8 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import * as IsomorphicReactPackage from 'react';
 import reactDOMPackageVersion from 'shared/ReactVersion';
+import * as IsomorphicReactPackage from 'react';
 
 export function ensureCorrectIsomorphicReactVersion() {
   const isomorphicReactPackageVersion = IsomorphicReactPackage.version;

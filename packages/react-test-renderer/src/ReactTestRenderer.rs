@@ -11,26 +11,10 @@ use js::{JsObject, Kind, PropertyDescriptor, SymbolFor, Unknown, WeakMap, object
 use react_reconciler::react_fiber_error_logger::{
     default_on_caught_error, default_on_recoverable_error, default_on_uncaught_error,
 };
-use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
-use react_reconciler::react_fiber_tree_reflection::find_current_fiber_using_slow_path;
 use react_reconciler::react_internal_types::Fiber;
-use react_reconciler::react_root_tags::{CONCURRENT_ROOT, LEGACY_ROOT};
-use react_reconciler::react_work_tags::{
-    CLASS_COMPONENT, CONTEXT_CONSUMER, CONTEXT_PROVIDER, FORWARD_REF, FRAGMENT, FUNCTION_COMPONENT,
-    HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL, HOST_ROOT, HOST_SINGLETON, HOST_TEXT,
-    INCOMPLETE_CLASS_COMPONENT, MEMO_COMPONENT, MODE, PROFILER, SCOPE_COMPONENT,
-    SIMPLE_MEMO_COMPONENT, WorkTag,
-};
-use shared::check_string_coercion::check_prop_string_coercion;
 use shared::environment::__DEV__;
-use shared::get_component_name_from_type::get_component_name_from_type;
-use shared::react_feature_flags::{DISABLE_LEGACY_MODE, ENABLE_REACT_TEST_RENDERER_WARNING};
 use shared::react_types::ReactNodeList;
 use webapi::console;
-
-use crate::react_fiber_config_test_host::{
-    Child, Container, ContainerTag, NodeMockElement, TextInstance, get_public_instance,
-};
 
 unsafe extern "Rust" {
     #[link_name = "scheduler/unstable_mock#* as Scheduler"]
@@ -42,6 +26,24 @@ unsafe extern "Rust" {
     #[link_name = "global.IS_REACT_NATIVE_TEST_ENVIRONMENT"]
     safe static IS_REACT_NATIVE_TEST_ENVIRONMENT: Option<&'static Unknown>;
 }
+
+use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
+use react_reconciler::react_fiber_tree_reflection::find_current_fiber_using_slow_path;
+use react_reconciler::react_work_tags::{
+    CLASS_COMPONENT, CONTEXT_CONSUMER, CONTEXT_PROVIDER, FORWARD_REF, FRAGMENT, FUNCTION_COMPONENT,
+    HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL, HOST_ROOT, HOST_SINGLETON, HOST_TEXT,
+    INCOMPLETE_CLASS_COMPONENT, MEMO_COMPONENT, MODE, PROFILER, SCOPE_COMPONENT,
+    SIMPLE_MEMO_COMPONENT, WorkTag,
+};
+use shared::get_component_name_from_type::get_component_name_from_type;
+
+use shared::check_string_coercion::check_prop_string_coercion;
+
+use crate::react_fiber_config_test_host::{
+    Child, Container, ContainerTag, NodeMockElement, TextInstance, get_public_instance,
+};
+use react_reconciler::react_root_tags::{CONCURRENT_ROOT, LEGACY_ROOT};
+use shared::react_feature_flags::{DISABLE_LEGACY_MODE, ENABLE_REACT_TEST_RENDERER_WARNING};
 
 fn default_on_default_transition_indicator() -> Option<&'static dyn Fn()> {
     None

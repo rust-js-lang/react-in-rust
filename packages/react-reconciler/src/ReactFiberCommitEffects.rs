@@ -8,53 +8,44 @@ use std::rc::Rc;
 
 use js::{JsError, Kind, Set, Unknown};
 use shared::environment::__DEV__;
+use shared::react_types::{OnCommit, OnRender, ViewTransitionProps};
+use webapi::console;
+
+use crate::react_fiber::ViewTransitionState;
+use crate::react_internal_types::{Fiber, Ref};
+
+use crate::react_fiber_view_transition_component::get_view_transition_name;
 use shared::react_feature_flags::{
     ENABLE_PROFILER_COMMIT_HOOKS, ENABLE_PROFILER_NESTED_UPDATE_PHASE, ENABLE_PROFILER_TIMER,
     ENABLE_SCHEDULING_PROFILER, ENABLE_VIEW_TRANSITION,
 };
-use shared::react_types::{OnCommit, OnRender, ViewTransitionProps};
-use webapi::console;
 
-use crate::get_component_name_from_fiber::get_component_name_from_fiber;
-use crate::react_current_fiber::run_with_fiber_in_dev;
-use crate::react_fiber::ViewTransitionState;
-use crate::react_fiber_begin_work::DID_WARN_ABOUT_REASSIGNING_PROPS;
-use crate::react_fiber_call_user_space::{
-    CALL_COMPONENT_DID_MOUNT_IN_DEV, CALL_COMPONENT_DID_UPDATE_IN_DEV,
-    CALL_COMPONENT_WILL_UNMOUNT_IN_DEV, CALL_CREATE_IN_DEV, CALL_DESTROY_IN_DEV, ClassInstance,
-    Destroy,
-};
-use crate::react_fiber_class_component::resolve_class_component_props;
-use crate::react_fiber_class_update_queue::{
-    UpdateQueue, commit_callbacks, commit_hidden_callbacks,
-};
-use crate::react_fiber_dev_tools_hook::{
-    mark_component_layout_effect_mount_started, mark_component_layout_effect_mount_stopped,
-    mark_component_layout_effect_unmount_started, mark_component_layout_effect_unmount_stopped,
-    mark_component_passive_effect_mount_started, mark_component_passive_effect_mount_stopped,
-    mark_component_passive_effect_unmount_started, mark_component_passive_effect_unmount_stopped,
-};
-use crate::react_fiber_flags::NO_FLAGS;
-use crate::react_fiber_view_transition_component::get_view_transition_name;
-use crate::react_fiber_work_loop::{capture_commit_phase_error, set_is_running_insertion_effect};
-use crate::react_hook_effect_tags::HookFlags;
-#[cfg_attr(rust_js, rust_js::name = "HookInsertion")]
-use crate::react_hook_effect_tags::INSERTION as HOOK_INSERTION;
-#[cfg_attr(rust_js, rust_js::name = "HookLayout")]
-use crate::react_hook_effect_tags::LAYOUT as HOOK_LAYOUT;
-#[cfg_attr(rust_js, rust_js::name = "NoHookEffect")]
-use crate::react_hook_effect_tags::NO_FLAGS as NO_HOOK_EFFECT;
-#[cfg_attr(rust_js, rust_js::name = "HookPassive")]
-use crate::react_hook_effect_tags::PASSIVE as HOOK_PASSIVE;
-use crate::react_internal_types::{Fiber, Ref};
-use crate::react_profiler_timer::{
-    is_current_update_nested, record_effect_duration, start_effect_timer,
-};
-use crate::react_type_of_mode::{NO_MODE, PROFILE_MODE};
 use crate::react_work_tags::{
     CLASS_COMPONENT, FRAGMENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_SINGLETON,
     VIEW_TRANSITION_COMPONENT,
 };
+
+use crate::react_fiber_flags::NO_FLAGS;
+
+use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+use crate::react_fiber_class_component::resolve_class_component_props;
+use crate::react_profiler_timer::{
+    is_current_update_nested, record_effect_duration, start_effect_timer,
+};
+use crate::react_type_of_mode::{NO_MODE, PROFILE_MODE};
+
+use crate::react_fiber_class_update_queue::{
+    UpdateQueue, commit_callbacks, commit_hidden_callbacks,
+};
+
+// ReactFiberConfig's `FragmentInstanceType`.
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#createFragmentInstance"
+)]
+fn create_fragment_instance(fragment_fiber: &Fiber) -> &'static Unknown {
+    unreachable!()
+}
 
 // ReactFiberConfig's `Instance`'s public instance.
 #[cfg_attr(
@@ -75,14 +66,32 @@ fn create_view_transition_instance(name: &str) -> &'static Unknown {
     unreachable!()
 }
 
-// ReactFiberConfig's `FragmentInstanceType`.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#createFragmentInstance"
-)]
-fn create_fragment_instance(fragment_fiber: &Fiber) -> &'static Unknown {
-    unreachable!()
-}
+use crate::react_fiber_work_loop::{capture_commit_phase_error, set_is_running_insertion_effect};
+use crate::react_hook_effect_tags::HookFlags;
+#[cfg_attr(rust_js, rust_js::name = "HookInsertion")]
+use crate::react_hook_effect_tags::INSERTION as HOOK_INSERTION;
+#[cfg_attr(rust_js, rust_js::name = "HookLayout")]
+use crate::react_hook_effect_tags::LAYOUT as HOOK_LAYOUT;
+#[cfg_attr(rust_js, rust_js::name = "NoHookEffect")]
+use crate::react_hook_effect_tags::NO_FLAGS as NO_HOOK_EFFECT;
+#[cfg_attr(rust_js, rust_js::name = "HookPassive")]
+use crate::react_hook_effect_tags::PASSIVE as HOOK_PASSIVE;
+
+use crate::react_fiber_begin_work::DID_WARN_ABOUT_REASSIGNING_PROPS;
+use crate::react_fiber_dev_tools_hook::{
+    mark_component_layout_effect_mount_started, mark_component_layout_effect_mount_stopped,
+    mark_component_layout_effect_unmount_started, mark_component_layout_effect_unmount_stopped,
+    mark_component_passive_effect_mount_started, mark_component_passive_effect_mount_stopped,
+    mark_component_passive_effect_unmount_started, mark_component_passive_effect_unmount_stopped,
+};
+
+use crate::react_fiber_call_user_space::{
+    CALL_COMPONENT_DID_MOUNT_IN_DEV, CALL_COMPONENT_DID_UPDATE_IN_DEV,
+    CALL_COMPONENT_WILL_UNMOUNT_IN_DEV, CALL_CREATE_IN_DEV, CALL_DESTROY_IN_DEV, ClassInstance,
+    Destroy,
+};
+
+use crate::react_current_fiber::run_with_fiber_in_dev;
 
 fn should_profile(current: &Fiber) -> bool {
     ENABLE_PROFILER_TIMER.with(|&enabled| enabled)

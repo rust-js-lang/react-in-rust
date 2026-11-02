@@ -5,6 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {
+  HostComponent,
+  HostHoistable,
+  HostSingleton,
+  HostText,
+} from './ReactWorkTags.js';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import {
   findFiberRoot,
@@ -17,12 +23,6 @@ import {
   setupIntersectionObserver,
   supportsTestSelectors,
 } from './ReactFiberConfig.js';
-import {
-  HostComponent,
-  HostHoistable,
-  HostSingleton,
-  HostText,
-} from './ReactWorkTags.js';
 import {$index, $withBorrow, $withBorrowMut} from '@rust-js/runtime';
 
 let COMPONENT_TYPE = 0b000;

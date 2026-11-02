@@ -9,13 +9,16 @@ use js::{JsObject, Kind, SymbolFor, Unknown, WeakMap};
 
 use crate::environment::__DEV__;
 use crate::get_component_name_from_type::LazyInit;
-use crate::get_prototype_of::GET_PROTOTYPE_OF;
-use crate::is_array::is_array;
-use crate::react_feature_flags::ENABLE_VIEW_TRANSITION;
+
 use crate::react_symbols::{
     REACT_ELEMENT_TYPE, REACT_FORWARD_REF_TYPE, REACT_LAZY_TYPE, REACT_MEMO_TYPE,
     REACT_SUSPENSE_LIST_TYPE, REACT_SUSPENSE_TYPE, REACT_VIEW_TRANSITION_TYPE,
 };
+
+use crate::is_array::is_array;
+
+use crate::get_prototype_of::GET_PROTOTYPE_OF;
+use crate::react_feature_flags::ENABLE_VIEW_TRANSITION;
 
 thread_local! {
     // Used for DEV messages to keep track of which parent rendered some props,

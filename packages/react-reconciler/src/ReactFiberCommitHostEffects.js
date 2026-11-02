@@ -5,7 +5,16 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {runWithFiberInDEV} from './ReactCurrentFiber.js';
+import {
+  DehydratedFragment,
+  HostComponent,
+  HostHoistable,
+  HostPortal,
+  HostRoot,
+  HostSingleton,
+  HostText,
+} from './ReactWorkTags.js';
+import {ContentReset, Placement} from './ReactFiberFlags.js';
 import {
   acquireSingletonInstance,
   appendChild,
@@ -35,22 +44,13 @@ import {
   unhideInstance,
   unhideTextInstance,
 } from './ReactFiberConfig.js';
-import {ContentReset, Placement} from './ReactFiberFlags.js';
+import {captureCommitPhaseError} from './ReactFiberWorkLoop.js';
+import {trackHostMutation} from './ReactFiberMutationTracking.js';
+import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {
   commitNewChildToFragmentInstances,
   getParentFragmentInstances,
 } from './ReactFiberFragmentInstance.js';
-import {trackHostMutation} from './ReactFiberMutationTracking.js';
-import {captureCommitPhaseError} from './ReactFiberWorkLoop.js';
-import {
-  DehydratedFragment,
-  HostComponent,
-  HostHoistable,
-  HostPortal,
-  HostRoot,
-  HostSingleton,
-  HostText,
-} from './ReactWorkTags.js';
 
 export function commitHostMount(finishedWork) {
   const type = finishedWork.type;

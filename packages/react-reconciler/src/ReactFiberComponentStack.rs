@@ -8,19 +8,21 @@ use std::rc::Rc;
 
 use js::{JsError, Unknown};
 use shared::environment::__DEV__;
-use shared::react_component_stack_frame::{
-    describe_built_in_component_frame, describe_class_component_frame, describe_debug_info_frame,
-    describe_function_component_frame,
-};
-use shared::react_feature_flags::ENABLE_VIEW_TRANSITION;
-use shared::react_owner_stack_frames::format_owner_stack;
 
 use crate::react_internal_types::Fiber;
+
+use shared::react_feature_flags::ENABLE_VIEW_TRANSITION;
+
 use crate::react_work_tags::{
     ACTIVITY_COMPONENT, CLASS_COMPONENT, FORWARD_REF, FUNCTION_COMPONENT, HOST_COMPONENT,
     HOST_HOISTABLE, HOST_SINGLETON, HOST_TEXT, LAZY_COMPONENT, SIMPLE_MEMO_COMPONENT,
     SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT, VIEW_TRANSITION_COMPONENT,
 };
+use shared::react_component_stack_frame::{
+    describe_built_in_component_frame, describe_class_component_frame, describe_debug_info_frame,
+    describe_function_component_frame,
+};
+use shared::react_owner_stack_frames::format_owner_stack;
 
 // A fiber is an object, which an owner, a fiber or a Server Component's
 // info, is read as.

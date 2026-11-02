@@ -5,20 +5,27 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {COMMENT_NODE} from 'react-dom-bindings/src/client/HTMLNodeType';
-import {
-  isContainerMarkedAsRoot,
-  markContainerAsRoot,
-  unmarkContainerAsRoot,
-} from 'react-dom-bindings/src/client/ReactDOMComponentTree';
-import {isValidContainer} from 'react-dom-bindings/src/client/ReactDOMContainer';
-import {listenToAllSupportedEvents} from 'react-dom-bindings/src/events/DOMPluginEventSystem';
-import {queueExplicitHydrationTarget} from 'react-dom-bindings/src/events/ReactDOMEventReplaying';
 import {
   defaultOnCaughtError,
   defaultOnRecoverableError,
   defaultOnUncaughtError,
 } from 'react-reconciler/src/ReactFiberErrorLogger';
+import {isValidContainer} from 'react-dom-bindings/src/client/ReactDOMContainer';
+import {queueExplicitHydrationTarget} from 'react-dom-bindings/src/events/ReactDOMEventReplaying';
+import {REACT_ELEMENT_TYPE} from 'shared/ReactSymbols';
+import {
+  disableCommentsAsDOMContainers,
+  enableDefaultTransitionIndicator,
+} from 'shared/ReactFeatureFlags';
+import {
+  isContainerMarkedAsRoot,
+  markContainerAsRoot,
+  unmarkContainerAsRoot,
+} from 'react-dom-bindings/src/client/ReactDOMComponentTree';
+import {listenToAllSupportedEvents} from 'react-dom-bindings/src/events/DOMPluginEventSystem';
+import {COMMENT_NODE} from 'react-dom-bindings/src/client/HTMLNodeType';
+import {defaultOnDefaultTransitionIndicator} from './ReactDOMDefaultTransitionIndicator.js';
+import {ConcurrentRoot} from 'react-reconciler/src/ReactRootTags';
 import {
   createContainer,
   createHydrationContainer,
@@ -27,13 +34,6 @@ import {
   updateContainer,
   updateContainerSync,
 } from 'react-reconciler/src/ReactFiberReconciler';
-import {ConcurrentRoot} from 'react-reconciler/src/ReactRootTags';
-import {
-  disableCommentsAsDOMContainers,
-  enableDefaultTransitionIndicator,
-} from 'shared/ReactFeatureFlags';
-import {REACT_ELEMENT_TYPE} from 'shared/ReactSymbols';
-import {defaultOnDefaultTransitionIndicator} from './ReactDOMDefaultTransitionIndicator.js';
 
 function ReactDOMRoot(internalRoot) {
   this._internalRoot = internalRoot;

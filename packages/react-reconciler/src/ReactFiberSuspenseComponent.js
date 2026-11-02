@@ -5,12 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {SuspenseComponent, SuspenseListComponent} from './ReactWorkTags.js';
+import {DidCapture, NoFlags} from './ReactFiberFlags.js';
 import {
   isSuspenseInstanceFallback,
   isSuspenseInstancePending,
 } from './ReactFiberConfig.js';
-import {DidCapture, NoFlags} from './ReactFiberFlags.js';
-import {SuspenseComponent, SuspenseListComponent} from './ReactWorkTags.js';
 
 // shared/ReactTypes' `Wakeable`s.
 

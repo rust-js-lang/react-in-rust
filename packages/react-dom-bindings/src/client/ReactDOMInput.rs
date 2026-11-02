@@ -6,18 +6,22 @@
 use std::cell::Cell;
 
 use js::{Kind, Unknown};
-// TODO: direct imports like some-package/src/* are bad. Fix me.
-use react_reconciler::react_current_fiber::get_current_fiber_owner_name_in_dev_or_null;
-use shared::check_string_coercion::check_attribute_string_coercion;
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{DISABLE_INPUT_ATTRIBUTE_SYNCING, ENABLE_HYDRATION_CHANGE_EVENT};
 use webapi::{Element, HTMLInputElement, console, element, html_input_element};
 
-use crate::escape_selector_attribute_value_inside_double_quotes::escape_selector_attribute_value_inside_double_quotes;
-use crate::input_value_tracking::{track, track_hydrated, update_value_if_changed};
+// TODO: direct imports like some-package/src/* are bad. Fix me.
+use react_reconciler::react_current_fiber::get_current_fiber_owner_name_in_dev_or_null;
+
 use crate::react_dom_component_tree::get_fiber_current_props_from_node;
-use crate::react_dom_event_replaying::queue_change_event;
 use crate::to_string_value::{ToStringValue, get_to_string_value, to_string};
+
+use crate::input_value_tracking::{track, track_hydrated, update_value_if_changed};
+use shared::react_feature_flags::{DISABLE_INPUT_ATTRIBUTE_SYNCING, ENABLE_HYDRATION_CHANGE_EVENT};
+
+use shared::check_string_coercion::check_attribute_string_coercion;
+
+use crate::escape_selector_attribute_value_inside_double_quotes::escape_selector_attribute_value_inside_double_quotes;
+use crate::react_dom_event_replaying::queue_change_event;
 
 thread_local! {
     static DID_WARN_VALUE_DEFAULT_VALUE: Cell<bool> = const { Cell::new(false) };

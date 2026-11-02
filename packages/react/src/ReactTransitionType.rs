@@ -7,9 +7,11 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{ENABLE_GESTURE_TRANSITION, ENABLE_VIEW_TRANSITION};
-use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use webapi::console;
+
+use shared::react_shared_internals::REACT_SHARED_INTERNALS;
+
+use shared::react_feature_flags::{ENABLE_GESTURE_TRANSITION, ENABLE_VIEW_TRANSITION};
 
 use crate::react_start_transition::{start_transition, t};
 

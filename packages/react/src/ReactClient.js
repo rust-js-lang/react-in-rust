@@ -8,11 +8,20 @@
 import {count, forEach, map, only, toArray} from './ReactChildren.js';
 
 export {Component, PureComponent} from './ReactBaseClasses.js';
-export {cache, cacheSignal} from './ReactCacheClient.js';
-export * as __COMPILER_RUNTIME from './ReactCompilerRuntime.js';
-export {createContext} from './ReactContext.js';
 export {createRef} from './ReactCreateRef.js';
+export {
+  cloneElement,
+  createElement,
+  isValidElement,
+} from './jsx/ReactJSXElement.js';
+
+export {createContext} from './ReactContext.js';
+export {lazy} from './ReactLazy.js';
+
 export {forwardRef} from './ReactForwardRef.js';
+export {memo} from './ReactMemo.js';
+
+export {cache, cacheSignal} from './ReactCacheClient.js';
 
 export {
   useActionState,
@@ -32,13 +41,7 @@ export {
   useSyncExternalStore,
 } from './ReactHooks.js';
 
-export {
-  cloneElement,
-  createElement,
-  isValidElement,
-} from './jsx/ReactJSXElement.js';
-export {lazy} from './ReactLazy.js';
-export {memo} from './ReactMemo.js';
+export * as __COMPILER_RUNTIME from './ReactCompilerRuntime.js';
 export {default as __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE} from './ReactSharedInternalsClient.js';
 
 export {

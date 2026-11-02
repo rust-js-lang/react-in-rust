@@ -13,130 +13,19 @@ use js::{
 };
 use node::js_error;
 use shared::environment::__DEV__;
-use shared::get_component_name_from_type::get_component_name_from_type;
-use shared::get_prototype_of::GET_PROTOTYPE_OF;
-use shared::has_own_property::HAS_OWN_PROPERTY;
-use shared::is_array::is_array;
-use shared::react_component_info_stack::get_owner_stack_by_component_info_in_dev;
-use shared::react_feature_flags::{
-    ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_FLIGHT_OBJECT_REFERENCES,
-    ENABLE_FLIGHT_WEAK_THENABLES, ENABLE_PROFILER_TIMER,
-};
-use shared::react_flight_property_access::OMITTED_PROP_ERROR;
-use shared::react_symbols::{
-    ASYNC_ITERATOR, REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE,
-};
 use shared::react_types::{
     JSONValue, ReactAsyncInfo, ReactComponentInfo, ReactDebugInfo, ReactDebugInfoEntry,
     ReactErrorInfoDev, ReactIOInfo, ReactStackTrace, ReactTimeInfo, Thenable,
 };
-#[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
-use shared::react_version::REACT_VERSION;
 use webapi::{
     ConsoleTask, FormDataEntryValue, ReadableStreamController, UnderlyingSource, console,
     performance,
 };
 
-use crate::react_flight_client_dev_tools_hook::inject_internals;
-use crate::react_flight_performance_track::{
-    log_component_aborted, log_component_await, log_component_await_aborted,
-    log_component_await_errored, log_component_errored, log_component_render,
-    log_deduped_component_render, log_io_info, log_io_info_errored, mark_all_tracks_in_order,
+use shared::react_feature_flags::{
+    ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_FLIGHT_OBJECT_REFERENCES,
+    ENABLE_FLIGHT_WEAK_THENABLES, ENABLE_PROFILER_TIMER,
 };
-use crate::react_flight_reply_client::{
-    create_bound_server_reference, create_server_object_reference, register_bound_server_reference,
-};
-use crate::react_flight_temporary_references::{TemporaryReferenceSet, read_temporary_reference};
-
-// ReactFlightClientConfig: each renderer's fork (they stay JS, as the
-// reconciler's ReactFiberConfig forks do).
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightClientConfig.js#resolveClientReference"
-)]
-fn resolve_client_reference(
-    bundler_config: Option<&'static Unknown>,
-    metadata: Option<&'static Unknown>,
-) -> &'static Unknown {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightClientConfig.js#resolveServerReference"
-)]
-fn resolve_server_reference(config: &'static Unknown, id: &str) -> &'static Unknown {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightClientConfig.js#preloadModule"
-)]
-fn preload_module(metadata: &'static Unknown) -> Option<Promise<Option<&'static Unknown>>> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightClientConfig.js#requireModule"
-)]
-fn require_module(metadata: &'static Unknown) -> Option<&'static Unknown> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightClientConfig.js#getModuleDebugInfo",
-    rust_js::nullable
-)]
-fn get_module_debug_info(metadata: &'static Unknown) -> Option<ReactDebugInfo> {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightClientConfig.js#dispatchHint"
-)]
-fn dispatch_hint(code: &str, model: Option<&'static Unknown>) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightClientConfig.js#readPartialStringChunk"
-)]
-fn read_partial_string_chunk(decoder: &'static Unknown, buffer: &js::Uint8Array) -> String {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightClientConfig.js#readFinalStringChunk"
-)]
-fn read_final_string_chunk(decoder: &'static Unknown, buffer: &js::Uint8Array) -> String {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightClientConfig.js#createStringDecoder"
-)]
-fn create_string_decoder(preserve_byte_order_mark: bool) -> &'static Unknown {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightClientConfig.js#prepareDestinationForModule"
-)]
-fn prepare_destination_for_module(
-    module_loading: Option<&'static Unknown>,
-    nonce: Option<&str>,
-    metadata: Option<&'static Unknown>,
-) {
-    unreachable!()
-}
 
 #[cfg_attr(
     rust_js,
@@ -158,12 +47,130 @@ fn check_eval_availability_once_dev() {
     unreachable!()
 }
 
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFlightClientConfig.js#createStringDecoder"
+)]
+fn create_string_decoder(preserve_byte_order_mark: bool) -> &'static Unknown {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFlightClientConfig.js#dispatchHint"
+)]
+fn dispatch_hint(code: &str, model: Option<&'static Unknown>) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFlightClientConfig.js#getModuleDebugInfo",
+    rust_js::nullable
+)]
+fn get_module_debug_info(metadata: &'static Unknown) -> Option<ReactDebugInfo> {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFlightClientConfig.js#preloadModule"
+)]
+fn preload_module(metadata: &'static Unknown) -> Option<Promise<Option<&'static Unknown>>> {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFlightClientConfig.js#prepareDestinationForModule"
+)]
+fn prepare_destination_for_module(
+    module_loading: Option<&'static Unknown>,
+    nonce: Option<&str>,
+    metadata: Option<&'static Unknown>,
+) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFlightClientConfig.js#readFinalStringChunk"
+)]
+fn read_final_string_chunk(decoder: &'static Unknown, buffer: &js::Uint8Array) -> String {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFlightClientConfig.js#readPartialStringChunk"
+)]
+fn read_partial_string_chunk(decoder: &'static Unknown, buffer: &js::Uint8Array) -> String {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFlightClientConfig.js#requireModule"
+)]
+fn require_module(metadata: &'static Unknown) -> Option<&'static Unknown> {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFlightClientConfig.js#resolveServerReference"
+)]
+fn resolve_server_reference(config: &'static Unknown, id: &str) -> &'static Unknown {
+    unreachable!()
+}
+
+// ReactFlightClientConfig: each renderer's fork (they stay JS, as the
+// reconciler's ReactFiberConfig forks do).
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFlightClientConfig.js#resolveClientReference"
+)]
+fn resolve_client_reference(
+    bundler_config: Option<&'static Unknown>,
+    metadata: Option<&'static Unknown>,
+) -> &'static Unknown {
+    unreachable!()
+}
+
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFlightClientConfig.js#rendererVersion"]
     safe static RENDERER_VERSION: &'static str;
     #[link_name = "./src/ReactFlightClientConfig.js#rendererPackageName"]
     safe static RENDERER_PACKAGE_NAME: &'static str;
 }
+
+use crate::react_flight_reply_client::{
+    create_bound_server_reference, create_server_object_reference, register_bound_server_reference,
+};
+use crate::react_flight_temporary_references::{TemporaryReferenceSet, read_temporary_reference};
+
+use crate::react_flight_performance_track::{
+    log_component_aborted, log_component_await, log_component_await_aborted,
+    log_component_await_errored, log_component_errored, log_component_render,
+    log_deduped_component_render, log_io_info, log_io_info_errored, mark_all_tracks_in_order,
+};
+use shared::react_symbols::{
+    ASYNC_ITERATOR, REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE,
+};
+
+use shared::get_component_name_from_type::get_component_name_from_type;
+use shared::react_component_info_stack::get_owner_stack_by_component_info_in_dev;
+
+use shared::has_own_property::HAS_OWN_PROPERTY;
+
+use shared::get_prototype_of::GET_PROTOTYPE_OF;
+
+use crate::react_flight_client_dev_tools_hook::inject_internals;
+use shared::react_flight_property_access::OMITTED_PROP_ERROR;
+#[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
+use shared::react_version::REACT_VERSION;
+
+use shared::is_array::is_array;
 
 unsafe extern "Rust" {
     #[link_name = "react#*.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE"]

@@ -5,7 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {Hydrating, NoFlags, Placement} from './ReactFiberFlags.js';
 import {
   ActivityComponent,
   Fragment,
@@ -18,6 +17,7 @@ import {
   OffscreenComponent,
   SuspenseComponent,
 } from './ReactWorkTags.js';
+import {Hydrating, NoFlags, Placement} from './ReactFiberFlags.js';
 
 export function getNearestMountedFiber(fiber) {
   let node = fiber;

@@ -7,20 +7,23 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{
-    ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_PROFILER_COMMIT_HOOKS,
-    ENABLE_PROFILER_NESTED_UPDATE_PHASE, ENABLE_PROFILER_TIMER,
-};
 use webapi::{ConsoleTask, console};
 
-use crate::get_component_name_from_fiber::get_component_name_from_fiber;
 use crate::react_captured_value::CapturedValue;
+use crate::react_internal_types::Fiber;
+
 use crate::react_fiber_lane::{
     Lane, Lanes, NO_LANES, includes_blocking_lane, includes_transition_lane, is_blocking_lane,
     is_gesture_render, is_transition_lane,
 };
-use crate::react_fiber_work_loop::is_already_rendering;
-use crate::react_internal_types::Fiber;
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#resolveEventTimeStamp"
+)]
+fn resolve_event_time_stamp() -> f64 {
+    unreachable!()
+}
 
 #[cfg_attr(
     rust_js,
@@ -31,13 +34,13 @@ fn resolve_event_type() -> Option<String> {
     unreachable!()
 }
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#resolveEventTimeStamp"
-)]
-fn resolve_event_time_stamp() -> f64 {
-    unreachable!()
-}
+use shared::react_feature_flags::{
+    ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_PROFILER_COMMIT_HOOKS,
+    ENABLE_PROFILER_NESTED_UPDATE_PHASE, ENABLE_PROFILER_TIMER,
+};
+
+use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+use crate::react_fiber_work_loop::is_already_rendering;
 
 // Intentionally not named imports because Rollup would use dynamic dispatch for
 // CommonJS interop named imports.

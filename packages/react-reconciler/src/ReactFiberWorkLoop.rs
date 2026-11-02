@@ -15,7 +15,20 @@ use js::{
 use react_isomorphic::react_start_transition::{Transition, set_t, t};
 use react_isomorphic::react_transition_type::TransitionTypes;
 use shared::environment::__DEV__;
-use shared::object_is::OBJECT_IS;
+use shared::react_types::{
+    GestureOptionsRequired, Thenable, ViewTransitionCallback, ViewTransitionGestureCallback,
+    Wakeable,
+};
+use webapi::{ConsoleTask, console};
+
+use crate::react_fiber_offscreen_component::OffscreenInstance;
+use crate::react_fiber_root::RootState;
+use crate::react_fiber_suspense_component::SuspenseState;
+use crate::react_internal_types::{ErrorInfo, Fiber, FiberRoot};
+
+use shared::react_symbols::REACT_STRICT_MODE_TYPE;
+
+use crate::react_fiber_view_transition_component::get_view_transition_name;
 use shared::react_feature_flags::{
     ALWAYS_THROTTLE_RETRIES, DISABLE_LEGACY_CONTEXT, DISABLE_LEGACY_MODE,
     ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_CREATE_EVENT_HANDLE_API,
@@ -29,97 +42,19 @@ use shared::react_owner_stack_reset::reset_owner_stack_limit;
 use shared::react_shared_internals::{
     AsyncDispatcher, Dispatcher as SharedDispatcher, REACT_SHARED_INTERNALS,
 };
-use shared::react_symbols::REACT_STRICT_MODE_TYPE;
-use shared::react_types::{
-    GestureOptionsRequired, Thenable, ViewTransitionCallback, ViewTransitionGestureCallback,
-    Wakeable,
-};
-use shared::report_global_error::REPORT_GLOBAL_ERROR;
-use webapi::{ConsoleTask, console};
 
-use crate::get_component_name_from_fiber::get_component_name_from_fiber;
-use crate::react_captured_value::{CapturedValue, create_captured_value_at_fiber};
-use crate::react_child_fiber::reset_child_reconciler_on_unwind;
-use crate::react_current_fiber::{IS_RENDERING, reset_current_fiber, run_with_fiber_in_dev};
-use crate::react_event_priorities::{
-    DEFAULT_EVENT_PRIORITY, DISCRETE_EVENT_PRIORITY, EventPriority, event_priority_to_lane,
-    lanes_to_event_priority, lower_event_priority,
-};
-use crate::react_fiber::{ViewTransitionState, create_work_in_progress, reset_work_in_progress};
-use crate::react_fiber_act::{is_concurrent_act_environment, is_legacy_act_environment};
-use crate::react_fiber_apply_gesture::{
-    apply_departure_transitions, insert_destination_clones, start_gesture_animations,
-};
-use crate::react_fiber_async_dispatcher::DEFAULT_ASYNC_DISPATCHER;
-use crate::react_fiber_begin_work::{
-    SELECTIVE_HYDRATION_EXCEPTION, begin_work, replay_function_component,
-};
-use crate::react_fiber_cache_component::release_cache;
-use crate::react_fiber_class_update_queue::enqueue_update;
-use crate::react_fiber_commit_view_transitions::{
-    SHOULD_START_VIEW_TRANSITION, reset_should_start_view_transition,
-};
-use crate::react_fiber_commit_work::{
-    SHOULD_FIRE_AFTER_ACTIVE_INSTANCE_BLUR, accumulate_suspensey_commit,
-    commit_after_mutation_effects, commit_before_mutation_effects, commit_layout_effects,
-    commit_mutation_effects, commit_passive_mount_effects, commit_passive_unmount_effects,
-    disappear_layout_effects_for_dev_validation, disconnect_passive_effect,
-    invoke_layout_effect_mount_in_dev, invoke_layout_effect_unmount_in_dev,
-    invoke_passive_effect_mount_in_dev, invoke_passive_effect_unmount_in_dev,
-    reappear_layout_effects_for_dev_validation, reconnect_passive_effects,
-};
-use crate::react_fiber_complete_work::complete_work;
-use crate::react_fiber_concurrent_updates::{
-    enqueue_concurrent_render_for_lane, finish_queueing_concurrent_updates,
-    get_concurrently_updated_lanes,
-};
-#[cfg_attr(rust_js, rust_js::name = "onCommitRootDevTools")]
-use crate::react_fiber_dev_tools_hook::on_commit_root as on_commit_root_dev_tools;
-#[cfg_attr(rust_js, rust_js::name = "onPostCommitRootDevTools")]
-use crate::react_fiber_dev_tools_hook::on_post_commit_root as on_post_commit_root_dev_tools;
-use crate::react_fiber_dev_tools_hook::{
-    IS_DEV_TOOLS_PRESENT, mark_commit_started, mark_commit_stopped, mark_component_errored,
-    mark_component_render_stopped, mark_component_suspended, mark_layout_effects_started,
-    mark_layout_effects_stopped, mark_passive_effects_started, mark_passive_effects_stopped,
-    mark_render_started, mark_render_stopped, mark_render_yielded, set_is_strict_mode_for_devtools,
-};
-use crate::react_fiber_error_logger::log_uncaught_error;
-use crate::react_fiber_flags::{
-    BEFORE_MUTATION_MASK, DID_DEFER, FORCE_CLIENT_RENDER, Flags, HOST_EFFECT_MASK, INCOMPLETE,
-    LAYOUT_MASK, MAY_SUSPEND_COMMIT, MOUNT_LAYOUT_DEV, MOUNT_PASSIVE_DEV, MUTATION_MASK, NO_FLAGS,
-    PASSIVE_MASK, PASSIVE_TRANSITION_MASK, PLACEMENT_DEV, SCHEDULE_RETRY, SHOULD_SUSPEND_COMMIT,
-    STORE_CONSISTENCY, VISIBILITY,
-};
-use crate::react_fiber_gesture_scheduler::{schedule_gesture_commit, stop_committed_gesture};
-use crate::react_fiber_hooks::{
-    CONTEXT_ONLY_DISPATCHER, FunctionComponentUpdateQueue, reset_hooks_after_throw,
-    reset_hooks_on_unwind,
-};
-use crate::react_fiber_hydration_context::{
-    get_is_hydrating, pop_hydration_state_on_interrupted_work,
-};
-#[cfg_attr(rust_js, rust_js::name = "_markRootPinged")]
-use crate::react_fiber_lane::mark_root_pinged as _mark_root_pinged;
-#[cfg_attr(rust_js, rust_js::name = "_markRootSuspended")]
-use crate::react_fiber_lane::mark_root_suspended as _mark_root_suspended;
-#[cfg_attr(rust_js, rust_js::name = "_markRootUpdated")]
-use crate::react_fiber_lane::mark_root_updated as _mark_root_updated;
-use crate::react_fiber_lane::{
-    GESTURE_LANE, IDLE_LANE, Lane, Lanes, NO_LANE, NO_LANES, OFFSCREEN_LANE, SOME_RETRY_LANE,
-    SOME_TRANSITION_LANE, SYNC_LANE, SYNC_UPDATE_LANES, UPDATE_LANES, add_fiber_to_lanes_map,
-    add_transition_to_lanes_map, check_if_root_is_prerendering, claim_next_retry_lane,
-    claim_next_transition_deferred_lane, get_entangled_lanes,
-    get_lanes_to_retry_synchronously_on_error, get_next_lanes, get_transitions_for_lanes,
-    includes_blocking_lane, includes_expired_lane, includes_idle_group_lanes,
-    includes_non_idle_work, includes_only_retries, includes_only_transitions,
-    includes_only_view_transition_eligible_lanes, includes_retry_lane, includes_some_lane,
-    includes_sync_lane, includes_transition_lane, is_gesture_render, is_subset_of_lanes,
-    mark_root_finished, merge_lanes, move_pending_fibers_to_memoized, pick_arbitrary_lane,
-    remove_lanes, upgrade_pending_lanes_to_sync,
-};
-use crate::react_fiber_legacy_context::{get_masked_context, get_unmasked_context};
-use crate::react_fiber_new_context::reset_context_dependencies;
-use crate::react_fiber_offscreen_component::OffscreenInstance;
+use shared::object_is::OBJECT_IS;
+use shared::report_global_error::REPORT_GLOBAL_ERROR;
+
+#[cfg_attr(rust_js, rust_js::name = "IdleSchedulerPriority")]
+use crate::scheduler::IDLE_PRIORITY as IDLE_SCHEDULER_PRIORITY;
+#[cfg_attr(rust_js, rust_js::name = "NormalSchedulerPriority")]
+use crate::scheduler::NORMAL_PRIORITY as NORMAL_SCHEDULER_PRIORITY;
+#[cfg_attr(rust_js, rust_js::name = "Scheduler_scheduleCallback")]
+use crate::scheduler::SCHEDULE_CALLBACK as SCHEDULER_SCHEDULE_CALLBACK;
+
+use crate::scheduler::{NOW as now, PriorityLevel, REQUEST_PAINT, SHOULD_YIELD, SchedulerCallback};
+
 use crate::react_fiber_performance_track::{
     log_action_yield_time, log_animating_phase, log_apply_gesture_phase, log_blocking_start,
     log_commit_phase, log_errored_render_phase, log_gesture_start, log_inconsistent_render,
@@ -129,97 +64,12 @@ use crate::react_fiber_performance_track::{
     log_suspended_with_delay_phase, log_suspended_yield_time, log_transition_start, log_yield_time,
     mark_all_lanes_in_order, set_current_track_from_lanes,
 };
-use crate::react_fiber_root::RootState;
-use crate::react_fiber_root_scheduler::{
-    ensure_root_is_scheduled, flush_sync_work_on_all_roots, flush_sync_work_on_legacy_roots_only,
-    request_transition_lane,
-};
-use crate::react_fiber_shell_hydration::is_root_dehydrated;
-use crate::react_fiber_suspense_component::SuspenseState;
-use crate::react_fiber_suspense_context::{get_shell_boundary, get_suspense_handler};
-use crate::react_fiber_thenable::{
-    SUSPENSE_ACTION_EXCEPTION, SUSPENSE_EXCEPTION, SUSPENSEY_COMMIT_EXCEPTION, clear_use_warnings,
-    get_suspended_thenable, has_potential_use_warnings, is_thenable_resolved,
-};
-use crate::react_fiber_throw::{
-    create_class_error_update, create_root_error_update, initialize_class_error_update,
-    throw_exception,
-};
-use crate::react_fiber_tracing_marker_component::{
-    MarkerIncomplete, MarkerProgress, PendingBoundaries, PendingTransitionCallbacks,
-    TransitionAborts, process_transition_callbacks,
-};
-use crate::react_fiber_transition::request_current_transition;
-use crate::react_fiber_transition_types::claim_queued_transition_types;
-use crate::react_fiber_unwind_work::{unwind_interrupted_work, unwind_work};
-use crate::react_fiber_view_transition_component::get_view_transition_name;
-use crate::react_internal_types::{ErrorInfo, Fiber, FiberRoot};
-use crate::react_post_paint_callback::schedule_post_paint_callback;
-use crate::react_profiler_timer::{
-    ANIMATING_LANES, ANIMATING_TASK, BLOCKING_CLAMP_TIME, BLOCKING_EVENT_REPEAT_TIME,
-    BLOCKING_EVENT_TIME, BLOCKING_EVENT_TYPE, BLOCKING_SUSPENDED_TIME,
-    BLOCKING_UPDATE_COMPONENT_NAME, BLOCKING_UPDATE_METHOD_NAME, BLOCKING_UPDATE_TASK,
-    BLOCKING_UPDATE_TIME, BLOCKING_UPDATE_TYPE, COMMIT_END_TIME, COMMIT_ERRORS, COMMIT_START_TIME,
-    CaptureErrors, GESTURE_CLAMP_TIME, GESTURE_EVENT_REPEAT_TIME, GESTURE_EVENT_TIME,
-    GESTURE_EVENT_TYPE, GESTURE_SUSPENDED_TIME, GESTURE_UPDATE_COMPONENT_NAME,
-    GESTURE_UPDATE_METHOD_NAME, GESTURE_UPDATE_TASK, GESTURE_UPDATE_TIME, GESTURE_UPDATE_TYPE,
-    IDLE_CLAMP_TIME, PINGED_UPDATE, RENDER_START_TIME, RETRY_CLAMP_TIME, SPAWNED_UPDATE,
-    TRANSITION_CLAMP_TIME, TRANSITION_EVENT_REPEAT_TIME, TRANSITION_EVENT_TIME,
-    TRANSITION_EVENT_TYPE, TRANSITION_START_TIME, TRANSITION_SUSPENDED_TIME,
-    TRANSITION_UPDATE_COMPONENT_NAME, TRANSITION_UPDATE_METHOD_NAME, TRANSITION_UPDATE_TASK,
-    TRANSITION_UPDATE_TIME, TRANSITION_UPDATE_TYPE, YIELD_REASON, YIELD_START_TIME,
-    clamp_blocking_timers, clamp_gesture_timers, clamp_idle_timers, clamp_retry_timers,
-    clamp_transition_timers, clear_blocking_timers, clear_gesture_timers, clear_gesture_updates,
-    clear_transition_timers, mark_nested_update_scheduled, record_commit_end_time,
-    record_commit_time, record_effect_error, record_render_time, reset_commit_errors,
-    start_animating, start_ping_timer_by_lanes, start_profiler_timer, start_yield_timer,
-    stop_animating, stop_profiler_timer_if_running_and_record_duration,
-    stop_profiler_timer_if_running_and_record_incomplete_duration, track_suspended_time,
-};
-use crate::react_root_tags::{CONCURRENT_ROOT, LEGACY_ROOT};
-use crate::react_strict_mode_warnings::REACT_STRICT_MODE_WARNINGS;
-#[cfg_attr(rust_js, rust_js::name = "onCommitRootTestSelector")]
-use crate::react_test_selectors::on_commit_root as on_commit_root_test_selector;
-use crate::react_type_of_mode::{
-    CONCURRENT_MODE, NO_MODE, PROFILE_MODE, STRICT_EFFECTS_MODE, STRICT_LEGACY_MODE,
-};
-use crate::react_work_tags::{
-    ACTIVITY_COMPONENT, CLASS_COMPONENT, FORWARD_REF, FUNCTION_COMPONENT, HOST_COMPONENT,
-    HOST_HOISTABLE, HOST_ROOT, HOST_SINGLETON, MEMO_COMPONENT, OFFSCREEN_COMPONENT,
-    SIMPLE_MEMO_COMPONENT, SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT,
-};
-#[cfg_attr(rust_js, rust_js::name = "IdleSchedulerPriority")]
-use crate::scheduler::IDLE_PRIORITY as IDLE_SCHEDULER_PRIORITY;
-#[cfg_attr(rust_js, rust_js::name = "NormalSchedulerPriority")]
-use crate::scheduler::NORMAL_PRIORITY as NORMAL_SCHEDULER_PRIORITY;
-#[cfg_attr(rust_js, rust_js::name = "Scheduler_scheduleCallback")]
-use crate::scheduler::SCHEDULE_CALLBACK as SCHEDULER_SCHEDULE_CALLBACK;
-use crate::scheduler::{NOW as now, PriorityLevel, REQUEST_PAINT, SHOULD_YIELD, SchedulerCallback};
-
-unsafe extern "Rust" {
-    #[link_name = "./src/ReactFiberConfig.js#supportsHydration"]
-    safe static SUPPORTS_HYDRATION: bool;
-    // ReactFiberConfig's `TimeoutHandle`'s none.
-    #[link_name = "./src/ReactFiberConfig.js#noTimeout"]
-    safe static NO_TIMEOUT: &'static Unknown;
-}
-
-// ReactFiberConfig's host operations, on its `Container`, `Instance`,
-// `Resource`, `SuspendedState`, `TimeoutHandle`, `GestureTimeline`,
-// `ViewTransitionInstance` and `RunningViewTransition`.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#resetAfterCommit"
-)]
-fn reset_after_commit(container_info: &'static Unknown) {
-    unreachable!()
-}
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#scheduleTimeout"
+    rust_js::link_name = "./src/ReactFiberConfig.js#afterActiveInstanceBlur"
 )]
-fn schedule_timeout(handler: &'static dyn Fn(), timeout: f64) -> &'static Unknown {
+fn after_active_instance_blur() {
     unreachable!()
 }
 
@@ -233,9 +83,9 @@ fn cancel_timeout(handle: &'static Unknown) {
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#afterActiveInstanceBlur"
+    rust_js::link_name = "./src/ReactFiberConfig.js#scheduleTimeout"
 )]
-fn after_active_instance_blur() {
+fn schedule_timeout(handler: &'static dyn Fn(), timeout: f64) -> &'static Unknown {
     unreachable!()
 }
 
@@ -254,10 +104,6 @@ fn start_suspending_commit() -> &'static Unknown {
 fn suspend_on_active_view_transition(state: &'static Unknown, root_container: &'static Unknown) {
     unreachable!()
 }
-
-/// What `waitForCommitToBeReady` gives where the commit isn't ready: it's
-/// given the commit, and gives what cancels it.
-type SchedulePendingCommit = dyn Fn(&'static dyn Fn()) -> Box<dyn Fn()>;
 
 #[cfg_attr(
     rust_js,
@@ -417,6 +263,190 @@ fn create_view_transition_instance(name: &str) -> &'static Unknown {
 fn flush_hydration_events() {
     unreachable!()
 }
+
+// ReactFiberConfig's host operations, on its `Container`, `Instance`,
+// `Resource`, `SuspendedState`, `TimeoutHandle`, `GestureTimeline`,
+// `ViewTransitionInstance` and `RunningViewTransition`.
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#resetAfterCommit"
+)]
+fn reset_after_commit(container_info: &'static Unknown) {
+    unreachable!()
+}
+
+unsafe extern "Rust" {
+    #[link_name = "./src/ReactFiberConfig.js#supportsHydration"]
+    safe static SUPPORTS_HYDRATION: bool;
+    // ReactFiberConfig's `TimeoutHandle`'s none.
+    #[link_name = "./src/ReactFiberConfig.js#noTimeout"]
+    safe static NO_TIMEOUT: &'static Unknown;
+}
+
+use crate::react_fiber::{ViewTransitionState, create_work_in_progress, reset_work_in_progress};
+use crate::react_fiber_shell_hydration::is_root_dehydrated;
+
+use crate::react_fiber_hydration_context::{
+    get_is_hydrating, pop_hydration_state_on_interrupted_work,
+};
+use crate::react_type_of_mode::{
+    CONCURRENT_MODE, NO_MODE, PROFILE_MODE, STRICT_EFFECTS_MODE, STRICT_LEGACY_MODE,
+};
+use crate::react_work_tags::{
+    ACTIVITY_COMPONENT, CLASS_COMPONENT, FORWARD_REF, FUNCTION_COMPONENT, HOST_COMPONENT,
+    HOST_HOISTABLE, HOST_ROOT, HOST_SINGLETON, MEMO_COMPONENT, OFFSCREEN_COMPONENT,
+    SIMPLE_MEMO_COMPONENT, SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT,
+};
+
+use crate::react_root_tags::{CONCURRENT_ROOT, LEGACY_ROOT};
+
+use crate::react_fiber_flags::{
+    BEFORE_MUTATION_MASK, DID_DEFER, FORCE_CLIENT_RENDER, Flags, HOST_EFFECT_MASK, INCOMPLETE,
+    LAYOUT_MASK, MAY_SUSPEND_COMMIT, MOUNT_LAYOUT_DEV, MOUNT_PASSIVE_DEV, MUTATION_MASK, NO_FLAGS,
+    PASSIVE_MASK, PASSIVE_TRANSITION_MASK, PLACEMENT_DEV, SCHEDULE_RETRY, SHOULD_SUSPEND_COMMIT,
+    STORE_CONSISTENCY, VISIBILITY,
+};
+#[cfg_attr(rust_js, rust_js::name = "_markRootPinged")]
+use crate::react_fiber_lane::mark_root_pinged as _mark_root_pinged;
+#[cfg_attr(rust_js, rust_js::name = "_markRootSuspended")]
+use crate::react_fiber_lane::mark_root_suspended as _mark_root_suspended;
+#[cfg_attr(rust_js, rust_js::name = "_markRootUpdated")]
+use crate::react_fiber_lane::mark_root_updated as _mark_root_updated;
+
+use crate::react_fiber_lane::{
+    GESTURE_LANE, IDLE_LANE, Lane, Lanes, NO_LANE, NO_LANES, OFFSCREEN_LANE, SOME_RETRY_LANE,
+    SOME_TRANSITION_LANE, SYNC_LANE, SYNC_UPDATE_LANES, UPDATE_LANES, add_fiber_to_lanes_map,
+    add_transition_to_lanes_map, check_if_root_is_prerendering, claim_next_retry_lane,
+    claim_next_transition_deferred_lane, get_entangled_lanes,
+    get_lanes_to_retry_synchronously_on_error, get_next_lanes, get_transitions_for_lanes,
+    includes_blocking_lane, includes_expired_lane, includes_idle_group_lanes,
+    includes_non_idle_work, includes_only_retries, includes_only_transitions,
+    includes_only_view_transition_eligible_lanes, includes_retry_lane, includes_some_lane,
+    includes_sync_lane, includes_transition_lane, is_gesture_render, is_subset_of_lanes,
+    mark_root_finished, merge_lanes, move_pending_fibers_to_memoized, pick_arbitrary_lane,
+    remove_lanes, upgrade_pending_lanes_to_sync,
+};
+
+use crate::react_event_priorities::{
+    DEFAULT_EVENT_PRIORITY, DISCRETE_EVENT_PRIORITY, EventPriority, event_priority_to_lane,
+    lanes_to_event_priority, lower_event_priority,
+};
+use crate::react_fiber_transition::request_current_transition;
+
+use crate::react_fiber_begin_work::{
+    SELECTIVE_HYDRATION_EXCEPTION, begin_work, replay_function_component,
+};
+use crate::react_fiber_complete_work::complete_work;
+use crate::react_fiber_unwind_work::{unwind_interrupted_work, unwind_work};
+
+use crate::react_fiber_throw::{
+    create_class_error_update, create_root_error_update, initialize_class_error_update,
+    throw_exception,
+};
+
+use crate::react_fiber_commit_work::{
+    SHOULD_FIRE_AFTER_ACTIVE_INSTANCE_BLUR, accumulate_suspensey_commit,
+    commit_after_mutation_effects, commit_before_mutation_effects, commit_layout_effects,
+    commit_mutation_effects, commit_passive_mount_effects, commit_passive_unmount_effects,
+    disappear_layout_effects_for_dev_validation, disconnect_passive_effect,
+    invoke_layout_effect_mount_in_dev, invoke_layout_effect_unmount_in_dev,
+    invoke_passive_effect_mount_in_dev, invoke_passive_effect_unmount_in_dev,
+    reappear_layout_effects_for_dev_validation, reconnect_passive_effects,
+};
+
+use crate::react_fiber_commit_view_transitions::{
+    SHOULD_START_VIEW_TRANSITION, reset_should_start_view_transition,
+};
+
+use crate::react_fiber_apply_gesture::{
+    apply_departure_transitions, insert_destination_clones, start_gesture_animations,
+};
+use crate::react_fiber_class_update_queue::enqueue_update;
+use crate::react_fiber_new_context::reset_context_dependencies;
+
+use crate::react_fiber_hooks::{
+    CONTEXT_ONLY_DISPATCHER, FunctionComponentUpdateQueue, reset_hooks_after_throw,
+    reset_hooks_on_unwind,
+};
+
+use crate::react_fiber_async_dispatcher::DEFAULT_ASYNC_DISPATCHER;
+
+use crate::react_captured_value::{CapturedValue, create_captured_value_at_fiber};
+use crate::react_fiber_concurrent_updates::{
+    enqueue_concurrent_render_for_lane, finish_queueing_concurrent_updates,
+    get_concurrently_updated_lanes,
+};
+use crate::react_profiler_timer::{
+    ANIMATING_LANES, ANIMATING_TASK, BLOCKING_CLAMP_TIME, BLOCKING_EVENT_REPEAT_TIME,
+    BLOCKING_EVENT_TIME, BLOCKING_EVENT_TYPE, BLOCKING_SUSPENDED_TIME,
+    BLOCKING_UPDATE_COMPONENT_NAME, BLOCKING_UPDATE_METHOD_NAME, BLOCKING_UPDATE_TASK,
+    BLOCKING_UPDATE_TIME, BLOCKING_UPDATE_TYPE, COMMIT_END_TIME, COMMIT_ERRORS, COMMIT_START_TIME,
+    CaptureErrors, GESTURE_CLAMP_TIME, GESTURE_EVENT_REPEAT_TIME, GESTURE_EVENT_TIME,
+    GESTURE_EVENT_TYPE, GESTURE_SUSPENDED_TIME, GESTURE_UPDATE_COMPONENT_NAME,
+    GESTURE_UPDATE_METHOD_NAME, GESTURE_UPDATE_TASK, GESTURE_UPDATE_TIME, GESTURE_UPDATE_TYPE,
+    IDLE_CLAMP_TIME, PINGED_UPDATE, RENDER_START_TIME, RETRY_CLAMP_TIME, SPAWNED_UPDATE,
+    TRANSITION_CLAMP_TIME, TRANSITION_EVENT_REPEAT_TIME, TRANSITION_EVENT_TIME,
+    TRANSITION_EVENT_TYPE, TRANSITION_START_TIME, TRANSITION_SUSPENDED_TIME,
+    TRANSITION_UPDATE_COMPONENT_NAME, TRANSITION_UPDATE_METHOD_NAME, TRANSITION_UPDATE_TASK,
+    TRANSITION_UPDATE_TIME, TRANSITION_UPDATE_TYPE, YIELD_REASON, YIELD_START_TIME,
+    clamp_blocking_timers, clamp_gesture_timers, clamp_idle_timers, clamp_retry_timers,
+    clamp_transition_timers, clear_blocking_timers, clear_gesture_timers, clear_gesture_updates,
+    clear_transition_timers, mark_nested_update_scheduled, record_commit_end_time,
+    record_commit_time, record_effect_error, record_render_time, reset_commit_errors,
+    start_animating, start_ping_timer_by_lanes, start_profiler_timer, start_yield_timer,
+    stop_animating, stop_profiler_timer_if_running_and_record_duration,
+    stop_profiler_timer_if_running_and_record_incomplete_duration, track_suspended_time,
+};
+
+use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+use crate::react_strict_mode_warnings::REACT_STRICT_MODE_WARNINGS;
+
+use crate::react_current_fiber::{IS_RENDERING, reset_current_fiber, run_with_fiber_in_dev};
+#[cfg_attr(rust_js, rust_js::name = "onCommitRootDevTools")]
+use crate::react_fiber_dev_tools_hook::on_commit_root as on_commit_root_dev_tools;
+#[cfg_attr(rust_js, rust_js::name = "onPostCommitRootDevTools")]
+use crate::react_fiber_dev_tools_hook::on_post_commit_root as on_post_commit_root_dev_tools;
+
+use crate::react_fiber_dev_tools_hook::{
+    IS_DEV_TOOLS_PRESENT, mark_commit_started, mark_commit_stopped, mark_component_errored,
+    mark_component_render_stopped, mark_component_suspended, mark_layout_effects_started,
+    mark_layout_effects_stopped, mark_passive_effects_started, mark_passive_effects_stopped,
+    mark_render_started, mark_render_stopped, mark_render_yielded, set_is_strict_mode_for_devtools,
+};
+#[cfg_attr(rust_js, rust_js::name = "onCommitRootTestSelector")]
+use crate::react_test_selectors::on_commit_root as on_commit_root_test_selector;
+
+use crate::react_fiber_cache_component::release_cache;
+
+use crate::react_fiber_act::{is_concurrent_act_environment, is_legacy_act_environment};
+use crate::react_fiber_tracing_marker_component::{
+    MarkerIncomplete, MarkerProgress, PendingBoundaries, PendingTransitionCallbacks,
+    TransitionAborts, process_transition_callbacks,
+};
+
+use crate::react_fiber_thenable::{
+    SUSPENSE_ACTION_EXCEPTION, SUSPENSE_EXCEPTION, SUSPENSEY_COMMIT_EXCEPTION, clear_use_warnings,
+    get_suspended_thenable, has_potential_use_warnings, is_thenable_resolved,
+};
+use crate::react_post_paint_callback::schedule_post_paint_callback;
+
+use crate::react_fiber_suspense_context::{get_shell_boundary, get_suspense_handler};
+
+use crate::react_child_fiber::reset_child_reconciler_on_unwind;
+use crate::react_fiber_root_scheduler::{
+    ensure_root_is_scheduled, flush_sync_work_on_all_roots, flush_sync_work_on_legacy_roots_only,
+    request_transition_lane,
+};
+
+use crate::react_fiber_legacy_context::{get_masked_context, get_unmasked_context};
+
+use crate::react_fiber_error_logger::log_uncaught_error;
+use crate::react_fiber_gesture_scheduler::{schedule_gesture_commit, stop_committed_gesture};
+use crate::react_fiber_transition_types::claim_queued_transition_types;
+
+/// What `waitForCommitToBeReady` gives where the commit isn't ready: it's
+/// given the commit, and gives what cancels it.
+type SchedulePendingCommit = dyn Fn(&'static dyn Fn()) -> Box<dyn Fn()>;
 
 /// A root's ping cache: the lanes each wakeable has a ping listener for.
 type PingCache = WeakMap<Wakeable, &'static Set<Lanes>>;

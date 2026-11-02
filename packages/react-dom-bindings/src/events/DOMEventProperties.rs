@@ -7,13 +7,13 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use shared::react_feature_flags::{ENABLE_CREATE_EVENT_HANDLE_API, ENABLE_SCROLL_END_POLYFILL};
+use crate::event_registry::register_two_phase_event;
 
 use crate::dom_event_names::{
     ANIMATION_CANCEL, ANIMATION_END, ANIMATION_ITERATION, ANIMATION_START, DOMEventName,
     TRANSITION_CANCEL, TRANSITION_END, TRANSITION_RUN, TRANSITION_START,
 };
-use crate::event_registry::register_two_phase_event;
+use shared::react_feature_flags::{ENABLE_CREATE_EVENT_HANDLE_API, ENABLE_SCROLL_END_POLYFILL};
 
 thread_local! {
     pub static TOP_LEVEL_EVENTS_TO_REACT_NAMES: RefCell<HashMap<DOMEventName, Option<String>>> =

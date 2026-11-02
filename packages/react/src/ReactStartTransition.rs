@@ -12,16 +12,19 @@ use std::rc::Rc;
 
 use js::{JsError, JsObject, Unknown};
 use shared::environment::__DEV__;
-use shared::noop::noop;
-use shared::react_feature_flags::{
-    ENABLE_GESTURE_TRANSITION, ENABLE_TRANSITION_TRACING, ENABLE_VIEW_TRANSITION,
-};
-use shared::react_shared_internals::{REACT_SHARED_INTERNALS, SharedStateClient};
 use shared::react_types::{GestureProvider, StartTransitionOptions, Thenable};
-use shared::report_global_error::REPORT_GLOBAL_ERROR;
 use webapi::console;
 
 use crate::react_transition_type::TransitionTypes;
+
+use shared::react_shared_internals::{REACT_SHARED_INTERNALS, SharedStateClient};
+
+use shared::react_feature_flags::{
+    ENABLE_GESTURE_TRANSITION, ENABLE_TRANSITION_TRACING, ENABLE_VIEW_TRANSITION,
+};
+use shared::report_global_error::REPORT_GLOBAL_ERROR;
+
+use shared::noop::noop;
 
 /// The reconciler's `Fiber`, `ReactInternalTypes`', which a Transition only
 /// holds: each is itself, as a JS `Set` holds it.

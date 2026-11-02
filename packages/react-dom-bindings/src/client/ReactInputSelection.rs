@@ -11,8 +11,9 @@ use webapi::{
 };
 
 use crate::get_active_element::get_active_element;
-use crate::html_node_type::{ELEMENT_NODE, TEXT_NODE};
 use crate::react_dom_selection::{Offsets, get_offsets, set_offsets};
+
+use crate::html_node_type::{ELEMENT_NODE, TEXT_NODE};
 
 fn is_text_node(node: Option<&Node>) -> bool {
     node.is_some_and(|node| node.node_type() == TEXT_NODE)

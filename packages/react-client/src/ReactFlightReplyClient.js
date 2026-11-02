@@ -5,12 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {enableFlightObjectReferences} from 'shared/ReactFeatureFlags';
-import {
-  describeObjectForErrorMessage,
-  isSimpleObject,
-  objectName,
-} from 'shared/ReactSerializationErrors';
 import {
   ASYNC_ITERATOR,
   REACT_CONTEXT_TYPE,
@@ -18,13 +12,19 @@ import {
   REACT_LAZY_TYPE,
   getIteratorFn,
 } from 'shared/ReactSymbols';
-import getPrototypeOf from 'shared/getPrototypeOf';
+import {
+  describeObjectForErrorMessage,
+  isSimpleObject,
+  objectName,
+} from 'shared/ReactSerializationErrors';
+import {writeTemporaryReference} from './ReactFlightTemporaryReferences.js';
 import isArray from 'shared/isArray';
+import getPrototypeOf from 'shared/getPrototypeOf';
+import {enableFlightObjectReferences} from 'shared/ReactFeatureFlags';
 import {
   checkEvalAvailabilityOnceDev,
   usedWithSSR,
 } from './ReactFlightClientConfig.js';
-import {writeTemporaryReference} from './ReactFlightTemporaryReferences.js';
 import {
   $catchUnwind,
   $displayF64,

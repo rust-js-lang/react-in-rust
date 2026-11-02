@@ -5,10 +5,11 @@
 
 use js::Unknown;
 use shared::environment::__DEV__;
-use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 use webapi::console;
 
 use crate::react_internal_types::Fiber;
+
+use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFiberConfig.js#warnsIfNotActing"]

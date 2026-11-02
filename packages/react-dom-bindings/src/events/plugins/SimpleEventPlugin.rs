@@ -6,14 +6,22 @@
 use std::rc::Rc;
 
 use react_reconciler::react_internal_types::Fiber;
-use shared::react_feature_flags::ENABLE_CREATE_EVENT_HANDLE_API;
 use webapi::{EventTarget, keyboard_event, mouse_event};
+
+use crate::plugin_module_type::AnyNativeEvent;
+use crate::react_synthetic_event_type::ReactSyntheticEvent;
+
+use crate::synthetic_event::{
+    SYNTHETIC_ANIMATION_EVENT, SYNTHETIC_CLIPBOARD_EVENT, SYNTHETIC_DRAG_EVENT, SYNTHETIC_EVENT,
+    SYNTHETIC_FOCUS_EVENT, SYNTHETIC_KEYBOARD_EVENT, SYNTHETIC_MOUSE_EVENT,
+    SYNTHETIC_POINTER_EVENT, SYNTHETIC_SUBMIT_EVENT, SYNTHETIC_TOGGLE_EVENT, SYNTHETIC_TOUCH_EVENT,
+    SYNTHETIC_TRANSITION_EVENT, SYNTHETIC_UI_EVENT, SYNTHETIC_WHEEL_EVENT, SyntheticEventClass,
+};
 
 use crate::dom_event_names::{
     ANIMATION_CANCEL, ANIMATION_END, ANIMATION_ITERATION, ANIMATION_START, TRANSITION_END,
 };
 use crate::dom_event_properties::TOP_LEVEL_EVENTS_TO_REACT_NAMES;
-pub use crate::dom_event_properties::register_simple_events as register_events;
 use crate::dom_plugin_event_system::{
     DispatchEntry, DispatchQueue, accumulate_event_handle_non_managed_node_listeners,
     accumulate_single_phase_listeners,
@@ -22,14 +30,9 @@ use crate::event_system_flags::{
     EventSystemFlags, IS_CAPTURE_PHASE, IS_EVENT_HANDLE_NON_MANAGED_NODE,
 };
 use crate::get_event_char_code::get_event_char_code;
-use crate::plugin_module_type::AnyNativeEvent;
-use crate::react_synthetic_event_type::ReactSyntheticEvent;
-use crate::synthetic_event::{
-    SYNTHETIC_ANIMATION_EVENT, SYNTHETIC_CLIPBOARD_EVENT, SYNTHETIC_DRAG_EVENT, SYNTHETIC_EVENT,
-    SYNTHETIC_FOCUS_EVENT, SYNTHETIC_KEYBOARD_EVENT, SYNTHETIC_MOUSE_EVENT,
-    SYNTHETIC_POINTER_EVENT, SYNTHETIC_SUBMIT_EVENT, SYNTHETIC_TOGGLE_EVENT, SYNTHETIC_TOUCH_EVENT,
-    SYNTHETIC_TRANSITION_EVENT, SYNTHETIC_UI_EVENT, SYNTHETIC_WHEEL_EVENT, SyntheticEventClass,
-};
+use shared::react_feature_flags::ENABLE_CREATE_EVENT_HANDLE_API;
+
+pub use crate::dom_event_properties::register_simple_events as register_events;
 
 #[cfg_attr(rust_js, rust_js::nullable(target_inst, native_event_target))]
 pub fn extract_events(

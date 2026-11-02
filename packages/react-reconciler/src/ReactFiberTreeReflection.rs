@@ -10,13 +10,15 @@ use js::Unknown;
 
 use crate::react_fiber::PortalStateNode;
 use crate::react_fiber_activity_component::ActivityState;
-use crate::react_fiber_flags::{HYDRATING, NO_FLAGS, PLACEMENT};
 use crate::react_fiber_suspense_component::SuspenseState;
 use crate::react_internal_types::{Fiber, FiberRoot};
+
 use crate::react_work_tags::{
     ACTIVITY_COMPONENT, FRAGMENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL, HOST_ROOT,
     HOST_SINGLETON, HOST_TEXT, OFFSCREEN_COMPONENT, SUSPENSE_COMPONENT,
 };
+
+use crate::react_fiber_flags::{HYDRATING, NO_FLAGS, PLACEMENT};
 
 /// What a fragment's traversal calls of each host instance or text it
 /// visits, given what it was given: whether it's done.

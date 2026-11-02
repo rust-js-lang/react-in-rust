@@ -5,19 +5,19 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {
-  enableCreateEventHandleAPI,
-  enableScopeAPI,
-} from 'shared/ReactFeatureFlags';
-import {listenToNativeEventForNonManagedEventTarget} from '../events/DOMPluginEventSystem.js';
 import {allNativeEvents} from '../events/EventRegistry.js';
-import {ELEMENT_NODE} from './HTMLNodeType.js';
 import {
   addEventHandleToTarget,
   doesTargetHaveEventHandle,
   getEventHandlerListeners,
   setEventHandlerListeners,
 } from './ReactDOMComponentTree.js';
+import {ELEMENT_NODE} from './HTMLNodeType.js';
+import {listenToNativeEventForNonManagedEventTarget} from '../events/DOMPluginEventSystem.js';
+import {
+  enableCreateEventHandleAPI,
+  enableScopeAPI,
+} from 'shared/ReactFeatureFlags';
 
 function isValidEventTarget(target) {
   return typeof target.addEventListener === 'function';

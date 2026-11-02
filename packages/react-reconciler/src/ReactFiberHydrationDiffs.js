@@ -5,11 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {enableSrcObject} from 'shared/ReactFeatureFlags';
-import {REACT_ELEMENT_TYPE} from 'shared/ReactSymbols';
-import assign from 'shared/assign';
-import getComponentNameFromType from 'shared/getComponentNameFromType';
-import isArray from 'shared/isArray';
 import {
   ActivityComponent,
   ClassComponent,
@@ -24,6 +19,11 @@ import {
   SuspenseComponent,
   SuspenseListComponent,
 } from './ReactWorkTags.js';
+import {enableSrcObject} from 'shared/ReactFeatureFlags';
+import {REACT_ELEMENT_TYPE} from 'shared/ReactSymbols';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
+import isArray from 'shared/isArray';
+import assign from 'shared/assign';
 import {$borrow, $index, $unborrow} from '@rust-js/runtime';
 
 const maxRowLength = 120;

@@ -5,13 +5,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import isArray from 'shared/isArray';
+import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
 import {
   DefaultEventPriority,
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import {enableProfilerTimer} from 'shared/ReactFeatureFlags';
-import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
-import isArray from 'shared/isArray';
 import {$insertAt, $position} from '@rust-js/runtime';
 
 // TODO: Consider exporting the react-native version.

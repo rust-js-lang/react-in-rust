@@ -7,16 +7,18 @@ use std::rc::Rc;
 
 use js::{Class, Map, Set, TimeoutId, Unknown, WeakMap, math, number, string};
 use react_reconciler::react_internal_types::Fiber;
+use shared::environment::__DEV__;
+use webapi::{Element, EventTarget, Node};
+
+use crate::react_dom_event_handle_types::{ReactDOMEventHandle, ReactDOMEventHandleListener};
+
 use react_reconciler::react_work_tags::{
     ACTIVITY_COMPONENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_ROOT, HOST_SINGLETON, HOST_TEXT,
     SUSPENSE_COMPONENT,
 };
-use shared::environment::__DEV__;
-use shared::react_feature_flags::{ENABLE_INTERNAL_INSTANCE_MAP, ENABLE_SCOPE_API};
-use webapi::{Element, EventTarget, Node};
 
-use crate::react_dom_event_handle_types::{ReactDOMEventHandle, ReactDOMEventHandleListener};
 use crate::react_fiber_config_dom::{RootResources, get_parent_hydration_boundary};
+use shared::react_feature_flags::{ENABLE_INTERNAL_INSTANCE_MAP, ENABLE_SCOPE_API};
 
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "randomKey")]

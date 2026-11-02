@@ -9,37 +9,49 @@ use std::rc::Rc;
 use js::{JsError, Unknown};
 use shared::environment::__DEV__;
 
-use crate::react_current_fiber::run_with_fiber_in_dev;
-use crate::react_fiber_flags::{CONTENT_RESET, PLACEMENT};
-use crate::react_fiber_fragment_instance::{
-    commit_new_child_to_fragment_instances, get_parent_fragment_instances,
-};
-use crate::react_fiber_mutation_tracking::track_host_mutation;
-use crate::react_fiber_work_loop::capture_commit_phase_error;
 use crate::react_internal_types::{Fiber, FiberRoot};
+
 use crate::react_work_tags::{
     DEHYDRATED_FRAGMENT, HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL, HOST_ROOT, HOST_SINGLETON,
     HOST_TEXT,
 };
 
-unsafe extern "Rust" {
-    #[link_name = "./src/ReactFiberConfig.js#supportsMutation"]
-    safe static SUPPORTS_MUTATION: bool;
-    #[link_name = "./src/ReactFiberConfig.js#supportsResources"]
-    safe static SUPPORTS_RESOURCES: bool;
-    #[link_name = "./src/ReactFiberConfig.js#supportsSingletons"]
-    safe static SUPPORTS_SINGLETONS: bool;
-}
+use crate::react_fiber_flags::{CONTENT_RESET, PLACEMENT};
 
-// ReactFiberConfig's host operations, on its `Instance`, `TextInstance`,
-// `Container`, `ChildSet`, `ActivityInstance` and `SuspenseInstance`.
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#commitMount")]
-fn commit_mount(
-    instance: Option<&'static Unknown>,
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#acquireSingletonInstance"
+)]
+fn acquire_singleton_instance(
     r#type: Option<&'static Unknown>,
     props: Option<&'static Unknown>,
+    instance: Option<&'static Unknown>,
     internal_instance_handle: &Fiber,
 ) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#appendChildToContainer"
+)]
+fn append_child_to_container(container: Option<&'static Unknown>, child: Option<&'static Unknown>) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#commitHydratedActivityInstance"
+)]
+fn commit_hydrated_activity_instance(activity_instance: &'static Unknown) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#commitHydratedContainer"
+)]
+fn commit_hydrated_container(container: &'static Unknown) {
     unreachable!()
 }
 
@@ -56,14 +68,11 @@ fn commit_hydrated_instance(
     unreachable!()
 }
 
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#commitUpdate")]
-fn commit_update(
-    instance: Option<&'static Unknown>,
-    r#type: Option<&'static Unknown>,
-    old_props: Option<&'static Unknown>,
-    new_props: Option<&'static Unknown>,
-    internal_instance_handle: &Fiber,
-) {
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#commitHydratedSuspenseInstance"
+)]
+fn commit_hydrated_suspense_instance(suspense_instance: &'static Unknown) {
     unreachable!()
 }
 
@@ -77,14 +86,6 @@ fn commit_text_update(text_instance: Option<&'static Unknown>, old_text: &str, n
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#resetTextContent"
-)]
-fn reset_text_content(instance: Option<&'static Unknown>) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#hideDehydratedBoundary"
 )]
 fn hide_dehydrated_boundary(instance: Option<&'static Unknown>) {
@@ -93,46 +94,9 @@ fn hide_dehydrated_boundary(instance: Option<&'static Unknown>) {
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#unhideDehydratedBoundary"
-)]
-fn unhide_dehydrated_boundary(instance: Option<&'static Unknown>) {
-    unreachable!()
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#hideInstance")]
-fn hide_instance(instance: Option<&'static Unknown>) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#unhideInstance"
-)]
-fn unhide_instance(instance: Option<&'static Unknown>, props: Option<&'static Unknown>) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#hideTextInstance"
 )]
 fn hide_text_instance(text_instance: Option<&'static Unknown>) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#unhideTextInstance"
-)]
-fn unhide_text_instance(text_instance: Option<&'static Unknown>, text: Option<&'static Unknown>) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#isSingletonScope"
-)]
-fn is_singleton_scope(r#type: Option<&'static Unknown>) -> bool {
     unreachable!()
 }
 
@@ -150,81 +114,9 @@ fn insert_in_container_before(
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#appendChildToContainer"
+    rust_js::link_name = "./src/ReactFiberConfig.js#isSingletonScope"
 )]
-fn append_child_to_container(container: Option<&'static Unknown>, child: Option<&'static Unknown>) {
-    unreachable!()
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#insertBefore")]
-fn insert_before(
-    parent_instance: Option<&'static Unknown>,
-    child: Option<&'static Unknown>,
-    before_child: &'static Unknown,
-) {
-    unreachable!()
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#appendChild")]
-fn append_child(parent_instance: Option<&'static Unknown>, child: Option<&'static Unknown>) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#removeChildFromContainer"
-)]
-fn remove_child_from_container(container: &'static Unknown, child: &'static Unknown) {
-    unreachable!()
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#removeChild")]
-fn remove_child(parent_instance: &'static Unknown, child: &'static Unknown) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#replaceContainerChildren"
-)]
-fn replace_container_children(container: &'static Unknown, new_children: Option<&'static Unknown>) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#commitHydratedContainer"
-)]
-fn commit_hydrated_container(container: &'static Unknown) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#commitHydratedActivityInstance"
-)]
-fn commit_hydrated_activity_instance(activity_instance: &'static Unknown) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#commitHydratedSuspenseInstance"
-)]
-fn commit_hydrated_suspense_instance(suspense_instance: &'static Unknown) {
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFiberConfig.js#acquireSingletonInstance"
-)]
-fn acquire_singleton_instance(
-    r#type: Option<&'static Unknown>,
-    props: Option<&'static Unknown>,
-    instance: Option<&'static Unknown>,
-    internal_instance_handle: &Fiber,
-) {
+fn is_singleton_scope(r#type: Option<&'static Unknown>) -> bool {
     unreachable!()
 }
 
@@ -239,6 +131,119 @@ fn release_singleton_instance(
 ) {
     unreachable!()
 }
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#removeChildFromContainer"
+)]
+fn remove_child_from_container(container: &'static Unknown, child: &'static Unknown) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#replaceContainerChildren"
+)]
+fn replace_container_children(container: &'static Unknown, new_children: Option<&'static Unknown>) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#resetTextContent"
+)]
+fn reset_text_content(instance: Option<&'static Unknown>) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#unhideDehydratedBoundary"
+)]
+fn unhide_dehydrated_boundary(instance: Option<&'static Unknown>) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#unhideInstance"
+)]
+fn unhide_instance(instance: Option<&'static Unknown>, props: Option<&'static Unknown>) {
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "./src/ReactFiberConfig.js#unhideTextInstance"
+)]
+fn unhide_text_instance(text_instance: Option<&'static Unknown>, text: Option<&'static Unknown>) {
+    unreachable!()
+}
+
+#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#appendChild")]
+fn append_child(parent_instance: Option<&'static Unknown>, child: Option<&'static Unknown>) {
+    unreachable!()
+}
+
+#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#commitUpdate")]
+fn commit_update(
+    instance: Option<&'static Unknown>,
+    r#type: Option<&'static Unknown>,
+    old_props: Option<&'static Unknown>,
+    new_props: Option<&'static Unknown>,
+    internal_instance_handle: &Fiber,
+) {
+    unreachable!()
+}
+
+#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#hideInstance")]
+fn hide_instance(instance: Option<&'static Unknown>) {
+    unreachable!()
+}
+
+#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#insertBefore")]
+fn insert_before(
+    parent_instance: Option<&'static Unknown>,
+    child: Option<&'static Unknown>,
+    before_child: &'static Unknown,
+) {
+    unreachable!()
+}
+
+#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#removeChild")]
+fn remove_child(parent_instance: &'static Unknown, child: &'static Unknown) {
+    unreachable!()
+}
+
+// ReactFiberConfig's host operations, on its `Instance`, `TextInstance`,
+// `Container`, `ChildSet`, `ActivityInstance` and `SuspenseInstance`.
+#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFiberConfig.js#commitMount")]
+fn commit_mount(
+    instance: Option<&'static Unknown>,
+    r#type: Option<&'static Unknown>,
+    props: Option<&'static Unknown>,
+    internal_instance_handle: &Fiber,
+) {
+    unreachable!()
+}
+
+unsafe extern "Rust" {
+    #[link_name = "./src/ReactFiberConfig.js#supportsMutation"]
+    safe static SUPPORTS_MUTATION: bool;
+    #[link_name = "./src/ReactFiberConfig.js#supportsResources"]
+    safe static SUPPORTS_RESOURCES: bool;
+    #[link_name = "./src/ReactFiberConfig.js#supportsSingletons"]
+    safe static SUPPORTS_SINGLETONS: bool;
+}
+
+use crate::react_fiber_work_loop::capture_commit_phase_error;
+
+use crate::react_fiber_mutation_tracking::track_host_mutation;
+
+use crate::react_current_fiber::run_with_fiber_in_dev;
+use crate::react_fiber_fragment_instance::{
+    commit_new_child_to_fragment_instances, get_parent_fragment_instances,
+};
 
 pub fn commit_host_mount(finished_work: &Rc<Fiber>) {
     let r#type = finished_work.r#type.get();

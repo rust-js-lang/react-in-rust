@@ -7,13 +7,14 @@ use std::rc::Rc;
 
 use js::{Dict, Kind, RegExp, Unknown, dict, reg_exp};
 use shared::environment::__DEV__;
-use shared::has_own_property::HAS_OWN_PROPERTY;
 use webapi::console;
 
 use crate::dom_event_names::DOMEventName;
+
 use crate::is_attribute_name_safe::ATTRIBUTE_NAME_CHAR;
 use crate::is_custom_element::is_custom_element;
 use crate::possible_standard_names::POSSIBLE_STANDARD_NAMES;
+use shared::has_own_property::HAS_OWN_PROPERTY;
 
 /// The event system's registry, as the client gives it; the server has none.
 pub struct EventRegistry {

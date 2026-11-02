@@ -9,13 +9,13 @@ use std::rc::Rc;
 
 use js::{Map, Set, WeakMap};
 use shared::environment::__DEV__;
-use shared::react_feature_flags::ENABLE_TAINT;
 use shared::react_shared_internals::{AsyncDispatcher, Dispatcher};
 
 use crate::react_taint_registry::{
     EntryValue, Reference, RequestCleanupQueue, TAINT_REGISTRY_BYTE_LENGTHS,
     TAINT_REGISTRY_OBJECTS, TAINT_REGISTRY_PENDING_REQUESTS, TAINT_REGISTRY_VALUES, TaintEntry,
 };
+use shared::react_feature_flags::ENABLE_TAINT;
 
 pub struct SharedStateServer {
     // ReactCurrentDispatcher for Hooks

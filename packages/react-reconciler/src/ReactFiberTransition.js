@@ -5,40 +5,40 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {NoLane} from './ReactFiberLane.js';
 import {
   enableGestureTransition,
   enableTransitionTracing,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
+import {isPrimaryRenderer} from './ReactFiberConfig.js';
+import {createCursor, pop, push} from './ReactFiberStack.js';
 import {
-  entangleAsyncAction,
-  peekEntangledActionLane,
-} from './ReactFiberAsyncAction.js';
+  getWorkInProgressRoot,
+  getWorkInProgressTransitions,
+  markTransitionStarted,
+} from './ReactFiberWorkLoop.js';
 import {
   CacheContext,
   createCache,
   retainCache,
 } from './ReactFiberCacheComponent.js';
-import {isPrimaryRenderer} from './ReactFiberConfig.js';
-import {
-  cancelScheduledGesture,
-  startScheduledGesture,
-} from './ReactFiberGestureScheduler.js';
-import {NoLane} from './ReactFiberLane.js';
-import {firstScheduledRoot} from './ReactFiberRootScheduler.js';
-import {createCursor, pop, push} from './ReactFiberStack.js';
 import {
   entangleAsyncTransitionTypes,
   entangledTransitionTypes as entangledTransitionTypes$2,
   queueTransitionTypes,
 } from './ReactFiberTransitionTypes.js';
 import {
-  getWorkInProgressRoot,
-  getWorkInProgressTransitions,
-  markTransitionStarted,
-} from './ReactFiberWorkLoop.js';
+  entangleAsyncAction,
+  peekEntangledActionLane,
+} from './ReactFiberAsyncAction.js';
 import {startAsyncTransitionTimer} from './ReactProfilerTimer.js';
+import {firstScheduledRoot} from './ReactFiberRootScheduler.js';
+import {
+  cancelScheduledGesture,
+  startScheduledGesture,
+} from './ReactFiberGestureScheduler.js';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {$unwrap} from '@rust-js/runtime';
 
 export const NoTransition = null;

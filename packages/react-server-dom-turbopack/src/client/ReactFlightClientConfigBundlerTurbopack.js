@@ -5,13 +5,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {Async, isAsyncImport} from '../shared/ReactFlightImportMetadata.js';
 import {
   addChunkDebugInfo,
   loadChunk,
   prepareDestinationWithChunks,
 } from 'react-client/src/ReactFlightClientConfig';
 import hasOwnProperty from 'shared/hasOwnProperty';
-import {Async, isAsyncImport} from '../shared/ReactFlightImportMetadata.js';
 
 // The reason this function needs to defined here in this file instead of just
 // being exported directly from the TurbopackDestination... file is because the

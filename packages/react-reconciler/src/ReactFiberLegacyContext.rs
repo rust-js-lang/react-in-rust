@@ -8,13 +8,16 @@ use std::rc::Rc;
 
 use js::{Dict, Unknown, object};
 use shared::environment::__DEV__;
-use shared::react_feature_flags::DISABLE_LEGACY_CONTEXT;
 use webapi::console;
+
+use crate::react_internal_types::Fiber;
+
+use shared::react_feature_flags::DISABLE_LEGACY_CONTEXT;
+
+use crate::react_work_tags::{CLASS_COMPONENT, HOST_ROOT};
 
 use crate::get_component_name_from_fiber::get_component_name_from_fiber;
 use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
-use crate::react_internal_types::Fiber;
-use crate::react_work_tags::{CLASS_COMPONENT, HOST_ROOT};
 
 #[cfg_attr(rust_js, rust_js::link_name = "getChildContext")]
 fn get_child_context(this: Option<&Unknown>) -> &'static Unknown {

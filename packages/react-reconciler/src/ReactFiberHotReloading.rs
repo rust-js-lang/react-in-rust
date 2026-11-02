@@ -8,24 +8,27 @@ use std::rc::Rc;
 
 use js::{JsObject, Set, SymbolFor, Unknown, WeakSet};
 use shared::environment::__DEV__;
-use shared::react_symbols::{REACT_FORWARD_REF_TYPE, REACT_LAZY_TYPE, REACT_MEMO_TYPE};
 use shared::react_types::ReactNodeList;
 
-use crate::react_fiber_concurrent_updates::enqueue_concurrent_render_for_lane;
-use crate::react_fiber_lane::SYNC_LANE;
-use crate::react_fiber_reconciler::ReactFiberReconciler;
+use crate::react_internal_types::{Fiber, FiberRoot};
+
 use crate::react_fiber_work_loop::{
     flush_pending_effects, flush_sync_work, schedule_update_on_fiber,
 };
-use crate::react_internal_types::{Fiber, FiberRoot};
-use crate::react_work_tags::{
-    CLASS_COMPONENT, FORWARD_REF, FUNCTION_COMPONENT, MEMO_COMPONENT, SIMPLE_MEMO_COMPONENT,
-};
+
+use crate::react_fiber_concurrent_updates::enqueue_concurrent_render_for_lane;
+use crate::react_fiber_reconciler::ReactFiberReconciler;
 
 unsafe extern "Rust" {
     #[link_name = "./src/ReactFiberLegacyContext.js#emptyContextObject"]
     safe static EMPTY_CONTEXT_OBJECT: &'static JsObject;
 }
+
+use crate::react_fiber_lane::SYNC_LANE;
+use crate::react_work_tags::{
+    CLASS_COMPONENT, FORWARD_REF, FUNCTION_COMPONENT, MEMO_COMPONENT, SIMPLE_MEMO_COMPONENT,
+};
+use shared::react_symbols::{REACT_FORWARD_REF_TYPE, REACT_LAZY_TYPE, REACT_MEMO_TYPE};
 
 pub struct Family {
     pub current: Option<&'static Unknown>,

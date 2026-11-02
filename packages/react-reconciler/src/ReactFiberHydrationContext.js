@@ -5,8 +5,14 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {
+  ActivityComponent,
+  HostComponent,
+  HostRoot,
+  HostSingleton,
+  SuspenseComponent,
+} from './ReactWorkTags.js';
 import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
-import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {createFiberFromDehydratedFragment} from './ReactFiber.js';
 import {
   canHydrateActivityInstance,
@@ -39,21 +45,15 @@ import {
   validateHydratableInstance,
   validateHydratableTextInstance,
 } from './ReactFiberConfig.js';
-import {getHostContext, getRootHostContainer} from './ReactFiberHostContext.js';
-import {describeDiff} from './ReactFiberHydrationDiffs.js';
 import {OffscreenLane} from './ReactFiberLane.js';
 import {
   getSuspendedTreeContext,
   restoreSuspendedTreeContext,
 } from './ReactFiberTreeContext.js';
 import {queueRecoverableErrors} from './ReactFiberWorkLoop.js';
-import {
-  ActivityComponent,
-  HostComponent,
-  HostRoot,
-  HostSingleton,
-  SuspenseComponent,
-} from './ReactWorkTags.js';
+import {getHostContext, getRootHostContainer} from './ReactFiberHostContext.js';
+import {describeDiff} from './ReactFiberHydrationDiffs.js';
+import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {$borrowMut, $index} from '@rust-js/runtime';
 
 // The deepest Fiber on the stack involved in a hydration context.

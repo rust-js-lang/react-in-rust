@@ -6,12 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {unstable_scheduleCallback as scheduleCallback} from 'scheduler';
-import {isHigherEventPriority} from 'react-reconciler/src/ReactEventPriorities';
-import {
-  attemptContinuousHydration,
-  attemptHydrationAtCurrentPriority,
-} from 'react-reconciler/src/ReactFiberReconciler';
-import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
+import {NormalPriority} from 'scheduler/src/SchedulerPriorities';
 import {
   getActivityInstanceFromFiber,
   getContainerFromFiber,
@@ -19,30 +14,35 @@ import {
   getSuspenseInstanceFromFiber,
 } from 'react-reconciler/src/ReactFiberTreeReflection';
 import {
-  ActivityComponent,
-  HostRoot,
-  SuspenseComponent,
-} from 'react-reconciler/src/ReactWorkTags';
-import {NormalPriority} from 'scheduler/src/SchedulerPriorities';
-import {enableHydrationChangeEvent} from 'shared/ReactFeatureFlags';
+  findInstanceBlockingEvent,
+  findInstanceBlockingTarget,
+} from './ReactDOMEventListener.js';
+import {
+  resetReplayingEvent,
+  setReplayingEvent,
+} from './CurrentReplayingEvent.js';
 import {
   getClosestInstanceFromNode,
   getFiberCurrentPropsFromNode,
   getInstanceFromNode,
 } from '../client/ReactDOMComponentTree.js';
 import {
+  ActivityComponent,
+  HostRoot,
+  SuspenseComponent,
+} from 'react-reconciler/src/ReactWorkTags';
+import {isHigherEventPriority} from 'react-reconciler/src/ReactEventPriorities';
+import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
+import {dispatchReplayedFormAction} from './plugins/FormActionEventPlugin.js';
+import {
   resolveUpdatePriority,
   runWithPriority as attemptHydrationAtPriority,
 } from '../client/ReactDOMUpdatePriority.js';
+import {enableHydrationChangeEvent} from 'shared/ReactFeatureFlags';
 import {
-  resetReplayingEvent,
-  setReplayingEvent,
-} from './CurrentReplayingEvent.js';
-import {
-  findInstanceBlockingEvent,
-  findInstanceBlockingTarget,
-} from './ReactDOMEventListener.js';
-import {dispatchReplayedFormAction} from './plugins/FormActionEventPlugin.js';
+  attemptContinuousHydration,
+  attemptHydrationAtCurrentPriority,
+} from 'react-reconciler/src/ReactFiberReconciler';
 import {$insertAt, $removeAt, $unwrap} from '@rust-js/runtime';
 
 let hasScheduledReplayAttempt = false;

@@ -5,20 +5,20 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {Hydrating, NoFlags, Placement} from './ReactFiberFlags.js';
+import {
+  getWorkInProgressRoot,
+  throwIfInfiniteUpdateLoopDetected,
+  warnAboutUpdateOnNotYetMountedFiberInDEV,
+} from './ReactFiberWorkLoop.js';
 import {
   NoLane,
   NoLanes,
   markHiddenUpdate,
   mergeLanes,
 } from './ReactFiberLane.js';
-import {OffscreenVisible} from './ReactFiberOffscreenComponent.js';
-import {
-  getWorkInProgressRoot,
-  throwIfInfiniteUpdateLoopDetected,
-  warnAboutUpdateOnNotYetMountedFiberInDEV,
-} from './ReactFiberWorkLoop.js';
+import {Hydrating, NoFlags, Placement} from './ReactFiberFlags.js';
 import {HostRoot, OffscreenComponent} from './ReactWorkTags.js';
+import {OffscreenVisible} from './ReactFiberOffscreenComponent.js';
 
 // If a render is in progress, and we receive an update from a concurrent event,
 // we wait until the current render is over (either finished or interrupted)

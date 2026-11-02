@@ -8,11 +8,13 @@ use std::rc::Rc;
 
 use js::{Class, Dict, Kind, Unknown, dict, function, string};
 use react_reconciler::react_internal_types::Fiber;
-use shared::assign::assign;
 use webapi::{Event, EventTarget, KeyboardEvent, MouseEvent, window};
 
-use crate::get_event_char_code::get_event_char_code;
 use crate::react_synthetic_event_type::ReactSyntheticEvent;
+
+use shared::assign::assign;
+
+use crate::get_event_char_code::get_event_char_code;
 
 /// `0 | ((event) => mixed)`: the native event's property, copied, or what a
 /// function makes of the native event.

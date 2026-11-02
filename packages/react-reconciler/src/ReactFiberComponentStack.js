@@ -5,14 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {
-  describeBuiltInComponentFrame,
-  describeClassComponentFrame,
-  describeDebugInfoFrame,
-  describeFunctionComponentFrame,
-} from 'shared/ReactComponentStackFrame';
 import {enableViewTransition} from 'shared/ReactFeatureFlags';
-import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
 import {
   ActivityComponent,
   ClassComponent,
@@ -28,6 +21,13 @@ import {
   SuspenseListComponent,
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
+import {
+  describeBuiltInComponentFrame,
+  describeClassComponentFrame,
+  describeDebugInfoFrame,
+  describeFunctionComponentFrame,
+} from 'shared/ReactComponentStackFrame';
+import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
 import {$unwrap} from '@rust-js/runtime';
 
 function describeFiber(fiber, childFiber) {

@@ -5,10 +5,12 @@
 
 use js::{Kind, SymbolFor, Unknown, function};
 
-use crate::get_component_name_from_type::get_component_name_from_type;
-use crate::has_own_property::HAS_OWN_PROPERTY;
 use crate::react_flight_property_access::OMITTED_PROP_ERROR;
+
+use crate::has_own_property::HAS_OWN_PROPERTY;
 use crate::react_symbols::REACT_ELEMENT_TYPE;
+
+use crate::get_component_name_from_type::get_component_name_from_type;
 
 #[derive(Clone, Copy, PartialEq)]
 enum ArrayKind {

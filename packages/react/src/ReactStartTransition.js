@@ -10,9 +10,9 @@ import {
   enableTransitionTracing,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
-import noop from 'shared/noop';
 import reportGlobalError from 'shared/reportGlobalError';
+import noop from 'shared/noop';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 function releaseAsyncTransition() {
   if (__DEV__) {

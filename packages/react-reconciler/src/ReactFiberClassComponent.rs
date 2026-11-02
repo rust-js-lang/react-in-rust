@@ -6,29 +6,35 @@
 use std::rc::Rc;
 
 use js::{Dict, Kind, Set, SymbolFor, Unknown};
-use shared::assign::assign;
 use shared::environment::__DEV__;
-use shared::get_component_name_from_type::get_component_name_from_type;
-use shared::is_array::is_array;
-use shared::react_feature_flags::{DISABLE_LEGACY_CONTEXT, ENABLE_SCHEDULING_PROFILER};
-use shared::react_instance_map::{get as get_instance, set as set_instance};
-use shared::react_symbols::{REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE};
 use shared::react_types::ReactContext;
-use shared::shallow_equal::shallow_equal;
 use webapi::console;
 
-use crate::get_component_name_from_fiber::get_component_name_from_fiber;
 use crate::react_fiber_call_user_space::ClassInstance;
+use crate::react_internal_types::Fiber;
+
+use crate::react_fiber_flags::{LAYOUT_STATIC, MOUNT_LAYOUT_DEV, SNAPSHOT, UPDATE};
+use shared::react_feature_flags::{DISABLE_LEGACY_CONTEXT, ENABLE_SCHEDULING_PROFILER};
+
+use crate::react_strict_mode_warnings::REACT_STRICT_MODE_WARNINGS;
+use shared::react_instance_map::{get as get_instance, set as set_instance};
+use shared::shallow_equal::shallow_equal;
+
+use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+use shared::get_component_name_from_type::get_component_name_from_type;
+
+use shared::assign::assign;
+use shared::is_array::is_array;
+use shared::react_symbols::{REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE};
+
+use crate::react_type_of_mode::{NO_MODE, STRICT_EFFECTS_MODE, STRICT_LEGACY_MODE};
+
 use crate::react_fiber_class_update_queue::{
     FORCE_UPDATE, REPLACE_STATE, UpdateQueue, check_has_force_update_after_processing,
     clone_update_queue, create_update, enqueue_update, entangle_transitions,
     initialize_update_queue, process_update_queue, reset_has_force_update_before_processing,
     suspend_if_update_read_from_entangled_async_action,
 };
-use crate::react_fiber_dev_tools_hook::{
-    mark_force_update_scheduled, mark_state_update_scheduled, set_is_strict_mode_for_devtools,
-};
-use crate::react_fiber_flags::{LAYOUT_STATIC, MOUNT_LAYOUT_DEV, SNAPSHOT, UPDATE};
 use crate::react_fiber_lane::{Lanes, NO_LANES};
 use crate::react_fiber_legacy_context::{
     EMPTY_CONTEXT_OBJECT, cache_context, get_masked_context, get_unmasked_context,
@@ -36,10 +42,11 @@ use crate::react_fiber_legacy_context::{
 };
 use crate::react_fiber_new_context::{check_if_context_changed, read_context};
 use crate::react_fiber_work_loop::{request_update_lane, schedule_update_on_fiber};
-use crate::react_internal_types::Fiber;
+
+use crate::react_fiber_dev_tools_hook::{
+    mark_force_update_scheduled, mark_state_update_scheduled, set_is_strict_mode_for_devtools,
+};
 use crate::react_profiler_timer::start_update_timer_by_lane;
-use crate::react_strict_mode_warnings::REACT_STRICT_MODE_WARNINGS;
-use crate::react_type_of_mode::{NO_MODE, STRICT_EFFECTS_MODE, STRICT_LEGACY_MODE};
 
 /// A class's static `getDerivedStateFromProps`: the state its props derive,
 /// given its previous state.

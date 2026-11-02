@@ -6,33 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  enableProfilerTimer,
-  enableTransitionTracing,
-} from 'shared/ReactFeatureFlags';
-import {popCacheProvider} from './ReactFiberCacheComponent.js';
-import {DidCapture, NoFlags, ShouldCapture, Update} from './ReactFiberFlags.js';
-import {popHiddenContext} from './ReactFiberHiddenContext.js';
-import {popHostContainer, popHostContext} from './ReactFiberHostContext.js';
-import {resetHydrationState} from './ReactFiberHydrationContext.js';
-import {
-  isContextProvider as isLegacyContextProvider,
-  popContext as popLegacyContext,
-  popTopLevelContextObject as popTopLevelLegacyContextObject,
-} from './ReactFiberLegacyContext.js';
-import {popProvider} from './ReactFiberNewContext.js';
-import {
-  popSuspenseHandler,
-  popSuspenseListContext,
-} from './ReactFiberSuspenseContext.js';
-import {
-  popMarkerInstance,
-  popRootMarkerInstance,
-} from './ReactFiberTracingMarkerComponent.js';
-import {popRootTransition, popTransition} from './ReactFiberTransition.js';
-import {popTreeContext} from './ReactFiberTreeContext.js';
-import {transferActualDuration} from './ReactProfilerTimer.js';
-import {NoMode, ProfileMode} from './ReactTypeOfMode.js';
-import {
   ActivityComponent,
   CacheComponent,
   ClassComponent,
@@ -48,6 +21,33 @@ import {
   SuspenseListComponent,
   TracingMarkerComponent,
 } from './ReactWorkTags.js';
+import {DidCapture, NoFlags, ShouldCapture, Update} from './ReactFiberFlags.js';
+import {NoMode, ProfileMode} from './ReactTypeOfMode.js';
+import {
+  enableProfilerTimer,
+  enableTransitionTracing,
+} from 'shared/ReactFeatureFlags';
+import {popHostContainer, popHostContext} from './ReactFiberHostContext.js';
+import {
+  popSuspenseHandler,
+  popSuspenseListContext,
+} from './ReactFiberSuspenseContext.js';
+import {popHiddenContext} from './ReactFiberHiddenContext.js';
+import {resetHydrationState} from './ReactFiberHydrationContext.js';
+import {
+  isContextProvider as isLegacyContextProvider,
+  popContext as popLegacyContext,
+  popTopLevelContextObject as popTopLevelLegacyContextObject,
+} from './ReactFiberLegacyContext.js';
+import {popProvider} from './ReactFiberNewContext.js';
+import {popCacheProvider} from './ReactFiberCacheComponent.js';
+import {transferActualDuration} from './ReactProfilerTimer.js';
+import {popTreeContext} from './ReactFiberTreeContext.js';
+import {popRootTransition, popTransition} from './ReactFiberTransition.js';
+import {
+  popMarkerInstance,
+  popRootMarkerInstance,
+} from './ReactFiberTracingMarkerComponent.js';
 
 export function unwindWork(current, workInProgress, renderLanes) {
   // Note: This intentionally doesn't check if we're hydrating because comparing

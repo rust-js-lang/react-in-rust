@@ -6,13 +6,10 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  ContinuousEventPriority,
-  DefaultEventPriority,
-  DiscreteEventPriority,
-  IdleEventPriority,
-} from 'react-reconciler/src/ReactEventPriorities';
-import {attemptSynchronousHydration} from 'react-reconciler/src/ReactFiberReconciler';
-import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
+  clearIfContinuousEvent,
+  isDiscreteEventThatRequiresHydration,
+  queueIfContinuousEvent,
+} from './ReactDOMEventReplaying.js';
 import {
   getActivityInstanceFromFiber,
   getContainerFromFiber,
@@ -24,6 +21,17 @@ import {
   HostRoot,
   SuspenseComponent,
 } from 'react-reconciler/src/ReactWorkTags';
+import {IS_CAPTURE_PHASE} from './EventSystemFlags.js';
+import getEventTarget from './getEventTarget.js';
+import {
+  getClosestInstanceFromNode,
+  getInstanceFromNode,
+} from '../client/ReactDOMComponentTree.js';
+import {dispatchEventForPluginEventSystem} from './DOMPluginEventSystem.js';
+import {
+  getCurrentUpdatePriority,
+  setCurrentUpdatePriority,
+} from '../client/ReactDOMUpdatePriority.js';
 import {
   IdlePriority as IdleSchedulerPriority,
   ImmediatePriority as ImmediateSchedulerPriority,
@@ -32,23 +40,15 @@ import {
   UserBlockingPriority as UserBlockingSchedulerPriority,
   getCurrentPriorityLevel as getCurrentSchedulerPriorityLevel,
 } from 'react-reconciler/src/Scheduler';
+import {
+  ContinuousEventPriority,
+  DefaultEventPriority,
+  DiscreteEventPriority,
+  IdleEventPriority,
+} from 'react-reconciler/src/ReactEventPriorities';
+import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
+import {attemptSynchronousHydration} from 'react-reconciler/src/ReactFiberReconciler';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
-import {
-  getClosestInstanceFromNode,
-  getInstanceFromNode,
-} from '../client/ReactDOMComponentTree.js';
-import {
-  getCurrentUpdatePriority,
-  setCurrentUpdatePriority,
-} from '../client/ReactDOMUpdatePriority.js';
-import {dispatchEventForPluginEventSystem} from './DOMPluginEventSystem.js';
-import {IS_CAPTURE_PHASE} from './EventSystemFlags.js';
-import {
-  clearIfContinuousEvent,
-  isDiscreteEventThatRequiresHydration,
-  queueIfContinuousEvent,
-} from './ReactDOMEventReplaying.js';
-import getEventTarget from './getEventTarget.js';
 
 // TODO: can we stop exporting these?
 let _enabled = true;

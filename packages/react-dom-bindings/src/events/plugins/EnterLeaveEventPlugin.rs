@@ -6,21 +6,26 @@
 use std::rc::Rc;
 
 use js::Unknown;
-use react_reconciler::react_fiber_tree_reflection::get_nearest_mounted_fiber;
 use react_reconciler::react_internal_types::Fiber;
-use react_reconciler::react_work_tags::{HOST_COMPONENT, HOST_SINGLETON, HOST_TEXT};
 use webapi::{EventTarget, mouse_event, window};
 
-use crate::current_replaying_event::is_replaying_event;
-use crate::dom_plugin_event_system::{DispatchQueue, accumulate_enter_leave_two_phase_listeners};
-use crate::event_registry::register_direct_event;
 use crate::event_system_flags::EventSystemFlags;
 use crate::plugin_module_type::AnyNativeEvent;
+use crate::react_synthetic_event_type::KnownReactSyntheticEvent;
+
+use crate::event_registry::register_direct_event;
+
+use crate::current_replaying_event::is_replaying_event;
+use crate::synthetic_event::{SYNTHETIC_MOUSE_EVENT, SYNTHETIC_POINTER_EVENT};
+
 use crate::react_dom_component_tree::{
     get_closest_instance_from_node, get_node_from_instance, is_container_marked_as_root,
 };
-use crate::react_synthetic_event_type::KnownReactSyntheticEvent;
-use crate::synthetic_event::{SYNTHETIC_MOUSE_EVENT, SYNTHETIC_POINTER_EVENT};
+
+use crate::dom_plugin_event_system::{DispatchQueue, accumulate_enter_leave_two_phase_listeners};
+use react_reconciler::react_work_tags::{HOST_COMPONENT, HOST_SINGLETON, HOST_TEXT};
+
+use react_reconciler::react_fiber_tree_reflection::get_nearest_mounted_fiber;
 
 pub fn register_events() {
     register_direct_event(

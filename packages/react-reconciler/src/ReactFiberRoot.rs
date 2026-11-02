@@ -9,28 +9,31 @@ use std::rc::Rc;
 
 use js::Unknown;
 use shared::environment::__DEV__;
-use shared::react_feature_flags::{
-    DISABLE_LEGACY_MODE, ENABLE_DEFAULT_TRANSITION_INDICATOR, ENABLE_GESTURE_TRANSITION,
-    ENABLE_PROFILER_COMMIT_HOOKS, ENABLE_PROFILER_TIMER, ENABLE_SUSPENSE_CALLBACK,
-    ENABLE_TRANSITION_TRACING, ENABLE_UPDATER_TRACKING, ENABLE_VIEW_TRANSITION,
-};
 use shared::react_types::ReactNodeList;
 
-use crate::react_fiber::create_host_root_fiber;
-use crate::react_fiber_cache_component::{Cache, create_cache, retain_cache};
-use crate::react_fiber_class_update_queue::initialize_update_queue;
-use crate::react_fiber_lane::{NO_LANE, NO_LANES, NO_TIMESTAMP, TOTAL_LANES, create_lane_map};
 use crate::react_internal_types::{
     FiberRoot, OnCaughtError, OnDefaultTransitionIndicator, OnError, SuspenseHydrationCallbacks,
     TransitionTracingCallbacks,
 };
-use crate::react_root_tags::{CONCURRENT_ROOT, LEGACY_ROOT, RootTag};
 
 unsafe extern "Rust" {
     // ReactFiberConfig's `TimeoutHandle | NoTimeout`.
     #[link_name = "./src/ReactFiberConfig.js#noTimeout"]
     safe static NO_TIMEOUT: &'static Unknown;
 }
+
+use crate::react_fiber::create_host_root_fiber;
+use crate::react_fiber_lane::{NO_LANE, NO_LANES, NO_TIMESTAMP, TOTAL_LANES, create_lane_map};
+use shared::react_feature_flags::{
+    DISABLE_LEGACY_MODE, ENABLE_DEFAULT_TRANSITION_INDICATOR, ENABLE_GESTURE_TRANSITION,
+    ENABLE_PROFILER_COMMIT_HOOKS, ENABLE_PROFILER_TIMER, ENABLE_SUSPENSE_CALLBACK,
+    ENABLE_TRANSITION_TRACING, ENABLE_UPDATER_TRACKING, ENABLE_VIEW_TRANSITION,
+};
+
+use crate::react_fiber_class_update_queue::initialize_update_queue;
+use crate::react_root_tags::{CONCURRENT_ROOT, LEGACY_ROOT, RootTag};
+
+use crate::react_fiber_cache_component::{Cache, create_cache, retain_cache};
 
 pub struct RootState {
     pub element: Option<&'static ReactNodeList>,

@@ -5,9 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {disableLegacyMode} from 'shared/ReactFeatureFlags';
-import queueMacrotask from 'shared/enqueueTask';
 import ReactSharedInternals from './ReactSharedInternalsClient.js';
+import queueMacrotask from 'shared/enqueueTask';
+import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 import {$at, $drain, $unwrap} from '@rust-js/runtime';
 
 // `act` calls can be nested, so we track the depth. This represents the

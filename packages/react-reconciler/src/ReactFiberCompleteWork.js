@@ -17,120 +17,7 @@ import {
   enableViewTransitionParentEnterExit,
   passChildrenWhenCloningPersistedNodes,
 } from 'shared/ReactFeatureFlags';
-import {resetChildFibers} from './ReactChildFiber.js';
-import {popCacheProvider} from './ReactFiberCacheComponent.js';
-import {
-  appendChildToContainerChildSet,
-  appendInitialChild,
-  cloneHiddenInstance,
-  cloneHiddenTextInstance,
-  cloneInstance,
-  createContainerChildSet,
-  createInstance,
-  createTextInstance,
-  finalizeContainerChildren,
-  finalizeHydratedChildren,
-  finalizeInitialChildren,
-  mayResourceSuspendCommit,
-  maySuspendCommit,
-  maySuspendCommitInSyncRender,
-  maySuspendCommitOnUpdate,
-  preloadInstance,
-  preloadResource,
-  preparePortalMount,
-  prepareScopeUpdate,
-  resolveSingletonInstance,
-  supportsMutation,
-  supportsPersistence,
-  supportsResources,
-  supportsSingletons,
-} from './ReactFiberConfig.js';
-import {
-  ChildDeletion,
-  Cloned,
-  DidCapture,
-  ForceClientRender,
-  Hydrate,
-  MaySuspendCommit,
-  NoFlags,
-  Passive,
-  Placement,
-  PortalStatic,
-  ScheduleRetry,
-  ShouldSuspendCommit,
-  Snapshot,
-  StaticMask,
-  Update,
-  ViewTransitionStatic,
-  ViewTransitionStaticParent,
-  Visibility,
-} from './ReactFiberFlags.js';
-import {popHiddenContext} from './ReactFiberHiddenContext.js';
-import {
-  getHostContext,
-  getRootHostContainer,
-  popHostContainer,
-  popHostContext,
-} from './ReactFiberHostContext.js';
-import {
-  emitPendingHydrationWarnings,
-  getIsHydrating,
-  popHydrationState,
-  prepareToHydrateHostActivityInstance,
-  prepareToHydrateHostInstance,
-  prepareToHydrateHostSuspenseInstance,
-  prepareToHydrateHostTextInstance,
-  resetHydrationState,
-  upgradeHydrationErrorsToRecoverable,
-} from './ReactFiberHydrationContext.js';
-import {
-  NoLanes,
-  OffscreenLane,
-  SomeRetryLane,
-  claimNextRetryLane,
-  includesOnlySuspenseyCommitEligibleLanes,
-  includesSomeLane,
-  mergeLanes,
-} from './ReactFiberLane.js';
-import {
-  isContextProvider as isLegacyContextProvider,
-  popContext as popLegacyContext,
-  popTopLevelContextObject as popTopLevelLegacyContextObject,
-} from './ReactFiberLegacyContext.js';
-import {popProvider} from './ReactFiberNewContext.js';
-import {createScopeInstance} from './ReactFiberScope.js';
-import {findFirstSuspended} from './ReactFiberSuspenseComponent.js';
-import {
-  ForceSuspenseFallback,
-  popSuspenseHandler,
-  popSuspenseListContext,
-  pushSuspenseListCatch,
-  pushSuspenseListContext,
-  setDefaultShallowSuspenseListContext,
-  setShallowSuspenseListContext,
-  suspenseStackCursor,
-} from './ReactFiberSuspenseContext.js';
-import {suspendCommit} from './ReactFiberThenable.js';
-import {
-  popMarkerInstance,
-  popRootMarkerInstance,
-} from './ReactFiberTracingMarkerComponent.js';
-import {popRootTransition, popTransition} from './ReactFiberTransition.js';
-import {popTreeContext, pushTreeFork} from './ReactFiberTreeContext.js';
-import {
-  getRenderTargetTime,
-  getWorkInProgressTransitions,
-  markSpawnedRetryLane,
-  renderHasNotSuspendedYet,
-  shouldRemainOnPreviousScreen,
-} from './ReactFiberWorkLoop.js';
-import {transferActualDuration} from './ReactProfilerTimer.js';
-import {
-  ConcurrentMode,
-  NoMode,
-  ProfileMode,
-  SuspenseyImagesMode,
-} from './ReactTypeOfMode.js';
+import {now} from './Scheduler.js';
 import {
   ActivityComponent,
   CacheComponent,
@@ -162,7 +49,120 @@ import {
   TracingMarkerComponent,
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
-import {now} from './Scheduler.js';
+import {
+  ConcurrentMode,
+  NoMode,
+  ProfileMode,
+  SuspenseyImagesMode,
+} from './ReactTypeOfMode.js';
+import {
+  ChildDeletion,
+  Cloned,
+  DidCapture,
+  ForceClientRender,
+  Hydrate,
+  MaySuspendCommit,
+  NoFlags,
+  Passive,
+  Placement,
+  PortalStatic,
+  ScheduleRetry,
+  ShouldSuspendCommit,
+  Snapshot,
+  StaticMask,
+  Update,
+  ViewTransitionStatic,
+  ViewTransitionStaticParent,
+  Visibility,
+} from './ReactFiberFlags.js';
+import {
+  appendChildToContainerChildSet,
+  appendInitialChild,
+  cloneHiddenInstance,
+  cloneHiddenTextInstance,
+  cloneInstance,
+  createContainerChildSet,
+  createInstance,
+  createTextInstance,
+  finalizeContainerChildren,
+  finalizeHydratedChildren,
+  finalizeInitialChildren,
+  mayResourceSuspendCommit,
+  maySuspendCommit,
+  maySuspendCommitInSyncRender,
+  maySuspendCommitOnUpdate,
+  preloadInstance,
+  preloadResource,
+  preparePortalMount,
+  prepareScopeUpdate,
+  resolveSingletonInstance,
+  supportsMutation,
+  supportsPersistence,
+  supportsResources,
+  supportsSingletons,
+} from './ReactFiberConfig.js';
+import {
+  getHostContext,
+  getRootHostContainer,
+  popHostContainer,
+  popHostContext,
+} from './ReactFiberHostContext.js';
+import {
+  ForceSuspenseFallback,
+  popSuspenseHandler,
+  popSuspenseListContext,
+  pushSuspenseListCatch,
+  pushSuspenseListContext,
+  setDefaultShallowSuspenseListContext,
+  setShallowSuspenseListContext,
+  suspenseStackCursor,
+} from './ReactFiberSuspenseContext.js';
+import {popHiddenContext} from './ReactFiberHiddenContext.js';
+import {findFirstSuspended} from './ReactFiberSuspenseComponent.js';
+import {
+  isContextProvider as isLegacyContextProvider,
+  popContext as popLegacyContext,
+  popTopLevelContextObject as popTopLevelLegacyContextObject,
+} from './ReactFiberLegacyContext.js';
+import {popProvider} from './ReactFiberNewContext.js';
+import {
+  emitPendingHydrationWarnings,
+  getIsHydrating,
+  popHydrationState,
+  prepareToHydrateHostActivityInstance,
+  prepareToHydrateHostInstance,
+  prepareToHydrateHostSuspenseInstance,
+  prepareToHydrateHostTextInstance,
+  resetHydrationState,
+  upgradeHydrationErrorsToRecoverable,
+} from './ReactFiberHydrationContext.js';
+import {
+  getRenderTargetTime,
+  getWorkInProgressTransitions,
+  markSpawnedRetryLane,
+  renderHasNotSuspendedYet,
+  shouldRemainOnPreviousScreen,
+} from './ReactFiberWorkLoop.js';
+import {
+  NoLanes,
+  OffscreenLane,
+  SomeRetryLane,
+  claimNextRetryLane,
+  includesOnlySuspenseyCommitEligibleLanes,
+  includesSomeLane,
+  mergeLanes,
+} from './ReactFiberLane.js';
+import {resetChildFibers} from './ReactChildFiber.js';
+import {createScopeInstance} from './ReactFiberScope.js';
+import {transferActualDuration} from './ReactProfilerTimer.js';
+import {popCacheProvider} from './ReactFiberCacheComponent.js';
+import {popTreeContext, pushTreeFork} from './ReactFiberTreeContext.js';
+import {popRootTransition, popTransition} from './ReactFiberTransition.js';
+import {
+  popMarkerInstance,
+  popRootMarkerInstance,
+} from './ReactFiberTracingMarkerComponent.js';
+import {suspendCommit} from './ReactFiberThenable.js';
 import {$unwrap} from '@rust-js/runtime';
 
 /**

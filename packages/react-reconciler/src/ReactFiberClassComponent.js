@@ -6,15 +6,27 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
+  LayoutStatic,
+  MountLayoutDev,
+  Snapshot,
+  Update,
+} from './ReactFiberFlags.js';
+import {
   disableLegacyContext,
   enableSchedulingProfiler,
 } from 'shared/ReactFeatureFlags';
+import ReactStrictModeWarnings from './ReactStrictModeWarnings.js';
 import {get as getInstance, set as setInstance} from 'shared/ReactInstanceMap';
-import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
-import assign from 'shared/assign';
+import shallowEqual from 'shared/shallowEqual';
+import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import isArray from 'shared/isArray';
-import shallowEqual from 'shared/shallowEqual';
+import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+import {
+  NoMode,
+  StrictEffectsMode,
+  StrictLegacyMode,
+} from './ReactTypeOfMode.js';
 import {
   checkHasForceUpdateAfterProcessing,
   cloneUpdateQueue,
@@ -26,17 +38,6 @@ import {
   resetHasForceUpdateBeforeProcessing,
   suspendIfUpdateReadFromEntangledAsyncAction,
 } from './ReactFiberClassUpdateQueue.js';
-import {
-  markForceUpdateScheduled,
-  markStateUpdateScheduled,
-  setIsStrictModeForDevtools,
-} from './ReactFiberDevToolsHook.js';
-import {
-  LayoutStatic,
-  MountLayoutDev,
-  Snapshot,
-  Update,
-} from './ReactFiberFlags.js';
 import {NoLanes} from './ReactFiberLane.js';
 import {
   cacheContext,
@@ -50,14 +51,13 @@ import {
   requestUpdateLane,
   scheduleUpdateOnFiber,
 } from './ReactFiberWorkLoop.js';
-import {startUpdateTimerByLane} from './ReactProfilerTimer.js';
-import ReactStrictModeWarnings from './ReactStrictModeWarnings.js';
 import {
-  NoMode,
-  StrictEffectsMode,
-  StrictLegacyMode,
-} from './ReactTypeOfMode.js';
-import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+  markForceUpdateScheduled,
+  markStateUpdateScheduled,
+  setIsStrictModeForDevtools,
+} from './ReactFiberDevToolsHook.js';
+import {startUpdateTimerByLane} from './ReactProfilerTimer.js';
+import assign from 'shared/assign';
 
 const fakeInternalInstance = {};
 

@@ -8,15 +8,17 @@ use std::rc::{Rc, Weak};
 
 use js::{JsObject, TimeoutId, Unknown, WeakMap, object};
 use react_isomorphic::react_transition_type::TransitionTypes;
+use shared::environment::__DEV__;
+use shared::react_types::ReactContext;
+use webapi::console;
+
+use shared::is_array::is_array;
+use shared::react_symbols::REACT_CONTEXT_TYPE;
+
 use react_reconciler::react_event_priorities::{
     DEFAULT_EVENT_PRIORITY, EventPriority, NO_EVENT_PRIORITY,
 };
-use shared::environment::__DEV__;
-use shared::is_array::is_array;
 use shared::react_feature_flags::ENABLE_PROFILER_TIMER;
-use shared::react_symbols::REACT_CONTEXT_TYPE;
-use shared::react_types::ReactContext;
-use webapi::console;
 
 // TODO: Consider exporting the react-native version.
 #[cfg_attr(rust_js, rust_js::name = "rendererVersion")]

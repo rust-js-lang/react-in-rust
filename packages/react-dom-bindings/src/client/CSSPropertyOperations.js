@@ -5,12 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {trackHostMutation} from 'react-reconciler/src/ReactFiberMutationTracking';
-import {checkCSSPropertyStringCoercion} from 'shared/CheckStringCoercion';
-import hyphenateStyleName from '../shared/hyphenateStyleName.js';
-import isUnitlessNumber from '../shared/isUnitlessNumber.js';
-import warnValidStyle from '../shared/warnValidStyle.js';
 import {shorthandToLonghand} from './CSSShorthandProperty.js';
+import hyphenateStyleName from '../shared/hyphenateStyleName.js';
+import warnValidStyle from '../shared/warnValidStyle.js';
+import isUnitlessNumber from '../shared/isUnitlessNumber.js';
+import {checkCSSPropertyStringCoercion} from 'shared/CheckStringCoercion';
+import {trackHostMutation} from 'react-reconciler/src/ReactFiberMutationTracking';
 
 /*
  * Operations for dealing with CSS properties.
