@@ -7,3 +7,5 @@ pub mod react_fizz_config_markup;
 pub mod react_markup_client;
 #[path = "src/ReactMarkupLegacyClientStreamConfig.rs"]
 pub mod react_markup_legacy_client_stream_config;
+#[path = "src/ReactMarkupServer.rs"]
+pub mod react_markup_server;

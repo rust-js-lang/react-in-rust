@@ -46,12 +46,12 @@ the package's files: `packages/scheduler/src/SchedulerMinHeap.rs` compiles
 to `SchedulerMinHeap.js` and `.d.ts` beside it. A crate's root file is
 Cargo.toml's `[lib] path`: `shared.rs`, `src/forks/Scheduler.rs`,
 `react.rs`, `reconciler.rs`, `bindings.rs`, `react_dom.rs`, `noop.rs`,
-`test_renderer.rs`, `react_art.rs` or `client.rs`. It declares each module as
+`test_renderer.rs`, `react_art.rs`, `client.rs` or `markup.rs`. It declares each module as
 `#[path = "src/..."] pub mod ..;` and writes no JS of its own.
 
 The crates are `shared`, `scheduler`, `react-isomorphic` (packages/react),
 `react-reconciler`, `react-dom-bindings`, `react-dom`,
-`react-noop-renderer`, `react-test-renderer`, `react-art`, `react-client`, `react-server-dom-webpack`, `react-server-dom-turbopack`, `react-server-dom-parcel`, `react-server-dom-esm` and `react-server-dom-unbundled`. A new package is a new crate,
+`react-noop-renderer`, `react-test-renderer`, `react-art`, `react-client`, `react-server-dom-webpack`, `react-server-dom-turbopack`, `react-server-dom-parcel`, `react-server-dom-esm`, `react-server-dom-unbundled` and `react-markup`. A new package is a new crate,
 added to the workspace's `members`.
 
 **A react-server-dom-* package is one crate of both sessions' modules**
@@ -928,6 +928,52 @@ These differences from upstream's output are accepted:
     preloadModule(reference))`, is typed of Parcel's thenable itself in the
     Rust, js's `Fulfils` having none of a thenable that isn't a `Promise`
     (the JS is upstream's).
+- **react-markup (2026-11-02, for the user's decision)**: its four modules
+  are Rust, a crate of their own (`markup.rs`); the `*.stable.js` entries,
+  which only throw, stay JS, as the re-export entries do (rd55).
+  ReactFizzConfigMarkup is ReactFizzConfigDOMLegacy's form: a `pub use` of
+  ReactFizzConfigDOM's items for upstream's `export {..} from`, and its
+  own functions, pushStartInstance's `for (const propKey in props)` as
+  `js::keys_in` and `HAS_OWN_PROPERTY`. ReactMarkupLegacyClientStreamConfig's
+  `StringDecoder` is upstream's `null` alone, an untagged enum, as
+  Parcel's `ModuleLoading` is. The two entries give Fizz, and Flight's
+  server, react-dom-bindings' legacy `Destination` (`push`, `destroy`),
+  as upstream's markup stream config does; the server entry reaches
+  ReactSharedInternalsServer, still JS, by its JS path, and swaps its
+  `getCurrentStack` for the client's around the user's `onError` with a
+  guard whose `Drop` is upstream's `finally`. Port differences, none
+  changing a result:
+  - ReactMarkupServer makes its two destinations after the two requests,
+    as Rust makes a closure after what it captures, where upstream's
+    closures read `fizzRequest` and `flightRequest` declared after them
+    (ReactDOMDefaultTransitionIndicator's order);
+  - the finished `push(null)` resolves `buffer.take()`, `const old =
+    buffer; buffer = ''; resolve(old);`, where upstream resolves `buffer`
+    and keeps it: nothing reads it after (`resolve(buffer.borrow().clone())`
+    is refused, a borrow held across `resolve`, ADR 0863);
+  - noServerCallOrFormAction is generic, `(id, args)`, given as both the
+    Flight client's callServer and encodeFormAction;
+  - stashErrorIdx is a number, as upstream's, its text `$displayF64(..)`
+    where upstream writes `'' + stashErrorIdx++`;
+  - the webpack server entries' forms: `options?.x` and `!= null`, error
+    messages as template literals, trailing `undefined`s left out, `null`
+    arguments of an `Option` given `undefined` (createFlightResponse's
+    first three, as the `.d.ts` types them);
+  - ReactFizzConfigDOMLegacy's: the `export {..}` list in rustfmt's order,
+    `return;` and `return writePreambleStartImpl(..)` as statements (rd364),
+    and `export const isPrimaryRenderer`/`supportsClientAPIs` after the
+    imports, where upstream declares them between two.
+  Readability gaps (rust-js), not holding: rd557 (a closure printed as a
+  function declaration prints its body's comments above it, handleError's,
+  or inside its first call, handleFlightError's); rd558 (an `Option` a
+  `HashMap` holds is boxed, `$someValue($unwrap($someGet(stashedErrors,
+  id), ..))` for `stashedErrors.get(id)`); the entries import
+  createResumableState and the rest from ReactFizzConfigDOM, where
+  upstream imports them from './ReactFizzConfigMarkup', which re-exports
+  them; `use .. REACT_SHARED_INTERNALS as REACT_SHARED_INTERNALS_CLIENT`
+  prints `import ReactSharedInternals`, where upstream names it
+  `ReactSharedInternalsClient`; and `getCurrentStack = .. ?? null`, the
+  Fizz server's form of a nullable field set from an `Option`.
 - **The Flight clients' names and arms** (the user, 2026-11-01; its
   acronym rule extended to the servers, the user, 2026-11-02, ESM's
   resolveClientReferenceMetadata's `baseUrl` and `fullUrl`):
