@@ -1,0 +1,23 @@
+[package]
+name = "react-markup"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# React's renderer of embedded markup, such as e-mails, `react-markup`. Its
+# modules are its files, each beside the JS rust-js writes from it; its root
+# declares them and writes no JS of its own.
+[lib]
+path = "markup.rs"
+
+[dependencies]
+js.workspace = true
+react-client = { path = "../react-client" }
+react-dom-bindings = { path = "../react-dom-bindings" }
+react-isomorphic = { path = "../react" }
+react-server = { path = "../react-server" }
+shared.workspace = true
+webapi.workspace = true
+
+[lints]
+workspace = true

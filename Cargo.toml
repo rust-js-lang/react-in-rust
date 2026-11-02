@@ -4,7 +4,7 @@
 # read the rest. rust-js is a checkout beside this one, built from source.
 [workspace]
 resolver = "3"
-members = ["bindings/art", "bindings/busboy", "packages/react", "packages/react-art", "packages/react-client", "packages/react-dom", "packages/react-dom-bindings", "packages/react-dom-bindings/src/server/fizz-instruction-set", "packages/react-is", "packages/react-noop-renderer", "packages/react-reconciler", "packages/react-server", "packages/react-server-dom-esm", "packages/react-server-dom-parcel", "packages/react-server-dom-turbopack", "packages/react-server-dom-unbundled", "packages/react-server-dom-webpack", "packages/react-test-renderer", "packages/scheduler", "packages/shared"]
+members = ["bindings/art", "bindings/busboy", "packages/react", "packages/react-art", "packages/react-client", "packages/react-dom", "packages/react-dom-bindings", "packages/react-dom-bindings/src/server/fizz-instruction-set", "packages/react-is", "packages/react-markup", "packages/react-noop-renderer", "packages/react-reconciler", "packages/react-server", "packages/react-server-dom-esm", "packages/react-server-dom-parcel", "packages/react-server-dom-turbopack", "packages/react-server-dom-unbundled", "packages/react-server-dom-webpack", "packages/react-test-renderer", "packages/scheduler", "packages/shared"]
 
 [workspace.package]
 version = "0.0.0"

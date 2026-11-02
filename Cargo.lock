@@ -78,6 +78,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "react-markup"
+version = "0.0.0"
+dependencies = [
+ "react-client",
+ "react-dom-bindings",
+ "react-isomorphic",
+ "react-server",
+ "rust-js-builtins",
+ "rust-js-webapi",
+ "shared",
+]
+
+[[package]]
 name = "react-noop-renderer"
 version = "0.0.0"
 dependencies = [
