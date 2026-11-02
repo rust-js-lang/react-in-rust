@@ -1659,9 +1659,9 @@ fn validate_additional_form_fields(
     form_data: Option<&'static FormData>,
 ) -> Option<&'static FormData> {
     if let Some(form_data) = form_data {
-        form_data.for_each(Box::new(|value, key, _| {
+        form_data.for_each(|value, key, _| {
             validate_additional_form_field(value, key);
-        }));
+        });
     }
     form_data
 }

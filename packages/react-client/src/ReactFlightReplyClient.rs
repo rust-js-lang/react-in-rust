@@ -816,9 +816,9 @@ impl Reply {
                 let prefix = self.form_field_prefix.clone() + "_" + &ref_id.to_string() + "_";
                 // SAFETY: an instance of FormData is one.
                 let value: &FormData = unsafe { js::cast(value) };
-                value.for_each(Box::new(move |original_value, original_key, _| {
+                value.for_each(|original_value, original_key, _| {
                     data.append(&(prefix.clone() + original_key), original_value);
-                }));
+                });
                 return Some(js::unknown_of(serialize_form_data_reference(ref_id)));
             }
             if js::instance_of(object, js::class::<js::Map<Unknown, Unknown>>()) {
@@ -1402,9 +1402,9 @@ thread_local! {
                 // all fields but the suspense cache would break since we might get
                 // a new identifier each time. So we just append it at the end instead.
                 let prefixed_data = webapi::form_data::new(None, None);
-                encoded_form_data.for_each(Box::new(move |value, key, _| {
+                encoded_form_data.for_each(|value, key, _| {
                     prefixed_data.append(&("$ACTION_".to_owned() + identifier_prefix + ":" + key), value);
-                }));
+                });
                 data = Some(prefixed_data);
                 // We encode the name of the prefix containing the data.
                 name = "$ACTION_REF_".to_owned() + identifier_prefix;
