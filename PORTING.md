@@ -51,7 +51,7 @@ Cargo.toml's `[lib] path`: `shared.rs`, `src/forks/Scheduler.rs`,
 
 The crates are `shared`, `scheduler`, `react-isomorphic` (packages/react),
 `react-reconciler`, `react-dom-bindings`, `react-dom`,
-`react-noop-renderer`, `react-test-renderer`, `react-art`, `react-client` and `react-server-dom-webpack`. A new package is a new crate,
+`react-noop-renderer`, `react-test-renderer`, `react-art`, `react-client`, `react-server-dom-webpack` and `react-server-dom-turbopack`. A new package is a new crate,
 added to the workspace's `members`.
 
 **A react-server-dom-* package is one crate of both sessions' modules**
@@ -1106,7 +1106,14 @@ The port is split between sessions by package:
   47f20158e: `HasOwnProperty::call` takes any value, so requireModule's
   `hasOwnProperty.call(moduleExports, name)` is upstream's). Its chunk
   pairs are read `chunks.get(i)`, as upstream's `chunks[i++]` reads
-  `undefined` past an odd list's end, which the async tests send. The plain re-export
+  `undefined` past an odd list's end, which the async tests send. Turbopack's
+  ReactFlightImportMetadata (its `Chunk`, an untagged `File(String) |
+  Merged((filename, filenames, sizes))`, a merged chunk's tuple told by
+  `typeof chunk === 'string'` as upstream's), and its
+  ReactFlightClientConfigBundlerTurbopackBrowser and -Server and
+  ReactFlightClientConfigTargetTurbopackBrowser and -Server are Rust, of
+  webpack's forms; `__turbopack_load_by_url__` and `__turbopack_require__`
+  are `shared::environment`'s too. The plain re-export
   entries (`client*.js`, `react-flight-dom-client.*.js`) stay JS (rd55).
   **Pending in rust-js, not accepted** (each changes no result):
   - rd543: a tuple's element is read by destructuring, `const chunks =

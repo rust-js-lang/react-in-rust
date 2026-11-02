@@ -43,3 +43,17 @@ pub fn webpack_require(id: &str) -> &'static Unknown {
 pub fn set_webpack_require_u(u: impl Fn(&str) -> String + 'static) {
     unreachable!()
 }
+
+/// Turbopack's `__turbopack_load_by_url__(id)`, of a chunk: a plain chunk
+/// filename, or a merged chunk, `[mergedChunkFilename,
+/// componentChunkFilenames, componentChunkSizes]`.
+#[cfg_attr(rust_js, rust_js::link_name = "__turbopack_load_by_url__")]
+pub fn turbopack_load_by_url<C>(id: &C) -> Promise<Option<&'static Unknown>> {
+    unreachable!()
+}
+
+/// Turbopack's `__turbopack_require__(id)`.
+#[cfg_attr(rust_js, rust_js::link_name = "__turbopack_require__")]
+pub fn turbopack_require(id: &str) -> &'static Unknown {
+    unreachable!()
+}
