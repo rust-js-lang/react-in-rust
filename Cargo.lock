@@ -152,6 +152,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "rust-js-bindings-busboy"
+version = "1.6.0"
+dependencies = [
+ "rust-js-builtins",
+ "rust-js-node",
+]
+
+[[package]]
 name = "rust-js-builtins"
 version = "0.0.2"
 
