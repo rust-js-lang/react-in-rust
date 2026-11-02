@@ -1102,10 +1102,11 @@ The port is split between sessions by package:
   2026-11-02). Webpack's ReactFlightImportMetadata,
   ReactFlightClientConfigBundlerWebpackBrowser and -Server and
   ReactFlightClientConfigTargetWebpackBrowser and -Server are Rust (Batch
-  55). ReactFlightClientConfigBundlerWebpack is held on rd546 (js's
-  `HasOwnProperty::call` takes `&Unknown`, so requireModule's
-  `hasOwnProperty.call(moduleExports, ..)` of what `js::get` gives would
-  need a cast); its draft passes the webpack gate. The plain re-export
+  55), and so is ReactFlightClientConfigBundlerWebpack (after rd546, rust-js
+  47f20158e: `HasOwnProperty::call` takes any value, so requireModule's
+  `hasOwnProperty.call(moduleExports, name)` is upstream's). Its chunk
+  pairs are read `chunks.get(i)`, as upstream's `chunks[i++]` reads
+  `undefined` past an odd list's end, which the async tests send. The plain re-export
   entries (`client*.js`, `react-flight-dom-client.*.js`) stay JS (rd55).
   **Pending in rust-js, not accepted** (each changes no result):
   - rd543: a tuple's element is read by destructuring, `const chunks =
@@ -1137,7 +1138,18 @@ The port is split between sessions by package:
   stack's `(fakeStack.stack ?? '')` (ReplyClient's parseStackLocation
   kind); `typeof performance !== 'undefined' &&` before
   `getEntriesByType`'s test (rd320, estimateBandwidth's kind); and the
-  `/**` comment above the patch prints `/*`.
+  `/**` comment above the patch prints `/*`. BundlerWebpack's: `chunks[i];
+  i++;` as two statements for upstream's `chunks[i++]` (Rust has no
+  post-increment); its two errors' messages are template literals of
+  `panic!("..{id}..")` where upstream concatenates; `!name` for `name ===
+  ''` of a string (clippy's `comparison_to_empty`); resolveServerReference
+  throws after its `if`/`else`, `if (resolvedModuleData == null) throw ..`,
+  where upstream throws inside the `else` (the `if` branch has the module);
+  `resolvedModuleData.async === true` where upstream tests truth (an
+  optional boolean); the cache's `resolve` is a function declaration of
+  `chunkCache.set(chunkId, null)` where upstream binds `chunkCache.set`
+  (rd80's kind); `ignoreReject(reason)` takes the callback's parameter;
+  requireModule ends without `return undefined;` (rw5's kind).
 - **The second session** has react-server, react-server-dom-*'s server
   side and react-dom-bindings/src/server.
 
