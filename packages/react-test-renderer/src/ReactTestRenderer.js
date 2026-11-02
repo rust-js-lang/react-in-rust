@@ -49,10 +49,9 @@ import {
   disableLegacyMode,
   enableReactTestRendererWarning,
 } from 'shared/ReactFeatureFlags';
-import {$index, $unwrap} from '@rust-js/runtime';
-
 export * as _Scheduler from 'scheduler/unstable_mock';
 export {default as version} from 'shared/ReactVersion';
+import {$index, $unwrap} from '@rust-js/runtime';
 
 function defaultOnDefaultTransitionIndicator() {}
 

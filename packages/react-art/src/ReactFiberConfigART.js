@@ -13,7 +13,6 @@ import {
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
-
 export {default as rendererVersion} from 'shared/ReactVersion';
 
 export {

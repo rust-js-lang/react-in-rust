@@ -6,7 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 import {useOptimistic} from './src/ReactHooks.js';
-
 export {
   Activity,
   Activity as unstable_Activity,

@@ -12,8 +12,6 @@ import {
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import {enableProfilerTimer} from 'shared/ReactFeatureFlags';
-import {$insertAt, $position} from '@rust-js/runtime';
-
 // TODO: Consider exporting the react-native version.
 export {default as rendererVersion} from 'shared/ReactVersion';
 
@@ -114,6 +112,7 @@ export {
   isHostSingletonType,
   isSingletonScope,
 } from 'react-reconciler/src/ReactFiberConfigWithNoSingletons';
+import {$insertAt, $position} from '@rust-js/runtime';
 
 export const rendererPackageName = 'react-test-renderer';
 export const extraDevToolsConfig = null;

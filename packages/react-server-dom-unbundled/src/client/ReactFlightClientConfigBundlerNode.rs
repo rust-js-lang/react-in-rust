@@ -7,7 +7,6 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use js::{Dict, Unknown, dict};
-use shared::has_own_property::HAS_OWN_PROPERTY;
 use shared::react_types::{FulfilledThenable, Thenable};
 
 use crate::shared::react_flight_import_metadata::{ImportMetadata, is_async_import};
@@ -24,6 +23,8 @@ fn prepare_destination_with_chunks(
 ) {
     unreachable!()
 }
+
+use shared::has_own_property::HAS_OWN_PROPERTY;
 
 pub type ServerConsumerModuleMap = Dict<&'static Dict<ClientReference>>;
 

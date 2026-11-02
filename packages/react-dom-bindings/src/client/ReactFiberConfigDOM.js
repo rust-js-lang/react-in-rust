@@ -113,21 +113,6 @@ import {requestFormReset as requestFormResetOnFiber} from 'react-reconciler/src/
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import noop from 'shared/noop';
 import estimateBandwidth from './estimateBandwidth.js';
-import {
-  $borrow,
-  $borrowMut,
-  $extend,
-  $index,
-  $lazyRange,
-  $position,
-  $removeAt,
-  $retain,
-  $truncate,
-  $unborrow,
-  $unwrap,
-  $withBorrowMut,
-} from '@rust-js/runtime';
-
 export {
   getCurrentUpdatePriority,
   resolveUpdatePriority,
@@ -149,6 +134,20 @@ export {
 } from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
 
 export {getClosestInstanceFromNode as getInstanceFromNode} from './ReactDOMComponentTree.js';
+import {
+  $borrow,
+  $borrowMut,
+  $extend,
+  $index,
+  $lazyRange,
+  $position,
+  $removeAt,
+  $retain,
+  $truncate,
+  $unborrow,
+  $unwrap,
+  $withBorrowMut,
+} from '@rust-js/runtime';
 
 export const rendererPackageName = 'react-dom';
 export const extraDevToolsConfig = null;

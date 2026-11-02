@@ -27,8 +27,6 @@ import {
   startLoggingProfilingEvents,
   stopLoggingProfilingEvents,
 } from '../SchedulerProfiling.js';
-import {$withBorrow, $withBorrowMut} from '@rust-js/runtime';
-
 export {
   IdlePriority as unstable_IdlePriority,
   ImmediatePriority as unstable_ImmediatePriority,
@@ -36,6 +34,7 @@ export {
   NormalPriority as unstable_NormalPriority,
   UserBlockingPriority as unstable_UserBlockingPriority,
 } from '../SchedulerPriorities.js';
+import {$withBorrow, $withBorrowMut} from '@rust-js/runtime';
 
 // Max 31 bit integer. The max integer size in V8 for 32-bit systems.
 // Math.pow(2, 30) - 1

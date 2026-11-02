@@ -12,7 +12,6 @@ import {
   NormalPriority,
   UserBlockingPriority,
 } from '../SchedulerPriorities.js';
-
 export {
   IdlePriority as unstable_IdlePriority,
   ImmediatePriority as unstable_ImmediatePriority,

@@ -5,11 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+export {default as version} from 'shared/ReactVersion';
 import {isValidContainer} from 'react-dom-bindings/src/client/ReactDOMContainer';
 import {createPortal as createPortalImpl} from 'react-reconciler/src/ReactPortal';
-
-export {default as version} from 'shared/ReactVersion';
-
 export {flushSync} from './ReactDOMFlushSync.js';
 
 export {

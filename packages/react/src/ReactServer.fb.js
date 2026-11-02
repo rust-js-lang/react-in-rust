@@ -5,11 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+export {default as __SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE} from './ReactSharedInternalsServer.js';
 import {count, forEach, map, only, toArray} from './ReactChildren.js';
 import {captureOwnerStack as captureOwnerStackImpl} from './ReactOwnerStack.js';
-
-export {default as __SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE} from './ReactSharedInternalsServer.js';
-
 export {cache, cacheSignal} from './ReactCacheServer.js';
 export {createRef} from './ReactCreateRef.js';
 export {forwardRef} from './ReactForwardRef.js';

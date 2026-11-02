@@ -392,6 +392,17 @@ clients are Rust: their createResponse call then gives `?? null` (rd613's
 rule for another crate's call), and the store can be upstream's. Pending
 in rust-js: resolveModule's `response._moduleLoading ?? null` (rd628).
 
+**Pending in rust-js from Batch 57** (none changes a result for React's
+own values): rd636 (rust-js #485, a P0 of 474b193f9, being fixed),
+ReactInputSelection's hasSelectionCapabilities, which
+reads `elem.type` in each of five comparisons and leaves a dead `const
+type = elem.type;` in the branch (Rust reads it once; a getter that runs
+code would see the difference); rd634, FizzInstructionSetShared's two
+"// Fall through to reveal." above the `try`; rd635, SelectEventPlugin's
+`// Fallthrough` for upstream's `// falls through`; rd632, five strict
+null tests loose again; rd628, resolveModule's `response._moduleLoading ??
+null`; rd621, the DEV `then`'s `$unwrap(wrapper)._debugInfo`.
+
 **`nullable(param)` promises `null`, never `undefined`** (the coordinator,
 2026-11-02, Batch 57). Where each of the crate's calls gives a
 `#[rust_js::nullable(param)]` parameter `null` or a value, rust-js tests it

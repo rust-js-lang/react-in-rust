@@ -48,7 +48,10 @@ export const {
   act,
   dumpTree,
   getRoot,
+  // TODO: Remove this once callers migrate to alternatives.
+  // This should only be used by React internals.
   unstable_runWithPriority,
+  // $FlowFixMe[signature-verification-failure]
 } = createReactNoop(
   ReactFiberReconciler, // reconciler
   false, // useMutation

@@ -3627,12 +3627,11 @@ function ResponseInstance(
     }
 
     this._debugRootOwner = rootOwner ?? null;
-    const error =
+    this._debugRootStack =
       rootOwner != null
         ? // TODO: Consider passing the top frame in so we can avoid internals showing up.
           new Error('react-stack-top-frame')
-        : undefined;
-    this._debugRootStack = error ?? null;
+        : null;
 
     const rootEnv = environmentName ?? 'Server';
     if (supportsCreateTask) {
@@ -3641,8 +3640,9 @@ function ResponseInstance(
       // elements created by the server. We use the "use server" string to indicate that
       // this is where we enter the server from the client.
       // TODO: Make this string configurable.
-      const createTask = console.createTask;
-      this._debugRootTask = createTask('"use ' + rootEnv.toLowerCase() + '"');
+      this._debugRootTask = console.createTask(
+        '"use ' + rootEnv.toLowerCase() + '"',
+      );
     }
     // Track the start of the fetch to the best of our knowledge.
     // Note: createFromFetch allows this to be marked at the start of the fetch

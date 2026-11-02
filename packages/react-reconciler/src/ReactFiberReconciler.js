@@ -54,6 +54,15 @@ import {
   scheduleInitialHydrationOnRoot,
   scheduleUpdateOnFiber,
 } from './ReactFiberWorkLoop.js';
+export {
+  batchedUpdates,
+  deferredUpdates,
+  discreteUpdates,
+  flushPendingEffects as flushPassiveEffects,
+  flushSyncFromReconciler,
+  flushSyncWork,
+  isAlreadyRendering,
+} from './ReactFiberWorkLoop.js';
 import {enqueueConcurrentRenderForLane} from './ReactFiberConcurrentUpdates.js';
 import {
   createUpdate,
@@ -82,9 +91,6 @@ import {
   setRefreshHandler,
 } from './ReactFiberHotReloading.js';
 import ReactVersion from 'shared/ReactVersion';
-import {registerDefaultIndicator} from './ReactFiberAsyncAction.js';
-import {$index, $unwrap} from '@rust-js/runtime';
-
 export {createPortal} from './ReactPortal.js';
 
 export {
@@ -107,16 +113,8 @@ export {
   defaultOnRecoverableError,
   defaultOnUncaughtError,
 } from './ReactFiberErrorLogger.js';
-
-export {
-  batchedUpdates,
-  deferredUpdates,
-  discreteUpdates,
-  flushPendingEffects as flushPassiveEffects,
-  flushSyncFromReconciler,
-  flushSyncWork,
-  isAlreadyRendering,
-} from './ReactFiberWorkLoop.js';
+import {registerDefaultIndicator} from './ReactFiberAsyncAction.js';
+import {$index, $unwrap} from '@rust-js/runtime';
 
 let didWarnAboutNestedUpdates;
 let didWarnAboutFindNodeInStrictMode;
