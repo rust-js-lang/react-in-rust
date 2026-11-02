@@ -483,8 +483,8 @@ pub fn reveal_completed_boundaries_with_view_transitions(
                 ])
             });
             let transition = document.start_view_transition(Some(&StartViewTransitionOptions {
-                update: Some(&update),
-                types: Some(&[]), // TODO: Add a hard coded type for Suspense reveals.
+                update: Some(Some(&update)),
+                types: Some(Some(&[])), // TODO: Add a hard coded type for Suspense reveals.
             }));
             js::set(document, "__reactViewTransition", transition);
             let restore_queue = restore_queue.take();

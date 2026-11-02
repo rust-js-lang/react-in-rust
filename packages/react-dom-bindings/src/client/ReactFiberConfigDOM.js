@@ -2071,7 +2071,7 @@ export function startViewTransition(
           afterMutationCallback();
         }
       },
-      types,
+      types: types ?? null,
     });
     // $FlowFixMe[prop-missing]
     ownerDocument.__reactViewTransition = transition;
@@ -2415,7 +2415,7 @@ export function startGestureTransition(
     // $FlowFixMe[prop-missing]
     const transition = ownerDocument.startViewTransition({
       update: mutationCallback,
-      types,
+      types: types ?? null,
     });
     // $FlowFixMe[prop-missing]
     ownerDocument.__reactViewTransition = transition;

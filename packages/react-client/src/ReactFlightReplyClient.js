@@ -29,8 +29,6 @@ import {
   $catchUnwind,
   $displayF64,
   $getOrInit,
-  $some,
-  $someValue,
   $unwound,
   $unwrap,
 } from '@rust-js/runtime';
@@ -277,10 +275,9 @@ export function processReply(
           resolve(data);
         }
       } else {
-        const option = entry.value;
-        const captured = option === undefined ? undefined : $some(option);
+        const captured = entry.value;
         const result = $catchUnwind(() => {
-          const partJson = stringify($someValue(captured));
+          const partJson = stringify(captured);
           data.append(streamPrefix, partJson);
           const progress$1 = $unwrap(progress);
           reader.read().then(entry => {

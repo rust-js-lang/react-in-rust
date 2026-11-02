@@ -1672,7 +1672,9 @@ pub fn cancel_view_transition_name(instance: &Instance, old_name: &str, props: &
             Some(&KeyframeAnimationOptions {
                 duration: Some(NumberOrCSSNumericValueOrStr::Number(0.0)),
                 fill: Some("forwards"),
-                pseudo_element: Some(&("::view-transition-group(".to_owned() + old_name + ")")),
+                pseudo_element: Some(Some(
+                    &("::view-transition-group(".to_owned() + old_name + ")"),
+                )),
                 ..Default::default()
             }),
         );
@@ -1728,7 +1730,7 @@ pub fn cancel_root_view_transition_name(root_container: &'static Container) {
             Some(&KeyframeAnimationOptions {
                 duration: Some(NumberOrCSSNumericValueOrStr::Number(0.0)),
                 fill: Some("forwards"),
-                pseudo_element: Some("::view-transition-group(root)"),
+                pseudo_element: Some(Some("::view-transition-group(root)")),
                 ..Default::default()
             }),
         );
@@ -1749,7 +1751,7 @@ pub fn cancel_root_view_transition_name(root_container: &'static Container) {
             Some(&KeyframeAnimationOptions {
                 duration: Some(NumberOrCSSNumericValueOrStr::Number(0.0)),
                 fill: Some("forwards"),
-                pseudo_element: Some("::view-transition"),
+                pseudo_element: Some(Some("::view-transition")),
                 ..Default::default()
             }),
         );
@@ -2240,7 +2242,7 @@ pub fn start_view_transition(
         // $FlowFixMe[prop-missing]
         let transition =
             owner_document.start_view_transition(Some(&StartViewTransitionOptions {
-                update: Some(&move || -> Option<BlockingPromise> {
+                update: Some(Some(&move || -> Option<BlockingPromise> {
                     // Note: We read the existence of a pending navigation before we apply the
                     // mutations. That way we're not waiting on a navigation that we spawned
                     // from this update. Only navigations that started before this commit.
@@ -2348,8 +2350,8 @@ pub fn start_view_transition(
                         after_mutation_callback();
                         None
                     }
-                }),
-                types: types.as_deref(),
+                })),
+                types: Some(types.as_deref()),
             }));
         // $FlowFixMe[prop-missing]
         js::set(owner_document, "__reactViewTransition", transition);
@@ -2676,9 +2678,9 @@ fn animate_gesture(
         let animation = target_element.animate(
             Some(&keyframes),
             Some(&KeyframeAnimationOptions {
-                pseudo_element: Some(pseudo_element),
+                pseudo_element: Some(Some(pseudo_element)),
                 // Set the timeline to the current gesture timeline to drive the updates.
-                timeline: Some(unsafe { js::cast(Some(timeline)) }),
+                timeline: Some(Some(unsafe { js::cast(Some(timeline)) })),
                 // We reset all easing functions to linear so that it feels like you
                 // have direct impact on the transition and to avoid double bouncing
                 // from scroll bouncing.
@@ -2710,7 +2712,7 @@ fn animate_gesture(
         let animation = target_element.animate(
             Some(&keyframes),
             Some(&KeyframeAnimationOptions {
-                pseudo_element: Some(pseudo_element),
+                pseudo_element: Some(Some(pseudo_element)),
                 // We reset all easing functions to linear so that it feels like you
                 // have direct impact on the transition and to avoid double bouncing
                 // from scroll bouncing.
@@ -2766,8 +2768,8 @@ pub fn start_gesture_transition(
             .map(|types| types.borrow().clone());
         // $FlowFixMe[prop-missing]
         let transition = owner_document.start_view_transition(Some(&StartViewTransitionOptions {
-            update: Some(&mutation_callback),
-            types: types.as_deref(),
+            update: Some(Some(&mutation_callback)),
+            types: Some(types.as_deref()),
         }));
         // $FlowFixMe[prop-missing]
         js::set(owner_document, "__reactViewTransition", transition);
@@ -2951,7 +2953,7 @@ pub fn start_gesture_transition(
                 let blocking_anim = document_element.animate(
                     Some(&[EmptyKeyframe {}, EmptyKeyframe {}]),
                     Some(&KeyframeAnimationOptions {
-                        pseudo_element: Some("::view-transition"),
+                        pseudo_element: Some(Some("::view-transition")),
                         duration: Some(NumberOrCSSNumericValueOrStr::Number(1.0)),
                         ..Default::default()
                     }),

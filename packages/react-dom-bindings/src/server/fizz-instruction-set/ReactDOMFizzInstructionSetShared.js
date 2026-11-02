@@ -151,6 +151,7 @@ export function revealCompletedBoundariesWithViewTransitions(
     shouldStartViewTransition = true;
   }
   // Fall through to reveal.
+  // Fall through to reveal.
   try {
     const existingTransition = document.__reactViewTransition;
     if (existingTransition) {

@@ -285,15 +285,13 @@ export function updatedAncestorInfoDev(oldInfo, tag) {
  */
 function isTagValidWithParent(tag, parentTag, implicitRootScope) {
   // First, let's check if we're in an unusual parsing mode...
-  // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intd
-  // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-incaption
-  // No special behavior since these rules fall back to "in body" mode for
-  // all except special table nodes which cause bad parsing behavior anyway.
-
-  // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intr
-  // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intable
-  // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inhead
   switch (parentTag) {
+    // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intd
+    // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-incaption
+    // No special behavior since these rules fall back to "in body" mode for
+    // all except special table nodes which cause bad parsing behavior anyway.
+
+    // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intr
     case 'tr':
       return (
         tag === 'th' ||
@@ -315,6 +313,7 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
     case 'colgroup':
       // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-incolgroup
       return tag === 'col' || tag === 'template';
+    // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intable
     case 'table':
       return (
         tag === 'caption' ||
@@ -326,6 +325,7 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
         tag === 'script' ||
         tag === 'template'
       );
+    // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inhead
     case 'head':
       return (
         tag === 'base' ||
@@ -365,10 +365,6 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
   // Probably in the "in body" parsing mode, so we outlaw only tag combos
   // where the parsing rules cause implicit opens or closes to be added.
   // https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inbody
-  // We support rendering <html> in the root when the container is
-  // #document
-  // We support rendering <body> in the root when the container is
-  // #document or <html>
   switch (tag) {
     case 'h1':
     case 'h2':
@@ -412,10 +408,14 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
       // We support rendering <head> in the root when the container is
       // #document, <html>, or <body>.
       return implicitRootScope || parentTag == null;
+    // We support rendering <html> in the root when the container is
+    // #document
     case 'html':
       return (
         (implicitRootScope && parentTag === '#document') || parentTag == null
       );
+    // We support rendering <body> in the root when the container is
+    // #document or <html>
     case 'body':
       return (
         (implicitRootScope &&

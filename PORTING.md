@@ -559,6 +559,30 @@ These differences from upstream's output are accepted:
   the zero-parameter closure `Rc::new(move || close(&closing))`, printed as
   an arrow, where upstream passes `close.bind(null, response)`.
 
+- **rd627** (the user, 2026-11-02, by name): BundlerESM's requireModule
+  is guard-first, `if (promise.status !== 'fulfilled') { throw
+  promise.reason; } const moduleExports = promise.value;`, where upstream
+  writes `let moduleExports; if (promise.status === 'fulfilled') {
+  moduleExports = promise.value; } else { throw promise.reason; }` (the
+  Rust is clippy's `let module_exports = if .. else { js::throw(..) };`),
+  and its resolveServerReference returns `{specifier: fullUrl, name:
+  exportName}` over four lines where upstream writes it on one.
+
+- **BundlerNode (unbundled)** (the user, 2026-11-02, by name, as
+  BundlerWebpack's and BundlerESM's): the import metadata's tuple read into
+  locals, `const id = metadata[0]; const metadataName = metadata[2];`, where
+  upstream reads `metadata[ID]`/`metadata[NAME]`; `moduleExports?.[..]` and
+  `!= null` for upstream's `&&` and truth; the template-literal error;
+  shorthand properties; `metadata.async === true`; `!metadata.name` for
+  `=== ''`; requireModule ends without `return undefined`; `value =>
+  value.default` for upstream's `function (value) { return .. }`; and rd627
+  A's guard-first requireModule.
+- **StartViewTransitionOptions' `types: types ?? null`** (the user,
+  2026-11-02, by name; rust-js ae7515268): a dictionary's optional nullable
+  member is an `Option<Option<T>>`, so startViewTransition and
+  startGestureTransition give `types: types ?? null` where upstream gives
+  `types: transitionTypes`.
+
 - **rd285** (the user; ADR 0262's rare and harmless, rust-js 15fac97c2, ADR
   1034): a dispatcher call whose arguments need statements hoists the
   receiver as React does, `const d = ReactDOMSharedInternals.d; ..;

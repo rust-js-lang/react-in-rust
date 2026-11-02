@@ -101,6 +101,7 @@ function getImplicitRole(element) {
           return null;
       }
     }
+
     case 'SELECT':
       if (element.hasAttribute('multiple') || element.size > 1) {
         return 'listbox';
