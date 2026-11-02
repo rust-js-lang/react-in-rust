@@ -1164,11 +1164,12 @@ These differences from upstream's output are accepted:
     upstream writes `formData.forEach(appendBackingEntry.bind(null,
     backingStore))`: Rust's closure, which converts each value to the
     store's own.
-  - gaps: rd559 (webapi's `FormDataEntryValue` borrows its text; `forEach`
-    gives it `'static` since rust-js rd574, but ReplyServer's resolveField
-    gives the store text it's only lent, `&str`, so a kept entry is the
-    port's `BackingEntryValue`, `Str(String)` or `File(&'static File)`);
-    and rust-js's readability gaps rd657 (a block
+  - a kept entry is the port's `BackingEntryValue`, `Str(String)` or
+    `File(&'static File)`, not webapi's `FormDataEntryValue<'static>`:
+    ReplyServer's resolveField gives the store text it's only lent, `&str`,
+    which an owned `String` keeps (rd559, closed 2026-11-02: the idiomatic
+    store, no gap).
+  - gaps: rust-js's readability gaps rd657 (a block
     comment before a call's first argument on its own line is placed
     after it, `previousDispatcher.C(href, /* preconnect */ crossOrigin)`,
     or before the statement of a call of one argument), rd658 (a `let` of
@@ -1178,10 +1179,14 @@ These differences from upstream's output are accepted:
     `js::on_load!`, re-reads its namespace's member, not the `const` it's
     declared as) and rd660 (a closure that only gives its arguments on,
     `|h, a, o| preload(Some(js::unknown(h)), ..)`, could be the function
-    itself, upstream's `L: preload`); rd655 (ReplyServer's
+    itself, upstream's `L: preload`, and createBackingFormData's arrow,
+    upstream's `appendBackingEntry.bind(null, backingStore)`); rd655 (ReplyServer's
     `(controller.error)(error)`, a `Rc<dyn Fn>` field only the crate's own
     closures fill, which read no `this`, prints `(0, controller.error)(error)`,
-    rd579's form, where upstream writes `controller.error(error)`); rd661 (a module whose load throws of
+    rd579's form, where upstream writes `controller.error(error)`; fixed in
+    rust-js 6dd3eee3d, its JS regenerated with rd574); rd663 (webapi's
+    observer and timer callbacks are still lent their arguments, where
+    `forEach`'s are JS's own, `'static`, since rd574); rd661 (a module whose load throws of
     a `None` export still exports its `Option`, so ReactFlightServer and
     react-markup bind ReactSharedInternalsServer by its JS path rather than
     `use` it).

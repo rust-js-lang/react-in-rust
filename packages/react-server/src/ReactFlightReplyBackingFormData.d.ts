@@ -39,10 +39,8 @@ export interface BackingFormData {
   blobs?: Map<string, Blob> | null | undefined;
 }
 
-// GAP rd559: webapi's `FormDataEntryValue` borrows its text, `Str(&'a str)`.
-// `forEach` gives it `'static`, but ReplyServer's resolveField gives the store
-// text it's only lent, `&str`, which an owned `String` keeps, so a kept entry
-// is the port's own type.
+// ReplyServer's resolveField gives the store text it's only lent, `&str`,
+// which an owned `String` keeps.
 /** A `FormDataEntryValue` the store keeps: its text, or its file. */
 export type BackingEntryValue = string | File;
 

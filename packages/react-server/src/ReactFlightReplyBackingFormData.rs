@@ -45,10 +45,8 @@ pub struct BackingFormData {
 }
 
 /// A `FormDataEntryValue` the store keeps: its text, or its file.
-// GAP rd559: webapi's `FormDataEntryValue` borrows its text, `Str(&'a str)`.
-// `forEach` gives it `'static`, but ReplyServer's resolveField gives the store
-// text it's only lent, `&str`, which an owned `String` keeps, so a kept entry
-// is the port's own type.
+// ReplyServer's resolveField gives the store text it's only lent, `&str`,
+// which an owned `String` keeps.
 #[cfg_attr(rust_js, rust_js::untagged)]
 #[derive(Clone)]
 pub enum BackingEntryValue {

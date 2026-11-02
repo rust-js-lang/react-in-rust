@@ -202,7 +202,7 @@ function triggerErrorOnChunk(response, chunk, error) {
     // = chunk as any; const controller = streamChunk.reason;`, read as
     // upstream does, so a chunk that's no stream throws JS's TypeError.
     const controller = chunk.reason;
-    (0, controller.error)(error);
+    controller.error(error);
     return;
   }
   let listeners;
@@ -700,7 +700,7 @@ export function reportGlobalError(response, error) {
       typeof chunk.reason.error === 'function'
     ) {
       const maybeController = chunk.reason;
-      (0, maybeController.error)(error);
+      maybeController.error(error);
     }
   });
 }
