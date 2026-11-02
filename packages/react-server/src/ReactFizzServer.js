@@ -5,20 +5,59 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {
-  disableLegacyContext,
-  disableLegacyContextForFunctionComponents,
-  enableAsyncIterableChildren,
-  enableCPUSuspense,
-  enableFizzBlockingRender,
-  enableScopeAPI,
-  enableViewTransition,
-  enableViewTransitionParentEnterExit as enableParentEnterExit,
-} from 'shared/ReactFeatureFlags';
-import {resetOwnerStackLimit} from 'shared/ReactOwnerStackReset';
-import {REACT_RECOVERABLE_DIGEST} from 'shared/ReactRecoverable';
 import {describeObjectForErrorMessage} from 'shared/ReactSerializationErrors';
-import ReactSharedInternals from 'shared/ReactSharedInternals';
+import {
+  constructClassInstance,
+  mountClassInstance,
+} from './ReactFizzClassComponent.js';
+import {
+  emptyContextObject,
+  getMaskedContext,
+  processChildContext,
+} from './ReactFizzLegacyContext.js';
+import {
+  getActiveContext,
+  popProvider,
+  pushProvider,
+  readContext,
+  rootContextSnapshot,
+  switchContext,
+} from './ReactFizzNewContext.js';
+import {
+  HooksDispatcher,
+  checkDidRenderIdHook,
+  cloneRecoverableErrorAsFatal,
+  createRecoverableError,
+  currentResumableState,
+  finishHooks,
+  getActionStateCount,
+  getActionStateMatchingIndex,
+  getThenableStateAfterSuspending,
+  isRecoverableError,
+  prepareToUseHooks,
+  prepareToUseThenableState,
+  readPreviousThenableFromState,
+  resetHooksState,
+  setCurrentResumableState,
+  unwrapThenable,
+} from './ReactFizzHooks.js';
+import {DefaultAsyncDispatcher} from './ReactFizzAsyncDispatcher.js';
+import {
+  getOwnerStackByComponentStackNodeInDev,
+  getStackByComponentStackNode,
+} from './ReactFizzComponentStack.js';
+import {emptyTreeContext, pushTreeContext} from './ReactFizzTreeContext.js';
+import {currentTaskInDEV, setCurrentTaskInDEV} from './ReactFizzCurrentTask.js';
+import {
+  callComponentInDEV,
+  callLazyInitInDEV,
+  callRenderInDEV,
+} from './ReactFizzCallUserSpace.js';
+import {
+  getViewTransitionClassName,
+  getViewTransitionName,
+} from './ReactFizzViewTransitionComponent.js';
+import {resetOwnerStackLimit} from 'shared/ReactOwnerStackReset';
 import {
   ASYNC_ITERATOR,
   REACT_ACTIVITY_TYPE,
@@ -40,24 +79,30 @@ import {
   REACT_VIEW_TRANSITION_TYPE,
   getIteratorFn,
 } from 'shared/ReactSymbols';
-import assign from 'shared/assign';
+import {
+  disableLegacyContext,
+  disableLegacyContextForFunctionComponents,
+  enableAsyncIterableChildren,
+  enableCPUSuspense,
+  enableFizzBlockingRender,
+  enableScopeAPI,
+  enableViewTransition,
+  enableViewTransitionParentEnterExit as enableParentEnterExit,
+} from 'shared/ReactFeatureFlags';
+import noop from 'shared/noop';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import isArray from 'shared/isArray';
-import noop from 'shared/noop';
-import {DefaultAsyncDispatcher} from './ReactFizzAsyncDispatcher.js';
+import {REACT_RECOVERABLE_DIGEST} from 'shared/ReactRecoverable';
 import {
-  callComponentInDEV,
-  callLazyInitInDEV,
-  callRenderInDEV,
-} from './ReactFizzCallUserSpace.js';
-import {
-  constructClassInstance,
-  mountClassInstance,
-} from './ReactFizzClassComponent.js';
-import {
-  getOwnerStackByComponentStackNodeInDev,
-  getStackByComponentStackNode,
-} from './ReactFizzComponentStack.js';
+  SuspenseException,
+  ensureSuspendableThenableStateDEV,
+  getSuspendedCallSiteDebugTaskDEV,
+  getSuspendedCallSiteStackDEV,
+  getSuspendedThenable,
+  setCaptureSuspendedCallSiteDEV,
+} from './ReactFizzThenable.js';
+import ReactSharedInternals from 'shared/ReactSharedInternals';
+import assign from 'shared/assign';
 import {
   bindToConsole,
   canHavePreamble,
@@ -105,51 +150,6 @@ import {
   writeStartPendingSuspenseBoundary,
   writeStartSegment,
 } from './ReactFizzConfig.js';
-import {currentTaskInDEV, setCurrentTaskInDEV} from './ReactFizzCurrentTask.js';
-import {
-  HooksDispatcher,
-  checkDidRenderIdHook,
-  cloneRecoverableErrorAsFatal,
-  createRecoverableError,
-  currentResumableState,
-  finishHooks,
-  getActionStateCount,
-  getActionStateMatchingIndex,
-  getThenableStateAfterSuspending,
-  isRecoverableError,
-  prepareToUseHooks,
-  prepareToUseThenableState,
-  readPreviousThenableFromState,
-  resetHooksState,
-  setCurrentResumableState,
-  unwrapThenable,
-} from './ReactFizzHooks.js';
-import {
-  emptyContextObject,
-  getMaskedContext,
-  processChildContext,
-} from './ReactFizzLegacyContext.js';
-import {
-  getActiveContext,
-  popProvider,
-  pushProvider,
-  readContext,
-  rootContextSnapshot,
-  switchContext,
-} from './ReactFizzNewContext.js';
-import {
-  SuspenseException,
-  ensureSuspendableThenableStateDEV,
-  getSuspendedCallSiteDebugTaskDEV,
-  getSuspendedCallSiteStackDEV,
-  getSuspendedThenable,
-  setCaptureSuspendedCallSiteDEV,
-} from './ReactFizzThenable.js';
-import {emptyTreeContext, pushTreeContext} from './ReactFizzTreeContext.js';
-import {
-  getViewTransitionClassName,
-  getViewTransitionName,
-} from './ReactFizzViewTransitionComponent.js';
 import {
   beginWriting,
   byteLengthOfChunk,

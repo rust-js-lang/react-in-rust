@@ -10,16 +10,18 @@ use std::rc::Rc;
 use js::{JsError, Kind, SymbolFor, Unknown};
 use react_isomorphic::react_lazy::LazyComponent;
 use shared::environment::__DEV__;
+
 use shared::react_component_stack_frame::{
     describe_built_in_component_frame, describe_class_component_frame, describe_debug_info_frame,
     describe_function_component_frame,
 };
-use shared::react_feature_flags::ENABLE_VIEW_TRANSITION;
-use shared::react_owner_stack_frames::format_owner_stack;
 use shared::react_symbols::{
     REACT_FORWARD_REF_TYPE, REACT_LAZY_TYPE, REACT_MEMO_TYPE, REACT_SUSPENSE_LIST_TYPE,
     REACT_SUSPENSE_TYPE, REACT_VIEW_TRANSITION_TYPE,
 };
+
+use shared::react_feature_flags::ENABLE_VIEW_TRANSITION;
+use shared::react_owner_stack_frames::format_owner_stack;
 
 pub struct ComponentStackNode {
     #[cfg_attr(rust_js, rust_js::nullable)]

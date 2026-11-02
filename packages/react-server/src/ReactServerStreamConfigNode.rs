@@ -12,12 +12,15 @@ use js::{
     uint8_array,
 };
 use node::buffer::Buffer;
-use node::crypto::{self, BinaryToTextEncoding};
 use node::stream::Writable;
-use node::util::{TextEncoder, text_encoder};
 use shared::environment::__DEV__;
-use shared::has_own_property::HAS_OWN_PROPERTY;
 use webapi::{Blob, TextEncoderEncodeIntoResult, console};
+
+use node::util::{TextEncoder, text_encoder};
+
+use node::crypto::{BinaryToTextEncoding, create_hash};
+
+use shared::has_own_property::HAS_OWN_PROPERTY;
 
 /// A destination that might be flushable, `interface MightBeFlushable`.
 pub struct Destination(PhantomData<JsObject>);
@@ -354,7 +357,7 @@ pub fn close_with_error(destination: &Destination, error: Option<&Unknown>) {
 }
 
 pub fn create_fast_hash(input: &str) -> String {
-    let hash = crypto::create_hash("md5");
+    let hash = create_hash("md5");
     hash.update(input);
     hash.digest(BinaryToTextEncoding::Hex)
 }

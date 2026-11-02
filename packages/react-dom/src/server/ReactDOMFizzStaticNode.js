@@ -15,7 +15,6 @@ import {
   startWork,
   stopFlowing,
 } from 'react-server/src/ReactFizzServer';
-import {Readable} from 'stream';
 import {
   createRenderState,
   createResumableState,
@@ -24,6 +23,7 @@ import {
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 import {textEncoder} from 'react-server/src/ReactServerStreamConfigNode';
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
+import {Readable} from 'stream';
 import {$unwrap} from '@rust-js/runtime';
 
 export {default as version} from 'shared/ReactVersion';

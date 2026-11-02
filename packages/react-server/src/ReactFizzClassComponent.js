@@ -5,14 +5,14 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {disableLegacyContext} from 'shared/ReactFeatureFlags';
-import {get as getInstance, set as setInstance} from 'shared/ReactInstanceMap';
-import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
-import assign from 'shared/assign';
-import getComponentNameFromType from 'shared/getComponentNameFromType';
-import isArray from 'shared/isArray';
 import {emptyContextObject} from './ReactFizzLegacyContext.js';
 import {readContext} from './ReactFizzNewContext.js';
+import {disableLegacyContext} from 'shared/ReactFeatureFlags';
+import {get as getInstance, set as setInstance} from 'shared/ReactInstanceMap';
+import getComponentNameFromType from 'shared/getComponentNameFromType';
+import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+import isArray from 'shared/isArray';
+import assign from 'shared/assign';
 import {$index, $slice, $unwrap} from '@rust-js/runtime';
 
 const didWarnAboutNoopUpdateForComponent = {};

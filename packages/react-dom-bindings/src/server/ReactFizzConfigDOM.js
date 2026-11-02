@@ -5,28 +5,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {Children} from 'react';
-import {doctypeChunk as doctypeChunk$1} from 'react-server/src/ReactFizzConfig';
-import {
-  readAsDataURL,
-  stringToChunk,
-  stringToPrecomputedChunk,
-  writeChunk,
-  writeChunkAndReturn,
-} from 'react-server/src/ReactServerStreamConfig';
-import {
-  flushResources,
-  getRenderState,
-  getResumableState,
-  resolveRequest,
-} from 'react-server/src/ReactFizzServer';
 import {
   checkAttributeStringCoercion,
   checkCSSPropertyStringCoercion,
   checkHtmlStringCoercion,
   checkOptionStringCoercion,
 } from 'shared/CheckStringCoercion';
-import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
+import {Children} from 'react';
 import {
   enableFizzBlockingRender,
   enableFizzExternalRuntime,
@@ -34,22 +19,26 @@ import {
   enableViewTransition,
   enableViewTransitionParentEnterExit,
 } from 'shared/ReactFeatureFlags';
-import hasOwnProperty from 'shared/hasOwnProperty';
-import isArray from 'shared/isArray';
-import {checkControlledValueProps} from '../shared/ReactControlledValuePropTypes.js';
-import {NotPending} from '../shared/ReactDOMFormActions.js';
-import {validateProperties as validateARIAProperties} from '../shared/ReactDOMInvalidARIAHook.js';
-import {validateProperties as validateInputProperties} from '../shared/ReactDOMNullInputValuePropHook.js';
-import {getValueDescriptorExpectingObjectForWarning} from '../shared/ReactDOMResourceValidation.js';
-import {validateProperties as validateUnknownProperties} from '../shared/ReactDOMUnknownPropertyHook.js';
-import {getCrossOriginString} from '../shared/crossOriginStrings.js';
-import getAttributeAlias from '../shared/getAttributeAlias.js';
-import hyphenateStyleName from '../shared/hyphenateStyleName.js';
+import {
+  flushResources,
+  getRenderState,
+  getResumableState,
+  resolveRequest,
+} from 'react-server/src/ReactFizzServer';
 import isAttributeNameSafe from '../shared/isAttributeNameSafe.js';
 import isUnitlessNumber from '../shared/isUnitlessNumber.js';
-import sanitizeURL from '../shared/sanitizeURL.js';
+import getAttributeAlias from '../shared/getAttributeAlias.js';
+import {checkControlledValueProps} from '../shared/ReactControlledValuePropTypes.js';
+import {validateProperties as validateARIAProperties} from '../shared/ReactDOMInvalidARIAHook.js';
+import {validateProperties as validateInputProperties} from '../shared/ReactDOMNullInputValuePropHook.js';
+import {validateProperties as validateUnknownProperties} from '../shared/ReactDOMUnknownPropertyHook.js';
 import warnValidStyle from '../shared/warnValidStyle.js';
+import {getCrossOriginString} from '../shared/crossOriginStrings.js';
 import escapeTextForBrowser from './escapeTextForBrowser.js';
+import hyphenateStyleName from '../shared/hyphenateStyleName.js';
+import hasOwnProperty from 'shared/hasOwnProperty';
+import sanitizeURL from '../shared/sanitizeURL.js';
+import isArray from 'shared/isArray';
 import {
   clientRenderBoundary as clientRenderFunction,
   completeBoundary as completeBoundaryFunction,
@@ -59,6 +48,17 @@ import {
   formReplaying as formReplayingRuntime,
   markShellTime,
 } from './fizz-instruction-set/ReactDOMFizzInstructionSetInlineCodeStrings.js';
+import {getValueDescriptorExpectingObjectForWarning} from '../shared/ReactDOMResourceValidation.js';
+import {NotPending} from '../shared/ReactDOMFormActions.js';
+import {doctypeChunk as doctypeChunk$1} from 'react-server/src/ReactFizzConfig';
+import {
+  readAsDataURL,
+  stringToChunk,
+  stringToPrecomputedChunk,
+  writeChunk,
+  writeChunkAndReturn,
+} from 'react-server/src/ReactServerStreamConfig';
+import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import {$displayF64, $index, $splice, $trim, $unwrap} from '@rust-js/runtime';
 
 // Used to distinguish these contexts from ones used in other renderers.

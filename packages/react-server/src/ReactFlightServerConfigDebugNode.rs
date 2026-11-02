@@ -7,7 +7,6 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::{Error, JsObject, Kind, Map, Unknown};
-use node::async_hooks::{self, HookCallbacks, async_resource, execution_async_id};
 use shared::environment::__DEV__;
 use shared::react_types::ReactStackTrace;
 use webapi::performance;
@@ -18,6 +17,8 @@ use crate::react_flight_async_sequence::{
 };
 use crate::react_flight_current_owner::resolve_owner;
 use crate::react_flight_hooks::{Request, resolve_request};
+
+use node::async_hooks::{self, HookCallbacks, async_resource, execution_async_id};
 
 #[cfg_attr(
     rust_js,

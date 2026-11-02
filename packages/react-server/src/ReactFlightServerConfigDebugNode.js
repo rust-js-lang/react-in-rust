@@ -5,7 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {AsyncResource, createHook, executionAsyncId} from 'async_hooks';
 import {
   AWAIT_NODE,
   IO_NODE,
@@ -13,9 +12,10 @@ import {
   UNRESOLVED_AWAIT_NODE,
   UNRESOLVED_PROMISE_NODE,
 } from './ReactFlightAsyncSequence.js';
-import {isAwaitInUserspace, resolveRequest} from './ReactFlightServer.js';
-import {parseStackTracePrivate} from './ReactFlightServerConfig.js';
 import {resolveOwner} from './flight/ReactFlightCurrentOwner.js';
+import {isAwaitInUserspace, resolveRequest} from './ReactFlightServer.js';
+import {AsyncResource, createHook, executionAsyncId} from 'async_hooks';
+import {parseStackTracePrivate} from './ReactFlightServerConfig.js';
 import {$fieldCell, $try, $withBorrow} from '@rust-js/runtime';
 
 const pendingOperations = new Map();

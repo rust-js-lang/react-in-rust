@@ -6,8 +6,8 @@
 // LICENSE file in the root directory of this source tree.
 
 import {createHash} from 'crypto';
-import {TextEncoder} from 'util';
 import hasOwnProperty from 'shared/hasOwnProperty';
+import {TextEncoder} from 'util';
 import {$unwrap} from '@rust-js/runtime';
 
 const supportsArrayBufferDetached = hasOwnProperty.call(

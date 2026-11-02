@@ -7,17 +7,20 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::{Dict, Kind, Set, SymbolFor, Unknown};
-use shared::assign::assign;
 use shared::environment::__DEV__;
-use shared::get_component_name_from_type::get_component_name_from_type;
-use shared::is_array::is_array;
-use shared::react_feature_flags::DISABLE_LEGACY_CONTEXT;
-use shared::react_instance_map::{get as get_instance, set as set_instance};
-use shared::react_symbols::{REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE};
 use webapi::console;
 
 use crate::react_fizz_legacy_context::EMPTY_CONTEXT_OBJECT;
 use crate::react_fizz_new_context::{Context, read_context};
+
+use shared::react_feature_flags::DISABLE_LEGACY_CONTEXT;
+use shared::react_instance_map::{get as get_instance, set as set_instance};
+
+use shared::get_component_name_from_type::get_component_name_from_type;
+use shared::react_symbols::{REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE};
+
+use shared::assign::assign;
+use shared::is_array::is_array;
 
 /// A class's static `getDerivedStateFromProps`: the state its props derive,
 /// given its previous state.

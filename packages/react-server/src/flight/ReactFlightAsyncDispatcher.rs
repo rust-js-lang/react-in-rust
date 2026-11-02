@@ -11,8 +11,9 @@ use shared::react_shared_internals::CacheDispatcher;
 use shared::react_types::ReactComponentInfo;
 use webapi::AbortSignal;
 
-use crate::react_flight_current_owner::resolve_owner;
 use crate::react_flight_hooks::{Cache, ResourceType, get_cache, resolve_request};
+
+use crate::react_flight_current_owner::resolve_owner;
 
 /// What gives the component rendering now, its info.
 type GetOwner = fn() -> Option<&'static ReactComponentInfo>;

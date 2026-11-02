@@ -7,11 +7,13 @@ use std::cell::{Cell, RefCell};
 
 use js::Unknown;
 use react_dom_bindings::react_dom_legacy_server_stream_config::Destination;
-use react_dom_bindings::react_fizz_config_dom_legacy::{
-    create_render_state, create_resumable_state, create_root_format_context,
-};
+
 use react_server::react_fizz_current_task::{
     ErrorInfo, abort, create_request, start_flowing, start_work,
+};
+
+use react_dom_bindings::react_fizz_config_dom_legacy::{
+    create_render_state, create_resumable_state, create_root_format_context,
 };
 
 #[cfg_attr(rust_js, rust_js::name = "version")]

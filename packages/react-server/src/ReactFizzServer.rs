@@ -14,26 +14,7 @@ use js::{
 };
 use node::async_hooks::AsyncLocalStorage;
 use react_isomorphic::react_lazy::LazyComponent;
-use shared::assign::assign;
 use shared::environment::__DEV__;
-use shared::get_component_name_from_type::get_component_name_from_type;
-use shared::is_array::is_array;
-use shared::react_feature_flags::{
-    DISABLE_LEGACY_CONTEXT, DISABLE_LEGACY_CONTEXT_FOR_FUNCTION_COMPONENTS,
-    ENABLE_ASYNC_ITERABLE_CHILDREN, ENABLE_CPU_SUSPENSE, ENABLE_FIZZ_BLOCKING_RENDER,
-    ENABLE_SCOPE_API, ENABLE_VIEW_TRANSITION, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
-};
-use shared::react_owner_stack_reset::reset_owner_stack_limit;
-use shared::react_recoverable::REACT_RECOVERABLE_DIGEST;
-use shared::react_serialization_errors::describe_object_for_error_message;
-use shared::react_shared_internals::REACT_SHARED_INTERNALS;
-use shared::react_symbols::{
-    ASYNC_ITERATOR, REACT_ACTIVITY_TYPE, REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE,
-    REACT_ELEMENT_TYPE, REACT_FORWARD_REF_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE,
-    REACT_LEGACY_HIDDEN_TYPE, REACT_MEMO_TYPE, REACT_PORTAL_TYPE, REACT_PROFILER_TYPE,
-    REACT_RECOVERABLE_TYPE, REACT_SCOPE_TYPE, REACT_STRICT_MODE_TYPE, REACT_SUSPENSE_LIST_TYPE,
-    REACT_SUSPENSE_TYPE, REACT_VIEW_TRANSITION_TYPE, get_iterator_fn,
-};
 use shared::react_types::{
     ReactFormState, ReactNodeList, SuspenseListProps, SuspenseListRevealOrder, SuspenseProps,
     Thenable, ViewTransitionProps,
@@ -43,16 +24,17 @@ use webapi::{
     console,
 };
 
-use crate::react_fizz_async_dispatcher::DEFAULT_ASYNC_DISPATCHER;
-use crate::react_fizz_call_user_space::{
-    CALL_COMPONENT_IN_DEV, CALL_LAZY_INIT_IN_DEV, CALL_RENDER_IN_DEV, ClassInstance, Component,
-};
+use shared::react_serialization_errors::describe_object_for_error_message;
+
 use crate::react_fizz_class_component::{construct_class_instance, mount_class_instance};
-use crate::react_fizz_component_stack::{
-    ComponentStackNode, get_owner_stack_by_component_stack_node_in_dev,
-    get_stack_by_component_stack_node,
+use crate::react_fizz_legacy_context::{
+    Context as LegacyContext, EMPTY_CONTEXT_OBJECT, get_masked_context, process_child_context,
 };
-use crate::react_fizz_current_task::{CURRENT_TASK_IN_DEV, set_current_task_in_dev};
+use crate::react_fizz_new_context::{
+    Context, ContextSnapshot, ROOT_CONTEXT_SNAPSHOT, get_active_context, pop_provider,
+    push_provider, read_context, switch_context,
+};
+
 use crate::react_fizz_hooks::{
     CURRENT_RESUMABLE_STATE, HOOKS_DISPATCHER, check_did_render_id_hook,
     clone_recoverable_error_as_fatal, create_recoverable_error, finish_hooks,
@@ -61,21 +43,51 @@ use crate::react_fizz_hooks::{
     read_previous_thenable_from_state, reset_hooks_state, set_current_resumable_state,
     unwrap_thenable,
 };
-use crate::react_fizz_legacy_context::{
-    Context as LegacyContext, EMPTY_CONTEXT_OBJECT, get_masked_context, process_child_context,
+
+use crate::react_fizz_async_dispatcher::DEFAULT_ASYNC_DISPATCHER;
+use crate::react_fizz_component_stack::{
+    ComponentStackNode, get_owner_stack_by_component_stack_node_in_dev,
+    get_stack_by_component_stack_node,
 };
-use crate::react_fizz_new_context::{
-    Context, ContextSnapshot, ROOT_CONTEXT_SNAPSHOT, get_active_context, pop_provider,
-    push_provider, read_context, switch_context,
+use crate::react_fizz_tree_context::{EMPTY_TREE_CONTEXT, TreeContext, push_tree_context};
+
+use crate::react_fizz_current_task::{CURRENT_TASK_IN_DEV, set_current_task_in_dev};
+
+use crate::react_fizz_call_user_space::{
+    CALL_COMPONENT_IN_DEV, CALL_LAZY_INIT_IN_DEV, CALL_RENDER_IN_DEV, ClassInstance, Component,
 };
+use crate::react_fizz_view_transition_component::{
+    get_view_transition_class_name, get_view_transition_name,
+};
+
+use shared::react_owner_stack_reset::reset_owner_stack_limit;
+use shared::react_symbols::{
+    ASYNC_ITERATOR, REACT_ACTIVITY_TYPE, REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE,
+    REACT_ELEMENT_TYPE, REACT_FORWARD_REF_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE,
+    REACT_LEGACY_HIDDEN_TYPE, REACT_MEMO_TYPE, REACT_PORTAL_TYPE, REACT_PROFILER_TYPE,
+    REACT_RECOVERABLE_TYPE, REACT_SCOPE_TYPE, REACT_STRICT_MODE_TYPE, REACT_SUSPENSE_LIST_TYPE,
+    REACT_SUSPENSE_TYPE, REACT_VIEW_TRANSITION_TYPE, get_iterator_fn,
+};
+
+use shared::react_shared_internals::REACT_SHARED_INTERNALS;
+
+use shared::react_feature_flags::{
+    DISABLE_LEGACY_CONTEXT, DISABLE_LEGACY_CONTEXT_FOR_FUNCTION_COMPONENTS,
+    ENABLE_ASYNC_ITERABLE_CHILDREN, ENABLE_CPU_SUSPENSE, ENABLE_FIZZ_BLOCKING_RENDER,
+    ENABLE_SCOPE_API, ENABLE_VIEW_TRANSITION, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
+};
+
+use shared::assign::assign;
+use shared::noop::noop;
+
+use shared::get_component_name_from_type::get_component_name_from_type;
+use shared::is_array::is_array;
+use shared::react_recoverable::REACT_RECOVERABLE_DIGEST;
+
 use crate::react_fizz_thenable::{
     SUSPENSE_EXCEPTION, ThenableState, ensure_suspendable_thenable_state_dev,
     get_suspended_call_site_debug_task_dev, get_suspended_call_site_stack_dev,
     get_suspended_thenable, set_capture_suspended_call_site_dev,
-};
-use crate::react_fizz_tree_context::{EMPTY_TREE_CONTEXT, TreeContext, push_tree_context};
-use crate::react_fizz_view_transition_component::{
-    get_view_transition_class_name, get_view_transition_name,
 };
 
 // ReactServerStreamConfig's types, which its fork for each host defines: a
@@ -740,8 +752,8 @@ fn request_instance(
         postponed_state: RefCell::new(None),
         on_error: on_error.unwrap_or_else(|| Rc::new(default_error_handler)),
         on_browser_bailout: on_browser_bailout.unwrap_or_else(|| Rc::new(|_, _| {})),
-        on_all_ready: on_all_ready.unwrap_or_else(|| Rc::new(shared::noop::noop)),
-        on_shell_ready: on_shell_ready.unwrap_or_else(|| Rc::new(shared::noop::noop)),
+        on_all_ready: on_all_ready.unwrap_or_else(|| Rc::new(noop)),
+        on_shell_ready: on_shell_ready.unwrap_or_else(|| Rc::new(noop)),
         on_shell_error: on_shell_error.unwrap_or_else(|| Rc::new(|_| {})),
         on_fatal_error: on_fatal_error.unwrap_or_else(|| Rc::new(|_| {})),
         render_lifetime_controller: Cell::new(None),

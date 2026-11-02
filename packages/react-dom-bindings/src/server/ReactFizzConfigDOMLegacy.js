@@ -9,7 +9,6 @@ import {
   stringToChunk,
   stringToPrecomputedChunk,
 } from 'react-server/src/ReactServerStreamConfig';
-import {NotPending} from '../shared/ReactDOMFormActions.js';
 import {
   createRenderState as createRenderStateImpl,
   pushEndActivityBoundary as pushEndActivityBoundaryImpl,
@@ -22,6 +21,7 @@ import {
   writeStartClientRenderedSuspenseBoundary as writeStartClientRenderedSuspenseBoundaryImpl,
   writeStartCompletedSuspenseBoundary as writeStartCompletedSuspenseBoundaryImpl,
 } from './ReactFizzConfigDOM.js';
+import {NotPending} from '../shared/ReactDOMFormActions.js';
 import escapeTextForBrowser from './escapeTextForBrowser.js';
 
 export {

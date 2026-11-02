@@ -7,8 +7,6 @@ use std::rc::Rc;
 
 use js::Unknown;
 
-use crate::escape_text_for_browser::escape_text_for_browser;
-use crate::react_dom_form_actions::{FormStatus, NOT_PENDING};
 use crate::react_fizz_config_dom::{
     Chunks, Destination, PrecomputedChunk, RenderState as BaseRenderState,
     create_render_state as create_render_state_impl,
@@ -22,6 +20,10 @@ use crate::react_fizz_config_dom::{
     write_start_client_rendered_suspense_boundary as write_start_client_rendered_suspense_boundary_impl,
     write_start_completed_suspense_boundary as write_start_completed_suspense_boundary_impl,
 };
+
+use crate::react_dom_form_actions::{FormStatus, NOT_PENDING};
+
+use crate::escape_text_for_browser::escape_text_for_browser;
 
 #[cfg_attr(rust_js, rust_js::name = "isPrimaryRenderer")]
 pub const IS_PRIMARY_RENDERER: bool = false;

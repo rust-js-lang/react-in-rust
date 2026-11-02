@@ -11,8 +11,6 @@ import {
   describeDebugInfoFrame,
   describeFunctionComponentFrame,
 } from 'shared/ReactComponentStackFrame';
-import {enableViewTransition} from 'shared/ReactFeatureFlags';
-import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
 import {
   REACT_FORWARD_REF_TYPE,
   REACT_LAZY_TYPE,
@@ -21,6 +19,8 @@ import {
   REACT_SUSPENSE_TYPE,
   REACT_VIEW_TRANSITION_TYPE,
 } from 'shared/ReactSymbols';
+import {enableViewTransition} from 'shared/ReactFeatureFlags';
+import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
 import {$unwrap} from '@rust-js/runtime';
 
 function shouldConstruct(component) {

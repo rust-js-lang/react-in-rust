@@ -5,9 +5,11 @@
 
 use js::{Dict, Unknown, object};
 use shared::environment::__DEV__;
-use shared::get_component_name_from_type::get_component_name_from_type;
-use shared::react_feature_flags::DISABLE_LEGACY_CONTEXT;
 use webapi::console;
+
+use shared::react_feature_flags::DISABLE_LEGACY_CONTEXT;
+
+use shared::get_component_name_from_type::get_component_name_from_type;
 
 #[cfg_attr(rust_js, rust_js::link_name = "getChildContext")]
 fn get_child_context(this: &Unknown) -> &'static Context {

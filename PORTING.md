@@ -789,6 +789,34 @@ These differences from upstream's output are accepted:
 - **react-art's event handler** (the user, rd335, 2026-11-02): the closure
   ReactFiberConfigART returns as a node's listener prints as an anonymous
   function, where upstream names it `function handleEvent`.
+- **ReactFizzServer's forms** (the user, 2026-11-02), each but the last a
+  filed rust-js gap; none changes a result:
+  - a `try` whose result is read after it is a `$catchUnwind` closure,
+    `const result = $catchUnwind(() => rerenderStalledTask(request,
+    task)); restoreThenableState(); .. if (result.TAG === 'Err') { throw
+    $unwinding(result._0); }`, where upstream writes `try {..} finally
+    {..}`;
+  - a `RefCell` collection, a segment's chunks and children, a replay's
+    nodes, an abort set, is read through `$borrow(..)` and
+    `$borrowMut(..)`, `$borrowMut(abortSet).delete(task)`, where upstream
+    reads the array or set itself;
+  - an `Option` is tested `!= null` where upstream tests `!== null` or
+    `!== undefined` (ReactDOMRoot's kind);
+  - an index's `usize` arithmetic is `>>> 0`, `(((totalChildren - 1) >>>
+    0) - n) >>> 0`, where upstream writes `totalChildren - 1 - n`;
+  - `for (i = 0; i < pingedTasks.length; i++) {..} pingedTasks.splice(0,
+    i);` is `while (i < pingedTasks.length) {..; i++; }
+    $drain(pingedTasks, 0, i);`, and completedSegments' alike;
+  - the port's helpers upstream doesn't have: `thrownValueOf`,
+    `fallbackKeyPathOf`, `isBackwards`, `isSuspending`,
+    `isSuspenseException`, `isCurrentTask`, `nextSegmentId`,
+    `newThrownInfo` and `componentNameOrUnknown`;
+  - a resume slot is read by its index's text, `resumeSlots[String(i)]`
+    and `delete resumeSlots[String(i)]`, where upstream indexes by the
+    number;
+  - a task object has no `ping` property (rd495, the user's decision of
+    2026-11-01, "Pings made at then()"): `pingOf(request, task)` makes its
+    resolve and reject where they're given to `then`.
 - **Accepted on the user's behalf while away, 2026-11-02** (each changes no
   result; the coordinator logs them for the user):
   - the Flight client's DEV `then` holds its wrapper promise in a cell its

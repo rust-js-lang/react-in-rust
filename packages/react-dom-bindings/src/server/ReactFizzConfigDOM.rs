@@ -9,33 +9,47 @@ use std::panic::{self, AssertUnwindSafe};
 use std::rc::Rc;
 
 use js::{Dict, JsObject, Kind, Unknown, dict};
-use react_server::react_fizz_server::{
-    flush_resources, get_render_state, get_resumable_state, resolve_request,
-};
 use shared::environment::__DEV__;
-use shared::react_dom_shared_internals::{HostDispatcher, REACT_DOM_SHARED_INTERNALS};
-use shared::react_feature_flags::{
-    ENABLE_FIZZ_BLOCKING_RENDER, ENABLE_FIZZ_EXTERNAL_RUNTIME, ENABLE_SRC_OBJECT,
-    ENABLE_VIEW_TRANSITION, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
-};
 use shared::react_types::{ReactCustomFormAction, Thenable};
 use webapi::{Blob, FormData, FormDataEntryValue};
 
-use react_isomorphic::CHILDREN;
 use shared::check_string_coercion::{
     check_attribute_string_coercion, check_css_property_string_coercion,
     check_html_string_coercion, check_option_string_coercion,
 };
-use shared::has_own_property::HAS_OWN_PROPERTY;
-use shared::is_array::is_array;
+
+use react_isomorphic::CHILDREN;
+
+use shared::react_feature_flags::{
+    ENABLE_FIZZ_BLOCKING_RENDER, ENABLE_FIZZ_EXTERNAL_RUNTIME, ENABLE_SRC_OBJECT,
+    ENABLE_VIEW_TRANSITION, ENABLE_VIEW_TRANSITION_PARENT_ENTER_EXIT,
+};
+
+use react_server::react_fizz_server::{
+    flush_resources, get_render_state, get_resumable_state, resolve_request,
+};
+
+use crate::is_attribute_name_safe::is_attribute_name_safe;
+use crate::is_unitless_number::is_unitless_number;
+
+use crate::get_attribute_alias::get_attribute_alias;
+use crate::react_controlled_value_prop_types::check_controlled_value_props;
+#[cfg_attr(rust_js, rust_js::name = "validateARIAProperties")]
+use crate::react_dom_invalid_aria_hook::validate_properties as validate_aria_properties;
+use crate::react_dom_null_input_value_prop_hook::validate_properties as validate_input_properties;
+use crate::react_dom_unknown_property_hook::validate_properties as validate_unknown_properties;
+use crate::warn_valid_style::warn_valid_style;
 
 use crate::cross_origin_strings::{CrossOriginString, get_cross_origin_string};
 use crate::escape_text_for_browser::escape_text_for_browser;
-use crate::get_attribute_alias::get_attribute_alias;
 use crate::hyphenate_style_name::hyphenate_style_name;
-use crate::is_attribute_name_safe::is_attribute_name_safe;
-use crate::is_unitless_number::is_unitless_number;
-use crate::react_controlled_value_prop_types::check_controlled_value_props;
+
+use shared::has_own_property::HAS_OWN_PROPERTY;
+
+use crate::sanitize_url::sanitize_url;
+
+use shared::is_array::is_array;
+
 use crate::react_dom_fizz_instruction_set_inline_code_strings::{
     CLIENT_RENDER_BOUNDARY as CLIENT_RENDER_FUNCTION,
     COMPLETE_BOUNDARY as COMPLETE_BOUNDARY_FUNCTION,
@@ -44,14 +58,11 @@ use crate::react_dom_fizz_instruction_set_inline_code_strings::{
     COMPLETE_SEGMENT as COMPLETE_SEGMENT_FUNCTION, FORM_REPLAYING as FORM_REPLAYING_RUNTIME,
     MARK_SHELL_TIME,
 };
-use crate::react_dom_form_actions::{FormStatus, NOT_PENDING};
-#[cfg_attr(rust_js, rust_js::name = "validateARIAProperties")]
-use crate::react_dom_invalid_aria_hook::validate_properties as validate_aria_properties;
-use crate::react_dom_null_input_value_prop_hook::validate_properties as validate_input_properties;
 use crate::react_dom_resource_validation::get_value_descriptor_expecting_object_for_warning;
-use crate::react_dom_unknown_property_hook::validate_properties as validate_unknown_properties;
-use crate::sanitize_url::sanitize_url;
-use crate::warn_valid_style::warn_valid_style;
+
+use crate::react_dom_form_actions::{FormStatus, NOT_PENDING};
+
+use shared::react_dom_shared_internals::{HostDispatcher, REACT_DOM_SHARED_INTERNALS};
 
 /// Where a render's output is written: the host's stream, as its stream
 /// config names it.
