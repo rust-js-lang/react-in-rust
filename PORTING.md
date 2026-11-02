@@ -1114,9 +1114,10 @@ The port is split between sessions by package:
   ReactFlightImportMetadata (its `Chunk`, an untagged `File(String) |
   Merged((filename, filenames, sizes))`, a merged chunk's tuple told by
   `typeof chunk === 'string'` as upstream's), and its
-  ReactFlightClientConfigBundlerTurbopackBrowser and -Server and
+  ReactFlightClientConfigBundlerTurbopack, -Browser and -Server and
   ReactFlightClientConfigTargetTurbopackBrowser and -Server are Rust, of
-  webpack's forms; `__turbopack_load_by_url__` and `__turbopack_require__`
+  webpack's forms (BundlerTurbopack's chunk sets are `js::WeakSet`s of the
+  chunks' promises); `__turbopack_load_by_url__` and `__turbopack_require__`
   are `shared::environment`'s too. The plain re-export
   entries (`client*.js`, `react-flight-dom-client.*.js`) stay JS (rd55).
   **Pending in rust-js, not accepted** (each changes no result):

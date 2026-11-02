@@ -1,5 +1,7 @@
 //! The client side, `src/client/`: its modules, each its file's.
 
+#[path = "client/ReactFlightClientConfigBundlerTurbopack.rs"]
+pub mod react_flight_client_config_bundler_turbopack;
 #[path = "client/ReactFlightClientConfigBundlerTurbopackBrowser.rs"]
 pub mod react_flight_client_config_bundler_turbopack_browser;
 #[path = "client/ReactFlightClientConfigBundlerTurbopackServer.rs"]
