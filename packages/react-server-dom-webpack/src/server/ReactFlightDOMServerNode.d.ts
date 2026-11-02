@@ -8,12 +8,6 @@
 import type {Busboy} from 'busboy';
 import type {Readable, Writable} from 'stream';
 import type {ReactPromise} from 'react-server/src/ReactFlightReplyServer';
-import type {
-  EnvironmentName,
-  FilterStackFrame,
-  OnError,
-  ReactClientValue,
-} from './react_flight_server.js';
 import type {ClientManifest} from './ReactFlightServerConfigWebpackBundler.js';
 
 export {
@@ -29,6 +23,8 @@ export {
 
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
+type EnvironmentName = string | (() => string);
+
 type FormDataEntryValue = File | string;
 
 /**
@@ -41,8 +37,8 @@ export type DebugChannel = unknown;
 export interface Options {
   debugChannel?: DebugChannel | undefined;
   environmentName?: EnvironmentName | undefined;
-  filterStackFrame?: FilterStackFrame | undefined;
-  onError?: OnError | undefined;
+  filterStackFrame?: ((value: string, value2: string) => boolean) | undefined;
+  onError?: ((value: unknown | null | undefined) => void) | undefined;
   identifierPrefix?: string | undefined;
   temporaryReferences?:
     | WeakMap<() => unknown | null | undefined, string>
@@ -56,7 +52,7 @@ export interface PipeableStream {
 }
 
 export function renderToPipeableStream(
-  model: ReactClientValue | null | undefined,
+  model: unknown | null | undefined,
   webpackMap: ClientManifest,
   options?: Options | null | undefined,
 ): PipeableStream;
@@ -69,8 +65,8 @@ export interface WebStreamsDebugChannel {
 export interface WebStreamsOptions {
   debugChannel?: WebStreamsDebugChannel | undefined;
   environmentName?: EnvironmentName | undefined;
-  filterStackFrame?: FilterStackFrame | undefined;
-  onError?: OnError | undefined;
+  filterStackFrame?: ((value: string, value2: string) => boolean) | undefined;
+  onError?: ((value: unknown | null | undefined) => void) | undefined;
   identifierPrefix?: string | undefined;
   temporaryReferences?:
     | WeakMap<() => unknown | null | undefined, string>
@@ -80,15 +76,15 @@ export interface WebStreamsOptions {
 }
 
 export function renderToReadableStream(
-  model: ReactClientValue | null | undefined,
+  model: unknown | null | undefined,
   webpackMap: ClientManifest,
   options?: WebStreamsOptions | null | undefined,
 ): ReadableStream;
 
 export interface PrerenderOptions {
   environmentName?: EnvironmentName | undefined;
-  filterStackFrame?: FilterStackFrame | undefined;
-  onError?: OnError | undefined;
+  filterStackFrame?: ((value: string, value2: string) => boolean) | undefined;
+  onError?: ((value: unknown | null | undefined) => void) | undefined;
   identifierPrefix?: string | undefined;
   temporaryReferences?:
     | WeakMap<() => unknown | null | undefined, string>
@@ -102,7 +98,7 @@ export interface StaticResult {
 }
 
 export function prerenderToNodeStream(
-  model: ReactClientValue | null | undefined,
+  model: unknown | null | undefined,
   webpackMap: ClientManifest,
   options?: PrerenderOptions | null | undefined,
 ): Promise<StaticResult>;
@@ -112,7 +108,7 @@ export interface WebStreamsStaticResult {
 }
 
 export function prerender(
-  model: ReactClientValue | null | undefined,
+  model: unknown | null | undefined,
   webpackMap: ClientManifest,
   options?: PrerenderOptions | null | undefined,
 ): Promise<WebStreamsStaticResult>;

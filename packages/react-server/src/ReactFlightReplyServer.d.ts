@@ -171,14 +171,15 @@ export function resolveFile(response: Response, key: string, file: File): void;
 
 export interface FileHandle {
   chunks: BlobPart[];
-  filename: string;
+  // What the part's disposition names it, `undefined` where it names none.
+  filename?: string | undefined;
   mime: string;
 }
 
 export function resolveFileInfo(
   response: Response,
   key: string,
-  filename: string,
+  filename: string | null | undefined,
   mime: string,
 ): FileHandle;
 

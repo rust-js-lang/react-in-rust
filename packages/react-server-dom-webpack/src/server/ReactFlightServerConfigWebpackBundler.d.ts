@@ -9,7 +9,6 @@ import type {
   ClientReference,
   ServerReference,
 } from '../ReactFlightWebpackReferences.js';
-import type {ReactClientValue} from './react_flight_server.js';
 import type {
   ImportManifestEntry,
   ImportMetadata,
@@ -49,7 +48,7 @@ export function getServerReferenceId(
 export function getServerReferenceBoundArguments(
   config: ClientManifest,
   serverReference: ServerReference,
-): (ReactClientValue | null | undefined)[] | null;
+): (unknown | null | undefined)[] | null;
 
 export function getServerReferenceLocation(
   config: ClientManifest,

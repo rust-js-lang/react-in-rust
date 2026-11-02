@@ -5,13 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ReactClientValue} from './server/react_flight_server.js';
-
 /** A server function, its own properties set by [`register_server_reference`]. */
 export interface ServerReference {
   $$typeof: symbol;
   $$id: string;
-  $$bound?: (ReactClientValue | null | undefined)[] | null | undefined;
+  $$bound?: (unknown | null | undefined)[] | null | undefined;
   $$location?: Error | undefined;
 }
 

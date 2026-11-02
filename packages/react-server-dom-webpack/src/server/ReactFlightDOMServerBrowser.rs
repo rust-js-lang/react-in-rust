@@ -7,7 +7,6 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::{JsError, Promise, Unknown, promise};
-use react_server::react_flight_hooks::Request;
 use shared::environment::__DEV__;
 use webapi::{
     AbortSignal, FormData, QueuingStrategy, ReadableByteStreamController, ReadableStream,
@@ -17,10 +16,10 @@ use webapi::{
 
 use super::react_flight_server_config_webpack_bundler::ClientManifest;
 
-use super::react_flight_server::{
-    EnvironmentName, FilterStackFrame, OnError, ReactClientValue, abort, attach_abort_signal,
-    close_debug_channel, create_prerender_request, create_request, resolve_debug_message,
-    start_flowing, start_flowing_debug, start_work, stop_flowing,
+use react_server::react_flight_hooks::{
+    EnvironmentName, FilterStackFrame, OnError, ReactClientValue, Request, abort,
+    attach_abort_signal, close_debug_channel, create_prerender_request, create_request,
+    resolve_debug_message, start_flowing, start_flowing_debug, start_work, stop_flowing,
 };
 
 use react_server::react_flight_reply_server::{

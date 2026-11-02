@@ -14,6 +14,8 @@ use js::{
 };
 use node::event;
 use node::events::EventEmitterExt;
+// GAP rd592: `readable::new` through its module's path makes no import of
+// this `use`, so `import {Readable} from 'stream'` goes after the others.
 use node::stream::{Readable, ReadableOptions, Writable, readable};
 use webapi::{
     AbortSignal, EventTargetExt, FormData, FormDataEntryValue, MessageEvent, QueuingStrategy,
@@ -25,12 +27,11 @@ use webapi::{
 use shared::environment::__DEV__;
 use shared::noop::noop;
 
-use super::react_flight_server::{
-    EnvironmentName, FilterStackFrame, OnError, ReactClientValue, abort, attach_abort_signal,
-    close_debug_channel, create_prerender_request, create_request, resolve_debug_message,
-    start_flowing, start_flowing_debug, start_work, stop_flowing,
+use react_server::react_flight_hooks::{
+    EnvironmentName, FilterStackFrame, OnError, ReactClientValue, Request, abort,
+    attach_abort_signal, close_debug_channel, create_prerender_request, create_request,
+    resolve_debug_message, start_flowing, start_flowing_debug, start_work, stop_flowing,
 };
-use react_server::react_flight_hooks::Request;
 
 use react_server::react_flight_reply_server::{
     FileHandle, ReactPromise, Response, ServerManifest, close, create_response, get_root,
@@ -181,6 +182,10 @@ fn start_reading_from_debug_channel_readable(
     } else {
         // SAFETY: what isn't a WebSocket is a Readable.
         let readable: &Readable = unsafe { js::cast(Some(stream)) };
+        // GAP rd591: a boxed closure that only forwards to a function is not
+        // that function, `readable.on('data', chunk => onData(chunk))` where
+        // upstream passes `onData` (and `ws.addEventListener('close', () =>
+        // onClose())`).
         let data = Rc::clone(&reading);
         readable.on(event::Data, Box::new(move |chunk| data.on_data(chunk)));
         let error = Rc::clone(&reading);
@@ -747,7 +752,7 @@ struct BusboyReading {
     closed: Cell<bool>,
 }
 
-// GAP (id requested): a `RefCell` borrow held across another crate's call, the
+// GAP rd590: a `RefCell` borrow held across another crate's call, the
 // file's handle given to resolveFileComplete and resolveFileChunk, is
 // counted, `$borrow(current.file, true)` in a `try`/`finally`, and so is
 // each borrow of a cell of a struct that holds its own kind,
@@ -850,13 +855,10 @@ pub fn decode_reply_from_busboy(
                     )));
                     return;
                 }
-                // resolveFileInfo takes the file name as text, where busboy
-                // gives `undefined` of a part that has none, which JS's `File`
-                // names "undefined", as upstream's `filename` passed on is.
                 let file_handle = Rc::new(RefCell::new(resolve_file_info(
                     &file.response,
                     name,
-                    filename.as_deref().unwrap_or("undefined"),
+                    filename.as_deref(),
                     mime_type,
                 )));
                 let pending_file = Rc::new(PendingFile {

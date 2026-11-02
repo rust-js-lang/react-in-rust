@@ -2598,19 +2598,20 @@ pub fn resolve_file(response: &Rc<Response>, key: &str, file: &File) {
 
 pub struct FileHandle {
     pub chunks: Vec<BlobPart<'static>>,
-    pub filename: String,
+    // What the part's disposition names it, `undefined` where it names none.
+    pub filename: Option<String>,
     pub mime: String,
 }
 
 pub fn resolve_file_info(
     _response: &Rc<Response>,
     _key: &str,
-    filename: &str,
+    filename: Option<&str>,
     mime: &str,
 ) -> FileHandle {
     FileHandle {
         chunks: Vec::new(),
-        filename: filename.to_owned(),
+        filename: filename.map(str::to_owned),
         mime: mime.to_owned(),
     }
 }
@@ -2629,7 +2630,9 @@ fn create_file_from_handle(handle: &FileHandle) -> &'static File {
     if js::is_function(file::new) {
         return file::new(
             &handle.chunks,
-            &handle.filename,
+            // GAP (id requested): `new File(..)`'s name is `&str`, so a name that's
+            // `undefined` is written as the text WebIDL makes of it.
+            handle.filename.as_deref().unwrap_or("undefined"),
             Some(FilePropertyBag {
                 r#type: Some(&handle.mime),
                 ..Default::default()
@@ -2637,17 +2640,20 @@ fn create_file_from_handle(handle: &FileHandle) -> &'static File {
         );
     }
     let scratch = form_data::new(None, None);
-    scratch.append_with_blob(
-        "file",
-        blob::new(
-            Some(&handle.chunks),
-            Some(BlobPropertyBag {
-                r#type: Some(&handle.mime),
-                endings: None,
-            }),
-        ),
-        &handle.filename,
+    let blob = blob::new(
+        Some(&handle.chunks),
+        Some(BlobPropertyBag {
+            r#type: Some(&handle.mime),
+            endings: None,
+        }),
     );
+    // GAP (id requested): FormData's `append` of a blob and an optional file name is
+    // two methods, so a name that's `undefined` appends the blob alone, named
+    // "blob", as upstream's `append('file', blob, undefined)` does.
+    match &handle.filename {
+        Some(filename) => scratch.append_with_blob("file", blob, filename),
+        None => scratch.append("file", blob),
+    }
     // GAP rd483: upstream's `scratch.get('file') as any`.
     match scratch.get("file") {
         Some(FormDataEntryValue::File(file)) => file,

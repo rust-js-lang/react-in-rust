@@ -6,12 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {ReactPromise} from 'react-server/src/ReactFlightReplyServer';
-import type {
-  EnvironmentName,
-  FilterStackFrame,
-  OnError,
-  ReactClientValue,
-} from './react_flight_server.js';
 import type {ClientManifest} from './ReactFlightServerConfigWebpackBundler.js';
 
 export {
@@ -27,6 +21,8 @@ export {
 
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
+type EnvironmentName = string | (() => string);
+
 export interface DebugChannel {
   readable?: ReadableStream | undefined;
   writable?: WritableStream | undefined;
@@ -35,18 +31,18 @@ export interface DebugChannel {
 export interface Options {
   debugChannel?: DebugChannel | undefined;
   environmentName?: EnvironmentName | undefined;
-  filterStackFrame?: FilterStackFrame | undefined;
+  filterStackFrame?: ((value: string, value2: string) => boolean) | undefined;
   identifierPrefix?: string | undefined;
   signal?: AbortSignal | undefined;
   temporaryReferences?:
     | WeakMap<() => unknown | null | undefined, string>
     | undefined;
-  onError?: OnError | undefined;
+  onError?: ((value: unknown | null | undefined) => void) | undefined;
   startTime?: number | undefined;
 }
 
 export function renderToReadableStream(
-  model: ReactClientValue | null | undefined,
+  model: unknown | null | undefined,
   webpackMap: ClientManifest,
   options?: Options | null | undefined,
 ): ReadableStream;
@@ -56,7 +52,7 @@ export interface StaticResult {
 }
 
 export function prerender(
-  model: ReactClientValue | null | undefined,
+  model: unknown | null | undefined,
   webpackMap: ClientManifest,
   options?: Options | null | undefined,
 ): Promise<StaticResult>;

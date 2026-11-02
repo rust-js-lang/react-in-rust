@@ -10,7 +10,7 @@ use js::{
 use shared::environment::__DEV__;
 use webapi::console;
 
-use crate::server::react_flight_server::ReactClientValue;
+use react_server::react_flight_hooks::ReactClientValue;
 
 /// A server function, its own properties set by [`register_server_reference`].
 pub struct ServerReference {

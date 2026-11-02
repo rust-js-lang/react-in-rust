@@ -5,16 +5,20 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import getPrototypeOf from 'shared/getPrototypeOf';
+import hasOwnProperty from 'shared/hasOwnProperty';
+import isArray from 'shared/isArray';
+import {enableFlightObjectReferences} from 'shared/ReactFeatureFlags';
+import {ASYNC_ITERATOR} from 'shared/ReactSymbols';
+import {
+  createTemporaryReference,
+  registerTemporaryReference,
+} from './ReactFlightServerTemporaryReferences.js';
 import {
   preloadModule,
   requireModule,
   resolveServerReference,
 } from 'react-client/src/ReactFlightClientConfig';
-import {enableFlightObjectReferences} from 'shared/ReactFeatureFlags';
-import {ASYNC_ITERATOR} from 'shared/ReactSymbols';
-import getPrototypeOf from 'shared/getPrototypeOf';
-import hasOwnProperty from 'shared/hasOwnProperty';
-import isArray from 'shared/isArray';
 import {
   appendBackingEntry,
   consumeBackingEntries,
@@ -23,10 +27,6 @@ import {
   getBackingString,
   getStreamChunks,
 } from './ReactFlightReplyBackingFormData.js';
-import {
-  createTemporaryReference,
-  registerTemporaryReference,
-} from './ReactFlightServerTemporaryReferences.js';
 import {$extend, $index, $unwrap} from '@rust-js/runtime';
 
 const __PROTO__ = '__proto__';
@@ -1919,18 +1919,28 @@ export function resolveFileChunk(response, handle, chunk) {
 // to a scratch single-entry FormData, whose append/get is O(1).
 function createFileFromHandle(handle) {
   if (typeof File === 'function') {
-    return new File(handle.chunks, handle.filename, {
-      type: handle.mime,
-    });
+    return new File(
+      handle.chunks,
+      // GAP (id requested): `new File(..)`'s name is `&str`, so a name that's
+      // `undefined` is written as the text WebIDL makes of it.
+      handle.filename ?? 'undefined',
+      {
+        type: handle.mime,
+      },
+    );
   }
   const scratch = new FormData();
-  scratch.append(
-    'file',
-    new Blob(handle.chunks, {
-      type: handle.mime,
-    }),
-    handle.filename,
-  );
+  const blob = new Blob(handle.chunks, {
+    type: handle.mime,
+  });
+  // GAP (id requested): FormData's `append` of a blob and an optional file name is
+  // two methods, so a name that's `undefined` appends the blob alone, named
+  // "blob", as upstream's `append('file', blob, undefined)` does.
+  if (handle.filename != null) {
+    scratch.append('file', blob, handle.filename);
+  } else {
+    scratch.append('file', blob);
+  }
   // GAP rd483: upstream's `scratch.get('file') as any`.
   const file = scratch.get('file');
   if (file === null || typeof file === 'string') {

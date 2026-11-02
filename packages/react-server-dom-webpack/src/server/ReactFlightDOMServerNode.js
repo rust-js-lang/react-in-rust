@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+// GAP rd592: `readable::new` through its module's path makes no import of
+// this `use`, so `import {Readable} from 'stream'` goes after the others.
 import noop from 'shared/noop';
 import {
   abort,
@@ -132,6 +134,10 @@ function startReadingFromDebugChannelReadable(request, stream) {
     ws.addEventListener('close', () => onClose());
   } else {
     const readable = stream;
+    // GAP rd591: a boxed closure that only forwards to a function is not
+    // that function, `readable.on('data', chunk => onData(chunk))` where
+    // upstream passes `onData` (and `ws.addEventListener('close', () =>
+    // onClose())`).
     readable.on('data', chunk => onData(chunk));
     readable.on('error', e => onError(e));
     readable.on('end', () => onClose());
@@ -552,15 +558,7 @@ export function decodeReplyFromBusboy(busboyStream, webpackMap, options) {
       );
       return;
     }
-    // resolveFileInfo takes the file name as text, where busboy
-    // gives `undefined` of a part that has none, which JS's `File`
-    // names "undefined", as upstream's `filename` passed on is.
-    const fileHandle = resolveFileInfo(
-      response,
-      name,
-      filename ?? 'undefined',
-      mimeType,
-    );
+    const fileHandle = resolveFileInfo(response, name, filename, mimeType);
     const pendingFile = {
       name,
       file: fileHandle,

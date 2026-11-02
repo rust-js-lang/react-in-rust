@@ -9,8 +9,8 @@ import {
   REACT_CONTEXT_TYPE,
   REACT_MEMO_CACHE_SENTINEL,
 } from 'shared/ReactSymbols';
-import {isClientReference} from './ReactFlightServerConfig.js';
 import {createThenableState, trackUsedThenable} from './ReactFlightThenable.js';
+import {isClientReference} from './ReactFlightServerConfig.js';
 import {$roomFor} from '@rust-js/runtime';
 
 let currentRequest = null;

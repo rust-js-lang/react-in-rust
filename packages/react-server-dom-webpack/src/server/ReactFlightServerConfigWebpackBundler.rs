@@ -5,8 +5,8 @@
 
 use js::{Dict, Error, dict};
 
-use super::react_flight_server::ReactClientValue;
 use crate::shared::react_flight_import_metadata::{Async, ImportManifestEntry, ImportMetadata};
+use react_server::react_flight_hooks::ReactClientValue;
 
 // GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
 pub use crate::react_flight_webpack_references::{ClientReference, ServerReference};

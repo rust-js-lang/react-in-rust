@@ -13,8 +13,9 @@ use react_reconciler::react_internal_types::{Dispatcher, MemoCacheArray};
 use shared::environment::__DEV__;
 use shared::react_symbols::{REACT_CONTEXT_TYPE, REACT_MEMO_CACHE_SENTINEL};
 use shared::react_types::{ReactComponentInfo, Thenable};
-use webapi::AbortController;
+use webapi::{AbortController, AbortSignal};
 
+use crate::react_flight_server_temporary_references::TemporaryReferenceSet;
 use crate::react_flight_thenable::{ThenableState, create_thenable_state, track_used_thenable};
 
 /// ReactFlightServer's request, its JS's until it's ported: what's read of
@@ -63,6 +64,161 @@ pub(crate) fn resolve_request() -> Option<&'static Request> {
 
 #[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFlightServer.js#getCache")]
 pub(crate) fn get_cache(request: &Request) -> &'static Cache {
+    let _ = request;
+    unreachable!()
+}
+
+// ReactFlightServer's functions a server entry calls, its JS's until it's
+// ported: of each bundler's own client manifest, `C`.
+
+/// Any value a server component may render or pass to the client.
+pub type ReactClientValue = Unknown;
+
+/// A request's `onError`, told of each error.
+pub type OnError = dyn Fn(Option<&'static Unknown>);
+
+/// A request's `environmentName`: the name itself, or what gives it.
+#[cfg_attr(rust_js, rust_js::untagged)]
+#[derive(Clone, Copy)]
+pub enum EnvironmentName {
+    Str(&'static str),
+    Fn(&'static dyn Fn() -> String),
+}
+
+/// A request's `filterStackFrame`: whether a frame is shown, of its URL and
+/// its function's name.
+pub type FilterStackFrame = dyn Fn(&str, &str) -> bool;
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFlightServer#createRequest"
+)]
+pub fn create_request<C: ?Sized>(
+    model: Option<&'static ReactClientValue>,
+    bundler_config: &C,
+    on_error: Option<&OnError>,
+    identifier_prefix: Option<&str>,
+    temporary_references: Option<&TemporaryReferenceSet>,
+    debug_start_time: Option<f64>,                 // Profiling-only
+    environment_name: Option<EnvironmentName>,     // DEV-only
+    filter_stack_frame: Option<&FilterStackFrame>, // DEV-only
+    keep_debug_alive: bool,                        // DEV-only
+) -> &'static Request {
+    let _ = (
+        model,
+        bundler_config,
+        on_error,
+        identifier_prefix,
+        temporary_references,
+        debug_start_time,
+        environment_name,
+        filter_stack_frame,
+        keep_debug_alive,
+    );
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFlightServer#createPrerenderRequest"
+)]
+pub fn create_prerender_request<C: ?Sized>(
+    model: Option<&'static ReactClientValue>,
+    bundler_config: &C,
+    on_all_ready: &dyn Fn(),
+    on_fatal_error: &dyn Fn(Option<&'static Unknown>),
+    on_error: Option<&OnError>,
+    identifier_prefix: Option<&str>,
+    temporary_references: Option<&TemporaryReferenceSet>,
+    debug_start_time: Option<f64>,                 // Profiling-only
+    environment_name: Option<EnvironmentName>,     // DEV-only
+    filter_stack_frame: Option<&FilterStackFrame>, // DEV-only
+    keep_debug_alive: bool,                        // DEV-only
+) -> &'static Request {
+    let _ = (
+        model,
+        bundler_config,
+        on_all_ready,
+        on_fatal_error,
+        on_error,
+        identifier_prefix,
+        temporary_references,
+        debug_start_time,
+        environment_name,
+        filter_stack_frame,
+        keep_debug_alive,
+    );
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFlightServer#startWork"
+)]
+pub fn start_work(request: &Request) {
+    let _ = request;
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFlightServer#startFlowing"
+)]
+pub fn start_flowing<D: ?Sized>(request: &Request, destination: &D) {
+    let _ = (request, destination);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFlightServer#startFlowingDebug"
+)]
+pub fn start_flowing_debug<D: ?Sized>(request: &Request, debug_destination: &D) {
+    let _ = (request, debug_destination);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFlightServer#stopFlowing"
+)]
+pub fn stop_flowing(request: &Request) {
+    let _ = request;
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFlightServer#abort"
+)]
+pub fn abort(request: &Request, reason: Option<&Unknown>) {
+    let _ = (request, reason);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFlightServer#attachAbortSignal"
+)]
+pub fn attach_abort_signal(request: &Request, signal: &AbortSignal) {
+    let _ = (request, signal);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFlightServer#resolveDebugMessage"
+)]
+pub fn resolve_debug_message(request: &Request, message: &str) {
+    let _ = (request, message);
+    unreachable!()
+}
+
+#[cfg_attr(
+    rust_js,
+    rust_js::link_name = "react-server/src/ReactFlightServer#closeDebugChannel"
+)]
+pub fn close_debug_channel(request: &Request) {
     let _ = request;
     unreachable!()
 }
