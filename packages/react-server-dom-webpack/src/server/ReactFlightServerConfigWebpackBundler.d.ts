@@ -5,6 +5,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {
+  ClientReference,
+  ServerReference,
+} from '../ReactFlightWebpackReferences.js';
 import type {ReactClientValue} from './react_flight_server.js';
 import type {
   ImportManifestEntry,
@@ -28,24 +32,26 @@ export type ClientReferenceManifestEntry = ImportManifestEntry;
 
 export type ClientReferenceKey = string;
 
-export function getClientReferenceKey(reference: any): ClientReferenceKey;
+export function getClientReferenceKey(
+  reference: ClientReference,
+): ClientReferenceKey;
 
 export function resolveClientReferenceMetadata(
   config: ClientManifest,
-  clientReference: any,
+  clientReference: ClientReference,
 ): ClientReferenceMetadata;
 
 export function getServerReferenceId(
   config: ClientManifest,
-  serverReference: any,
+  serverReference: ServerReference,
 ): ServerReferenceId;
 
 export function getServerReferenceBoundArguments(
   config: ClientManifest,
-  serverReference: any,
+  serverReference: ServerReference,
 ): (ReactClientValue | null | undefined)[] | null;
 
 export function getServerReferenceLocation(
   config: ClientManifest,
-  serverReference: any,
+  serverReference: ServerReference,
 ): Error | null | undefined;

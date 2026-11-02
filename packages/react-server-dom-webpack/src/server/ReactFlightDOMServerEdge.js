@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import noop from 'shared/noop';
 import {
   abort,
   attachAbortSignal,
@@ -18,11 +19,6 @@ import {
   stopFlowing,
 } from 'react-server/src/ReactFlightServer';
 import {
-  createStringDecoder,
-  readFinalStringChunk,
-  readPartialStringChunk as readPartialStringChunk$1,
-} from 'react-client/src/ReactFlightClientStreamConfigWeb';
-import {
   close,
   createResponse,
   getRoot,
@@ -30,12 +26,13 @@ import {
   resolveField,
   resolveFile,
 } from 'react-server/src/ReactFlightReplyServer';
-import {ASYNC_ITERATOR} from 'shared/ReactSymbols';
-import noop from 'shared/noop';
+import {
+  createStringDecoder,
+  readFinalStringChunk,
+  readPartialStringChunk as readPartialStringChunk$1,
+} from 'react-client/src/ReactFlightClientStreamConfigWeb';
 import {$someValue, $unwrap} from '@rust-js/runtime';
 
-// GAP rd586: a re-export of a binding is named as its Rust item, `export
-// {decodeAction as decode_action}`, but for its `rust_js::name`.
 export {
   decodeAction,
   decodeFormState,
@@ -55,9 +52,8 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
   let stringBuffer = '';
 
   function progress({done, value}) {
-    // GAP rd583: a read's `done` and `value` are `Option`s, `done ??= false`
-    // and `$someValue(value)`, where upstream reads them as given.
-    done ??= false;
+    // GAP rd583: a read's `value` is an `Option` of one, `$someValue(value)`,
+    // where upstream reads it as given.
     // GAP rd582: the conditional's temporary is named after the else
     // branch's callee, whose import is renamed for it.
     const readPartialStringChunk = done
@@ -75,9 +71,7 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
       closeDebugChannel(request);
       return;
     }
-    // GAP rd581: upstream gives back this read's promise, `void |
-    // Promise<void>`, which no `then` callback's type can give.
-    reader.read().then(progress).catch(error);
+    return reader.read().then(progress).catch(error);
   }
 
   function error(e) {
@@ -220,10 +214,7 @@ export function decodeReply(body, webpackMap, options) {
 }
 
 export function decodeReplyFromAsyncIterable(iterable, webpackMap, options) {
-  // GAP rd585: an async iterable, whose `[Symbol.asyncIterator]()` gives
-  // its iterator, which js has no type of.
-  const getAsyncIterator = iterable[ASYNC_ITERATOR];
-  const iterator = getAsyncIterator.call(iterable);
+  const iterator = iterable[Symbol.asyncIterator]();
 
   const response = createResponse(
     webpackMap,
@@ -234,7 +225,7 @@ export function decodeReplyFromAsyncIterable(iterable, webpackMap, options) {
   );
 
   function progress(entry) {
-    if (entry.done === true) {
+    if (entry.done) {
       close(response);
     } else {
       const name = entry.value[0];
@@ -250,13 +241,10 @@ export function decodeReplyFromAsyncIterable(iterable, webpackMap, options) {
 
   function error(reason) {
     reportGlobalError(response, reason);
-    // GAP rd584: an async iterator's `throw`, which js's `AsyncIterator`
-    // doesn't bind.
-    const throw$ = iterator.throw;
-    if (typeof throw$ === 'function') {
+    if (typeof iterator.throw === 'function') {
       // The iterator protocol doesn't necessarily include this but a generator do.
-      const thrown = throw$.call(iterator, reason);
-      thrown.then(noop, noop);
+      // $FlowFixMe[prop-missing] should be able to pass mixed
+      iterator.throw(reason).then(noop, noop);
     }
   }
 

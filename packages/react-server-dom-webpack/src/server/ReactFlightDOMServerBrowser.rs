@@ -7,13 +7,7 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::{JsError, Promise, Unknown, promise};
-use react_client::react_flight_client_stream_config_web::{
-    StringDecoder, create_string_decoder, read_final_string_chunk, read_partial_string_chunk,
-};
 use react_server::react_flight_hooks::Request;
-use react_server::react_flight_reply_server::{
-    ReactPromise, ServerManifest, close, create_response, get_root,
-};
 use shared::environment::__DEV__;
 use webapi::{
     AbortSignal, FormData, QueuingStrategy, ReadableByteStreamController, ReadableStream,
@@ -21,26 +15,27 @@ use webapi::{
     form_data, readable_stream,
 };
 
+use super::react_flight_server_config_webpack_bundler::ClientManifest;
+
 use super::react_flight_server::{
     EnvironmentName, FilterStackFrame, OnError, ReactClientValue, abort, attach_abort_signal,
     close_debug_channel, create_prerender_request, create_request, resolve_debug_message,
     start_flowing, start_flowing_debug, start_work, stop_flowing,
 };
-use super::react_flight_server_config_webpack_bundler::ClientManifest;
 
-// GAP rd586: a re-export of a binding is named as its Rust item, `export
-// {decodeAction as decode_action}`, but for its `rust_js::name`.
-#[cfg_attr(rust_js, rust_js::name = "decodeAction")]
-pub use super::react_flight_action_server::decode_action;
-#[cfg_attr(rust_js, rust_js::name = "decodeFormState")]
-pub use super::react_flight_action_server::decode_form_state;
+use react_server::react_flight_reply_server::{
+    ReactPromise, ServerManifest, close, create_response, get_root,
+};
 
-#[cfg_attr(rust_js, rust_js::name = "createClientModuleProxy")]
-pub use crate::react_flight_webpack_references::create_client_module_proxy;
-#[cfg_attr(rust_js, rust_js::name = "registerClientReference")]
-pub use crate::react_flight_webpack_references::register_client_reference;
-#[cfg_attr(rust_js, rust_js::name = "registerServerReference")]
-pub use crate::react_flight_webpack_references::register_server_reference;
+pub use react_server::react_flight_action_server::{decode_action, decode_form_state};
+
+pub use crate::react_flight_webpack_references::{
+    create_client_module_proxy, register_client_reference, register_server_reference,
+};
+
+use react_client::react_flight_client_stream_config_web::{
+    StringDecoder, create_string_decoder, read_final_string_chunk, read_partial_string_chunk,
+};
 
 pub use react_server::react_flight_server_temporary_references::create_temporary_reference_set;
 
@@ -76,18 +71,19 @@ impl DebugChannelReading {
     fn progress(
         self: &Rc<Self>,
         ReadableStreamReadResult { done, value }: ReadableStreamReadResult,
-    ) {
-        // GAP rd583: a read's `done` and `value` are `Option`s, `done ??= false`
-        // and `$someValue(value)`, where upstream reads them as given.
-        let done = done.unwrap_or(false);
+    ) -> Option<Promise<()>> {
+        // GAP rd583: a read's `value` is an `Option` of one, `$someValue(value)`,
+        // where upstream reads it as given.
         // GAP rd582: the conditional's temporary is named after the else
         // branch's callee, whose import is renamed for it.
-        *self.string_buffer.borrow_mut() += &if done {
-            read_final_string_chunk(self.string_decoder, js::uint8_array::new(0.0))
-        } else {
-            // SAFETY: a byte stream's chunk is a `Uint8Array`.
-            read_partial_string_chunk(self.string_decoder, unsafe { js::cast(value.flatten()) })
-        };
+        self.string_buffer
+            .borrow_mut()
+            .push_str(&if js::truthy(done.as_ref()) {
+                read_final_string_chunk(self.string_decoder, js::uint8_array::new(0.0))
+            } else {
+                // SAFETY: a byte stream's chunk is a `Uint8Array`.
+                read_partial_string_chunk(self.string_decoder, unsafe { js::cast(value.flatten()) })
+            });
         let mut messages: Vec<String> = self
             .string_buffer
             .borrow()
@@ -99,19 +95,18 @@ impl DebugChannelReading {
             resolve_debug_message(self.request, message);
         }
         *self.string_buffer.borrow_mut() = last;
-        if done {
+        if js::truthy(done.as_ref()) {
             close_debug_channel(self.request);
-            return;
+            return None;
         }
         let reading = Rc::clone(self);
         let erroring = Rc::clone(self);
-        // GAP rd581: upstream gives back this read's promise, `void |
-        // Promise<void>`, which no `then` callback's type can give.
-        let _: Promise<()> = self
-            .reader
-            .read()
-            .then(move |entry| reading.progress(entry))
-            .catch(move |e| erroring.error(e));
+        Some(
+            self.reader
+                .read()
+                .then(move |entry| reading.progress(entry))
+                .catch(move |e| erroring.error(e)),
+        )
     }
 
     fn error(&self, e: &'static JsError) {

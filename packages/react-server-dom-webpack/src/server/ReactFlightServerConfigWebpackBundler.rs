@@ -20,16 +20,13 @@ pub type ClientReferenceManifestEntry = ImportManifestEntry;
 
 pub type ClientReferenceKey = String;
 
-#[cfg_attr(rust_js, rust_js::name = "isClientReference")]
-pub use crate::react_flight_webpack_references::is_client_reference;
-#[cfg_attr(rust_js, rust_js::name = "isServerReference")]
-pub use crate::react_flight_webpack_references::is_server_reference;
+pub use crate::react_flight_webpack_references::{is_client_reference, is_server_reference};
 
 pub fn get_client_reference_key(reference: &ClientReference) -> ClientReferenceKey {
-    if reference.r#async() {
-        reference.id() + "#async"
+    if reference.r#async {
+        reference.id.clone() + "#async"
     } else {
-        reference.id()
+        reference.id.clone()
     }
 }
 
@@ -37,7 +34,7 @@ pub fn resolve_client_reference_metadata(
     config: &ClientManifest,
     client_reference: &ClientReference,
 ) -> ClientReferenceMetadata {
-    let module_path = client_reference.id();
+    let module_path = client_reference.id.clone();
     let mut name = String::new();
     let mut resolved_module_data = dict::get(config, &module_path);
     if let Some(resolved_module_data) = resolved_module_data {
@@ -57,14 +54,14 @@ pub fn resolve_client_reference_metadata(
         );
     };
     if js::strict_equals(resolved_module_data.r#async, true)
-        && js::strict_equals(client_reference.r#async(), true)
+        && js::strict_equals(client_reference.r#async, true)
     {
         panic!(
             "The module \"{module_path}\" is marked as an async ESM module but was loaded as a CJS proxy. This is probably a bug in the React Server Components bundler."
         );
     }
     if js::strict_equals(resolved_module_data.r#async, true)
-        || js::strict_equals(client_reference.r#async(), true)
+        || js::strict_equals(client_reference.r#async, true)
     {
         ImportMetadata::Async((
             resolved_module_data.id.clone(),
@@ -85,7 +82,7 @@ pub fn get_server_reference_id(
     _config: &ClientManifest,
     server_reference: &ServerReference,
 ) -> ServerReferenceId {
-    server_reference.id()
+    server_reference.id.clone()
 }
 
 #[cfg_attr(rust_js, rust_js::nullable)]
@@ -93,12 +90,12 @@ pub fn get_server_reference_bound_arguments(
     _config: &ClientManifest,
     server_reference: &ServerReference,
 ) -> Option<&'static [Option<&'static ReactClientValue>]> {
-    server_reference.bound()
+    server_reference.bound
 }
 
 pub fn get_server_reference_location(
     _config: &ClientManifest,
     server_reference: &ServerReference,
 ) -> Option<&'static Error> {
-    server_reference.location()
+    server_reference.location
 }

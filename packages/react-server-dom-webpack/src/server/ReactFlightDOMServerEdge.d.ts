@@ -83,7 +83,7 @@ export function decodeReply(
 export type ReplyEntry = [string, FormDataEntryValue];
 
 export function decodeReplyFromAsyncIterable(
-  iterable: unknown,
+  iterable: AsyncIterable<ReplyEntry>,
   webpackMap: any,
   options?: DecodeReplyOptions | null | undefined,
 ): ReactPromise;

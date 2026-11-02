@@ -18,19 +18,17 @@ import {
   stopFlowing,
 } from 'react-server/src/ReactFlightServer';
 import {
-  createStringDecoder,
-  readFinalStringChunk,
-  readPartialStringChunk as readPartialStringChunk$1,
-} from 'react-client/src/ReactFlightClientStreamConfigWeb';
-import {
   close,
   createResponse,
   getRoot,
 } from 'react-server/src/ReactFlightReplyServer';
+import {
+  createStringDecoder,
+  readFinalStringChunk,
+  readPartialStringChunk as readPartialStringChunk$1,
+} from 'react-client/src/ReactFlightClientStreamConfigWeb';
 import {$someValue, $unwrap} from '@rust-js/runtime';
 
-// GAP rd586: a re-export of a binding is named as its Rust item, `export
-// {decodeAction as decode_action}`, but for its `rust_js::name`.
 export {
   decodeAction,
   decodeFormState,
@@ -50,9 +48,8 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
   let stringBuffer = '';
 
   function progress({done, value}) {
-    // GAP rd583: a read's `done` and `value` are `Option`s, `done ??= false`
-    // and `$someValue(value)`, where upstream reads them as given.
-    done ??= false;
+    // GAP rd583: a read's `value` is an `Option` of one, `$someValue(value)`,
+    // where upstream reads it as given.
     // GAP rd582: the conditional's temporary is named after the else
     // branch's callee, whose import is renamed for it.
     const readPartialStringChunk = done
@@ -70,9 +67,7 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
       closeDebugChannel(request);
       return;
     }
-    // GAP rd581: upstream gives back this read's promise, `void |
-    // Promise<void>`, which no `then` callback's type can give.
-    reader.read().then(progress).catch(error);
+    return reader.read().then(progress).catch(error);
   }
 
   function error(e) {

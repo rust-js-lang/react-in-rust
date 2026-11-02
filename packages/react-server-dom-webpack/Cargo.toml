@@ -10,6 +10,7 @@ publish.workspace = true
 # them and write no JS of their own.
 
 [dependencies]
+busboy.workspace = true
 js.workspace = true
 node.workspace = true
 react-client = { path = "../react-client" }
