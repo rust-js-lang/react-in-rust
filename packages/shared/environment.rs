@@ -3,7 +3,7 @@
 //! declares them: read where the code runs, `if (__DEV__) {..}`. Bindings
 //! alone, so no JS of its own.
 
-use js::{Promise, Unknown};
+use js::{Dict, Promise, Unknown};
 
 unsafe extern "Rust" {
     /// Whether this is a development build.
@@ -14,6 +14,10 @@ unsafe extern "Rust" {
 
     /// Whether this is the experimental release channel's build.
     pub safe static __EXPERIMENTAL__: bool;
+
+    /// Parcel's `parcelRequire.meta.publicUrl`.
+    #[link_name = "parcelRequire.meta.publicUrl"]
+    pub safe static PARCEL_REQUIRE_META_PUBLIC_URL: &'static str;
 
     /// Webpack's chunk filename function, `__webpack_require__.u`.
     #[link_name = "__webpack_require__.u"]
@@ -55,5 +59,23 @@ pub fn turbopack_load_by_url<C>(id: &C) -> Promise<Option<&'static Unknown>> {
 /// Turbopack's `__turbopack_require__(id)`.
 #[cfg_attr(rust_js, rust_js::link_name = "__turbopack_require__")]
 pub fn turbopack_require(id: &str) -> &'static Unknown {
+    unreachable!()
+}
+
+/// Parcel's `parcelRequire(id)`.
+#[cfg_attr(rust_js, rust_js::link_name = "parcelRequire")]
+pub fn parcel_require(id: &str) -> &'static Unknown {
+    unreachable!()
+}
+
+/// Parcel's `parcelRequire.load(url)`.
+#[cfg_attr(rust_js, rust_js::link_name = "parcelRequire.load")]
+pub fn parcel_require_load(url: &str) -> Promise<Option<&'static Unknown>> {
+    unreachable!()
+}
+
+/// Parcel's `parcelRequire.extendImportMap(importMap)`.
+#[cfg_attr(rust_js, rust_js::link_name = "parcelRequire.extendImportMap")]
+pub fn parcel_require_extend_import_map(import_map: &Dict<String>) {
     unreachable!()
 }

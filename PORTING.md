@@ -51,7 +51,7 @@ Cargo.toml's `[lib] path`: `shared.rs`, `src/forks/Scheduler.rs`,
 
 The crates are `shared`, `scheduler`, `react-isomorphic` (packages/react),
 `react-reconciler`, `react-dom-bindings`, `react-dom`,
-`react-noop-renderer`, `react-test-renderer`, `react-art`, `react-client`, `react-server-dom-webpack` and `react-server-dom-turbopack`. A new package is a new crate,
+`react-noop-renderer`, `react-test-renderer`, `react-art`, `react-client`, `react-server-dom-webpack`, `react-server-dom-turbopack` and `react-server-dom-parcel`. A new package is a new crate,
 added to the workspace's `members`.
 
 **A react-server-dom-* package is one crate of both sessions' modules**
@@ -1118,7 +1118,20 @@ The port is split between sessions by package:
   ReactFlightClientConfigTargetTurbopackBrowser and -Server are Rust, of
   webpack's forms (BundlerTurbopack's chunk sets are `js::WeakSet`s of the
   chunks' promises); `__turbopack_load_by_url__` and `__turbopack_require__`
-  are `shared::environment`'s too. The plain re-export
+  are `shared::environment`'s too. Parcel's ReactFlightImportMetadata (`[id,
+  name, bundles]` or with its import map, an untagged enum told by
+  length), ReactFlightClientConfigBundlerParcel and
+  ReactFlightClientConfigTargetParcelBrowser and -Server are Rust;
+  `parcelRequire`, `.load`, `.extendImportMap` and `.meta.publicUrl` are
+  `shared::environment`'s. Port differences (for the user while away;
+  none changes a result): preloadModule tests `metadata.length === 4`
+  where upstream tests `metadata[IMPORT_MAP]`'s truth (the server sends a
+  fourth item only where it has a map); resolveServerReference's `bundles
+  == null` for `!bundles` (an array); TargetParcelServer's loop reads
+  `const bundle = bundles[i];` where upstream reads it in place.
+  BundlerESM (react-server-dom-esm) and BundlerNode
+  (react-server-dom-unbundled) are held on rd607: rust-js has no
+  `import()` of a specifier the program has at run time. The plain re-export
   entries (`client*.js`, `react-flight-dom-client.*.js`) stay JS (rd55).
   **Pending in rust-js, not accepted** (each changes no result):
   - rd543: a tuple's element is read by destructuring, `const chunks =
