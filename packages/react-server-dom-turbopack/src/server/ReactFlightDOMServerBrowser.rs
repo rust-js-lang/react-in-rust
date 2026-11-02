@@ -15,6 +15,7 @@ use webapi::{
 };
 
 use super::react_flight_server_config_turbopack_bundler::ClientManifest;
+use crate::client::react_flight_client_config_bundler_turbopack::ServerManifest;
 
 use react_server::react_flight_hooks::{
     EnvironmentName, FilterStackFrame, OnError, ReactClientValue, Request, abort,
@@ -22,9 +23,7 @@ use react_server::react_flight_hooks::{
     resolve_debug_message, start_flowing, start_flowing_debug, start_work, stop_flowing,
 };
 
-use react_server::react_flight_reply_server::{
-    ReactPromise, ServerManifest, close, create_response, get_root,
-};
+use react_server::react_flight_reply_server::{ReactPromise, close, create_response, get_root};
 
 pub use react_server::react_flight_action_server::{decode_action, decode_form_state};
 

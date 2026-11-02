@@ -324,8 +324,7 @@ pub fn decode_reply(
         ReplyBody::FormData(body) => body,
     };
     let response = create_response(
-        // SAFETY: react-server's manifest is the bundler's, Parcel's here.
-        unsafe { js::cast(Some(js::unknown(SERVER_MANIFEST.get()))) },
+        SERVER_MANIFEST.get(),
         "",
         options.and_then(|options| options.temporary_references),
         Some(js::unknown(body)),
@@ -339,20 +338,14 @@ pub fn decode_reply(
 pub fn decode_action(
     body: &'static FormData,
 ) -> Option<Promise<&'static dyn Fn() -> Option<&'static Unknown>>> {
-    // SAFETY: react-server's manifest is the bundler's, Parcel's here.
-    decode_action_impl(body, unsafe {
-        js::cast(Some(js::unknown(SERVER_MANIFEST.get())))
-    })
+    decode_action_impl(body, js::unknown(SERVER_MANIFEST.get()))
 }
 
 pub fn decode_form_state(
     action_result: Option<&'static Unknown>,
     body: &'static FormData,
 ) -> Promise<Option<ReactFormState<Option<&'static Unknown>, Option<&'static Unknown>>>> {
-    // SAFETY: react-server's manifest is the bundler's, Parcel's here.
-    decode_form_state_impl(action_result, body, unsafe {
-        js::cast(Some(js::unknown(SERVER_MANIFEST.get())))
-    })
+    decode_form_state_impl(action_result, body, js::unknown(SERVER_MANIFEST.get()))
 }
 
 pub fn load_server_action(id: &str) -> Promise<&'static dyn Fn() -> Option<&'static Unknown>> {

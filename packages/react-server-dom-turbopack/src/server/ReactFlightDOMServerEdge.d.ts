@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {ReactPromise} from 'react-server/src/ReactFlightReplyServer';
+import type {ServerManifest} from '../client/ReactFlightClientConfigBundlerTurbopack.js';
 import type {ClientManifest} from './ReactFlightServerConfigTurbopackBundler.js';
 
 export {
@@ -72,7 +73,7 @@ export interface DecodeReplyOptions {
 
 export function decodeReply(
   body: ReplyBody,
-  turbopackMap: any,
+  turbopackMap: ServerManifest,
   options?: DecodeReplyOptions | null | undefined,
 ): ReactPromise;
 
@@ -81,6 +82,6 @@ export type ReplyEntry = [string, FormDataEntryValue];
 
 export function decodeReplyFromAsyncIterable(
   iterable: AsyncIterable<ReplyEntry>,
-  turbopackMap: any,
+  turbopackMap: ServerManifest,
   options?: DecodeReplyOptions | null | undefined,
 ): ReactPromise;

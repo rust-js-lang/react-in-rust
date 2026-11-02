@@ -407,7 +407,6 @@ function resolveServerReferenceChunk(response, chunk, value) {
   let resolveListeners;
   if (chunk.status === 'blocked') {
     const old = chunk.value;
-    chunk.value = null;
     resolveListeners = old;
   } else {
     resolveListeners = undefined;
@@ -538,8 +537,7 @@ function reviveModel(
         response,
       );
       for (const [i, item] of value.entries()) {
-        const childRef =
-          reference != null ? reference + ':' + String(i) : undefined;
+        const childRef = reference != null ? reference + ':' + i : undefined;
         value[i] = reviveModel(
           response,
           value,
@@ -680,7 +678,7 @@ function initializeModelChunk(chunk) {
       chunk.reason = error;
     }
   } finally {
-    initializingHandler = old ?? null;
+    initializingHandler = old;
   }
 }
 

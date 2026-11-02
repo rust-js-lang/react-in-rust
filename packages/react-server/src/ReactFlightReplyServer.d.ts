@@ -89,7 +89,7 @@ declare class ReactPromise {
 export type {ReactPromise};
 
 export interface Response {
-  _bundlerConfig: any;
+  _bundlerConfig: unknown;
   _prefix: string;
   _formData: any;
   _chunks: Map<number, ReactPromise>;
@@ -153,8 +153,8 @@ export type {FlightIterator};
 
 export const MAX_BOUND_ARGS: number;
 
-export function createResponse(
-  bundlerConfig: any,
+export function createResponse<M>(
+  bundlerConfig: M,
   formFieldPrefix: string,
   temporaryReferences?: TemporaryReferenceSet | null | undefined,
   backingFormData?: unknown | null | undefined,

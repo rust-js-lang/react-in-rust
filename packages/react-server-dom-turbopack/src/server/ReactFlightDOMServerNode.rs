@@ -34,9 +34,8 @@ use react_server::react_flight_hooks::{
 };
 
 use react_server::react_flight_reply_server::{
-    FileHandle, ReactPromise, Response, ServerManifest, close, create_response, get_root,
-    report_global_error, resolve_field, resolve_file, resolve_file_chunk, resolve_file_complete,
-    resolve_file_info,
+    FileHandle, ReactPromise, Response, close, create_response, get_root, report_global_error,
+    resolve_field, resolve_file, resolve_file_chunk, resolve_file_complete, resolve_file_info,
 };
 
 pub use react_server::react_flight_action_server::{decode_action, decode_form_state};
@@ -53,6 +52,7 @@ use react_client::react_flight_client_stream_config_node::{
 use react_server::react_server_stream_config_node::TEXT_ENCODER;
 
 use super::react_flight_server_config_turbopack_bundler::ClientManifest;
+use crate::client::react_flight_client_config_bundler_turbopack::ServerManifest;
 
 pub use react_server::react_flight_server_temporary_references::create_temporary_reference_set;
 

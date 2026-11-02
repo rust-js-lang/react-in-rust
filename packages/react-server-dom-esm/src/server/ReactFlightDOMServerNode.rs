@@ -25,9 +25,8 @@ use react_server::react_flight_hooks::{
 };
 
 use react_server::react_flight_reply_server::{
-    FileHandle, ReactPromise, Response, ServerManifest, close, create_response, get_root,
-    report_global_error, resolve_field, resolve_file_chunk, resolve_file_complete,
-    resolve_file_info,
+    FileHandle, ReactPromise, Response, close, create_response, get_root, report_global_error,
+    resolve_field, resolve_file_chunk, resolve_file_complete, resolve_file_info,
 };
 
 pub use react_server::react_flight_action_server::{decode_action, decode_form_state};
@@ -487,7 +486,7 @@ impl BusboyReading {
 
 pub fn decode_reply_from_busboy(
     busboy_stream: &'static Busboy,
-    module_base_path: &'static ServerManifest,
+    module_base_path: &'static str,
     options: Option<&'static DecodeReplyOptions>,
 ) -> Rc<ReactPromise> {
     let response = create_response(
@@ -642,7 +641,7 @@ pub enum ReplyBody {
 
 pub fn decode_reply(
     body: ReplyBody,
-    module_base_path: &'static ServerManifest,
+    module_base_path: &'static str,
     options: Option<&'static DecodeReplyOptions>,
 ) -> Rc<ReactPromise> {
     let body = match body {

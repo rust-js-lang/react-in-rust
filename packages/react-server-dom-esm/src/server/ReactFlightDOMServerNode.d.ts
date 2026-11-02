@@ -85,7 +85,7 @@ export interface DecodeReplyOptions {
 
 export function decodeReplyFromBusboy(
   busboyStream: Busboy,
-  moduleBasePath: any,
+  moduleBasePath: string,
   options?: DecodeReplyOptions | null | undefined,
 ): ReactPromise;
 
@@ -94,6 +94,6 @@ export type ReplyBody = string | FormData;
 
 export function decodeReply(
   body: ReplyBody,
-  moduleBasePath: any,
+  moduleBasePath: string,
   options?: DecodeReplyOptions | null | undefined,
 ): ReactPromise;

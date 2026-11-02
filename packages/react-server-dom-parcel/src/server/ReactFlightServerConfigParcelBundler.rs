@@ -31,7 +31,9 @@ pub fn resolve_client_reference_metadata(
     _config: &ClientManifest,
     client_reference: &ClientReference,
 ) -> ClientReferenceMetadata {
-    if let Some(import_map) = client_reference.import_map {
+    if let Some(import_map) = client_reference.import_map
+        && js::truthy(Some(import_map))
+    {
         return ImportMetadata::WithImportMap((
             client_reference.id.clone(),
             client_reference.name.clone(),

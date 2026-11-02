@@ -15,6 +15,7 @@ use webapi::{
 };
 
 use super::react_flight_server_config_webpack_bundler::ClientManifest;
+use crate::client::react_flight_client_config_bundler_webpack::ServerManifest;
 
 use shared::noop::noop;
 
@@ -25,8 +26,8 @@ use react_server::react_flight_hooks::{
 };
 
 use react_server::react_flight_reply_server::{
-    ReactPromise, Response, ServerManifest, close, create_response, get_root, report_global_error,
-    resolve_field, resolve_file,
+    ReactPromise, Response, close, create_response, get_root, report_global_error, resolve_field,
+    resolve_file,
 };
 
 pub use react_server::react_flight_action_server::{decode_action, decode_form_state};

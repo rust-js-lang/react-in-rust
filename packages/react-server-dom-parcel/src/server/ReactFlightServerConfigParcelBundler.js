@@ -15,7 +15,7 @@ export function getClientReferenceKey(reference) {
 }
 
 export function resolveClientReferenceMetadata(config, clientReference) {
-  if (clientReference.$$importMap != null) {
+  if (clientReference.$$importMap) {
     return [
       clientReference.$$id,
       clientReference.$$name,

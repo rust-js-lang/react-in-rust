@@ -731,6 +731,10 @@ These differences from upstream's output are accepted:
   - createResponse's `backingFormData` and `arraySizeLimit` are declared
     `unknown`, where upstream's are `FormData` and `number`: each is told
     `undefined` from `null` as upstream's defaults are.
+  - chunk statuses print as string literals, `chunk.status ===
+    'fulfilled'`, `case 'resolved_model':`, where upstream names constants
+    (PENDING, BLOCKED, INITIALIZED, ..), the user accepting it by name
+    (rd435).
 - **react-server-dom-webpack's server (the user, 2026-11-02)**:
   ReactFlightWebpackReferences, ReactFlightServerConfigWebpackBundler and
   ReactFlightDOMServerBrowser, -Edge and -Node are Rust; the plain
@@ -781,7 +785,43 @@ These differences from upstream's output are accepted:
     writes `handle.filename ?? 'undefined'` and two `append`s, webapi's
     `new File` naming by `&str` and FormData's optional file name a second
     method).
-- **The Flight clients' names and arms** (the user, 2026-11-01):
+- **react-server-dom-{turbopack,parcel,unbundled,esm}'s servers (the user,
+  2026-11-02)**: each package's References, its bundler config
+  (ReactFlightServerConfig*Bundler) and its ReactFlightDOMServer entries
+  (Browser, Edge and Node, as the package has them) are Rust, on webpack's
+  port; the `react-flight-dom-server.*.js` re-exports stay JS (rd55), as do
+  the plugins and the Node loaders and registers. Turbopack's and
+  unbundled's are webpack's with their names (Turbopack's References add
+  registerServerObjectReference); Parcel keeps the manifest
+  registerServerActions is given, `let serverManifest = {};`, and adds
+  decodeAction, decodeFormState and loadServerAction on it; ESM's manifest
+  is its module base path, a `string`. react-server's ReplyServer and
+  ActionServer take each bundler's server manifest as it is:
+  createResponse of a type parameter `M`, so each entry gives its own
+  (webpack's and Turbopack's client configs' `ServerManifest`, Parcel's,
+  ESM's `string`, and react_server's `ServerManifest` for unbundled, whose
+  client config is still JS), and decodeAction and decodeFormState as the
+  `unknown` JS has, `js::unknown(manifest)`, until rd597 lets them be
+  generic too (rust-js takes their `for_each` closures to hold `M`); the
+  response keeps it as the `unknown` only resolveServerReference reads.
+  Accepted, each gap left open:
+  - every item of react-server-dom-webpack's server's list above, where the
+    same code is;
+  - ci1: registerServerObjectReference's `if (__DEV__ && typeof reference
+    === 'function')`;
+  - rd594: registerServerObjectReference's `$$id` value is a `const value
+    = ..` before `Object.defineProperties(..)`, where upstream writes the
+    conditional in the literal;
+  - rd595: Parcel's ClientReference's `$$importMap` is declared `|
+    undefined` alone in the `.d.ts`, though createClientReference stores
+    the `null` it may be given (the JS is upstream's);
+  - rd596: loadServerAction's middle promise, `.then(() =>
+    preloadModule(reference))`, is typed of Parcel's thenable itself in the
+    Rust, js's `Fulfils` having none of a thenable that isn't a `Promise`
+    (the JS is upstream's).
+- **The Flight clients' names and arms** (the user, 2026-11-01; its
+  acronym rule extended to the servers, the user, 2026-11-02, ESM's
+  resolveClientReferenceMetadata's `baseUrl` and `fullUrl`):
   - readChunk's default arm is split by variant, `throw chunk.reason` of
     an errored chunk and `throw null` of a resolved module's, where
     upstream's one `default: throw chunk.reason;` reads a reason that is

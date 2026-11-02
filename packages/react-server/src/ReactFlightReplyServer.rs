@@ -32,7 +32,10 @@ use crate::react_flight_server_temporary_references::{
 // That's why we import the Client configuration from the Server.
 // Everything is aliased as their Server equivalence for clarity.
 
-/// react-client's ReactFlightClientConfig's `ServerManifest`, its JS's.
+/// react-client's ReactFlightClientConfig's `ServerManifest`, its JS's: the
+/// manifest of a bundler whose client config is still JS. A bundler whose
+/// config is Rust gives its own type; [`create_response`] takes either, and
+/// a [`Response`] keeps it as the `unknown` only resolveServerReference reads.
 pub struct ServerManifest(PhantomData<JsObject>);
 
 unsafe impl js::Defined for ServerManifest {}
@@ -47,8 +50,8 @@ unsafe impl js::Defined for ServerReference {}
     rust_js,
     rust_js::link_name = "react-client/src/ReactFlightClientConfig#resolveServerReference"
 )]
-pub(crate) fn resolve_server_reference(
-    bundler_config: &ServerManifest,
+pub(crate) fn resolve_server_reference<M: ?Sized>(
+    bundler_config: &M,
     id: &str,
 ) -> &'static ServerReference {
     let _ = (bundler_config, id);
@@ -322,7 +325,7 @@ thread_local! {
 }
 
 pub struct Response {
-    pub _bundler_config: &'static ServerManifest,
+    pub _bundler_config: &'static Unknown,
     pub _prefix: String,
     pub _form_data: &'static BackingFormData,
     pub _chunks: &'static Map<f64, Rc<ReactPromise>>,
@@ -2513,8 +2516,8 @@ const MAX_BIGINT_DIGITS: u32 = 300;
 
 pub const MAX_BOUND_ARGS: usize = 1000;
 
-pub fn create_response(
-    bundler_config: &'static ServerManifest,
+pub fn create_response<M: js::Defined + ?Sized>(
+    bundler_config: &'static M,
     form_field_prefix: &str,
     temporary_references: Option<&'static TemporaryReferenceSet>,
     backing_form_data: Option<&'static Unknown>,
@@ -2534,7 +2537,7 @@ pub fn create_response(
     let chunks: &'static Map<f64, Rc<ReactPromise>> = js::map::new(None);
 
     Rc::new(Response {
-        _bundler_config: bundler_config,
+        _bundler_config: js::unknown(bundler_config),
         _prefix: form_field_prefix.to_owned(),
         // GAP rd483: the form data as given, any value, as upstream passes it on.
         _form_data: create_backing_form_data(
