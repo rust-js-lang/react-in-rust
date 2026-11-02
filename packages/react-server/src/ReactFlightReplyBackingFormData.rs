@@ -45,8 +45,10 @@ pub struct BackingFormData {
 }
 
 /// A `FormDataEntryValue` the store keeps: its text, or its file.
-// GAP rd559: webapi's `FormDataEntryValue` borrows its text, `Str(&'a str)`,
-// so an entry kept past the call that gave it is the port's own type.
+// GAP rd559: webapi's `FormDataEntryValue` borrows its text, `Str(&'a str)`.
+// `forEach` gives it `'static`, but ReplyServer's resolveField gives the store
+// text it's only lent, `&str`, which an owned `String` keeps, so a kept entry
+// is the port's own type.
 #[cfg_attr(rust_js, rust_js::untagged)]
 #[derive(Clone)]
 pub enum BackingEntryValue {
@@ -111,16 +113,14 @@ pub fn create_backing_form_data(form_data: &FormData, prefix: &str) -> BackingFo
         stream_chunks: RefCell::new(None),
         blobs: RefCell::new(None),
     };
-    // GAP rd574: FormData's `forEach` lends its callback each value for the
-    // call alone, where `entries()` gives them, so the store keeps them from
-    // there, where upstream writes `formData.forEach(appendBackingEntry.bind(null, backingStore))`.
-    for (key, value) in form_data.entries() {
+    // $FlowFixMe[prop-missing]
+    form_data.for_each(|value, key, _| {
         let value = match value {
             FormDataEntryValue::Str(value) => BackingEntryValue::Str(value.to_owned()),
             FormDataEntryValue::File(value) => BackingEntryValue::File(value),
         };
-        append_backing_entry(&backing_store, value, &key);
-    }
+        append_backing_entry(&backing_store, value, key);
+    });
     backing_store
 }
 

@@ -55,12 +55,10 @@ export function createBackingFormData(formData, prefix) {
     streamChunks: null,
     blobs: null,
   };
-  // GAP rd574: FormData's `forEach` lends its callback each value for the
-  // call alone, where `entries()` gives them, so the store keeps them from
-  // there, where upstream writes `formData.forEach(appendBackingEntry.bind(null, backingStore))`.
-  for (const [key, value] of formData.entries()) {
+  // $FlowFixMe[prop-missing]
+  formData.forEach((value, key) => {
     appendBackingEntry(backingStore, value, key);
-  }
+  });
   return backingStore;
 }
 

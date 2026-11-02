@@ -1107,9 +1107,9 @@ These differences from upstream's output are accepted:
   and ReactFlightHooks import it by that name.
 - **ReactDOMFlightServerHostDispatcher, ReactFlightReplyBackingFormData and
   react-server's ReactSharedInternalsServer are Rust** (the user,
-  2026-11-02: the forms below accepted; rd574's `entries()` waits for
-  webapi's `forEach` to give values a callback may keep, then is upstream's
-  `forEach`). Each is used: the first by
+  2026-11-02: the forms below accepted; createBackingFormData is upstream's
+  `formData.forEach(..)`, as webapi's `forEach` gives values a callback may
+  keep, rust-js rd574). Each is used: the first by
   every DOM Flight server's ReactFlightServerConfigDOM, which imports it to
   install its dispatcher; the second by ReactFlightReplyServer; the third
   by ReactFlightServer, react-markup and the `react-server` builds'
@@ -1159,15 +1159,16 @@ These differences from upstream's output are accepted:
     `undefined`; ReactFlightServer keeps its JS-path binding of it, typed
     `&'static SharedStateServer` (the module throws before it's
     `undefined`).
-  - gaps: rd559 (webapi's `FormDataEntryValue` borrows its text, so a
-    kept entry is the port's `BackingEntryValue`, `Str(String)` or
-    `File(&'static File)`) and rd574 (FormData's `forEach` lends its
-    callback each value for the call alone, so createBackingFormData
-    iterates `formData.entries()`, where upstream writes
-    `formData.forEach(appendBackingEntry.bind(null, backingStore))`: the
-    same entries in the same order, but a `backingFormData` given as
-    `null` throws V8's TypeError of reading `entries`, where upstream's
-    names `forEach`); and rust-js's readability gaps rd657 (a block
+  - createBackingFormData's callback is an arrow, `formData.forEach((value,
+    key) => { appendBackingEntry(backingStore, value, key); })`, where
+    upstream writes `formData.forEach(appendBackingEntry.bind(null,
+    backingStore))`: Rust's closure, which converts each value to the
+    store's own.
+  - gaps: rd559 (webapi's `FormDataEntryValue` borrows its text; `forEach`
+    gives it `'static` since rust-js rd574, but ReplyServer's resolveField
+    gives the store text it's only lent, `&str`, so a kept entry is the
+    port's `BackingEntryValue`, `Str(String)` or `File(&'static File)`);
+    and rust-js's readability gaps rd657 (a block
     comment before a call's first argument on its own line is placed
     after it, `previousDispatcher.C(href, /* preconnect */ crossOrigin)`,
     or before the statement of a call of one argument), rd658 (a `let` of
