@@ -1070,19 +1070,19 @@ The port is split between sessions by package:
   reference's metadata, read off the model, is cast to
   `BoundServerReferenceMetaData`, its module to a function, its bound
   arguments to a `Thenable`, as upstream's `metaData.id`/`metaData.bound`.
+  **Decided** (logged for the user, 2026-11-02): rd541, six fields only
+  JS reads (`ServerObjectReferenceJson`'s `id`, `BoundReferenceJson`'s
+  `id` and `bound`, `ServerReferenceProperties`' `form_action`,
+  `is_signature_equal` and `bind`) are `never read` in a native `cargo
+  check`: rust-js's clippy (ADRs 0440, 0888) is the lint, and it's clean,
+  so no change and no `#[allow]`. **Accepted on the user's behalf**
+  (2026-11-02): rd539, the ReplyClient's `.d.ts` keeps its exported
+  `BoundServerReferenceMetaData` interface where upstream's type is an
+  inline parameter type.
+  processReply's functions are nested in it over its variables, as
+  upstream's (rd536, rust-js bdfb187df, taken in Batch 55's
+  regeneration).
   **Pending in rust-js, not accepted** (each changes no result):
-  - rd536: processReply takes its callbacks as `impl Fn`, which makes it
-    generic, and rust-js finds no scope of a generic function, so `Reply`
-    prints as an object of methods, `const Reply = {..}` and
-    `Reply.serializeModel(reply, root, 0)`, where upstream's functions are
-    nested in processReply over its variables (a `Box<dyn Fn>` probe gives
-    upstream's form; the port keeps `impl Fn`);
-  - rd541: six fields only JS reads, `ServerObjectReferenceJson`'s `id`,
-    `BoundReferenceJson`'s `id` and `bound` (each given to JSON.stringify
-    or encodeFormData) and `ServerReferenceProperties`' `form_action`,
-    `is_signature_equal` and `bind` (given to `Object.defineProperties`),
-    are `never read` in a native `cargo check`; rust-js's clippy is clean,
-    and no `#[allow]` is added;
   - rd537: a part id, a JS number kept `f64`, is
     `prefix + $displayF64(id)` where upstream writes `prefix + id`;
   - rd425: a reader's or iterator's `progress` is a closure held in a cell
@@ -1119,8 +1119,15 @@ The port is split between sessions by package:
   - rd548: addChunkDebugInfo's fill-if-missing reads `const cached =
     chunkIOInfoCache.get(chunkId); let ioInfo; if (cached != null) {..}`
     where upstream writes `let ioInfo = ..; if (ioInfo === undefined)`;
-  - rd545 (rust-js's control-flow work): the `$FlowFixMe` inside the
-    `try` prints above `let href;`.
+  **Regressions of the regeneration on rust-js e0f88d00f, pending in
+  rust-js** (its control-flow work; neither changes a result):
+  - rd604: ReactDOMComponent's diffHydratedGenericElement prints `break;`
+    for the Rust's `continue;` in its switch's arms, where upstream (and
+    63877bcaf's JS) has `continue;`: the same only because the switch
+    ends the loop's body;
+  - rd605: BeforeInputEventPlugin's `END_KEYCODES` prints one item a line
+    with its trailing `// Tab, Return, Esc, Space` inside the array, where
+    upstream's is `[9, 13, 27, 32]; // ..`.
   Port differences (decided for the user while away, 2026-11-02; none
   changes a result): prepareDestinationWithChunks tests `moduleLoading !=
   null` where upstream tests `!== null` (ReactDOMRoot's kind); the patched

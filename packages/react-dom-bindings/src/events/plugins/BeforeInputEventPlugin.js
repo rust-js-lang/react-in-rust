@@ -19,8 +19,10 @@ import {
 } from '../SyntheticEvent.js';
 
 const END_KEYCODES = [
-  // Tab, Return, Esc, Space
-  9, 13, 27, 32,
+  9,
+  13,
+  27,
+  32, // Tab, Return, Esc, Space
 ];
 const START_KEYCODE = 229;
 

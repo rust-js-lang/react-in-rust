@@ -38,9 +38,9 @@ export function addChunkDebugInfo(target, chunkId, filename) {
     ioInfo = cached;
   } else {
     const scriptFilename = __webpack_get_script_filename__(chunkId);
-    // $FlowFixMe[incompatible-type]
     let href;
     try {
+      // $FlowFixMe[incompatible-type]
       href = new URL(scriptFilename, document.baseURI).href;
     } catch {
       href = scriptFilename;

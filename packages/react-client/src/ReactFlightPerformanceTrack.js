@@ -51,7 +51,7 @@ export function markAllTracksInOrder() {
 const trackNames = [
   'Primary',
   'Parallel',
-  'Parallel\u200b',
+  'Parallel\u200b', // Padded with zero-width space to give each track a unique name.
   'Parallel\u200b\u200b',
   'Parallel\u200b\u200b\u200b',
   'Parallel\u200b\u200b\u200b\u200b',

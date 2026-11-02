@@ -26,6 +26,7 @@ import {
 } from './ReactFlightClientConfig.js';
 import {writeTemporaryReference} from './ReactFlightTemporaryReferences.js';
 import {
+  $catchUnwind,
   $displayF64,
   $getOrInit,
   $someValue,
@@ -126,61 +127,82 @@ function escapeStringValue(value) {
     : value;
 }
 
-const Reply = {
+/** What JS threw, of a caught unwind. */
+function thrown(payload) {
+  return payload.error;
+}
+
+export function processReply(
+  root,
+  formFieldPrefix,
+  temporaryReferences,
+  onResolve,
+  onReject,
+  signal,
+) {
+  let nextPartId = 1;
+  let pendingParts = 0;
+  let formData$2;
+  const writtenObjects = new WeakMap();
+  let modelRoot = root;
+  let settled = false;
+  let replyLifetimeController$1;
+  let json$1;
+
   // Ending the lifetime makes the runtime remove the caller's abort listener.
   // Without that, the listener keeps everything this reply serialized reachable
   // for as long as the caller's signal lives, and a composite signal from
   // AbortSignal.any() is itself retained by the runtime while it has any abort
   // listener attached.
-  endReplyLifetime(reply) {
-    const replyLifetimeController = reply.replyLifetimeController;
+  function endReplyLifetime() {
+    const replyLifetimeController = replyLifetimeController$1;
     if (replyLifetimeController != null) {
       replyLifetimeController.abort(REPLY_ENDED);
     }
-  },
+  }
 
-  resolve(reply, value) {
-    reply.settled = true;
-    Reply.endReplyLifetime(reply);
-    reply.onResolve(value);
-  },
+  function resolve(value) {
+    settled = true;
+    endReplyLifetime();
+    onResolve(value);
+  }
 
-  reject(reply, error) {
-    reply.settled = true;
-    Reply.endReplyLifetime(reply);
-    reply.onReject(error);
-  },
+  function reject(error) {
+    settled = true;
+    endReplyLifetime();
+    onReject(error);
+  }
 
-  attachAbortSignal(reply, abortSignal) {
+  function attachAbortSignal(abortSignal) {
     if (abortSignal.aborted) {
-      Reply.abort(reply, abortSignal.reason);
+      abort(abortSignal.reason);
       return;
     }
     const replyLifetimeController = new AbortController();
-    reply.replyLifetimeController = replyLifetimeController;
+    replyLifetimeController$1 = replyLifetimeController;
     abortSignal.addEventListener(
       'abort',
       () => {
-        Reply.abort(reply, abortSignal.reason);
+        abort(abortSignal.reason);
       },
       {
         signal: replyLifetimeController.signal,
       },
     );
-  },
+  }
 
   /** The reply's form data, made the first time a part needs one. */
-  formData(reply) {
-    reply.formData ??= new FormData();
-    return $unwrap(reply.formData);
-  },
+  function formData() {
+    formData$2 ??= new FormData();
+    return $unwrap(formData$2);
+  }
 
-  takePartId(reply) {
-    const id = reply.nextPartId++;
+  function takePartId() {
+    const id = nextPartId++;
     return id;
-  },
+  }
 
-  serializeTypedArray(reply, tag, typedArray) {
+  function serializeTypedArray(tag, typedArray) {
     const blob = new Blob([
       // We should be able to pass the buffer straight through but Node < 18 treat
       // multi-byte array blobs differently so we first convert it to single-byte.
@@ -190,127 +212,112 @@ const Reply = {
         typedArray.byteLength,
       ),
     ]);
-    const blobId = Reply.takePartId(reply);
-    const formData = Reply.formData(reply);
-    formData.append(reply.formFieldPrefix + $displayF64(blobId), blob);
+    const blobId = takePartId();
+    const formData$1 = formData();
+    formData$1.append(formFieldPrefix + $displayF64(blobId), blob);
     return '$' + tag + blobId.toString(16);
-  },
+  }
 
-  serializeBinaryReader(reply, reader) {
+  function serializeBinaryReader(reader) {
     // Upgrade to use FormData to allow us to stream this value.
-    const data = Reply.formData(reply);
+    const data = formData();
 
-    reply.pendingParts++;
-    const streamId = Reply.takePartId(reply);
+    pendingParts++;
+    const streamId = takePartId();
 
     const buffer = [];
     // Stream chunks use a dedicated namespace so that the server can tell
     // them apart from one-shot chunks without scanning.
-    const streamPrefix = reply.formFieldPrefix + 'S' + $displayF64(streamId);
+    const streamPrefix = formFieldPrefix + 'S' + $displayF64(streamId);
 
     let progress;
     progress = entry => {
       if (entry.done) {
-        const blobId = Reply.takePartId(reply);
+        const blobId = takePartId();
         const parts = buffer.slice();
-        data.append(
-          reply.formFieldPrefix + $displayF64(blobId),
-          new Blob(parts),
-        );
+        data.append(formFieldPrefix + $displayF64(blobId), new Blob(parts));
         data.append(streamPrefix, '"$o' + blobId.toString(16) + '"');
         data.append(streamPrefix, 'C'); // Close signal
-        reply.pendingParts--;
-        if (reply.pendingParts === 0) {
-          Reply.resolve(reply, data);
+        pendingParts--;
+        if (pendingParts === 0) {
+          resolve(data);
         }
       } else {
         buffer.push($someValue(entry.value));
         const progress$1 = $unwrap(progress);
-        reader.read(new Uint8Array(1024)).then(
-          entry => {
-            progress$1(entry);
-          },
-          error => Reply.reject(reply, error),
-        );
+        reader.read(new Uint8Array(1024)).then(entry => {
+          progress$1(entry);
+        }, reject);
       }
     };
     const progress$1 = $unwrap(progress);
-    reader.read(new Uint8Array(1024)).then(
-      entry => {
-        progress$1(entry);
-      },
-      error => Reply.reject(reply, error),
-    );
+    reader.read(new Uint8Array(1024)).then(entry => {
+      progress$1(entry);
+    }, reject);
 
     return '$r' + streamId.toString(16);
-  },
+  }
 
-  serializeReader(reply, reader) {
+  function serializeReader(reader) {
     // Upgrade to use FormData to allow us to stream this value.
-    const data = Reply.formData(reply);
+    const data = formData();
 
-    reply.pendingParts++;
-    const streamId = Reply.takePartId(reply);
+    pendingParts++;
+    const streamId = takePartId();
 
     // Stream chunks use a dedicated namespace so that the server can tell
     // them apart from one-shot chunks without scanning.
-    const streamPrefix = reply.formFieldPrefix + 'S' + $displayF64(streamId);
+    const streamPrefix = formFieldPrefix + 'S' + $displayF64(streamId);
 
     let progress;
     progress = entry => {
       if (entry.done) {
         data.append(streamPrefix, 'C'); // Close signal
-        reply.pendingParts--;
-        if (reply.pendingParts === 0) {
-          Reply.resolve(reply, data);
+        pendingParts--;
+        if (pendingParts === 0) {
+          resolve(data);
         }
       } else {
         const captured = entry.value;
-        try {
-          const partJson = Reply.stringify(reply, $someValue(captured));
+        const result = $catchUnwind(() => {
+          const partJson = stringify($someValue(captured));
           data.append(streamPrefix, partJson);
           const progress$1 = $unwrap(progress);
-          reader.read().then(
-            entry => {
-              progress$1(entry);
-            },
-            error => Reply.reject(reply, error),
-          );
-        } catch (thrown$1) {
-          const x = $unwound(thrown$1);
-          Reply.reject(reply, thrown(x));
+          reader.read().then(entry => {
+            progress$1(entry);
+          }, reject);
+        });
+        if (result.TAG === 'Err') {
+          reject(thrown(result._0));
         }
       }
     };
     const progress$1 = $unwrap(progress);
-    reader.read().then(
-      entry => {
-        progress$1(entry);
-      },
-      error => Reply.reject(reply, error),
-    );
+    reader.read().then(entry => {
+      progress$1(entry);
+    }, reject);
 
     return '$R' + streamId.toString(16);
-  },
+  }
 
-  serializeReadableStream(reply, stream) {
+  function serializeReadableStream(stream) {
     // Detect if this is a BYOB stream. BYOB streams should be able to be read as bytes on the
     // receiving side. For binary streams, we serialize them as plain Blobs.
     let binaryReader;
     try {
       binaryReader = stream.getReader({mode: 'byob'});
     } catch {
-      return Reply.serializeReader(reply, stream.getReader());
+      return serializeReader(stream.getReader());
     }
-    return Reply.serializeBinaryReader(reply, binaryReader);
-  },
+    return serializeBinaryReader(binaryReader);
+  }
 
-  serializeAsyncIterable(reply, iterable, iterator) {
+  function serializeAsyncIterable(iterable, iterator) {
     // Upgrade to use FormData to allow us to stream this value.
-    const data = Reply.formData(reply);
+    const data = formData();
 
-    reply.pendingParts++;
-    const streamId = Reply.takePartId(reply);
+    pendingParts++;
+    const streamId = takePartId();
 
     // Generators/Iterators are Iterables but they're also their own iterator
     // functions. If that's the case, we treat them as single-shot. Otherwise,
@@ -320,7 +327,7 @@ const Reply = {
 
     // Stream chunks use a dedicated namespace so that the server can tell
     // them apart from one-shot chunks without scanning.
-    const streamPrefix = reply.formFieldPrefix + 'S' + $displayF64(streamId);
+    const streamPrefix = formFieldPrefix + 'S' + $displayF64(streamId);
 
     // There's a race condition between when the stream is aborted and when the promise
     // resolves so we track whether we already aborted it to avoid writing twice.
@@ -335,63 +342,57 @@ const Reply = {
           const captured = entry.value;
           let partJson;
           try {
-            partJson = Reply.stringify(reply, captured);
+            partJson = stringify(captured);
           } catch (thrown$1) {
             const x = $unwound(thrown$1);
-            Reply.reject(reply, thrown(x));
+            reject(thrown(x));
             return;
           }
           data.append(streamPrefix, 'C' + partJson);
         }
-        reply.pendingParts--;
-        if (reply.pendingParts === 0) {
-          Reply.resolve(reply, data);
+        pendingParts--;
+        if (pendingParts === 0) {
+          resolve(data);
         }
       } else {
         const captured = entry.value;
-        try {
-          const partJson = Reply.stringify(reply, captured);
+        const result = $catchUnwind(() => {
+          const partJson = stringify(captured);
           data.append(streamPrefix, partJson);
           const progress$1 = $unwrap(progress);
-          iterator.next().then(
-            entry => {
-              progress$1(entry);
-            },
-            error => Reply.reject(reply, error),
-          );
-        } catch (thrown$1) {
-          const x = $unwound(thrown$1);
-          Reply.reject(reply, thrown(x));
+          iterator.next().then(entry => {
+            progress$1(entry);
+          }, reject);
+        });
+        if (result.TAG === 'Err') {
+          reject(thrown(result._0));
         }
       }
     };
     const progress$1 = $unwrap(progress);
-    iterator.next().then(
-      entry => {
-        progress$1(entry);
-      },
-      error => Reply.reject(reply, error),
-    );
+    iterator.next().then(entry => {
+      progress$1(entry);
+    }, reject);
     return '$' + (isIterator ? 'x' : 'X') + streamId.toString(16);
-  },
+  }
 
   /**
    * `JSON.stringify(value, resolveToJSON)`: each key and value
    * given resolveToJSON, `this` the object holding the key.
    */
-  stringify(reply, value) {
+  function stringify(value) {
     return (
       JSON.stringify(
         value,
-        function (key, value) {
-          return Reply.resolveToJson(reply, this, key, value);
+        function (key, value$1) {
+          return resolveToJson(this, key, value$1);
         },
         0,
       ) ?? ''
     );
-  },
+  }
 
-  resolveToJson(reply, parent, key, value) {
+  function resolveToJson(parent, key, value) {
     if (__DEV__ && key === __PROTO__) {
       console.error(
         'Expected not to serialize an object with own property `__proto__`. When parsed this property will be omitted.%s',
@@ -435,49 +436,42 @@ const Reply = {
         // reference. A Server Reference must always be encoded by id.
         const objectReferenceId = knownServerObjectReferences.get(value);
         if (objectReferenceId != null) {
-          const existingReference = reply.writtenObjects.get(value);
+          const existingReference = writtenObjects.get(value);
           if (existingReference != null) {
-            if (reply.modelRoot !== value) {
+            if (modelRoot !== value) {
               return existingReference;
             }
             // serializeModel registered this root before we recognized it
             // as a Server Reference. Encode its metadata on this first visit.
-            reply.modelRoot = undefined;
+            modelRoot = undefined;
           }
-          const referenceJson = Reply.stringify(reply, {
+          const referenceJson = stringify({
             id: objectReferenceId,
           });
           // Upgrade to use FormData to allow us to stream this value.
-          const formData = Reply.formData(reply);
+          const formData$1 = formData();
           // The reference to this object came from the same client so we can
           // pass it back to the server where it resolves to the object.
-          const refId = Reply.takePartId(reply);
-          formData.set(
-            reply.formFieldPrefix + $displayF64(refId),
-            referenceJson,
-          );
+          const refId = takePartId();
+          formData$1.set(formFieldPrefix + $displayF64(refId), referenceJson);
           const serverObjectReferenceId =
             serializeServerObjectReferenceID(refId);
           // Store the reference ID for deduplication.
-          reply.writtenObjects.set(value, serverObjectReferenceId);
+          writtenObjects.set(value, serverObjectReferenceId);
           return serverObjectReferenceId;
         }
       }
       switch (value.$$typeof) {
         case REACT_ELEMENT_TYPE:
-          if (reply.temporaryReferences != null && !key.includes(':')) {
+          if (temporaryReferences != null && !key.includes(':')) {
             // TODO: If the property name contains a colon, we don't dedupe. Escape instead.
-            const parentReference = reply.writtenObjects.get(parent);
+            const parentReference = writtenObjects.get(parent);
             if (parentReference != null) {
               // If the parent has a reference, we can refer to this object indirectly
               // through the property name inside that parent.
               const reference = parentReference + ':' + key;
               // Store this object so that the server can refer to it later in responses.
-              writeTemporaryReference(
-                reply.temporaryReferences,
-                reference,
-                value,
-              );
+              writeTemporaryReference(temporaryReferences, reference, value);
               return serializeTemporaryReferenceMarker();
             }
           }
@@ -485,8 +479,8 @@ const Reply = {
           // passed directly to encodeReply, or a promise that resolved to
           // JSX). It was already registered as a temporary reference by
           // serializeModel so we just need to emit the marker.
-          if (reply.temporaryReferences != null && reply.modelRoot === value) {
-            reply.modelRoot = undefined;
+          if (temporaryReferences != null && modelRoot === value) {
+            modelRoot = undefined;
             return serializeTemporaryReferenceMarker();
           }
           throw new Error(
@@ -499,47 +493,46 @@ const Reply = {
           const payload = value._payload;
           const init = value._init;
           // Upgrade to use FormData to allow us to stream this value.
-          const data = Reply.formData(reply);
-          reply.pendingParts++;
-          let resolved;
-          try {
+          const data = formData();
+          pendingParts++;
+          const result = $catchUnwind(() => {
             const resolvedModel = init(payload);
             // We always outline this as a separate part even though we could inline it
             // because it ensures a more deterministic encoding.
-            const lazyId = Reply.takePartId(reply);
-            const partJson = Reply.serializeModel(reply, resolvedModel, lazyId);
-            data.append(reply.formFieldPrefix + $displayF64(lazyId), partJson);
-            resolved = serializeByValueID(lazyId);
-          } catch (thrown$1) {
-            const payload = $unwound(thrown$1);
-            const x = thrown(payload);
+            const lazyId = takePartId();
+            const partJson = serializeModel(resolvedModel, lazyId);
+            data.append(formFieldPrefix + $displayF64(lazyId), partJson);
+            return serializeByValueID(lazyId);
+          });
+          let resolved;
+          if (result.TAG === 'Ok') {
+            resolved = result._0;
+          } else {
+            const x = thrown(result._0);
             if (
               typeof x === 'object' &&
               x !== null &&
               typeof x.then === 'function'
             ) {
               // Suspended
-              reply.pendingParts++;
-              const lazyId = Reply.takePartId(reply);
+              pendingParts++;
+              const lazyId = takePartId();
               const thenable = x;
               function retry() {
                 // While the first promise resolved, its value isn't necessarily what we'll
                 // resolve into because we might suspend again.
                 let partJson;
                 try {
-                  partJson = Reply.serializeModel(reply, value, lazyId);
+                  partJson = serializeModel(value, lazyId);
                 } catch (thrown$1) {
                   const reason = $unwound(thrown$1);
-                  Reply.reject(reply, thrown(reason));
+                  reject(thrown(reason));
                   return;
                 }
-                data.append(
-                  reply.formFieldPrefix + $displayF64(lazyId),
-                  partJson,
-                );
-                reply.pendingParts--;
-                if (reply.pendingParts === 0) {
-                  Reply.resolve(reply, data);
+                data.append(formFieldPrefix + $displayF64(lazyId), partJson);
+                pendingParts--;
+                if (pendingParts === 0) {
+                  resolve(data);
                 }
               }
               thenable.then(retry, retry);
@@ -547,37 +540,37 @@ const Reply = {
             } else {
               // In the future we could consider serializing this as an error
               // that throws on the server instead.
-              Reply.reject(reply, x);
+              reject(x);
               resolved = null;
             }
           }
-          reply.pendingParts--;
+          pendingParts--;
           return resolved;
         }
       }
 
-      const existingReference = reply.writtenObjects.get(value);
+      const existingReference = writtenObjects.get(value);
 
       if (typeof value.then === 'function') {
         if (existingReference != null) {
-          if (reply.modelRoot !== value) {
+          if (modelRoot !== value) {
             // We've already emitted this as an outlined object, so we can
             // just refer to that by its existing ID.
             return existingReference;
           }
           // This is the ID we're currently emitting so we need to write it
           // once but if we discover it again, we refer to it by id.
-          reply.modelRoot = undefined;
+          modelRoot = undefined;
         }
 
         // We assume that any object with a .then property is a "Thenable" type,
         // or a Promise type. Either of which can be represented by a Promise.
         // Upgrade to use FormData to allow us to stream this value.
-        const data = Reply.formData(reply);
-        reply.pendingParts++;
-        const promiseId = Reply.takePartId(reply);
+        const data = formData();
+        pendingParts++;
+        const promiseId = takePartId();
         const promiseReference = serializePromiseID(promiseId);
-        reply.writtenObjects.set(value, promiseReference);
+        writtenObjects.set(value, promiseReference);
         const thenable = value;
         thenable.then(
           partValue => {
@@ -585,56 +578,49 @@ const Reply = {
             try {
               const previousReference =
                 typeof partValue === 'object' && partValue !== null
-                  ? reply.writtenObjects.get(partValue)
+                  ? writtenObjects.get(partValue)
                   : undefined;
               partJson =
                 previousReference != null
                   ? JSON.stringify(previousReference)
-                  : Reply.serializeModel(reply, partValue, promiseId);
+                  : serializeModel(partValue, promiseId);
             } catch (thrown$1) {
               const reason = $unwound(thrown$1);
-              Reply.reject(reply, thrown(reason));
+              reject(thrown(reason));
               return;
             }
-            data.append(
-              reply.formFieldPrefix + $displayF64(promiseId),
-              partJson,
-            );
-            reply.pendingParts--;
-            if (reply.pendingParts === 0) {
-              Reply.resolve(reply, data);
+            data.append(formFieldPrefix + $displayF64(promiseId), partJson);
+            pendingParts--;
+            if (pendingParts === 0) {
+              resolve(data);
             }
           },
           // In the future we could consider serializing this as an error
           // that throws on the server instead.
-          reason => Reply.reject(reply, reason),
+          reject,
         );
         return promiseReference;
       }
       if (existingReference != null) {
-        if (reply.modelRoot !== value) {
+        if (modelRoot !== value) {
           // We've already emitted this as an outlined object, so we can
           // just refer to that by its existing ID.
           return existingReference;
         }
         // This is the ID we're currently emitting so we need to write it
         // once but if we discover it again, we refer to it by id.
-        reply.modelRoot = undefined;
+        modelRoot = undefined;
       } else if (!key.includes(':')) {
         // TODO: If the property name contains a colon, we don't dedupe. Escape instead.
-        const parentReference = reply.writtenObjects.get(parent);
+        const parentReference = writtenObjects.get(parent);
         if (parentReference != null) {
           // If the parent has a reference, we can refer to this object indirectly
           // through the property name inside that parent.
           const reference = parentReference + ':' + key;
-          reply.writtenObjects.set(value, reference);
-          if (reply.temporaryReferences != null) {
+          writtenObjects.set(value, reference);
+          if (temporaryReferences != null) {
             // Store this object so that the server can refer to it later in responses.
-            writeTemporaryReference(
-              reply.temporaryReferences,
-              reference,
-              value,
-            );
+            writeTemporaryReference(temporaryReferences, reference, value);
           }
         }
       }
@@ -645,106 +631,95 @@ const Reply = {
       // TODO: Should we the Object.prototype.toString.call() to test for cross-realm objects?
       if (value instanceof FormData) {
         // Upgrade to use FormData to allow us to use rich objects as its values.
-        const data = Reply.formData(reply);
-        const refId = Reply.takePartId(reply);
+        const data = formData();
+        const refId = takePartId();
         // Copy all the form fields with a prefix for this reference.
         // These must come first in the form order because we assume that all the
         // fields are available before this is referenced.
         // We include a special marker so that the Server can detect FormData entries
         // that are values in referenced FormData objects.
-        const prefix = reply.formFieldPrefix + '_' + $displayF64(refId) + '_';
-        value.forEach((originalValue, originalKey) => {
+        const prefix = formFieldPrefix + '_' + $displayF64(refId) + '_';
+        const value$1 = value;
+        value$1.forEach((originalValue, originalKey) => {
           data.append(prefix + originalKey, originalValue);
         });
         return serializeFormDataReference(refId);
       }
       if (value instanceof Map) {
-        const mapId = Reply.takePartId(reply);
+        const mapId = takePartId();
         const map = value;
-        const partJson = Reply.serializeModel(reply, Array.from(map), mapId);
-        Reply.formData(reply).append(
-          reply.formFieldPrefix + $displayF64(mapId),
-          partJson,
-        );
+        const partJson = serializeModel(Array.from(map), mapId);
+        formData().append(formFieldPrefix + $displayF64(mapId), partJson);
         return serializeMapID(mapId);
       }
       if (value instanceof Set) {
         const set = value;
-        const setId = Reply.takePartId(reply);
-        const partJson = Reply.serializeModel(reply, Array.from(set), setId);
-        Reply.formData(reply).append(
-          reply.formFieldPrefix + $displayF64(setId),
-          partJson,
-        );
+        const setId = takePartId();
+        const partJson = serializeModel(Array.from(set), setId);
+        formData().append(formFieldPrefix + $displayF64(setId), partJson);
         return serializeSetID(setId);
       }
 
       if (value instanceof ArrayBuffer) {
         const buffer = value;
         const blob = new Blob([buffer]);
-        const blobId = Reply.takePartId(reply);
-        Reply.formData(reply).append(
-          reply.formFieldPrefix + $displayF64(blobId),
-          blob,
-        );
+        const blobId = takePartId();
+        formData().append(formFieldPrefix + $displayF64(blobId), blob);
         return '$' + 'A' + blobId.toString(16);
       }
       if (value instanceof Int8Array) {
         // char
-        return Reply.serializeTypedArray(reply, 'O', value);
+        return serializeTypedArray('O', value);
       }
       if (value instanceof Uint8Array) {
         // unsigned char
-        return Reply.serializeTypedArray(reply, 'o', value);
+        return serializeTypedArray('o', value);
       }
       if (value instanceof Uint8ClampedArray) {
         // unsigned clamped char
-        return Reply.serializeTypedArray(reply, 'U', value);
+        return serializeTypedArray('U', value);
       }
       if (value instanceof Int16Array) {
         // sort
-        return Reply.serializeTypedArray(reply, 'S', value);
+        return serializeTypedArray('S', value);
       }
       if (value instanceof Uint16Array) {
         // unsigned short
-        return Reply.serializeTypedArray(reply, 's', value);
+        return serializeTypedArray('s', value);
       }
       if (value instanceof Int32Array) {
         // long
-        return Reply.serializeTypedArray(reply, 'L', value);
+        return serializeTypedArray('L', value);
       }
       if (value instanceof Uint32Array) {
         // unsigned long
-        return Reply.serializeTypedArray(reply, 'l', value);
+        return serializeTypedArray('l', value);
       }
       if (value instanceof Float32Array) {
         // float
-        return Reply.serializeTypedArray(reply, 'G', value);
+        return serializeTypedArray('G', value);
       }
       if (value instanceof Float64Array) {
         // double
-        return Reply.serializeTypedArray(reply, 'g', value);
+        return serializeTypedArray('g', value);
       }
       if (value instanceof BigInt64Array) {
         // number
-        return Reply.serializeTypedArray(reply, 'M', value);
+        return serializeTypedArray('M', value);
       }
       if (value instanceof BigUint64Array) {
         // unsigned number
         // We use "m" instead of "n" since JSON can start with "null"
-        return Reply.serializeTypedArray(reply, 'm', value);
+        return serializeTypedArray('m', value);
       }
       if (value instanceof DataView) {
-        return Reply.serializeTypedArray(reply, 'V', value);
+        return serializeTypedArray('V', value);
       }
       // TODO: Blob is not available in old Node/browsers. Remove the typeof check later.
       if (typeof Blob === 'function' && value instanceof Blob) {
-        const blobId = Reply.takePartId(reply);
+        const blobId = takePartId();
         const blob = value;
-        Reply.formData(reply).append(
-          reply.formFieldPrefix + $displayF64(blobId),
-          blob,
-        );
+        formData().append(formFieldPrefix + $displayF64(blobId), blob);
         return serializeBlobID(blobId);
       }
 
@@ -753,14 +728,10 @@ const Reply = {
         const iterator = $unwrap(iteratorFn.call(value));
         if (iterator === value) {
           // Iterator, not Iterable
-          const iteratorId = Reply.takePartId(reply);
-          const partJson = Reply.serializeModel(
-            reply,
-            Array.from(iterator),
-            iteratorId,
-          );
-          Reply.formData(reply).append(
-            reply.formFieldPrefix + $displayF64(iteratorId),
+          const iteratorId = takePartId();
+          const partJson = serializeModel(Array.from(iterator), iteratorId);
+          formData().append(
+            formFieldPrefix + $displayF64(iteratorId),
             partJson,
           );
           return serializeIteratorID(iteratorId);
@@ -773,13 +744,13 @@ const Reply = {
         typeof ReadableStream === 'function' &&
         value instanceof ReadableStream
       ) {
-        return Reply.serializeReadableStream(reply, value);
+        return serializeReadableStream(value);
       }
       const getAsyncIterator = value[ASYNC_ITERATOR];
       if (typeof getAsyncIterator === 'function') {
         // We treat AsyncIterables as a Fragment and as such we might need to key them.
         const iterator = getAsyncIterator.call(value);
-        return Reply.serializeAsyncIterable(reply, value, iterator);
+        return serializeAsyncIterable(value, iterator);
       }
 
       // Verify that this is a simple plain object.
@@ -788,7 +759,7 @@ const Reply = {
         proto !== ObjectPrototype &&
         (proto === null || getPrototypeOf(proto) !== null)
       ) {
-        if (reply.temporaryReferences == null) {
+        if (temporaryReferences == null) {
           throw new Error(
             'Only plain objects, and a few built-ins, can be passed to Server Functions. ' +
               'Classes or null prototypes are not supported.' +
@@ -862,38 +833,34 @@ const Reply = {
       case 'function': {
         const referenceClosure = knownServerReferences.get(value);
         if (referenceClosure != null) {
-          const existingReference = reply.writtenObjects.get(value);
+          const existingReference = writtenObjects.get(value);
           if (existingReference != null) {
             return existingReference;
           }
           const {id, bound} = referenceClosure;
-          const referenceClosureJson = Reply.stringify(reply, {id, bound});
+          const referenceClosureJson = stringify({id, bound});
           // Upgrade to use FormData to allow us to stream this value.
-          const formData = Reply.formData(reply);
+          const formData$2 = formData();
           // The reference to this function came from the same client so we can pass it back.
-          const refId = Reply.takePartId(reply);
-          formData.set(
-            reply.formFieldPrefix + $displayF64(refId),
+          const refId = takePartId();
+          formData$2.set(
+            formFieldPrefix + $displayF64(refId),
             referenceClosureJson,
           );
           const serverReferenceId = serializeServerReferenceID(refId);
           // Store the server reference ID for deduplication.
-          reply.writtenObjects.set(value, serverReferenceId);
+          writtenObjects.set(value, serverReferenceId);
           return serverReferenceId;
         }
-        if (reply.temporaryReferences != null && !key.includes(':')) {
+        if (temporaryReferences != null && !key.includes(':')) {
           // TODO: If the property name contains a colon, we don't dedupe. Escape instead.
-          const parentReference = reply.writtenObjects.get(parent);
+          const parentReference = writtenObjects.get(parent);
           if (parentReference != null) {
             // If the parent has a reference, we can refer to this object indirectly
             // through the property name inside that parent.
             const reference = parentReference + ':' + key;
             // Store this object so that the server can refer to it later in responses.
-            writeTemporaryReference(
-              reply.temporaryReferences,
-              reference,
-              value,
-            );
+            writeTemporaryReference(temporaryReferences, reference, value);
             return serializeTemporaryReferenceMarker();
           }
         }
@@ -903,19 +870,15 @@ const Reply = {
         );
       }
       case 'symbol':
-        if (reply.temporaryReferences != null && !key.includes(':')) {
+        if (temporaryReferences != null && !key.includes(':')) {
           // TODO: If the property name contains a colon, we don't dedupe. Escape instead.
-          const parentReference = reply.writtenObjects.get(parent);
+          const parentReference = writtenObjects.get(parent);
           if (parentReference != null) {
             // If the parent has a reference, we can refer to this object indirectly
             // through the property name inside that parent.
             const reference = parentReference + ':' + key;
             // Store this object so that the server can refer to it later in responses.
-            writeTemporaryReference(
-              reply.temporaryReferences,
-              reference,
-              value,
-            );
+            writeTemporaryReference(temporaryReferences, reference, value);
             return serializeTemporaryReferenceMarker();
           }
         }
@@ -931,66 +894,37 @@ const Reply = {
           `Type ${typeof value} is not supported as an argument to a Server Function.`,
         );
     }
-  },
+  }
 
-  serializeModel(reply, model, id) {
+  function serializeModel(model, id) {
     if (typeof model === 'object' && model !== null) {
       const reference = serializeByValueID(id);
-      reply.writtenObjects.set(model, reference);
-      if (reply.temporaryReferences != null) {
+      writtenObjects.set(model, reference);
+      if (temporaryReferences != null) {
         // Store this object so that the server can refer to it later in responses.
-        writeTemporaryReference(reply.temporaryReferences, reference, model);
+        writeTemporaryReference(temporaryReferences, reference, model);
       }
     }
-    reply.modelRoot = model;
-    return Reply.stringify(reply, model);
-  },
+    modelRoot = model;
+    return stringify(model);
+  }
 
-  abort(reply, reason) {
+  function abort(reason) {
     // Nothing can make the reply pending again from here, so the caller's
     // signal has no further effect on it.
-    Reply.endReplyLifetime(reply);
-    if (reply.pendingParts > 0) {
-      reply.pendingParts = 0; // Don't resolve again later.
+    endReplyLifetime();
+    if (pendingParts > 0) {
+      pendingParts = 0; // Don't resolve again later.
       // Resolve with what we have so far, which may have holes at this point.
       // They'll error when the stream completes on the server.
-      const formData = reply.formData;
-      if (formData == null) {
-        Reply.resolve(reply, $unwrap(reply.json));
+      const formData$1 = formData$2;
+      if (formData$1 == null) {
+        resolve($unwrap(json$1));
       } else {
-        Reply.resolve(reply, formData);
+        resolve(formData$1);
       }
     }
-  },
-};
-
-/** What JS threw, of a caught unwind. */
-function thrown(payload) {
-  return payload.error;
-}
-
-export function processReply(
-  root,
-  formFieldPrefix,
-  temporaryReferences,
-  onResolve,
-  onReject,
-  signal,
-) {
-  const reply = {
-    formFieldPrefix,
-    temporaryReferences,
-    onResolve,
-    onReject,
-    nextPartId: 1,
-    pendingParts: 0,
-    formData: undefined,
-    writtenObjects: new WeakMap(),
-    modelRoot: root,
-    settled: false,
-    replyLifetimeController: undefined,
-    json: undefined,
-  };
+  }
 
   if (__DEV__) {
     // We use eval to create fake function stacks which includes Component stacks.
@@ -1003,24 +937,24 @@ export function processReply(
   const json = $getOrInit(
     {
       get value() {
-        return reply.json;
+        return json$1;
       },
       set value(value) {
-        reply.json = value;
+        json$1 = value;
       },
     },
-    () => Reply.serializeModel(reply, root, 0),
+    () => serializeModel(root, 0),
   );
 
-  const formData = reply.formData;
-  if (formData == null) {
+  const formData$1 = formData$2;
+  if (formData$1 == null) {
     // If it's a simple data structure, we just use plain JSON.
-    Reply.resolve(reply, json);
+    resolve(json);
   } else {
     // Otherwise, we use FormData to let us stream in the result.
-    formData.set(reply.formFieldPrefix + '0', json);
-    if (reply.pendingParts === 0) {
-      Reply.resolve(reply, formData);
+    formData$1.set(formFieldPrefix + '0', json);
+    if (pendingParts === 0) {
+      resolve(formData$1);
     }
   }
 
@@ -1032,8 +966,8 @@ export function processReply(
   // TODO: Skip serializing when the signal is already aborted, the way the
   // server entry points abort before rendering starts. Needs a decision on what
   // to resolve with, since abort() resolves with the parts that finished.
-  if (signal != null && !reply.settled) {
-    Reply.attachAbortSignal(reply, signal);
+  if (signal != null && !settled) {
+    attachAbortSignal(signal);
   }
 }
 

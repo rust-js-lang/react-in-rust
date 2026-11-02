@@ -575,36 +575,21 @@ function wakeChunkIfInitialized(
         i++;
       }
     }
-    const borrowMut = {
-      get value() {
-        return chunk;
-      },
-      set value(value) {
-        chunk.status = value.status;
-        chunk.value = value.value;
-        chunk.reason = value.reason;
-      },
-    };
-    if (
-      borrowMut.value.status === 'blocked' ||
-      borrowMut.value.status === 'pending'
-    ) {
-      const value = borrowMut.value;
-      const value$1 = borrowMut.value;
-      if (value.value != null) {
-        const value$1 = value.value;
-        $extend(value$1, resolveListeners);
+    if (chunk.status === 'blocked' || chunk.status === 'pending') {
+      if (chunk.value != null) {
+        const value = chunk.value;
+        $extend(value, resolveListeners);
       } else {
-        value.value = resolveListeners;
+        chunk.value = resolveListeners;
       }
 
-      if (value$1.reason != null) {
-        const reason = value$1.reason;
+      if (chunk.reason != null) {
+        const reason = chunk.reason;
         if (rejectListeners != null) {
           $extend(reason, rejectListeners);
         }
       } else {
-        value$1.reason = rejectListeners;
+        chunk.reason = rejectListeners;
       }
     }
   } else if (chunk.status === 'rejected' && rejectListeners != null) {
@@ -773,33 +758,17 @@ function resolveModelChunk(response, chunk, value) {
     return;
   }
   releasePendingChunk(response, chunk);
-  const borrowMut = {
-    get value() {
-      return chunk;
-    },
-    set value(value) {
-      chunk.status = value.status;
-      chunk.value = value.value;
-      chunk.reason = value.reason;
-    },
-  };
-  let tmp;
-  if (
-    borrowMut.value.status === 'pending' ||
-    borrowMut.value.status === 'pending_weak'
-  ) {
-    const value = borrowMut.value;
-    const value$1 = borrowMut.value;
-    const old = value.value;
-    value.value = null;
-    const old$1 = value$1.reason;
-    value$1.reason = null;
-    tmp = [old, old$1];
+  let resolveListeners;
+  let rejectListeners;
+  if (chunk.status === 'pending' || chunk.status === 'pending_weak') {
+    resolveListeners = chunk.value;
+    chunk.value = null;
+    rejectListeners = chunk.reason;
+    chunk.reason = null;
   } else {
-    tmp = [undefined, undefined];
+    resolveListeners = undefined;
+    rejectListeners = undefined;
   }
-  const resolveListeners = tmp[0];
-  const rejectListeners = tmp[1];
   const resolvedChunk = chunk;
   resolvedChunk.status = 'resolved_model';
   resolvedChunk.value = value;
@@ -824,34 +793,21 @@ function resolveModuleChunk(response, chunk, value) {
     return;
   }
   releasePendingChunk(response, chunk);
-  const borrowMut = {
-    get value() {
-      return chunk;
-    },
-    set value(value) {
-      chunk.status = value.status;
-      chunk.value = value.value;
-      chunk.reason = value.reason;
-    },
-  };
-  let tmp;
+  let resolveListeners;
+  let rejectListeners;
   if (
-    borrowMut.value.status === 'pending' ||
-    borrowMut.value.status === 'pending_weak' ||
-    borrowMut.value.status === 'blocked'
+    chunk.status === 'pending' ||
+    chunk.status === 'pending_weak' ||
+    chunk.status === 'blocked'
   ) {
-    const value = borrowMut.value;
-    const value$1 = borrowMut.value;
-    const old = value.value;
-    value.value = null;
-    const old$1 = value$1.reason;
-    value$1.reason = null;
-    tmp = [old, old$1];
+    resolveListeners = chunk.value;
+    chunk.value = null;
+    rejectListeners = chunk.reason;
+    chunk.reason = null;
   } else {
-    tmp = [undefined, undefined];
+    resolveListeners = undefined;
+    rejectListeners = undefined;
   }
-  const resolveListeners = tmp[0];
-  const rejectListeners = tmp[1];
   const resolvedChunk = chunk;
   resolvedChunk.status = 'resolved_module';
   resolvedChunk.value = value;
@@ -1024,19 +980,17 @@ function initializeModelChunk(chunk) {
       handler.value = value;
       $cellReplace($borrowMut($fieldCell(handler, 'chunk', true)), cyclicChunk);
     }
-
-    let tmp;
+    let listeners;
+    let rejectListeners;
     if (cyclicChunk.status === 'blocked') {
-      const old = cyclicChunk.value;
+      listeners = cyclicChunk.value;
       cyclicChunk.value = null;
-      const old$1 = cyclicChunk.reason;
+      rejectListeners = cyclicChunk.reason;
       cyclicChunk.reason = null;
-      tmp = [old, old$1];
     } else {
-      tmp = [undefined, undefined];
+      listeners = undefined;
+      rejectListeners = undefined;
     }
-    const listeners = tmp[0];
-    const rejectListeners = tmp[1];
     if (listeners != null) {
       // These listeners were added to `cyclicChunk` while its model was
       // parsing. They come from models that were parsed nested inside that
@@ -1083,22 +1037,9 @@ function initializeModelChunk(chunk) {
       // Put the deferred listeners back on `cyclicChunk` before any cyclic
       // reference is fulfilled. Fulfilling one can complete `cyclicChunk`, and
       // completion wakes what is queued on it at that moment.
-      if (deferred != null) {
-        const borrowMut = {
-          get value() {
-            return cyclicChunk;
-          },
-          set value(value) {
-            cyclicChunk.status = value.status;
-            cyclicChunk.value = value.value;
-            cyclicChunk.reason = value.reason;
-          },
-        };
-        if (borrowMut.value.status === 'blocked') {
-          const value = borrowMut.value;
-          borrowMut.value.value = deferred;
-          value.reason = rejectListeners;
-        }
+      if (deferred != null && cyclicChunk.status === 'blocked') {
+        cyclicChunk.value = deferred;
+        cyclicChunk.reason = rejectListeners;
       }
       if (cyclic != null) {
         for (let i = 0; i < cyclic.length; i++) {
@@ -1131,8 +1072,7 @@ function initializeModelChunk(chunk) {
   } finally {
     initializingHandler = prevHandler ?? null;
     if ((enableProfilerTimer && enableComponentPerformanceTrack) || __DEV__) {
-      const old = prevChunk;
-      initializingChunk = old ?? null;
+      initializingChunk = prevChunk ?? null;
     }
   }
 }
@@ -3174,18 +3114,17 @@ function resolveModule(response, id, model, streamState) {
       // This can't actually happen because we don't have any forward
       // references to modules.
       const blockedChunk$1 = chunk;
-      let tmp;
+      let value;
+      let reason;
       if (blockedChunk$1.status === 'pending') {
-        const old = blockedChunk$1.value;
+        value = blockedChunk$1.value;
         blockedChunk$1.value = null;
-        const old$1 = blockedChunk$1.reason;
+        reason = blockedChunk$1.reason;
         blockedChunk$1.reason = null;
-        tmp = [old, old$1];
       } else {
-        tmp = [undefined, undefined];
+        value = undefined;
+        reason = undefined;
       }
-      const value = tmp[0];
-      const reason = tmp[1];
       blockedChunk$1.status = 'blocked';
       blockedChunk$1.value = value ?? null;
       blockedChunk$1.reason = reason ?? null;
@@ -3408,30 +3347,17 @@ function startAsyncIterable(response, id, iterator, streamState) {
         buffer.push(chunk);
       } else {
         const chunk = $index(buffer, nextWriteIndex);
-        const borrowMut = {
-          get value() {
-            return chunk;
-          },
-          set value(value) {
-            chunk.status = value.status;
-            chunk.value = value.value;
-            chunk.reason = value.reason;
-          },
-        };
-        let tmp;
-        if (borrowMut.value.status === 'pending') {
-          const value = borrowMut.value;
-          const value$1 = borrowMut.value;
-          const old = value.value;
-          value.value = null;
-          const old$1 = value$1.reason;
-          value$1.reason = null;
-          tmp = [old, old$1];
+        let resolveListeners;
+        let rejectListeners;
+        if (chunk.status === 'pending') {
+          resolveListeners = chunk.value;
+          chunk.value = null;
+          rejectListeners = chunk.reason;
+          chunk.reason = null;
         } else {
-          tmp = [undefined, undefined];
+          resolveListeners = undefined;
+          rejectListeners = undefined;
         }
-        const resolveListeners = tmp[0];
-        const rejectListeners = tmp[1];
         const initializedChunk = chunk;
         initializedChunk.status = 'fulfilled';
         initializedChunk.value = {done: false, value};

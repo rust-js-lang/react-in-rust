@@ -2519,7 +2519,7 @@ function diffHydratedGenericElement(
           extraAttributes.delete(propKey);
           const serverValue = domElement.getAttribute('data');
           warnForPropDifference(propKey, serverValue, value, serverDifferences);
-          continue;
+          break;
         }
       // Fallthrough
       case 'src':
@@ -2541,7 +2541,7 @@ function diffHydratedGenericElement(
                 extraAttributes,
                 serverDifferences,
               );
-              continue;
+              break;
             } catch {
               // If not, just fall through to the normal toString flow.
             }
@@ -2589,7 +2589,7 @@ function diffHydratedGenericElement(
               );
             }
           }
-          continue;
+          break;
         }
         hydrateSanitizedAttribute(
           domElement,
@@ -2623,7 +2623,7 @@ function diffHydratedGenericElement(
           // We can check if the function has the $FORM_ACTION property on the client
           // and if it's not, warn, but that's an unnecessary constraint that they
           // have to have the extra extension that doesn't do anything on the client.
-          continue;
+          break;
         } else {
           if (serverValue === EXPECTED_FORM_ACTION_URL) {
             extraAttributes.delete(propKey.toLowerCase());
@@ -2633,7 +2633,7 @@ function diffHydratedGenericElement(
               value,
               serverDifferences,
             );
-            continue;
+            break;
           }
           hydrateSanitizedAttribute(
             domElement,
@@ -2643,7 +2643,7 @@ function diffHydratedGenericElement(
             extraAttributes,
             serverDifferences,
           );
-          continue;
+          break;
         }
       }
       case 'xlinkHref':
@@ -2903,7 +2903,7 @@ function diffHydratedGenericElement(
           (propKey[0] === 'o' || propKey[0] === 'O') &&
           (propKey[1] === 'n' || propKey[1] === 'N')
         ) {
-          continue;
+          break;
         }
         const attributeName = getAttributeAlias(propKey);
         let isMismatchDueToBadCasing = false;
@@ -3105,25 +3105,31 @@ export function diffHydratedProperties(domElement, tag, props, hostContext) {
       const name = attributes[i].name.toLowerCase();
       // Controlled attributes are not validated
       // TODO: Only ignore them on controlled tags.
-      if (name !== 'value' && name !== 'checked' && name !== 'selected') {
-        if (
-          (name === 'vt-name' && enableViewTransition) ||
-          (name === 'vt-update' && enableViewTransition) ||
-          (name === 'vt-enter' && enableViewTransition) ||
-          (name === 'vt-exit' && enableViewTransition) ||
-          (name === 'vt-share' && enableViewTransition) ||
-          (name === 'vt-parent-enter' && enableViewTransition) ||
-          (name === 'vt-parent-exit' && enableViewTransition)
-        ) {
-          // View Transition annotations are expected from the Server Runtime.
-          // However, if they're also specified on the client and don't match
-          // that's an error.
-        } else {
-          // Fallthrough
-          // Intentionally use the original name.
-          // See discussion in https://github.com/react/react/pull/10676.
+      switch (name) {
+        case 'value':
+          break;
+        case 'checked':
+          break;
+        case 'selected':
+          break;
+        case 'vt-name':
+        case 'vt-update':
+        case 'vt-enter':
+        case 'vt-exit':
+        case 'vt-share':
+        case 'vt-parent-enter':
+        case 'vt-parent-exit':
+          if (enableViewTransition) {
+            // View Transition annotations are expected from the Server Runtime.
+            // However, if they're also specified on the client and don't match
+            // that's an error.
+            break;
+          }
+        // Intentionally use the original name.
+        // See discussion in https://github.com/react/react/pull/10676.
+        // Fallthrough
+        default:
           extraAttributes.add(attributes[i].name);
-        }
       }
     }
     if (isCustomElement(tag, props)) {

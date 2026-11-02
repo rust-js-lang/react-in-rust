@@ -4544,20 +4544,44 @@ function accumulateSuspenseyCommitOnFiber(
   committedLanes,
   suspendedState,
 ) {
-  const tag = fiber.tag;
-  if (tag === HostHoistable) {
-    recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState);
-    if (fiber.flags & suspenseyCommitFlag) {
-      const memoizedState = fiber.memoizedState;
-      if (memoizedState != null) {
-        suspendResource(
-          suspendedState,
-          // This should always be set by visiting HostRoot first
-          currentHoistableRoot,
-          memoizedState,
-          fiber.memoizedProps,
-        );
-      } else {
+  switch (fiber.tag) {
+    case HostHoistable:
+      recursivelyAccumulateSuspenseyCommit(
+        fiber,
+        committedLanes,
+        suspendedState,
+      );
+      if (fiber.flags & suspenseyCommitFlag) {
+        const memoizedState = fiber.memoizedState;
+        if (memoizedState != null) {
+          suspendResource(
+            suspendedState,
+            // This should always be set by visiting HostRoot first
+            currentHoistableRoot,
+            memoizedState,
+            fiber.memoizedProps,
+          );
+        } else {
+          const instance = fiber.stateNode;
+          const type = fiber.type;
+          const props = fiber.memoizedProps;
+          // TODO: Allow sync lanes to suspend too with an opt-in.
+          if (
+            includesOnlySuspenseyCommitEligibleLanes(committedLanes) ||
+            maySuspendCommitInSyncRender(type, props)
+          ) {
+            suspendInstance(suspendedState, instance, type, props);
+          }
+        }
+      }
+      break;
+    case HostComponent:
+      recursivelyAccumulateSuspenseyCommit(
+        fiber,
+        committedLanes,
+        suspendedState,
+      );
+      if (fiber.flags & suspenseyCommitFlag) {
         const instance = fiber.stateNode;
         const type = fiber.type;
         const props = fiber.memoizedProps;
@@ -4569,58 +4593,20 @@ function accumulateSuspenseyCommitOnFiber(
           suspendInstance(suspendedState, instance, type, props);
         }
       }
-    }
-  } else if (tag === HostComponent) {
-    recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState);
-    if (fiber.flags & suspenseyCommitFlag) {
-      const instance = fiber.stateNode;
-      const type = fiber.type;
-      const props = fiber.memoizedProps;
-      // TODO: Allow sync lanes to suspend too with an opt-in.
-      if (
-        includesOnlySuspenseyCommitEligibleLanes(committedLanes) ||
-        maySuspendCommitInSyncRender(type, props)
-      ) {
-        suspendInstance(suspendedState, instance, type, props);
-      }
-    }
-  } else if (tag === HostRoot || tag === HostPortal) {
-    if (supportsResources) {
-      const previousHoistableRoot = currentHoistableRoot;
-      // ReactFiberConfig's `Container`.
-      const container = fiber.stateNode.containerInfo;
-      currentHoistableRoot = getHoistableRoot(container);
-      recursivelyAccumulateSuspenseyCommit(
-        fiber,
-        committedLanes,
-        suspendedState,
-      );
-      currentHoistableRoot = previousHoistableRoot;
-    } else {
-      recursivelyAccumulateSuspenseyCommit(
-        fiber,
-        committedLanes,
-        suspendedState,
-      );
-    }
-  } else if (tag === OffscreenComponent) {
-    const isHidden = fiber.memoizedState != null;
-    if (isHidden) {
-      // Don't suspend in hidden trees
-    } else {
-      const current = fiber.alternate;
-      const wasHidden = current != null && current.memoizedState != null;
-      if (wasHidden) {
-        // This tree is being revealed. Visit all newly visible suspensey
-        // instances, even if they're in the current tree.
-        const prevFlags = suspenseyCommitFlag;
-        suspenseyCommitFlag = MaySuspendCommit;
+      break;
+    case HostRoot:
+    case HostPortal:
+      if (supportsResources) {
+        const previousHoistableRoot = currentHoistableRoot;
+        // ReactFiberConfig's `Container`.
+        const container = fiber.stateNode.containerInfo;
+        currentHoistableRoot = getHoistableRoot(container);
         recursivelyAccumulateSuspenseyCommit(
           fiber,
           committedLanes,
           suspendedState,
         );
-        suspenseyCommitFlag = prevFlags;
+        currentHoistableRoot = previousHoistableRoot;
       } else {
         recursivelyAccumulateSuspenseyCommit(
           fiber,
@@ -4628,25 +4614,64 @@ function accumulateSuspenseyCommitOnFiber(
           suspendedState,
         );
       }
-    }
-  } else if (tag === ViewTransitionComponent && enableViewTransition) {
-    if ((fiber.flags & suspenseyCommitFlag) !== NoFlags) {
-      const props = fiber.memoizedProps;
-      const name = props.name;
-      if (name != null && name !== 'auto') {
-        // This is a named ViewTransition being mounted or reappearing. Let's add it to
-        // the map so we can match it with deletions later.
-        const state = fiber.stateNode;
-        // Reset the pair in case we didn't end up restoring the instance in previous commits.
-        // This shouldn't really happen anymore but just in case. We could maybe add an invariant.
-        state.paired = null;
-        trackAppearingViewTransition(name, state);
+      break;
+    case OffscreenComponent: {
+      const isHidden = fiber.memoizedState != null;
+      if (isHidden) {
+        // Don't suspend in hidden trees
+      } else {
+        const current = fiber.alternate;
+        const wasHidden = current != null && current.memoizedState != null;
+        if (wasHidden) {
+          // This tree is being revealed. Visit all newly visible suspensey
+          // instances, even if they're in the current tree.
+          const prevFlags = suspenseyCommitFlag;
+          suspenseyCommitFlag = MaySuspendCommit;
+          recursivelyAccumulateSuspenseyCommit(
+            fiber,
+            committedLanes,
+            suspendedState,
+          );
+          suspenseyCommitFlag = prevFlags;
+        } else {
+          recursivelyAccumulateSuspenseyCommit(
+            fiber,
+            committedLanes,
+            suspendedState,
+          );
+        }
       }
+      break;
     }
-    recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState);
-  } else {
+    case ViewTransitionComponent:
+      if (enableViewTransition) {
+        if ((fiber.flags & suspenseyCommitFlag) !== NoFlags) {
+          const props = fiber.memoizedProps;
+          const name = props.name;
+          if (name != null && name !== 'auto') {
+            // This is a named ViewTransition being mounted or reappearing. Let's add it to
+            // the map so we can match it with deletions later.
+            const state = fiber.stateNode;
+            // Reset the pair in case we didn't end up restoring the instance in previous commits.
+            // This shouldn't really happen anymore but just in case. We could maybe add an invariant.
+            state.paired = null;
+            trackAppearingViewTransition(name, state);
+          }
+        }
+        recursivelyAccumulateSuspenseyCommit(
+          fiber,
+          committedLanes,
+          suspendedState,
+        );
+        break;
+      }
     // Fallthrough
-    recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState);
+    default:
+      recursivelyAccumulateSuspenseyCommit(
+        fiber,
+        committedLanes,
+        suspendedState,
+      );
   }
 }
 
