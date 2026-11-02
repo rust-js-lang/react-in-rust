@@ -39,6 +39,8 @@ pub mod react_flight_call_user_space;
 pub mod react_flight_current_owner;
 #[path = "src/ReactFlightHooks.rs"]
 pub mod react_flight_hooks;
+#[path = "src/ReactFlightReplyBackingFormData.rs"]
+pub mod react_flight_reply_backing_form_data;
 #[path = "src/ReactFlightReplyServer.rs"]
 pub mod react_flight_reply_server;
 #[path = "src/ReactFlightServer.rs"]
@@ -67,3 +69,5 @@ pub mod react_server_stream_config_edge;
 pub mod react_server_stream_config_fb;
 #[path = "src/ReactServerStreamConfigNode.rs"]
 pub mod react_server_stream_config_node;
+#[path = "src/ReactSharedInternalsServer.rs"]
+pub mod react_shared_internals_server;

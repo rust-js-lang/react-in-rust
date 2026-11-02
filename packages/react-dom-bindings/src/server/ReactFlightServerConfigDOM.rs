@@ -3,36 +3,21 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+use std::cell::RefCell;
 use std::collections::HashSet;
 
 use js::{Kind, Unknown, string};
 
-use crate::cross_origin_strings::{CrossOriginString, get_cross_origin_string};
-
 // This module registers the host dispatcher so it needs to be imported
 // even if no exports are used.
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/server/ReactDOMFlightServerHostDispatcher.js#preload"
-)]
-fn preload(href: Option<&Unknown>, r#as: Option<&Unknown>, options: &Unknown) {
-    let _ = (href, r#as, options);
-    unreachable!()
-}
+use crate::react_dom_flight_server_host_dispatcher::{preload, preload_module};
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/server/ReactDOMFlightServerHostDispatcher.js#preloadModule"
-)]
-fn preload_module(href: Option<&Unknown>, options: &Unknown) {
-    let _ = (href, options);
-    unreachable!()
-}
+use crate::cross_origin_strings::{CrossOriginString, get_cross_origin_string};
 
-pub type Hints = HashSet<String>;
+pub type Hints = RefCell<HashSet<String>>;
 
 pub fn create_hints() -> Hints {
-    HashSet::new()
+    RefCell::new(HashSet::new())
 }
 
 const NO_SCOPE: FormatContext = /*         */ 0b000000;
@@ -142,7 +127,7 @@ fn process_img(props: &Unknown, format_context: FormatContext) {
             // will never actually appear in the DOM.
             js::or(src, Some(js::unknown(""))),
             Some(js::unknown("image")),
-            js::unknown(&ImageOptions {
+            Some(js::unknown_of(ImageOptions {
                 image_src_set: src_set,
                 image_sizes: sizes,
                 cross_origin,
@@ -150,7 +135,7 @@ fn process_img(props: &Unknown, format_context: FormatContext) {
                 r#type: js::get(props, "type"),
                 fetch_priority: js::get(props, "fetchPriority"),
                 referrer_policy: js::get(props, "referrerPolicy"),
-            }),
+            })),
         );
     }
 }
@@ -174,7 +159,7 @@ fn process_link(props: &Unknown, format_context: FormatContext) {
             preload(
                 href,
                 js::get(props, "as"),
-                js::unknown(&PreloadOptions {
+                Some(js::unknown_of(PreloadOptions {
                     cross_origin: js::get(props, "crossOrigin"),
                     integrity: js::get(props, "integrity"),
                     nonce: js::get(props, "nonce"),
@@ -184,25 +169,25 @@ fn process_link(props: &Unknown, format_context: FormatContext) {
                     image_src_set: js::get(props, "imageSrcSet"),
                     image_sizes: js::get(props, "imageSizes"),
                     media: js::get(props, "media"),
-                }),
+                })),
             );
         }
         Kind::String("modulepreload") => {
             preload_module(
                 href,
-                js::unknown(&ModuleOptions {
+                Some(js::unknown_of(ModuleOptions {
                     r#as: js::get(props, "as"),
                     cross_origin: js::get(props, "crossOrigin"),
                     integrity: js::get(props, "integrity"),
                     nonce: js::get(props, "nonce"),
-                }),
+                })),
             );
         }
         Kind::String("stylesheet") => {
             preload(
                 href,
                 Some(js::unknown("style")),
-                js::unknown(&StyleOptions {
+                Some(js::unknown_of(StyleOptions {
                     cross_origin: js::get(props, "crossOrigin"),
                     integrity: js::get(props, "integrity"),
                     nonce: js::get(props, "nonce"),
@@ -210,7 +195,7 @@ fn process_link(props: &Unknown, format_context: FormatContext) {
                     fetch_priority: js::get(props, "fetchPriority"),
                     referrer_policy: js::get(props, "referrerPolicy"),
                     media: js::get(props, "media"),
-                }),
+                })),
             );
         }
         _ => {}

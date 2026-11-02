@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {BackingFormData} from './ReactFlightReplyBackingFormData.js';
 import type {TemporaryReferenceSet} from './ReactFlightServerTemporaryReferences.js';
 
 type BlobPart =
@@ -94,7 +95,7 @@ export type {ReactPromise};
 export interface Response {
   _bundlerConfig: unknown;
   _prefix: string;
-  _formData: any;
+  _formData: BackingFormData;
   _chunks: Map<number, ReactPromise>;
   _closed: boolean;
   _closedReason?: unknown | null | undefined;

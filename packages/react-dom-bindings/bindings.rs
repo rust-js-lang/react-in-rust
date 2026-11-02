@@ -157,6 +157,8 @@ pub mod warn_valid_style;
 // The server side's modules (m6-wife's).
 #[path = "src/server/fizz-instruction-set/ReactDOMFizzInstructionSetInlineCodeStrings.rs"]
 pub mod react_dom_fizz_instruction_set_inline_code_strings;
+#[path = "src/server/ReactDOMFlightServerHostDispatcher.rs"]
+pub mod react_dom_flight_server_host_dispatcher;
 #[path = "src/server/ReactDOMLegacyServerStreamConfig.rs"]
 pub mod react_dom_legacy_server_stream_config;
 #[path = "src/server/ReactFizzConfigDOM.rs"]

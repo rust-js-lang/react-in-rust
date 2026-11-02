@@ -19,7 +19,7 @@ use shared::react_feature_flags::ENABLE_FLIGHT_OBJECT_REFERENCES;
 use shared::react_symbols::ASYNC_ITERATOR;
 use shared::react_types::Thenable;
 use webapi::{
-    Blob, BlobPart, BlobPropertyBag, File, FilePropertyBag, FormData, FormDataEntryValue,
+    Blob, BlobPart, BlobPropertyBag, File, FilePropertyBag, FormDataEntryValue,
     ReadableByteStreamController, ReadableStream, ReadableStreamDefaultController,
     UnderlyingByteSource, UnderlyingDefaultSource, blob, file, form_data, readable_stream,
 };
@@ -77,67 +77,10 @@ pub(crate) fn require_module(metadata: &ServerReference) -> Option<&'static Unkn
     unreachable!()
 }
 
-/// ReactFlightReplyBackingFormData's `BackingFormData`, its JS's.
-pub struct BackingFormData(PhantomData<JsObject>);
-
-unsafe impl js::Defined for BackingFormData {}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightReplyBackingFormData.js#createBackingFormData"
-)]
-fn create_backing_form_data(form_data: &FormData, prefix: &str) -> &'static BackingFormData {
-    let _ = (form_data, prefix);
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightReplyBackingFormData.js#appendBackingEntry"
-)]
-fn append_backing_entry(backing_store: &BackingFormData, value: FormDataEntryValue<'_>, key: &str) {
-    let _ = (backing_store, value, key);
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightReplyBackingFormData.js#consumeBackingEntries"
-)]
-fn consume_backing_entries(
-    backing_store: &BackingFormData,
-    form_prefix: &str,
-) -> &'static FormData {
-    let _ = (backing_store, form_prefix);
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightReplyBackingFormData.js#getBackingString"
-)]
-fn get_backing_string(backing_store: &BackingFormData, key: &str) -> Option<String> {
-    let _ = (backing_store, key);
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightReplyBackingFormData.js#getStreamChunks"
-)]
-fn get_stream_chunks(backing_store: &BackingFormData, key: &str) -> Option<Vec<String>> {
-    let _ = (backing_store, key);
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightReplyBackingFormData.js#getBackingBlob"
-)]
-fn get_backing_blob(backing_store: &BackingFormData, key: &str) -> Option<&'static Blob> {
-    let _ = (backing_store, key);
-    unreachable!()
-}
+use crate::react_flight_reply_backing_form_data::{
+    BackingEntryValue, BackingFormData, append_backing_entry, consume_backing_entries,
+    create_backing_form_data, get_backing_blob, get_backing_string, get_stream_chunks,
+};
 
 /// What a listener of a chunk is given: any value.
 type Listen = dyn Fn(Option<&'static Unknown>);
@@ -327,7 +270,7 @@ thread_local! {
 pub struct Response {
     pub _bundler_config: &'static Unknown,
     pub _prefix: String,
-    pub _form_data: &'static BackingFormData,
+    pub _form_data: BackingFormData,
     pub _chunks: &'static Map<f64, Rc<ReactPromise>>,
     pub _closed: Cell<bool>,
     #[cfg_attr(rust_js, rust_js::nullable)]
@@ -1140,7 +1083,7 @@ fn get_chunk(response: &Rc<Response>, id: f64) -> Rc<ReactPromise> {
             let prefix = &response._prefix;
             let key = prefix.clone() + &js::number::to_string(id, None);
             // Check if we have this field in the backing store already.
-            let backing_entry = get_backing_string(response._form_data, &key);
+            let backing_entry = get_backing_string(&response._form_data, &key);
             let chunk = if let Some(backing_entry) = backing_entry {
                 create_resolved_model_chunk(response, backing_entry, id)
             } else if response._closed.get() {
@@ -1657,7 +1600,7 @@ fn parse_typed_array(
     // GAP rd483: upstream's `getBackingBlob(..) as any`: a reference to no
     // Blob reads `arrayBuffer` of `undefined`, JS's TypeError.
     let backing_entry: &Blob =
-        unsafe { js::cast(get_backing_blob(response._form_data, &key).map(js::unknown)) };
+        unsafe { js::cast(get_backing_blob(&response._form_data, &key).map(js::unknown)) };
 
     let promise = backing_entry.array_buffer();
 
@@ -1782,7 +1725,7 @@ fn resolve_stream(
     // Stream chunks are written under a dedicated namespace so they can be
     // told apart from one-shot chunks at append time.
     let key = prefix.clone() + "S" + &js::number::to_string(id, None);
-    let existing_entries = get_stream_chunks(response._form_data, &key);
+    let existing_entries = get_stream_chunks(&response._form_data, &key);
     let Some(existing_entries) = existing_entries else {
         return;
     };
@@ -2259,7 +2202,7 @@ fn parse_model_string(
                 // be consumed by referenced FormData.
                 let form_prefix = response._prefix.clone() + "_" + &string_id + "_";
                 return Some(js::unknown(consume_backing_entries(
-                    response._form_data,
+                    &response._form_data,
                     &form_prefix,
                 )));
             }
@@ -2466,7 +2409,7 @@ fn parse_model_string(
                 let blob_key = prefix.clone() + &js::number::to_string(id, None);
                 // We should have this backingEntry in the store already because we emitted
                 // it before referencing it. It should be a Blob.
-                let backing_entry = get_backing_blob(response._form_data, &blob_key);
+                let backing_entry = get_backing_blob(&response._form_data, &blob_key);
                 if !js::instance_of(backing_entry, js::class::<Blob>()) {
                     panic!("Referenced Blob is not a Blob.");
                 }
@@ -2589,12 +2532,16 @@ pub fn resolve_field(response: &Rc<Response>, key: &str, value: &str) {
         }
     }
     // Add this field to the backing store.
-    append_backing_entry(response._form_data, FormDataEntryValue::Str(value), key);
+    append_backing_entry(
+        &response._form_data,
+        BackingEntryValue::Str(value.to_owned()),
+        key,
+    );
 }
 
-pub fn resolve_file(response: &Rc<Response>, key: &str, file: &File) {
+pub fn resolve_file(response: &Rc<Response>, key: &str, file: &'static File) {
     // Add this field to the backing store.
-    append_backing_entry(response._form_data, FormDataEntryValue::File(file), key);
+    append_backing_entry(&response._form_data, BackingEntryValue::File(file), key);
 }
 
 pub struct FileHandle {
@@ -2665,8 +2612,8 @@ fn create_file_from_handle(handle: &FileHandle) -> &'static File {
 pub fn resolve_file_complete(response: &Rc<Response>, key: &str, handle: &FileHandle) {
     // Add this file to the backing store.
     append_backing_entry(
-        response._form_data,
-        FormDataEntryValue::File(create_file_from_handle(handle)),
+        &response._form_data,
+        BackingEntryValue::File(create_file_from_handle(handle)),
         key,
     );
 }

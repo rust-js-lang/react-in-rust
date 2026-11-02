@@ -1098,6 +1098,80 @@ These differences from upstream's output are accepted:
     `ServerReferenceMetadataDev`, `DebugBlobReading`, `BlobReading`,
     `ErrorValueInfo`, `ComponentDebugInfo`, `IoDebugInfo`,
     `ConstructorReference`, `AsyncDebugInfo` and `AbortedAsyncInfo`;
+- **ReactDOMFlightServerHostDispatcher, ReactFlightReplyBackingFormData and
+  react-server's ReactSharedInternalsServer are Rust** (2026-11-02, the
+  forms below pending the user's acceptance). Each is used: the first by
+  every DOM Flight server's ReactFlightServerConfigDOM, which imports it to
+  install its dispatcher; the second by ReactFlightReplyServer; the third
+  by ReactFlightServer, react-markup and the `react-server` builds'
+  `shared/ReactSharedInternals` fork. None is a config shim.
+  - The host dispatcher's hints are ReactFlightServerConfigDOM's `Hints`,
+    a `RefCell<HashSet<String>>` (the request's `Set`), read `unsafe {
+    js::cast(Some(get_hints(&request))) }` because ReactFlightServer's
+    `getHints` gives its fork's opaque `Unknown`; a generic `get_hints<H>`,
+    as Fizz's `get_resumable_state<S>` is, would take the cast away.
+  - preload and preloadModule are exported, and ReactFlightServerConfigDOM
+    calls them with what its props hold, so their `href` and `as` are any
+    value, tested `typeof href === 'string'` as upstream does; the
+    dispatcher's `L` is `L(href, as, options) { preload(href, as, options);
+    }` where upstream gives `preload`, as the shared `HostDispatcher` types
+    `L`'s `href` and `as` as text. The other dispatcher functions take
+    text, as `HostDispatcher` types them, so upstream's `typeof href ===
+    'string'` wrappers are gone (prefetchDNS's `&& href` is `if (href)`),
+    their bodies one level out.
+  - preload's fallback, without a request, calls the previous dispatcher
+    only of an `as` that's text (`else if (typeof as === 'string')`),
+    where upstream passes any `as` on: `HostDispatcher`'s `L` takes text.
+    Only processLink's `props.as` is anything else, and processLink runs
+    inside a render, which has its request; the previous dispatcher there
+    is react-dom's no-op or Fizz's, which does nothing of a missing `as`.
+  - each `return emitHint(..)` is `emitHint(..)`, a call of nothing to
+    return; `request != null` and `trimmed != null` where upstream tests
+    truth; preconnect's key is `${crossOrigin ?? 'null'}`; getImagePreloadKey
+    tests `imageSrcSet` by truth after `typeof .. === 'string'`, where
+    upstream writes `!== ''`; the dispatcher object's keys have no
+    `/* prefetchDNS */` comments (Fizz's form).
+  - BackingFormData is a struct of `RefCell` and `Cell` fields, each
+    `None` `null` (`nullable`), its maps `HashMap`s. A field made when
+    first needed is `backingStore.blobs ??= new Map(); const blobs =
+    backingStore.blobs;` (`get_or_insert_with`), where upstream writes
+    `let blobs = ..; if (blobs === null) { blobs = backingStore.blobs = new
+    Map(); }`. Its doc comment is the `.d.ts`'s, on `BackingFormData`.
+    getStreamChunks gives a copy, `value.slice()`, where upstream gives the
+    array (ReactFlightServer's copied-before-JS-runs form).
+    consumeBackingEntries names the stripped key, `const name =
+    key.slice(formPrefix.length);`. ReplyServer's `resolveFile` takes a
+    `&'static File`, which the store keeps.
+  - ReactSharedInternalsServer's check reads
+    `React.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE
+    == null` where upstream tests `!ReactSharedInternalsServer`, and its
+    message is one literal. Its default export is
+    `Option<&'static SharedStateServer>`, as the binding may be
+    `undefined`; ReactFlightServer keeps its JS-path binding of it, typed
+    `&'static SharedStateServer` (the module throws before it's
+    `undefined`).
+  - gaps: rd559 (webapi's `FormDataEntryValue` borrows its text, so a
+    kept entry is the port's `BackingEntryValue`, `Str(String)` or
+    `File(&'static File)`) and rd574 (FormData's `forEach` lends its
+    callback each value for the call alone, so createBackingFormData
+    iterates `formData.entries()`, where upstream writes
+    `formData.forEach(appendBackingEntry.bind(null, backingStore))`: the
+    same entries in the same order, but a `backingFormData` given as
+    `null` throws V8's TypeError of reading `entries`, where upstream's
+    names `forEach`); and rust-js's readability gaps rd657 (a block
+    comment before a call's first argument on its own line is placed
+    after it, `previousDispatcher.C(href, /* preconnect */ crossOrigin)`,
+    or before the statement of a call of one argument), rd658 (a `let` of
+    a `RefCell` field's borrow is read as the field, its name lost:
+    `backingStore.stringChunks.get(key)` where upstream names `const
+    stringChunks`), rd659 (a static renamed by `rust_js::name`, read in a
+    `js::on_load!`, re-reads its namespace's member, not the `const` it's
+    declared as) and rd660 (a closure that only gives its arguments on,
+    `|h, a, o| preload(Some(js::unknown(h)), ..)`, could be the function
+    itself, upstream's `L: preload`); rd661 (a module whose load throws of
+    a `None` export still exports its `Option`, so ReactFlightServer and
+    react-markup bind ReactSharedInternalsServer by its JS path rather than
+    `use` it).
 - **Accepted on the user's behalf while away, 2026-11-02** (each changes no
   result; the coordinator logs them for the user):
   - the Flight client's DEV `then` holds its wrapper promise in a cell its
