@@ -87,10 +87,10 @@ type Listen = dyn Fn(Option<&'static Unknown>);
 
 /// What a stream's rows are given to.
 pub struct FlightStreamController {
-    pub enqueue_model: Rc<dyn Fn(&str)>,
-    pub close: Rc<dyn Fn(&str)>,
+    enqueue_model: Rc<dyn Fn(&str)>,
+    close: Rc<dyn Fn(&str)>,
     #[cfg_attr(rust_js, rust_js::test)]
-    pub error: Rc<Listen>,
+    error: Rc<Listen>,
 }
 
 pub type JSONValue = Unknown;
