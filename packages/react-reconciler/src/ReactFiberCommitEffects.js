@@ -127,7 +127,6 @@ export function commitHookEffectListMount(flags, finishedWork) {
     if (lastEffect != null) {
       const firstEffect = lastEffect.next;
       let effect = firstEffect;
-      // $FlowFixMe[unsafe-addition] (@poteto)
       while (true) {
         if ((effect.tag & flags) === flags) {
           if (enableSchedulingProfiler) {
@@ -201,6 +200,7 @@ export function commitHookEffectListMount(flags, finishedWork) {
                 "}, [someId]); // Or [] if effect doesn't need props or state\n\n" +
                 'Learn more about data fetching with Hooks: https://react.dev/link/hooks-data-fetching';
             } else {
+              // $FlowFixMe[unsafe-addition] (@poteto)
               addendum = ' You returned: ' + destroy;
             }
             runWithFiberInDEV(

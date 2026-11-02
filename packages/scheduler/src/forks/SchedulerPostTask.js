@@ -80,10 +80,9 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
     _controller: controller,
   };
 
-  const taskNode = node;
   scheduler
     .postTask(() => {
-      runTask(priorityLevel, postTaskPriority, taskNode, callback);
+      runTask(priorityLevel, postTaskPriority, node, callback);
     }, postTaskOptions)
     .catch(handleAbortError);
 

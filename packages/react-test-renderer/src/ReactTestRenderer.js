@@ -456,7 +456,7 @@ export function create(element, options) {
     null,
   );
 
-  updateContainer(element, root, null, null);
+  updateContainer(element, root);
 
   const entry = {
     _Scheduler: Scheduler,
@@ -508,14 +508,14 @@ export function create(element, options) {
       if (root == null) {
         return;
       }
-      updateContainer(newElement, root, null, null);
+      updateContainer(newElement, root);
     },
     unmount() {
       const current = root;
       if (current == null) {
         return;
       }
-      updateContainer(null, current, null, null);
+      updateContainer(null, current);
       container = null;
       root = null;
     },

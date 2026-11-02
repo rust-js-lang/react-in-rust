@@ -567,7 +567,7 @@ export function dispatchEventForPluginEventSystem(
       deferClickToDocumentForLegacyFBSupport(domEventName, targetContainer);
       return;
     }
-    if (targetInst != null) {
+    if (targetInst !== null) {
       // The below logic attempts to work out if we need to change
       // the target fiber to a different ancestor. We had similar logic
       // in the legacy event system, except the big difference between
@@ -921,7 +921,7 @@ export function accumulateEnterLeaveTwoPhaseListeners(
       false,
     );
   }
-  if (to != null && enterEvent != null) {
+  if (to != null && enterEvent !== null) {
     accumulateEnterLeaveListenersForEvent(
       dispatchQueue,
       enterEvent,

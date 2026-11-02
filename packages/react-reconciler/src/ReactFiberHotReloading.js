@@ -167,7 +167,7 @@ export function scheduleRoot(root, element) {
       // Just ignore. We'll delete this with _renderSubtree code path later.
       return;
     }
-    updateContainerSync(element, root, null, null);
+    updateContainerSync(element, root);
     flushSyncWork();
   }
 }

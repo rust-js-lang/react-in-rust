@@ -117,7 +117,6 @@ import {
   $borrow,
   $borrowMut,
   $extend,
-  $f64ToInt,
   $index,
   $lazyRange,
   $position,
@@ -242,9 +241,9 @@ export function getRootHostContext(rootContainerInstance) {
 
 function getOwnHostContext(namespaceUri) {
   switch (namespaceUri) {
-    case 'http://www.w3.org/2000/svg':
+    case SVG_NAMESPACE:
       return HostContextNamespaceSvg;
-    case 'http://www.w3.org/1998/Math/MathML':
+    case MATH_NAMESPACE:
       return HostContextNamespaceMath;
     default:
       return HostContextNamespaceNone;
@@ -1522,6 +1521,8 @@ export function restoreRootViewTransitionName(rootContainer) {
   } else if (rootContainer.nodeName === 'HTML') {
     containerInstance = $unwrap($unwrap(rootContainer.ownerDocument).body);
   } else {
+    // If the container is not the whole document, then we ideally should probably
+    // clone the whole document outside of the React too.
     containerInstance = rootContainer;
   }
   if (
@@ -1754,6 +1755,8 @@ export function removeRootViewTransitionClone(rootContainer, clone) {
   } else if (rootContainer.nodeName === 'HTML') {
     containerInstance = $unwrap($unwrap(rootContainer.ownerDocument).body);
   } else {
+    // If the container is not the whole document, then we ideally should probably
+    // clone the whole document outside of the React too.
     containerInstance = rootContainer;
   }
   const containerParent = containerInstance.parentNode;
@@ -2515,10 +2518,11 @@ export function startGestureTransition(
           let adjustedRangeStart =
             rangeEnd -
             (duration + $unwrap(timing.delay)) * durationToRangeMultipler;
-          // $FlowFixMe[prop-missing]
-          // $FlowFixMe[unsafe-arithmetic]
           let adjustedRangeEnd =
-            rangeEnd - $unwrap(timing.delay) * durationToRangeMultipler;
+            rangeEnd -
+            // $FlowFixMe[prop-missing]
+            // $FlowFixMe[unsafe-arithmetic]
+            $unwrap(timing.delay) * durationToRangeMultipler;
           if (
             timing.direction === 'reverse' ||
             timing.direction === 'alternate-reverse'
@@ -3068,7 +3072,7 @@ FragmentInstance.prototype.compareDocumentPosition = function (otherNode) {
   const parentHostFiber =
     getFragmentParentInstanceOrContainerFiber(fragmentFiber);
   if (parentHostFiber == null) {
-    return 1;
+    return Node.DOCUMENT_POSITION_DISCONNECTED;
   }
   const children = [];
   traverseFragmentInstancesAndTextInstances(
@@ -3107,19 +3111,19 @@ FragmentInstance.prototype.compareDocumentPosition = function (otherNode) {
     : parentHostInstance;
 
   if (parentHostInstanceFromDom == null) {
-    return 1;
+    return Node.DOCUMENT_POSITION_DISCONNECTED;
   }
 
   // Check if first and last node are actually in the expected document position
   // before relying on them as source of truth for other contained nodes
   const firstNodeIsContained =
     (parentHostInstanceFromDom.compareDocumentPosition(firstNode) &
-      $f64ToInt(16, 0, 4294967295)) >>>
+      Node.DOCUMENT_POSITION_CONTAINED_BY) >>>
       0 !==
     0;
   const lastNodeIsContained =
     (parentHostInstanceFromDom.compareDocumentPosition(lastNode) &
-      $f64ToInt(16, 0, 4294967295)) >>>
+      Node.DOCUMENT_POSITION_CONTAINED_BY) >>>
       0 !==
     0;
   const firstResult = firstNode.compareDocumentPosition(otherNode);
@@ -3132,13 +3136,13 @@ FragmentInstance.prototype.compareDocumentPosition = function (otherNode) {
     (!firstNodeIsContained && firstNode === otherNode) ||
     (!lastNodeIsContained && lastNode === otherNode);
   const otherNodeIsWithinFirstOrLastChild =
-    (firstResult & $f64ToInt(16, 0, 4294967295)) >>> 0 !== 0 ||
-    (lastResult & $f64ToInt(16, 0, 4294967295)) >>> 0 !== 0;
+    (firstResult & Node.DOCUMENT_POSITION_CONTAINED_BY) >>> 0 !== 0 ||
+    (lastResult & Node.DOCUMENT_POSITION_CONTAINED_BY) >>> 0 !== 0;
   const otherNodeIsBetweenFirstAndLastChildren =
     firstNodeIsContained &&
     lastNodeIsContained &&
-    (firstResult & $f64ToInt(4, 0, 4294967295)) >>> 0 !== 0 &&
-    (lastResult & $f64ToInt(2, 0, 4294967295)) >>> 0 !== 0;
+    (firstResult & Node.DOCUMENT_POSITION_FOLLOWING) >>> 0 !== 0 &&
+    (lastResult & Node.DOCUMENT_POSITION_PRECEDING) >>> 0 !== 0;
 
   let result;
   if (
@@ -3146,16 +3150,17 @@ FragmentInstance.prototype.compareDocumentPosition = function (otherNode) {
     otherNodeIsWithinFirstOrLastChild ||
     otherNodeIsBetweenFirstAndLastChildren
   ) {
-    result = $f64ToInt(16, 0, 4294967295);
+    result = Node.DOCUMENT_POSITION_CONTAINED_BY;
   } else {
     result = otherNodeIsFirstOrLastChildDisconnected
-      ? $f64ToInt(32, 0, 4294967295)
+      ? // otherNode has been portaled into another container
+        Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
       : firstResult;
   }
 
   if (
-    result & $f64ToInt(1, 0, 4294967295) ||
-    result & $f64ToInt(32, 0, 4294967295)
+    result & Node.DOCUMENT_POSITION_DISCONNECTED ||
+    result & Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
   ) {
     return result;
   }
@@ -3174,7 +3179,7 @@ FragmentInstance.prototype.compareDocumentPosition = function (otherNode) {
   if (documentPositionMatchesFiberPosition) {
     return result;
   }
-  return 32;
+  return Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
 };
 
 FragmentInstance.prototype.scrollIntoView = function (alignToTop) {
@@ -3493,13 +3498,13 @@ function validateDocumentPositionWithFiberTree(
   otherNode,
 ) {
   const otherFiber = getClosestInstanceFromNode(otherNode);
-  if (documentPosition & $f64ToInt(16, 0, 4294967295)) {
+  if (documentPosition & Node.DOCUMENT_POSITION_CONTAINED_BY) {
     return (
       otherFiber != null &&
       isFiberContainedByFragment(otherFiber, fragmentFiber)
     );
   }
-  if (documentPosition & $f64ToInt(8, 0, 4294967295)) {
+  if (documentPosition & Node.DOCUMENT_POSITION_CONTAINS) {
     if (otherFiber == null) {
       // otherFiber is null when otherNode is not part of a React tree. That
       // includes the document, documentElement and body, but also the root
@@ -3511,14 +3516,14 @@ function validateDocumentPositionWithFiberTree(
     }
     return isFragmentContainedByFiber(fragmentFiber, otherFiber);
   }
-  if (documentPosition & $f64ToInt(2, 0, 4294967295)) {
+  if (documentPosition & Node.DOCUMENT_POSITION_PRECEDING) {
     return (
       otherFiber != null &&
       (otherFiber === precedingBoundaryFiber ||
         isFiberPreceding(precedingBoundaryFiber, otherFiber))
     );
   }
-  if (documentPosition & $f64ToInt(4, 0, 4294967295)) {
+  if (documentPosition & Node.DOCUMENT_POSITION_FOLLOWING) {
     return (
       otherFiber != null &&
       (otherFiber === followingBoundaryFiber ||

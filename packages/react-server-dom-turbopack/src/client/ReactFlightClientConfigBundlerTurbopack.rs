@@ -15,7 +15,8 @@ use crate::shared::react_flight_import_metadata::{
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "react-client/src/ReactFlightClientConfig#prepareDestinationWithChunks"
+    rust_js::link_name = "react-client/src/ReactFlightClientConfig#prepareDestinationWithChunks",
+    rust_js::nullable(module_loading)
 )]
 fn prepare_destination_with_chunks(
     module_loading: Option<&'static Unknown>,
@@ -61,6 +62,7 @@ pub type ClientReference = ClientReferenceMetadata;
 // This should get inlined and we could also just implement an unwrapping function
 // though that risks it getting used in places it shouldn't be. This is unfortunate
 // but currently it seems to be the best option we have.
+#[cfg_attr(rust_js, rust_js::nullable(module_loading))]
 pub fn prepare_destination_for_module(
     module_loading: Option<&'static Unknown>,
     nonce: Option<&str>,
@@ -229,16 +231,12 @@ pub fn preload_module(metadata: &ClientReference) -> Option<&'static Thenable> {
             require_async_module(id)
         } else {
             let id = id.clone();
-            // SAFETY: a promise is a thenable.
-            Some(unsafe {
-                js::cast(Some(js::unknown(
-                    &js::promise::all(promises).then(move |_| require_async_module(&id)),
-                )))
-            })
+            Some(js::upcast(
+                js::promise::all(promises).then(move |_| require_async_module(&id)),
+            ))
         }
     } else if !promises.is_empty() {
-        // SAFETY: a promise is a thenable.
-        Some(unsafe { js::cast(Some(js::unknown(&js::promise::all(promises)))) })
+        Some(js::upcast(js::promise::all(promises)))
     } else {
         None
     }

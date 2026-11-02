@@ -6,7 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 import {getFragmentInstanceOrTextInstanceSiblings} from 'react-reconciler/src/ReactFiberTreeReflection';
-import {$f64ToInt} from '@rust-js/runtime';
 
 export function compareDocumentPositionForEmptyFragment(
   fragmentFiber,
@@ -19,27 +18,28 @@ export function compareDocumentPositionForEmptyFragment(
   const parentResult = parentHostInstance.compareDocumentPosition(otherNode);
   let result = parentResult;
   if (parentHostInstance === otherNode) {
-    result = $f64ToInt(8, 0, 65535);
-  } else if (parentResult & $f64ToInt(16, 0, 65535)) {
+    result = Node.DOCUMENT_POSITION_CONTAINS;
+  } else if (parentResult & Node.DOCUMENT_POSITION_CONTAINED_BY) {
     // otherNode is one of the fragment's siblings. Use the next
     // host sibling (via the parent tree, not fiber.sibling) to
     // determine if its preceding or following.
     const nextSiblingFiber =
       getFragmentInstanceOrTextInstanceSiblings(fragmentFiber)[1];
     if (nextSiblingFiber == null) {
-      result = $f64ToInt(2, 0, 65535);
+      result = Node.DOCUMENT_POSITION_PRECEDING;
     } else {
       const nextSiblingInstance = getPublicInstance(nextSiblingFiber);
       const nextSiblingResult =
         nextSiblingInstance.compareDocumentPosition(otherNode);
       result =
-        nextSiblingResult === 0 || nextSiblingResult & $f64ToInt(4, 0, 65535)
-          ? $f64ToInt(4, 0, 65535)
-          : $f64ToInt(2, 0, 65535);
+        nextSiblingResult === 0 ||
+        nextSiblingResult & Node.DOCUMENT_POSITION_FOLLOWING
+          ? Node.DOCUMENT_POSITION_FOLLOWING
+          : Node.DOCUMENT_POSITION_PRECEDING;
     }
   }
 
-  result |= $f64ToInt(32, 0, 65535);
+  result |= Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
   return result;
 }
 //# sourceMappingURL=ReactDOMFragmentRefShared.js.map

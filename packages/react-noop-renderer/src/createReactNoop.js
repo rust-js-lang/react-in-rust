@@ -996,7 +996,7 @@ function createReactNoop(reconciler, useMutation) {
   function renderToRootWithID(element, rootId, callback) {
     const container = getOrCreateRootContainer(rootId, ConcurrentRoot);
     const root = roots.get(container.rootID);
-    NoopRenderer.updateContainer(element, $unwrap(root), null, callback);
+    NoopRenderer.updateContainer(element, $unwrap(root), undefined, callback);
   }
 
   return {
@@ -1063,14 +1063,13 @@ function createReactNoop(reconciler, useMutation) {
         options?.onDefaultTransitionIndicator ?? onDefaultTransitionIndicator,
         options?.unstable_transitionCallbacks ?? null,
       );
-      const container$1 = container;
       return {
         _Scheduler: Scheduler,
         render(children) {
-          NoopRenderer.updateContainer(children, fiberRoot, null, null);
+          NoopRenderer.updateContainer(children, fiberRoot);
         },
         getChildren() {
-          return getChildren(container$1);
+          return getChildren(container);
         },
         getChildrenAsJSX() {
           return getChildrenAsJSX(container);
@@ -1106,14 +1105,13 @@ function createReactNoop(reconciler, useMutation) {
         onDefaultTransitionIndicator,
         null,
       );
-      const container$1 = container;
       return {
         _Scheduler: Scheduler,
         render(children) {
-          NoopRenderer.updateContainer(children, fiberRoot, null, null);
+          NoopRenderer.updateContainer(children, fiberRoot);
         },
         getChildren() {
-          return getChildren(container$1);
+          return getChildren(container);
         },
         getChildrenAsJSX() {
           return getChildrenAsJSX(container);
@@ -1193,7 +1191,7 @@ function createReactNoop(reconciler, useMutation) {
       const rootId = DEFAULT_ROOT_ID;
       const container = getOrCreateRootContainer(rootId, LegacyRoot);
       const root = roots.get(container.rootID);
-      NoopRenderer.updateContainer(element, $unwrap(root), null, callback);
+      NoopRenderer.updateContainer(element, $unwrap(root), undefined, callback);
     },
 
     renderToRootWithID,
@@ -1201,7 +1199,7 @@ function createReactNoop(reconciler, useMutation) {
     unmountRootWithID(rootId) {
       const root = roots.get(rootId);
       if (root != null) {
-        NoopRenderer.updateContainer(null, root, null, () => {
+        NoopRenderer.updateContainer(null, root, undefined, () => {
           roots.delete(rootId);
           rootContainers.delete(rootId);
         });

@@ -366,6 +366,39 @@ is `undefined` again; `ReactChildrenGiven-test.js` holds it, as no
 upstream test does. This supersedes 730df40's "Children.map(undefined)
 returns null", accepted before the rule.
 
+**The Flight targets' `moduleLoading !== null`** (rd613, rust-js
+93a3bfc39, Batch 57): each Target's prepareDestinationWithChunks (webpack,
+turbopack, Node) and each Bundler's prepareDestinationForModule (webpack,
+turbopack, ESM, and the link declarations that call them) say
+`nullable(module_loading)`, and react-client's `_moduleLoading` is a
+`nullable` field, so the targets test `!== null` as upstream does. Parcel's
+`ModuleLoading` is upstream's `null` alone, an enum, and takes none.
+**Accepted by the user** (2026-11-02, by name; it changes a result, ADR
+0262's third case): ResponseInstance stores `this._moduleLoading =
+moduleLoading ?? null;` where upstream stores `moduleLoading`, because the
+JS DOM clients give a manifest's `moduleLoading` as it is, `undefined`
+where the key is left out. There ours preinits nothing, as Rust's `None`
+does, and upstream's `undefined !== null` throws on `.prefix`.
+ReactFlightDOMNodeModuleLoading-test.js holds it. Revisit when the DOM
+clients are Rust: their createResponse call then gives `?? null` (rd613's
+rule for another crate's call), and the store can be upstream's. Pending
+in rust-js: resolveModule's `response._moduleLoading ?? null` (rd628).
+
+**`nullable(param)` promises `null`, never `undefined`** (the coordinator,
+2026-11-02, Batch 57). Where each of the crate's calls gives a
+`#[rust_js::nullable(param)]` parameter `null` or a value, rust-js tests it
+`!== null` (rd613, rust-js 93a3bfc39), and its `.d.ts` is `T | null`. A
+public function whose upstream type is `?T`, which a JS caller may leave
+out, takes a plain `Option` instead: the reconciler's `updateContainer` and
+`updateContainerSync` (`parentComponent: ?component`, `callback:
+?Function`), whose private `updateContainerImpl` and
+`getContextForSubtree` keep `nullable` and so test `!= null`/`== null`.
+With `nullable` on the public entries, a renderer's
+`updateContainer(element, container)` logged "Expected the last optional
+`callback` argument to be a function" in DEV;
+`ReactFiberUpdateContainerOptional-test.internal.js` holds it, as no
+upstream test does.
+
 ## Accepted differences and forms
 
 The user decided each of these. Name the id in a commit where one applies.
@@ -500,6 +533,22 @@ These differences from upstream's output are accepted:
   pointer, a closure or one `function::bind` makes) is no argument,
   `callback()` of `callback(None)`, as a binding's is. Only a callee that
   counts its arguments (`arguments.length`) can tell.
+
+- **rd625** (the user, 2026-11-02, by name, rd271's kind): the crate's own
+  `None` given to a `?T` parameter, a plain `Option` (see "`nullable(param)`
+  promises `null`"), is left out where it's trailing and `undefined`
+  otherwise, where upstream passes `null`: ReactDOMRoot's
+  `updateContainer(children, root)` and `updateContainerSync(null, root)`,
+  ReactTestRenderer's three `updateContainer(element, root)`,
+  ReactFiberHotReloading's `updateContainerSync(element, root)`, ReactART's
+  three `updateContainerSync(children, mountNode, this)`, and createReactNoop's
+  three `NoopRenderer.updateContainer(element, root, undefined, callback)`.
+  updateContainer reads both as none.
+
+- **The Flight Node client's `() => close(response)`** (the user,
+  2026-11-02, by name; rust-js ADR 0605): its stream's `end` handler is
+  the zero-parameter closure `Rc::new(move || close(&closing))`, printed as
+  an arrow, where upstream passes `close.bind(null, response)`.
 
 - **rd285** (the user; ADR 0262's rare and harmless, rust-js 15fac97c2, ADR
   1034): a dispatcher call whose arguments need statements hoists the
@@ -1058,6 +1107,12 @@ The audit's last list (Batch 42) the user accepted on 2026-11-01 too:
   `_debugTask` gives the fiber `null` where upstream gives `undefined`.
   React's own elements always carry them in DEV.
 
+- **ReactProfilerTimer's `fiber !== null`** (the user, 2026-11-02, by
+  name): startUpdateTimerByLane's three `__DEV__ && fiber !== null`
+  (its gesture, blocking and transition lanes) where upstream writes `fiber
+  != null`: rd613's strict test of a nullable parameter each caller gives a
+  fiber or `null`.
+
 These forms are decided:
 
 - **tr1**: test an Option with `== null` or `!= null`, never by truth. Where
@@ -1333,12 +1388,7 @@ The port is split between sessions by package:
     chunkIOInfoCache.get(chunkId); let ioInfo; if (cached != null) {..}`
     where upstream writes `let ioInfo = ..; if (ioInfo === undefined)`;
   Port differences (decided for the user while away, 2026-11-02; none
-  changes a result): prepareDestinationWithChunks tests `moduleLoading !=
-  null` where upstream tests `!== null` (ReactDOMRoot's kind; not accepted:
-  our `ModuleLoading` is a plain `Option`, so a manifest without the key
-  reads undefined, which upstream's would throw on; a
-  `#[rust_js::nullable(module_loading)]` parameter still tests `!= null`,
-  rd613, pending); the chunk map's `flightChunk != null`
+  changes a result): the chunk map's `flightChunk != null`
   where upstream tests `!== undefined` (the map holds strings); the fake
   stack's `(fakeStack.stack ?? '')` (ReplyClient's parseStackLocation
   kind); `typeof performance !== 'undefined' &&` before

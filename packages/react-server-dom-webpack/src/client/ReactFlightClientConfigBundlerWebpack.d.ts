@@ -38,7 +38,7 @@ export type ClientReference = ClientReferenceMetadata;
 // though that risks it getting used in places it shouldn't be. This is unfortunate
 // but currently it seems to be the best option we have.
 export function prepareDestinationForModule(
-  moduleLoading: unknown | null | undefined,
+  moduleLoading: unknown | null,
   nonce: string | null | undefined,
   metadata: ClientReferenceMetadata,
 ): void;

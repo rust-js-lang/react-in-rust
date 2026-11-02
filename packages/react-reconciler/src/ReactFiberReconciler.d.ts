@@ -91,15 +91,15 @@ export function createHydrationContainer(
 export function updateContainer(
   element: unknown | null | undefined,
   container: FiberRoot,
-  parentComponent: unknown | null,
-  callback: unknown | null,
+  parentComponent?: unknown | null | undefined,
+  callback?: unknown | null | undefined,
 ): Lane;
 
 export function updateContainerSync(
   element: unknown | null | undefined,
   container: FiberRoot,
-  parentComponent: unknown | null,
-  callback: unknown | null,
+  parentComponent?: unknown | null | undefined,
+  callback?: unknown | null | undefined,
 ): Lane;
 
 // A class component's instance, or ReactFiberConfig's `PublicInstance`, if any.

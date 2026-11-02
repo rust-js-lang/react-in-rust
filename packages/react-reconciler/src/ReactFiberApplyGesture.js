@@ -364,7 +364,7 @@ function recursivelyInsertNew(
 ) {
   if (
     visitPhase === INSERT_APPEARING_PAIR &&
-    parentViewTransition == null &&
+    parentViewTransition === null &&
     (parentFiber.subtreeFlags & (ViewTransitionNamedStatic | Placement)) ===
       NoFlags
   ) {
@@ -464,7 +464,7 @@ function recursivelyInsertNewFiber(
       } else {
         recursivelyInsertNew(finishedWork, instance, null, visitPhase);
       }
-      if (parentViewTransition != null) {
+      if (parentViewTransition !== null) {
         const clones = parentViewTransition.clones;
         if (clones == null) {
           parentViewTransition.clones = [instance];
@@ -598,7 +598,7 @@ function recursivelyInsertClonesFromExistingTree(
           // phase. Otherwise it leads to duplicate names.
         }
         appendChild(hostParentClone, clone);
-        if (parentViewTransition != null) {
+        if (parentViewTransition !== null) {
           const clones = parentViewTransition.clones;
           if (clones == null) {
             parentViewTransition.clones = [clone];
@@ -964,7 +964,7 @@ function insertDestinationClonesOfFiber(
     appendChild(hostParentClone, clone);
     recursivelyInsertClones(finishedWork, clone, null, visitPhase);
   }
-  if (parentViewTransition != null) {
+  if (parentViewTransition !== null) {
     const clones = parentViewTransition.clones;
     if (clones == null) {
       parentViewTransition.clones = [clone];

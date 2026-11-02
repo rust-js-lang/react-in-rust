@@ -168,6 +168,10 @@ pub struct Thenable(PhantomData<JsObject>);
 
 unsafe impl js::Defined for Thenable {}
 
+// SAFETY: a promise is a thenable, its `then` a promise's, whose status
+// React sets.
+unsafe impl<T> js::Extends<Thenable> for js::Promise<T> {}
+
 impl Thenable {
     #[cfg_attr(rust_js, rust_js::link_name = "then")]
     pub fn then(

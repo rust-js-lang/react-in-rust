@@ -138,7 +138,7 @@ export interface DebugChannel {
 export interface ResponseInstance {
   _bundlerConfig: unknown | null | undefined;
   _serverReferenceConfig?: unknown | null | undefined;
-  _moduleLoading: unknown | null | undefined;
+  _moduleLoading?: unknown | null | undefined;
   _callServer: CallServerCallback | null | undefined;
   _encodeFormAction: EncodeFormActionCallback | null | undefined;
   _nonce: string | null | undefined;

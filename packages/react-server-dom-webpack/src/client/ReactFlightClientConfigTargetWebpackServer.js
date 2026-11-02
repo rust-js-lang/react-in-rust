@@ -13,7 +13,7 @@ export function prepareDestinationWithChunks(
   chunks,
   nonce,
 ) {
-  if (moduleLoading != null) {
+  if (moduleLoading !== null) {
     for (let i = 1; i < chunks.length; i += 2) {
       preinitScriptForSSR(
         moduleLoading.prefix + chunks[i],

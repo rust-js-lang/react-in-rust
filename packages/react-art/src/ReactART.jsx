@@ -5,8 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import Mode from 'art/modes/current';
-import FastNoSideEffects from 'art/modes/fast-noSideEffects';
+import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
 import {
   defaultOnCaughtError,
   defaultOnRecoverableError,
@@ -18,7 +17,8 @@ import {
   injectIntoDevTools,
   updateContainerSync,
 } from 'react-reconciler/src/ReactFiberReconciler';
-import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
+import Mode from 'art/modes/current';
+import FastNoSideEffects from 'art/modes/fast-noSideEffects';
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 import {TYPES, childrenAsString} from './ReactARTInternals.js';
 import {Component} from 'react';
@@ -27,6 +27,7 @@ import {$unwrap} from '@rust-js/runtime';
 export {default as Transform} from 'art/core/transform';
 
 export {default as version} from 'shared/ReactVersion';
+
 const slice = Array.prototype.slice;
 
 function defaultOnDefaultTransitionIndicator() {
@@ -90,12 +91,7 @@ export class Surface extends Component {
     }
     // We synchronously flush updates coming from above so that they commit together
     // and so that refs resolve before the parent life cycles.
-    updateContainerSync(
-      this.props.children,
-      $unwrap(this._mountNode),
-      this,
-      null
-    );
+    updateContainerSync(this.props.children, $unwrap(this._mountNode), this);
     flushSyncWork();
   }
 
@@ -108,12 +104,7 @@ export class Surface extends Component {
 
     // We synchronously flush updates coming from above so that they commit together
     // and so that refs resolve before the parent life cycles.
-    updateContainerSync(
-      this.props.children,
-      $unwrap(this._mountNode),
-      this,
-      null
-    );
+    updateContainerSync(this.props.children, $unwrap(this._mountNode), this);
     flushSyncWork();
 
     if ($unwrap(this._surface).render) {
@@ -124,7 +115,7 @@ export class Surface extends Component {
   componentWillUnmount() {
     // We synchronously flush updates coming from above so that they commit together
     // and so that refs resolve before the parent life cycles.
-    updateContainerSync(null, $unwrap(this._mountNode), this, null);
+    updateContainerSync(null, $unwrap(this._mountNode), this);
     flushSyncWork();
   }
 

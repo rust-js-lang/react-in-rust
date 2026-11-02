@@ -174,7 +174,7 @@ function applyViewTransitionToHostInstancesRecursive(
   while (child != null) {
     if (child.tag === HostComponent) {
       const instance = child.stateNode;
-      if (collectMeasurements != null) {
+      if (collectMeasurements !== null) {
         const measurement = measureInstance(instance);
         collectMeasurements.push(measurement);
         if (wasInstanceInViewport(measurement)) {
@@ -887,7 +887,7 @@ function measureViewTransitionHostInstancesRecursive(
     if (current.tag === HostComponent) {
       const instance = current.stateNode;
       if (
-        previousMeasurements != null &&
+        previousMeasurements !== null &&
         viewTransitionHostInstanceIdx < previousMeasurements.length
       ) {
         // The previous measurement of the Instance in this location within the ViewTransition.

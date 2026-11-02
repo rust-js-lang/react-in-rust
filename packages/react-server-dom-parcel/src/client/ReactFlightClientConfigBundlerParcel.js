@@ -38,6 +38,7 @@ export function preloadModule(metadata) {
   if (bundles.length === 0) {
     return null;
   }
+
   return Promise.all(bundles.map(url => parcelRequire.load(url)));
 }
 

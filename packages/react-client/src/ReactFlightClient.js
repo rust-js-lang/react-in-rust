@@ -320,9 +320,11 @@ function releasePendingChunk(response, chunk) {
     const pendingChunks = (response._pendingChunks ?? 0) - 1;
     response._pendingChunks = pendingChunks;
     if (pendingChunks === 0) {
-      // We're no longer waiting for any more chunks. We can release the strong reference
-      // to the response. We'll regain it if we ask for any more data later on.
-      $unwrap(response._weakResponse).response = null;
+      $unwrap(
+        // We're no longer waiting for any more chunks. We can release the strong reference
+        // to the response. We'll regain it if we ask for any more data later on.
+        response._weakResponse,
+      ).response = null;
       // Wait a short period to see if any more chunks get asked for. E.g. by a React render.
       // These chunks might discover more pending chunks.
       // If we don't ask for more then we assume that those chunks weren't blocking initial
@@ -3058,7 +3060,7 @@ function resolveModule(response, id, model, streamState) {
   );
 
   prepareDestinationForModule(
-    response._moduleLoading,
+    response._moduleLoading ?? null,
     response._nonce,
     clientReferenceMetadata,
   );
@@ -3439,10 +3441,12 @@ function stopStream(response, id, row) {
     const pendingChunks = (response._pendingChunks ?? 0) - 1;
     response._pendingChunks = pendingChunks;
     if (pendingChunks === 0) {
-      // We're no longer waiting for any more chunks. We can release the strong
-      // reference to the response. We'll regain it if we ask for any more data
-      // later on.
-      $unwrap(response._weakResponse).response = null;
+      $unwrap(
+        // We're no longer waiting for any more chunks. We can release the strong
+        // reference to the response. We'll regain it if we ask for any more data
+        // later on.
+        response._weakResponse,
+      ).response = null;
     }
   }
   const controller = streamController(chunk);
@@ -3583,7 +3587,7 @@ function ResponseInstance(
   const chunks = new Map();
   this._bundlerConfig = bundlerConfig;
   this._serverReferenceConfig = serverReferenceConfig ?? null;
-  this._moduleLoading = moduleLoading;
+  this._moduleLoading = moduleLoading ?? null;
   this._callServer = callServer ?? missingCall;
   this._encodeFormAction = encodeFormAction;
   this._nonce = nonce;
@@ -4303,10 +4307,10 @@ function initializeIOInfo(response, ioInfo) {
     const promise = ioInfo.value;
     if (promise != null) {
       switch (promise.status) {
-        case 'fulfilled':
+        case INITIALIZED:
           logIOInfo(ioInfo, env, promise.value);
           break;
-        case 'rejected':
+        case ERRORED:
           logIOInfoErrored(ioInfo, env, promise.reason);
           break;
         default: {
@@ -4655,7 +4659,7 @@ function flushComponentPerformance(
               const promise = asyncInfo.awaited.value;
               if (promise != null) {
                 switch (promise.status) {
-                  case 'fulfilled':
+                  case INITIALIZED:
                     logComponentAwait(
                       asyncInfo,
                       trackIdx,
@@ -4665,7 +4669,7 @@ function flushComponentPerformance(
                       promise.value,
                     );
                     break;
-                  case 'rejected':
+                  case ERRORED:
                     logComponentAwaitErrored(
                       asyncInfo,
                       trackIdx,

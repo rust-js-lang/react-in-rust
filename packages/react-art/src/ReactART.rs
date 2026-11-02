@@ -6,17 +6,19 @@
 use std::cell::{Cell, OnceCell};
 use std::rc::Rc;
 
-use art::{FAST_NO_SIDE_EFFECTS, Node, Surface as ArtSurface, mode};
 use js::array::SLICE as slice;
 use js::{PropertyDescriptor, Unknown, function, object};
 use react::webapi::Element;
 use react::{CSSProperties, Component, HostType, JSX, jsx};
+use react_reconciler::react_internal_types::FiberRoot;
+use react_reconciler::react_root_tags::{CONCURRENT_ROOT, LEGACY_ROOT};
+
 use react_reconciler::react_fiber_error_logger::{
     default_on_caught_error, default_on_recoverable_error, default_on_uncaught_error,
 };
 use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
-use react_reconciler::react_internal_types::FiberRoot;
-use react_reconciler::react_root_tags::{CONCURRENT_ROOT, LEGACY_ROOT};
+
+use art::{FAST_NO_SIDE_EFFECTS, Node, Surface as ArtSurface, mode};
 use shared::react_feature_flags::DISABLE_LEGACY_MODE;
 
 use crate::react_art_internals::{TYPES, children_as_string};

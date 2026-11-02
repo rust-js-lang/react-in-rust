@@ -65,7 +65,7 @@ ReactDOMHydrationRoot.prototype.render = ReactDOMRoot.prototype.render =
         );
       }
     }
-    updateContainer(children, root, null, null);
+    updateContainer(children, root);
   };
 
 ReactDOMHydrationRoot.prototype.unmount = ReactDOMRoot.prototype.unmount =
@@ -87,7 +87,7 @@ ReactDOMHydrationRoot.prototype.unmount = ReactDOMRoot.prototype.unmount =
             'current render has completed, which may lead to a race condition.',
         );
       }
-      updateContainerSync(null, root, null, null);
+      updateContainerSync(null, root);
       flushSyncWork();
       unmarkContainerAsRoot(container);
     }

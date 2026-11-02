@@ -1322,8 +1322,7 @@ fn encode_form_data(reference: Option<&'static Unknown>) -> &'static Thenable {
         resolve = Some(res);
         reject = Some(rej);
     });
-    // SAFETY: a promise is a thenable, whose status React sets.
-    let thenable: &'static Thenable = unsafe { js::cast(Some(js::unknown(&promise))) };
+    let thenable: &'static Thenable = js::upcast(promise);
     let (resolve, reject) = (resolve.unwrap(), reject.unwrap());
     process_reply(
         reference,
@@ -1437,13 +1436,7 @@ fn custom_encode_form_action(
     };
     let bound_promise: &'static Thenable = match reference_closure.bound {
         Some(bound) => bound,
-        // SAFETY: a promise is a thenable.
-        None => unsafe {
-            js::cast(Some(js::unknown(&js::promise::resolve(Vec::<
-                Option<&'static Unknown>,
-            >::new(
-            )))))
-        },
+        None => js::upcast(js::promise::resolve(Vec::<Option<&'static Unknown>>::new())),
     };
     encode_form_action(reference_closure.id, bound_promise)
 }
@@ -1782,16 +1775,12 @@ thread_local! {
         let args: Vec<Option<&'static Unknown>> =
             unsafe { js::cast(function::call(ARRAY_SLICE, Some(js::arguments()), (1.0,))) };
         let bound_promise: &'static Thenable = match reference_closure.bound {
-            // SAFETY: a promise is a thenable.
-            Some(bound) => unsafe {
-                js::cast(Some(js::unknown(&js::promise::resolve(bound).then(move |bound_args: &'static Thenable| {
-                    // SAFETY: the bound arguments are an array.
-                    let bound_args: Vec<Option<&'static Unknown>> = js::cast(Some(js::unknown(bound_args)));
-                    [bound_args, args].concat()
-                }))))
-            },
-            // SAFETY: as above.
-            None => unsafe { js::cast(Some(js::unknown(&js::promise::resolve(args)))) },
+            Some(bound) => js::upcast(js::promise::resolve(bound).then(move |bound_args: &'static Thenable| {
+                // SAFETY: the bound arguments are an array.
+                let bound_args: Vec<Option<&'static Unknown>> = unsafe { js::cast(Some(js::unknown(bound_args))) };
+                [bound_args, args].concat()
+            })),
+            None => js::upcast(js::promise::resolve(args)),
         };
 
         KNOWN_SERVER_REFERENCES.with(|references| {

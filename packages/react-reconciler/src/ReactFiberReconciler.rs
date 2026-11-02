@@ -518,7 +518,6 @@ struct RootUpdatePayload {
 
 unsafe impl js::Defined for RootUpdatePayload {}
 
-#[cfg_attr(rust_js, rust_js::nullable(parent_component, callback))]
 fn update_container_impl(
     root_fiber: &Rc<Fiber>,
     lane: Lane,

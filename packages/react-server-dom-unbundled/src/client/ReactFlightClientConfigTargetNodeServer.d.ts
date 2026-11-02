@@ -15,7 +15,7 @@ export interface ModuleLoadingOptions {
 export type ModuleLoading = ModuleLoadingOptions | null | undefined;
 
 export function prepareDestinationWithChunks(
-  moduleLoading: ModuleLoading,
+  moduleLoading: ModuleLoadingOptions | null,
   chunks: string[],
   nonce?: string | null | undefined,
 ): void;

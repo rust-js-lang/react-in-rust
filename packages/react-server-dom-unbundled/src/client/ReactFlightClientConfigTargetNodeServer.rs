@@ -27,6 +27,7 @@ fn preinit_script_for_ssr(href: &str, nonce: Option<&str>, cross_origin: Option<
     unreachable!()
 }
 
+#[cfg_attr(rust_js, rust_js::nullable(module_loading))]
 pub fn prepare_destination_with_chunks(
     module_loading: ModuleLoading,
     // Chunks are double-indexed [..., idx, filenamex, idy, filenamey, ...]

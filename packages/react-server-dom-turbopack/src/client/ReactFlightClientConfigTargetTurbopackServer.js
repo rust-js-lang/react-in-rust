@@ -8,7 +8,7 @@
 import {preinitScriptForSSR} from 'react-client/src/ReactFlightClientConfig';
 
 export function prepareDestinationWithChunks(moduleLoading, chunks, nonce) {
-  if (moduleLoading != null) {
+  if (moduleLoading !== null) {
     for (let i = 0; i < chunks.length; i++) {
       // A merged chunk is `[mergedChunkFilename, ...]`; preinit its own URL.
       const chunk = chunks[i];

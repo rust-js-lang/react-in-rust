@@ -3687,7 +3687,7 @@ function commitRoot(
     // batch. This enables them to be grouped later.
     resetCommitErrors();
     recordCommitTime();
-    if (enableComponentPerformanceTrack && suspendedCommitReason != null) {
+    if (enableComponentPerformanceTrack && suspendedCommitReason !== null) {
       logSuspendedCommitPhase(
         completedRenderEndTime,
         commitStartTime,

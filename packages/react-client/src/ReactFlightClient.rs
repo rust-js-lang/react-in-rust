@@ -82,7 +82,8 @@ fn preload_module(metadata: &'static Unknown) -> Option<Promise<Option<&'static 
 
 #[cfg_attr(
     rust_js,
-    rust_js::link_name = "./src/ReactFlightClientConfig.js#prepareDestinationForModule"
+    rust_js::link_name = "./src/ReactFlightClientConfig.js#prepareDestinationForModule",
+    rust_js::nullable(module_loading)
 )]
 fn prepare_destination_for_module(
     module_loading: Option<&'static Unknown>,
@@ -503,6 +504,7 @@ pub struct ResponseInstance {
     pub _bundler_config: Cell<Option<&'static Unknown>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub _server_reference_config: Cell<Option<&'static Unknown>>,
+    #[cfg_attr(rust_js, rust_js::nullable)]
     pub _module_loading: Cell<Option<&'static Unknown>>,
     pub _call_server: Cell<Option<&'static CallServerCallback>>,
     pub _encode_form_action: Cell<Option<&'static EncodeFormActionCallback>>,
@@ -5802,8 +5804,7 @@ fn initialize_io_info(response: &'static Response, io_info: &'static ReactIOInfo
         let env = response._root_environment_name.borrow().clone().unwrap();
         let promise = io_info.value.get();
         if let Some(promise) = promise {
-            // SAFETY: a promise is a thenable.
-            let thenable: &Thenable = unsafe { js::cast(Some(js::unknown(&promise))) };
+            let thenable: &Thenable = js::upcast(promise);
             match thenable.status().as_deref() {
                 Some(INITIALIZED) => log_io_info(io_info, &env, thenable.value()),
                 Some(ERRORED) => log_io_info_errored(io_info, &env, thenable.reason()),
@@ -6160,9 +6161,7 @@ fn flush_component_performance(
                         let env = response._root_environment_name.borrow().clone().unwrap();
                         let promise = async_info.awaited.value.get();
                         if let Some(promise) = promise {
-                            // SAFETY: a promise is a thenable.
-                            let thenable: &Thenable =
-                                unsafe { js::cast(Some(js::unknown(&promise))) };
+                            let thenable: &Thenable = js::upcast(promise);
                             match thenable.status().as_deref() {
                                 Some(INITIALIZED) => log_component_await(
                                     async_info,

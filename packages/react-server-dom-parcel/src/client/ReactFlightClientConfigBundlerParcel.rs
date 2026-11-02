@@ -94,12 +94,9 @@ pub fn preload_module(metadata: &ClientReference) -> Option<&'static Thenable> {
         return None;
     }
 
-    // SAFETY: a promise is a thenable.
-    Some(unsafe {
-        js::cast(Some(js::unknown(&js::promise::all(
-            bundles.iter().map(|url| parcel_require_load(url)).collect(),
-        ))))
-    })
+    Some(js::upcast(js::promise::all(
+        bundles.iter().map(|url| parcel_require_load(url)).collect(),
+    )))
 }
 
 pub fn require_module(metadata: &ClientReference) -> Option<&'static Unknown> {

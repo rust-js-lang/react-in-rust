@@ -284,8 +284,10 @@ function describeExpandedElement(type, props, rowPrefix) {
   if (properties.length === 0) {
     return rowPrefix + '<' + type + '>\n';
   } else if (remainingRowLength > 0) {
+    // We can fit all on one row.
     return rowPrefix + '<' + type + ' ' + properties.join(' ') + '>\n';
   } else {
+    // Split into one row per property:
     return (
       rowPrefix +
       '<' +

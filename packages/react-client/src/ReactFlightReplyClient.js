@@ -29,6 +29,7 @@ import {
   $catchUnwind,
   $displayF64,
   $getOrInit,
+  $some,
   $someValue,
   $unwound,
   $unwrap,
@@ -241,7 +242,7 @@ export function processReply(
           resolve(data);
         }
       } else {
-        buffer.push($someValue(entry.value));
+        buffer.push(entry.value);
         const progress$1 = $unwrap(progress);
         reader.read(new Uint8Array(1024)).then(entry => {
           progress$1(entry);
@@ -276,7 +277,8 @@ export function processReply(
           resolve(data);
         }
       } else {
-        const captured = entry.value;
+        const option = entry.value;
+        const captured = option === undefined ? undefined : $some(option);
         const result = $catchUnwind(() => {
           const partJson = stringify($someValue(captured));
           data.append(streamPrefix, partJson);

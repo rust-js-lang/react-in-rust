@@ -3120,7 +3120,7 @@ function findLastContentRow(firstChild) {
     }
     row = row.sibling;
   }
-  return lastContentRow ?? null;
+  return lastContentRow;
 }
 
 // shared/ReactTypes' `SuspenseListRevealOrder`.
