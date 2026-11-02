@@ -5,20 +5,15 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-// GAP rd597: decodeAction and decodeFormState take any bundler's server
-// manifest as the `unknown` JS has, where each bundler's own type would be a
-// type parameter `M`, as createResponse's is: rust-js takes a closure a
-// generic function gives as a `dyn Fn` (`body.for_each(|..| ..)`'s) to hold
-// the type parameter, and refuses react-server (ADR 0626).
-export function decodeAction(
+export function decodeAction<M>(
   body: FormData,
-  serverManifest: unknown,
+  serverManifest: M,
 ): Promise<() => unknown | null | undefined> | null;
 
-export function decodeFormState(
+export function decodeFormState<M>(
   actionResult: unknown | null | undefined,
   body: FormData,
-  serverManifest: unknown,
+  serverManifest: M,
 ): Promise<
   | [unknown | null | undefined, string, unknown | null | undefined, number]
   | null

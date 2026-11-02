@@ -797,12 +797,10 @@ These differences from upstream's output are accepted:
   decodeAction, decodeFormState and loadServerAction on it; ESM's manifest
   is its module base path, a `string`. react-server's ReplyServer and
   ActionServer take each bundler's server manifest as it is:
-  createResponse of a type parameter `M`, so each entry gives its own
-  (webpack's and Turbopack's client configs' `ServerManifest`, Parcel's,
-  ESM's `string`, and react_server's `ServerManifest` for unbundled, whose
-  client config is still JS), and decodeAction and decodeFormState as the
-  `unknown` JS has, `js::unknown(manifest)`, until rd597 lets them be
-  generic too (rust-js takes their `for_each` closures to hold `M`); the
+  createResponse, decodeAction and decodeFormState of a type parameter `M`,
+  so each entry gives its own (webpack's and Turbopack's client configs'
+  `ServerManifest`, Parcel's, ESM's `string`, and react_server's
+  `ServerManifest` for unbundled, whose client config is still JS); the
   response keeps it as the `unknown` only resolveServerReference reads.
   Accepted, each gap left open:
   - every item of react-server-dom-webpack's server's list above, where the

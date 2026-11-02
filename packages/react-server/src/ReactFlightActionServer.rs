@@ -53,8 +53,8 @@ fn bind_args(
     function::apply(bind, Some(&r#fn), Some(&bound_args))
 }
 
-fn load_server_reference(
-    bundler_config: &'static Unknown,
+fn load_server_reference<M: js::Defined + ?Sized>(
+    bundler_config: &'static M,
     meta_data: &ServerReferenceMetaData,
 ) -> Promise<Option<&'static Unknown>> {
     let id = meta_data.id;
@@ -91,9 +91,9 @@ fn load_server_reference(
     }
 }
 
-fn decode_bound_action_meta_data(
+fn decode_bound_action_meta_data<M: js::Defined + ?Sized>(
     body: &'static FormData,
-    server_manifest: &'static Unknown,
+    server_manifest: &'static M,
     form_field_prefix: &str,
     array_size_limit: Option<&'static Unknown>,
 ) -> &'static ServerReferenceMetaData {
@@ -119,15 +119,10 @@ fn decode_bound_action_meta_data(
     unsafe { js::cast(value) }
 }
 
-// GAP rd597: decodeAction and decodeFormState take any bundler's server
-// manifest as the `unknown` JS has, where each bundler's own type would be a
-// type parameter `M`, as createResponse's is: rust-js takes a closure a
-// generic function gives as a `dyn Fn` (`body.for_each(|..| ..)`'s) to hold
-// the type parameter, and refuses react-server (ADR 0626).
 #[cfg_attr(rust_js, rust_js::nullable)]
-pub fn decode_action(
+pub fn decode_action<M: js::Defined + ?Sized>(
     body: &'static FormData,
-    server_manifest: &'static Unknown,
+    server_manifest: &'static M,
 ) -> Option<Promise<&'static dyn Fn() -> Option<&'static Unknown>>> {
     // We're going to create a new formData object that holds all the fields except
     // the implementation details of the action data.
@@ -181,10 +176,10 @@ pub fn decode_action(
     }))
 }
 
-pub fn decode_form_state(
+pub fn decode_form_state<M: js::Defined + ?Sized>(
     action_result: Option<&'static Unknown>,
     body: &'static FormData,
-    server_manifest: &'static Unknown,
+    server_manifest: &'static M,
 ) -> Promise<Option<ReactFormState<Option<&'static Unknown>, Option<&'static ServerReferenceId>>>> {
     let key_path = body.get("$ACTION_KEY");
     let Some(FormDataEntryValue::Str(key_path)) = key_path else {

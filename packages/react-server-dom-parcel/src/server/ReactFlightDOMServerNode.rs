@@ -1052,14 +1052,14 @@ pub fn decode_reply_from_async_iterable(
 pub fn decode_action(
     body: &'static FormData,
 ) -> Option<Promise<&'static dyn Fn() -> Option<&'static Unknown>>> {
-    decode_action_impl(body, js::unknown(SERVER_MANIFEST.get()))
+    decode_action_impl(body, SERVER_MANIFEST.get())
 }
 
 pub fn decode_form_state(
     action_result: Option<&'static Unknown>,
     body: &'static FormData,
 ) -> Promise<Option<ReactFormState<Option<&'static Unknown>, Option<&'static Unknown>>>> {
-    decode_form_state_impl(action_result, body, js::unknown(SERVER_MANIFEST.get()))
+    decode_form_state_impl(action_result, body, SERVER_MANIFEST.get())
 }
 
 pub fn load_server_action(id: &str) -> Promise<&'static dyn Fn() -> Option<&'static Unknown>> {

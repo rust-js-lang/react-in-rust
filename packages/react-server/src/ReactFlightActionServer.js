@@ -96,11 +96,6 @@ function decodeBoundActionMetaData(
   return value;
 }
 
-// GAP rd597: decodeAction and decodeFormState take any bundler's server
-// manifest as the `unknown` JS has, where each bundler's own type would be a
-// type parameter `M`, as createResponse's is: rust-js takes a closure a
-// generic function gives as a `dyn Fn` (`body.for_each(|..| ..)`'s) to hold
-// the type parameter, and refuses react-server (ADR 0626).
 export function decodeAction(body, serverManifest) {
   // We're going to create a new formData object that holds all the fields except
   // the implementation details of the action data.
