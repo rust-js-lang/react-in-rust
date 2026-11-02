@@ -107,11 +107,6 @@ export function decodeAction(body, serverManifest) {
   // `for_each` takes a `Box<dyn FnMut>`, `'static`, which can't write the
   // key found to a local, so it's a loop of the form data's entries.
   // $FlowFixMe[prop-missing]
-  // GAP rd567: this comment and rd561's, before a `match` whose
-  // arms print as one call, are printed before the loop.
-  // GAP rd561: upstream's one `formData.append(key, value)` of a
-  // `string | File`: webapi's `append` takes text, and a blob is
-  // `append_with_blob`'s.
   for (const [key, value] of body) {
     if (!key.startsWith('$ACTION_')) {
       // $FlowFixMe[incompatible-type]

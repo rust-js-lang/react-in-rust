@@ -136,18 +136,8 @@ pub fn decode_action(
     // $FlowFixMe[prop-missing]
     for (key, value) in form_data::iter(body) {
         if !key.starts_with("$ACTION_") {
-            // GAP rd567: this comment and rd561's, before a `match` whose
-            // arms print as one call, are printed before the loop.
-            // GAP rd561: upstream's one `formData.append(key, value)` of a
-            // `string | File`: webapi's `append` takes text, and a blob is
-            // `append_with_blob`'s.
-            match value {
-                FormDataEntryValue::Str(value) => {
-                    // $FlowFixMe[incompatible-type]
-                    form_data.append(&key, value)
-                }
-                FormDataEntryValue::File(value) => form_data.append(&key, value),
-            }
+            // $FlowFixMe[incompatible-type]
+            form_data.append(&key, value);
         } else if key.starts_with("$ACTION_REF_") {
             // Later actions may override earlier actions if a button is used to
             // override the default form action. However, we don't expect the same

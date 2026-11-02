@@ -97,35 +97,18 @@ Object.defineProperty(ReactPromise.prototype, 'then', {
         }
         resolve(value);
       }
-    } else {
-      const borrowMut = {
-        get value() {
-          return chunk;
-        },
-        set value(value) {
-          chunk.status = value.status;
-          chunk.value = value.value;
-          chunk.reason = value.reason;
-        },
-      };
-      if (
-        borrowMut.value.status === 'pending' ||
-        borrowMut.value.status === 'blocked'
-      ) {
-        const value = borrowMut.value;
-        const value$1 = borrowMut.value;
-        if (resolve != null) {
-          value.value ??= [];
-          value.value.push(resolve);
-        }
-        if (reject != null) {
-          value$1.reason ??= [];
-          value$1.reason.push(reject);
-        }
-      } else if (reject != null) {
-        const reason = chunk.status === 'rejected' ? chunk.reason : undefined;
-        reject(reason);
+    } else if (chunk.status === 'pending' || chunk.status === 'blocked') {
+      if (resolve != null) {
+        chunk.value ??= [];
+        chunk.value.push(resolve);
       }
+      if (reject != null) {
+        chunk.reason ??= [];
+        chunk.reason.push(reject);
+      }
+    } else if (reject != null) {
+      const reason = chunk.status === 'rejected' ? chunk.reason : undefined;
+      reject(reason);
     }
   },
 });
@@ -181,42 +164,27 @@ function wakeChunkIfInitialized(
     wakeChunk(response, resolveListeners, value, chunk);
     return;
   }
-  const borrowMut = {
-    get value() {
-      return chunk;
-    },
-    set value(value) {
-      chunk.status = value.status;
-      chunk.value = value.value;
-      chunk.reason = value.reason;
-    },
-  };
-  if (
-    borrowMut.value.status === 'blocked' ||
-    borrowMut.value.status === 'pending'
-  ) {
-    const value = borrowMut.value;
-    const value$1 = borrowMut.value;
-    if (value.value != null) {
-      const value$1 = value.value;
-      $extend(value$1, resolveListeners);
+  if (chunk.status === 'blocked' || chunk.status === 'pending') {
+    if (chunk.value != null) {
+      const value = chunk.value;
+      $extend(value, resolveListeners);
     } else {
-      value.value = resolveListeners;
+      chunk.value = resolveListeners;
     }
-    if (value$1.reason != null) {
-      const reason = value$1.reason;
+    if (chunk.reason != null) {
+      const reason = chunk.reason;
       if (rejectListeners != null) {
         $extend(reason, rejectListeners);
       }
       return;
     }
-    value$1.reason = rejectListeners;
+    chunk.reason = rejectListeners;
     return;
   }
-  if (borrowMut.value.status !== 'rejected') {
+  if (chunk.status !== 'rejected') {
     return;
   }
-  const errored = borrowMut.value.reason;
+  const errored = chunk.reason;
   if (rejectListeners != null) {
     rejectChunk(response, rejectListeners, errored);
   }
@@ -277,25 +245,13 @@ function resolveModelChunk(response, chunk, value, id) {
     }
     return;
   }
-  const borrowMut = {
-    get value() {
-      return chunk;
-    },
-    set value(value) {
-      chunk.status = value.status;
-      chunk.value = value.value;
-      chunk.reason = value.reason;
-    },
-  };
   let resolveListeners;
   let rejectListeners;
-  if (borrowMut.value.status === 'pending') {
-    const value = borrowMut.value;
-    const value$1 = borrowMut.value;
-    resolveListeners = value.value;
-    value.value = null;
-    rejectListeners = value$1.reason;
-    value$1.reason = null;
+  if (chunk.status === 'pending') {
+    resolveListeners = chunk.value;
+    chunk.value = null;
+    rejectListeners = chunk.reason;
+    chunk.reason = null;
   } else {
     resolveListeners = undefined;
     rejectListeners = undefined;
@@ -509,15 +465,14 @@ function loadServerObjectReference(response, metaData, parentObject, key) {
   function fulfill() {
     let value;
     try {
-      const value$1 = requireServerReference(response, serverReference);
+      value = requireServerReference(response, serverReference);
       // Objects can appear under "then", but a function here would turn
       // the containing object into a thenable during reply decoding.
-      if (typeof value$1 !== 'object' || value$1 === null) {
+      if (typeof value !== 'object' || value === null) {
         throw new Error(
           'Expected a Server Reference to an object to resolve to an object.',
         );
       }
-      value = value$1;
     } catch (error) {
       triggerErrorOnChunk(response, blockedPromise, error);
       return;
@@ -840,7 +795,7 @@ function fulfillReference(response, reference, value, arrayRoot) {
       throw new Error('Invalid reference.');
     }
 
-    const resolvedValue$1 = map(response, value$1, parentObject, key);
+    resolvedValue = map(response, value$1, parentObject, key);
 
     // Add any array counts to the reference's array root. The value that we're
     // resolving might have deep nesting that we need to resolve.
@@ -854,7 +809,6 @@ function fulfillReference(response, reference, value, arrayRoot) {
         bumpArrayCount(reference.arrayRoot, localLength, response);
       }
     }
-    resolvedValue = resolvedValue$1;
   } catch (error) {
     rejectReference(response, handler, error);
     return;
@@ -883,22 +837,11 @@ function resolveReference(response, handler, parentObject, key, resolvedValue) {
     if (chunk == null) {
       return;
     }
-    const borrowMut = {
-      get value() {
-        return chunk;
-      },
-      set value(value) {
-        chunk.status = value.status;
-        chunk.value = value.value;
-        chunk.reason = value.reason;
-      },
-    };
-    if (borrowMut.value.status !== 'blocked') {
+    if (chunk.status !== 'blocked') {
       return;
     }
-    const value = borrowMut.value;
-    const resolveListeners = value.value;
-    value.value = null;
+    const resolveListeners = chunk.value;
+    chunk.value = null;
     // Assuming handler.errored is false.
     const arrayRoot = handler.arrayRoot;
     chunk.status = 'fulfilled';
@@ -1295,22 +1238,11 @@ function parseTypedArray(
       if (chunk == null) {
         return;
       }
-      const borrowMut = {
-        get value() {
-          return chunk;
-        },
-        set value(value) {
-          chunk.status = value.status;
-          chunk.value = value.value;
-          chunk.reason = value.reason;
-        },
-      };
-      if (borrowMut.value.status !== 'blocked') {
+      if (chunk.status !== 'blocked') {
         return;
       }
-      const value = borrowMut.value;
-      const resolveListeners = value.value;
-      value.value = null;
+      const resolveListeners = chunk.value;
+      chunk.value = null;
       // We don't keep an array count for this since it won't be referenced again.
       // In fact, we don't really need to store this chunk at all.
       chunk.status = 'fulfilled';
