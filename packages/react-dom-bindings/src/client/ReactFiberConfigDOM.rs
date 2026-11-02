@@ -3659,7 +3659,7 @@ impl FragmentInstance {
         let Some(parent_host_fiber) =
             get_fragment_parent_instance_or_container_fiber(&fragment_fiber)
         else {
-            return node::DOCUMENT_POSITION_DISCONNECTED;
+            return f64::from(node::DOCUMENT_POSITION_DISCONNECTED);
         };
         let children: RefCell<Vec<Rc<Fiber>>> = RefCell::new(Vec::new());
         traverse_fragment_instances_and_text_instances(
@@ -3711,7 +3711,7 @@ impl FragmentInstance {
             };
 
         let Some(parent_host_instance_from_dom) = parent_host_instance_from_dom else {
-            return node::DOCUMENT_POSITION_DISCONNECTED;
+            return f64::from(node::DOCUMENT_POSITION_DISCONNECTED);
         };
 
         // Check if first and last node are actually in the expected document position
@@ -3772,7 +3772,7 @@ impl FragmentInstance {
         if document_position_matches_fiber_position {
             return f64::from(result);
         }
-        node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+        f64::from(node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC)
     }
 
     pub fn scroll_into_view(&self, align_to_top: Option<&'static Unknown>) {

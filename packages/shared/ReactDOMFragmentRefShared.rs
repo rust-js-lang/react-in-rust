@@ -21,31 +21,31 @@ pub fn compare_document_position_for_empty_fragment(
     let parent_result = parent_host_instance.compare_document_position(other_node) as u16;
     let mut result = parent_result;
     if parent_host_instance == other_node {
-        result = node::DOCUMENT_POSITION_CONTAINS as u16;
-    } else if parent_result & node::DOCUMENT_POSITION_CONTAINED_BY as u16 != 0 {
+        result = node::DOCUMENT_POSITION_CONTAINS;
+    } else if parent_result & node::DOCUMENT_POSITION_CONTAINED_BY != 0 {
         // otherNode is one of the fragment's siblings. Use the next
         // host sibling (via the parent tree, not fiber.sibling) to
         // determine if its preceding or following.
         let [_, next_sibling_fiber] =
             get_fragment_instance_or_text_instance_siblings(fragment_fiber);
         match next_sibling_fiber {
-            None => result = node::DOCUMENT_POSITION_PRECEDING as u16,
+            None => result = node::DOCUMENT_POSITION_PRECEDING,
             Some(next_sibling_fiber) => {
                 let next_sibling_instance: &Node =
                     unsafe { js::cast(Some(get_public_instance(&next_sibling_fiber))) };
                 let next_sibling_result =
                     next_sibling_instance.compare_document_position(other_node) as u16;
                 result = if next_sibling_result == 0
-                    || next_sibling_result & node::DOCUMENT_POSITION_FOLLOWING as u16 != 0
+                    || next_sibling_result & node::DOCUMENT_POSITION_FOLLOWING != 0
                 {
-                    node::DOCUMENT_POSITION_FOLLOWING as u16
+                    node::DOCUMENT_POSITION_FOLLOWING
                 } else {
-                    node::DOCUMENT_POSITION_PRECEDING as u16
+                    node::DOCUMENT_POSITION_PRECEDING
                 };
             }
         }
     }
 
-    result |= node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC as u16;
+    result |= node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
     f64::from(result)
 }

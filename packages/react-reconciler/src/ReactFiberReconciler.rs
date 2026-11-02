@@ -464,7 +464,6 @@ impl ReactFiberReconciler {
         root
     }
 
-    #[cfg_attr(rust_js, rust_js::nullable(parent_component, callback))]
     pub fn update_container(
         &self,
         element: Option<&'static ReactNodeList>,
@@ -486,7 +485,6 @@ impl ReactFiberReconciler {
         lane
     }
 
-    #[cfg_attr(rust_js, rust_js::nullable(parent_component, callback))]
     pub fn update_container_sync(
         &self,
         element: Option<&'static ReactNodeList>,
