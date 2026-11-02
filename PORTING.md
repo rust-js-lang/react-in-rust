@@ -1168,7 +1168,10 @@ These differences from upstream's output are accepted:
     `js::on_load!`, re-reads its namespace's member, not the `const` it's
     declared as) and rd660 (a closure that only gives its arguments on,
     `|h, a, o| preload(Some(js::unknown(h)), ..)`, could be the function
-    itself, upstream's `L: preload`); rd661 (a module whose load throws of
+    itself, upstream's `L: preload`); rd655 (ReplyServer's
+    `(controller.error)(error)`, a `Rc<dyn Fn>` field only the crate's own
+    closures fill, which read no `this`, prints `(0, controller.error)(error)`,
+    rd579's form, where upstream writes `controller.error(error)`); rd661 (a module whose load throws of
     a `None` export still exports its `Option`, so ReactFlightServer and
     react-markup bind ReactSharedInternalsServer by its JS path rather than
     `use` it).
