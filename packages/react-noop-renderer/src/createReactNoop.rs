@@ -182,40 +182,44 @@ pub struct PersistenceCounters {
 }
 
 // The ReactNoop object's functions, by what they take and give.
-type OfRoot = dyn Fn(Option<&str>);
-type RootChildren = dyn Fn(Option<&str>) -> Option<Rc<RefCell<Vec<Child>>>>;
-type RootJsx = dyn Fn(Option<&str>) -> Option<&'static Unknown>;
-type GetRoot = dyn Fn(Option<&str>) -> Option<Rc<FiberRoot>>;
-type GetOrCreateRootContainer = dyn Fn(Option<&str>, RootTag) -> &'static Container;
-type CreateRoot = dyn Fn(Option<&'static CreateRootOptions>) -> Root;
-type SuspenseyThingStatus = dyn Fn(&str) -> Option<&'static str>;
-type OfId = dyn Fn(&str);
-type CreatePortal =
+pub(crate) type OfRoot = dyn Fn(Option<&str>);
+pub(crate) type RootChildren = dyn Fn(Option<&str>) -> Option<Rc<RefCell<Vec<Child>>>>;
+pub(crate) type RootJsx = dyn Fn(Option<&str>) -> Option<&'static Unknown>;
+pub(crate) type GetRoot = dyn Fn(Option<&str>) -> Option<Rc<FiberRoot>>;
+pub(crate) type GetOrCreateRootContainer = dyn Fn(Option<&str>, RootTag) -> &'static Container;
+pub(crate) type CreateRoot = dyn Fn(Option<&'static CreateRootOptions>) -> Root;
+pub(crate) type SuspenseyThingStatus = dyn Fn(&str) -> Option<&'static str>;
+pub(crate) type OfId = dyn Fn(&str);
+pub(crate) type CreatePortal =
     dyn Fn(Option<&'static Unknown>, &'static Container, Option<&'static Unknown>) -> ReactPortal;
 type Callback = dyn Fn(Option<&'static Unknown>) -> Option<&'static Unknown>;
-type BatchedUpdates = dyn Fn(&Callback, Option<&'static Unknown>) -> Option<&'static Unknown>;
-type DeferredUpdates = dyn Fn(&dyn Fn() -> Option<&'static Unknown>) -> Option<&'static Unknown>;
+pub(crate) type BatchedUpdates =
+    dyn Fn(&Callback, Option<&'static Unknown>) -> Option<&'static Unknown>;
+pub(crate) type DeferredUpdates =
+    dyn Fn(&dyn Fn() -> Option<&'static Unknown>) -> Option<&'static Unknown>;
 type DiscreteCallback = dyn Fn(
     Option<&'static Unknown>,
     Option<&'static Unknown>,
     Option<&'static Unknown>,
     Option<&'static Unknown>,
 ) -> Option<&'static Unknown>;
-type DiscreteUpdates = dyn Fn(
+pub(crate) type DiscreteUpdates = dyn Fn(
     &DiscreteCallback,
     Option<&'static Unknown>,
     Option<&'static Unknown>,
     Option<&'static Unknown>,
     Option<&'static Unknown>,
 ) -> Option<&'static Unknown>;
-type Render = dyn Fn(Option<&'static Unknown>, Option<&'static Unknown>);
-type RenderToRootWithId = dyn Fn(Option<&'static Unknown>, &str, Option<&'static Unknown>);
-type FindInstance = dyn Fn(Option<&'static Unknown>) -> Option<&'static Unknown>;
-type Flush = dyn Fn() -> Vec<Option<&'static Unknown>>;
-type RunWithPriority =
+pub(crate) type Render = dyn Fn(Option<&'static Unknown>, Option<&'static Unknown>);
+pub(crate) type RenderToRootWithId =
+    dyn Fn(Option<&'static Unknown>, &str, Option<&'static Unknown>);
+pub(crate) type FindInstance = dyn Fn(Option<&'static Unknown>) -> Option<&'static Unknown>;
+pub(crate) type Flush = dyn Fn() -> Vec<Option<&'static Unknown>>;
+pub(crate) type RunWithPriority =
     dyn Fn(EventPriority, &dyn Fn() -> Option<&'static Unknown>) -> Option<&'static Unknown>;
-type IdleUpdates = dyn Fn(&dyn Fn() -> Option<&'static Unknown>);
-type FlushSync = dyn Fn(Option<&dyn Fn() -> Option<&'static Unknown>>) -> Option<&'static Unknown>;
+pub(crate) type IdleUpdates = dyn Fn(&dyn Fn() -> Option<&'static Unknown>);
+pub(crate) type FlushSync =
+    dyn Fn(Option<&dyn Fn() -> Option<&'static Unknown>>) -> Option<&'static Unknown>;
 // A root's.
 type RenderChildren = dyn Fn(Option<&'static Unknown>);
 type Children = dyn Fn() -> Option<Rc<RefCell<Vec<Child>>>>;
@@ -269,6 +273,8 @@ pub struct ReactNoop {
     pub idle_updates: Box<IdleUpdates>,
     pub flush_sync: Box<FlushSync>,
     pub flush_passive_effects: Box<dyn Fn() -> bool>,
+    pub flush_discrete_updates: Option<&'static Unknown>,
+    pub act: Option<&'static Unknown>,
     // Logs the current state of the tree.
     pub dump_tree: Box<OfRoot>,
     pub get_root: Box<GetRoot>,
@@ -475,7 +481,7 @@ impl Drop for RestorePriority<'_> {
     }
 }
 
-fn create_react_noop(
+pub(crate) fn create_react_noop(
     reconciler: &dyn Fn(&JsObject) -> &'static ReactFiberReconciler,
     use_mutation: bool,
 ) -> ReactNoop {
@@ -2025,6 +2031,8 @@ fn create_react_noop(
 
         flush_sync: Box::new(flush_sync),
         flush_passive_effects: Box::new(move || noop_renderer.flush_passive_effects()),
+        flush_discrete_updates: None,
+        act: None,
 
         // Logs the current state of the tree.
         dump_tree: Box::new({

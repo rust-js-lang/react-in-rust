@@ -173,6 +173,8 @@ export interface ReactNoop {
     value: (() => unknown | null | undefined) | null | undefined,
   ) => unknown | null | undefined;
   flushPassiveEffects: () => boolean;
+  flushDiscreteUpdates?: unknown;
+  act?: unknown;
   // Logs the current state of the tree.
   dumpTree: (value: string | null | undefined) => void;
   getRoot: (value: string | null | undefined) => FiberRoot | null | undefined;
