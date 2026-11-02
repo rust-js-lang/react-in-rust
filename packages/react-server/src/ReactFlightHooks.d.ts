@@ -7,35 +7,10 @@
 
 import type {Dispatcher} from 'react-reconciler/src/ReactInternalTypes';
 import type {ReactComponentInfo} from 'shared/ReactTypes';
+import type {Request} from './ReactFlightServer.js';
 import type {ThenableState} from './ReactFlightThenable.js';
 
-/** What a resource type of `cache()` makes: any value, made once per cache. */
-export type ResourceType = () => unknown | null | undefined;
-
-/** A request's cache, of each resource type. */
-export type Cache = Map<ResourceType, unknown | null | undefined>;
-
-// ReactFlightServer's functions a server entry calls, its JS's until it's
-// ported: of each bundler's own client manifest, `C`.
-
-/** Any value a server component may render or pass to the client. */
-export type ReactClientValue = unknown;
-
-/** A request's `onError`, told of each error, giving its digest, if any. */
-export type OnError = (
-  value: unknown | null | undefined,
-) => string | null | undefined;
-
-/** A request's `environmentName`: the name itself, or what gives it. */
-export type EnvironmentName = string | (() => string);
-
-/**
- * A request's `filterStackFrame`: whether a frame is shown, of its URL and
- * its function's name.
- */
-export type FilterStackFrame = (value: string, value2: string) => boolean;
-
-export function prepareToUseHooksForRequest(request: any): void;
+export function prepareToUseHooksForRequest(request: Request): void;
 
 export function resetHooksForRequest(): void;
 

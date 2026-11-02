@@ -10,7 +10,7 @@ import {resolveOwner} from './ReactFlightCurrentOwner.js';
 
 function resolveCache() {
   const request = resolveRequest();
-  if (request !== null) {
+  if (request != null) {
     return getCache(request);
   }
   return new Map();
@@ -29,7 +29,7 @@ function getCacheForType(resourceType) {
 
 function cacheSignal() {
   const request = resolveRequest();
-  if (request !== null) {
+  if (request != null) {
     return request.cacheController.signal;
   }
   return null;

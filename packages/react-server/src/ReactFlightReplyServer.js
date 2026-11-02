@@ -27,7 +27,7 @@ import {
   getBackingString,
   getStreamChunks,
 } from './ReactFlightReplyBackingFormData.js';
-import {$extend, $index, $unwrap} from '@rust-js/runtime';
+import {$index, $unwrap} from '@rust-js/runtime';
 
 const __PROTO__ = '__proto__';
 
@@ -167,14 +167,18 @@ function wakeChunkIfInitialized(
   if (chunk.status === 'blocked' || chunk.status === 'pending') {
     if (chunk.value != null) {
       const value = chunk.value;
-      $extend(value, resolveListeners);
+      for (let i = 0; i < resolveListeners.length; i++) {
+        value.push(resolveListeners[i]);
+      }
     } else {
       chunk.value = resolveListeners;
     }
     if (chunk.reason != null) {
       const reason = chunk.reason;
       if (rejectListeners != null) {
-        $extend(reason, rejectListeners);
+        for (let i = 0; i < rejectListeners.length; i++) {
+          reason.push(rejectListeners[i]);
+        }
       }
       return;
     }
@@ -332,9 +336,6 @@ function loadServerReference(response, metaData, parentObject, key) {
   let serverReferencePromise;
   if (serverReferencePromise$1 === null) {
     if (bound instanceof ReactPromise) {
-      // GAP rd485: `Promise.resolve(bound)` and `Promise.all([..])`
-      // of thenables: js's promise functions take and give
-      // `Promise`s, which a `Thenable` is none of.
       serverReferencePromise = Promise.resolve(bound);
     } else {
       // Nothing to preload and no bound arguments to wait for, so we can
@@ -346,7 +347,8 @@ function loadServerReference(response, metaData, parentObject, key) {
   } else {
     serverReferencePromise =
       bound instanceof ReactPromise
-        ? // GAP rd485: as above.
+        ? // GAP rd485: `Promise.all([..])` of thenables: js's promise
+          // functions take `Promise`s, which a `Thenable` is none of.
           Promise.all([serverReferencePromise$1, bound])
         : serverReferencePromise$1;
   }
@@ -719,8 +721,11 @@ function getChunk(response, id) {
     if (backingEntry != null) {
       chunk = createResolvedModelChunk(response, backingEntry, id);
     } else if (response._closed) {
+      // We have already errored the response and we're not going to get
+      // anything more streaming in so this will immediately error.
       chunk = createErroredChunk(response, response._closedReason);
     } else {
+      // We're still waiting on this entry to stream in.
       chunk = createPendingChunk(response);
     }
     chunks.set(id, chunk);
@@ -1344,10 +1349,9 @@ function parseReadableStream(
       });
     }
   };
-  const error$1 = error;
   const enqueue = value => {
     if (type === 'bytes' && !ArrayBuffer.isView(value)) {
-      error$1(new Error('Invalid data for bytes stream.'));
+      error(new Error('Invalid data for bytes stream.'));
       return;
     }
     if (byteController != null) {
@@ -1357,7 +1361,6 @@ function parseReadableStream(
       $unwrap(controller).enqueue(value);
     }
   };
-  const error$2 = error;
   const flightController = {
     enqueueModel(json) {
       const blockedChunk = previousBlockedChunk;
@@ -1374,13 +1377,13 @@ function parseReadableStream(
               : undefined;
           enqueue(value);
         } else {
-          chunk.then(enqueue, error$2);
+          chunk.then(enqueue, error);
           previousBlockedChunk = chunk;
         }
       } else {
         // We're still waiting on a previous chunk so we can't enqueue quite yet.
         const chunk = createPendingChunk(response);
-        chunk.then(enqueue, error$2);
+        chunk.then(enqueue, error);
         previousBlockedChunk = chunk;
         blockedChunk.then(() => {
           if (previousBlockedChunk === chunk) {

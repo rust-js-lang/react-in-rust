@@ -11,7 +11,7 @@ use shared::react_shared_internals::CacheDispatcher;
 use shared::react_types::ReactComponentInfo;
 use webapi::AbortSignal;
 
-use crate::react_flight_hooks::{Cache, ResourceType, get_cache, resolve_request};
+use crate::react_flight_server::{Cache, ResourceType, get_cache, resolve_request};
 
 use crate::react_flight_current_owner::resolve_owner;
 
@@ -36,7 +36,7 @@ impl CacheDispatcher for DefaultAsyncDispatcher {}
 fn resolve_cache() -> &'static Cache {
     let request = resolve_request();
     if let Some(request) = request {
-        return get_cache(request);
+        return get_cache(&request);
     }
     js::map::new(None)
 }
@@ -56,7 +56,7 @@ fn get_cache_for_type(resource_type: &'static ResourceType) -> Option<&'static U
 fn cache_signal() -> Option<&'static AbortSignal> {
     let request = resolve_request();
     if let Some(request) = request {
-        return Some(request.cache_controller().signal());
+        return Some(request.cache_controller.signal());
     }
     None
 }

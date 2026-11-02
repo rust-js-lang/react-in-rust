@@ -29,7 +29,6 @@ use webapi::{
 use shared::react_feature_flags::{ENABLE_PROFILER_TIMER, ENABLE_TAINT};
 
 use crate::react_flight_async_sequence::{AsyncSequence, PromiseWithDebugInfo};
-use crate::react_flight_hooks::Cache;
 use crate::react_flight_server_temporary_references::TemporaryReferenceSet;
 use crate::react_flight_thenable::{SUSPENSE_EXCEPTION, ThenableState};
 
@@ -261,7 +260,7 @@ fn close_with_error(destination: &Destination, error: Option<&Unknown>) {
     rust_js::link_name = "./src/ReactFlightServerConfig.js#resolveClientReferenceMetadata"
 )]
 fn resolve_client_reference_metadata(
-    config: &ClientManifest,
+    config: Option<&ClientManifest>,
     client_reference: &ClientReference,
 ) -> &'static ClientReferenceMetadata {
     let _ = (config, client_reference);
@@ -273,7 +272,7 @@ fn resolve_client_reference_metadata(
     rust_js::link_name = "./src/ReactFlightServerConfig.js#getServerReferenceId"
 )]
 fn get_server_reference_id(
-    config: &ClientManifest,
+    config: Option<&ClientManifest>,
     server_reference: &ServerReference,
 ) -> &'static ServerReferenceId {
     let _ = (config, server_reference);
@@ -286,7 +285,7 @@ fn get_server_reference_id(
 )]
 #[cfg_attr(rust_js, rust_js::nullable)]
 fn get_server_reference_bound_arguments(
-    config: &ClientManifest,
+    config: Option<&ClientManifest>,
     server_reference: &ServerReference,
 ) -> Option<&'static [Option<&'static ReactClientValue>]> {
     let _ = (config, server_reference);
@@ -298,7 +297,7 @@ fn get_server_reference_bound_arguments(
     rust_js::link_name = "./src/ReactFlightServerConfig.js#getServerReferenceLocation"
 )]
 fn get_server_reference_location(
-    config: &ClientManifest,
+    config: Option<&ClientManifest>,
     server_reference: &ServerReference,
 ) -> Option<&'static Error> {
     let _ = (config, server_reference);
@@ -875,6 +874,21 @@ fn task_debug_stack_trace(request: &Request, task: &Task) -> Option<ReactStackTr
     ))
 }
 
+/// What isn't `null` of a task's `debugOwner`, a component's info, which
+/// upstream's `debugOwner !== null` lets through and outlines. Of the
+/// `undefined` a production element's clone gives, outlineComponentInfo's
+/// read of its `owner` throws a TypeError, as upstream's does.
+fn task_debug_owner_info(debug_owner: Option<&'static Unknown>) -> &'static ReactComponentInfo {
+    // SAFETY: what isn't `null` is a component's info, or `undefined`.
+    let info: Option<&'static ReactComponentInfo> = unsafe { js::cast(debug_owner) };
+    let Some(info) = info else {
+        // `undefined.owner` throws, as upstream's outlineComponentInfo of it does.
+        js::get(debug_owner, "owner");
+        unreachable!("reading an undefined value's property throws");
+    };
+    info
+}
+
 /// What a debug model's serialization may still outline, `{objectLimit}`,
 /// counted down as it goes.
 pub struct Counter {
@@ -908,6 +922,12 @@ thread_local! {
     static NEXT_TWO_CHUNKS_ARE_ATOMIC: &'static Chunk = js::unknown(js::symbol::new(None));
 }
 
+/// What a resource type of `cache()` makes: any value, made once per cache.
+pub type ResourceType = dyn Fn() -> Option<&'static Unknown>;
+
+/// A request's cache, of each resource type.
+pub type Cache = Map<ResourceType, Option<&'static Unknown>>;
+
 /// A request's `onError`, told of each error: the digest the client is
 /// sent of it, if any.
 pub type OnError = dyn Fn(Option<&'static Unknown>) -> Option<String>;
@@ -937,7 +957,8 @@ pub struct Request {
     pub fatal_error: Cell<Option<&'static Unknown>>,
     #[cfg_attr(rust_js, rust_js::nullable)]
     pub destination: Cell<Option<&'static Destination>>,
-    pub bundler_config: &'static ClientManifest,
+    #[cfg_attr(rust_js, rust_js::nullable)]
+    pub bundler_config: Option<&'static ClientManifest>,
     pub cache: &'static Cache,
     pub cache_controller: &'static AbortController,
     pub next_chunk_id: Cell<f64>,
@@ -965,7 +986,7 @@ pub struct Request {
     pub identifier_count: Cell<f64>,
     pub taint_cleanup_queue: &'static RequestCleanupQueue,
     pub on_error: Rc<OnError>,
-    pub on_all_ready: Rc<OnAllReady>,
+    on_all_ready: Rc<OnAllReady>,
     pub on_fatal_error: Rc<OnFatalError>,
     // GAP rd493: upstream sets the Profiling-only and DEV-only fields only
     // under their flags; a struct's fields are always set.
@@ -1044,14 +1065,15 @@ fn default_error_handler(error: Option<&'static Unknown>) -> Option<String> {
     None
 }
 
+#[cfg_attr(rust_js, rust_js::nullable(bundler_config))]
 fn request_instance(
     r#type: i32,
     model: Option<&'static ReactClientValue>,
-    bundler_config: &'static ClientManifest,
+    bundler_config: Option<&'static ClientManifest>,
     on_error: Option<Rc<OnError>>,
     on_all_ready: Rc<OnAllReady>,
     on_fatal_error: Rc<OnFatalError>,
-    identifier_prefix: Option<String>,
+    identifier_prefix: Option<&str>,
     temporary_references: Option<&'static TemporaryReferenceSet>,
     debug_start_time: Option<f64>,                    // Profiling-only
     environment_name: Option<EnvironmentName>,        // DEV-only
@@ -1119,7 +1141,7 @@ fn request_instance(
         written_import_strings: js::map::new(None),
         written_import_strings_size: Cell::new(0.0),
         temporary_references,
-        identifier_prefix: identifier_prefix.unwrap_or_default(),
+        identifier_prefix: identifier_prefix.unwrap_or_default().to_owned(),
         identifier_count: Cell::new(1.0),
         taint_cleanup_queue: cleanup_queue,
         on_error: on_error.unwrap_or_else(|| Rc::new(default_error_handler)),
@@ -1197,11 +1219,12 @@ fn request_instance(
     request
 }
 
+#[cfg_attr(rust_js, rust_js::nullable(bundler_config))]
 pub fn create_request(
     model: Option<&'static ReactClientValue>,
-    bundler_config: &'static ClientManifest,
+    bundler_config: Option<&'static ClientManifest>,
     on_error: Option<Rc<OnError>>,
-    identifier_prefix: Option<String>,
+    identifier_prefix: Option<&str>,
     temporary_references: Option<&'static TemporaryReferenceSet>,
     debug_start_time: Option<f64>,                    // Profiling-only
     environment_name: Option<EnvironmentName>,        // DEV-only
@@ -1229,13 +1252,14 @@ pub fn create_request(
     )
 }
 
+#[cfg_attr(rust_js, rust_js::nullable(bundler_config))]
 pub fn create_prerender_request(
     model: Option<&'static ReactClientValue>,
-    bundler_config: &'static ClientManifest,
+    bundler_config: Option<&'static ClientManifest>,
     on_all_ready: Rc<OnAllReady>,
     on_fatal_error: Rc<OnFatalError>,
     on_error: Option<Rc<OnError>>,
-    identifier_prefix: Option<String>,
+    identifier_prefix: Option<&str>,
     temporary_references: Option<&'static TemporaryReferenceSet>,
     debug_start_time: Option<f64>,                    // Profiling-only
     environment_name: Option<EnvironmentName>,        // DEV-only
@@ -1529,14 +1553,18 @@ fn create_thenable_task(
         if __DEV__ {
             task.debug_owner.get()
         } else {
-            None
+            js::null()
         },
         if __DEV__ {
             task.debug_stack.get()
         } else {
-            None
+            js::null()
         },
-        if __DEV__ { task.debug_task.get() } else { None },
+        if __DEV__ {
+            task.debug_task.get()
+        } else {
+            js::null()
+        },
     )
 }
 
@@ -1587,14 +1615,18 @@ fn serialize_thenable(request: &Rc<Request>, task: &Rc<Task>, thenable: &'static
             let debug_owner = if __DEV__ {
                 task.debug_owner.get()
             } else {
-                None
+                js::null()
             };
             let debug_stack = if __DEV__ {
                 task.debug_stack.get()
             } else {
-                None
+                js::null()
             };
-            let debug_task = if __DEV__ { task.debug_task.get() } else { None };
+            let debug_task = if __DEV__ {
+                task.debug_task.get()
+            } else {
+                js::null()
+            };
             let settled = Rc::new(Cell::new(false));
             thenable.then(
                 {
@@ -1774,14 +1806,18 @@ fn serialize_readable_stream(
         if __DEV__ {
             task.debug_owner.get()
         } else {
-            None
+            js::null()
         },
         if __DEV__ {
             task.debug_stack.get()
         } else {
-            None
+            js::null()
         },
-        if __DEV__ { task.debug_task.get() } else { None },
+        if __DEV__ {
+            task.debug_task.get()
+        } else {
+            js::null()
+        },
     );
 
     // The task represents the Stop row. This adds a Start row.
@@ -1891,27 +1927,33 @@ fn serialize_readable_stream(
                 );
                 enqueue_flush(&request);
                 call_on_all_ready_if_ready(&request);
-            } else if let Err(x) = catch_unwind(AssertUnwindSafe(|| {
-                request
-                    .pending_chunks
-                    .set(request.pending_chunks.get() + 1.0);
-                stream_task.model.set(entry.value.flatten());
-                if is_byte_stream {
-                    // Chunks of byte streams are always Uint8Array instances.
-                    let chunk: &'static Unknown = stream_task.model.get().unwrap();
-                    emit_typed_array_chunk(&request, stream_task.id, "b", chunk, false);
-                } else {
-                    try_stream_task(&request, &stream_task);
+            } else {
+                // GAP (new): a `catch_unwind` closure's capture of an `Option` of
+                // one, `entry.value`, is `$some` of it, `$someValue(captured)`
+                // where it's read, so the value is read before the `try`.
+                let value = entry.value.flatten();
+                if let Err(x) = catch_unwind(AssertUnwindSafe(|| {
+                    request
+                        .pending_chunks
+                        .set(request.pending_chunks.get() + 1.0);
+                    stream_task.model.set(value);
+                    if is_byte_stream {
+                        // Chunks of byte streams are always Uint8Array instances.
+                        let chunk: &'static Unknown = stream_task.model.get().unwrap();
+                        emit_typed_array_chunk(&request, stream_task.id, "b", chunk, false);
+                    } else {
+                        try_stream_task(&request, &stream_task);
+                    }
+                    enqueue_flush(&request);
+                    let (progress, error) =
+                        (progress_cell.borrow().clone().unwrap(), Rc::clone(&error));
+                    let _: Promise<()> = reader.read().then_with(
+                        move |entry| progress(entry),
+                        move |reason| error(reason.as_unknown()),
+                    );
+                })) {
+                    error(thrown_value_of(&*x));
                 }
-                enqueue_flush(&request);
-                let (progress, error) =
-                    (progress_cell.borrow().clone().unwrap(), Rc::clone(&error));
-                let _: Promise<()> = reader.read().then_with(
-                    move |entry| progress(entry),
-                    move |reason| error(reason.as_unknown()),
-                );
-            })) {
-                error(thrown_value_of(&*x));
             }
         })
     };
@@ -1957,14 +1999,18 @@ fn serialize_async_iterable(
         if __DEV__ {
             task.debug_owner.get()
         } else {
-            None
+            js::null()
         },
         if __DEV__ {
             task.debug_stack.get()
         } else {
-            None
+            js::null()
         },
-        if __DEV__ { task.debug_task.get() } else { None },
+        if __DEV__ {
+            task.debug_task.get()
+        } else {
+            js::null()
+        },
     );
 
     if __DEV__ {
@@ -2501,11 +2547,7 @@ fn render_function_component(
             // We don't have a chunk to assign debug info. We need to outline this
             // component to assign it an ID.
             return outline_task(request, task);
-        }
-        // GAP rd578: as `} else if let .. {`, the `let` assigned in each branch
-        // was declared inside the `else` block (`ReferenceError: debugInfo is
-        // not defined`), so the early return is its own `if`.
-        if let Some(prev_thenable_state) = &prev_thenable_state {
+        } else if let Some(prev_thenable_state) = &prev_thenable_state {
             // This is a replay and we've already emitted the debug info of this component
             // in the first pass. We skip emitting a duplicate line.
             // As a hack we stashed the previous component debug info on this object in DEV.
@@ -2959,15 +3001,14 @@ fn render_client_element(
             }
         }
     };
-    let mut debug_owner = None;
-    let mut debug_stack = None;
+    let mut debug_owner = js::null();
+    let mut debug_stack = js::null();
     if __DEV__ {
-        debug_owner =
-            unsafe { js::cast::<Option<&'static ReactComponentInfo>>(task.debug_owner.get()) };
-        if let Some(debug_owner) = debug_owner {
+        debug_owner = task.debug_owner.get();
+        if !matches!(js::classify(debug_owner), Kind::Null) {
             // Ensure we outline this owner if it is the first time we see it.
             // So that we can refer to it directly.
-            outline_component_info(request, debug_owner);
+            outline_component_info(request, task_debug_owner_info(debug_owner));
         }
         if let Some(filtered) = task_debug_stack_trace(request, task) {
             // Outline the debug stack so that we write to the completedDebugChunks instead.
@@ -2999,11 +3040,7 @@ fn render_client_element(
         Some(props),
     ];
     if __DEV__ {
-        element.extend([
-            debug_owner.map_or(js::null(), |debug_owner| Some(js::unknown(debug_owner))),
-            debug_stack.or(js::null()),
-            Some(js::unknown_of(validated)),
-        ]);
+        element.extend([debug_owner, debug_stack, Some(js::unknown_of(validated))]);
     }
     let element = js::unknown_of(element);
     if task.implicit_slot.get() && key.is_some() {
@@ -3062,14 +3099,18 @@ fn defer_task(request: &Rc<Request>, task: &Rc<Task>) -> Option<&'static ReactJs
         if __DEV__ {
             task.debug_owner.get()
         } else {
-            None
+            js::null()
         },
         if __DEV__ {
             task.debug_stack.get()
         } else {
-            None
+            js::null()
         },
-        if __DEV__ { task.debug_task.get() } else { None },
+        if __DEV__ {
+            task.debug_task.get()
+        } else {
+            js::null()
+        },
     );
 
     ping_task(request, &new_task);
@@ -3093,14 +3134,18 @@ fn outline_task(request: &Rc<Request>, task: &Rc<Task>) -> Option<&'static React
         if __DEV__ {
             task.debug_owner.get()
         } else {
-            None
+            js::null()
         },
         if __DEV__ {
             task.debug_stack.get()
         } else {
-            None
+            js::null()
         },
-        if __DEV__ { task.debug_task.get() } else { None },
+        if __DEV__ {
+            task.debug_task.get()
+        } else {
+            js::null()
+        },
     );
 
     retry_task(request, &new_task);
@@ -3405,12 +3450,14 @@ fn forward_promise_debug_info(
 }
 
 /// What a task is told it awaited: `{awaited, env, owner, stack}`, its
-/// `awaited` the I/O node, deduped by this reference.
+/// `awaited` the I/O node, deduped by this reference, and its `owner` what
+/// it's given, a component's info, `null` or the `undefined` of a task whose
+/// element was a production element's clone.
 struct AsyncInfo {
     awaited: Rc<AsyncSequence>,
     env: String,
-    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
-    owner: Cell<Option<&'static ReactComponentInfo>>,
+    #[cfg_attr(rust_js, rust_js::optional)]
+    owner: Cell<Option<&'static Unknown>>,
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     stack: RefCell<Option<ReactStackTrace>>,
 }
@@ -3594,7 +3641,7 @@ fn visit_async_node_impl(
                                 js::unknown_of(AsyncInfo {
                                     awaited: io_node, // This is deduped by this reference.
                                     env,
-                                    owner: Cell::new(node.owner),
+                                    owner: Cell::new(node.owner.map(js::unknown)),
                                     stack: RefCell::new(
                                         node.stack
                                             .as_ref()
@@ -3672,11 +3719,9 @@ fn emit_async_sequence(
                 if owner.is_none() && stack.is_none() {
                     // We have no location for the await. We can use the JSX callsite of the parent
                     // as the await if this was just passed as a prop.
-                    if let Some(debug_owner) = unsafe {
-                        js::cast::<Option<&'static ReactComponentInfo>>(task.debug_owner.get())
-                    } {
+                    if !matches!(js::classify(task.debug_owner.get()), Kind::Null) {
                         // $FlowFixMe[cannot-write]
-                        debug_info.owner.set(Some(debug_owner));
+                        debug_info.owner.set(task.debug_owner.get());
                     }
                     if let Some(stack) = task_debug_stack_trace(request, task) {
                         // $FlowFixMe[cannot-write]
@@ -3685,7 +3730,7 @@ fn emit_async_sequence(
                 } else {
                     if let Some(owner) = owner {
                         // $FlowFixMe[cannot-write]
-                        debug_info.owner.set(Some(owner));
+                        debug_info.owner.set(Some(js::unknown(owner)));
                     }
                     if let Some(stack) = stack {
                         // $FlowFixMe[cannot-write]
@@ -4511,7 +4556,6 @@ impl DebugBlobReading {
             return None;
         }
         // TODO: Emit the chunk early and refer to it later by dedupe.
-        // GAP rd583: a read's `value` is an `Option` of one.
         self.model.borrow_mut().push(entry.value.flatten());
         let reading = Rc::clone(self);
         let erroring = Rc::clone(self);
@@ -4586,7 +4630,6 @@ impl BlobReading {
             return None;
         }
         // TODO: Emit the chunk early and refer to it later by dedupe.
-        // GAP rd583: a read's `value` is an `Option` of one.
         self.model.borrow_mut().push(entry.value.flatten());
         let reading = Rc::clone(self);
         let erroring = Rc::clone(self);
@@ -4834,14 +4877,18 @@ fn render_model(
             if __DEV__ {
                 task.debug_owner.get()
             } else {
-                None
+                js::null()
             },
             if __DEV__ {
                 task.debug_stack.get()
             } else {
-                None
+                js::null()
             },
-            if __DEV__ { task.debug_task.get() } else { None },
+            if __DEV__ {
+                task.debug_task.get()
+            } else {
+                js::null()
+            },
         );
         let (resolve, reject) = ping_of(request, &new_task);
         let thenable: &'static Thenable = unsafe { js::cast(x) };
@@ -6452,10 +6499,9 @@ fn outline_io_info(request: &Rc<Request>, io_info: &'static ReactIOInfo) {
         io_info.name.get(),
         io_info.start.get(),
         io_info.end.get(),
-        // GAP(D1): `ReactIOInfo`'s `value` reads `None` of both `null` and
-        // `undefined`, which upstream tells apart (it writes a `null`
-        // `value`, and leaves out an `undefined` one), so it's read as any
-        // value.
+        // `ReactIOInfo`'s `value` is read as any value: its `Option` reads
+        // `None` of both `null` and `undefined`, which upstream tells apart
+        // (it writes a `null` `value`, and leaves out an `undefined` one).
         js::get(io_info, "value"),
         env.as_deref(),
         owner,
@@ -7913,8 +7959,8 @@ fn emit_chunk(request: &Rc<Request>, task: &Rc<Task>, value: Option<&'static Rea
     // For anything else we need to try to serialize it using JSON.
     // We resolve the model tree first in pure JS to avoid the C++->JS boundary
     // overhead of JSON.stringify's replacer callback.
-    // GAP(E1): `{'': value}`, an object literal of a key that's no
-    // identifier, can't be written, so the key is set on an empty object.
+    // `{'': value}`, an object literal of a key that's no identifier, can't
+    // be written, so the key is set on an empty object.
     let root = js::unknown(js::object::spread(None::<&Unknown>));
     js::set(root, "", value);
     let resolved_model = resolve_model(request, task, root, "", value);
@@ -8128,9 +8174,7 @@ fn perform_work(request: &Rc<Request>) {
         js::cast(Some(js::unknown(&HOOKS_DISPATCHER)))
     }));
     let prev_request = CURRENT_REQUEST.replace(Some(Rc::clone(request)));
-    // GAP(E3): ReactFlightHooks' `Request` is still its opaque one until it
-    // takes this module's; the request is given as what it is.
-    prepare_to_use_hooks_for_request(unsafe { js::cast(Some(js::unknown(&**request))) });
+    prepare_to_use_hooks_for_request(request);
 
     let result = catch_unwind(AssertUnwindSafe(|| {
         let pinged_tasks = request.pinged_tasks.replace(vec![]);

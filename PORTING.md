@@ -148,7 +148,7 @@ react-server, react-client, the Fizz suites and react-server-dom-fb,
 | ssr | `yarn test react-dom/src/__tests__/ReactDOMServerIntegration` (21 suites) | 1602 / 0 / 0 |
 | float | `yarn test react-dom/src/__tests__/ReactDOMFloat react-dom/src/__tests__/ReactDOMLegacyFloat` (2 suites) | 143 / 0 / 1 |
 | ssrmisc | `yarn test react-dom/src/__tests__/ReactServerRendering react-dom/src/__tests__/ReactDOMServerLifecycles react-dom/src/__tests__/ReactDOMInReactServer react-dom/src/__tests__/ReactClassComponentPropResolutionFizz packages/react-markup packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShimServer` (9 suites) | 104 / 0 / 0 |
-| server | `yarn test packages/react-server/src/__tests__` (4 suites) | 26 / 0 / 0² |
+| server | `yarn test packages/react-server/src/__tests__` (7 suites) | 31 / 0 / 0²⁵ |
 | client | `yarn test packages/react-client/src/__tests__` (4 suites) | 98 / 0 / 0⁴ |
 | webpack | `yarn test packages/react-server-dom-webpack/src/__tests__` (9 suites) | 278 / 0 / 0 |
 | turbopack | `yarn test packages/react-server-dom-turbopack/src/__tests__` (7 suites) | 43 / 0 / 0 |
@@ -167,6 +167,14 @@ Batch 52 with the fix of its unblock, and
 that row's `undefined` or `null` as it is), added in Batch 53 with the
 handler's `value` and `reason` holding what they're given; upstream's suites
 alone are 95 in 2.
+
+⁵ With the port's own `ReactFizzPostponedState-test.js`,
+`ReactFlightSymbolDescription-test.js` (1 test, DEV: a logged symbol of no
+description is sent as `"$Sundefined"`) and
+`ReactFlightGivenDebugValues-test.js` (3 tests: an element without an
+`_owner` throws where upstream reads its owner; a forwarded I/O info's
+`null` value is sent and an `undefined` one left out), the last added with
+ReactFlightServer's migration; upstream's suites alone are 26 in 4.
 
 ² One run in five of `-r=www-modern packages/react-server/src/__tests__`
 failed one test (25 / 1 / 0) while the machine was loaded. The default
@@ -807,10 +815,10 @@ These differences from upstream's output are accepted:
   ReactFlightWebpackReferences, ReactFlightServerConfigWebpackBundler and
   ReactFlightDOMServerBrowser, -Edge and -Node are Rust; the plain
   re-export entries `react-flight-dom-server.*.js` stay JS (rd55), as do
-  ReactFlightWebpackPlugin, NodeLoader and NodeRegister. ReactFlightServer's
-  functions an entry calls are bound once, in react_server's
-  ReactFlightHooks beside its Flight `Request`, each bundler's client
-  manifest a type parameter, as ReactFizzCurrentTask binds ReactFizzServer's.
+  ReactFlightWebpackPlugin, NodeLoader and NodeRegister. An entry calls
+  ReactFlightServer's functions through `use
+  react_server::react_flight_server::{..}`, its bundler's client manifest
+  given as `js::unknown(..)` (Parcel's `None`, upstream's `null`).
   These differences from upstream are accepted, each gap left open:
   - `options?.x` where upstream writes `options ? options.x : undefined`,
     and `!= null` where upstream tests `!== undefined` or truth (an option
@@ -953,6 +961,70 @@ These differences from upstream's output are accepted:
     iterations") escaping a DEV error stack, whose length is the
     checkout's path's and the `$catchUnwind` frames': a known gate failure,
     gone with the first item's gap (the user, 2026-11-02).
+- **ReactFlightServer's forms (the user, 2026-11-02)**: ReactFlightServer
+  is Rust. Its `Request` and `Task` are Rust structs held by `Rc`, their
+  mutable fields `Cell`s and `RefCell`s, as Fizz's are; ReactFlightHooks,
+  ReactFlightAsyncDispatcher, ReactFlightServerConfigDebugNode and the
+  react-server-dom-* entries `use` its items. A request's `onAllReady` is
+  private to react-server, as Fizz's is (rust-js's ADR 0626: a public
+  field's callback may be cloned out and outlive the request, so a
+  prerender's, which holds the request's `Rc<OnceCell<Weak<..>>>`, isn't
+  owned by createPrerenderRequest's return). A task's `debugOwner`,
+  `debugStack` and `debugTask` hold what the element gave,
+  `Option<&'static Unknown>`, and upstream's `!== null` tests of them are
+  `js::classify`'s `Kind::Null`, so a production element's `undefined`
+  passes them and throws where upstream's does
+  (`ReactFlightGivenDebugValues-test.js`). Fizz's forms above are accepted
+  here too, where the same code is: a `try` whose result is read after it
+  as `$catchUnwind`, `$borrow(..)` and `$borrowMut(..)` of a `RefCell`
+  collection, `!= null` of an `Option` where upstream tests `!== null` or
+  `!== undefined`, the pinged tasks' `while` and `$drain`, and an entry's
+  `onAllReady = () => { res(); }` (rd599). Also accepted, none changing a
+  result:
+  - upstream's `const stringify = JSON.stringify;` is a function,
+    `stringify(value)`, which throws what `JSON.stringify` throws, of a
+    model that's never `undefined`;
+  - `ObjectPrototype` is `Object.prototype`, read where it's compared,
+    where upstream names it once;
+  - the request's `filterStackFrame` is called with four arguments,
+    `filterStackFrame(url, functionName, lineNumber, columnNumber)`, as
+    upstream's calls are, where upstream's option type takes two;
+  - `debugTask.run(callback.bind(null, arg))` and
+    `componentStorage.run(.., fn.bind(null, ..))` are arrows, `() =>
+    callback(arg)`;
+  - `voidHandler` is a function declaration, `function voidHandler() {}`,
+    where upstream's is `const voidHandler = () => {};`;
+  - emitChunk's root, upstream's `{'': value}`, is made as `const root =
+    {}; root[''] = value;`, as Rust writes no literal of a key that's no
+    identifier;
+  - an array the port holds in a `RefCell` (a component's tracked
+    thenables, a component info's stack, a blob's model) is copied before
+    a call that may run JS, where upstream iterates it in place, so no
+    borrow is held across the call;
+  - the port's helpers and structs upstream doesn't have: `stringify`,
+    `taskDebugStackTrace`, `taskDebugOwnerInfo`, `thrownValueOf`,
+    `isSuspenseException`, `keyedFragment`, `hasDisplayName`,
+    `forwardPromiseDebugInfo`, `pingOf`, `isElementType`, `doNotLimit`,
+    `doNotLimitAdd`, `doNotLimitHas`, `writtenReferenceOf`,
+    `describeErrorValue`, `isNotPlainImportMetadata`,
+    `notPlainImportMetadata`, `unknownValueMessage`,
+    `isNextTwoChunksAreAtomic`, and the types `Counter`,
+    `DeferredDebugStore`, `LazyThenable`, `MultiShotIterable`,
+    `MultiShotAsyncIterable`, `FragmentProps`, `Found`, `Visited`,
+    `AsyncInfo`, `ServerObjectReferenceMetadata`, `ServerReferenceMetadata`,
+    `ServerReferenceMetadataDev`, `DebugBlobReading`, `BlobReading`,
+    `ErrorValueInfo`, `ComponentDebugInfo`, `IoDebugInfo`,
+    `ConstructorReference`, `AsyncDebugInfo` and `AbortedAsyncInfo`;
+  - temporary, until react-in-rust builds on a rust-js past ae7515268,
+    which has their fixes (rd579 46eaf6688, rd576 and rd577 f3af1ed54; the
+    coordinator's follow-up): rd579's `environmentNameOf(request)`, `const
+    environmentName = request.environmentName; return environmentName();`,
+    for upstream's `(0, request.environmentName)()`; and patchConsole's
+    two, `descriptor.value` read as any value, `typeof originalMethod ===
+    'function'` after it, where upstream tests `typeof descriptor.value ===
+    'function'` in the `if` (rd576), and the console it patches read as
+    `const consoleObject = $unwrap(globalThis.console);`, where upstream
+    passes `console` (rd577).
 - **Accepted on the user's behalf while away, 2026-11-02** (each changes no
   result; the coordinator logs them for the user):
   - the Flight client's DEV `then` holds its wrapper promise in a cell its

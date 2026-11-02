@@ -41,7 +41,6 @@ import {
   $borrowMut,
   $fieldCell,
   $index,
-  $someValue,
   $unborrow,
   $unwrap,
 } from '@rust-js/runtime';
@@ -268,13 +267,11 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
   let stringBuffer = '';
 
   function progress({done, value}) {
-    // GAP rd583: a read's `value` is an `Option` of one, `$someValue(value)`,
-    // where upstream reads it as given.
     // GAP rd582: the conditional's temporary is named after the else
     // branch's callee, whose import is renamed for it.
     const value$1 = done
       ? readFinalStringChunk(stringDecoder, new Uint8Array(0))
-      : readPartialStringChunk(stringDecoder, $someValue(value));
+      : readPartialStringChunk(stringDecoder, value);
     stringBuffer += value$1;
     const messages = stringBuffer.split('\n');
     const last = messages.pop() ?? '';
@@ -391,10 +388,11 @@ export function prerenderToNodeStream(model, webpackMap, options) {
     const onFatalError = reject;
     let request;
     function onAllReady() {
+      const request$1 = $unwrap(request);
       let writable;
       const readable = new Readable({
         read() {
-          startFlowing($unwrap(request), $unwrap(writable));
+          startFlowing(request$1, $unwrap(writable));
         },
       });
       writable = createFakeWritableFromNodeReadable(readable);
@@ -427,6 +425,7 @@ export function prerender(model, webpackMap, options) {
     const onFatalError = reject;
     let request;
     function onAllReady() {
+      const request$1 = $unwrap(request);
       let writable;
       const stream = new ReadableStream(
         {
@@ -436,11 +435,11 @@ export function prerender(model, webpackMap, options) {
               createFakeWritableFromReadableStreamController(controller);
           },
           pull(controller) {
-            startFlowing($unwrap(request), $unwrap(writable));
+            startFlowing(request$1, $unwrap(writable));
           },
           cancel(reason) {
-            stopFlowing($unwrap(request));
-            abort($unwrap(request), reason);
+            stopFlowing(request$1);
+            abort(request$1, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.

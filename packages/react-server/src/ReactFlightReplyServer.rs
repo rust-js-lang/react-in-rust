@@ -625,10 +625,7 @@ fn load_server_reference(
     let server_reference_promise: &'static Thenable = match preload_module(server_reference) {
         None => {
             if js::instance_of(bound, js::class::<ReactPromise>()) {
-                // GAP rd485: `Promise.resolve(bound)` and `Promise.all([..])`
-                // of thenables: js's promise functions take and give
-                // `Promise`s, which a `Thenable` is none of.
-                unsafe { js::cast(Some(js::unknown(&js::promise::resolve(bound)))) }
+                js::upcast(js::promise::resolve(bound))
             } else {
                 // Nothing to preload and no bound arguments to wait for, so we can
                 // resolve the reference synchronously.
@@ -639,15 +636,16 @@ fn load_server_reference(
         }
         Some(server_reference_promise) => {
             if js::instance_of(bound, js::class::<ReactPromise>()) {
-                // GAP rd485: as above.
-                unsafe {
-                    js::cast(Some(js::unknown(&js::promise::all(vec![
+                // GAP rd485: `Promise.all([..])` of thenables: js's promise
+                // functions take `Promise`s, which a `Thenable` is none of.
+                js::upcast(js::promise::all(vec![
+                    unsafe {
                         js::cast::<js::Promise<Option<&'static Unknown>>>(Some(js::unknown(
                             server_reference_promise,
-                        ))),
-                        js::cast(bound),
-                    ]))))
-                }
+                        )))
+                    },
+                    unsafe { js::cast(bound) },
+                ]))
             } else {
                 server_reference_promise
             }

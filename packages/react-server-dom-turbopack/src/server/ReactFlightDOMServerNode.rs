@@ -3,9 +3,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use std::cell::{Cell, RefCell};
+use std::cell::{Cell, OnceCell, RefCell};
 use std::panic::{AssertUnwindSafe, catch_unwind};
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 
 use busboy::{Busboy, FileInfo, FileStream};
 use js::{
@@ -26,8 +26,8 @@ use shared::environment::__DEV__;
 use shared::noop::noop;
 use shared::react_types::ReactFormState;
 
-use react_server::react_flight_hooks::{
-    EnvironmentName, FilterStackFrame, OnError, ReactClientValue, Request, abort,
+use react_server::react_flight_server::{
+    EnvironmentName, FilterStackFrame, OnError, OnFatalError, ReactClientValue, Request, abort,
     attach_abort_signal, close_debug_channel, create_prerender_request, create_request,
     resolve_debug_message, start_flowing, start_flowing_debug, start_work, stop_flowing,
 };
@@ -63,7 +63,7 @@ use react_client::react_flight_client_stream_config_node::{
     StringDecoder, create_string_decoder, read_final_string_chunk, read_partial_string_chunk,
 };
 
-use react_server::react_server_stream_config_node::TEXT_ENCODER;
+use react_server::react_server_stream_config_node::{Destination, TEXT_ENCODER};
 
 use super::react_flight_server_config_turbopack_bundler::ClientManifest;
 use crate::client::react_flight_client_config_bundler_turbopack::ServerManifest;
@@ -73,18 +73,15 @@ pub use react_server::react_flight_server_temporary_references::create_temporary
 // GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
 pub use react_server::react_flight_server_temporary_references::TemporaryReferenceSet;
 
-fn create_drain_handler(
-    destination: &'static Writable,
-    request: &'static Request,
-) -> Box<dyn Fn()> {
-    Box::new(move || start_flowing(request, destination))
+fn create_drain_handler(destination: &'static Destination, request: Rc<Request>) -> Box<dyn Fn()> {
+    Box::new(move || start_flowing(&request, js::unknown(destination)))
 }
 
-fn create_cancel_handler(request: &'static Request, reason: &'static str) -> Box<dyn Fn()> {
+fn create_cancel_handler(request: Rc<Request>, reason: &'static str) -> Box<dyn Fn()> {
     Box::new(move || {
-        stop_flowing(request);
+        stop_flowing(&request);
         abort(
-            request,
+            &request,
             Some(js::unknown(js::error::new(Some(reason), None))),
         );
     })
@@ -93,7 +90,7 @@ fn create_cancel_handler(request: &'static Request, reason: &'static str) -> Box
 /// startReadingFromDebugChannelReadable's scope: the text read but not yet
 /// split into messages, and whether its last bytes were a partial chunk.
 struct DebugChannelReadableReading {
-    request: &'static Request,
+    request: Rc<Request>,
     string_decoder: &'static StringDecoder,
     last_was_partial: Cell<bool>,
     string_buffer: RefCell<String>,
@@ -128,14 +125,14 @@ impl DebugChannelReadableReading {
             .collect();
         let last = messages.pop().unwrap_or_default();
         for message in &messages {
-            resolve_debug_message(self.request, message);
+            resolve_debug_message(&self.request, message);
         }
         *self.string_buffer.borrow_mut() = last;
     }
 
     fn on_error(&self, error: Option<&'static Unknown>) {
         abort(
-            self.request,
+            &self.request,
             Some(js::unknown(js::error::new(
                 Some("Lost connection to the Debug Channel."),
                 Some(&js::ErrorOptions {
@@ -146,7 +143,7 @@ impl DebugChannelReadableReading {
     }
 
     fn on_close(&self) {
-        close_debug_channel(self.request);
+        close_debug_channel(&self.request);
     }
 }
 
@@ -155,10 +152,7 @@ impl DebugChannelReadableReading {
 /// it has, as upstream tells them.
 pub type DebugChannel = Unknown;
 
-fn start_reading_from_debug_channel_readable(
-    request: &'static Request,
-    stream: &'static DebugChannel,
-) {
+fn start_reading_from_debug_channel_readable(request: Rc<Request>, stream: &'static DebugChannel) {
     let reading = Rc::new(DebugChannelReadableReading {
         request,
         string_decoder: create_string_decoder(None),
@@ -216,8 +210,8 @@ fn start_reading_from_debug_channel_readable(
 pub struct Options {
     pub debug_channel: Option<&'static DebugChannel>,
     pub environment_name: Option<EnvironmentName>,
-    pub filter_stack_frame: Option<&'static FilterStackFrame>,
-    pub on_error: Option<&'static OnError>,
+    pub filter_stack_frame: Option<Rc<FilterStackFrame>>,
+    pub on_error: Option<Rc<OnError>>,
     pub identifier_prefix: Option<&'static str>,
     pub temporary_references: Option<&'static TemporaryReferenceSet>,
     pub start_time: Option<f64>,
@@ -225,7 +219,7 @@ pub struct Options {
 
 pub struct PipeableStream {
     pub abort: Box<dyn Fn(Option<&'static Unknown>)>,
-    pub pipe: Box<dyn Fn(&'static Writable) -> &'static Writable>,
+    pub pipe: Box<dyn Fn(&'static Destination) -> &'static Destination>,
 }
 
 pub fn render_to_pipeable_stream(
@@ -268,55 +262,64 @@ pub fn render_to_pipeable_stream(
         };
     let request = create_request(
         model,
-        turbopack_map,
-        options.and_then(|options| options.on_error),
+        Some(js::unknown(turbopack_map)),
+        options.and_then(|options| options.on_error.clone()),
         options.and_then(|options| options.identifier_prefix),
         options.and_then(|options| options.temporary_references),
         options.and_then(|options| options.start_time),
         if __DEV__ {
-            options.and_then(|options| options.environment_name)
+            options.and_then(|options| options.environment_name.clone())
         } else {
             None
         },
         if __DEV__ {
-            options.and_then(|options| options.filter_stack_frame)
+            options.and_then(|options| options.filter_stack_frame.clone())
         } else {
             None
         },
         debug_channel_readable.is_some(),
     );
     let has_started_flowing = Cell::new(false);
-    start_work(request);
+    start_work(&request);
     if let Some(debug_channel_writable) = debug_channel_writable {
-        start_flowing_debug(request, debug_channel_writable);
+        start_flowing_debug(&request, js::unknown(debug_channel_writable));
     }
     if let Some(debug_channel_readable) = debug_channel_readable {
-        start_reading_from_debug_channel_readable(request, debug_channel_readable);
+        start_reading_from_debug_channel_readable(Rc::clone(&request), debug_channel_readable);
     }
     PipeableStream {
-        pipe: Box::new(move |destination| {
-            if has_started_flowing.get() {
-                panic!("React currently only supports piping to one writable stream.");
-            }
-            has_started_flowing.set(true);
-            start_flowing(request, destination);
-            destination.on(event::Drain, create_drain_handler(destination, request));
-            let on_error = create_cancel_handler(
-                request,
-                "The destination stream errored while writing data.",
-            );
-            destination.on(event::Error, Box::new(move |_: &JsError| on_error()));
-            // We don't close until the debug channel closes.
-            if !__DEV__ || debug_channel_readable.is_none() {
+        pipe: {
+            let request = Rc::clone(&request);
+            Box::new(move |destination| {
+                if has_started_flowing.get() {
+                    panic!("React currently only supports piping to one writable stream.");
+                }
+                has_started_flowing.set(true);
+                start_flowing(&request, js::unknown(destination));
                 destination.on(
-                    event::Close,
-                    create_cancel_handler(request, "The destination stream closed early."),
+                    event::Drain,
+                    create_drain_handler(destination, Rc::clone(&request)),
                 );
-            }
-            destination
-        }),
+                let on_error = create_cancel_handler(
+                    Rc::clone(&request),
+                    "The destination stream errored while writing data.",
+                );
+                destination.on(event::Error, Box::new(move |_: &JsError| on_error()));
+                // We don't close until the debug channel closes.
+                if !__DEV__ || debug_channel_readable.is_none() {
+                    destination.on(
+                        event::Close,
+                        create_cancel_handler(
+                            Rc::clone(&request),
+                            "The destination stream closed early.",
+                        ),
+                    );
+                }
+                destination
+            })
+        },
         abort: Box::new(move |reason| {
-            abort(request, reason);
+            abort(&request, reason);
         }),
     }
 }
@@ -398,7 +401,7 @@ fn create_fake_writable_from_readable_stream_controller(
 /// startReadingFromDebugChannelReadableStream's scope: its reader, and the
 /// text read but not yet split into messages.
 struct DebugChannelReading {
-    request: &'static Request,
+    request: Rc<Request>,
     reader: &'static ReadableStreamDefaultReader,
     string_decoder: &'static StringDecoder,
     string_buffer: RefCell<String>,
@@ -409,8 +412,6 @@ impl DebugChannelReading {
         self: &Rc<Self>,
         ReadableStreamReadResult { done, value }: ReadableStreamReadResult,
     ) -> Option<Promise<()>> {
-        // GAP rd583: a read's `value` is an `Option` of one, `$someValue(value)`,
-        // where upstream reads it as given.
         // GAP rd582: the conditional's temporary is named after the else
         // branch's callee, whose import is renamed for it.
         self.string_buffer
@@ -429,11 +430,11 @@ impl DebugChannelReading {
             .collect();
         let last = messages.pop().unwrap_or_default();
         for message in &messages {
-            resolve_debug_message(self.request, message);
+            resolve_debug_message(&self.request, message);
         }
         *self.string_buffer.borrow_mut() = last;
         if js::truthy(done.as_ref()) {
-            close_debug_channel(self.request);
+            close_debug_channel(&self.request);
             return None;
         }
         let reading = Rc::clone(self);
@@ -448,7 +449,7 @@ impl DebugChannelReading {
 
     fn error(&self, e: &'static JsError) {
         abort(
-            self.request,
+            &self.request,
             Some(js::unknown(js::error::new(
                 Some("Lost connection to the Debug Channel."),
                 Some(&js::ErrorOptions { cause: Some(e) }),
@@ -457,10 +458,7 @@ impl DebugChannelReading {
     }
 }
 
-fn start_reading_from_debug_channel_readable_stream(
-    request: &'static Request,
-    stream: &ReadableStream,
-) {
+fn start_reading_from_debug_channel_readable_stream(request: Rc<Request>, stream: &ReadableStream) {
     let reading = Rc::new(DebugChannelReading {
         request,
         reader: stream.get_reader(),
@@ -484,8 +482,8 @@ pub struct WebStreamsDebugChannel {
 pub struct WebStreamsOptions {
     pub debug_channel: Option<&'static WebStreamsDebugChannel>,
     pub environment_name: Option<EnvironmentName>,
-    pub filter_stack_frame: Option<&'static FilterStackFrame>,
-    pub on_error: Option<&'static OnError>,
+    pub filter_stack_frame: Option<Rc<FilterStackFrame>>,
+    pub on_error: Option<Rc<OnError>>,
     pub identifier_prefix: Option<&'static str>,
     pub temporary_references: Option<&'static TemporaryReferenceSet>,
     pub start_time: Option<f64>,
@@ -513,25 +511,25 @@ pub fn render_to_readable_stream(
     };
     let request = create_request(
         model,
-        turbopack_map,
-        options.and_then(|options| options.on_error),
+        Some(js::unknown(turbopack_map)),
+        options.and_then(|options| options.on_error.clone()),
         options.and_then(|options| options.identifier_prefix),
         options.and_then(|options| options.temporary_references),
         options.and_then(|options| options.start_time),
         if __DEV__ {
-            options.and_then(|options| options.environment_name)
+            options.and_then(|options| options.environment_name.clone())
         } else {
             None
         },
         if __DEV__ {
-            options.and_then(|options| options.filter_stack_frame)
+            options.and_then(|options| options.filter_stack_frame.clone())
         } else {
             None
         },
         debug_channel_readable.is_some(),
     );
     if let Some(signal) = options.and_then(|options| options.signal) {
-        attach_abort_signal(request, signal);
+        attach_abort_signal(&request, signal);
     }
     if let Some(debug_channel_writable) = debug_channel_writable {
         let debug_writable: Cell<Option<&'static Writable>> = Cell::new(None);
@@ -545,7 +543,7 @@ pub fn render_to_readable_stream(
                     )));
                 }),
                 pull: Some(&|_controller| {
-                    start_flowing_debug(request, debug_writable.get().unwrap());
+                    start_flowing_debug(&request, js::unknown(debug_writable.get().unwrap()));
                 }),
                 cancel: None,
             }),
@@ -558,7 +556,10 @@ pub fn render_to_readable_stream(
         let _: Promise<()> = debug_stream.pipe_to(debug_channel_writable, None);
     }
     if let Some(debug_channel_readable) = debug_channel_readable {
-        start_reading_from_debug_channel_readable_stream(request, debug_channel_readable);
+        start_reading_from_debug_channel_readable_stream(
+            Rc::clone(&request),
+            debug_channel_readable,
+        );
     }
     let writable: Cell<Option<&'static Writable>> = Cell::new(None);
     readable_stream::new(
@@ -569,14 +570,14 @@ pub fn render_to_readable_stream(
                 writable.set(Some(create_fake_writable_from_readable_stream_controller(
                     controller,
                 )));
-                start_work(request);
+                start_work(&request);
             }),
             pull: Some(&|_controller| {
-                start_flowing(request, writable.get().unwrap());
+                start_flowing(&request, js::unknown(writable.get().unwrap()));
             }),
-            cancel: Some(&move |reason| {
-                stop_flowing(request);
-                abort(request, reason);
+            cancel: Some(&|reason| {
+                stop_flowing(&request);
+                abort(&request, reason);
             }),
         }),
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -606,8 +607,8 @@ fn create_fake_writable_from_node_readable(readable: &'static Readable) -> &'sta
 
 pub struct PrerenderOptions {
     pub environment_name: Option<EnvironmentName>,
-    pub filter_stack_frame: Option<&'static FilterStackFrame>,
-    pub on_error: Option<&'static OnError>,
+    pub filter_stack_frame: Option<Rc<FilterStackFrame>>,
+    pub on_error: Option<Rc<OnError>>,
     pub identifier_prefix: Option<&'static str>,
     pub temporary_references: Option<&'static TemporaryReferenceSet>,
     pub signal: Option<&'static AbortSignal>,
@@ -624,46 +625,50 @@ pub fn prerender_to_node_stream(
     options: Option<&'static PrerenderOptions>,
 ) -> Promise<StaticResult> {
     promise::new(move |resolve, reject| {
-        let on_fatal_error = reject;
-        let request: Cell<Option<&'static Request>> = Cell::new(None);
-        let on_all_ready = || {
-            let writable: Cell<Option<&'static Writable>> = Cell::new(None);
-            let readable: &'static Readable = readable::new(Some(&ReadableOptions {
-                read: Some(&|_| {
-                    start_flowing(request.get().unwrap(), writable.get().unwrap());
-                }),
-                high_water_mark: None,
-            }));
-            writable.set(Some(create_fake_writable_from_node_readable(readable)));
-            resolve(StaticResult { prelude: readable });
+        let on_fatal_error: Rc<OnFatalError> = Rc::new(reject);
+        let request_cell: Rc<OnceCell<Weak<Request>>> = Rc::new(OnceCell::new());
+        let on_all_ready = {
+            let cell = Rc::clone(&request_cell);
+            move || {
+                let request = cell.get().and_then(Weak::upgrade).unwrap();
+                let writable: Cell<Option<&'static Writable>> = Cell::new(None);
+                let readable: &'static Readable = readable::new(Some(&ReadableOptions {
+                    read: Some(&|_| {
+                        start_flowing(&request, js::unknown(writable.get().unwrap()));
+                    }),
+                    high_water_mark: None,
+                }));
+                writable.set(Some(create_fake_writable_from_node_readable(readable)));
+                resolve(StaticResult { prelude: readable });
+            }
         };
 
-        request.set(Some(create_prerender_request(
+        let request = create_prerender_request(
             model,
-            turbopack_map,
-            &on_all_ready,
+            Some(js::unknown(turbopack_map)),
+            Rc::new(on_all_ready),
             on_fatal_error,
-            options.and_then(|options| options.on_error),
+            options.and_then(|options| options.on_error.clone()),
             options.and_then(|options| options.identifier_prefix),
             options.and_then(|options| options.temporary_references),
             options.and_then(|options| options.start_time),
             if __DEV__ {
-                options.and_then(|options| options.environment_name)
+                options.and_then(|options| options.environment_name.clone())
             } else {
                 None
             },
             if __DEV__ {
-                options.and_then(|options| options.filter_stack_frame)
+                options.and_then(|options| options.filter_stack_frame.clone())
             } else {
                 None
             },
             false,
-        )));
-        let request = request.get().unwrap();
+        );
+        let _ = request_cell.set(Rc::downgrade(&request));
         if let Some(signal) = options.and_then(|options| options.signal) {
-            attach_abort_signal(request, signal);
+            attach_abort_signal(&request, signal);
         }
-        start_work(request);
+        start_work(&request);
     })
 }
 
@@ -677,61 +682,65 @@ pub fn prerender(
     options: Option<&'static PrerenderOptions>,
 ) -> Promise<WebStreamsStaticResult> {
     promise::new(move |resolve, reject| {
-        let on_fatal_error = reject;
-        let request: Cell<Option<&'static Request>> = Cell::new(None);
-        let on_all_ready = || {
-            let writable: Cell<Option<&'static Writable>> = Cell::new(None);
-            let stream = readable_stream::new(
-                Some(&UnderlyingByteSource {
-                    r#type: "bytes",
-                    auto_allocate_chunk_size: None,
-                    start: Some(&|controller: &'static ReadableByteStreamController| {
-                        writable.set(Some(create_fake_writable_from_readable_stream_controller(
-                            controller,
-                        )));
+        let on_fatal_error: Rc<OnFatalError> = Rc::new(reject);
+        let request_cell: Rc<OnceCell<Weak<Request>>> = Rc::new(OnceCell::new());
+        let on_all_ready = {
+            let cell = Rc::clone(&request_cell);
+            move || {
+                let request = cell.get().and_then(Weak::upgrade).unwrap();
+                let writable: Cell<Option<&'static Writable>> = Cell::new(None);
+                let stream = readable_stream::new(
+                    Some(&UnderlyingByteSource {
+                        r#type: "bytes",
+                        auto_allocate_chunk_size: None,
+                        start: Some(&|controller: &'static ReadableByteStreamController| {
+                            writable.set(Some(
+                                create_fake_writable_from_readable_stream_controller(controller),
+                            ));
+                        }),
+                        pull: Some(&|_controller| {
+                            start_flowing(&request, js::unknown(writable.get().unwrap()));
+                        }),
+                        cancel: Some(&|reason| {
+                            stop_flowing(&request);
+                            abort(&request, reason);
+                        }),
                     }),
-                    pull: Some(&|_controller| {
-                        start_flowing(request.get().unwrap(), writable.get().unwrap());
+                    // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
+                    // $FlowFixMe[incompatible-type]
+                    Some(QueuingStrategy {
+                        high_water_mark: Some(0.0),
                     }),
-                    cancel: Some(&|reason| {
-                        stop_flowing(request.get().unwrap());
-                        abort(request.get().unwrap(), reason);
-                    }),
-                }),
-                // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
-                // $FlowFixMe[incompatible-type]
-                Some(QueuingStrategy {
-                    high_water_mark: Some(0.0),
-                }),
-            );
-            resolve(WebStreamsStaticResult { prelude: stream });
+                );
+                resolve(WebStreamsStaticResult { prelude: stream });
+            }
         };
-        request.set(Some(create_prerender_request(
+        let request = create_prerender_request(
             model,
-            turbopack_map,
-            &on_all_ready,
+            Some(js::unknown(turbopack_map)),
+            Rc::new(on_all_ready),
             on_fatal_error,
-            options.and_then(|options| options.on_error),
+            options.and_then(|options| options.on_error.clone()),
             options.and_then(|options| options.identifier_prefix),
             options.and_then(|options| options.temporary_references),
             options.and_then(|options| options.start_time),
             if __DEV__ {
-                options.and_then(|options| options.environment_name)
+                options.and_then(|options| options.environment_name.clone())
             } else {
                 None
             },
             if __DEV__ {
-                options.and_then(|options| options.filter_stack_frame)
+                options.and_then(|options| options.filter_stack_frame.clone())
             } else {
                 None
             },
             false,
-        )));
-        let request = request.get().unwrap();
+        );
+        let _ = request_cell.set(Rc::downgrade(&request));
         if let Some(signal) = options.and_then(|options| options.signal) {
-            attach_abort_signal(request, signal);
+            attach_abort_signal(&request, signal);
         }
-        start_work(request);
+        start_work(&request);
     })
 }
 

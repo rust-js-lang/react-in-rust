@@ -47,7 +47,14 @@ export type DebugChannel = unknown;
 export interface Options {
   debugChannel?: DebugChannel | undefined;
   environmentName?: EnvironmentName | undefined;
-  filterStackFrame?: ((value: string, value2: string) => boolean) | undefined;
+  filterStackFrame?:
+    | ((
+        value: string,
+        value2: string,
+        value3: number,
+        value4: number,
+      ) => boolean)
+    | undefined;
   onError?:
     | ((value: unknown | null | undefined) => string | null | undefined)
     | undefined;
@@ -77,7 +84,14 @@ export interface WebStreamsDebugChannel {
 export interface WebStreamsOptions {
   debugChannel?: WebStreamsDebugChannel | undefined;
   environmentName?: EnvironmentName | undefined;
-  filterStackFrame?: ((value: string, value2: string) => boolean) | undefined;
+  filterStackFrame?:
+    | ((
+        value: string,
+        value2: string,
+        value3: number,
+        value4: number,
+      ) => boolean)
+    | undefined;
   onError?:
     | ((value: unknown | null | undefined) => string | null | undefined)
     | undefined;
@@ -97,7 +111,14 @@ export function renderToReadableStream(
 
 export interface PrerenderOptions {
   environmentName?: EnvironmentName | undefined;
-  filterStackFrame?: ((value: string, value2: string) => boolean) | undefined;
+  filterStackFrame?:
+    | ((
+        value: string,
+        value2: string,
+        value3: number,
+        value4: number,
+      ) => boolean)
+    | undefined;
   onError?:
     | ((value: unknown | null | undefined) => string | null | undefined)
     | undefined;

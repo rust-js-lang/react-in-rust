@@ -1118,11 +1118,8 @@ function encodeErrorForBoundary(
     } else if (typeof error === 'object' && error !== null) {
       tmp = [describeObjectForErrorMessage($unwrap(error)), undefined];
     } else {
-      tmp = [
-        // eslint-disable-next-line react-internal/safe-string-coercion
-        String(error),
-        undefined,
-      ];
+      // eslint-disable-next-line react-internal/safe-string-coercion
+      tmp = [String(error), undefined];
     }
     const message = tmp[0];
     const stack = tmp[1];

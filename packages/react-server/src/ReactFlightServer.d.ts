@@ -8,7 +8,6 @@
 import type {AsyncLocalStorage} from 'async_hooks';
 import type {RequestCleanupQueue} from 'react/src/ReactTaintRegistry';
 import type {ReactComponentInfo} from 'shared/ReactTypes';
-import type {Cache} from './ReactFlightHooks.js';
 import type {TemporaryReferenceSet} from './ReactFlightServerTemporaryReferences.js';
 
 type ReactKey = string | symbol;
@@ -147,6 +146,12 @@ export interface DeferredDebugStore {
   existing: Map<unknown, number>;
 }
 
+/** What a resource type of `cache()` makes: any value, made once per cache. */
+export type ResourceType = () => unknown | null | undefined;
+
+/** A request's cache, of each resource type. */
+export type Cache = Map<ResourceType, unknown | null | undefined>;
+
 /**
  * A request's `onError`, told of each error: the digest the client is
  * sent of it, if any.
@@ -171,7 +176,7 @@ export interface Request {
   // What was thrown, `undefined` too: `null` until then.
   fatalError: unknown | null | undefined;
   destination?: unknown | null | undefined;
-  bundlerConfig: ClientManifest;
+  bundlerConfig?: ClientManifest | null | undefined;
   cache: Cache;
   cacheController: AbortController;
   nextChunkId: number;
@@ -221,7 +226,7 @@ export interface Request {
 
 export function createRequest(
   model: ReactClientValue | null | undefined,
-  bundlerConfig: ClientManifest,
+  bundlerConfig: ClientManifest | null,
   onError: OnError | null | undefined,
   identifierPrefix: string | null | undefined,
   temporaryReferences: TemporaryReferenceSet | null | undefined,
@@ -233,7 +238,7 @@ export function createRequest(
 
 export function createPrerenderRequest(
   model: ReactClientValue | null | undefined,
-  bundlerConfig: ClientManifest,
+  bundlerConfig: ClientManifest | null,
   onAllReady: OnAllReady,
   onFatalError: OnFatalError,
   onError: OnError | null | undefined,

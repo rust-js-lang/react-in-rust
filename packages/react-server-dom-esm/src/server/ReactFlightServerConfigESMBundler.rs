@@ -5,7 +5,7 @@
 
 use js::Error;
 
-use react_server::react_flight_hooks::ReactClientValue;
+use react_server::react_flight_server::ReactClientValue;
 
 // GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
 pub use crate::react_flight_esm_references::{ClientReference, ServerReference};

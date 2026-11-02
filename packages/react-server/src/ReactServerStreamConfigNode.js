@@ -5,9 +5,9 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {TextEncoder} from 'util';
 import {createHash} from 'crypto';
 import hasOwnProperty from 'shared/hasOwnProperty';
-import {TextEncoder} from 'util';
 import {$unwrap} from '@rust-js/runtime';
 
 const supportsArrayBufferDetached = hasOwnProperty.call(

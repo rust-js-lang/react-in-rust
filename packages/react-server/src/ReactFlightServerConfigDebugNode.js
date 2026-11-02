@@ -75,7 +75,7 @@ export function initAsyncDebugInfo() {
             } else {
               promiseRef = new WeakRef(resource);
               const request = resolveRequest();
-              if (request === null) {
+              if (request == null) {
                 // We don't collect stacks for awaits that weren't in the scope of a specific render.
               } else {
                 stack = parseStackTracePrivate(new Error(), 5);
@@ -244,7 +244,7 @@ export function initAsyncDebugInfo() {
               // where upstream assigns it and then clears it.
               const old = lastRanAwait;
               lastRanAwait = null;
-              resolvedNode.previous = old ?? null;
+              resolvedNode.previous = old;
               break;
             }
             default:

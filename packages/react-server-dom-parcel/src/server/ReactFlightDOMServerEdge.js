@@ -40,7 +40,7 @@ import {
   readFinalStringChunk,
   readPartialStringChunk as readPartialStringChunk$1,
 } from 'react-client/src/ReactFlightClientStreamConfigWeb';
-import {$someValue, $unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/runtime';
 
 export {
   createClientReference,
@@ -55,13 +55,11 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
   let stringBuffer = '';
 
   function progress({done, value}) {
-    // GAP rd583: a read's `value` is an `Option` of one, `$someValue(value)`,
-    // where upstream reads it as given.
     // GAP rd582: the conditional's temporary is named after the else
     // branch's callee, whose import is renamed for it.
     const readPartialStringChunk = done
       ? readFinalStringChunk(stringDecoder, new Uint8Array(0))
-      : readPartialStringChunk$1(stringDecoder, $someValue(value));
+      : readPartialStringChunk$1(stringDecoder, value);
     stringBuffer += readPartialStringChunk;
     const messages = stringBuffer.split('\n');
     const last = messages.pop() ?? '';
@@ -155,15 +153,16 @@ export function prerender(model, options) {
     const onFatalError = reject;
     let request;
     function onAllReady() {
+      const request$1 = $unwrap(request);
       const stream = new ReadableStream(
         {
           type: 'bytes',
           pull(controller) {
-            startFlowing($unwrap(request), controller);
+            startFlowing(request$1, controller);
           },
           cancel(reason) {
-            stopFlowing($unwrap(request));
-            abort($unwrap(request), reason);
+            stopFlowing(request$1);
+            abort(request$1, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.

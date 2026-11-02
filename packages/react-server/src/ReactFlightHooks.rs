@@ -4,224 +4,17 @@
 // LICENSE file in the root directory of this source tree.
 
 use std::cell::{Cell, RefCell};
-use std::marker::PhantomData;
 use std::rc::Rc;
 
-use js::{JsObject, Map, SymbolFor, Unknown};
+use js::{SymbolFor, Unknown};
 use react_reconciler::react_fiber_hooks::CacheRefresh;
 use react_reconciler::react_internal_types::{Dispatcher, MemoCacheArray};
 use shared::environment::__DEV__;
 use shared::react_symbols::{REACT_CONTEXT_TYPE, REACT_MEMO_CACHE_SENTINEL};
 use shared::react_types::{ReactComponentInfo, Thenable};
-use webapi::{AbortController, AbortSignal};
 
-use crate::react_flight_server_temporary_references::TemporaryReferenceSet;
+use crate::react_flight_server::Request;
 use crate::react_flight_thenable::{ThenableState, create_thenable_state, track_used_thenable};
-
-/// ReactFlightServer's request, its JS's until it's ported: what's read of
-/// it here.
-pub struct Request(PhantomData<JsObject>);
-
-unsafe impl js::Defined for Request {}
-
-impl Request {
-    #[cfg_attr(rust_js, rust_js::link_name = "get identifierCount")]
-    fn identifier_count(&self) -> f64 {
-        unreachable!()
-    }
-
-    #[cfg_attr(rust_js, rust_js::link_name = "set identifierCount")]
-    fn set_identifier_count(&self, count: f64) {
-        let _ = count;
-        unreachable!()
-    }
-
-    #[cfg_attr(rust_js, rust_js::link_name = "get identifierPrefix")]
-    fn identifier_prefix(&self) -> String {
-        unreachable!()
-    }
-
-    #[cfg_attr(rust_js, rust_js::link_name = "get cacheController")]
-    pub(crate) fn cache_controller(&self) -> &'static AbortController {
-        unreachable!()
-    }
-}
-
-/// What a resource type of `cache()` makes: any value, made once per cache.
-pub type ResourceType = dyn Fn() -> Option<&'static Unknown>;
-
-/// A request's cache, of each resource type.
-pub type Cache = Map<ResourceType, Option<&'static Unknown>>;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightServer.js#resolveRequest"
-)]
-#[cfg_attr(rust_js, rust_js::nullable)]
-pub(crate) fn resolve_request() -> Option<&'static Request> {
-    unreachable!()
-}
-
-#[cfg_attr(rust_js, rust_js::link_name = "./src/ReactFlightServer.js#getCache")]
-pub(crate) fn get_cache(request: &Request) -> &'static Cache {
-    let _ = request;
-    unreachable!()
-}
-
-// ReactFlightServer's functions a server entry calls, its JS's until it's
-// ported: of each bundler's own client manifest, `C`.
-
-/// Any value a server component may render or pass to the client.
-pub type ReactClientValue = Unknown;
-
-/// A request's `onError`, told of each error, giving its digest, if any.
-pub type OnError = dyn Fn(Option<&'static Unknown>) -> Option<String>;
-
-/// A request's `environmentName`: the name itself, or what gives it.
-#[cfg_attr(rust_js, rust_js::untagged)]
-#[derive(Clone, Copy)]
-pub enum EnvironmentName {
-    Str(&'static str),
-    Fn(&'static dyn Fn() -> String),
-}
-
-/// A request's `filterStackFrame`: whether a frame is shown, of its URL and
-/// its function's name.
-pub type FilterStackFrame = dyn Fn(&str, &str) -> bool;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFlightServer#createRequest"
-)]
-pub fn create_request<C: ?Sized>(
-    model: Option<&'static ReactClientValue>,
-    bundler_config: &C,
-    on_error: Option<&OnError>,
-    identifier_prefix: Option<&str>,
-    temporary_references: Option<&TemporaryReferenceSet>,
-    debug_start_time: Option<f64>,                 // Profiling-only
-    environment_name: Option<EnvironmentName>,     // DEV-only
-    filter_stack_frame: Option<&FilterStackFrame>, // DEV-only
-    keep_debug_alive: bool,                        // DEV-only
-) -> &'static Request {
-    let _ = (
-        model,
-        bundler_config,
-        on_error,
-        identifier_prefix,
-        temporary_references,
-        debug_start_time,
-        environment_name,
-        filter_stack_frame,
-        keep_debug_alive,
-    );
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFlightServer#createPrerenderRequest"
-)]
-pub fn create_prerender_request<C: ?Sized>(
-    model: Option<&'static ReactClientValue>,
-    bundler_config: &C,
-    on_all_ready: &dyn Fn(),
-    on_fatal_error: &dyn Fn(Option<&'static Unknown>),
-    on_error: Option<&OnError>,
-    identifier_prefix: Option<&str>,
-    temporary_references: Option<&TemporaryReferenceSet>,
-    debug_start_time: Option<f64>,                 // Profiling-only
-    environment_name: Option<EnvironmentName>,     // DEV-only
-    filter_stack_frame: Option<&FilterStackFrame>, // DEV-only
-    keep_debug_alive: bool,                        // DEV-only
-) -> &'static Request {
-    let _ = (
-        model,
-        bundler_config,
-        on_all_ready,
-        on_fatal_error,
-        on_error,
-        identifier_prefix,
-        temporary_references,
-        debug_start_time,
-        environment_name,
-        filter_stack_frame,
-        keep_debug_alive,
-    );
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFlightServer#startWork"
-)]
-pub fn start_work(request: &Request) {
-    let _ = request;
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFlightServer#startFlowing"
-)]
-pub fn start_flowing<D: ?Sized>(request: &Request, destination: &D) {
-    let _ = (request, destination);
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFlightServer#startFlowingDebug"
-)]
-pub fn start_flowing_debug<D: ?Sized>(request: &Request, debug_destination: &D) {
-    let _ = (request, debug_destination);
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFlightServer#stopFlowing"
-)]
-pub fn stop_flowing(request: &Request) {
-    let _ = request;
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFlightServer#abort"
-)]
-pub fn abort(request: &Request, reason: Option<&Unknown>) {
-    let _ = (request, reason);
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFlightServer#attachAbortSignal"
-)]
-pub fn attach_abort_signal(request: &Request, signal: &AbortSignal) {
-    let _ = (request, signal);
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFlightServer#resolveDebugMessage"
-)]
-pub fn resolve_debug_message(request: &Request, message: &str) {
-    let _ = (request, message);
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFlightServer#closeDebugChannel"
-)]
-pub fn close_debug_channel(request: &Request) {
-    let _ = request;
-    unreachable!()
-}
 
 #[cfg_attr(
     rust_js,
@@ -234,7 +27,7 @@ fn is_client_reference(reference: Option<&'static Unknown>) -> bool {
 
 thread_local! {
     #[cfg_attr(rust_js, rust_js::nullable)]
-    static CURRENT_REQUEST: Cell<Option<&'static Request>> = const { Cell::new(None) };
+    static CURRENT_REQUEST: RefCell<Option<Rc<Request>>> = const { RefCell::new(None) };
     static THENABLE_INDEX_COUNTER: Cell<usize> = const { Cell::new(0) };
     #[cfg_attr(rust_js, rust_js::nullable)]
     static THENABLE_STATE: RefCell<Option<Rc<ThenableState>>> = const { RefCell::new(None) };
@@ -242,8 +35,8 @@ thread_local! {
     static CURRENT_COMPONENT_DEBUG_INFO: Cell<Option<&'static ReactComponentInfo>> = const { Cell::new(None) };
 }
 
-pub fn prepare_to_use_hooks_for_request(request: &'static Request) {
-    CURRENT_REQUEST.set(Some(request));
+pub fn prepare_to_use_hooks_for_request(request: &Rc<Request>) {
+    CURRENT_REQUEST.set(Some(Rc::clone(request)));
 }
 
 pub fn reset_hooks_for_request() {
@@ -330,17 +123,13 @@ fn unsupported_context() -> ! {
 }
 
 fn use_id() -> String {
-    let Some(request) = CURRENT_REQUEST.get() else {
+    let Some(request) = CURRENT_REQUEST.with_borrow(Clone::clone) else {
         panic!("useId can only be used while React is rendering");
     };
-    let id = request.identifier_count();
-    request.set_identifier_count(id + 1.0);
+    let id = request.identifier_count.get();
+    request.identifier_count.set(id + 1.0);
     // use 'S' for Flight components to distinguish from 'R' and 'r' in Fizz/Client
-    "_".to_owned()
-        + &request.identifier_prefix()
-        + "S_"
-        + &js::number::to_string(id, Some(32))
-        + "_"
+    "_".to_owned() + &request.identifier_prefix + "S_" + &js::number::to_string(id, Some(32)) + "_"
 }
 
 fn r#use(usable: Option<&'static Unknown>) -> Option<&'static Unknown> {

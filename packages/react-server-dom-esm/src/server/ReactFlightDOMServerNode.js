@@ -253,10 +253,11 @@ export function prerenderToNodeStream(model, moduleBasePath, options) {
     const onFatalError = reject;
     let request;
     function onAllReady() {
+      const request$1 = $unwrap(request);
       let writable;
       const readable = new Readable({
         read() {
-          startFlowing($unwrap(request), $unwrap(writable));
+          startFlowing(request$1, $unwrap(writable));
         },
       });
       writable = createFakeWritable(readable);

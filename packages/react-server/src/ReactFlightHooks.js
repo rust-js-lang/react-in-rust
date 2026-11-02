@@ -107,8 +107,7 @@ function useId() {
   if (request == null) {
     throw new Error('useId can only be used while React is rendering');
   }
-  const id = request.identifierCount;
-  request.identifierCount = id + 1;
+  const id = request.identifierCount++;
   // use 'S' for Flight components to distinguish from 'R' and 'r' in Fizz/Client
   return '_' + request.identifierPrefix + 'S_' + id.toString(32) + '_';
 }

@@ -16,18 +16,9 @@ use crate::react_flight_async_sequence::{
     UNRESOLVED_PROMISE_NODE,
 };
 use crate::react_flight_current_owner::resolve_owner;
-use crate::react_flight_hooks::{Request, resolve_request};
+use crate::react_flight_server::{is_await_in_userspace, resolve_request};
 
 use node::async_hooks::{self, HookCallbacks, async_resource, execution_async_id};
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "./src/ReactFlightServer.js#isAwaitInUserspace"
-)]
-fn is_await_in_userspace(request: &Request, stack: &ReactStackTrace) -> bool {
-    let _ = (request, stack);
-    unreachable!()
-}
 
 #[cfg_attr(
     rust_js,
@@ -125,7 +116,7 @@ pub fn init_async_debug_info() {
                                     stack =
                                         parse_stack_trace_private(js::error::new(None, None), 5);
                                     if let Some(trace) = &stack
-                                        && !is_await_in_userspace(request, trace)
+                                        && !is_await_in_userspace(&request, trace)
                                     {
                                         // If this await was not done directly in user space, then clear the stack. We won't use it
                                         // anyway. This lets future awaits on this await know that we still need to get their stacks

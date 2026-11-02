@@ -3,8 +3,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use std::cell::{Cell, RefCell};
-use std::rc::Rc;
+use std::cell::{Cell, OnceCell, RefCell};
+use std::rc::{Rc, Weak};
 
 use js::{
     AsyncIterable, AsyncIterator, IteratorResult, JsError, Kind, Promise, Unknown, dict, promise,
@@ -21,12 +21,10 @@ use crate::client::react_flight_client_config_bundler_parcel::{
     ServerManifest, preload_module, require_module, resolve_server_reference,
 };
 
-use super::react_flight_server_config_parcel_bundler::ClientManifest;
-
 use shared::noop::noop;
 
-use react_server::react_flight_hooks::{
-    EnvironmentName, FilterStackFrame, OnError, ReactClientValue, Request, abort,
+use react_server::react_flight_server::{
+    EnvironmentName, FilterStackFrame, OnError, OnFatalError, ReactClientValue, Request, abort,
     attach_abort_signal, close_debug_channel, create_prerender_request, create_request,
     resolve_debug_message, start_flowing, start_flowing_debug, start_work, stop_flowing,
 };
@@ -61,18 +59,18 @@ pub struct DebugChannel {
 pub struct Options {
     pub debug_channel: Option<&'static DebugChannel>,
     pub environment_name: Option<EnvironmentName>,
-    pub filter_stack_frame: Option<&'static FilterStackFrame>,
+    pub filter_stack_frame: Option<Rc<FilterStackFrame>>,
     pub identifier_prefix: Option<&'static str>,
     pub signal: Option<&'static AbortSignal>,
     pub temporary_references: Option<&'static TemporaryReferenceSet>,
-    pub on_error: Option<&'static OnError>,
+    pub on_error: Option<Rc<OnError>>,
     pub start_time: Option<f64>,
 }
 
 /// startReadingFromDebugChannelReadableStream's scope: its reader, and the
 /// text read but not yet split into messages.
 struct DebugChannelReading {
-    request: &'static Request,
+    request: Rc<Request>,
     reader: &'static ReadableStreamDefaultReader,
     string_decoder: &'static StringDecoder,
     string_buffer: RefCell<String>,
@@ -83,8 +81,6 @@ impl DebugChannelReading {
         self: &Rc<Self>,
         ReadableStreamReadResult { done, value }: ReadableStreamReadResult,
     ) -> Option<Promise<()>> {
-        // GAP rd583: a read's `value` is an `Option` of one, `$someValue(value)`,
-        // where upstream reads it as given.
         // GAP rd582: the conditional's temporary is named after the else
         // branch's callee, whose import is renamed for it.
         self.string_buffer
@@ -103,11 +99,11 @@ impl DebugChannelReading {
             .collect();
         let last = messages.pop().unwrap_or_default();
         for message in &messages {
-            resolve_debug_message(self.request, message);
+            resolve_debug_message(&self.request, message);
         }
         *self.string_buffer.borrow_mut() = last;
         if js::truthy(done.as_ref()) {
-            close_debug_channel(self.request);
+            close_debug_channel(&self.request);
             return None;
         }
         let reading = Rc::clone(self);
@@ -122,7 +118,7 @@ impl DebugChannelReading {
 
     fn error(&self, e: &'static JsError) {
         abort(
-            self.request,
+            &self.request,
             Some(js::unknown(js::error::new(
                 Some("Lost connection to the Debug Channel."),
                 Some(&js::ErrorOptions { cause: Some(e) }),
@@ -131,10 +127,7 @@ impl DebugChannelReading {
     }
 }
 
-fn start_reading_from_debug_channel_readable_stream(
-    request: &'static Request,
-    stream: &ReadableStream,
-) {
+fn start_reading_from_debug_channel_readable_stream(request: Rc<Request>, stream: &ReadableStream) {
     let reading = Rc::new(DebugChannelReading {
         request,
         reader: stream.get_reader(),
@@ -170,25 +163,25 @@ pub fn render_to_readable_stream(
     };
     let request = create_request(
         model,
-        &ClientManifest::Null,
-        options.and_then(|options| options.on_error),
+        None,
+        options.and_then(|options| options.on_error.clone()),
         options.and_then(|options| options.identifier_prefix),
         options.and_then(|options| options.temporary_references),
         options.and_then(|options| options.start_time),
         if __DEV__ {
-            options.and_then(|options| options.environment_name)
+            options.and_then(|options| options.environment_name.clone())
         } else {
             None
         },
         if __DEV__ {
-            options.and_then(|options| options.filter_stack_frame)
+            options.and_then(|options| options.filter_stack_frame.clone())
         } else {
             None
         },
         debug_channel_readable.is_some(),
     );
     if let Some(signal) = options.and_then(|options| options.signal) {
-        attach_abort_signal(request, signal);
+        attach_abort_signal(&request, signal);
     }
     if let Some(debug_channel_writable) = debug_channel_writable {
         let debug_stream = readable_stream::new(
@@ -196,8 +189,8 @@ pub fn render_to_readable_stream(
                 r#type: "bytes",
                 auto_allocate_chunk_size: None,
                 start: None,
-                pull: Some(&move |controller: &'static ReadableByteStreamController| {
-                    start_flowing_debug(request, controller);
+                pull: Some(&|controller: &'static ReadableByteStreamController| {
+                    start_flowing_debug(&request, js::unknown(controller));
                 }),
                 cancel: None,
             }),
@@ -210,21 +203,24 @@ pub fn render_to_readable_stream(
         let _: Promise<()> = debug_stream.pipe_to(debug_channel_writable, None);
     }
     if let Some(debug_channel_readable) = debug_channel_readable {
-        start_reading_from_debug_channel_readable_stream(request, debug_channel_readable);
+        start_reading_from_debug_channel_readable_stream(
+            Rc::clone(&request),
+            debug_channel_readable,
+        );
     }
     readable_stream::new(
         Some(&UnderlyingByteSource {
             r#type: "bytes",
             auto_allocate_chunk_size: None,
-            start: Some(&move |_controller| {
-                start_work(request);
+            start: Some(&|_controller| {
+                start_work(&request);
             }),
-            pull: Some(&move |controller| {
-                start_flowing(request, controller);
+            pull: Some(&|controller| {
+                start_flowing(&request, js::unknown(controller));
             }),
-            cancel: Some(&move |reason| {
-                stop_flowing(request);
-                abort(request, reason);
+            cancel: Some(&|reason| {
+                stop_flowing(&request);
+                abort(&request, reason);
             }),
         }),
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -244,56 +240,60 @@ pub fn prerender(
     options: Option<&'static Options>,
 ) -> Promise<StaticResult> {
     promise::new(move |resolve, reject| {
-        let on_fatal_error = reject;
-        let request: Cell<Option<&'static Request>> = Cell::new(None);
-        let on_all_ready = || {
-            let stream = readable_stream::new(
-                Some(&UnderlyingByteSource {
-                    r#type: "bytes",
-                    auto_allocate_chunk_size: None,
-                    start: None,
-                    pull: Some(&|controller: &'static ReadableByteStreamController| {
-                        start_flowing(request.get().unwrap(), controller);
+        let on_fatal_error: Rc<OnFatalError> = Rc::new(reject);
+        let request_cell: Rc<OnceCell<Weak<Request>>> = Rc::new(OnceCell::new());
+        let on_all_ready = {
+            let cell = Rc::clone(&request_cell);
+            move || {
+                let request = cell.get().and_then(Weak::upgrade).unwrap();
+                let stream = readable_stream::new(
+                    Some(&UnderlyingByteSource {
+                        r#type: "bytes",
+                        auto_allocate_chunk_size: None,
+                        start: None,
+                        pull: Some(&|controller: &'static ReadableByteStreamController| {
+                            start_flowing(&request, js::unknown(controller));
+                        }),
+                        cancel: Some(&|reason| {
+                            stop_flowing(&request);
+                            abort(&request, reason);
+                        }),
                     }),
-                    cancel: Some(&|reason| {
-                        stop_flowing(request.get().unwrap());
-                        abort(request.get().unwrap(), reason);
+                    // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
+                    // $FlowFixMe[incompatible-type]
+                    Some(QueuingStrategy {
+                        high_water_mark: Some(0.0),
                     }),
-                }),
-                // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
-                // $FlowFixMe[incompatible-type]
-                Some(QueuingStrategy {
-                    high_water_mark: Some(0.0),
-                }),
-            );
-            resolve(StaticResult { prelude: stream });
+                );
+                resolve(StaticResult { prelude: stream });
+            }
         };
-        request.set(Some(create_prerender_request(
+        let request = create_prerender_request(
             model,
-            &ClientManifest::Null,
-            &on_all_ready,
+            None,
+            Rc::new(on_all_ready),
             on_fatal_error,
-            options.and_then(|options| options.on_error),
+            options.and_then(|options| options.on_error.clone()),
             options.and_then(|options| options.identifier_prefix),
             options.and_then(|options| options.temporary_references),
             options.and_then(|options| options.start_time),
             if __DEV__ {
-                options.and_then(|options| options.environment_name)
+                options.and_then(|options| options.environment_name.clone())
             } else {
                 None
             },
             if __DEV__ {
-                options.and_then(|options| options.filter_stack_frame)
+                options.and_then(|options| options.filter_stack_frame.clone())
             } else {
                 None
             },
             false,
-        )));
-        let request = request.get().unwrap();
+        );
+        let _ = request_cell.set(Rc::downgrade(&request));
         if let Some(signal) = options.and_then(|options| options.signal) {
-            attach_abort_signal(request, signal);
+            attach_abort_signal(&request, signal);
         }
-        start_work(request);
+        start_work(&request);
     })
 }
 

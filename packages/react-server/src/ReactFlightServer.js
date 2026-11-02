@@ -20,14 +20,6 @@ import {
   UNRESOLVED_PROMISE_NODE,
 } from './ReactFlightAsyncSequence.js';
 import {
-  HooksDispatcher,
-  getThenableStateAfterSuspending,
-  getTrackedThenablesAfterRendering,
-  prepareToUseHooksForComponent,
-  prepareToUseHooksForRequest,
-  resetHooksForRequest,
-} from './ReactFlightHooks.js';
-import {
   isOpaqueTemporaryReference,
   resolveTemporaryReference,
 } from './ReactFlightServerTemporaryReferences.js';
@@ -71,6 +63,14 @@ import {
   callIteratorInDEV,
   callLazyInitInDEV,
 } from './ReactFlightCallUserSpace.js';
+import {
+  HooksDispatcher,
+  getThenableStateAfterSuspending,
+  getTrackedThenablesAfterRendering,
+  prepareToUseHooksForComponent,
+  prepareToUseHooksForRequest,
+  resetHooksForRequest,
+} from './ReactFlightHooks.js';
 import {
   beginWriting,
   byteLengthOfBinaryChunk,
@@ -471,6 +471,24 @@ function taskDebugStackTrace(request, task) {
     );
   }
   return filterStackTrace(request, parseStackTrace(error, 1));
+}
+
+/**
+ * What isn't `null` of a task's `debugOwner`, a component's info, which
+ * upstream's `debugOwner !== null` lets through and outlines. Of the
+ * `undefined` a production element's clone gives, outlineComponentInfo's
+ * read of its `owner` throws a TypeError, as upstream's does.
+ */
+function taskDebugOwnerInfo(debugOwner) {
+  const info = debugOwner;
+  if (info == null) {
+    // `undefined.owner` throws, as upstream's outlineComponentInfo of it does.
+    debugOwner.owner;
+    throw new Error(
+      "internal error: entered unreachable code: reading an undefined value's property throws",
+    );
+  }
+  return info;
 }
 
 const __PROTO__ = '__proto__';
@@ -954,9 +972,9 @@ function createThenableTask(request, task, thenable) {
     task.formatContext,
     request.abortableTasks,
     enableProfilerTimer ? task.time : 0,
-    __DEV__ ? task.debugOwner : undefined,
-    __DEV__ ? task.debugStack : undefined,
-    __DEV__ ? task.debugTask : undefined,
+    __DEV__ ? task.debugOwner : null,
+    __DEV__ ? task.debugStack : null,
+    __DEV__ ? task.debugTask : null,
   );
 }
 
@@ -1002,9 +1020,9 @@ function serializeThenable(request, task, thenable) {
         const implicitSlot = task.implicitSlot;
         const formatContext = task.formatContext;
         const lastTimestamp = enableProfilerTimer ? task.time : 0;
-        const debugOwner = __DEV__ ? task.debugOwner : undefined;
-        const debugStack = __DEV__ ? task.debugStack : undefined;
-        const debugTask = __DEV__ ? task.debugTask : undefined;
+        const debugOwner = __DEV__ ? task.debugOwner : null;
+        const debugStack = __DEV__ ? task.debugStack : null;
+        const debugTask = __DEV__ ? task.debugTask : null;
         let settled = false;
         thenable.then(
           value => {
@@ -1158,9 +1176,9 @@ function serializeReadableStream(request, task, stream) {
     task.formatContext,
     request.abortableTasks,
     enableProfilerTimer ? task.time : 0,
-    __DEV__ ? task.debugOwner : undefined,
-    __DEV__ ? task.debugStack : undefined,
-    __DEV__ ? task.debugTask : undefined,
+    __DEV__ ? task.debugOwner : null,
+    __DEV__ ? task.debugStack : null,
+    __DEV__ ? task.debugTask : null,
   );
 
   // The task represents the Stop row. This adds a Start row.
@@ -1246,10 +1264,13 @@ function serializeReadableStream(request, task, stream) {
       enqueueFlush(request);
       callOnAllReadyIfReady(request);
     } else {
-      const captured = entry.value;
+      // GAP (new): a `catch_unwind` closure's capture of an `Option` of
+      // one, `entry.value`, is `$some` of it, `$someValue(captured)`
+      // where it's read, so the value is read before the `try`.
+      const value = entry.value;
       try {
         request.pendingChunks++;
-        streamTask.model = $someValue(captured);
+        streamTask.model = value;
         if (isByteStream) {
           // Chunks of byte streams are always Uint8Array instances.
           const chunk = $unwrap(streamTask.model);
@@ -1276,14 +1297,7 @@ function serializeReadableStream(request, task, stream) {
   progressCell = progress;
 
   request.cacheController.signal.addEventListener('abort', abortStream);
-  reader.read().then(
-    entry => {
-      progress(entry);
-    },
-    reason => {
-      error(reason);
-    },
-  );
+  reader.read().then(progress, error);
   return serializeByValueID(streamTask.id);
 }
 
@@ -1306,9 +1320,9 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
     task.formatContext,
     request.abortableTasks,
     enableProfilerTimer ? task.time : 0,
-    __DEV__ ? task.debugOwner : undefined,
-    __DEV__ ? task.debugStack : undefined,
-    __DEV__ ? task.debugTask : undefined,
+    __DEV__ ? task.debugOwner : null,
+    __DEV__ ? task.debugStack : null,
+    __DEV__ ? task.debugTask : null,
   );
 
   if (__DEV__) {
@@ -1705,16 +1719,12 @@ function renderFunctionComponent(
   let result;
   let componentDebugInfo;
   if (__DEV__) {
+    let debugInfo;
     if (!canEmitDebugInfo) {
       // We don't have a chunk to assign debug info. We need to outline this
       // component to assign it an ID.
       return outlineTask(request, task);
-    }
-    // GAP rd578: as `} else if let .. {`, the `let` assigned in each branch
-    // was declared inside the `else` block (`ReferenceError: debugInfo is
-    // not defined`), so the early return is its own `if`.
-    let debugInfo;
-    if (prevThenableState != null) {
+    } else if (prevThenableState != null) {
       // This is a replay and we've already emitted the debug info of this component
       // in the first pass. We skip emitting a duplicate line.
       // As a hack we stashed the previous component debug info on this object in DEV.
@@ -2108,14 +2118,14 @@ function renderClientElement(
       key = key;
     }
   }
-  let debugOwner;
-  let debugStack;
+  let debugOwner = null;
+  let debugStack = null;
   if (__DEV__) {
     debugOwner = task.debugOwner;
-    if (debugOwner != null) {
+    if (debugOwner !== null) {
       // Ensure we outline this owner if it is the first time we see it.
       // So that we can refer to it directly.
-      outlineComponentInfo(request, debugOwner);
+      outlineComponentInfo(request, taskDebugOwnerInfo(debugOwner));
     }
     const filtered = taskDebugStackTrace(request, task);
     if (filtered != null) {
@@ -2136,7 +2146,7 @@ function renderClientElement(
   const keyValue = key ?? null;
   const element = [REACT_ELEMENT_TYPE, type, keyValue, props];
   if (__DEV__) {
-    element.push(debugOwner ?? null, debugStack ?? null, validated);
+    element.push(debugOwner, debugStack, validated);
   }
   if (task.implicitSlot && key != null) {
     // The root Server Component had no key so it was in an implicit slot.
@@ -2187,9 +2197,9 @@ function deferTask(request, task) {
     task.formatContext,
     request.abortableTasks,
     enableProfilerTimer ? task.time : 0,
-    __DEV__ ? task.debugOwner : undefined,
-    __DEV__ ? task.debugStack : undefined,
-    __DEV__ ? task.debugTask : undefined,
+    __DEV__ ? task.debugOwner : null,
+    __DEV__ ? task.debugStack : null,
+    __DEV__ ? task.debugTask : null,
   );
 
   pingTask(request, newTask);
@@ -2208,9 +2218,9 @@ function outlineTask(request, task) {
     task.formatContext,
     request.abortableTasks,
     enableProfilerTimer ? task.time : 0,
-    __DEV__ ? task.debugOwner : undefined,
-    __DEV__ ? task.debugStack : undefined,
-    __DEV__ ? task.debugTask : undefined,
+    __DEV__ ? task.debugOwner : null,
+    __DEV__ ? task.debugStack : null,
+    __DEV__ ? task.debugTask : null,
   );
 
   retryTask(request, newTask);
@@ -2698,7 +2708,7 @@ function emitAsyncSequence(
       if (owner == null && stack == null) {
         // We have no location for the await. We can use the JSX callsite of the parent
         // as the await if this was just passed as a prop.
-        if (task.debugOwner != null) {
+        if (task.debugOwner !== null) {
           // $FlowFixMe[cannot-write]
           debugInfo.owner = task.debugOwner;
         }
@@ -3387,8 +3397,7 @@ function serializeDebugBlob(request, blob) {
       return;
     }
     // TODO: Emit the chunk early and refer to it later by dedupe.
-    // GAP rd583: a read's `value` is an `Option` of one.
-    model.push($someValue(entry.value));
+    model.push(entry.value);
     // $FlowFixMe[incompatible-type]
     return reader.read().then(progress).catch(error);
   }
@@ -3420,8 +3429,7 @@ const BlobReading = {
       return;
     }
     // TODO: Emit the chunk early and refer to it later by dedupe.
-    // GAP rd583: a read's `value` is an `Option` of one.
-    blobReading.model.push($someValue(entry.value));
+    blobReading.model.push(entry.value);
     // $FlowFixMe[incompatible-type]
     return blobReading.reader
       .read()
@@ -3501,21 +3509,18 @@ function serializeBlob(request, blob) {
     reader,
     abortBlob: undefined,
   };
-  const aborting = reading;
-  const abortBlob = () => BlobReading.abortBlob(aborting);
+  const abortBlob = () => BlobReading.abortBlob(reading);
   if (reading.abortBlob === undefined) {
     reading.abortBlob = abortBlob;
   }
 
   request.cacheController.signal.addEventListener('abort', abortBlob);
 
-  const progressing = reading;
-  const erroring = reading;
   // $FlowFixMe[incompatible-type]
   reader
     .read()
-    .then(entry => BlobReading.progress(progressing, entry))
-    .catch(reason => BlobReading.error(erroring, reason));
+    .then(entry => BlobReading.progress(reading, entry))
+    .catch(reason => BlobReading.error(reading, reason));
 
   return '$B' + newTask.id.toString(16);
 }
@@ -3627,9 +3632,9 @@ function renderModel(request, task, parent, key, value) {
       const implicitSlot = task.implicitSlot;
       const formatContext = task.formatContext;
       const get = enableProfilerTimer ? task.time : 0;
-      const unknown = __DEV__ ? task.debugOwner : undefined;
-      const value$2 = __DEV__ ? task.debugStack : undefined;
-      const value$3 = __DEV__ ? task.debugTask : undefined;
+      const unknown = __DEV__ ? task.debugOwner : null;
+      const value$2 = __DEV__ ? task.debugStack : null;
+      const value$3 = __DEV__ ? task.debugTask : null;
       let newTask;
       try {
         newTask = createTask(
@@ -4984,10 +4989,9 @@ function outlineIOInfo(request, ioInfo) {
     ioInfo.name,
     ioInfo.start,
     ioInfo.end,
-    // GAP(D1): `ReactIOInfo`'s `value` reads `None` of both `null` and
-    // `undefined`, which upstream tells apart (it writes a `null`
-    // `value`, and leaves out an `undefined` one), so it's read as any
-    // value.
+    // `ReactIOInfo`'s `value` is read as any value: its `Option` reads
+    // `None` of both `null` and `undefined`, which upstream tells apart
+    // (it writes a `null` `value`, and leaves out an `undefined` one).
     ioInfo.value,
     env,
     owner,
@@ -6228,8 +6232,8 @@ function emitChunk(request, task, value) {
   // For anything else we need to try to serialize it using JSON.
   // We resolve the model tree first in pure JS to avoid the C++->JS boundary
   // overhead of JSON.stringify's replacer callback.
-  // GAP(E1): `{'': value}`, an object literal of a key that's no
-  // identifier, can't be written, so the key is set on an empty object.
+  // `{'': value}`, an object literal of a key that's no identifier, can't
+  // be written, so the key is set on an empty object.
   const root = {};
   root[''] = value;
   const resolvedModel = resolveModel(request, task, root, '', value);
@@ -6451,8 +6455,6 @@ function performWork(request) {
   ReactSharedInternals.H = HooksDispatcher;
   const prevRequest = currentRequest;
   currentRequest = request;
-  // GAP(E3): ReactFlightHooks' `Request` is still its opaque one until it
-  // takes this module's; the request is given as what it is.
   prepareToUseHooksForRequest(request);
 
   let result = $catchUnwind(() => {

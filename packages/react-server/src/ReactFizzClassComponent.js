@@ -11,8 +11,8 @@ import {disableLegacyContext} from 'shared/ReactFeatureFlags';
 import {get as getInstance, set as setInstance} from 'shared/ReactInstanceMap';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
-import isArray from 'shared/isArray';
 import assign from 'shared/assign';
+import isArray from 'shared/isArray';
 import {$index, $slice, $unwrap} from '@rust-js/runtime';
 
 const didWarnAboutNoopUpdateForComponent = {};

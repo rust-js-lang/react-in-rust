@@ -79,6 +79,9 @@ export type ChunkState =
     };
 
 declare class ReactPromise {
+  status: 'pending' | 'blocked' | 'resolved_model' | 'fulfilled' | 'rejected';
+  value: unknown;
+  reason: unknown;
   // TODO: This doesn't return a new Promise chain unlike the real .then
   then(
     resolve?: ((value: unknown | null | undefined) => void) | null | undefined,

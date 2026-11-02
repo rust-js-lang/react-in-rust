@@ -7,7 +7,7 @@ use js::{Dict, Error, IntoUnknown, PropertyDescriptor, Symbol, SymbolFor, Unknow
 use shared::environment::__DEV__;
 use webapi::console;
 
-use react_server::react_flight_hooks::ReactClientValue;
+use react_server::react_flight_server::ReactClientValue;
 
 /// A server function, its own properties set by [`register_server_reference`].
 pub struct ServerReference {
