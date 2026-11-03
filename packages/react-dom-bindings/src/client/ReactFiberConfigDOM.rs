@@ -3364,13 +3364,14 @@ impl FragmentInstance {
             }
             if let Some(signal) = signal {
                 let r#type = r#type.to_owned();
-                let on_abort: &'static dyn Fn(&Event) = webapi::listener(move |_: &Event| {
-                    fragment_instance.remove_event_listener(
-                        &r#type,
-                        listener,
-                        options_or_use_capture,
-                    );
-                });
+                let on_abort: &'static dyn Fn(&'static Event) =
+                    webapi::listener(move |_: &Event| {
+                        fragment_instance.remove_event_listener(
+                            &r#type,
+                            listener,
+                            options_or_use_capture,
+                        );
+                    });
                 signal.add_event_listener_named(
                     "abort",
                     on_abort,
@@ -5292,7 +5293,7 @@ pub fn is_hidden_subtree(fiber: &Fiber) -> bool {
 /// setFocusIfFocusable's focus ends.
 struct RemoveFocusListener {
     owner_document: &'static Document,
-    handle_focus: &'static dyn Fn(&Event),
+    handle_focus: &'static dyn Fn(&'static Event),
 }
 
 impl Drop for RemoveFocusListener {

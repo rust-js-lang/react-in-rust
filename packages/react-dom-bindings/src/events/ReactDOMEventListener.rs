@@ -78,7 +78,7 @@ pub fn create_event_listener_wrapper_with_priority(
     target_container: &'static EventTarget,
     dom_event_name: &str,
     event_system_flags: EventSystemFlags,
-) -> &'static dyn Fn(&AnyNativeEvent) {
+) -> &'static dyn Fn(&'static AnyNativeEvent) {
     let event_priority = get_event_priority(dom_event_name);
     let listener_wrapper: fn(
         &str,
@@ -96,7 +96,7 @@ pub fn create_event_listener_wrapper_with_priority(
             &dom_event_name,
             event_system_flags,
             target_container,
-            unsafe { js::cast(Some(js::unknown(native_event))) },
+            native_event,
         )
     })
 }

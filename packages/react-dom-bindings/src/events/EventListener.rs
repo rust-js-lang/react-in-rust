@@ -8,8 +8,8 @@ use webapi::{AddEventListenerOptions, Event, EventTarget, EventTargetExt};
 pub fn add_event_bubble_listener(
     target: &EventTarget,
     event_type: &str,
-    listener: &'static dyn Fn(&Event),
-) -> &'static dyn Fn(&Event) {
+    listener: &'static dyn Fn(&'static Event),
+) -> &'static dyn Fn(&'static Event) {
     target.add_event_listener_named(event_type, listener, Some(&false));
     listener
 }
@@ -17,8 +17,8 @@ pub fn add_event_bubble_listener(
 pub fn add_event_capture_listener(
     target: &EventTarget,
     event_type: &str,
-    listener: &'static dyn Fn(&Event),
-) -> &'static dyn Fn(&Event) {
+    listener: &'static dyn Fn(&'static Event),
+) -> &'static dyn Fn(&'static Event) {
     target.add_event_listener_named(event_type, listener, Some(&true));
     listener
 }
@@ -26,9 +26,9 @@ pub fn add_event_capture_listener(
 pub fn add_event_capture_listener_with_passive_flag(
     target: &EventTarget,
     event_type: &str,
-    listener: &'static dyn Fn(&Event),
+    listener: &'static dyn Fn(&'static Event),
     passive: bool,
-) -> &'static dyn Fn(&Event) {
+) -> &'static dyn Fn(&'static Event) {
     target.add_event_listener_named(
         event_type,
         listener,
@@ -45,9 +45,9 @@ pub fn add_event_capture_listener_with_passive_flag(
 pub fn add_event_bubble_listener_with_passive_flag(
     target: &EventTarget,
     event_type: &str,
-    listener: &'static dyn Fn(&Event),
+    listener: &'static dyn Fn(&'static Event),
     passive: bool,
-) -> &'static dyn Fn(&Event) {
+) -> &'static dyn Fn(&'static Event) {
     target.add_event_listener_named(
         event_type,
         listener,
@@ -64,7 +64,7 @@ pub fn add_event_bubble_listener_with_passive_flag(
 pub fn remove_event_listener(
     target: &EventTarget,
     event_type: &str,
-    listener: &'static dyn Fn(&Event),
+    listener: &'static dyn Fn(&'static Event),
     capture: bool,
 ) {
     target.remove_event_listener_named(event_type, listener, Some(&capture));

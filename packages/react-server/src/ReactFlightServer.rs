@@ -1756,7 +1756,7 @@ fn serialize_thenable(request: &Rc<Request>, task: &Rc<Task>, thenable: &'static
 type StreamError = Rc<dyn Fn(Option<&'static Unknown>)>;
 
 /// A stream's or an async iterable's listener of its request's abort.
-type AbortListener = &'static dyn Fn(&Event);
+type AbortListener = &'static dyn Fn(&'static Event);
 
 fn serialize_readable_stream(
     request: &Rc<Request>,
@@ -4606,7 +4606,7 @@ struct BlobReading {
     model: Rc<RefCell<Vec<Option<&'static Unknown>>>>,
     reader: &'static ReadableStreamDefaultReader,
     // The `abort` listener, which removes itself: set once it's made.
-    abort_blob: OnceCell<&'static dyn Fn(&Event)>,
+    abort_blob: OnceCell<&'static dyn Fn(&'static Event)>,
 }
 
 impl BlobReading {
