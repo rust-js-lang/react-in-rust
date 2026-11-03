@@ -223,9 +223,7 @@ pub fn experimental_render_to_html(
                     buffer.borrow_mut().push_str(chunk);
                 } else {
                     // null indicates that we finished
-                    // GAP rd654: `resolve(buffer.borrow().clone())` is refused (ADR 0863),
-                    // though `resolve` of a string runs none of this crate's code.
-                    resolve(buffer.take());
+                    resolve(buffer.borrow().clone());
                 }
                 true
             }),

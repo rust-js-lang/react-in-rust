@@ -997,11 +997,9 @@ These differences from upstream's output are accepted:
     as Rust makes a closure after what it captures, where upstream's
     closures read `fizzRequest` and `flightRequest` declared after them
     (ReactDOMDefaultTransitionIndicator's order);
-  - the finished `push(null)` resolves `buffer.take()`, `const old =
-    buffer; buffer = ''; resolve(old);`, where upstream resolves `buffer`
-    and keeps it: nothing reads it after (rd654:
-    `resolve(buffer.borrow().clone())` is refused, a borrow held across
-    `resolve`, ADR 0863, though `resolve` of a string runs no crate code);
+  - the finished `push(null)` resolves `buffer.borrow().clone()`,
+    upstream's `resolve(buffer)` (rd654, fixed in rust-js 3399d7ff9: a
+    promise's `resolve` given text runs no code, ADR 0898 amended);
   - noServerCallOrFormAction is generic, `(id, args)`, given as both the
     Flight client's callServer and encodeFormAction;
   - stashErrorIdx is a number, as upstream's, its text `String(stashErrorIdx)`
@@ -1018,7 +1016,7 @@ These differences from upstream's output are accepted:
   Readability gaps (rust-js), not holding (rd557, a hoisted closure's
   comments, fixed in rust-js 4b8d58215): rd558 (an `Option` a
   `HashMap` holds is boxed, `$someValue($unwrap($someGet(stashedErrors,
-  id), ..))` for `stashedErrors.get(id)`); rd652 and rd654 above (rd650,
+  id), ..))` for `stashedErrors.get(id)`); rd652 above (rd650,
   the entries' imports from './ReactFizzConfigMarkup.js', and rd651, the
   `ReactSharedInternalsClient` alias, fixed in rust-js a6797eac5 and
   d72ed8bb3); and `getCurrentStack = .. ?? null`, the Fizz server's
