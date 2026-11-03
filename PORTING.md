@@ -1080,7 +1080,7 @@ These differences from upstream's output are accepted:
   ReactFlightWebpackReferences, ReactFlightServerConfigWebpackBundler and
   ReactFlightDOMServerBrowser, -Edge and -Node are Rust; the plain
   re-export entries `react-flight-dom-server.*.js` stay JS (rd55), as do
-  ReactFlightWebpackPlugin and NodeRegister (NodeLoader is Rust, below). An entry calls
+  ReactFlightWebpackPlugin (NodeLoader and NodeRegister are Rust, below). An entry calls
   ReactFlightServer's functions through `use
   react_server::react_flight_server::{..}`, its bundler's client manifest
   given as `js::unknown(..)` (Parcel's `None`, upstream's `null`).
@@ -1131,7 +1131,7 @@ These differences from upstream's output are accepted:
   (ReactFlightServerConfig*Bundler) and its ReactFlightDOMServer entries
   (Browser, Edge and Node, as the package has them) are Rust, on webpack's
   port; the `react-flight-dom-server.*.js` re-exports stay JS (rd55), as do
-  the plugins and the Node registers (the Node loaders are Rust, below). Turbopack's and
+  the plugins (the Node loaders and registers are Rust, below). Turbopack's and
   unbundled's are webpack's with their names (Turbopack's References add
   registerServerObjectReference); Parcel keeps the manifest
   registerServerActions is given, `let serverManifest = {};`, and adds
@@ -1158,74 +1158,93 @@ These differences from upstream's output are accepted:
     preloadModule(reference))`, is typed of Parcel's thenable itself in the
     Rust, js's `Fulfils` having none of a thenable that isn't a `Promise`
     (the JS is upstream's).
-- **The Flight Node loaders (2026-11-04)**: react-server-dom-webpack's
-  ReactFlightWebpackNodeLoader, -unbundled's ReactFlightUnbundledNodeLoader
-  and -esm's ReactFlightESMNodeLoader are Rust, each in its own package as
-  upstream has them: upstream's three are one file, unbundled's webpack's
-  byte for byte (its modules import `"react-server-dom-webpack/server"`,
-  kept), ESM's of its own `/server`, so a shared crate would be further
-  from upstream's tree, not closer. Its libraries are binding crates:
-  `bindings/acorn-loose` (`@rust-js-bindings/acorn-loose`: `parse`, acorn's
-  `Options`, and ESTree's `Program` and `Node`, a `#[rust_js::tag =
-  "type"]` enum of the kinds the loaders read and `Node::Other`, with
-  `name`, `loc` and `id` getters for what upstream reads of a node of any
-  kind) and `bindings/webpack-sources` (`helpers::read_mappings` and
+- **The Flight Node loaders and registers (2026-11-04)**:
+  react-server-dom-webpack's ReactFlightWebpackNodeLoader and
+  ReactFlightWebpackNodeRegister, -unbundled's ReactFlightUnbundledNodeLoader
+  and ReactFlightUnbundledNodeRegister, and -esm's ReactFlightESMNodeLoader
+  are Rust, each in its own package as upstream has them: upstream's three
+  loaders are one file, unbundled's webpack's byte for byte (its modules
+  import `"react-server-dom-webpack/server"`, kept), ESM's of its own
+  `/server`, and the registers one file of each package's `/server`, so a
+  shared crate would be further from upstream's tree, not closer. The
+  loaders' libraries are binding crates: `bindings/acorn-loose`
+  (`@rust-js-bindings/acorn-loose`: `parse`, acorn's `Options`, and
+  ESTree's `Program` and `Node`, a `#[rust_js::tag = "type"]` enum of the
+  kinds the loaders read and `Node::Other`, with `name`, `loc` and `id`
+  getters for what upstream reads of a node of any kind) and
+  `bindings/webpack-sources` (`helpers::read_mappings` and
   `create_mappings_serializer`, of `webpack-sources/lib/helpers/*.js`).
   Node's hooks' next functions are upstream's recursive types, each a
   `#[repr(transparent)]` newtype of its `dyn Fn` (`ResolveFunction(&'static
   ResolveFn)`, the transform's loader an `Rc<LoadFn>`), printed as the
   function itself; a hook's result made or passed on is an `Rc`, so
-  `return result` gives Node's own object, extra keys kept. No upstream
-  test runs them: `ReactFlightWebpackNodeLoader-test.js`,
+  `return result` gives Node's own object, extra keys kept. The register
+  is `js::export_default!`'s `export default function register()`, so the
+  `node-register.js` entries read `require(..).default` where upstream's
+  `module.exports` was the function (Jest's; the rollup bundle's
+  `exports: 'auto'` is `module.exports = register` as before); it reads the
+  server's two functions through `#[rust_js::require]` getters,
+  `require('react-server-dom-webpack/server').registerServerReference`,
+  where `register()` is called, as upstream requires the server then; and
+  node's `MODULE` (`import Module from 'module'`), `Module.prototype` and
+  a module's `exports` (rust-js ADR 0305 amended). No upstream test runs
+  the loaders: `ReactFlightWebpackNodeLoader-test.js`,
   `ReactFlightUnbundledNodeLoader-test.js` and `ReactFlightESMNodeLoader-test.js`
   (8 tests each: resolve's condition, warning and context; pass-through;
   a client module of its exports and its `export *`s; a server module's
   registrations and its inline source map, made or mapped through the one
   it names; both directives; the legacy getSource/transformSource) hold
-  them, and pass on upstream's JS too. NodeRegister and the
-  `node-register.js` entries stay JS: upstream's register is CommonJS
-  (`module.exports = function register()`, a lazy
-  `require('react-server-dom-webpack/server')`, `Module.prototype._compile`
-  and `this.exports`), held for the node crate's missing `require` and
-  `Module` bindings (see the session's report). Differences from upstream,
-  none changing a result but the first:
-  - a node upstream reads `.id.name` of without one, acorn-loose's `export
-    if (a) {}`, panics, `$unwrap(node.declaration.id)`, where upstream's
-    read throws a TypeError (h03);
+  them, and pass on upstream's JS too; the webpack register runs in every
+  webpack suite through `WebpackMock`'s `clientModuleError`. Port forms,
+  none changing a result (the coordinator, 2026-11-04, the first three by name),
+  but the last two, which change what an error says:
   - a string export name, `export {x as "y z"}`, keeps upstream's
     `registerServerReference(x,url,undefined)`: its names are
     `Option<String>`, written `entry.localName ?? 'undefined'` and
-    `JSON.stringify` of `Some` alone, and the dedupe set of them a
-    `$KeySet`;
-  - resolve's context is a clone with the condition pushed, `{...context,
-    conditions: context.conditions.slice()}` then `.push('react-server')`,
-    where upstream spreads `[...context.conditions, 'react-server']` into
-    the literal;
-  - `ecmaVersion: 2024` and the register's would-be `sourceType: 'script'`,
+    `JSON.stringify` of `Some` alone;
+  - `ecmaVersion: 2024`, and the register's `sourceType: 'script'`,
     acorn's types, where upstream passes `'2024'` and `'source'` (acorn
     reads both alike);
   - `lastMappedLine = sourceLineCount` of the file with no map is left
     out: upstream never reads it after, and rustc refuses the dead store;
+  - resolve's context is a clone with the condition pushed, `{...context,
+    conditions: context.conditions.slice()}` then `.push('react-server')`,
+    where upstream spreads `[...context.conditions, 'react-server']` into
+    the literal: the spread keeps every key Node gives, as upstream's does,
+    so no result changes for any context (rd676 is the struct update
+    that wouldn't);
+  - the register reads `require('..').x` once for each of its two
+    functions, where upstream names `const Server = require('..')`;
   - the trailing `;`s are counted `for (const c of
     Array.from(mappings).toReversed())`, the line count is
     `source.split('\n').length`, loops are `for…of` (fo1), the
     FunctionDeclaration arms are split (ci1), `return await` where
     upstream returns the promise, and acronym names, `parentUrl`,
     `sourceMappingUrl` (the Flight clients' rule);
-  - rust-js gaps, not holding: rd674 (a next resolve's `{url} |
-    Promise<{url}>` is typed the promise alone: `.await` of a `T |
-    Promise<T>`), rd676 (struct update of a clone, `..(*context).clone()`,
-    prints the clone and a read of each field, not `{...context, ..}`),
-    rd677 (a `match` of a tagged enum is an `if`/`else if` chain, not
-    upstream's `switch (node.type)`), and unnumbered: the options' closure
-    hoisted as `function value(..)` before `parse`, not `onComment(..) {..}`
-    in the literal; consecutive `+=`s of text merged into one; a `match`
-    of a binding's `Result` whose `Err` `continue`s is `$try`, not `try`/`catch`;
-    `.flatten()` of `&[Option<Node>]` is `values().filter(item => item !=
-    null)`; `Default` of an untagged enum is refused (`EcmaVersion`), so
-    `Options` has none and each `parse` names every field; an async fn's
-    `.d.ts` result is `any`; rd673, the `.d.ts` of the newtypes' `function`
-    parameter, is fixed in rust-js 97a226593.
+  - a node upstream reads `.id.name` of without one, acorn-loose's `export
+    if (a) {}`, and a module whose `exports` is `null`, panic,
+    `$unwrap(..)`, where upstream's read throws a TypeError (h03);
+  - the register's parse error logs `'Error parsing %s %s', filename, ..`
+    where upstream logs `url`, the `url` module itself (its `require`d
+    value, which no binding gives): acorn-loose throws only of options it
+    can't take, which the register never gives. **Not yet decided.**
+  Readability gaps (rust-js), not holding: rd674 (a next resolve's `{url}
+  | Promise<{url}>` is typed the promise alone: `.await` of a `T |
+  Promise<T>`), rd676 (struct update of a clone, `..(*context).clone()`,
+  prints the clone and a read of each field, not `{...context, ..}`),
+  rd677 (a `match` of a tagged enum is an `if`/`else if` chain, not
+  upstream's `switch (node.type)`), rd688 (the options' closure is hoisted
+  as `function value(..)` before `parse`, not `onComment(..) {..}` in the
+  literal), rd689 (consecutive `+=`s of text merged into one), rd690 (a
+  `match` of a binding's `Result` whose `Err` `continue`s is `$try` and
+  TAG checks, not `try`/`catch`), rd691 (`.flatten()` of `&[Option<Node>]`
+  is `values().filter(item => item != null)`), rd692 (`Default` of an
+  untagged enum, `EcmaVersion`, is refused, so `Options` has none and each
+  `parse` names every field), rd693 (a `HashSet<Option<String>>` is a
+  `$KeySet`), rd694 (a thread-local `Cell<Option<..>>` is `let x;`, tested
+  `== null`, where upstream writes `= null` and `=== null`), rd695 (an
+  async fn's `.d.ts` result is `any`); rd673, the `.d.ts` of the
+  newtypes' `function` parameter, is fixed in rust-js a784aad38.
 - **react-markup (the user, 2026-11-02: its forms accepted)**: its four modules
   are Rust, a crate of their own (`markup.rs`); the `*.stable.js` entries,
   which only throw, stay JS, as the re-export entries do (rd55).

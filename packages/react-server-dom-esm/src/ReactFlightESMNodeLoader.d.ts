@@ -98,6 +98,7 @@ export interface Loaded {
 
 export type Source = string | ArrayBuffer | Uint8Array<ArrayBuffer>;
 
+// GAP rd695: an async fn's `.d.ts` result is `any`.
 export function resolve(
   specifier: string,
   context: ResolveContext,

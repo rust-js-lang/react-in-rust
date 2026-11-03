@@ -7,4 +7,4 @@
  * @flow
  */
 
-module.exports = require('./src/ReactFlightUnbundledNodeRegister');
+module.exports = require('./src/ReactFlightUnbundledNodeRegister').default;

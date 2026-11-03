@@ -4,6 +4,8 @@
 pub mod client;
 #[path = "ReactFlightWebpackNodeLoader.rs"]
 pub mod react_flight_webpack_node_loader;
+#[path = "ReactFlightWebpackNodeRegister.rs"]
+pub mod react_flight_webpack_node_register;
 #[path = "ReactFlightWebpackPlugin.rs"]
 pub mod react_flight_webpack_plugin;
 #[path = "ReactFlightWebpackReferences.rs"]

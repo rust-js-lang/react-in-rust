@@ -96,10 +96,12 @@ pub enum Source {
 thread_local! {
     static WARNED_ABOUT_CONDITIONS_FLAG: Cell<bool> = const { Cell::new(false) };
 
+    // GAP rd694: `let stashedGetSource;` and `== null` of a `Cell<Option<..>>`, where upstream writes `= null`.
     static STASHED_GET_SOURCE: Cell<Option<GetSourceFunction>> = const { Cell::new(None) };
     static STASHED_RESOLVE: Cell<Option<ResolveFunction>> = const { Cell::new(None) };
 }
 
+// GAP rd695: an async fn's `.d.ts` result is `any`.
 pub async fn resolve(
     specifier: &str,
     mut context: Rc<ResolveContext>,
@@ -113,6 +115,7 @@ pub async fn resolve(
         .iter()
         .any(|condition| condition == "react-server")
     {
+        // GAP rd676: a struct update of the clone, `..(*context).clone()`, would print the clone and a read of each field.
         let mut with_react_server = (*context).clone();
         with_react_server.conditions.push("react-server".to_owned());
         context = Rc::new(with_react_server);
@@ -186,6 +189,7 @@ fn add_local_exported_names(
     local_names: &HashSet<Option<String>>,
     node: &Node,
 ) {
+    // GAP rd677: a `match` of the tagged `Node` is an `if`/`else if` chain, not `switch (node.type)`.
     match node {
         Node::Identifier { name, loc } => {
             add_exported_entry(
@@ -203,6 +207,7 @@ fn add_local_exported_names(
             }
         }
         Node::ArrayPattern { elements } => {
+            // GAP rd691: `.flatten()` is `values().filter(item => item != null)`.
             for element in elements.iter().flatten() {
                 add_local_exported_names(exported_entries, local_names, element);
             }
@@ -248,6 +253,7 @@ fn transform_server_module(
     // This entry list needs to be in source location order.
     let mut exported_entries: Vec<ExportedEntry> = vec![];
     // Dedupe set.
+    // GAP rd693: a set of `Option` names is a `$KeySet`.
     let local_names: HashSet<Option<String>> = HashSet::new();
 
     for node in body {
@@ -454,6 +460,7 @@ fn transform_server_module(
             }
         }
 
+        // GAP rd689: consecutive `+=`s of text are merged into one.
         new_src += "\n\n;";
         new_src += "import {registerServerReference} from \"react-server-dom-webpack/server\";\n";
         if !mappings.is_empty() {
@@ -520,6 +527,7 @@ fn add_export_names(names: &mut Vec<String>, node: &Node) {
             }
         }
         Node::ArrayPattern { elements } => {
+            // GAP rd691
             for element in elements.iter().flatten() {
                 add_export_names(names, element);
             }
@@ -591,6 +599,7 @@ async fn parse_export_names_into(
                     let Source::String(source) = &loaded.source else {
                         panic!("Expected the transformed source to be a string.");
                     };
+                    // GAP rd690: a `match` of the `Result` whose `Err` continues is `$try`, not `try`/`catch`.
                     let child_body = match acorn_loose::parse(
                         source,
                         &Options {
@@ -598,6 +607,7 @@ async fn parse_export_names_into(
                             source_type: Some(SourceType::Module),
                             locations: None,
                             on_comment: None,
+                            // GAP rd692: `Default` of the untagged `EcmaVersion` is refused, so each field is named.
                             preserve_parens: None,
                         },
                     ) {
@@ -744,6 +754,7 @@ async fn transform_module_if_needed(
             ecma_version: EcmaVersion::Version(2024),
             source_type: Some(SourceType::Module),
             locations: Some(true),
+            // GAP rd688: the closure is hoisted as `function value(..)`, not `onComment(..) {..}` in the literal.
             on_comment: Some(&mut |_block: bool,
                                    text: &str,
                                    start: f64,

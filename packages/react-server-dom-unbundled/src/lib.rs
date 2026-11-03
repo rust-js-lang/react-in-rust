@@ -4,6 +4,8 @@
 pub mod client;
 #[path = "ReactFlightUnbundledNodeLoader.rs"]
 pub mod react_flight_unbundled_node_loader;
+#[path = "ReactFlightUnbundledNodeRegister.rs"]
+pub mod react_flight_unbundled_node_register;
 #[path = "ReactFlightUnbundledReferences.rs"]
 pub mod react_flight_unbundled_references;
 pub mod server;

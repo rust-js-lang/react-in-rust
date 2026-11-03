@@ -12,14 +12,17 @@ import {$KeySet, $index, $try, $unwrap} from '@rust-js/runtime';
 
 let warnedAboutConditionsFlag = false;
 
+// GAP rd694: `let stashedGetSource;` and `== null` of a `Cell<Option<..>>`, where upstream writes `= null`.
 let stashedGetSource;
 let stashedResolve;
 
+// GAP rd695: an async fn's `.d.ts` result is `any`.
 export async function resolve(specifier, context, defaultResolve) {
   // We stash this in case we end up needing to resolve export * statements later.
   stashedResolve = defaultResolve;
 
   if (!context.conditions.includes('react-server')) {
+    // GAP rd676: a struct update of the clone, `..(*context).clone()`, would print the clone and a read of each field.
     const withReactServer = {
       ...context,
       conditions: context.conditions.slice(),
@@ -68,6 +71,7 @@ function addExportedEntry(
 }
 
 function addLocalExportedNames(exportedEntries, localNames, node) {
+  // GAP rd677: a `match` of the tagged `Node` is an `if`/`else if` chain, not `switch (node.type)`.
   if (node.type === 'Identifier') {
     addExportedEntry(
       exportedEntries,
@@ -82,6 +86,7 @@ function addLocalExportedNames(exportedEntries, localNames, node) {
       addLocalExportedNames(exportedEntries, localNames, property);
     }
   } else if (node.type === 'ArrayPattern') {
+    // GAP rd691: `.flatten()` is `values().filter(item => item != null)`.
     for (const element of node.elements.values().filter(item => item != null)) {
       addLocalExportedNames(exportedEntries, localNames, element);
     }
@@ -102,6 +107,7 @@ function transformServerModule(source, program, url, sourceMap, loader) {
   // This entry list needs to be in source location order.
   const exportedEntries = [];
   // Dedupe set.
+  // GAP rd693: a set of `Option` names is a `$KeySet`.
   const localNames = new $KeySet();
 
   for (let i = 0; i < body.length; i++) {
@@ -297,6 +303,7 @@ function transformServerModule(source, program, url, sourceMap, loader) {
       }
     }
 
+    // GAP rd689: consecutive `+=`s of text are merged into one.
     newSrc +=
       '\n\n;import {registerServerReference} from "react-server-dom-esm/server";\n';
     if (mappings) {
@@ -360,6 +367,7 @@ function addExportNames(names, node) {
       addExportNames(names, property);
     }
   } else if (node.type === 'ArrayPattern') {
+    // GAP rd691
     for (const element of node.elements.values().filter(item => item != null)) {
       addExportNames(names, element);
     }
@@ -418,6 +426,8 @@ async function parseExportNamesInto(body, names, parentUrl, loader) {
         if (typeof loaded.source !== 'string') {
           throw new Error('Expected the transformed source to be a string.');
         }
+        // GAP rd690: a `match` of the `Result` whose `Err` continues is `$try`, not `try`/`catch`.
+        // GAP rd692: `Default` of the untagged `EcmaVersion` is refused, so each field is named.
         const value = $try(() =>
           parse(loaded.source, {ecmaVersion: 2024, sourceType: 'module'}),
         );
@@ -549,6 +559,7 @@ async function transformModuleIfNeeded(source, url, loader) {
       ecmaVersion: 2024,
       sourceType: 'module',
       locations: true,
+      // GAP rd688: the closure is hoisted as `function value(..)`, not `onComment(..) {..}` in the literal.
       onComment: value,
     });
   } catch (x) {
