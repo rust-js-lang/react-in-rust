@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ReactComponentInfo} from 'shared/ReactTypes';
+import type {ReactComponentInfo, ReactStackTrace} from 'shared/ReactTypes';
 
 export const IO_NODE: number;
 
@@ -24,20 +24,17 @@ export const UNRESOLVED_AWAIT_NODE: number;
  */
 export interface AsyncSequence {
   tag: number;
-  owner?: ReactComponentInfo | null | undefined;
+  owner: ReactComponentInfo | null;
   // callsite that spawned the I/O, created the Promise, or awaited
-  stack?:
-    | [string, string, number, number, number, number, boolean][]
-    | null
-    | undefined;
+  stack: ReactStackTrace | null;
   // start time when the first part of the I/O sequence started, or when we started blocking
   start: number;
   // end time when the Promise was resolved, or when we unblocked; -1.1 until it's resolved
   end: number;
   // a reference to this Promise if still referenced; not used on I/O
-  promise?: WeakRef<any> | null | undefined;
+  promise: WeakRef<any> | null;
   // the thing that ended up resolving this promise, or the promise we were waiting on
-  awaited?: AsyncSequence | null | undefined;
+  awaited: AsyncSequence | null;
   // the sequence that was blocking us, or the preceeding await that spawned this new work
-  previous?: AsyncSequence | null | undefined;
+  previous: AsyncSequence | null;
 }

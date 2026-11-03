@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ReactFormState} from 'shared/ReactTypes';
+
 export function decodeAction<M>(
   body: FormData,
   serverManifest: M,
@@ -15,7 +17,7 @@ export function decodeFormState<M>(
   body: FormData,
   serverManifest: M,
 ): Promise<
-  | [unknown | null | undefined, string, unknown | null | undefined, number]
+  | ReactFormState<unknown | null | undefined, unknown | null | undefined>
   | null
   | undefined
 >;

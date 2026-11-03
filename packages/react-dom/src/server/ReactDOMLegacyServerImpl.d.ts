@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ReactNodeList} from 'shared/ReactTypes';
+
 export {default as version} from 'shared/ReactVersion';
 
 export interface ServerOptions {
@@ -12,7 +14,7 @@ export interface ServerOptions {
 }
 
 export function renderToStringImpl(
-  children: unknown | null | undefined,
+  children: ReactNodeList | null | undefined,
   options: ServerOptions | null | undefined,
   generateStaticMarkup: boolean,
   abortReason: string,

@@ -444,8 +444,7 @@ function getCurrentStackInDEV() {
  */
 function stringify(value) {
   try {
-    const json = JSON.stringify(value);
-    return json ?? '';
+    return JSON.stringify(value) ?? '';
   } catch (error) {
     throw error;
   }
@@ -2410,8 +2409,8 @@ function visitAsyncNode(request, task, node, visited, cutOff) {
 
   // Process from deepest to shallowest (reverse order).
   for (let i = chain.length - 1; i >= 0; i--) {
-    // Set it as visited early in case we see the node again before returning.
     const n = chain[i];
+    // Set it as visited early in case we see the node again before returning.
     visited.nodes.set(n, null);
 
     const result = visitAsyncNodeImpl(
@@ -3293,9 +3292,9 @@ function serializeDebugMap(request, counter, map) {
   // The Map itself doesn't take up any space but the outlined object does.
   counter.objectLimit++;
   for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
     // Outline every object entry in case we run out of space to serialize them.
     // Because we can't mark these values as limited.
-    const entry = entries[i];
     const entryObject = entry;
     doNotLimit().add(entryObject);
     const key = entry[0];
@@ -3317,9 +3316,9 @@ function serializeDebugSet(request, counter, set) {
   // The Set itself doesn't take up any space but the outlined object does.
   counter.objectLimit++;
   for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
     // Outline every object entry in case we run out of space to serialize them.
     // Because we can't mark these values as limited.
-    const entry = entries[i];
     if (typeof entry === 'object' && entry !== null) {
       doNotLimit().add(entry);
     }
@@ -5324,8 +5323,8 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
           doNotLimitAdd(stack);
           if (Array.isArray(stack)) {
             for (let i = 0; i < stack.length; i++) {
-              // Safety: a call site is an array, an object.
               const callsite = stack[i];
+              // Safety: a call site is an array, an object.
               doNotLimitAdd(callsite);
             }
           }
@@ -5679,8 +5678,7 @@ function serializeDebugModel(request, objectLimit, model) {
   // $FlowFixMe[incompatible-type]
   let json;
   try {
-    const json$1 = JSON.stringify(model, replacer, 0);
-    json = json$1 ?? '';
+    json = JSON.stringify(model, replacer, 0) ?? '';
   } catch (x) {
     // $FlowFixMe[incompatible-cast] stringify can return null
     json = JSON.stringify(unknownValueMessage(x.message));
@@ -5733,8 +5731,7 @@ function emitOutlinedDebugModelChunk(request, id, counter, model) {
   // $FlowFixMe[incompatible-type] stringify can return null
   let json;
   try {
-    const json$1 = JSON.stringify(model, replacer, 0);
-    json = json$1 ?? '';
+    json = JSON.stringify(model, replacer, 0) ?? '';
   } catch (x) {
     // $FlowFixMe[incompatible-type] stringify can return null
     json = JSON.stringify(unknownValueMessage(x.message));

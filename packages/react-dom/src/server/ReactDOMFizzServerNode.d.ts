@@ -8,10 +8,17 @@
 import type {Writable} from 'stream';
 import type {
   BootstrapScriptDescriptor,
-  HeadersDescriptor,
   NonceOption,
+  OnHeaders,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
-import type {PostponedState} from 'react-server/src/ReactFizzServer';
+import type {
+  FormState,
+  OnBrowserBailout,
+  OnError,
+  OnFatal,
+  PostponedState,
+} from 'react-server/src/ReactFizzServer';
+import type {ReactNodeList} from 'shared/ReactTypes';
 
 export {default as version} from 'shared/ReactVersion';
 
@@ -28,40 +35,24 @@ export interface Options {
   bootstrapModules?: BootstrapScript[] | undefined;
   progressiveChunkSize?: number | undefined;
   onShellReady?: (() => void) | undefined;
-  onShellError?: ((value: unknown | null | undefined) => void) | undefined;
+  onShellError?: OnFatal | undefined;
   onAllReady?: (() => void) | undefined;
-  onError?:
-    | ((
-        value: unknown | null | undefined,
-        value2: any,
-      ) => string | null | undefined)
-    | undefined;
-  onBrowserBailout?:
-    | ((value: unknown | null | undefined, value2: any) => void)
-    | undefined;
+  onError?: OnError | undefined;
+  onBrowserBailout?: OnBrowserBailout | undefined;
   unstable_externalRuntimeSrc?: BootstrapScript | undefined;
   importMap?: unknown;
-  formState?:
-    | [unknown | null | undefined, string, unknown | null | undefined, number]
-    | undefined;
-  onHeaders?: ((descriptor: HeadersDescriptor) => void) | undefined;
+  formState?: FormState | undefined;
+  onHeaders?: OnHeaders | undefined;
   maxHeadersLength?: unknown;
 }
 
 export interface ResumeOptions {
   nonce?: Nonce | undefined;
   onShellReady?: (() => void) | undefined;
-  onShellError?: ((value: unknown | null | undefined) => void) | undefined;
+  onShellError?: OnFatal | undefined;
   onAllReady?: (() => void) | undefined;
-  onError?:
-    | ((
-        value: unknown | null | undefined,
-        value2: any,
-      ) => string | null | undefined)
-    | undefined;
-  onBrowserBailout?:
-    | ((value: unknown | null | undefined, value2: any) => void)
-    | undefined;
+  onError?: OnError | undefined;
+  onBrowserBailout?: OnBrowserBailout | undefined;
 }
 
 export interface PipeableStream {
@@ -72,7 +63,7 @@ export interface PipeableStream {
 }
 
 export function renderToPipeableStream(
-  children?: unknown | null | undefined,
+  children?: ReactNodeList | null | undefined,
   options?: Options | null | undefined,
 ): PipeableStream;
 
@@ -97,52 +88,36 @@ export interface WebStreamsOptions {
   bootstrapScripts?: BootstrapScript[] | undefined;
   bootstrapModules?: BootstrapScript[] | undefined;
   progressiveChunkSize?: number | undefined;
-  onError?:
-    | ((
-        value: unknown | null | undefined,
-        value2: any,
-      ) => string | null | undefined)
-    | undefined;
-  onBrowserBailout?:
-    | ((value: unknown | null | undefined, value2: any) => void)
-    | undefined;
+  onError?: OnError | undefined;
+  onBrowserBailout?: OnBrowserBailout | undefined;
   unstable_externalRuntimeSrc?: BootstrapScript | undefined;
   importMap?: unknown;
-  formState?:
-    | [unknown | null | undefined, string, unknown | null | undefined, number]
-    | undefined;
+  formState?: FormState | undefined;
   maxHeadersLength?: unknown;
   signal?: AbortSignal | undefined;
   onHeaders?: ((headers: Headers) => void) | undefined;
 }
 
 export function renderToReadableStream(
-  children?: unknown | null | undefined,
+  children?: ReactNodeList | null | undefined,
   options?: WebStreamsOptions | null | undefined,
 ): Promise<ReactDOMServerReadableStream>;
 
 export function resumeToPipeableStream(
-  children: unknown | null | undefined,
+  children: ReactNodeList | null | undefined,
   postponedState: PostponedState,
   options?: ResumeOptions | null | undefined,
 ): PipeableStream;
 
 export interface WebStreamsResumeOptions {
   nonce?: Nonce | undefined;
-  onError?:
-    | ((
-        value: unknown | null | undefined,
-        value2: any,
-      ) => string | null | undefined)
-    | undefined;
-  onBrowserBailout?:
-    | ((value: unknown | null | undefined, value2: any) => void)
-    | undefined;
+  onError?: OnError | undefined;
+  onBrowserBailout?: OnBrowserBailout | undefined;
   signal?: AbortSignal | undefined;
 }
 
 export function resume(
-  children: unknown | null | undefined,
+  children: ReactNodeList | null | undefined,
   postponedState: PostponedState,
   options?: WebStreamsResumeOptions | null | undefined,
 ): Promise<ReactDOMServerReadableStream>;

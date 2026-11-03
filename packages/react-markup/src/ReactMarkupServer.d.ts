@@ -5,17 +5,14 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {OnError} from 'react-server/src/ReactFizzServer';
+
 export {default as version} from 'shared/ReactVersion';
 
 export interface MarkupOptions {
   identifierPrefix?: string | undefined;
   signal?: AbortSignal | undefined;
-  onError?:
-    | ((
-        value: unknown | null | undefined,
-        value2: any,
-      ) => string | null | undefined)
-    | undefined;
+  onError?: OnError | undefined;
 }
 
 export function experimental_renderToHTML(

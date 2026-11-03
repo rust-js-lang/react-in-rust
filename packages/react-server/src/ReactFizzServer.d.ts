@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ReactFormState, ReactNodeList} from 'shared/ReactTypes';
 import type {ComponentStackNode} from './ReactFizzComponentStack.js';
 import type {Context} from './ReactFizzLegacyContext.js';
 import type {ContextSnapshot} from './ReactFizzNewContext.js';
@@ -38,7 +39,7 @@ interface Segment {
   // The context that this segment was created in.
   parentFormatContext: FormatContext;
   // If this segment represents a fallback, this is the content that will replace that fallback.
-  boundary?: SuspenseBoundary | null | undefined;
+  boundary: SuspenseBoundary | null;
   // used to discern when text separator boundaries are needed
   lastPushedText: boolean;
   textEmbedded: boolean;
@@ -49,16 +50,16 @@ interface SuspenseBoundary {
   rootSegmentID: number;
   parentFlushed: boolean;
   pendingTasks: number;
-  row?: SuspenseListRow | null | undefined;
+  row: SuspenseListRow | null;
   completedSegments: Segment[];
   byteSize: number;
   defer: boolean;
   fallbackAbortableTasks: AbortSet;
   contentState: HoistableState;
   fallbackState: HoistableState;
-  preamble?: Preamble | null | undefined;
-  tracked?: Tracked | null | undefined;
-  errorDigest?: string | null | undefined;
+  preamble: Preamble | null;
+  tracked: Tracked | null;
+  errorDigest: string | null;
   // DEV-only fields
   errorMessage?: string | null | undefined;
   errorStack?: string | null | undefined;
@@ -67,16 +68,16 @@ interface SuspenseBoundary {
 
 interface SuspenseListRow {
   pendingTasks: number;
-  boundaries?: SuspenseBoundary[] | null | undefined;
+  boundaries: SuspenseBoundary[] | null;
   hoistables: HoistableState;
-  inheritedHoistables?: unknown | null | undefined;
+  inheritedHoistables: unknown | null;
   together: boolean;
-  next?: SuspenseListRow | null | undefined;
+  next: SuspenseListRow | null;
 }
 
 interface Tracked {
-  contentKeyPath?: any | null | undefined;
-  fallbackNode?: ReplayNode | null | undefined;
+  contentKeyPath: any | null;
+  fallbackNode: ReplayNode | null;
 }
 
 // ReactServerStreamConfig's types, which its fork for each host defines: a
@@ -140,31 +141,28 @@ export type AbortSet = Set<Task>;
  * writes to none: its `replay` is `null` where it renders.
  */
 export interface Task {
-  replay?: ReplaySet | null | undefined;
-  node: unknown | null | undefined;
+  replay: ReplaySet | null;
+  node: ReactNodeList | null | undefined;
   childIndex: number;
-  blockedBoundary?: SuspenseBoundary | null | undefined;
-  blockedSegment?: Segment | null | undefined;
-  blockedPreamble?: unknown | null | undefined;
-  hoistableState?: unknown | null | undefined;
+  blockedBoundary: SuspenseBoundary | null;
+  blockedSegment: Segment | null;
+  blockedPreamble: unknown | null;
+  hoistableState: unknown | null;
   abortSet: AbortSet;
-  keyPath?: any | null | undefined;
+  keyPath: any | null;
   formatContext: FormatContext;
   context: ContextSnapshot;
   treeContext: TreeContext;
-  row?: SuspenseListRow | null | undefined;
-  componentStack?: ComponentStackNode | null | undefined;
-  thenableState?: any[] | null | undefined;
+  row: SuspenseListRow | null;
+  componentStack: ComponentStackNode | null;
+  thenableState: any[] | null;
   // GAP rd493: upstream sets `legacyContext` only `if
   // (!disableLegacyContext)` and `debugTask` only in DEV, to keep the
   // object at 16 fields in production; a struct's fields are always set.
   legacyContext: Context;
-  debugTask?:
-    | {
-        run<T>(f: () => T): T;
-      }
-    | null
-    | undefined;
+  debugTask: {
+    run<T>(f: () => T): T;
+  } | null;
 }
 
 export type ErrorInfo = any;
@@ -191,7 +189,7 @@ export type OnBrowserBailout = (
 export type OnFatal = (value: unknown | null | undefined) => void;
 
 declare class RequestInstance {
-  destination?: unknown | null | undefined;
+  destination: unknown | null;
   flushScheduled: boolean;
   resumableState: ResumableState;
   renderState: RenderState;
@@ -204,17 +202,17 @@ declare class RequestInstance {
   nextSegmentId: number;
   allPendingTasks: number;
   pendingRootTasks: number;
-  completedRootSegment?: Segment | null | undefined;
-  completedPreambleSegments?: Segment[][] | null | undefined;
+  completedRootSegment: Segment | null;
+  completedPreambleSegments: Segment[][] | null;
   byteSize: number;
   abortableTasks: AbortSet;
   pingedTasks: Task[];
-  currentTask?: Task | null | undefined;
+  currentTask: Task | null;
   // Queues to flush in order of priority
   clientRenderedBoundaries: SuspenseBoundary[];
   completedBoundaries: SuspenseBoundary[];
   partialBoundaries: SuspenseBoundary[];
-  trackedPostpones?: PostponedHoles | null | undefined;
+  trackedPostpones: PostponedHoles | null;
   // While prerendering a postponed request that produced a real shell, this
   // holds the PostponedState returned by getPostponedState. getPostponedState
   // snapshots nextSegmentId before the (pull-driven) prelude flush runs, but the
@@ -223,7 +221,7 @@ declare class RequestInstance {
   // render allocates segment ids strictly above the shell's; otherwise the shell
   // and resume emit duplicate B:/S: ids once concatenated. Stays null for live
   // renders and resumes.
-  postponedState?: PostponedState | null | undefined;
+  postponedState: PostponedState | null;
   // onError is called when an error happens anywhere in the tree. It might recover.
   // The return string is used in production  primarily to avoid leaking internals, secondarily to save bytes.
   // Returning null/undefined will cause a default error message in production
@@ -246,9 +244,9 @@ declare class RequestInstance {
   // aborted. Bounds the lifetime of anything that must not outlive the render.
   // Null until attachAbortSignal creates it, so a render that is given no
   // signal constructs no controller.
-  renderLifetimeController?: AbortController | null | undefined;
+  renderLifetimeController: AbortController | null;
   // Form state that was the result of an MPA submission, if it was provided.
-  formState?: FormState | null | undefined;
+  formState: FormState | null;
   // DEV-only, warning dedupe
   didWarnForKey?: WeakSet<ComponentStackNode> | null | undefined;
 }
@@ -256,15 +254,13 @@ declare class RequestInstance {
 export type {RequestInstance};
 
 /** The result of an MPA submission. */
-export type FormState = [
+export type FormState = ReactFormState<
   unknown | null | undefined,
-  string,
-  unknown | null | undefined,
-  number,
-];
+  unknown | null | undefined
+>;
 
 export function createRequest(
-  children: unknown | null | undefined,
+  children: ReactNodeList | null | undefined,
   resumableState: ResumableState,
   renderState: RenderState,
   rootFormatContext: FormatContext,
@@ -279,7 +275,7 @@ export function createRequest(
 ): RequestInstance;
 
 export function createPrerenderRequest(
-  children: unknown | null | undefined,
+  children: ReactNodeList | null | undefined,
   resumableState: ResumableState,
   renderState: RenderState,
   rootFormatContext: FormatContext,
@@ -293,7 +289,7 @@ export function createPrerenderRequest(
 ): RequestInstance;
 
 export function resumeRequest(
-  children: unknown | null | undefined,
+  children: ReactNodeList | null | undefined,
   postponedState: PostponedState,
   renderState: RenderState,
   onError?: OnError | null | undefined,
@@ -305,7 +301,7 @@ export function resumeRequest(
 ): RequestInstance;
 
 export function resumeAndPrerenderRequest(
-  children: unknown | null | undefined,
+  children: ReactNodeList | null | undefined,
   postponedState: PostponedState,
   renderState: RenderState,
   onError?: OnError | null | undefined,

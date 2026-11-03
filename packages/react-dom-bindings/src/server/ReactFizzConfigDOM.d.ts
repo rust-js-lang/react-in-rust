@@ -103,12 +103,12 @@ export interface RenderState {
   // preamble chunks
   preamble: PreambleState;
   // external runtime script chunks
-  externalRuntimeScript?: ExternalRuntimeScript | null | undefined;
+  externalRuntimeScript: ExternalRuntimeScript | null;
   bootstrapChunks: any[];
   importMapChunks: any[];
   // Headers queues for Resources that can flush early
   onHeaders?: OnHeaders | undefined;
-  headers?: Headers | null | undefined;
+  headers: Headers | null;
   resets: Resets;
   // Hoistable chunks
   charsetChunks: any[];
@@ -127,7 +127,7 @@ export interface RenderState {
   preloads: Preloads;
   nonce: NonceOption;
   // like a module global for currently rendering boundary
-  hoistableState?: HoistableState | null | undefined;
+  hoistableState: HoistableState | null;
   // Module-global-like reference for flushing/hoisting state of style resources
   // We need to track whether the current request has flushed any style resources
   // without sending an instruction to hoist them. we do that here
@@ -186,9 +186,9 @@ export interface ExternalRuntimeScript {
 export type Nonce = string | NonceOption;
 
 export interface PreambleState {
-  htmlChunks?: any[] | null | undefined;
-  headChunks?: any[] | null | undefined;
-  bodyChunks?: any[] | null | undefined;
+  htmlChunks: any[] | null;
+  headChunks: any[] | null;
+  bodyChunks: any[] | null;
 }
 
 /** A resource's chunks, which a queue holds by identity. */
@@ -269,9 +269,9 @@ export type SelectedValue = unknown | null | undefined;
 // Lets us keep track of contextual state and pick it back up after suspending.
 export interface FormatContext {
   insertionMode: number;
-  selectedValue?: unknown | null | undefined;
+  selectedValue: unknown | null;
   tagScope: number;
-  viewTransition?: ViewTransitionContext | null | undefined;
+  viewTransition: ViewTransitionContext | null;
 }
 
 export function canHavePreamble(formatContext: FormatContext): boolean;

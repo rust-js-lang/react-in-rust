@@ -98,13 +98,13 @@ export interface Response {
   _formData: BackingFormData;
   _chunks: Map<number, ReactPromise>;
   _closed: boolean;
-  _closedReason?: unknown | null | undefined;
+  _closedReason: unknown | null;
   _temporaryReferences?: TemporaryReferenceSet | undefined;
-  _serverReferenceObjects?: WeakSet<object> | null | undefined;
+  _serverReferenceObjects: WeakSet<object> | null;
   _serverReferenceCache: WeakMap<object, ReactPromise>;
   _serverObjectReferenceCache: WeakMap<object, ReactPromise>;
   _rootArrayContexts: WeakMap<object, NestedArrayContext>;
-  _arraySizeLimit?: unknown | null | undefined;
+  _arraySizeLimit: unknown | null;
 }
 
 export function getRoot(response: Response): ReactPromise;
@@ -132,7 +132,7 @@ export interface InitializationReference {
 }
 
 export interface InitializationHandler {
-  chunk?: ReactPromise | null | undefined;
+  chunk: ReactPromise | null;
   value: unknown | null | undefined;
   // TODO: Split type to make it impossible to treat a thrown value as NestedArrayContext.
   // thrown value if errored, otherwise array context
@@ -140,7 +140,7 @@ export interface InitializationHandler {
   // GAP rd488: upstream's one `reason` is a thrown value or, where it's
   // not errored, an array context; an untagged enum can't tell a struct
   // from any thrown value, so the array context is a field of its own.
-  arrayRoot?: NestedArrayContext | null | undefined;
+  arrayRoot: NestedArrayContext | null;
   deps: number;
   errored: boolean;
 }

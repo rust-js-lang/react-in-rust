@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ReactClientValue} from 'react-server/src/ReactFlightServer';
 import type {
   ClientReference,
   ServerReference,
@@ -13,6 +14,11 @@ import type {
 export {
   isClientReference,
   isServerReference,
+} from '../ReactFlightESMReferences.js';
+
+export type {
+  ClientReference,
+  ServerReference,
 } from '../ReactFlightESMReferences.js';
 
 export type ClientManifest = string;
@@ -40,7 +46,7 @@ export function getServerReferenceId(
 export function getServerReferenceBoundArguments(
   config: ClientManifest,
   serverReference: ServerReference,
-): (unknown | null | undefined)[] | null;
+): (ReactClientValue | null | undefined)[] | null;
 
 export function getServerReferenceLocation(
   config: ClientManifest,

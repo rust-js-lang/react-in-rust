@@ -8,6 +8,13 @@
 import type {Busboy} from 'busboy';
 import type {Readable, Writable} from 'stream';
 import type {ReactPromise} from 'react-server/src/ReactFlightReplyServer';
+import type {
+  FilterStackFrame,
+  OnError,
+  ReactClientValue,
+} from 'react-server/src/ReactFlightServer';
+import type {TemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
+import type {ReactFormState} from 'shared/ReactTypes';
 import type {ServerManifest} from '../client/ReactFlightClientConfigBundlerParcel.js';
 
 export {
@@ -16,6 +23,8 @@ export {
 } from '../ReactFlightParcelReferences.js';
 
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
+
+export type {TemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
 type EnvironmentName = string | (() => string);
 
@@ -31,21 +40,10 @@ export type DebugChannel = unknown;
 export interface Options {
   debugChannel?: DebugChannel | undefined;
   environmentName?: EnvironmentName | undefined;
-  filterStackFrame?:
-    | ((
-        value: string,
-        value2: string,
-        value3: number,
-        value4: number,
-      ) => boolean)
-    | undefined;
-  onError?:
-    | ((value: unknown | null | undefined) => string | null | undefined)
-    | undefined;
+  filterStackFrame?: FilterStackFrame | undefined;
+  onError?: OnError | undefined;
   identifierPrefix?: string | undefined;
-  temporaryReferences?:
-    | WeakMap<() => unknown | null | undefined, string>
-    | undefined;
+  temporaryReferences?: TemporaryReferenceSet | undefined;
   startTime?: number | undefined;
 }
 
@@ -55,7 +53,7 @@ export interface PipeableStream {
 }
 
 export function renderToPipeableStream(
-  model?: unknown | null | undefined,
+  model?: ReactClientValue | null | undefined,
   options?: Options | null | undefined,
 ): PipeableStream;
 
@@ -67,47 +65,25 @@ export interface WebStreamsDebugChannel {
 export interface WebStreamsOptions {
   debugChannel?: WebStreamsDebugChannel | undefined;
   environmentName?: EnvironmentName | undefined;
-  filterStackFrame?:
-    | ((
-        value: string,
-        value2: string,
-        value3: number,
-        value4: number,
-      ) => boolean)
-    | undefined;
-  onError?:
-    | ((value: unknown | null | undefined) => string | null | undefined)
-    | undefined;
+  filterStackFrame?: FilterStackFrame | undefined;
+  onError?: OnError | undefined;
   identifierPrefix?: string | undefined;
-  temporaryReferences?:
-    | WeakMap<() => unknown | null | undefined, string>
-    | undefined;
+  temporaryReferences?: TemporaryReferenceSet | undefined;
   startTime?: number | undefined;
   signal?: AbortSignal | undefined;
 }
 
 export function renderToReadableStream(
-  model?: unknown | null | undefined,
+  model?: ReactClientValue | null | undefined,
   options?: WebStreamsOptions | null | undefined,
 ): ReadableStream;
 
 export interface PrerenderOptions {
   environmentName?: EnvironmentName | undefined;
-  filterStackFrame?:
-    | ((
-        value: string,
-        value2: string,
-        value3: number,
-        value4: number,
-      ) => boolean)
-    | undefined;
-  onError?:
-    | ((value: unknown | null | undefined) => string | null | undefined)
-    | undefined;
+  filterStackFrame?: FilterStackFrame | undefined;
+  onError?: OnError | undefined;
   identifierPrefix?: string | undefined;
-  temporaryReferences?:
-    | WeakMap<() => unknown | null | undefined, string>
-    | undefined;
+  temporaryReferences?: TemporaryReferenceSet | undefined;
   signal?: AbortSignal | undefined;
   startTime?: number | undefined;
 }
@@ -117,7 +93,7 @@ export interface StaticResult {
 }
 
 export function prerenderToNodeStream(
-  model?: unknown | null | undefined,
+  model?: ReactClientValue | null | undefined,
   options?: PrerenderOptions | null | undefined,
 ): Promise<StaticResult>;
 
@@ -126,16 +102,14 @@ export interface WebStreamsStaticResult {
 }
 
 export function prerender(
-  model?: unknown | null | undefined,
+  model?: ReactClientValue | null | undefined,
   options?: PrerenderOptions | null | undefined,
 ): Promise<WebStreamsStaticResult>;
 
 export function registerServerActions(manifest: ServerManifest): void;
 
 export interface DecodeReplyOptions {
-  temporaryReferences?:
-    | WeakMap<() => unknown | null | undefined, string>
-    | undefined;
+  temporaryReferences?: TemporaryReferenceSet | undefined;
   arraySizeLimit?: unknown;
 }
 
@@ -168,7 +142,7 @@ export function decodeFormState(
   actionResult: unknown | null | undefined,
   body: FormData,
 ): Promise<
-  | [unknown | null | undefined, string, unknown | null | undefined, number]
+  | ReactFormState<unknown | null | undefined, unknown | null | undefined>
   | null
   | undefined
 >;

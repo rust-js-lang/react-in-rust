@@ -6,6 +6,13 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {ReactPromise} from 'react-server/src/ReactFlightReplyServer';
+import type {
+  FilterStackFrame,
+  OnError,
+  ReactClientValue,
+} from 'react-server/src/ReactFlightServer';
+import type {TemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
+import type {ReactFormState} from 'shared/ReactTypes';
 import type {ServerManifest} from '../client/ReactFlightClientConfigBundlerParcel.js';
 
 export {
@@ -14,6 +21,8 @@ export {
 } from '../ReactFlightParcelReferences.js';
 
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
+
+export type {TemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
 type EnvironmentName = string | (() => string);
 
@@ -25,27 +34,16 @@ export interface DebugChannel {
 export interface Options {
   debugChannel?: DebugChannel | undefined;
   environmentName?: EnvironmentName | undefined;
-  filterStackFrame?:
-    | ((
-        value: string,
-        value2: string,
-        value3: number,
-        value4: number,
-      ) => boolean)
-    | undefined;
+  filterStackFrame?: FilterStackFrame | undefined;
   identifierPrefix?: string | undefined;
   signal?: AbortSignal | undefined;
-  temporaryReferences?:
-    | WeakMap<() => unknown | null | undefined, string>
-    | undefined;
-  onError?:
-    | ((value: unknown | null | undefined) => string | null | undefined)
-    | undefined;
+  temporaryReferences?: TemporaryReferenceSet | undefined;
+  onError?: OnError | undefined;
   startTime?: number | undefined;
 }
 
 export function renderToReadableStream(
-  model?: unknown | null | undefined,
+  model?: ReactClientValue | null | undefined,
   options?: Options | null | undefined,
 ): ReadableStream;
 
@@ -54,7 +52,7 @@ export interface StaticResult {
 }
 
 export function prerender(
-  model?: unknown | null | undefined,
+  model?: ReactClientValue | null | undefined,
   options?: Options | null | undefined,
 ): Promise<StaticResult>;
 
@@ -64,9 +62,7 @@ export function registerServerActions(manifest: ServerManifest): void;
 export type ReplyBody = string | FormData;
 
 export interface DecodeReplyOptions {
-  temporaryReferences?:
-    | WeakMap<() => unknown | null | undefined, string>
-    | undefined;
+  temporaryReferences?: TemporaryReferenceSet | undefined;
   arraySizeLimit?: unknown;
 }
 
@@ -83,7 +79,7 @@ export function decodeFormState(
   actionResult: unknown | null | undefined,
   body: FormData,
 ): Promise<
-  | [unknown | null | undefined, string, unknown | null | undefined, number]
+  | ReactFormState<unknown | null | undefined, unknown | null | undefined>
   | null
   | undefined
 >;

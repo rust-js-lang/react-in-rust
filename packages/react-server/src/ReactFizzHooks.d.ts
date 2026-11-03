@@ -5,6 +5,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {
+  Deps,
+  EventFunction,
+  EventFunctionImpl,
+  Reducer,
+  StateAndDispatch,
+} from 'react-reconciler/src/ReactFiberHooks';
 import type {Dispatcher} from 'react-reconciler/src/ReactInternalTypes';
 import type {ReactRecoverable} from 'shared/ReactTypes';
 import type {RequestInstance, ResumableState, Task} from './ReactFizzServer.js';
@@ -60,31 +67,20 @@ export function resetHooksState(): void;
 
 export function useState(
   initialState?: unknown | null | undefined,
-): [
-  unknown | null | undefined,
-  ((value: unknown | null | undefined) => void) | null | undefined,
-];
+): StateAndDispatch;
 
 export function useReducer(
-  reducer: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
-  ) => unknown | null | undefined,
+  reducer: Reducer,
   initialArg?: unknown | null | undefined,
   init?: unknown | null | undefined,
-): [
-  unknown | null | undefined,
-  ((value: unknown | null | undefined) => void) | null | undefined,
-];
+): StateAndDispatch;
 
 export function useCallback(
   callback?: unknown | null | undefined,
-  deps?: (unknown | null | undefined)[] | null | undefined,
+  deps?: Deps | null | undefined,
 ): unknown | null | undefined;
 
-export function useEffectEvent(
-  callback: () => unknown | null | undefined,
-): (...args: (unknown | null | undefined)[]) => unknown | null | undefined;
+export function useEffectEvent(callback: EventFunctionImpl): EventFunction;
 
 export function unwrapThenable(thenable: any): unknown | null | undefined;
 

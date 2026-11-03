@@ -51,6 +51,13 @@ export {
   writeStartSegment,
 } from './ReactFizzConfigDOM.js';
 
+export type {
+  FormatContext,
+  HoistableState,
+  PreambleState,
+  ResumableState,
+} from './ReactFizzConfigDOM.js';
+
 export const isPrimaryRenderer: boolean;
 
 export interface RenderState extends RenderState {

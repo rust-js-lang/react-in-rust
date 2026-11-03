@@ -9,7 +9,13 @@ import type {
   BootstrapScriptDescriptor,
   NonceOption,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
-import type {PostponedState} from 'react-server/src/ReactFizzServer';
+import type {
+  FormState,
+  OnBrowserBailout,
+  OnError,
+  PostponedState,
+} from 'react-server/src/ReactFizzServer';
+import type {ReactNodeList} from 'shared/ReactTypes';
 
 export {default as version} from 'shared/ReactVersion';
 
@@ -26,20 +32,11 @@ export interface Options {
   bootstrapModules?: BootstrapScript[] | undefined;
   progressiveChunkSize?: number | undefined;
   signal?: AbortSignal | undefined;
-  onError?:
-    | ((
-        value: unknown | null | undefined,
-        value2: any,
-      ) => string | null | undefined)
-    | undefined;
-  onBrowserBailout?:
-    | ((value: unknown | null | undefined, value2: any) => void)
-    | undefined;
+  onError?: OnError | undefined;
+  onBrowserBailout?: OnBrowserBailout | undefined;
   unstable_externalRuntimeSrc?: BootstrapScript | undefined;
   importMap?: unknown;
-  formState?:
-    | [unknown | null | undefined, string, unknown | null | undefined, number]
-    | undefined;
+  formState?: FormState | undefined;
   onHeaders?: ((headers: Headers) => void) | undefined;
   maxHeadersLength?: unknown;
 }
@@ -47,15 +44,8 @@ export interface Options {
 export interface ResumeOptions {
   nonce?: Nonce | undefined;
   signal?: AbortSignal | undefined;
-  onError?:
-    | ((
-        value: unknown | null | undefined,
-        value2: any,
-      ) => string | null | undefined)
-    | undefined;
-  onBrowserBailout?:
-    | ((value: unknown | null | undefined, value2: any) => void)
-    | undefined;
+  onError?: OnError | undefined;
+  onBrowserBailout?: OnBrowserBailout | undefined;
   unstable_externalRuntimeSrc?: BootstrapScript | undefined;
 }
 
@@ -63,12 +53,12 @@ export interface ResumeOptions {
 export type ReactDOMServerReadableStream = ReadableStream;
 
 export function renderToReadableStream(
-  children?: unknown | null | undefined,
+  children?: ReactNodeList | null | undefined,
   options?: Options | null | undefined,
 ): Promise<ReactDOMServerReadableStream>;
 
 export function resume(
-  children: unknown | null | undefined,
+  children: ReactNodeList | null | undefined,
   postponedState: PostponedState,
   options?: ResumeOptions | null | undefined,
 ): Promise<ReactDOMServerReadableStream>;

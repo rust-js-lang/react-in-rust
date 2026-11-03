@@ -44,7 +44,7 @@ export interface Segment {
 }
 
 export interface Destination {
-  root?: unknown | null | undefined;
+  root: unknown | null;
   placeholders: Map<number, Placeholder>;
   segments: Map<number, Segment>;
   stack: Parent[];

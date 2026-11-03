@@ -13,7 +13,7 @@ export type Context = ReactContext<unknown | null | undefined>;
 // Used to store the parent path of all context overrides in a shared linked list.
 // Forming a reverse tree.
 export interface ContextNode {
-  parent?: ContextNode | null | undefined;
+  parent: ContextNode | null;
   depth: number;
   context: Context;
   parentValue?: unknown;

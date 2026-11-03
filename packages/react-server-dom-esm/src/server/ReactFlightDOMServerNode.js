@@ -125,16 +125,16 @@ function startReadingFromDebugChannelReadable(request, stream) {
       // $FlowFixMe[prop-missing]
       onError(event.error);
     });
-    ws.addEventListener('close', () => onClose());
+    ws.addEventListener('close', onClose);
   } else {
     const readable = stream;
     // GAP rd591: a boxed closure that only forwards to a function is not
     // that function, `readable.on('data', chunk => onData(chunk))` where
     // upstream passes `onData` (and `ws.addEventListener('close', () =>
     // onClose())`).
-    readable.on('data', chunk => onData(chunk));
-    readable.on('error', e => onError(e));
-    readable.on('end', () => onClose());
+    readable.on('data', onData);
+    readable.on('error', onError);
+    readable.on('end', onClose);
   }
 }
 

@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 export interface ComponentStackNode {
-  parent?: ComponentStackNode | null | undefined;
+  parent: ComponentStackNode | null;
   // What it renders, as the element gave it: `null` or `undefined` too.
   type?: unknown;
   // DEV only: a ReactComponentInfo or a ComponentStackNode.

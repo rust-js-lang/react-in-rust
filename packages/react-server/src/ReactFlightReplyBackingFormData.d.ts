@@ -26,17 +26,17 @@ export interface BackingFormData {
   prefix: string;
   // Entries whose key is in the `prefix + '_' + ...` namespace, in insertion
   // order. The only structure the "$K" scan reads.
-  referencedEntries?: [string, BackingEntryValue][] | null | undefined;
+  referencedEntries: [string, BackingEntryValue][] | null;
   // Cursor for the "$K" scan; advances monotonically.
   keyPointer: number;
   // Field name -> string, for one-shot `prefix + <decimal id>` chunk fields.
-  stringChunks?: Map<string, string> | null | undefined;
+  stringChunks: Map<string, string> | null;
   // Field name (`prefix + 'S' + <decimal id>`) -> buffered chunk strings, in
   // arrival order. Only actual streams/async iterables allocate an array.
-  streamChunks?: Map<string, string[]> | null | undefined;
+  streamChunks: Map<string, string[]> | null;
   // Field name -> outlined Blob/File. The client outlines each Blob under a
   // fresh id, so keys don't repeat.
-  blobs?: Map<string, Blob> | null | undefined;
+  blobs: Map<string, Blob> | null;
 }
 
 // ReplyServer's resolveField gives the store text it's only lent, `&str`,

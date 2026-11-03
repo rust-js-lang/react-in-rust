@@ -629,9 +629,9 @@ export function completeBoundaryWithStyles(
 
   // Sheets Mode
   for (let i = 0; i < stylesheetDescriptors.length; i++) {
+    const stylesheetDescriptor = stylesheetDescriptors[i];
     // Sheet Mode iterates over the stylesheet arguments and constructs them if new or checks them for
     // dependency if they already existed
-    const stylesheetDescriptor = stylesheetDescriptors[i];
     const descriptor = stylesheetDescriptor.values();
     const href = $unwrap(
       descriptor.next().value,

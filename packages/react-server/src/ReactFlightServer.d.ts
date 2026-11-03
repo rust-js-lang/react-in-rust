@@ -7,7 +7,7 @@
 
 import type {AsyncLocalStorage} from 'async_hooks';
 import type {RequestCleanupQueue} from 'react/src/ReactTaintRegistry';
-import type {ReactComponentInfo} from 'shared/ReactTypes';
+import type {ReactComponentInfo, ReactStackTrace} from 'shared/ReactTypes';
 import type {TemporaryReferenceSet} from './ReactFlightServerTemporaryReferences.js';
 
 type ReactKey = string | symbol;
@@ -93,7 +93,7 @@ export type FilterStackFrame = (
 
 export function isAwaitInUserspace(
   request: RequestInstance,
-  stack: [string, string, number, number, number, number, boolean][],
+  stack: ReactStackTrace,
 ): boolean;
 
 /** The set of tasks a request may abort, shared by the tasks made in it. */
@@ -105,12 +105,12 @@ export interface Task {
   status: number;
   model: ReactClientValue | null | undefined;
   // parent server component keys
-  keyPath?: ReactKey | null | undefined;
+  keyPath: ReactKey | null;
   // true if the root server component of this sequence had a null key
   implicitSlot: boolean;
   // an approximate parent context from host components
   formatContext: FormatContext;
-  thenableState?: any[] | null | undefined;
+  thenableState: any[] | null;
   // GAP rd493: upstream sets the Profiling-only and DEV-only fields only
   // under their flags; a struct's fields are always set.
   // Profiling-only. Whether we need to track the completion time of this task.
@@ -175,8 +175,8 @@ declare class RequestInstance {
   flushScheduled: boolean;
   // What was thrown, `undefined` too: `null` until then.
   fatalError: unknown | null | undefined;
-  destination?: unknown | null | undefined;
-  bundlerConfig?: ClientManifest | null | undefined;
+  destination: unknown | null;
+  bundlerConfig: ClientManifest | null;
   cache: Cache;
   cacheController: AbortController;
   nextChunkId: number;
@@ -216,12 +216,12 @@ declare class RequestInstance {
   // See completedRegularChunks for why some entries are preceded by the
   // NEXT_TWO_CHUNKS_ARE_ATOMIC sentinel.
   completedDebugChunks: Chunk[];
-  debugDestination?: unknown | null | undefined;
+  debugDestination: unknown | null;
   environmentName: () => string;
   filterStackFrame: FilterStackFrame;
-  didWarnForKey?: WeakSet<object> | null | undefined;
+  didWarnForKey: WeakSet<object> | null;
   writtenDebugObjects: WeakMap<object, string>;
-  deferredDebugObjects?: DeferredDebugStore | null | undefined;
+  deferredDebugObjects: DeferredDebugStore | null;
 }
 
 export type {RequestInstance};

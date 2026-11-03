@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {
+  Chunks,
   FormatContext,
   HoistableState,
   PreambleState,
@@ -13,6 +14,7 @@ import type {
   ResumableState,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 import type {FormStatus} from 'react-dom-bindings/src/shared/ReactDOMFormActions';
+import type {ReactNodeList} from 'shared/ReactTypes';
 
 export {
   doctypeChunk,
@@ -50,6 +52,14 @@ export {
   writeStartSegment,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 
+export type {
+  FormatContext,
+  HoistableState,
+  PreambleState,
+  RenderState,
+  ResumableState,
+} from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
+
 // GAP rd652: these two `const`s, declared between the `use`s, print after
 // all the imports.
 
@@ -75,7 +85,7 @@ export function getViewTransitionFormatContext(
 ): FormatContext;
 
 export function pushStartInstance(
-  target: any[],
+  target: Chunks,
   type: string,
   props: unknown,
   resumableState: ResumableState,
@@ -84,29 +94,29 @@ export function pushStartInstance(
   hoistableState: HoistableState | null | undefined,
   formatContext: FormatContext,
   textEmbedded: boolean,
-): unknown | null | undefined;
+): ReactNodeList | null | undefined;
 
 export function pushTextInstance(
-  target: any[],
+  target: Chunks,
   text: string,
   renderState: RenderState,
   textEmbedded: boolean,
 ): boolean;
 
 export function pushSegmentFinale(
-  target: any[],
+  target: Chunks,
   renderState: RenderState,
   lastPushedText: boolean,
   textEmbedded: boolean,
 ): void;
 
 export function pushStartActivityBoundary(
-  target: any[],
+  target: Chunks,
   renderState: RenderState,
 ): void;
 
 export function pushEndActivityBoundary(
-  target: any[],
+  target: Chunks,
   renderState: RenderState,
 ): void;
 
