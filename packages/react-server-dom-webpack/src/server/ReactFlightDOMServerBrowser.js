@@ -112,9 +112,7 @@ export function renderToReadableStream(model, webpackMap, options) {
       },
       // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
       // $FlowFixMe[incompatible-type]
-      {
-        highWaterMark: 0,
-      },
+      {highWaterMark: 0},
     );
     debugStream.pipeTo(debugChannelWritable);
   }
@@ -137,9 +135,7 @@ export function renderToReadableStream(model, webpackMap, options) {
     },
     // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
     // $FlowFixMe[incompatible-type]
-    {
-      highWaterMark: 0,
-    },
+    {highWaterMark: 0},
   );
 }
 
@@ -162,9 +158,7 @@ export function prerender(model, webpackMap, options) {
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
         // $FlowFixMe[incompatible-type]
-        {
-          highWaterMark: 0,
-        },
+        {highWaterMark: 0},
       );
       resolve({prelude: stream});
     }

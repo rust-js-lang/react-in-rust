@@ -44,9 +44,7 @@ function bind() {
     const typeof$ = {value: SERVER_REFERENCE_TAG};
     const id = {value: this.$$id};
     const bound$1 = this.$$bound;
-    const bound = {
-      value: bound$1 != null ? [...bound$1, ...args] : args,
-    };
+    const bound = {value: bound$1 != null ? [...bound$1, ...args] : args};
     return __DEV__
       ? Object.defineProperties(newFn, {
           $$typeof: typeof$,
@@ -81,9 +79,7 @@ const serverReferenceToString = {
 };
 
 export function registerServerReference(reference, id, exportName) {
-  const typeof$ = {
-    value: SERVER_REFERENCE_TAG,
-  };
+  const typeof$ = {value: SERVER_REFERENCE_TAG};
   id = {
     value: id + '#' + exportName,
     configurable: true,

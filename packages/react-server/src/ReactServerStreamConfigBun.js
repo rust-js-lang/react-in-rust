@@ -100,8 +100,7 @@ export function readAsDataURL(blob) {
     const encoded = Buffer.from(arrayBuffer).toString('base64');
     // GAP rd664: the type, read once and tested, is named, `const type =
     // blob.type;`, where upstream reads `blob.type || ..` in place.
-    const type = blob.type;
-    const mimeType = type || 'application/octet-stream';
+    const mimeType = blob.type || 'application/octet-stream';
     return 'data:' + mimeType + ';base64,' + encoded;
   });
 }

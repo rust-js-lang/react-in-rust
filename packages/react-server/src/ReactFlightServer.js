@@ -427,9 +427,7 @@ function patchConsole(consoleInst, methodName) {
         originalName,
       );
     }
-    Object.defineProperty(consoleInst, methodName, {
-      value: wrapperMethod,
-    });
+    Object.defineProperty(consoleInst, methodName, {value: wrapperMethod});
   }
 }
 
@@ -2125,13 +2123,7 @@ function renderClientElement(
     if (filtered != null) {
       // Outline the debug stack so that we write to the completedDebugChunks instead.
       const objectLimit = filtered.length * 2 + 1;
-      const id = outlineDebugModel(
-        request,
-        {
-          objectLimit,
-        },
-        filtered,
-      );
+      const id = outlineDebugModel(request, {objectLimit}, filtered);
       // We also store this in the main dedupe set so that it can be referenced by inline React Elements.
       request.writtenObjects.set(filtered, serializeByValueID(id));
       debugStack = filtered;
@@ -3284,9 +3276,7 @@ function serializeDebugFormData(request, formData) {
   const entries = Array.from(formData.entries());
   const id = outlineDebugModel(
     request,
-    {
-      objectLimit: entries.length * 2 + 1,
-    },
+    {objectLimit: entries.length * 2 + 1},
     entries,
   );
   return '$K' + id.toString(16);
@@ -3382,9 +3372,7 @@ function serializeDebugBlob(request, blob) {
       emitOutlinedDebugModelChunk(
         request,
         id,
-        {
-          objectLimit: length + 2,
-        },
+        {objectLimit: length + 2},
         model,
       );
       enqueueFlush(request);
@@ -4372,9 +4360,7 @@ function fatalError(request, error) {
   }
   const abortReason = new Error(
     'The render was aborted due to a fatal error.',
-    {
-      cause: error,
-    },
+    {cause: error},
   );
   request.cacheController.abort(abortReason);
 }
@@ -4479,13 +4465,7 @@ function serializeDebugErrorValue(request, counter, error) {
       const errorsId = outlineDebugModel(request, counter, errors);
       errorInfo.errors = serializeByValueID(errorsId);
     }
-    const id = outlineDebugModel(
-      request,
-      {
-        objectLimit,
-      },
-      errorInfo,
-    );
+    const id = outlineDebugModel(request, {objectLimit}, errorInfo);
     return '$Z' + id.toString(16);
   } else {
     // In prod we don't emit any information about this Error object to avoid
@@ -4525,13 +4505,7 @@ function emitErrorChunk(
         if ('cause' in error$1) {
           const cause = error$1.cause;
           const causeId = debug
-            ? outlineDebugModel(
-                request,
-                {
-                  objectLimit: 5,
-                },
-                cause,
-              )
+            ? outlineDebugModel(request, {objectLimit: 5}, cause)
             : outlineModel(request, cause);
           causeReference = serializeByValueID(causeId);
         }
@@ -4541,13 +4515,7 @@ function emitErrorChunk(
         ) {
           const errors = error$1.errors;
           const errorsId = debug
-            ? outlineDebugModel(
-                request,
-                {
-                  objectLimit: 5,
-                },
-                errors,
-              )
+            ? outlineDebugModel(request, {objectLimit: 5}, errors)
             : outlineModel(request, errors);
           errorsReference = serializeByValueID(errorsId);
         }
@@ -4576,9 +4544,7 @@ function emitErrorChunk(
       errors: errorsReference,
     };
   } else {
-    errorInfo = {
-      digest,
-    };
+    errorInfo = {digest};
   }
   const row = serializeRowHeader('E', id) + stringify(errorInfo) + '\n';
   const processedChunk = stringToChunk(row);
@@ -4831,9 +4797,7 @@ function outlineComponentInfo(request, componentInfo) {
 
   // We use the console encoding so that we can dedupe objects but don't necessarily
   // use the full serialization that requires a task.
-  const counter = {
-    objectLimit,
-  };
+  const counter = {objectLimit};
 
   // We can't serialize the ConsoleTask/Error objects so we need to omit them before serializing.
   const componentDebugInfo = {
@@ -5692,9 +5656,7 @@ function unknownValueMessage(message) {
 }
 
 function serializeDebugModel(request, objectLimit, model) {
-  const counter = {
-    objectLimit,
-  };
+  const counter = {objectLimit};
 
   function replacer(parentPropertyName, _value) {
     try {
@@ -6920,9 +6882,7 @@ export function attachAbortSignal(request, signal) {
     () => {
       abort(request, signal.reason);
     },
-    {
-      signal: cacheSignal,
-    },
+    {signal: cacheSignal},
   );
 }
 
@@ -7034,9 +6994,7 @@ export function resolveDebugMessage(request, message) {
         const retainedValue = request.deferredDebugObjects.retained.get(id);
         if (retainedValue != null) {
           // If we still have this object, and haven't emitted it before, emit it on the stream.
-          const counter = {
-            objectLimit: 10,
-          };
+          const counter = {objectLimit: 10};
           request.deferredDebugObjects.retained.delete(id);
           request.deferredDebugObjects.existing.delete(retainedValue);
           emitOutlinedDebugModelChunk(request, id, counter, retainedValue);
@@ -7052,9 +7010,7 @@ export function resolveDebugMessage(request, message) {
         if (retainedValue != null) {
           // If we still have this Promise, and haven't emitted it before, wait for it
           // and then emit it on the stream.
-          const counter = {
-            objectLimit: 10,
-          };
+          const counter = {objectLimit: 10};
           request.deferredDebugObjects.retained.delete(id);
           emitRequestedDebugThenable(request, id, counter, retainedValue);
         }

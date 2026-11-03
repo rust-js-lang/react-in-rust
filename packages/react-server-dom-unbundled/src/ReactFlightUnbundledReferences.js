@@ -26,15 +26,9 @@ export function registerClientReference(proxyImplementation, id, exportName) {
 
 function registerClientReferenceImpl(proxyImplementation, id, async) {
   return Object.defineProperties(proxyImplementation, {
-    $$typeof: {
-      value: CLIENT_REFERENCE_TAG,
-    },
-    $$id: {
-      value: id,
-    },
-    $$async: {
-      value: async,
-    },
+    $$typeof: {value: CLIENT_REFERENCE_TAG},
+    $$id: {value: id},
+    $$async: {value: async},
   });
 }
 
@@ -56,9 +50,7 @@ function bind() {
     const typeof$ = {value: SERVER_REFERENCE_TAG};
     const id = {value: this.$$id};
     const bound$1 = this.$$bound;
-    const bound = {
-      value: bound$1 != null ? [...bound$1, ...args] : args,
-    };
+    const bound = {value: bound$1 != null ? [...bound$1, ...args] : args};
     return __DEV__
       ? Object.defineProperties(newFn, {
           $$typeof: typeof$,
@@ -93,9 +85,7 @@ const serverReferenceToString = {
 };
 
 export function registerServerReference(reference, id, exportName) {
-  const typeof$ = {
-    value: SERVER_REFERENCE_TAG,
-  };
+  const typeof$ = {value: SERVER_REFERENCE_TAG};
   id = {
     value: exportName === null ? id : id + '#' + String(exportName),
     configurable: true,
@@ -288,9 +278,7 @@ function getReference(target, name) {
       target.$$id + '#' + name,
       target.$$async,
     );
-    Object.defineProperty(reference, 'name', {
-      value: name,
-    });
+    Object.defineProperty(reference, 'name', {value: name});
     const proxy = new Proxy(reference, deepProxyHandlers);
     target[name] = proxy;
     cachedReference = proxy;

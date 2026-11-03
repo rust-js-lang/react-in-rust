@@ -149,7 +149,6 @@ export function renderToReadableStream(children, options) {
 
     let request;
     function onShellReady() {
-      const request$1 = $unwrap(request);
       let writable;
       const stream = new ReadableStream(
         {
@@ -159,18 +158,16 @@ export function renderToReadableStream(children, options) {
               createFakeWritableFromReadableStreamController(controller);
           },
           pull() {
-            startFlowing(request$1, $unwrap(writable));
+            startFlowing(request, $unwrap(writable));
           },
           cancel(reason) {
-            stopFlowing(request$1);
-            abort(request$1, reason);
+            stopFlowing(request);
+            abort(request, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
         // $FlowFixMe[incompatible-type]
-        {
-          highWaterMark: 0,
-        },
+        {highWaterMark: 0},
       );
       // TODO: Move to sub-classing ReadableStream.
       stream.allReady = allReady;
@@ -287,7 +284,6 @@ export function resume(children, postponedState, options) {
 
     let request;
     function onShellReady() {
-      const request$1 = $unwrap(request);
       let writable;
       const stream = new ReadableStream(
         {
@@ -297,18 +293,16 @@ export function resume(children, postponedState, options) {
               createFakeWritableFromReadableStreamController(controller);
           },
           pull() {
-            startFlowing(request$1, $unwrap(writable));
+            startFlowing(request, $unwrap(writable));
           },
           cancel(reason) {
-            stopFlowing(request$1);
-            abort(request$1, reason);
+            stopFlowing(request);
+            abort(request, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
         // $FlowFixMe[incompatible-type]
-        {
-          highWaterMark: 0,
-        },
+        {highWaterMark: 0},
       );
       // TODO: Move to sub-classing ReadableStream.
       stream.allReady = allReady;

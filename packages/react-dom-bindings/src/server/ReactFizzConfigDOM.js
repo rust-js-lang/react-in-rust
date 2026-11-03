@@ -6350,9 +6350,7 @@ export function emitEarlyPreloads(renderState, resumableState, shellComplete) {
         }
       }
       if (linkHeader) {
-        onHeaders({
-          Link: linkHeader,
-        });
+        onHeaders({Link: linkHeader});
       } else {
         // We still call this with no headers because a user may be using it as a signal that
         // it React will not provide any headers

@@ -26,7 +26,6 @@ import {
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
 
 export {default as version} from 'shared/ReactVersion';
-import {$unwrap} from '@rust-js/runtime';
 
 ensureCorrectIsomorphicReactVersion();
 
@@ -36,27 +35,24 @@ export function prerender(children, options) {
 
     let request;
     function onAllReady() {
-      const request$1 = $unwrap(request);
       const stream = new ReadableStream(
         {
           type: 'bytes',
           pull(controller) {
-            startFlowing(request$1, controller);
+            startFlowing(request, controller);
           },
           cancel(reason) {
-            stopFlowing(request$1);
-            abort(request$1, reason);
+            stopFlowing(request);
+            abort(request, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
         // $FlowFixMe[incompatible-type]
-        {
-          highWaterMark: 0,
-        },
+        {highWaterMark: 0},
       );
 
       const result = {
-        postponed: getPostponedState(request$1),
+        postponed: getPostponedState(request),
         prelude: stream,
       };
       resolve(result);
@@ -110,27 +106,24 @@ export function resumeAndPrerender(children, postponedState, options) {
 
     let request;
     function onAllReady() {
-      const request$1 = $unwrap(request);
       const stream = new ReadableStream(
         {
           type: 'bytes',
           pull(controller) {
-            startFlowing(request$1, controller);
+            startFlowing(request, controller);
           },
           cancel(reason) {
-            stopFlowing(request$1);
-            abort(request$1, reason);
+            stopFlowing(request);
+            abort(request, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
         // $FlowFixMe[incompatible-type]
-        {
-          highWaterMark: 0,
-        },
+        {highWaterMark: 0},
       );
 
       const result = {
-        postponed: getPostponedState(request$1),
+        postponed: getPostponedState(request),
         prelude: stream,
       };
       resolve(result);

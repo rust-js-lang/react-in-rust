@@ -18,9 +18,7 @@ export const callComponentInDEV = __DEV__
     callComponent.react_stack_bottom_frame.bind(callComponent)
   : null;
 
-const callRender = {
-  react_stack_bottom_frame: instance => instance.render(),
-};
+const callRender = {react_stack_bottom_frame: instance => instance.render()};
 
 export const callRenderInDEV = __DEV__
   ? // We use this technique to trick minifiers to preserve the function name.

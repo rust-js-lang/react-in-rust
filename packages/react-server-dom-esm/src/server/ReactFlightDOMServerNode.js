@@ -101,9 +101,7 @@ function startReadingFromDebugChannelReadable(request, stream) {
   function onError(error) {
     abort(
       request,
-      new Error('Lost connection to the Debug Channel.', {
-        cause: error,
-      }),
+      new Error('Lost connection to the Debug Channel.', {cause: error}),
     );
   }
 

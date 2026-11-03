@@ -86,11 +86,7 @@ export function createTemporaryReference(temporaryReferences, id) {
           'only be rendered as a Component or passed to props of a Client Component.',
       );
     },
-    {
-      $$typeof: {
-        value: TEMPORARY_REFERENCE_TAG,
-      },
-    },
+    {$$typeof: {value: TEMPORARY_REFERENCE_TAG}},
   );
   const wrapper = new Proxy(reference, proxyHandlers);
   registerTemporaryReference(temporaryReferences, wrapper, id);

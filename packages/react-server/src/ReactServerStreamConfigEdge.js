@@ -236,8 +236,7 @@ export function readAsDataURL(blob) {
       typeof Buffer !== 'undefined' && typeof Buffer.from === 'function'
         ? Buffer.from(arrayBuffer).toString('base64')
         : btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-    const type = blob.type;
-    const mimeType = type || 'application/octet-stream';
+    const mimeType = blob.type || 'application/octet-stream';
     return 'data:' + mimeType + ';base64,' + encoded;
   });
 }

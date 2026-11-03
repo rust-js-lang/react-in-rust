@@ -176,9 +176,7 @@ const ReactNoopServer = ReactFizzServer({
   },
 
   writeStartSegment(destination, renderState, formatContext, id) {
-    const segment = {
-      children: [],
-    };
+    const segment = {children: []};
     destination.segments.set(id, segment);
     if (destination.stack.length !== 0) {
       throw new Error('Segments are only expected at the root of the stack.');

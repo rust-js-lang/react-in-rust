@@ -1084,9 +1084,7 @@ function getThrownInfo(node) {
     function get() {
       // Lazyily generate the stack since it's expensive.
       const stack = getStackFromNode(node);
-      Object.defineProperty(errorInfo, 'componentStack', {
-        value: stack,
-      });
+      Object.defineProperty(errorInfo, 'componentStack', {value: stack});
       return stack;
     }
     Object.defineProperty(errorInfo, 'componentStack', {
@@ -6656,9 +6654,7 @@ export function attachAbortSignal(request, signal) {
     () => {
       abort(request, signal.reason);
     },
-    {
-      signal: renderLifetimeController.signal,
-    },
+    {signal: renderLifetimeController.signal},
   );
 }
 

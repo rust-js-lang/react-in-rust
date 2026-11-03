@@ -5,6 +5,8 @@
  *  clients. Therefore, it should be fast and not have many external dependencies.
  */
 
+// Imports are resolved statically by the closure compiler in release bundles
+// and by rollup in jest unit tests
 import './fizz-instruction-set/ReactDOMFizzInstructionSetExternalRuntime.js';
 import {$unwrap} from '@rust-js/runtime';
 
@@ -68,9 +70,7 @@ function installFizzInstrObserver(target) {
   );
   // We assume that instruction data nodes are eventually appended to the
   // body, even if Fizz is streaming to a shell / subtree.
-  fizzInstrObserver.observe(target, {
-    childList: true,
-  });
+  fizzInstrObserver.observe(target, {childList: true});
   window.addEventListener('DOMContentLoaded', () => {
     handleMutations(fizzInstrObserver.takeRecords());
     fizzInstrObserver.disconnect();

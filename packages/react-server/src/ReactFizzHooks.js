@@ -85,19 +85,12 @@ export function createRecoverableError(recoverable) {
   // Always create the recoverable at the consumption point so its stack
   // identifies the relevant use() or abort() call. A lazy reason is diagnostic
   // metadata and can be any value supported by Error.cause.
-  const options =
-    reason != null
-      ? {
-          cause: initializedReason,
-        }
-      : undefined;
+  const options = reason != null ? {cause: initializedReason} : undefined;
   const error = new Error(
     'Browser-only rendering was requested by `browser()`.',
     options,
   );
-  Object.defineProperty(error, REACT_RECOVERABLE_TYPE, {
-    value: true,
-  });
+  Object.defineProperty(error, REACT_RECOVERABLE_TYPE, {value: true});
   return error;
 }
 
@@ -114,9 +107,7 @@ export function cloneRecoverableErrorAsFatal(recoverableError) {
     // Create a separate diagnostic for fatal reporting without changing the
     // branded recoverable error that other tasks may still need to observe.
     const cause = recoverableError.cause;
-    options = {
-      cause,
-    };
+    options = {cause};
   } else {
     options = undefined;
   }
@@ -507,9 +498,7 @@ function useRef(initialValue) {
   const workInProgressHook = createWorkInProgressHook();
   const previousRef = workInProgressHook.memoizedState;
   if (previousRef === null) {
-    const ref = {
-      current: initialValue,
-    };
+    const ref = {current: initialValue};
     if (__DEV__) {
       Object.seal(ref);
     }

@@ -23,7 +23,6 @@ import {
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
-import {$unwrap} from '@rust-js/runtime';
 
 ensureCorrectIsomorphicReactVersion();
 
@@ -42,26 +41,23 @@ export function renderToReadableStream(children, options) {
 
     let request;
     function onShellReady() {
-      const request$1 = $unwrap(request);
       const stream = new ReadableStream(
         {
           type: 'direct',
           pull(controller) {
             // $FlowFixMe[incompatible-type]
-            startFlowing(request$1, controller);
+            startFlowing(request, controller);
           },
           cancel(reason) {
-            stopFlowing(request$1);
-            abort(request$1, reason);
+            stopFlowing(request);
+            abort(request, reason);
           },
         },
         // GAP rd665: the strategy is printed across three lines, as rustfmt
         // lays out its struct, where upstream writes `{highWaterMark: 2048}`.
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
         // $FlowFixMe[incompatible-type]
-        {
-          highWaterMark: 2048,
-        },
+        {highWaterMark: 2048},
       );
       // TODO: Move to sub-classing ReadableStream.
       stream.allReady = allReady;

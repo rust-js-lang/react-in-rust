@@ -295,8 +295,7 @@ export function createFastHash(input) {
 export function readAsDataURL(blob) {
   return blob.arrayBuffer().then(arrayBuffer => {
     const encoded = Buffer.from(arrayBuffer).toString('base64');
-    const type = blob.type;
-    const mimeType = type || 'application/octet-stream';
+    const mimeType = blob.type || 'application/octet-stream';
     return 'data:' + mimeType + ';base64,' + encoded;
   });
 }
