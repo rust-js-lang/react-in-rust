@@ -2034,6 +2034,24 @@ The port is split between sessions by package:
   "../react-client/src/forks/ReactFlightClientConfig.markup.rs"]` (agreed
   with m6-wife, 2026-11-04); its `null` types are an untagged enum's one
   `#[rust_js::null]` variant, and its imports rd713's.
+  react-dom's ReactDOMSharedInternalsFB and client/ReactDOMClientFB, www's
+  internals and client, are Rust (Batch 63); www's tests reach them
+  (`-r=www-modern`, `-r=www-classic`). The internals' `Events`, the six
+  functions ReactDOMClientFB sets as it loads for www's own code, are a
+  nullable `&Unknown` of their tuple, printed `Internals.Events = [..]`.
+  Differences, pending the coordinator's decision: `f: () => undefined`
+  for `f: noop` (ReactDOMSharedInternals' kind); ReactDOMClientFB imports
+  the reconciler's `flushSyncFromReconciler as flushSyncFromReconciler$2`,
+  where upstream names it `flushSyncWithoutWarningIfAlreadyRendering`, as
+  a namespace method can't be renamed (#566's kind); `/* Events */` prints
+  before `Internals.Events =` (rd710's kind); its exports are where its
+  Rust has them, `export {..} from`, `export function createPortal`,
+  `export const flushSync`, where upstream lists them in one `export {..}`
+  after unstable_batchedUpdates; createPortal's `key` has no `= null`
+  default (ReactDOM's kind); and the DevTools message is ReactDOMClient's
+  template literal. ReactDOMRootFB is held (rd717, #572; rd718, #577),
+  WIP on branch wip-rootfb; ReactDOMFB, ReactDOMFB.modern and the
+  TestingFB entries re-export it, so they wait for it.
   react-noop-renderer's createReactNoop and ReactFiberConfigNoop are Rust.
   react-test-renderer's ReactFiberConfigTestHost and ReactTestRenderer are
   Rust; react-art's ReactARTInternals, ReactFiberConfigART and ReactART

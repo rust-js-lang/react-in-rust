@@ -10,6 +10,8 @@ pub mod react_dom;
 pub mod react_dom_browser;
 #[path = "src/client/ReactDOMClient.rs"]
 pub mod react_dom_client;
+#[path = "src/client/ReactDOMClientFB.rs"]
+pub mod react_dom_client_fb;
 #[path = "src/client/ReactDOMDefaultTransitionIndicator.rs"]
 pub mod react_dom_default_transition_indicator;
 #[path = "src/server/ReactDOMFizzServerBrowser.rs"]
@@ -40,6 +42,8 @@ pub mod react_dom_legacy_server_node;
 pub mod react_dom_root;
 #[path = "src/ReactDOMSharedInternals.rs"]
 pub mod react_dom_shared_internals;
+#[path = "src/ReactDOMSharedInternalsFB.rs"]
+pub mod react_dom_shared_internals_fb;
 #[path = "src/shared/ReactDOMTypes.rs"]
 pub mod react_dom_types;
 #[path = "src/test-utils/ReactTestUtils.rs"]
