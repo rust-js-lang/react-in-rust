@@ -735,7 +735,8 @@ function updateOffscreenComponent(
         // be added to the stack to get added to any Offscreen/suspense children
         const instance = workInProgress.stateNode;
         if (instance != null && instance._transitions != null) {
-          transitions = Array.from(instance._transitions);
+          const instanceTransitions = instance._transitions;
+          transitions = Array.from(instanceTransitions);
         }
       }
 
@@ -989,12 +990,6 @@ function updateDehydratedActivityComponent(
           root,
           renderLanes,
         );
-        // We have already tried to ping at a higher priority than we're rendering with
-        // so if we got here, we must have failed to hydrate at those levels. We must
-        // now give up. Instead, we're going to delete the whole subtree and instead inject
-        // a new real Activity boundary to take its place. This might suspend for a while
-        // and if it does we might still have an opportunity to hydrate before this pass
-        // commits.
         if (
           attemptHydrationAtLane !== NoLane &&
           attemptHydrationAtLane !== activityState.retryLane
@@ -1015,6 +1010,13 @@ function updateDehydratedActivityComponent(
           // check for this case on every iteration of the work loop. So doing
           // it this way moves the check out of the fast path.
           throw SelectiveHydrationException;
+        } else {
+          // We have already tried to ping at a higher priority than we're rendering with
+          // so if we got here, we must have failed to hydrate at those levels. We must
+          // now give up. Instead, we're going to delete the whole subtree and instead inject
+          // a new real Activity boundary to take its place. This might suspend for a while
+          // and if it does we might still have an opportunity to hydrate before this pass
+          // commits.
         }
       }
 
@@ -2926,12 +2928,6 @@ function updateDehydratedSuspenseComponent(
           root,
           renderLanes,
         );
-        // We have already tried to ping at a higher priority than we're rendering with
-        // so if we got here, we must have failed to hydrate at those levels. We must
-        // now give up. Instead, we're going to delete the whole subtree and instead inject
-        // a new real Suspense boundary to take its place, which may render content
-        // or fallback. This might suspend for a while and if it does we might still have
-        // an opportunity to hydrate before this pass commits.
         if (
           attemptHydrationAtLane !== NoLane &&
           attemptHydrationAtLane !== suspenseState.retryLane
@@ -2952,6 +2948,13 @@ function updateDehydratedSuspenseComponent(
           // check for this case on every iteration of the work loop. So doing
           // it this way moves the check out of the fast path.
           throw SelectiveHydrationException;
+        } else {
+          // We have already tried to ping at a higher priority than we're rendering with
+          // so if we got here, we must have failed to hydrate at those levels. We must
+          // now give up. Instead, we're going to delete the whole subtree and instead inject
+          // a new real Suspense boundary to take its place, which may render content
+          // or fallback. This might suspend for a while and if it does we might still have
+          // an opportunity to hydrate before this pass commits.
         }
       }
 

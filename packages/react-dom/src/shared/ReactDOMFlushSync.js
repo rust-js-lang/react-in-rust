@@ -30,7 +30,8 @@ function flushSyncImpl(fn) {
     ReactDOMSharedInternals.p /* ReactDOMCurrentUpdatePriority */ =
       previousUpdatePriority;
     const wasInRender =
-      ReactDOMSharedInternals.d.f(/* ReactDOMCurrentDispatcher */); /* flushSyncWork */
+      ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */
+        .f(); /* flushSyncWork */
     if (__DEV__ && wasInRender) {
       console.error(
         'flushSync was called from inside a lifecycle method. React cannot ' +

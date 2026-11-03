@@ -486,34 +486,14 @@ the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
   `export {detachDeletedInstance} from ..`. Upstream imports it in its one
   ReactDOMComponentTree import and writes `export {detachDeletedInstance};`.
   Rust can't name it in both a `use` and a `pub use` (E0252).
-- rd706 (places): CompleteWork's completeDehydratedActivityBoundary and
-  completeDehydratedSuspenseBoundary write `current.memoizedState.hydrationErrors
-  = hydrationErrors;`. Upstream (and the port before rust-js 8fec690ea) writes
-  `const prevState = current.memoizedState; prevState.hydrationErrors =
-  hydrationErrors;`, the `if let`'s `prev_state`.
 
 **Pending in rust-js from Batch 62** (no result changes):
-- rd710 (control-flow run 49): a call whose arguments rustfmt breaks over
-  lines loses a comment between its receiver's parts,
-  ReactFlightClientConfigDOM's preinitModuleForSSR and preinitScriptForSSR
-  `ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */`, and prints
-  a comment before an argument on a line of its own, `dispatcher.M(\n
-  /* preinitModuleScript */\n href, ..)`.
-- rd712 (m6-wife): webpack's and turbopack's preloadModule print `const
-  id$1 = id;` for `let id = id.clone();` before the closure.
 - rd713 (names run 50): the markup Flight client config, react-markup's
   module at `../react-client/src/forks/`, imports react-markup's stream
   config as `'../../../react-markup/src/ReactMarkupLegacyClientStreamConfig.js'`
   where upstream writes `'react-markup/src/ReactMarkupLegacyClientStreamConfig.js'`.
 
 **Pending in rust-js from Batch 63** (no result changes):
-- rd723 (bindings run 23; #571's remainder, since rust-js 6870d25fb):
-  ReactFiberWorkLoop's warnAboutUpdateOnNotYetMountedFiberInDEV reads like
-  upstream, with no
-  closure or handle, but its `Some` arm copies the module's variable first,
-  `const didWarnStateUpdateForNotYetMountedComponent$1 =
-  didWarnStateUpdateForNotYetMountedComponent;`, and reads the copy, where
-  upstream reads the variable itself.
 - rd720 (since 440015731): ReactTestRenderer's findAllByProps prints `node =>
   { const option = node.props; return option != null && propsMatch(option,
   props); }`, where it printed `node => node.props != null &&
@@ -532,15 +512,14 @@ rejectListeners ?? null;` (and `cyclicChunk.reason`) in three places, where
 upstream writes `chunk.reason = rejectListeners;` (since rust-js 440015731,
 #541's nullable places).
 
-**Pending in rust-js from Batch 64** (no result changes):
-- rd722 (control-flow run 50, since rust-js 43b76175f..4c06385fa): an
-  `else` of only comments is lost. ReactFiberNewContext's
-  scheduleContextWorkOnParentPath prints its `else if (alternate != null &&
-  ..)` as an `if` inside the `else`, under the `else`'s comment; and
-  ReactFiberBeginWork's updateDehydratedActivityComponent and
-  updateDehydratedSuspenseComponent drop `} else { // We have already
-  tried to ping .. }`, its comment printed above the `if`. Upstream, and the
-  port before, keep the `else` as written.
+**Accepted on the user's behalf while away, Batch 64** (the coordinator,
+2026-11-04; no result changes): rd727, ReactFiberBeginWork's
+updateOffscreenComponent prints `const instanceTransitions =
+instance._transitions; transitions = Array.from(instanceTransitions);`
+where upstream reads `Array.from(instance._transitions)`: the let chain's
+binding keeps the program's name (rd226, rust-js aa7639e81), which can't be
+the field's own, `transitions`, as the body assigns the outer
+`transitions`.
 
 **Held until rust-js prints an untagged string-or-integer `{}` in place**
 (the user's condition, 2026-11-03; the coordinator's rust-js P3): webpack's
@@ -2024,8 +2003,7 @@ The port is split between sessions by package:
   needless_return); the SSR preinits leave out upstream's `integrity:
   undefined` and `fetchPriority: undefined` keys (rd391's kind: the
   dispatchers `Object.assign` them into a script's props, where an
-  `undefined` prop writes nothing). rd710's comments stay pending (below,
-  Batch 62).
+  `undefined` prop writes nothing).
   shared/forks/ReactFeatureFlags.native-oss and .test-renderer are Rust
   (Batch 62), as ReactFeatureFlags is, and print upstream's flags line for
   line; rollup alone reads them.

@@ -78,11 +78,7 @@ export function dispatchHint(code, model) {
         dispatcher.M(/* preinitModuleScript */ refined);
       } else {
         const [href, options] = refined;
-        dispatcher.M(
-          /* preinitModuleScript */
-          href,
-          options,
-        );
+        dispatcher.M(/* preinitModuleScript */ href, options);
       }
       break;
     }
@@ -96,24 +92,18 @@ function refineModel(code, model) {
 }
 
 export function preinitModuleForSSR(href, nonce, crossOrigin) {
-  ReactDOMSharedInternals.d.M(
-    /* preinitModuleScript */
-    href,
-    {
+  ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */
+    .M(/* preinitModuleScript */ href, {
       crossOrigin: getCrossOriginString(crossOrigin),
       nonce,
-    },
-  );
+    });
 }
 
 export function preinitScriptForSSR(href, nonce, crossOrigin) {
-  ReactDOMSharedInternals.d.X(
-    /* preinitScript */
-    href,
-    {
+  ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */
+    .X(/* preinitScript */ href, {
       crossOrigin: getCrossOriginString(crossOrigin),
       nonce,
-    },
-  );
+    });
 }
 //# sourceMappingURL=ReactFlightClientConfigDOM.js.map

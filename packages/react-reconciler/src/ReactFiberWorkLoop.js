@@ -3949,8 +3949,8 @@ function flushLayoutEffects() {
       recordCommitTime();
       logSuspendedViewTransitionPhase(
         commitEndTime, // The start is the end of the first commit part.
-        commitStartTime,
-        suspendedViewTransitionReason, // The end is the start of the second commit part.
+        commitStartTime, // The end is the start of the second commit part.
+        suspendedViewTransitionReason,
         animatingTask,
       );
     }
@@ -5326,12 +5326,10 @@ export function warnAboutUpdateOnNotYetMountedFiberInDEV(fiber) {
     // Upstream's `|| 'ReactComponent'`: an empty name is none.
     const componentName = getComponentNameFromFiber(fiber) || 'ReactComponent';
     if (didWarnStateUpdateForNotYetMountedComponent != null) {
-      const didWarnStateUpdateForNotYetMountedComponent$1 =
-        didWarnStateUpdateForNotYetMountedComponent;
-      if (didWarnStateUpdateForNotYetMountedComponent$1.has(componentName)) {
+      if (didWarnStateUpdateForNotYetMountedComponent.has(componentName)) {
         return;
       }
-      didWarnStateUpdateForNotYetMountedComponent$1.add(componentName);
+      didWarnStateUpdateForNotYetMountedComponent.add(componentName);
     } else {
       didWarnStateUpdateForNotYetMountedComponent = new Set([componentName]);
     }

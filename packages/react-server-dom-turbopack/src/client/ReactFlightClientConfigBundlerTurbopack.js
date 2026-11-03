@@ -153,8 +153,7 @@ export function preloadModule(metadata) {
     if (promises.length === 0) {
       return requireAsyncModule(id);
     } else {
-      const id$1 = id;
-      return Promise.all(promises).then(() => requireAsyncModule(id$1));
+      return Promise.all(promises).then(() => requireAsyncModule(id));
     }
   } else if (promises.length !== 0) {
     return Promise.all(promises);

@@ -310,8 +310,7 @@ function appendAllChildren(
           parent /* needsVisibilityToggle */,
           current,
           true,
-          /* isHidden */
-          true,
+          /* isHidden */ true,
         );
       } else if (child != null) {
         child.return = current;
@@ -389,10 +388,8 @@ function appendAllChildrenToContainer(
         appendAllChildrenToContainer(
           containerChildSet,
           current,
-          /* needsVisibilityToggle */
-          true,
-          /* isHidden */
-          true,
+          /* needsVisibilityToggle */ true,
+          /* isHidden */ true,
         );
 
         hasOffscreenComponentChild = true;
@@ -430,10 +427,8 @@ function updateHostContainer(current, workInProgress) {
     appendAllChildrenToContainer(
       newChildSet,
       workInProgress,
-      /* needsVisibilityToggle */
-      false,
-      /* isHidden */
-      false,
+      /* needsVisibilityToggle */ false,
+      /* isHidden */ false,
     );
     portalOrRoot.pendingChildren = newChildSet;
     // Schedule an update on the container to swap out the container.
@@ -484,10 +479,8 @@ function updateHostComponent(
       hasOffscreenComponentChild = appendAllChildrenToContainer(
         childSet,
         workInProgress,
-        /* needsVisibilityToggle */
-        false,
-        /* isHidden */
-        false,
+        /* needsVisibilityToggle */ false,
+        /* isHidden */ false,
       );
     }
 
@@ -525,10 +518,8 @@ function updateHostComponent(
       appendAllChildren(
         newInstance,
         workInProgress,
-        /* needsVisibilityToggle */
-        false,
-        /* isHidden */
-        false,
+        /* needsVisibilityToggle */ false,
+        /* isHidden */ false,
       );
     }
   }
@@ -968,7 +959,8 @@ function completeDehydratedActivityBoundary(
     // from the Suspense Boundary.
     const hydrationErrors = upgradeHydrationErrorsToRecoverable();
     if (current != null && current.memoizedState != null) {
-      current.memoizedState.hydrationErrors = hydrationErrors;
+      const prevState = current.memoizedState;
+      prevState.hydrationErrors = hydrationErrors;
     }
     // Fall through to normal Offscreen path
     return true;
@@ -1054,7 +1046,8 @@ function completeDehydratedSuspenseBoundary(
     // from the Suspense Boundary.
     const hydrationErrors = upgradeHydrationErrorsToRecoverable();
     if (current != null && current.memoizedState != null) {
-      current.memoizedState.hydrationErrors = hydrationErrors;
+      const prevState = current.memoizedState;
+      prevState.hydrationErrors = hydrationErrors;
     }
     // Fall through to normal Suspense path
     return true;

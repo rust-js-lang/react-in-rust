@@ -141,6 +141,11 @@ export function scheduleContextWorkOnParentPath(
       if (alternate != null) {
         alternate.childLanes = mergeLanes(alternate.childLanes, renderLanes);
       }
+    } else if (
+      alternate != null &&
+      !isSubsetOfLanes(alternate.childLanes, renderLanes)
+    ) {
+      alternate.childLanes = mergeLanes(alternate.childLanes, renderLanes);
     } else {
       // Neither alternate was updated.
       // Normally, this would mean that the rest of the
@@ -148,12 +153,6 @@ export function scheduleContextWorkOnParentPath(
       // However, this is not necessarily true inside offscreen
       // or fallback trees because childLanes may be inconsistent
       // with the surroundings. This is why we continue the loop.
-      if (
-        alternate != null &&
-        !isSubsetOfLanes(alternate.childLanes, renderLanes)
-      ) {
-        alternate.childLanes = mergeLanes(alternate.childLanes, renderLanes);
-      }
     }
     if (node === propagationRoot) {
       break;
