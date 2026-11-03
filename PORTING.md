@@ -462,15 +462,13 @@ callbacks read, but it still tests `referenceClosure.bound === null` before
 the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
 
 **Pending in rust-js from Batch 61** (no result changes):
-- rd702 (control-flow run 47): rd701's fix (rust-js 516869ec9) doesn't
-  cover ReactFiberBeginWork's attemptEarlyBailoutIfNoScheduledUpdate, whose
-  guarded TracingMarker arm falls through to the guarded
-  TracingMarker/LegacyHidden arm. Each of its 12 cases still ends with its
-  own `return bailoutOnAlreadyFinishedWork(current, workInProgress,
-  renderLanes);`, where upstream has `break;` and one return after the
-  switch. **Accepted by the user** (rd701's remainder, 2026-11-03, by name;
-  oxc_codegen's): once the switch is upstream's, its `// Fallthrough`
-  prints above the `return` after the `switch`, not inside the last case.
+- rd702 (control-flow run 48): ReactFiberBeginWork's
+  attemptEarlyBailoutIfNoScheduledUpdate has upstream's one return after
+  its switch since rust-js 48c3b4ed5, and `// Fallthrough` between the
+  TracingMarker and LegacyHidden cases. Its guarded TracingMarker case
+  still ends `return bailoutOnAlreadyFinishedWork(..)` where upstream
+  breaks, and the LegacyHidden case's `// Fallthrough` above its `break;`
+  doesn't print.
 - rd703 (control-flow): in a loop's `match`, an arm ending `if c { a }
   else { b } continue;` prints guard-first, `if (c) { a; continue; } b;
   continue;`, and an `if`/`else if`/`else` chain has its tests inverted.
@@ -494,6 +492,27 @@ the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
   = hydrationErrors;`. Upstream (and the port before rust-js 8fec690ea) writes
   `const prevState = current.memoizedState; prevState.hydrationErrors =
   hydrationErrors;`, the `if let`'s `prev_state`.
+
+**Pending in rust-js from Batch 62** (no result changes):
+- rd710 (control-flow run 48): a call whose arguments rustfmt breaks over
+  lines loses a comment between its receiver's parts,
+  ReactFlightClientConfigDOM's preinitModuleForSSR and preinitScriptForSSR
+  `ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */`, and prints
+  a comment before an argument on a line of its own, `dispatcher.M(\n
+  /* preinitModuleScript */\n href, ..)`.
+- rd711 (control-flow run 48): ReactChildFiber's thrown fiber's owner loop,
+  `for &info in debug_info.iter().rev()` with a `break`, prints
+  `$iter(debugInfo.toReversed())`, where its twin in getCurrentDebugTask
+  prints upstream's `for (let i = debugInfo.length - 1; i >= 0; i--)`.
+- rd712 (m6-wife): webpack's and turbopack's preloadModule print `const
+  id$1 = id;` for `let id = id.clone();` before the closure.
+- rd713 (names run 50): the markup Flight client config, react-markup's
+  module at `../react-client/src/forks/`, imports react-markup's stream
+  config as `'../../../react-markup/src/ReactMarkupLegacyClientStreamConfig.js'`
+  where upstream writes `'react-markup/src/ReactMarkupLegacyClientStreamConfig.js'`.
+- rd714 (control-flow run 48): ReactFiberConfigDOM's clearHead prints its
+  test `a || b || c || (d && e)` as `if (a || b || c) { // retain }
+  else if (d' || e') { .. }` since rust-js 48c3b4ed5..707d7eea0.
 
 **Held until rust-js prints an untagged string-or-integer `{}` in place**
 (the user's condition, 2026-11-03; the coordinator's rust-js P3): webpack's
@@ -602,6 +621,11 @@ These differences from upstream's output are accepted:
   `import * as Ui; const Selected = Ui.Empty;`.
 - **rd153**: upstream's `export * from '..'` is written `pub use m::*;`,
   which prints `export {..each name..} from '..'`.
+- **rd712's destructuring** (the coordinator, 2026-11-04, for the user):
+  the bundler configs' `let (ImportMetadata::Async((id, chunks, ..)) |
+  ImportMetadata::Sync((id, chunks, ..))) = metadata;` prints `const [id,
+  chunks] = metadata;` (`const [id, , name] = metadata;`), where upstream
+  reads `metadata[ID]` in place at each use.
 - **rd183**: `stack.push(...current.children)` is written
   `stack.extend(webapi::html_collection::iter(current.children()))`, which
   prints rd365's index loop, `const items = current.children; for (let i =

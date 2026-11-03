@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 export function batchedUpdates<A, B, R>(
-  fn: (a: A, value: B | null | undefined) => R,
+  fn: (a: A, value?: B | null | undefined) => R,
   a: A,
   b?: B | null | undefined,
 ): R;

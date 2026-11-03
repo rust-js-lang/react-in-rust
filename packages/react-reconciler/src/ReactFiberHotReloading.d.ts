@@ -19,13 +19,13 @@ export interface RefreshUpdate {
 
 // Resolves type to a family.
 export type RefreshHandler = (
-  value: unknown | null | undefined,
+  value?: unknown | null | undefined,
 ) => Family | null | undefined;
 
 // Used by React Refresh runtime through DevTools Global Hook.
 export type SetRefreshHandler = (
-  value:
-    | ((value: unknown | null | undefined) => Family | null | undefined)
+  value?:
+    | ((value?: unknown | null | undefined) => Family | null | undefined)
     | null
     | undefined,
 ) => void;
@@ -34,7 +34,7 @@ export type ScheduleRefresh = (root: FiberRoot, update: RefreshUpdate) => void;
 
 export type ScheduleRoot = (
   root: FiberRoot,
-  value: unknown | null | undefined,
+  value?: unknown | null | undefined,
 ) => void;
 
 export function setRefreshHandler(handler: RefreshHandler | null): void;

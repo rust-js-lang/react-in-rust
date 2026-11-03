@@ -611,6 +611,7 @@ export function commitRootCallbacks(finishedWork) {
           break;
         case ClassComponent:
           instance = child.stateNode;
+          break;
       }
     }
     try {
@@ -797,6 +798,7 @@ function commitAttachRef(finishedWork) {
       }
       default:
         instanceToUse = finishedWork.stateNode;
+        break;
     }
     if (typeof ref === 'function') {
       if (shouldProfile(finishedWork)) {

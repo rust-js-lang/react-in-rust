@@ -202,12 +202,12 @@ export const warnsIfNotActing: boolean;
 export type TimeoutHandle = number | object;
 
 export const scheduleTimeout:
-  | ((value: () => void, value2: number | null | undefined) => number | object)
+  | ((value: () => void, value2?: number | null | undefined) => number | object)
   | null
   | undefined;
 
 export const cancelTimeout:
-  | ((value: (number | object) | null | undefined) => void)
+  | ((value?: (number | object) | null | undefined) => void)
   | null
   | undefined;
 
@@ -395,7 +395,7 @@ export function startViewTransition(
   afterMutationCallback: () => void,
   spawnedWorkCallback: () => void,
   passiveCallback: () => unknown | null | undefined,
-  errorCallback: (value: unknown | null | undefined) => void,
+  errorCallback: (value?: unknown | null | undefined) => void,
   blockedCallback: (value: string) => void,
   finishedAnimation: () => void,
 ): RunningViewTransition | null | undefined;
@@ -412,7 +412,7 @@ export function startGestureTransition(
   transitionTypes: TransitionTypes | null | undefined,
   mutationCallback: () => void,
   animateCallback: () => void,
-  errorCallback: (value: unknown | null | undefined) => void,
+  errorCallback: (value?: unknown | null | undefined) => void,
   finishedAnimation: () => void,
 ): RunningViewTransition | null | undefined;
 
@@ -781,8 +781,8 @@ export function setFocusIfFocusable(
  */
 export interface IntersectionObserverHandle {
   disconnect: () => void;
-  observe: (element: Element) => void;
-  unobserve: (element: Element) => void;
+  observe: (target: Element) => void;
+  unobserve: (target: Element) => void;
 }
 
 export function setupIntersectionObserver(
@@ -792,7 +792,7 @@ export function setupIntersectionObserver(
 ): IntersectionObserverHandle;
 
 export function requestPostPaintCallback(
-  callback: (value: number | null | undefined) => void,
+  callback: (value?: number | null | undefined) => void,
 ): void;
 
 // -------------------

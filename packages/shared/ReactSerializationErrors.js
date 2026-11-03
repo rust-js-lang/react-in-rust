@@ -151,6 +151,7 @@ function describeElementType(type) {
       if (enableViewTransition) {
         return 'ViewTransition';
       }
+      break;
   }
   if (typeof type === 'object') {
     switch (type.$$typeof) {

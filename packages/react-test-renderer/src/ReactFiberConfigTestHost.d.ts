@@ -266,11 +266,11 @@ export const warnsIfNotActing: boolean;
 
 export const scheduleTimeout: (
   value: () => void,
-  value2: number | null | undefined,
+  value2?: number | null | undefined,
 ) => number | object;
 
 export const cancelTimeout: (
-  value: (number | object) | null | undefined,
+  value?: (number | object) | null | undefined,
 ) => void;
 
 export const noTimeout: number;
@@ -390,7 +390,7 @@ export function startViewTransition(
   afterMutationCallback: () => void,
   spawnedWorkCallback: () => void,
   passiveCallback: () => unknown | null | undefined,
-  errorCallback: (value: unknown | null | undefined) => void,
+  errorCallback: (value?: unknown | null | undefined) => void,
   blockedCallback: (value: string) => void,
   finishedAnimation: () => void,
 ): RunningViewTransition | null;
@@ -406,7 +406,7 @@ export function startGestureTransition(
   transitionTypes: TransitionTypes | null | undefined,
   mutationCallback: () => void,
   animateCallback: () => void,
-  errorCallback: (value: unknown | null | undefined) => void,
+  errorCallback: (value?: unknown | null | undefined) => void,
   finishedAnimation: () => void,
 ): RunningViewTransition | null;
 

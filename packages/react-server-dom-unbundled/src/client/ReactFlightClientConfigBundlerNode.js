@@ -23,8 +23,7 @@ export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
 }
 
 export function resolveClientReference(bundlerConfig, metadata) {
-  const id = metadata[0];
-  const metadataName = metadata[2];
+  const [id, , metadataName] = metadata;
   const moduleExports = bundlerConfig[id];
   const moduleData = moduleExports?.[metadataName];
   let resolvedModuleData;

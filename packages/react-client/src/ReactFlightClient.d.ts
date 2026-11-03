@@ -28,10 +28,10 @@ declare const RESPONSE_SYMBOL: unique symbol;
  * controller, which the rows of its id feed.
  */
 export interface FlightStreamController {
-  enqueueValue: (value: unknown | null | undefined) => void;
+  enqueueValue: (value?: unknown | null | undefined) => void;
   enqueueModel: (value: string) => void;
   close: (value: string) => void;
-  error: (value: unknown | null | undefined) => void;
+  error: (error?: unknown | null | undefined) => void;
 }
 
 export interface ProfilingResult {
@@ -45,7 +45,7 @@ export interface ProfilingResult {
  * a reference of a model waiting on the chunk.
  */
 export type Listener =
-  | ((value: unknown | null | undefined) => void)
+  | ((value?: unknown | null | undefined) => void)
   | InitializationReference;
 
 /**
@@ -125,8 +125,8 @@ declare class ReactPromise {
   // by SES lockdown) because assigning over an inherited non-writable property
   // is rejected.
   then(
-    resolve?: ((value: unknown | null | undefined) => void) | null | undefined,
-    reject?: ((value: unknown | null | undefined) => void) | null | undefined,
+    resolve?: ((value?: unknown | null | undefined) => void) | null | undefined,
+    reject?: ((value?: unknown | null | undefined) => void) | null | undefined,
   ): void;
 }
 

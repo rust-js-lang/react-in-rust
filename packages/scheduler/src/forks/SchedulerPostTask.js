@@ -66,6 +66,7 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
       break;
     default:
       postTaskPriority = 'user-visible';
+      break;
   }
 
   const controller = new TaskController({priority: postTaskPriority});
@@ -171,6 +172,7 @@ export function unstable_next(callback) {
     default:
       // Anything lower than normal priority should remain at the current level.
       priorityLevel = current;
+      break;
   }
 
   const restore = currentPriorityLevel_DEPRECATED;

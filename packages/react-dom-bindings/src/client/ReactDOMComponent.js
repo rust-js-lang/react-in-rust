@@ -943,6 +943,7 @@ function setProp(domElement, tag, key, value, props, prevValue) {
       }
       const attributeName = getAttributeAlias(key);
       setValueForAttribute(domElement, attributeName, value);
+      break;
     }
   }
   // To avoid marking things as host mutations we do early returns above.
@@ -1093,6 +1094,7 @@ export function setInitialProperties(domElement, tag, props) {
           default:
             // defaultChecked and defaultValue are ignored by setProp
             setProp(domElement, tag, propKey, propValue, props, null);
+            break;
         }
       }
       if (hasSrcSet) {
@@ -1154,6 +1156,7 @@ export function setInitialProperties(domElement, tag, props) {
             break;
           default:
             setProp(domElement, tag, propKey, propValue, props, null);
+            break;
         }
       }
       // TODO: Make sure we check if this is still unmounted or do any clean
@@ -1205,6 +1208,7 @@ export function setInitialProperties(domElement, tag, props) {
               // in initSelect anyway. We can remove the special case in setProp.
             }
             setProp(domElement, tag, propKey, propValue, props, null);
+            break;
         }
       }
       validateSelectProps(domElement, props);
@@ -1251,6 +1255,7 @@ export function setInitialProperties(domElement, tag, props) {
             break;
           default:
             setProp(domElement, tag, propKey, propValue, props, null);
+            break;
         }
       }
       // TODO: Make sure we check if this is still unmounted or do any clean
@@ -1351,6 +1356,7 @@ export function setInitialProperties(domElement, tag, props) {
           default:
             // defaultChecked and defaultValue are ignored by setProp
             setProp(domElement, tag, propKey, propValue, props, null);
+            break;
         }
       }
       return;
@@ -1368,6 +1374,7 @@ export function setInitialProperties(domElement, tag, props) {
         }
         return;
       }
+      break;
   }
 
   for (const propKey in props) {
@@ -1437,6 +1444,7 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
               if (!nextProps.hasOwnProperty(propKey)) {
                 setProp(domElement, tag, propKey, null, nextProps, lastProp);
               }
+              break;
           }
         }
       }
@@ -1503,6 +1511,7 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
                   lastProp,
                 );
               }
+              break;
           }
         }
       }
@@ -1623,6 +1632,7 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
                   lastProp,
                 );
               }
+              break;
           }
         }
       }
@@ -1651,6 +1661,7 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
             default:
               // defaultValue is ignored by setProp
               setProp(domElement, tag, propKey, null, nextProps, lastProp);
+              break;
           }
         }
       }
@@ -1697,6 +1708,7 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
                   lastProp,
                 );
               }
+              break;
           }
         }
       }
@@ -1789,6 +1801,7 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
             default:
               // defaultChecked and defaultValue are ignored by setProp
               setProp(domElement, tag, propKey, nextProp, nextProps, lastProp);
+              break;
           }
         }
       }
@@ -1832,6 +1845,7 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
         }
         return;
       }
+      break;
   }
 
   for (const propKey in lastProps) {
@@ -1994,6 +2008,7 @@ function hydrateAttribute(
         if (serverValue === '' + value) {
           return;
         }
+        break;
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
@@ -2030,6 +2045,7 @@ function hydrateBooleanAttribute(
           // As long as it's positive.
           return;
         }
+        break;
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
@@ -2075,6 +2091,7 @@ function hydrateOverloadedBooleanAttribute(
         if (serverValue === '' + value) {
           return;
         }
+        break;
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
@@ -2112,6 +2129,7 @@ function hydrateBooleanishAttribute(
         if (serverValue === '' + value) {
           return;
         }
+        break;
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
@@ -2159,6 +2177,7 @@ function hydrateNumericAttribute(
             return;
           }
         }
+        break;
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
@@ -2206,6 +2225,7 @@ function hydratePositiveNumericAttribute(
             return;
           }
         }
+        break;
     }
   }
   warnForPropDifference(propKey, serverValue, value, serverDifferences);
@@ -2246,6 +2266,7 @@ function hydrateSanitizedAttribute(
         if (serverValue === sanitizedValue) {
           return;
         }
+        break;
       }
     }
   }
@@ -2408,6 +2429,7 @@ function diffHydratedCustomComponent(
           value,
           serverDifferences,
         );
+        break;
       }
     }
   }
@@ -3055,6 +3077,7 @@ export function hydrateProperties(domElement, tag, props, hostContext) {
           props.children,
         );
       }
+      break;
   }
 
   const children = props.children;
@@ -3139,6 +3162,7 @@ export function diffHydratedProperties(domElement, tag, props, hostContext) {
           // Intentionally use the original name.
           // See discussion in https://github.com/react/react/pull/10676.
           extraAttributes.add(attributes[i].name);
+          break;
       }
     }
     if (isCustomElement(tag, props)) {
@@ -3206,6 +3230,7 @@ export function restoreControlledState(domElement, tag, props) {
       break;
     case 'select':
       restoreControlledSelectState(domElement, props);
+      break;
   }
 }
 //# sourceMappingURL=ReactDOMComponent.js.map

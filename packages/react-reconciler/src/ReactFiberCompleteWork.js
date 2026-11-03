@@ -750,6 +750,7 @@ function cutOffTailIfNeeded(renderState, hasRenderedATailFallback) {
         // inserted.
         lastTailNode.sibling = null;
       }
+      break;
     }
   }
 }
@@ -2055,6 +2056,7 @@ export function completeWork(current, workInProgress, renderLanes) {
         // Only Legacy Mode completes an errored node.
         return null;
       }
+      break;
   }
 
   throw new Error(

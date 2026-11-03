@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 declare const getPrototypeOf: (
-  value: unknown | null | undefined,
+  value?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 export default getPrototypeOf;

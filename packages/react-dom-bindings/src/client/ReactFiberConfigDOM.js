@@ -229,8 +229,10 @@ export function getRootHostContext(rootContainerInstance) {
             break;
           default:
             context = HostContextNamespaceNone;
+            break;
         }
       }
+      break;
     }
   }
   if (__DEV__) {
@@ -535,8 +537,10 @@ export function createInstance(
               );
             }
           }
+          break;
         }
       }
+      break;
   }
   precacheFiberNode(internalInstanceHandle, domElement);
   updateFiberProps(domElement, props);
@@ -836,6 +840,7 @@ export function commitMount(
       } else if (newProps.srcSet) {
         domElement.srcset = newProps.srcSet;
       }
+      break;
   }
 }
 
@@ -875,7 +880,8 @@ export function commitHydratedInstance(
       hydrateTextarea(domElement, props.value, props.defaultValue);
       break;
     case 'img':
-    // TODO: Should we replay onLoad events?
+      // TODO: Should we replay onLoad events?
+      break;
   }
 }
 
@@ -1932,6 +1938,7 @@ function customizeViewTransitionError(error, ignoreAbort) {
           // Skip logging this. This is not considered an error.
           return null;
         }
+        break;
     }
   }
   return error;
@@ -3655,6 +3662,7 @@ export function clearContainer(container) {
         break;
       default:
         container.textContent = '';
+        break;
     }
   }
 }
@@ -3700,6 +3708,7 @@ function clearContainerSparingly(container) {
         if (node.rel.toLowerCase() === 'stylesheet') {
           continue;
         }
+        break;
     }
     container.removeChild(node);
   }
@@ -3713,11 +3722,10 @@ function clearHead(head) {
     if (
       isMarkedHoistable(node) ||
       nodeName === 'SCRIPT' ||
-      nodeName === 'STYLE' ||
-      (nodeName === 'LINK' && node.rel.toLowerCase() === 'stylesheet')
+      nodeName === 'STYLE'
     ) {
       // retain these nodes
-    } else {
+    } else if (nodeName !== 'LINK' || node.rel.toLowerCase() !== 'stylesheet') {
       head.removeChild(node);
     }
     node = nextNode;
@@ -4621,6 +4629,7 @@ export function acquireSingletonInstance(
         console.error(
           'acquireSingletonInstance was called with an element type that is not supported. This is a bug in React.',
         );
+        break;
     }
   }
 
@@ -4844,6 +4853,7 @@ function preload(href, as, options) {
         break;
       case 'script':
         key = getScriptKey(href);
+        break;
     }
     if (!preloadPropsMap.has(key)) {
       const preloadProps = Object.assign(

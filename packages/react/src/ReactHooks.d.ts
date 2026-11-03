@@ -28,7 +28,7 @@ export type Create = () => (() => void) | null | undefined;
  */
 export type StartTransition = (
   value: () => void,
-  value2: StartTransitionOptions | null | undefined,
+  value2?: StartTransitionOptions | null | undefined,
 ) => void;
 
 /**
@@ -36,7 +36,7 @@ export type StartTransition = (
  * it calls.
  */
 export type Ref =
-  | ((value: unknown | null | undefined) => unknown | null | undefined)
+  | ((value?: unknown | null | undefined) => unknown | null | undefined)
   | RefObject;
 
 /**
@@ -44,8 +44,8 @@ export type Ref =
  * its next value, and the value it seeds it with.
  */
 export type CacheRefresh = (
-  value: (() => unknown | null | undefined) | null | undefined,
-  value2: unknown | null | undefined,
+  value?: (() => unknown | null | undefined) | null | undefined,
+  value2?: unknown | null | undefined,
 ) => void;
 
 export function getCacheForType<T>(resourceType: () => T): T;

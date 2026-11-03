@@ -7,8 +7,8 @@
 
 /** Whether a memo's props are equal, so that it needn't render again. */
 export type Compare = (
-  value: unknown | null | undefined,
-  value2: unknown | null | undefined,
+  value?: unknown | null | undefined,
+  value2?: unknown | null | undefined,
 ) => boolean;
 
 /** A component that renders again only when its props change. */

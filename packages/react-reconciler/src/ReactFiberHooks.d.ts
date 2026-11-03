@@ -37,15 +37,15 @@ export type Deps = (unknown | null | undefined)[];
  * state and the action.
  */
 export type Reducer = (
-  value: unknown | null | undefined,
-  value2: unknown | null | undefined,
+  value?: unknown | null | undefined,
+  value2?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 /** A hook's dispatch: what schedules an update of its action. */
-export type Dispatch = (value: unknown | null | undefined) => void;
+export type Dispatch = (value?: unknown | null | undefined) => void;
 
 /** What `useActionState` dispatches its action with: of the payload. */
-export type ActionDispatch = (value: unknown | null | undefined) => void;
+export type ActionDispatch = (value?: unknown | null | undefined) => void;
 
 /** What a state hook gives: its state, and what updates it. */
 export type StateAndDispatch = [
@@ -66,11 +66,11 @@ export type ActionStateAndDispatch = [
 export interface UpdateQueue {
   pending: Update | null;
   lanes: Lanes;
-  dispatch: ((value: unknown | null | undefined) => void) | null;
+  dispatch: ((value?: unknown | null | undefined) => void) | null;
   lastRenderedReducer:
     | ((
-        value: unknown | null | undefined,
-        value2: unknown | null | undefined,
+        value?: unknown | null | undefined,
+        value2?: unknown | null | undefined,
       ) => unknown | null | undefined)
     | null;
   lastRenderedState: unknown | null | undefined;
@@ -204,7 +204,7 @@ export type EventFunctionImpl = () => unknown | null | undefined;
 
 /** What `useDebugValue` formats its value with, for DevTools. */
 export type DebugValueFormatter = (
-  value: unknown | null | undefined,
+  value?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 /** What `useMemo` calls for its value. */
@@ -212,7 +212,7 @@ export type MemoCreate = () => unknown | null | undefined;
 
 /** What a form's action is: called with the form's data. */
 export type FormAction = (
-  value: unknown | null | undefined,
+  value?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 // ReactFiberConfig's `TransitionStatus`, and the form's data.
@@ -231,7 +231,7 @@ export function requestFormReset(formFiber: Fiber): void;
  */
 export type StartTransition = (
   value: () => unknown | null | undefined,
-  value2: StartTransitionOptions | null | undefined,
+  value2?: StartTransitionOptions | null | undefined,
 ) => void;
 
 /**
@@ -239,8 +239,8 @@ export type StartTransition = (
  * its next value, and the value it seeds it with.
  */
 export type CacheRefresh = (
-  value: unknown | null | undefined,
-  value2: unknown | null | undefined,
+  value?: unknown | null | undefined,
+  value2?: unknown | null | undefined,
 ) => void;
 
 export const ContextOnlyDispatcher: Dispatcher;

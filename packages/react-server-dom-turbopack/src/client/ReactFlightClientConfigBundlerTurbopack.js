@@ -28,8 +28,7 @@ export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
 
 export function resolveClientReference(bundlerConfig, metadata) {
   if (bundlerConfig != null) {
-    const id = metadata[0];
-    const metadataName = metadata[2];
+    const [id, , metadataName] = metadata;
     const moduleExports = bundlerConfig[id];
     const moduleData = moduleExports?.[metadataName];
     let name;
@@ -132,8 +131,7 @@ function ignoreReject(reason) {
 // Start preloading the modules since we might need them soon.
 // This function doesn't suspend.
 export function preloadModule(metadata) {
-  const id = metadata[0];
-  const chunks = metadata[1];
+  const [id, chunks] = metadata;
   const promises = [];
   for (let i = 0; i < chunks.length; i++) {
     const chunkFilename = chunks[i];
@@ -155,7 +153,8 @@ export function preloadModule(metadata) {
     if (promises.length === 0) {
       return requireAsyncModule(id);
     } else {
-      return Promise.all(promises).then(() => requireAsyncModule(id));
+      const id$1 = id;
+      return Promise.all(promises).then(() => requireAsyncModule(id$1));
     }
   } else if (promises.length !== 0) {
     return Promise.all(promises);
@@ -167,8 +166,7 @@ export function preloadModule(metadata) {
 // Actually require the module or suspend if it's not yet ready.
 // Increase priority if necessary.
 export function requireModule(metadata) {
-  const id = metadata[0];
-  const name = metadata[2];
+  const [id, , name] = metadata;
   let moduleExports = __turbopack_require__(id);
   if (isAsyncImport(metadata)) {
     if (typeof moduleExports.then !== 'function') {

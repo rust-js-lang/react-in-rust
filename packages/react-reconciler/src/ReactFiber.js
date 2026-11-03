@@ -315,6 +315,7 @@ export function createWorkInProgress(current, pendingProps) {
       case ClassComponent:
       case ForwardRef:
         workInProgress.type = resolveTypeForHotReloading(current.type);
+        break;
     }
   }
 
@@ -578,6 +579,7 @@ export function createFiberFromTypeAndProps(
             `but got: ${typeString}.${info}`,
         );
         resolvedType = null;
+        break;
       }
     }
   }

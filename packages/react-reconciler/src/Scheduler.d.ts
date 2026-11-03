@@ -29,11 +29,11 @@ export type SchedulerCallback = (
 export type ScheduleCallback = (
   value: number,
   callback: SchedulerCallback,
-  value2: SchedulerOptions | null | undefined,
+  value2?: SchedulerOptions | null | undefined,
 ) => any;
 
 /** SchedulerMock's `log`: what a test logs, any value. */
-export type Log = (value: unknown | null | undefined) => void;
+export type Log = (value?: unknown | null | undefined) => void;
 
 export const scheduleCallback: ScheduleCallback;
 

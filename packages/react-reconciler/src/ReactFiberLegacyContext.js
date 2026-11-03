@@ -257,6 +257,7 @@ export function findCurrentUnmaskedContext(fiber) {
           if (isContextProvider(component)) {
             return node.stateNode.__reactInternalMemoizedMergedChildContext;
           }
+          break;
         }
       }
       node = node.return;

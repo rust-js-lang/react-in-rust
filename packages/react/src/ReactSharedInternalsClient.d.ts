@@ -18,13 +18,13 @@ export interface SharedStateClient {
   // ReactCurrentBatchConfig for Transitions
   T: Transition | null;
   S:
-    | ((transition: Transition, value: unknown | null | undefined) => void)
+    | ((transition: Transition, value?: unknown | null | undefined) => void)
     | null;
   G?:
     | ((
         transition: Transition,
         value: unknown,
-        value2: GestureTransitionOptions | null | undefined,
+        value2?: GestureTransitionOptions | null | undefined,
       ) => () => void)
     | null
     | undefined;

@@ -11,8 +11,8 @@
  */
 export type PreinitStyle = (
   value: string,
-  value2: unknown | null | undefined,
-  value3: unknown | null | undefined,
+  value2?: unknown | null | undefined,
+  value3?: unknown | null | undefined,
 ) => void;
 
 /**
@@ -31,21 +31,21 @@ export interface HostDispatcher {
   /** `prefetchDNS(href)`. */
   D: (value: string) => void;
   /** `preconnect(href, crossOrigin)`. */
-  C: (value: string, value2: unknown | null | undefined) => void;
+  C: (value: string, value2?: unknown | null | undefined) => void;
   /** `preload(href, as, options)`. */
   L: (
     value: string,
     value2: string,
-    value3: unknown | null | undefined,
+    value3?: unknown | null | undefined,
   ) => void;
   /** `preloadModule(href, options)`. */
-  m: (value: string, value2: unknown | null | undefined) => void;
+  m: (value: string, value2?: unknown | null | undefined) => void;
   /** `preinitScript(src, options)`. */
-  X: (value: string, value2: unknown | null | undefined) => void;
+  X: (value: string, value2?: unknown | null | undefined) => void;
   /** `preinitStyle(href, precedence, options)`. */
   S: PreinitStyle;
   /** `preinitModuleScript(src, options)`. */
-  M: (value: string, value2: unknown | null | undefined) => void;
+  M: (value: string, value2?: unknown | null | undefined) => void;
 }
 
 declare const ReactDOMSharedInternals: any;

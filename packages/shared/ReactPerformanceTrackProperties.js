@@ -304,6 +304,7 @@ export function addValueToProperties(
     default:
       // eslint-disable-next-line react-internal/safe-string-coercion
       desc = String(value);
+      break;
   }
   properties.push([prefix + '\xa0\xa0'.repeat(indent) + propertyName, desc]);
 }

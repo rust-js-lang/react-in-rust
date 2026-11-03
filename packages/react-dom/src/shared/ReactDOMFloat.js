@@ -355,6 +355,7 @@ function getValueDescriptorExpectingObjectForWarning(thing) {
       if (thing === '') {
         return 'an empty string';
       }
+      break;
   }
   return `something with type "${typeof thing}"`;
 }

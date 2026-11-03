@@ -322,6 +322,7 @@ function validateProperty(tagName, name, value, eventRegistry) {
           warnedProperties[name] = true;
           return true;
         }
+        break;
     }
     return true;
   }

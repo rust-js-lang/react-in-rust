@@ -258,6 +258,7 @@ export function unstable_runWithPriority(priorityLevel, eventHandler) {
       break;
     default:
       priorityLevel = NormalPriority;
+      break;
   }
 
   const restore = currentPriorityLevel;
@@ -283,6 +284,7 @@ export function unstable_next(eventHandler) {
     default:
       // Anything lower than normal priority should remain at the current level.
       priorityLevel = current;
+      break;
   }
 
   const restore = currentPriorityLevel;
@@ -333,6 +335,7 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
       break;
     default:
       timeout = NORMAL_PRIORITY_TIMEOUT;
+      break;
   }
 
   const expirationTime = startTime + timeout;

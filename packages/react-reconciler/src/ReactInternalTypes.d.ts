@@ -80,7 +80,7 @@ export interface MemoCache {
  * object whose `current` is set to it.
  */
 export type Ref =
-  | ((value: unknown | null | undefined) => unknown | null | undefined)
+  | ((value?: unknown | null | undefined) => unknown | null | undefined)
   | unknown;
 
 /**
@@ -386,122 +386,122 @@ export interface FiberRoot {
 }
 
 export interface Dispatcher {
-  use: (value: unknown | null | undefined) => unknown | null | undefined;
+  use: (usable?: unknown | null | undefined) => unknown | null | undefined;
   readContext: (
     context: ReactContext<unknown | null | undefined>,
   ) => unknown | null | undefined;
   useState: (
-    value: unknown | null | undefined,
+    value?: unknown | null | undefined,
   ) => [
     unknown | null | undefined,
-    ((value: unknown | null | undefined) => void) | null | undefined,
+    ((value?: unknown | null | undefined) => void) | null | undefined,
   ];
   useReducer: (
     value: (
-      value: unknown | null | undefined,
-      value2: unknown | null | undefined,
+      value?: unknown | null | undefined,
+      value2?: unknown | null | undefined,
     ) => unknown | null | undefined,
-    value2: unknown | null | undefined,
-    value3: unknown | null | undefined,
+    value2?: unknown | null | undefined,
+    value3?: unknown | null | undefined,
   ) => [
     unknown | null | undefined,
-    ((value: unknown | null | undefined) => void) | null | undefined,
+    ((value?: unknown | null | undefined) => void) | null | undefined,
   ];
   useContext: (
     context: ReactContext<unknown | null | undefined>,
   ) => unknown | null | undefined;
-  useRef: (value: unknown | null | undefined) => RefObject;
+  useRef: (value?: unknown | null | undefined) => RefObject;
   useEffect: (
     value: () => unknown | null | undefined,
-    value2: (unknown | null | undefined)[] | null | undefined,
+    value2?: (unknown | null | undefined)[] | null | undefined,
   ) => void;
   useEffectEvent: (
     value: () => unknown | null | undefined,
   ) => (...args: (unknown | null | undefined)[]) => unknown | null | undefined;
   useInsertionEffect: (
     value: () => unknown | null | undefined,
-    value2: (unknown | null | undefined)[] | null | undefined,
+    value2?: (unknown | null | undefined)[] | null | undefined,
   ) => void;
   useLayoutEffect: (
     value: () => unknown | null | undefined,
-    value2: (unknown | null | undefined)[] | null | undefined,
+    value2?: (unknown | null | undefined)[] | null | undefined,
   ) => void;
   useCallback: (
-    value: unknown | null | undefined,
-    value2: (unknown | null | undefined)[] | null | undefined,
+    value?: unknown | null | undefined,
+    value2?: (unknown | null | undefined)[] | null | undefined,
   ) => unknown | null | undefined;
   useMemo: (
     value: () => unknown | null | undefined,
-    value2: (unknown | null | undefined)[] | null | undefined,
+    value2?: (unknown | null | undefined)[] | null | undefined,
   ) => unknown | null | undefined;
   // The ref: an object whose `current` is set, a function called with the
   // handle, or nothing; and what creates the handle.
   useImperativeHandle: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
-    value3: (unknown | null | undefined)[] | null | undefined,
+    value?: unknown | null | undefined,
+    value2?: unknown | null | undefined,
+    value3?: (unknown | null | undefined)[] | null | undefined,
   ) => void;
   useDebugValue: (
-    value: unknown | null | undefined,
-    value2:
-      | ((value: unknown | null | undefined) => unknown | null | undefined)
+    value?: unknown | null | undefined,
+    value2?:
+      | ((value?: unknown | null | undefined) => unknown | null | undefined)
       | null
       | undefined,
   ) => void;
   useDeferredValue: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
+    value?: unknown | null | undefined,
+    value2?: unknown | null | undefined,
   ) => unknown | null | undefined;
   useTransition: () => [
     boolean,
     (
       value: () => unknown | null | undefined,
-      value2: StartTransitionOptions | null | undefined,
+      value2?: StartTransitionOptions | null | undefined,
     ) => void,
   ];
   useSyncExternalStore: (
     value: (value: () => void) => unknown | null | undefined,
     value2: () => unknown | null | undefined,
-    value3: unknown | null | undefined,
+    value3?: unknown | null | undefined,
   ) => unknown | null | undefined;
   useId: () => string;
   useCacheRefresh: () => (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
+    value?: unknown | null | undefined,
+    value2?: unknown | null | undefined,
   ) => void;
   useMemoCache: (value: number) => (unknown | null | undefined)[];
   // ReactFiberConfig's `TransitionStatus`.
   useHostTransitionStatus: () => unknown | null | undefined;
   // The passthrough, and the reducer, if it's a function.
   useOptimistic: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
+    value?: unknown | null | undefined,
+    value2?: unknown | null | undefined,
   ) => [
     unknown | null | undefined,
-    ((value: unknown | null | undefined) => void) | null | undefined,
+    ((value?: unknown | null | undefined) => void) | null | undefined,
   ];
   useFormState: (
     value: (
-      value: unknown | null | undefined,
-      value2: unknown | null | undefined,
+      value?: unknown | null | undefined,
+      value2?: unknown | null | undefined,
     ) => unknown | null | undefined,
-    value2: unknown | null | undefined,
-    value3: string | null | undefined,
+    value2?: unknown | null | undefined,
+    value3?: string | null | undefined,
   ) => [
     unknown | null | undefined,
-    (value: unknown | null | undefined) => void,
+    (value?: unknown | null | undefined) => void,
     boolean,
   ];
   useActionState: (
     value: (
-      value: unknown | null | undefined,
-      value2: unknown | null | undefined,
+      value?: unknown | null | undefined,
+      value2?: unknown | null | undefined,
     ) => unknown | null | undefined,
-    value2: unknown | null | undefined,
-    value3: string | null | undefined,
+    value2?: unknown | null | undefined,
+    value3?: string | null | undefined,
   ) => [
     unknown | null | undefined,
-    (value: unknown | null | undefined) => void,
+    (value?: unknown | null | undefined) => void,
     boolean,
   ];
 }

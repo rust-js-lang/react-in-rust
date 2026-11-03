@@ -23,25 +23,25 @@ import type {Child, Container} from './ReactFiberConfigNoop.js';
 
 export interface ReactNoopPersistentExports {
   _Scheduler: object;
-  getChildren: (value: string | null | undefined) => void;
+  getChildren: (value?: string | null | undefined) => void;
   dangerouslyGetChildren: (
-    value: string | null | undefined,
+    value?: string | null | undefined,
   ) => Child[] | null | undefined;
-  getPendingChildren: (value: string | null | undefined) => void;
+  getPendingChildren: (value?: string | null | undefined) => void;
   dangerouslyGetPendingChildren: (
-    value: string | null | undefined,
+    value?: string | null | undefined,
   ) => Child[] | null | undefined;
   getOrCreateRootContainer: (
     value: string | null | undefined,
     value2: number,
   ) => Container;
-  createRoot: (value: CreateRootOptions | null | undefined) => Root;
+  createRoot: (value?: CreateRootOptions | null | undefined) => Root;
   createLegacyRoot: () => LegacyRoot;
   getChildrenAsJSX: (
-    value: string | null | undefined,
+    value?: string | null | undefined,
   ) => unknown | null | undefined;
   getPendingChildrenAsJSX: (
-    value: string | null | undefined,
+    value?: string | null | undefined,
   ) => unknown | null | undefined;
   getSuspenseyThingStatus: (value: string) => string | null | undefined;
   resolveSuspenseyThing: (value: string) => void;
@@ -49,24 +49,24 @@ export interface ReactNoopPersistentExports {
   createPortal: (
     value: unknown | null | undefined,
     container: Container,
-    value2: unknown | null | undefined,
+    value2?: unknown | null | undefined,
   ) => ReactPortal;
   render: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
+    value?: unknown | null | undefined,
+    value2?: unknown | null | undefined,
   ) => void;
   renderLegacySyncRoot: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
+    value?: unknown | null | undefined,
+    value2?: unknown | null | undefined,
   ) => void;
   renderToRootWithID: (
     value: unknown | null | undefined,
     value2: string,
-    value3: unknown | null | undefined,
+    value3?: unknown | null | undefined,
   ) => void;
   unmountRootWithID: (value: string) => void;
   findInstance: (
-    value: unknown | null | undefined,
+    value?: unknown | null | undefined,
   ) => unknown | null | undefined;
   flushNextYield: () => (unknown | null | undefined)[];
   startTrackingHostCounters: () => void;
@@ -74,33 +74,33 @@ export interface ReactNoopPersistentExports {
   expire: (value: number) => void;
   flushExpired: () => (unknown | null | undefined)[];
   batchedUpdates: (
-    value: (value: unknown | null | undefined) => unknown | null | undefined,
-    value2: unknown | null | undefined,
+    value: (value?: unknown | null | undefined) => unknown | null | undefined,
+    value2?: unknown | null | undefined,
   ) => unknown | null | undefined;
   deferredUpdates: (
     value: () => unknown | null | undefined,
   ) => unknown | null | undefined;
   discreteUpdates: (
     value: (
-      value: unknown | null | undefined,
-      value2: unknown | null | undefined,
-      value3: unknown | null | undefined,
-      value4: unknown | null | undefined,
+      value?: unknown | null | undefined,
+      value2?: unknown | null | undefined,
+      value3?: unknown | null | undefined,
+      value4?: unknown | null | undefined,
     ) => unknown | null | undefined,
-    value2: unknown | null | undefined,
-    value3: unknown | null | undefined,
-    value4: unknown | null | undefined,
-    value5: unknown | null | undefined,
+    value2?: unknown | null | undefined,
+    value3?: unknown | null | undefined,
+    value4?: unknown | null | undefined,
+    value5?: unknown | null | undefined,
   ) => unknown | null | undefined;
   idleUpdates: (value: () => unknown | null | undefined) => void;
   flushDiscreteUpdates?: unknown;
   flushSync: (
-    value: (() => unknown | null | undefined) | null | undefined,
+    value?: (() => unknown | null | undefined) | null | undefined,
   ) => unknown | null | undefined;
   flushPassiveEffects: () => boolean;
   act?: unknown;
-  dumpTree: (value: string | null | undefined) => void;
-  getRoot: (value: string | null | undefined) => FiberRoot | null | undefined;
+  dumpTree: (value?: string | null | undefined) => void;
+  getRoot: (value?: string | null | undefined) => FiberRoot | null | undefined;
   // TODO: Remove this once callers migrate to alternatives.
   // This should only be used by React internals.
   unstable_runWithPriority: (
@@ -111,16 +111,16 @@ export interface ReactNoopPersistentExports {
 
 export const _Scheduler: object;
 
-export const getChildren: (value: string | null | undefined) => void;
+export const getChildren: (value?: string | null | undefined) => void;
 
 export const dangerouslyGetChildren: (
-  value: string | null | undefined,
+  value?: string | null | undefined,
 ) => Child[] | null | undefined;
 
-export const getPendingChildren: (value: string | null | undefined) => void;
+export const getPendingChildren: (value?: string | null | undefined) => void;
 
 export const dangerouslyGetPendingChildren: (
-  value: string | null | undefined,
+  value?: string | null | undefined,
 ) => Child[] | null | undefined;
 
 export const getOrCreateRootContainer: (
@@ -128,16 +128,16 @@ export const getOrCreateRootContainer: (
   value2: number,
 ) => Container;
 
-export const createRoot: (value: CreateRootOptions | null | undefined) => Root;
+export const createRoot: (value?: CreateRootOptions | null | undefined) => Root;
 
 export const createLegacyRoot: () => LegacyRoot;
 
 export const getChildrenAsJSX: (
-  value: string | null | undefined,
+  value?: string | null | undefined,
 ) => unknown | null | undefined;
 
 export const getPendingChildrenAsJSX: (
-  value: string | null | undefined,
+  value?: string | null | undefined,
 ) => unknown | null | undefined;
 
 export const getSuspenseyThingStatus: (
@@ -151,29 +151,29 @@ export const resetSuspenseyThingCache: () => void;
 export const createPortal: (
   value: unknown | null | undefined,
   container: Container,
-  value2: unknown | null | undefined,
+  value2?: unknown | null | undefined,
 ) => ReactPortal;
 
 export const render: (
-  value: unknown | null | undefined,
-  value2: unknown | null | undefined,
+  value?: unknown | null | undefined,
+  value2?: unknown | null | undefined,
 ) => void;
 
 export const renderLegacySyncRoot: (
-  value: unknown | null | undefined,
-  value2: unknown | null | undefined,
+  value?: unknown | null | undefined,
+  value2?: unknown | null | undefined,
 ) => void;
 
 export const renderToRootWithID: (
   value: unknown | null | undefined,
   value2: string,
-  value3: unknown | null | undefined,
+  value3?: unknown | null | undefined,
 ) => void;
 
 export const unmountRootWithID: (value: string) => void;
 
 export const findInstance: (
-  value: unknown | null | undefined,
+  value?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 export const flushNextYield: () => (unknown | null | undefined)[];
@@ -187,8 +187,8 @@ export const expire: (value: number) => void;
 export const flushExpired: () => (unknown | null | undefined)[];
 
 export const batchedUpdates: (
-  value: (value: unknown | null | undefined) => unknown | null | undefined,
-  value2: unknown | null | undefined,
+  value: (value?: unknown | null | undefined) => unknown | null | undefined,
+  value2?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 export const deferredUpdates: (
@@ -197,15 +197,15 @@ export const deferredUpdates: (
 
 export const discreteUpdates: (
   value: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
-    value3: unknown | null | undefined,
-    value4: unknown | null | undefined,
+    value?: unknown | null | undefined,
+    value2?: unknown | null | undefined,
+    value3?: unknown | null | undefined,
+    value4?: unknown | null | undefined,
   ) => unknown | null | undefined,
-  value2: unknown | null | undefined,
-  value3: unknown | null | undefined,
-  value4: unknown | null | undefined,
-  value5: unknown | null | undefined,
+  value2?: unknown | null | undefined,
+  value3?: unknown | null | undefined,
+  value4?: unknown | null | undefined,
+  value5?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 export const idleUpdates: (value: () => unknown | null | undefined) => void;
@@ -213,17 +213,17 @@ export const idleUpdates: (value: () => unknown | null | undefined) => void;
 export const flushDiscreteUpdates: unknown | null | undefined;
 
 export const flushSync: (
-  value: (() => unknown | null | undefined) | null | undefined,
+  value?: (() => unknown | null | undefined) | null | undefined,
 ) => unknown | null | undefined;
 
 export const flushPassiveEffects: () => boolean;
 
 export const act: unknown | null | undefined;
 
-export const dumpTree: (value: string | null | undefined) => void;
+export const dumpTree: (value?: string | null | undefined) => void;
 
 export const getRoot: (
-  value: string | null | undefined,
+  value?: string | null | undefined,
 ) => FiberRoot | null | undefined;
 
 export const unstable_runWithPriority: (

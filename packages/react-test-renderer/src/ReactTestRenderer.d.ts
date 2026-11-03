@@ -71,11 +71,11 @@ export interface TestRenderer {
   root?: unknown;
   toJSON: () => unknown | null | undefined;
   toTree: () => unknown | null | undefined;
-  update: (value: unknown | null | undefined) => void;
+  update: (newElement?: unknown | null | undefined) => void;
   unmount: () => void;
   getInstance: () => unknown | null | undefined;
   unstable_flushSync: (
-    value: (() => unknown | null | undefined) | null | undefined,
+    fn?: (() => unknown | null | undefined) | null | undefined,
   ) => unknown | null | undefined;
 }
 

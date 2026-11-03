@@ -1077,6 +1077,7 @@ function createChildReconciler(shouldTrackSideEffects) {
             resolvedChild,
             knownKeys,
           );
+          break;
         }
       }
     }

@@ -211,6 +211,7 @@ function scheduleFibersWithFamiliesRecursively(
         case ForwardRef:
           candidateType = type.render;
           outerCandidateType = elementType;
+          break;
       }
 
       const resolve = resolveFamily;

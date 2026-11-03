@@ -44,8 +44,7 @@ export function preloadModule(metadata) {
 }
 
 export function requireModule(metadata) {
-  const id = metadata[0];
-  const name = metadata[1];
+  const [id, name] = metadata;
   const moduleExports = parcelRequire(id);
   if (hasOwnProperty.call(moduleExports, name)) {
     return moduleExports[name];

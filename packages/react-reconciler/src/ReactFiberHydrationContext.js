@@ -576,6 +576,7 @@ export function prepareToHydrateHostTextInstance(fiber) {
             diffNode.serverProps = difference;
           }
         }
+        break;
     }
   }
 
@@ -682,6 +683,7 @@ function popToNextHostParent(fiber) {
         return;
       default:
         hydrationParentFiber = hydrationParentFiber.return;
+        break;
     }
   }
 }

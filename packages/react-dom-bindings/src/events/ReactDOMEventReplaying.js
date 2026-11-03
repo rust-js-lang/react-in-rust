@@ -143,6 +143,7 @@ export function clearIfContinuousEvent(domEventName, nativeEvent) {
     case 'lostpointercapture': {
       const pointerId = nativeEvent.pointerId;
       queuedPointerCaptures.delete(pointerId);
+      break;
     }
   }
 }

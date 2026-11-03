@@ -493,6 +493,7 @@ export function throwException(
             }
             return false;
           }
+          break;
       }
       throw new Error(
         `Unexpected Suspense handler tag (${suspenseBoundary.tag}). This is a bug in React.`,
@@ -667,6 +668,7 @@ export function throwException(
           workInProgress.flags |= ShouldCapture;
           return false;
         }
+        break;
       }
     }
     workInProgress = workInProgress.return;

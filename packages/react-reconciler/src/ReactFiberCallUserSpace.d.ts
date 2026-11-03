@@ -14,17 +14,17 @@ import type {Fiber} from './ReactInternalTypes.js';
  * ref of a `forwardRef`'s render, or the legacy context.
  */
 export type Component = (
-  value: unknown | null | undefined,
-  value2: unknown | null | undefined,
+  value?: unknown | null | undefined,
+  value2?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 export type CallComponent = (
   value: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
+    value?: unknown | null | undefined,
+    value2?: unknown | null | undefined,
   ) => unknown | null | undefined,
-  value2: unknown | null | undefined,
-  value3: unknown | null | undefined,
+  value2?: unknown | null | undefined,
+  value3?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 /** What `componentDidCatch` is given with the error: where it was thrown. */

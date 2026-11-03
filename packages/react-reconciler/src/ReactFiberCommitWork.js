@@ -523,6 +523,7 @@ function commitBeforeMutationEffectsOnFiber(
             'likely caused by a bug in React. Please file an issue.',
         );
       }
+      break;
   }
 }
 
@@ -825,6 +826,7 @@ function commitLayoutEffectOnFiber(
         finishedWork,
         committedLanes,
       );
+      break;
   }
 
   if (
@@ -993,6 +995,7 @@ function abortParentMarkerTransitionsForDeletedFiber(
             deletedOffscreenInstance,
             isInDeletedTree,
           );
+          break;
         }
       }
 
@@ -1180,6 +1183,7 @@ function hideOrUnhideAllChildrenOnFiber(fiber, isHidden) {
     }
     default:
       hideOrUnhideAllChildren(fiber, isHidden);
+      break;
   }
 }
 
@@ -1218,6 +1222,7 @@ function hideOrUnhideNearestPortalsOnFiber(fiber, isHidden) {
     }
     default:
       hideOrUnhideNearestPortals(fiber, isHidden);
+      break;
   }
 }
 
@@ -1698,6 +1703,7 @@ function commitDeletionEffectsOnFiber(
         nearestMountedAncestor,
         deletedFiber,
       );
+      break;
   }
 
   if (
@@ -2576,6 +2582,7 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
       // Fallthrough
       recursivelyTraverseMutationEffects(root, finishedWork, lanes);
       commitReconciliationEffects(finishedWork, lanes);
+      break;
   }
 
   if (
@@ -2817,6 +2824,7 @@ function commitAfterMutationEffectsOnFiber(finishedWork, root, lanes) {
     }
     default:
       recursivelyTraverseAfterMutationEffects(root, finishedWork, lanes);
+      break;
   }
 }
 
@@ -2973,6 +2981,7 @@ function disappearLayoutEffects(finishedWork, layoutEffectTraversalFlags) {
         finishedWork,
         layoutEffectTraversalFlags,
       );
+      break;
   }
 
   if (
@@ -3274,6 +3283,7 @@ function reappearLayoutEffects(
         finishedWork,
         layoutEffectTraversalFlags,
       );
+      break;
   }
 
   if (
@@ -4080,6 +4090,7 @@ function commitPassiveMountOnFiber(
         committedTransitions,
         endTime,
       );
+      break;
   }
 
   if (
@@ -4359,6 +4370,7 @@ export function reconnectPassiveEffects(
         includeWorkInProgressEffects,
         endTime,
       );
+      break;
   }
 
   if (
@@ -4499,6 +4511,7 @@ function commitAtomicPassiveEffects(
         committedTransitions,
         endTime,
       );
+      break;
   }
   popDeepEquality(prevDeepEquality);
 }
@@ -4685,6 +4698,7 @@ function accumulateSuspenseyCommitOnFiber(
         committedLanes,
         suspendedState,
       );
+      break;
   }
 }
 
@@ -4844,6 +4858,7 @@ function commitPassiveUnmountOnFiber(finishedWork) {
     }
     default:
       recursivelyTraversePassiveUnmountEffects(finishedWork);
+      break;
   }
 
   if (
@@ -4947,6 +4962,7 @@ export function disconnectPassiveEffect(finishedWork) {
     }
     default:
       recursivelyTraverseDisconnectPassiveEffects(finishedWork);
+      break;
   }
 
   if (
@@ -5131,6 +5147,7 @@ function commitPassiveUnmountInsideDeletedTreeOnFiber(
           }
         }
       }
+      break;
   }
 
   if (
@@ -5169,6 +5186,7 @@ export function invokeLayoutEffectMountInDEV(fiber) {
         break;
       case ClassComponent:
         commitClassDidMount(fiber);
+        break;
     }
   }
 }
@@ -5182,6 +5200,7 @@ export function invokePassiveEffectMountInDEV(fiber) {
       case ForwardRef:
       case SimpleMemoComponent:
         commitHookEffectListMount(HookPassive | HookHasEffect, fiber);
+        break;
     }
   }
 }
@@ -5208,6 +5227,7 @@ export function invokeLayoutEffectUnmountInDEV(fiber) {
           const returnFiber = fiber.return;
           safelyCallComponentWillUnmount(fiber, returnFiber, instance);
         }
+        break;
       }
     }
   }
@@ -5227,6 +5247,7 @@ export function invokePassiveEffectUnmountInDEV(fiber) {
           fiber,
           returnFiber,
         );
+        break;
       }
     }
   }

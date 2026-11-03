@@ -38,6 +38,7 @@ export function bindToConsole(methodName, args, badgeName) {
     case 'assert':
       // assert takes formatting options as the second argument.
       offset = 1;
+      break;
   }
 
   const newArgs = args.slice();

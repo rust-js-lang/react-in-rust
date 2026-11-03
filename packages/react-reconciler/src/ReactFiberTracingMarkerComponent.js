@@ -94,6 +94,7 @@ export function processTransitionCallbacks(
                   name: abort.name,
                   endTime,
                 });
+                break;
             }
           });
 

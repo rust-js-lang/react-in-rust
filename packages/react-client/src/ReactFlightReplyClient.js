@@ -811,13 +811,8 @@ export function processReply(
       case 'boolean':
         return value;
       case 'number': {
-        const serializedNumber = serializeNumber(value);
-        if (typeof serializedNumber === 'string') {
-          const text = serializedNumber;
-          return text;
-        }
-        const number = serializedNumber;
-        return number;
+        const text = serializeNumber(value);
+        return text;
       }
       case 'undefined':
         return serializeUndefined();

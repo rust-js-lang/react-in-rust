@@ -77,15 +77,15 @@ export interface PersistenceCounters {
 /** The test renderer createReactNoop gives. */
 export interface ReactNoop {
   _Scheduler: object;
-  getChildren: (value: string | null | undefined) => void;
-  getPendingChildren: (value: string | null | undefined) => void;
+  getChildren: (rootId?: string | null | undefined) => void;
+  getPendingChildren: (rootId?: string | null | undefined) => void;
   /**
    * Prefer using `getChildrenAsJSX`.
    * Using the returned children in `.toEqual` has very poor performance on mismatch due to deep equality checking of fiber structures.
    * Make sure you deeply remove enumerable properties before passing it to `.toEqual`, or, better, use `getChildrenAsJSX` or `toMatchRenderedOutput`.
    */
   dangerouslyGetChildren: (
-    value: string | null | undefined,
+    rootId?: string | null | undefined,
   ) => Child[] | null | undefined;
   /**
    * Prefer using `getPendingChildrenAsJSX`.
@@ -93,92 +93,92 @@ export interface ReactNoop {
    * Make sure you deeply remove enumerable properties before passing it to `.toEqual`, or, better, use `getChildrenAsJSX` or `toMatchRenderedOutput`.
    */
   dangerouslyGetPendingChildren: (
-    value: string | null | undefined,
+    rootId?: string | null | undefined,
   ) => Child[] | null | undefined;
   getOrCreateRootContainer: (
-    value: string | null | undefined,
-    value2: number,
+    rootId: string | null | undefined,
+    tag: number,
   ) => Container;
   // TODO: Replace ReactNoop.render with createRoot + root.render
-  createRoot: (value: CreateRootOptions | null | undefined) => Root;
+  createRoot: (options?: CreateRootOptions | null | undefined) => Root;
   createLegacyRoot: () => LegacyRoot;
   getChildrenAsJSX: (
-    value: string | null | undefined,
+    rootId?: string | null | undefined,
   ) => unknown | null | undefined;
   getPendingChildrenAsJSX: (
-    value: string | null | undefined,
+    rootId?: string | null | undefined,
   ) => unknown | null | undefined;
-  getSuspenseyThingStatus: (value: string) => string | null | undefined;
-  resolveSuspenseyThing: (value: string) => void;
+  getSuspenseyThingStatus: (src: string) => string | null | undefined;
+  resolveSuspenseyThing: (key: string) => void;
   resetSuspenseyThingCache: () => void;
   createPortal: (
-    value: unknown | null | undefined,
+    children: unknown | null | undefined,
     container: Container,
-    value2: unknown | null | undefined,
+    key?: unknown | null | undefined,
   ) => ReactPortal;
   // Shortcut for testing a single root
   render: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
+    element?: unknown | null | undefined,
+    callback?: unknown | null | undefined,
   ) => void;
   renderLegacySyncRoot: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
+    element?: unknown | null | undefined,
+    callback?: unknown | null | undefined,
   ) => void;
   renderToRootWithID: (
-    value: unknown | null | undefined,
-    value2: string,
-    value3: unknown | null | undefined,
+    element: unknown | null | undefined,
+    rootId: string,
+    callback?: unknown | null | undefined,
   ) => void;
-  unmountRootWithID: (value: string) => void;
+  unmountRootWithID: (rootId: string) => void;
   findInstance: (
-    value: unknown | null | undefined,
+    componentOrElement?: unknown | null | undefined,
   ) => unknown | null | undefined;
   flushNextYield: () => (unknown | null | undefined)[];
   startTrackingHostCounters: () => void;
   stopTrackingHostCounters: () => HostCounters;
-  expire: (value: number) => void;
+  expire: (ms: number) => void;
   flushExpired: () => (unknown | null | undefined)[];
   // TODO: Remove this after callers migrate to alternatives.
   unstable_runWithPriority: (
     priority: EventPriority,
-    value: () => unknown | null | undefined,
+    fn: () => unknown | null | undefined,
   ) => unknown | null | undefined;
   batchedUpdates: (
-    value: (value: unknown | null | undefined) => unknown | null | undefined,
-    value2: unknown | null | undefined,
+    f: (value?: unknown | null | undefined) => unknown | null | undefined,
+    a?: unknown | null | undefined,
   ) => unknown | null | undefined;
   deferredUpdates: (
-    value: () => unknown | null | undefined,
+    f: () => unknown | null | undefined,
   ) => unknown | null | undefined;
   discreteUpdates: (
-    value: (
-      value: unknown | null | undefined,
-      value2: unknown | null | undefined,
-      value3: unknown | null | undefined,
-      value4: unknown | null | undefined,
+    f: (
+      value?: unknown | null | undefined,
+      value2?: unknown | null | undefined,
+      value3?: unknown | null | undefined,
+      value4?: unknown | null | undefined,
     ) => unknown | null | undefined,
-    value2: unknown | null | undefined,
-    value3: unknown | null | undefined,
-    value4: unknown | null | undefined,
-    value5: unknown | null | undefined,
+    a?: unknown | null | undefined,
+    b?: unknown | null | undefined,
+    c?: unknown | null | undefined,
+    d?: unknown | null | undefined,
   ) => unknown | null | undefined;
-  idleUpdates: (value: () => unknown | null | undefined) => void;
+  idleUpdates: (fn: () => unknown | null | undefined) => void;
   flushSync: (
-    value: (() => unknown | null | undefined) | null | undefined,
+    fn?: (() => unknown | null | undefined) | null | undefined,
   ) => unknown | null | undefined;
   flushPassiveEffects: () => boolean;
   flushDiscreteUpdates?: unknown;
   act?: unknown;
   // Logs the current state of the tree.
-  dumpTree: (value: string | null | undefined) => void;
-  getRoot: (value: string | null | undefined) => FiberRoot | null | undefined;
+  dumpTree: (rootId?: string | null | undefined) => void;
+  getRoot: (rootId?: string | null | undefined) => FiberRoot | null | undefined;
 }
 
 /** What `createRoot` gives. */
 export interface Root {
   _Scheduler: object;
-  render: (value: unknown | null | undefined) => void;
+  render: (children?: unknown | null | undefined) => void;
   getChildren: () => Child[] | null | undefined;
   getChildrenAsJSX: () => unknown | null | undefined;
 }
@@ -186,7 +186,7 @@ export interface Root {
 /** What `createLegacyRoot` gives. */
 export interface LegacyRoot {
   _Scheduler: object;
-  render: (value: unknown | null | undefined) => void;
+  render: (children?: unknown | null | undefined) => void;
   getChildren: () => Child[] | null | undefined;
   getChildrenAsJSX: () => unknown | null | undefined;
   legacy: boolean;

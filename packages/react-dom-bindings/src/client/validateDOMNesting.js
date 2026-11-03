@@ -359,6 +359,7 @@ function isTagValidWithParent(tag, parentTag, implicitRootScope) {
       } else {
         return tag === 'html';
       }
+      break;
   }
 
   // Probably in the "in body" parsing mode, so we outlaw only tag combos
@@ -499,6 +500,7 @@ function findAncestor(parent, tagName) {
         if (parent.type === tagName) {
           return parent;
         }
+        break;
     }
     parent = parent.return;
   }

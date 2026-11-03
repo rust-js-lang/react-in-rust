@@ -148,6 +148,7 @@ export function createFiberRoot(
           break;
         case LegacyRoot:
           root._debugRootType = hydrate ? 'hydrate()' : 'render()';
+          break;
       }
     }
   }

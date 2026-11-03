@@ -30,7 +30,7 @@ export interface Transition {
 /** What the renderer does as a Transition's scope returns. */
 export type OnStartTransitionFinish = (
   transition: Transition,
-  value: unknown | null | undefined,
+  value?: unknown | null | undefined,
 ) => void;
 
 /**
@@ -40,7 +40,7 @@ export type OnStartTransitionFinish = (
 export type OnStartGestureTransitionFinish = (
   transition: Transition,
   value: unknown,
-  value2: GestureTransitionOptions | null | undefined,
+  value2?: GestureTransitionOptions | null | undefined,
 ) => () => void;
 
 export function startTransition(

@@ -7,7 +7,7 @@
 
 /** `flushSync(fn)`: what `fn` gives, or nothing where it's given none. */
 export type FlushSync = (
-  value: (() => unknown | null | undefined) | null | undefined,
+  value?: (() => unknown | null | undefined) | null | undefined,
 ) => unknown | null | undefined;
 
 export const flushSync: FlushSync;

@@ -15,7 +15,7 @@ export type Visit<A, B, C> = (fiber: Fiber, a: A, b: B, c: C) => boolean;
 
 /** What gives an instance's parent, as `getLowestCommonAncestor` climbs. */
 export type GetParent = (
-  value: Fiber | null | undefined,
+  value?: Fiber | null | undefined,
 ) => Fiber | null | undefined;
 
 export function getNearestMountedFiber(fiber: Fiber): Fiber | null;

@@ -3185,6 +3185,7 @@ function validateRevealOrder(revealOrder) {
                 'Did you mean "independent", "together", "forwards" or "backwards"?',
               revealOrder,
             );
+            break;
         }
       } else {
         console.error(
@@ -3450,6 +3451,7 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
           tailMode,
           treeForkCount,
         );
+        break;
       }
     }
   }
@@ -4007,6 +4009,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
           renderLanes,
         );
       }
+      break;
   }
   return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
 }

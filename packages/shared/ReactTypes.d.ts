@@ -384,7 +384,9 @@ export interface SuspenseProps {
   children?: ReactNodeList | undefined;
   fallback?: ReactNodeList | undefined;
   // TODO: Add "unstable_" prefix?
-  suspenseCallback?: ((value: Set<any> | null | undefined) => void) | undefined;
+  suspenseCallback?:
+    | ((value?: Set<any> | null | undefined) => void)
+    | undefined;
   unstable_avoidThisFallback?: boolean | undefined;
   defer?: boolean | undefined;
   name?: string | undefined;

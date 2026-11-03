@@ -553,6 +553,7 @@ function recursivelyInsertNewFiber(
         parentViewTransition,
         visitPhase,
       );
+      break;
   }
 }
 
@@ -582,6 +583,7 @@ function recursivelyInsertClonesFromExistingTree(
           default:
             // We've found any "layout" View Transitions at this point so we can bail.
             nextPhase = CLONE_UNCHANGED;
+            break;
         }
         let clone;
         if (nextPhase !== CLONE_UNCHANGED) {
@@ -706,6 +708,7 @@ function recursivelyInsertClonesFromExistingTree(
           parentViewTransition,
           visitPhase,
         );
+        break;
     }
     child = child.sibling;
   }
@@ -1045,6 +1048,7 @@ function recursivelyRestoreNew(finishedWork, nearestMountedAncestor) {
           nearestMountedAncestor,
         );
       }
+      break;
     }
   }
 }
@@ -1165,6 +1169,7 @@ function applyViewTransitionsOnFiber(finishedWork, current) {
     }
     default:
       recursivelyApplyViewTransitions(finishedWork);
+      break;
   }
 }
 
@@ -1264,6 +1269,7 @@ function restoreViewTransitionsOnFiber(finishedWork) {
       break;
     default:
       recursivelyRestoreViewTransitions(finishedWork);
+      break;
   }
 }
 

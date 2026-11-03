@@ -1071,6 +1071,7 @@ export function performWorkOnRoot(root, lanes, forceSync) {
           break;
         default:
           logYieldTime(yieldStartTime, yieldEndTime);
+          break;
       }
     }
   }
@@ -2335,10 +2336,11 @@ function handleThrow(root, thrownValue) {
         // handle this currently.
         break;
       case SuspendedOnHydration:
-      // This is conceptually like a suspend, but it's not associated with
-      // a particular wakeable. DevTools doesn't seem to care about this case,
-      // currently. It's similar to if the component were interrupted, which
-      // we don't mark with a special function.
+        // This is conceptually like a suspend, but it's not associated with
+        // a particular wakeable. DevTools doesn't seem to care about this case,
+        // currently. It's similar to if the component were interrupted, which
+        // we don't mark with a special function.
+        break;
     }
   }
 }
@@ -2618,6 +2620,7 @@ function renderRootSync(root, lanes, shouldYieldForPrerendering) {
                 workInProgressSuspendedReason = NotSuspended;
                 workInProgressThrownValue = null;
                 throwAndUnwindWorkLoop(root, unitOfWork, thrownValue, reason);
+                break;
               }
             }
           }
@@ -2858,6 +2861,7 @@ function renderRootConcurrent(root, lanes) {
                         'Unexpected type of fiber triggered a suspensey commit. This is a bug in React.',
                       );
                     }
+                    break;
                 }
                 // Otherwise, unwind then continue with the normal work loop.
                 workInProgressSuspendedReason = NotSuspended;
@@ -3113,6 +3117,7 @@ function replayBeginWork(unitOfWork) {
       unitOfWork = resetWorkInProgress(unitOfWork, entangledRenderLanes);
       workInProgress = unitOfWork;
       next = beginWork(current, unitOfWork, entangledRenderLanes);
+      break;
   }
   if (isProfilingMode) {
     stopProfilerTimerIfRunningAndRecordDuration(unitOfWork);
@@ -5384,6 +5389,7 @@ function warnAboutRenderPhaseUpdatesInDEV(fiber) {
           );
           didWarnAboutUpdateInRender = true;
         }
+        break;
     }
   }
 }

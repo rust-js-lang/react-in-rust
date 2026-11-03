@@ -1555,9 +1555,7 @@ function initializeChunkIfUnblocked(response, handler) {
 }
 
 function fulfillReference(response, reference, value, fulfilledChunk) {
-  const {handler} = reference;
-  const parentObject = reference.parentObject;
-  const {key, map, path} = reference;
+  const {handler, parentObject, key, map, path} = reference;
   let value$1 = value;
 
   try {
@@ -1738,6 +1736,7 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
               $unborrow(value);
             }
           }
+          break;
       }
     } else if (__DEV__ && reference.isDebug !== true) {
       const value = $borrow($fieldCell(handler, 'chunk', true), true);
@@ -1993,6 +1992,7 @@ function loadServerReference(response, metaData, parentObject, key) {
           if (__DEV__) {
             handlerValue._owner = resolvedValue;
           }
+          break;
       }
     }
 
@@ -4316,6 +4316,7 @@ function initializeIOInfo(response, ioInfo) {
             logIOInfo.bind(null, ioInfo, env),
             logIOInfoErrored.bind(null, ioInfo, erroredEnv),
           );
+          break;
         }
       }
     } else {
@@ -4679,6 +4680,7 @@ function flushComponentPerformance(
                     // end of the response stream. This is more sensitive to ordering so we don't wait
                     // to log it.
                     logComponentAwait(asyncInfo, trackIdx, time, endTime, env);
+                    break;
                 }
               } else {
                 logComponentAwait(asyncInfo, trackIdx, time, endTime, env);
@@ -4961,6 +4963,7 @@ function processFullStringRow(response, streamState, id, tag, row) {
       }
       // We assume anything else is JSON.
       resolveModel(response, id, row, streamState);
+      break;
   }
 }
 
@@ -5058,6 +5061,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
         if (lastIdx > chunk.length) {
           lastIdx = -1;
         }
+        break;
     }
     const offset = chunk.byteOffset + i;
     if (lastIdx > -1) {
@@ -5251,6 +5255,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
           );
         }
         lastIdx = chunkLength;
+        break;
     }
     if (lastIdx > -1) {
       // We found the last chunk of the row

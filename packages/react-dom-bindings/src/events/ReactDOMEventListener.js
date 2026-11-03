@@ -98,6 +98,7 @@ export function createEventListenerWrapperWithPriority(
       break;
     default:
       listenerWrapper = dispatchEvent;
+      break;
   }
   return nativeEvent => {
     listenerWrapper(

@@ -139,6 +139,7 @@ export function extractEvents(
           break;
         case 'mouseup':
           isMouseDown = false;
+          break;
       }
     }
     return;

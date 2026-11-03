@@ -130,6 +130,7 @@ function resolveThenable(thenable) {
         case 'rejected':
           throw thenable.reason;
       }
+      break;
   }
   throw thenable;
 }
@@ -171,6 +172,7 @@ function mapIntoArray(children, array, escapedPrefix, nameSoFar, callback) {
             );
           }
         }
+        break;
     }
   }
 

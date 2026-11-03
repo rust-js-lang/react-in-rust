@@ -32,6 +32,7 @@ export function getValueForAttribute(node, name, expected) {
           if (prefix !== 'data-' && prefix !== 'aria-') {
             return expected;
           }
+          break;
         }
       }
       return expected === undefined ? undefined : null;
@@ -70,6 +71,7 @@ export function getValueForAttributeOnCustomComponent(node, name, expected) {
           if (expected === false) {
             return expected;
           }
+          break;
       }
       return expected === undefined ? undefined : null;
     }
@@ -113,6 +115,7 @@ export function setValueForAttribute(node, name, value) {
           node.removeAttribute(name);
           return;
         }
+        break;
       }
     }
     if (__DEV__) {

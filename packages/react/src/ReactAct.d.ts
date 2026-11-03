@@ -8,8 +8,8 @@
 /** The thenable `act` gives, awaited to finish its scope. */
 export interface ActThenable {
   then: (
-    value: (value: unknown | null | undefined) => void,
-    value2: (value: unknown | null | undefined) => void,
+    resolve: (value?: unknown | null | undefined) => void,
+    reject: (value?: unknown | null | undefined) => void,
   ) => void;
 }
 

@@ -166,6 +166,7 @@ export function getOwnerStackByFiberInDev(workInProgress) {
             workInProgress.type.render,
           );
         }
+        break;
     }
 
     let owner = workInProgress;

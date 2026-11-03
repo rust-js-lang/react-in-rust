@@ -58,7 +58,7 @@ declare function countChildren(children?: unknown | null | undefined): number;
  */
 declare function forEachChildren(
   children: unknown | null | undefined,
-  forEachFunc: (value: unknown | null | undefined) => void,
+  forEachFunc: (value?: unknown | null | undefined) => void,
   forEachContext?: unknown | null | undefined,
 ): void;
 

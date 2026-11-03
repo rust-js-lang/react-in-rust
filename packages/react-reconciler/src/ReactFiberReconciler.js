@@ -461,6 +461,7 @@ export function attemptSynchronousHydration(fiber) {
       // boundary so that they next attempt also has higher pri.
       const retryLane = SyncLane;
       markRetryLaneIfNotHydrated(fiber, retryLane);
+      break;
     }
   }
 }

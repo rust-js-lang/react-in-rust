@@ -195,6 +195,7 @@ export function extractEvents(
     case 'keydown':
     case 'keyup':
       constructSelectEvent(dispatchQueue, nativeEvent, nativeEventTarget);
+      break;
   }
 }
 //# sourceMappingURL=SelectEventPlugin.js.map

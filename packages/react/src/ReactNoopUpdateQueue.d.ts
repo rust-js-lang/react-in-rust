@@ -11,8 +11,8 @@
  */
 export type EnqueueForceUpdate = (
   value: unknown,
-  value2: (() => void) | null | undefined,
-  value3: string | null | undefined,
+  value2?: (() => void) | null | undefined,
+  value3?: string | null | undefined,
 ) => void;
 
 /**
@@ -21,9 +21,9 @@ export type EnqueueForceUpdate = (
  */
 export type EnqueueState = (
   value: unknown,
-  value2: unknown | null | undefined,
-  value3: (() => void) | null | undefined,
-  value4: string | null | undefined,
+  value2?: unknown | null | undefined,
+  value3?: (() => void) | null | undefined,
+  value4?: string | null | undefined,
 ) => void;
 
 /**
@@ -31,7 +31,7 @@ export type EnqueueState = (
  * `setState` and `forceUpdate` call.
  */
 export interface Updater {
-  isMounted: (value: unknown) => boolean;
+  isMounted: (publicInstance: unknown) => boolean;
   enqueueForceUpdate: EnqueueForceUpdate;
   enqueueReplaceState: EnqueueState;
   enqueueSetState: EnqueueState;

@@ -202,11 +202,11 @@ export function getChildHostContext(): HostContext;
 
 export const scheduleTimeout: (
   value: () => void,
-  value2: number | null | undefined,
+  value2?: number | null | undefined,
 ) => number | object;
 
 export const cancelTimeout: (
-  value: (number | object) | null | undefined,
+  value?: (number | object) | null | undefined,
 ) => void;
 
 export const noTimeout: number;

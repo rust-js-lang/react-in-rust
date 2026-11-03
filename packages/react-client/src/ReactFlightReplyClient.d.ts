@@ -59,7 +59,7 @@ export function processReply(
   formFieldPrefix: string,
   temporaryReferences: TemporaryReferenceSet | null | undefined,
   onResolve: (body: ReplyBody) => void,
-  onReject: (value: unknown | null | undefined) => void,
+  onReject: (value?: unknown | null | undefined) => void,
   signal?: AbortSignal | null | undefined,
 ): void;
 

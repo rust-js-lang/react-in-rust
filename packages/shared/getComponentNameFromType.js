@@ -85,6 +85,7 @@ export default function getComponentNameFromType(type) {
       if (enableTransitionTracing) {
         return 'TracingMarker';
       }
+      break;
   }
   if (typeof type === 'object') {
     if (__DEV__ && typeof type.tag === 'number') {

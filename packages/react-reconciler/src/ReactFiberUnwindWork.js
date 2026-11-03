@@ -305,6 +305,7 @@ export function unwindInterruptedWork(current, interruptedWork, renderLanes) {
           popMarkerInstance(interruptedWork);
         }
       }
+      break;
   }
 }
 //# sourceMappingURL=ReactFiberUnwindWork.js.map
