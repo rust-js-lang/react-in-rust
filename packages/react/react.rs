@@ -5,6 +5,9 @@
 pub mod index_experimental;
 #[path = "index.experimental.development.rs"]
 pub mod index_experimental_development;
+// www's entry, which holds code of its own.
+#[path = "index.fb.rs"]
+pub mod index_fb;
 
 #[path = "src/BadMapPolyfill.rs"]
 pub mod bad_map_polyfill;

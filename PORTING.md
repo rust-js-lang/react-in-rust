@@ -2012,6 +2012,30 @@ The port is split between sessions by package:
   shared/forks/ReactFeatureFlags.native-oss and .test-renderer are Rust
   (Batch 62), as ReactFeatureFlags is, and print upstream's flags line for
   line; rollup alone reads them.
+  The FB forks are Rust too, in the same form, each its crate's module
+  beside its `.js`: shared's ReactFeatureFlags.www-dynamic,
+  .native-fb-dynamic, .eslint-plugin.www, .test-renderer.www and
+  .test-renderer.native-fb, scheduler's SchedulerFeatureFlags.www-dynamic
+  and .native-fb (declared in Scheduler.rs, the crate's root). A flag of
+  `__VARIANT__` (shared's `environment::__VARIANT__`, the gatekeeper's
+  value, which jest sets per run) is a `thread_local!`, as one of
+  `__PROFILE__` is. Their JS is upstream's line for line (only the license
+  header and the Flow-only `null as any as ..` check differ). jest's
+  `setupTests.www.js` reads www-dynamic as the `ReactFeatureFlags` module
+  and sets the www fork's static flags per variant, as upstream's does.
+  ReactFeatureFlags.www and .native-fb and SchedulerFeatureFlags.www,
+  which read the dynamic module whole (`require('ReactFeatureFlags')`,
+  `import * as .. from 'ReactNativeInternalFeatureFlags'`), wait on
+  rust-js #572.
+  react's index.fb.js, www's entry, is Rust, `index.fb.rs`: it holds code,
+  `captureOwnerStack` in DEV alone. Its export list is in rustfmt's order
+  (one `pub use` of ReactClient, its four renamed exports first, as
+  rustfmt sorts them), where upstream lists them by hand; blank lines
+  between `pub use`s to keep upstream's order split it into eleven `export
+  {..}` statements. Its `captureOwnerStack` is ReactServer.fb's form,
+  `export const captureOwnerStack = __DEV__ ? captureOwnerStackImpl :
+  undefined;`, where upstream declares `let captureOwnerStack;`, sets it
+  in `if (__DEV__) {..}` and exports it after.
   react-client/src/forks/ReactFlightClientConfig.markup is react-markup's
   module (it re-exports react-markup's stream config, and react-markup
   uses react-client), declared in markup.rs as `#[path =
