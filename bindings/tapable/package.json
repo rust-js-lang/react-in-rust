@@ -1,0 +1,25 @@
+{
+  "name": "@rust-js-bindings/tapable",
+  "version": "2.2.0",
+  "description": "rust-js bindings of tapable, the hooks webpack's plugins tap",
+  "license": "MIT",
+  "keywords": [
+    "rust-js",
+    "tapable"
+  ],
+  "files": [
+    "Cargo.toml",
+    "src",
+    "README.md"
+  ],
+  "rust-js": {
+    "crate": "rust-js-bindings-tapable"
+  },
+  "owners": [
+    "nguyenyou"
+  ],
+  "peerDependencies": {
+    "tapable": ">=2.2.0 <2.3.0",
+    "@rust-js/builtins": "~0.0.2"
+  }
+}

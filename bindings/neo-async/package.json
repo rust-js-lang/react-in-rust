@@ -1,0 +1,25 @@
+{
+  "name": "@rust-js-bindings/neo-async",
+  "version": "2.6.0",
+  "description": "rust-js bindings of neo-async, the async library of webpack's ecosystem",
+  "license": "MIT",
+  "keywords": [
+    "rust-js",
+    "neo-async"
+  ],
+  "files": [
+    "Cargo.toml",
+    "src",
+    "README.md"
+  ],
+  "rust-js": {
+    "crate": "rust-js-bindings-neo-async"
+  },
+  "owners": [
+    "nguyenyou"
+  ],
+  "peerDependencies": {
+    "neo-async": ">=2.6.0 <2.7.0",
+    "@rust-js/builtins": "~0.0.2"
+  }
+}

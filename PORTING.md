@@ -192,12 +192,18 @@ added with ReactDOMServerFB; upstream's suite alone is 8 in 1.
 ⁸ With the port's own `ReactFlightWebpackPlugin-test.js` (7 tests: the
 plugin's options, and the client and SSR manifests of a development and a
 production build of a small app, read off webpack's output), as no
-upstream test runs the plugin; it passes on upstream's JS. Without it
-the gate is 281 in 10. ReactFlightWebpackPlugin is held: rust-js can't
-yet extend a binding's class that's a module's default export (rd678, its
-`.d.ts` fails), and drops a subclass's `get type()` to a method (rd679, a
-wrong answer: webpack's `dependency.type` is a function), so the test's
-`reasons` type check fails on it.
+upstream test runs the plugin; it passes on upstream's JS and on the
+port's. Without it the gate is 281 in 10. ReactFlightWebpackPlugin's
+port binds webpack, tapable, neo-async and acorn-loose, each a crate of
+its own (`bindings/`): its `ClientReferenceDependency` extends webpack's
+`ModuleDependency`, a module's default (rust-js rd678), its `get type()`
+a getter as the binding's trait marks it (rd679); `clientFileName` is
+`node::require::resolve(..)` (rd681); and the plugin is an ES class,
+`#[rust_js::class(es)]`, `export default class ReactFlightWebpackPlugin`,
+as upstream writes it (rd682, the user's decision of 2026-11-03). Its
+`ClientManifestEntry` is its own, of webpack's `Id`, `string | number`,
+where the shared `ImportManifestEntry` is `string`'s, which the Flight
+client's JS keeps (GAP in the file).
 
 ² One run in five of `-r=www-modern packages/react-server/src/__tests__`
 failed one test (25 / 1 / 0) while the machine was loaded. The default

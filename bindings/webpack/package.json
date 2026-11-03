@@ -1,0 +1,26 @@
+{
+  "name": "@rust-js-bindings/webpack",
+  "version": "5.82.0",
+  "description": "rust-js bindings of webpack, what a plugin of webpack's compiler uses",
+  "license": "MIT",
+  "keywords": [
+    "rust-js",
+    "webpack"
+  ],
+  "files": [
+    "Cargo.toml",
+    "src",
+    "README.md"
+  ],
+  "rust-js": {
+    "crate": "rust-js-bindings-webpack"
+  },
+  "owners": [
+    "nguyenyou"
+  ],
+  "peerDependencies": {
+    "webpack": ">=5.82.0 <5.83.0",
+    "@rust-js/builtins": "~0.0.2",
+    "@rust-js-bindings/tapable": "~2.2.0"
+  }
+}

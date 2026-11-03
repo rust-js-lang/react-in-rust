@@ -10,13 +10,17 @@ publish.workspace = true
 # them and write no JS of their own.
 
 [dependencies]
+acorn-loose.workspace = true
 busboy.workspace = true
 js.workspace = true
+neo-async.workspace = true
 node.workspace = true
 react-client = { path = "../react-client" }
 react-server = { path = "../react-server" }
 shared.workspace = true
+tapable.workspace = true
 webapi.workspace = true
+webpack.workspace = true
 
 [lints]
 workspace = true

@@ -1,0 +1,23 @@
+[package]
+name = "rust-js-bindings-neo-async"
+# neo-async's major and minor, and the binding's own patch (ADR 0116).
+version = "2.6.0"
+edition = "2024"
+license = "MIT"
+description = "rust-js bindings of neo-async, the async library of webpack's ecosystem"
+publish = false
+
+[lib]
+name = "neo_async"
+path = "src/lib.rs"
+
+[dependencies]
+js = { package = "rust-js-builtins", version = "~0.0.2" }
+
+# What it binds is neo-async's own JS: rustc checks it, and rust-js reads its
+# metadata (ADRs 0024, 0414).
+[package.metadata.rust-js]
+bindings = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(rust_js)"] }
