@@ -40,6 +40,10 @@ const clientFileName = require.resolve('../client.browser.js');
 const PLUGIN_NAME = 'React Server Plugin';
 
 export default class ReactFlightWebpackPlugin {
+  clientReferences;
+  chunkName;
+  clientManifestFilename;
+  serverConsumerManifestFilename;
   constructor(options) {
     if (options == null) {
       throw new Error(

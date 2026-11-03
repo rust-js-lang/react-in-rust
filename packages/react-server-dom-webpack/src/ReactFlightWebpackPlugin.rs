@@ -130,7 +130,7 @@ type ClientReferenceDependencies = Rc<Vec<Rc<ClientReferenceDependency>>>;
 type ResolvedCallback =
     Box<dyn FnOnce(Option<&'static Error>, Option<Vec<Rc<ClientReferenceDependency>>>)>;
 
-#[cfg_attr(rust_js, rust_js::class(es))]
+#[cfg_attr(rust_js, rust_js::class(es, fields))]
 pub struct ReactFlightWebpackPlugin {
     pub client_references: Vec<ClientReferencePath>,
     pub chunk_name: String,
