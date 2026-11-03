@@ -266,9 +266,9 @@ export interface ProdElement {
 }
 
 export function createResponse(
-  bundlerConfig: unknown | null | undefined,
-  serverReferenceConfig: unknown | null | undefined,
-  moduleLoading: unknown | null | undefined,
+  bundlerConfig: unknown | null,
+  serverReferenceConfig: unknown | null,
+  moduleLoading: unknown | null,
   callServer: CallServerCallback | null | undefined,
   encodeFormAction: EncodeFormActionCallback | null | undefined,
   nonce: string | null | undefined,

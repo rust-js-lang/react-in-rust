@@ -8,6 +8,9 @@
 import type {ReactCustomFormAction} from 'shared/ReactTypes';
 import type {TemporaryReferenceSet} from './ReactFlightTemporaryReferences.js';
 
+/** TypeScript's `Function`, what a server reference is. */
+export type ServerFunction = () => unknown | null | undefined;
+
 export type ServerReference<T> = T;
 
 export type CallServerCallback = (
@@ -22,30 +25,53 @@ export type EncodeFormActionCallback = (
 
 export type ServerReferenceId = unknown;
 
+/** What a reply resolves to: its JSON, or a FormData of its parts. */
+export type ReplyBody = string | FormData;
+
 // Serializable values
-export type ReactServerValue = unknown;
+export type ReactServerValue =
+  | ServerReference<any>
+  | string
+  | boolean
+  | number
+  | null
+  | undefined
+  | bigint
+  | AsyncIterable<ReactServerValue>
+  | AsyncIterator<ReactServerValue>
+  | Iterable<ReactServerValue>
+  | Iterator<ReactServerValue>
+  | ReactServerValue[]
+  | Map<ReactServerValue, ReactServerValue>
+  | Set<ReactServerValue>
+  | FormData
+  | Date
+  | {
+      readonly [key: string]: ReactServerValue;
+    }
+  | Promise<ReactServerValue>;
 
 export function processReply(
   root: ReactServerValue | null | undefined,
   formFieldPrefix: string,
   temporaryReferences: TemporaryReferenceSet | null | undefined,
-  onResolve: (value: unknown) => void,
+  onResolve: (body: ReplyBody) => void,
   onReject: (value: unknown | null | undefined) => void,
   signal?: AbortSignal | null | undefined,
 ): void;
 
 export function registerBoundServerReference(
-  reference: () => unknown | null | undefined,
+  reference: ServerFunction,
   id: ServerReferenceId,
   bound?: any | null | undefined,
   encodeFormAction?: EncodeFormActionCallback | null | undefined,
 ): void;
 
 export function registerServerReference(
-  reference: () => unknown | null | undefined,
+  reference: ServerFunction,
   id: ServerReferenceId,
   encodeFormAction?: EncodeFormActionCallback | null | undefined,
-): () => unknown | null | undefined;
+): ServerFunction;
 
 export function createServerObjectReference(id: ServerReferenceId): unknown;
 
@@ -68,7 +94,7 @@ export function createBoundServerReference(
   callServer: CallServerCallback,
   encodeFormAction?: EncodeFormActionCallback | null | undefined,
   findSourceMapUrl?: FindSourceMapURLCallback | null | undefined,
-): () => unknown | null | undefined;
+): ServerFunction;
 
 export function createServerReference(
   id: ServerReferenceId,
@@ -76,4 +102,4 @@ export function createServerReference(
   encodeFormAction?: EncodeFormActionCallback | null | undefined,
   findSourceMapUrl?: FindSourceMapURLCallback | null | undefined,
   functionName?: string | null | undefined,
-): () => unknown | null | undefined;
+): ServerFunction;

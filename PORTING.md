@@ -405,9 +405,13 @@ moduleLoading ?? null;` where upstream stores `moduleLoading`, because the
 JS DOM clients give a manifest's `moduleLoading` as it is, `undefined`
 where the key is left out. There ours preinits nothing, as Rust's `None`
 does, and upstream's `undefined !== null` throws on `.prefix`.
-ReactFlightDOMNodeModuleLoading-test.js holds it. Revisit when the DOM
-clients are Rust: their createResponse call then gives `?? null` (rd613's
-rule for another crate's call), and the store can be upstream's.
+ReactFlightDOMNodeModuleLoading-test.js holds it. createResponse's
+`bundlerConfig`, `serverReferenceConfig` and `moduleLoading` are
+`nullable` (Batch 59), and the Edge client, Rust since Batch 59, gives the
+manifest's `moduleMap`, `serverModuleMap` and `moduleLoading` as upstream
+does, each a `nullable` field of its `ServerConsumerManifest`. The store
+keeps `?? null` while the Node clients, which that test runs, are JS:
+revisit it when they are Rust.
 resolveModule reads `response._moduleLoading` as upstream does (rd628,
 rust-js e2669d625).
 
@@ -1663,6 +1667,15 @@ The port is split between sessions by package:
   ReactFlightClientConfigTargetNodeServer are webpack's, as upstream's
   are. The plain re-export
   entries (`client*.js`, `react-flight-dom-client.*.js`) stay JS (rd55).
+  Webpack's ReactFlightDOMClientEdge is Rust (Batch 59). Its
+  `startReadingFromStream`'s `progress` is rd425's cell, and its
+  createResponse arguments are the forms accepted above (`?.`, `?? false`).
+  ReplyClient's processReply resolves with `ReplyBody`, an untagged
+  `Text(String) | Form(&FormData)`, which is upstream's `string | FormData`.
+  So encodeReply's promise is `Promise<ReplyBody>`, where upstream declares
+  `Promise<string | URLSearchParams | FormData>` and notes that it makes no
+  URLSearchParams yet. The DOM client's DebugChannel is an `Rc`, shared by
+  the response and the FinalizationRegistry that closes it.
   **Accepted by the user** (2026-11-02, by name): rd543, a tuple's
   element is read by destructuring, `const chunks = metadata[1];`, where
   upstream reads `metadata[CHUNKS]` in place; rd544, the async marker,

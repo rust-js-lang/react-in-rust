@@ -48,8 +48,6 @@ const knownServerReferences = new WeakMap();
 // reference of one kind must not be usable where the other is expected.
 const knownServerObjectReferences = new WeakMap();
 
-// Serializable values
-
 const __PROTO__ = '__proto__';
 
 function serializeByValueID(id) {

@@ -495,7 +495,7 @@ pub type DebugChannelCallback = dyn Fn(&str);
 pub struct DebugChannel {
     pub has_readable: bool,
     #[cfg_attr(rust_js, rust_js::nullable)]
-    pub callback: Option<&'static DebugChannelCallback>,
+    pub callback: Option<Rc<DebugChannelCallback>>,
 }
 
 unsafe impl js::Defined for DebugChannel {}
@@ -554,7 +554,7 @@ pub struct ResponseInstance {
     pub _debug_find_source_map_url: Cell<Option<&'static FindSourceMapURLCallback>>,
     // DEV-only
     #[cfg_attr(rust_js, rust_js::optional)]
-    pub _debug_channel: Cell<Option<&'static DebugChannel>>,
+    pub _debug_channel: RefCell<Option<Rc<DebugChannel>>>,
     // DEV-only
     #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub _blocked_console: RefCell<Option<Chunk>>,
@@ -611,8 +611,8 @@ fn get_weak_response(response: &'static Response) -> Rc<WeakResponse> {
     }
 }
 
-fn close_debug_channel(debug_channel: &DebugChannel) {
-    if let Some(callback) = debug_channel.callback {
+fn close_debug_channel(debug_channel: Rc<DebugChannel>) {
+    if let Some(callback) = &debug_channel.callback {
         callback("");
     }
 }
@@ -620,8 +620,8 @@ fn close_debug_channel(debug_channel: &DebugChannel) {
 thread_local! {
     // If FinalizationRegistry doesn't exist, we cannot use the debugChannel.
     #[cfg_attr(rust_js, rust_js::nullable)]
-    static DEBUG_CHANNEL_REGISTRY: Option<&'static FinalizationRegistry<&'static DebugChannel>> =
-        if __DEV__ && js::is_function(js::finalization_registry::new::<&'static DebugChannel>) {
+    static DEBUG_CHANNEL_REGISTRY: Option<&'static FinalizationRegistry<Rc<DebugChannel>>> =
+        if __DEV__ && js::is_function(js::finalization_registry::new::<Rc<DebugChannel>>) {
             Some(js::finalization_registry::new(Box::new(close_debug_channel)))
         } else {
             None
@@ -1697,12 +1697,12 @@ pub fn report_global_error(weak_response: &WeakResponse, error: Option<&'static 
         }
     });
     if __DEV__ {
-        let debug_channel = response._debug_channel.get();
+        let debug_channel = response._debug_channel.borrow().clone();
         if let Some(debug_channel) = debug_channel {
             // If we don't have any more ways of reading data, we don't have to send
             // any more neither. So we close the writable side.
             close_debug_channel(debug_channel);
-            response._debug_channel.set(None);
+            *response._debug_channel.borrow_mut() = None;
             // Make sure the debug channel is not closed a second time when the
             // Response gets GC:ed.
             if let Some(debug_channel_registry) = DEBUG_CHANNEL_REGISTRY.with(|&registry| registry)
@@ -2581,7 +2581,8 @@ fn wait_for_reference(
     if __DEV__
         && response
             ._debug_channel
-            .get()
+            .borrow()
+            .as_ref()
             .is_none_or(|debug_channel| !debug_channel.has_readable)
         && matches!(*referenced_chunk.state.borrow(), ChunkState::Pending { .. })
         && SymbolFor::from_value(js::get(parent_object, &0.0)) == Some(REACT_ELEMENT_TYPE)
@@ -3655,8 +3656,9 @@ fn parse_model_string(
                     if js::string::length(value) > 2 {
                         let debug_channel_callback = response
                             ._debug_channel
-                            .get()
-                            .and_then(|debug_channel| debug_channel.callback);
+                            .borrow()
+                            .as_ref()
+                            .and_then(|debug_channel| debug_channel.callback.clone());
                         if let Some(debug_channel_callback) = debug_channel_callback {
                             if js::string::get(value, 2.0) == Some("@") {
                                 // This is a deferred Promise.
@@ -3796,7 +3798,7 @@ type ResponseParameters = (
     Option<String>,                            // environmentName, DEV-only
     Option<f64>,                               // debugStartTime, DEV-only
     Option<f64>,                               // debugEndTime, DEV-only
-    Option<&'static DebugChannel>,             // debugChannel, DEV-only
+    Option<Rc<DebugChannel>>,                  // debugChannel, DEV-only
 );
 
 /// ResponseInstance's signature, `new ResponseInstance(..)`'s.
@@ -3814,7 +3816,7 @@ type ResponseConstructor = fn(
     Option<String>,                            // environmentName, DEV-only
     Option<f64>,                               // debugStartTime, DEV-only
     Option<f64>,                               // debugEndTime, DEV-only
-    Option<&'static DebugChannel>,             // debugChannel, DEV-only
+    Option<Rc<DebugChannel>>,                  // debugChannel, DEV-only
 ) -> ResponseInstance;
 
 thread_local! {
@@ -3916,7 +3918,7 @@ thread_local! {
                     );
                     this._debug_end_time.set(debug_end_time);
                     this._debug_find_source_map_url.set(find_source_map_url);
-                    this._debug_channel.set(debug_channel);
+                    *this._debug_channel.borrow_mut() = debug_channel.clone();
                     *this._blocked_console.borrow_mut() = None;
                     this._replay_console.set(Some(replay_console));
                     *this._root_environment_name.borrow_mut() = Some(root_env);
@@ -3926,7 +3928,7 @@ thread_local! {
                                 // We can't safely clean things up later, so we immediately close the
                                 // debug channel.
                                 close_debug_channel(debug_channel);
-                                this._debug_channel.set(None);
+                                *this._debug_channel.borrow_mut() = None;
                             }
                             Some(debug_channel_registry) => {
                                 // When a Response gets GC:ed because nobody is referring to any of the
@@ -3958,6 +3960,10 @@ thread_local! {
 }
 
 #[allow(clippy::too_many_arguments)] // upstream's 14 positional parameters.
+#[cfg_attr(
+    rust_js,
+    rust_js::nullable(bundler_config, server_reference_config, module_loading)
+)]
 pub fn create_response(
     bundler_config: Option<&'static Unknown>,
     server_reference_config: Option<&'static Unknown>,
@@ -3972,7 +3978,7 @@ pub fn create_response(
     environment_name: Option<String>,                               // DEV-only
     debug_start_time: Option<f64>,                                  // DEV-only
     debug_end_time: Option<f64>,                                    // DEV-only
-    debug_channel: Option<&'static DebugChannel>,                   // DEV-only
+    debug_channel: Option<Rc<DebugChannel>>,                        // DEV-only
 ) -> Rc<WeakResponse> {
     if __DEV__ {
         // We use eval to create fake function stacks which includes Component stacks.
@@ -5579,7 +5585,8 @@ fn resolve_debug_model(response: &'static Response, id: f64, json: Uninitialized
         && matches!(*debug_chunk.state.borrow(), ChunkState::Blocked { .. })
         && response
             ._debug_channel
-            .get()
+            .borrow()
+            .as_ref()
             .is_none_or(|debug_channel| !debug_channel.has_readable)
         && js::string::get(&json, 0.0) == Some("\"")
         && js::string::get(&json, 1.0) == Some("$")
@@ -6876,10 +6883,10 @@ pub fn close(weak_response: &WeakResponse) {
             }
         });
         if __DEV__ {
-            let debug_channel = response._debug_channel.get();
+            let debug_channel = response._debug_channel.borrow().clone();
             if let Some(debug_channel) = debug_channel {
                 close_debug_channel(debug_channel);
-                response._debug_channel.set(None);
+                *response._debug_channel.borrow_mut() = None;
                 if let Some(debug_channel_registry) =
                     DEBUG_CHANNEL_REGISTRY.with(|&registry| registry)
                 {

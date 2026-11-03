@@ -56,7 +56,7 @@ thread_local! {
 const REPLY_ENDED: &str = "The reply ended.";
 
 /// TypeScript's `Function`, what a server reference is.
-type ServerFunction = dyn Fn() -> Option<&'static Unknown>;
+pub type ServerFunction = dyn Fn() -> Option<&'static Unknown>;
 
 pub type ServerReference<T> = T;
 
@@ -67,6 +67,13 @@ pub type EncodeFormActionCallback =
     dyn Fn(ServerReferenceId, &'static Thenable) -> ReactCustomFormAction;
 
 pub type ServerReferenceId = &'static Unknown;
+
+/// What a reply resolves to: its JSON, or a FormData of its parts.
+#[cfg_attr(rust_js, rust_js::untagged)]
+pub enum ReplyBody {
+    Text(String),
+    Form(&'static FormData),
+}
 
 struct ServerReferenceClosure {
     id: ServerReferenceId,
@@ -91,6 +98,10 @@ thread_local! {
 }
 
 // Serializable values
+#[cfg_attr(
+    rust_js,
+    rust_js::types = "ServerReference<any> | string | boolean | number | null | undefined | bigint | AsyncIterable<ReactServerValue> | AsyncIterator<ReactServerValue> | Iterable<ReactServerValue> | Iterator<ReactServerValue> | ReactServerValue[] | Map<ReactServerValue, ReactServerValue> | Set<ReactServerValue> | FormData | Date | { readonly [key: string]: ReactServerValue } | Promise<ReactServerValue>"
+)]
 pub type ReactServerValue = Unknown;
 
 const __PROTO__: &str = "__proto__";
@@ -196,7 +207,7 @@ fn escape_string_value(value: &str) -> String {
 struct Reply {
     form_field_prefix: String,
     temporary_references: Option<TemporaryReferenceSet>,
-    on_resolve: Box<dyn Fn(&'static Unknown)>,
+    on_resolve: Box<dyn Fn(ReplyBody)>,
     on_reject: Box<dyn Fn(Option<&'static Unknown>)>,
     next_part_id: Cell<f64>,
     pending_parts: Cell<f64>,
@@ -223,7 +234,7 @@ impl Reply {
         }
     }
 
-    fn resolve(&self, value: &'static Unknown) {
+    fn resolve(&self, value: ReplyBody) {
         self.settled.set(true);
         self.end_reply_lifetime();
         (self.on_resolve)(value);
@@ -330,7 +341,7 @@ impl Reply {
                 data.append(&stream_prefix, "C"); // Close signal
                 reply.pending_parts.set(reply.pending_parts.get() - 1.0);
                 if reply.pending_parts.get() == 0.0 {
-                    reply.resolve(js::unknown(data));
+                    reply.resolve(ReplyBody::Form(data));
                 }
             } else {
                 // SAFETY: a BYOB reader's chunk is the Uint8Array it filled.
@@ -382,7 +393,7 @@ impl Reply {
                 data.append(&stream_prefix, "C"); // Close signal
                 reply.pending_parts.set(reply.pending_parts.get() - 1.0);
                 if reply.pending_parts.get() == 0.0 {
-                    reply.resolve(js::unknown(data));
+                    reply.resolve(ReplyBody::Form(data));
                 }
             } else {
                 let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -472,7 +483,7 @@ impl Reply {
                     }
                     reply.pending_parts.set(reply.pending_parts.get() - 1.0);
                     if reply.pending_parts.get() == 0.0 {
-                        reply.resolve(js::unknown(data));
+                        reply.resolve(ReplyBody::Form(data));
                     }
                 } else {
                     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -693,7 +704,7 @@ impl Reply {
                                                 .pending_parts
                                                 .set(reply.pending_parts.get() - 1.0);
                                             if reply.pending_parts.get() == 0.0 {
-                                                reply.resolve(js::unknown(data));
+                                                reply.resolve(ReplyBody::Form(data));
                                             }
                                         }
                                         Err(reason) => reply.reject(thrown(&*reason)),
@@ -762,7 +773,7 @@ impl Reply {
                             );
                             reply.pending_parts.set(reply.pending_parts.get() - 1.0);
                             if reply.pending_parts.get() == 0.0 {
-                                reply.resolve(js::unknown(data));
+                                reply.resolve(ReplyBody::Form(data));
                             }
                         }
                         Err(reason) => reply.reject(thrown(&*reason)),
@@ -1216,8 +1227,8 @@ impl Reply {
             // Resolve with what we have so far, which may have holes at this point.
             // They'll error when the stream completes on the server.
             match self.form_data.get() {
-                None => self.resolve(js::unknown_of(self.json.get().unwrap().clone())),
-                Some(form_data) => self.resolve(js::unknown(form_data)),
+                None => self.resolve(ReplyBody::Text(self.json.get().unwrap().clone())),
+                Some(form_data) => self.resolve(ReplyBody::Form(form_data)),
             }
         }
     }
@@ -1250,7 +1261,7 @@ pub fn process_reply(
     root: Option<&'static ReactServerValue>,
     form_field_prefix: &str,
     temporary_references: Option<TemporaryReferenceSet>,
-    on_resolve: impl Fn(&'static Unknown) + 'static,
+    on_resolve: impl Fn(ReplyBody) + 'static,
     on_reject: impl Fn(Option<&'static Unknown>) + 'static,
     signal: Option<&'static AbortSignal>,
 ) {
@@ -1282,13 +1293,13 @@ pub fn process_reply(
     match reply.form_data.get() {
         None => {
             // If it's a simple data structure, we just use plain JSON.
-            reply.resolve(js::unknown_of(json.clone()));
+            reply.resolve(ReplyBody::Text(json.clone()));
         }
         Some(form_data) => {
             // Otherwise, we use FormData to let us stream in the result.
             form_data.set(&(reply.form_field_prefix.clone() + "0"), json);
             if reply.pending_parts.get() == 0.0 {
-                reply.resolve(js::unknown(form_data));
+                reply.resolve(ReplyBody::Form(form_data));
             }
         }
     }
@@ -1329,14 +1340,13 @@ fn encode_form_data(reference: Option<&'static Unknown>) -> &'static Thenable {
         "",
         None, // TODO: This means React Elements can't be used as state in progressive enhancement.
         move |body| {
-            let body: &'static FormData = match js::classify(Some(body)) {
-                Kind::String(text) => {
+            let body: &'static FormData = match body {
+                ReplyBody::Text(text) => {
                     let data = webapi::form_data::new(None, None);
-                    data.append("0", text);
+                    data.append("0", &text);
                     data
                 }
-                // SAFETY: processReply resolves with its JSON text or its FormData.
-                _ => unsafe { js::cast(Some(body)) },
+                ReplyBody::Form(data) => data,
             };
             let fulfilled: &Thenable = thenable;
             fulfilled.set_status("fulfilled");

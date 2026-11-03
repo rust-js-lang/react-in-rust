@@ -10,3 +10,5 @@ pub mod react_flight_client_config_bundler_webpack_server;
 pub mod react_flight_client_config_target_webpack_browser;
 #[path = "client/ReactFlightClientConfigTargetWebpackServer.rs"]
 pub mod react_flight_client_config_target_webpack_server;
+#[path = "client/ReactFlightDOMClientEdge.rs"]
+pub mod react_flight_dom_client_edge;
