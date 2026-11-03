@@ -81,13 +81,17 @@ committed, as upstream's JS was. Source maps are not committed (see
 `.gitignore`).
 
 ```sh
-yarn rust --package react-dom-bindings     # compile one crate to its JS
+yarn rust                                  # compile every crate to its JS, at once
+yarn rust --package react-dom-bindings     # compile one crate, and what it uses
 cargo fmt -p react-dom-bindings            # rustfmt, this crate only
 node ../rust-js/tooling/cli.js clippy --package react-dom-bindings -- -D warnings
 ```
 
-- **Name the package.** `yarn rust` needs `--package`; plain `yarn rust`
-  refuses a workspace.
+- **Regenerate the whole port with plain `yarn rust`**, one build: each
+  crate is checked once and Cargo checks the crates that don't use each
+  other on every core (rust-js ADR 1068). `--package` may be given several
+  times, as Cargo's `-p`. Never loop over the crates one `yarn rust
+  --package` at a time.
 - **Touch the root.** Right after you build one crate, building a crate that
   depends on it can say `Finished` and write nothing. If the JS you expected
   didn't change, `touch` the crate's root file (for example
