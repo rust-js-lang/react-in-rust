@@ -7,9 +7,7 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use js::Unknown;
-use react_dom_bindings::react_fizz_config_dom::{
-    BootstrapScript, FormatContext, Nonce, OnHeaders, RenderState, ResumableState,
-};
+use react_dom_bindings::react_fizz_config_dom::BootstrapScript;
 use react_server::react_fizz_server::{OnBrowserBailout, OnError, Request};
 use react_server::react_server_stream_config_fb::Destination;
 use shared::react_types::ReactNodeList;
@@ -18,60 +16,9 @@ use react_server::react_fizz_server::{
     abort, create_request, perform_work, start_flowing, start_work,
 };
 
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFizzConfig#createResumableState"
-)]
-fn create_resumable_state(
-    identifier_prefix: Option<&str>,
-    external_runtime_config: Option<BootstrapScript<'static>>,
-    bootstrap_script_content: Option<&'static str>,
-    bootstrap_scripts: Option<&'static [BootstrapScript<'static>]>,
-    bootstrap_modules: Option<&'static [BootstrapScript<'static>]>,
-) -> ResumableState {
-    let _ = (
-        identifier_prefix,
-        external_runtime_config,
-        bootstrap_script_content,
-        bootstrap_scripts,
-        bootstrap_modules,
-    );
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFizzConfig#createRenderState"
-)]
-fn create_render_state(
-    resumable_state: &ResumableState,
-    nonce: Option<Nonce<'static>>,
-    external_runtime_config: Option<BootstrapScript<'static>>,
-    import_map: Option<&'static Unknown>,
-    on_headers: Option<Rc<OnHeaders>>,
-    max_headers_length: Option<&'static Unknown>,
-) -> RenderState {
-    let _ = (
-        resumable_state,
-        nonce,
-        external_runtime_config,
-        import_map,
-        on_headers,
-        max_headers_length,
-    );
-    unreachable!()
-}
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-server/src/ReactFizzConfig#createRootFormatContext"
-)]
-fn create_root_format_context(
-    #[cfg_attr(rust_js, rust_js::name = "namespaceURI")] namespace_uri: Option<&str>,
-) -> Rc<FormatContext> {
-    let _ = namespace_uri;
-    unreachable!()
-}
+use react_dom_bindings::react_fizz_config_dom::{
+    create_render_state, create_resumable_state, create_root_format_context,
+};
 
 pub struct Options {
     pub identifier_prefix: Option<&'static str>,

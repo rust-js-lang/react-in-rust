@@ -1133,13 +1133,11 @@ These differences from upstream's output are accepted:
   module, ReactDOMServerFB, is Rust, a crate of its own whose root is
   Cargo's default `src/lib.rs`, as the other react-server-dom-* crates'
   are, `#[path = "ReactDOMServerFB.rs"] pub mod react_dom_server_fb;`.
-  Upstream imports createResumableState, createRenderState and
-  createRootFormatContext from the Fizz config fork,
-  `react-server/src/ReactFizzConfig` (dom-fb's re-exports
-  ReactFizzConfigDOM's and adds `isWorkLoopExternallyDriven`), so the port
-  reaches them as JS-path bindings of the fork, `link_name =
-  "react-server/src/ReactFizzConfig#createResumableState"`, of
-  ReactFizzConfigDOM's signatures and types. The destination is
+  It `use`s createResumableState, createRenderState and
+  createRootFormatContext from `react_dom_bindings::react_fizz_config_dom`,
+  as react-dom's Fizz entries do (the coordinator, 2026-11-03: one
+  compiler-checked authority, not hand-copied bindings of the fork). The
+  destination is
   ReactServerStreamConfigFB's `Destination`, an `Rc` the `Stream` holds and
   gives startFlowing; `debug` reads the request `as any` by `js::get`, as
   upstream does, into a struct of the port's, `DebugInfo`, a JS object of
@@ -1164,6 +1162,11 @@ These differences from upstream's output are accepted:
     upstream's Options types them as required `Array<string>`: React's own
     tests leave them out, and a Rust slice of text can't be given as one of
     `BootstrapScript` without a copy;
+  - the three are imported from
+    `react-dom-bindings/src/server/ReactFizzConfigDOM`, the other Fizz
+    entries' form, where upstream imports them from the fork,
+    `react-server/src/ReactFizzConfig`, whose dom-fb version re-exports
+    ReactFizzConfigDOM's (the same functions);
   - the Bun entry's forms: the imports' names in rustfmt's order, `export
     function` (rd350), and trailing `undefined`s left out
     (`createRootFormatContext()`, createRequest's last two);

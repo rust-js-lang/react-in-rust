@@ -17,7 +17,7 @@ import {
   createRenderState,
   createResumableState,
   createRootFormatContext,
-} from 'react-server/src/ReactFizzConfig';
+} from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 
 export function renderToStream(children, options) {
   const destination = {
