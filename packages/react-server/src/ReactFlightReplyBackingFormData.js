@@ -69,12 +69,13 @@ export function consumeBackingEntries(backingStore, formPrefix) {
   // continuous block before its reference, so once a key doesn't match we
   // are past the values for this reference.
   const data = new FormData();
-  if (backingStore.referencedEntries == null) {
+  const entries = backingStore.referencedEntries;
+  if (entries == null) {
     return data;
   }
   let i = backingStore.keyPointer;
-  while (i < backingStore.referencedEntries.length) {
-    const entry = backingStore.referencedEntries[i];
+  while (i < entries.length) {
+    const entry = entries[i];
     const key = entry[0];
     if (!key.startsWith(formPrefix)) {
       break;
@@ -88,15 +89,17 @@ export function consumeBackingEntries(backingStore, formPrefix) {
 }
 
 export function getBackingString(backingStore, key) {
-  if (backingStore.stringChunks == null) {
+  const stringChunks = backingStore.stringChunks;
+  if (stringChunks == null) {
     return;
   }
-  return backingStore.stringChunks.get(key);
+  return stringChunks.get(key);
 }
 
 export function getStreamChunks(backingStore, key) {
-  if (backingStore.streamChunks != null) {
-    const value = backingStore.streamChunks.get(key);
+  const streamChunks = backingStore.streamChunks;
+  if (streamChunks != null) {
+    const value = streamChunks.get(key);
     return value == null ? value : value.slice();
   }
 }

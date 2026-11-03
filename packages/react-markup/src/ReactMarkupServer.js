@@ -45,9 +45,9 @@ function noServerCallOrFormAction(id, args) {
 export function experimental_renderToHTML(children, options) {
   return new Promise((resolve, reject) => {
     const flightResponse = createFlightResponse(
-      undefined,
-      undefined,
-      undefined,
+      null,
+      null,
+      null,
       noServerCallOrFormAction,
       noServerCallOrFormAction,
       undefined,
