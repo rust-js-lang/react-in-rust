@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {describeBuiltInComponentFrame} from './ReactComponentStackFrame.js';
+
 import {formatOwnerStack} from './ReactOwnerStackFrames.js';
 
 export function getOwnerStackByComponentInfoInDev(componentInfo) {

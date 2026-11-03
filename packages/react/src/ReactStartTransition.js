@@ -12,6 +12,7 @@ import {
   enableTransitionTracing,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
+
 import reportGlobalError from 'shared/reportGlobalError';
 
 import noop from 'shared/noop';

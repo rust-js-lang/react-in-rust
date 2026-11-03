@@ -29,6 +29,7 @@ use crate::react_internal_types::{ErrorInfo, Fiber, FiberRoot};
 use shared::react_symbols::REACT_STRICT_MODE_TYPE;
 
 use crate::react_fiber_view_transition_component::get_view_transition_name;
+
 use shared::react_feature_flags::{
     ALWAYS_THROTTLE_RETRIES, DISABLE_LEGACY_CONTEXT, DISABLE_LEGACY_MODE,
     ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_CREATE_EVENT_HANDLE_API,
@@ -44,6 +45,7 @@ use shared::react_shared_internals::{
 };
 
 use shared::object_is::OBJECT_IS;
+
 use shared::report_global_error::REPORT_GLOBAL_ERROR;
 
 #[cfg_attr(rust_js, rust_js::name = "IdleSchedulerPriority")]
@@ -376,6 +378,7 @@ use crate::react_fiber_concurrent_updates::{
     enqueue_concurrent_render_for_lane, finish_queueing_concurrent_updates,
     get_concurrently_updated_lanes,
 };
+
 use crate::react_profiler_timer::{
     ANIMATING_LANES, ANIMATING_TASK, BLOCKING_CLAMP_TIME, BLOCKING_EVENT_REPEAT_TIME,
     BLOCKING_EVENT_TIME, BLOCKING_EVENT_TYPE, BLOCKING_SUSPENDED_TIME,
@@ -406,7 +409,6 @@ use crate::react_current_fiber::{IS_RENDERING, reset_current_fiber, run_with_fib
 use crate::react_fiber_dev_tools_hook::on_commit_root as on_commit_root_dev_tools;
 #[cfg_attr(rust_js, rust_js::name = "onPostCommitRootDevTools")]
 use crate::react_fiber_dev_tools_hook::on_post_commit_root as on_post_commit_root_dev_tools;
-
 use crate::react_fiber_dev_tools_hook::{
     IS_DEV_TOOLS_PRESENT, mark_commit_started, mark_commit_stopped, mark_component_errored,
     mark_component_render_stopped, mark_component_suspended, mark_layout_effects_started,

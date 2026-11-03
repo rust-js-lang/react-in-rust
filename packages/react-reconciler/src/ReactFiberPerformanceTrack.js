@@ -10,6 +10,7 @@
 import {SuspenseComponent} from './ReactWorkTags.js';
 
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+
 import {
   getGroupNameOfHighestPriorityLane,
   includesOnlyHydrationLanes,
@@ -17,6 +18,7 @@ import {
   includesOnlyOffscreenLanes,
   includesSomeLane,
 } from './ReactFiberLane.js';
+
 import {
   addObjectDiffToProperties,
   addObjectToProperties,

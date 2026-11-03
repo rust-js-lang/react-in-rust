@@ -18,6 +18,7 @@ use crate::react_symbols::{
 use crate::is_array::is_array;
 
 use crate::get_prototype_of::GET_PROTOTYPE_OF;
+
 use crate::react_feature_flags::ENABLE_VIEW_TRANSITION;
 
 thread_local! {

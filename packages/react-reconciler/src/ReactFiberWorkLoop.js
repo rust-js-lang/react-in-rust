@@ -8,6 +8,7 @@
 import {REACT_STRICT_MODE_TYPE} from 'shared/ReactSymbols';
 
 import {getViewTransitionName} from './ReactFiberViewTransitionComponent.js';
+
 import {
   alwaysThrottleRetries,
   disableLegacyContext,
@@ -32,6 +33,7 @@ import {resetOwnerStackLimit} from 'shared/ReactOwnerStackReset';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 import objectIs from 'shared/objectIs';
+
 import reportGlobalError from 'shared/reportGlobalError';
 
 import {
@@ -260,6 +262,7 @@ import {
   finishQueueingConcurrentUpdates,
   getConcurrentlyUpdatedLanes,
 } from './ReactFiberConcurrentUpdates.js';
+
 import {
   PINGED_UPDATE,
   SPAWNED_UPDATE,
@@ -355,7 +358,6 @@ import {
   onPostCommitRoot as onPostCommitRootDevTools,
   setIsStrictModeForDevtools,
 } from './ReactFiberDevToolsHook.js';
-
 import {onCommitRoot as onCommitRootTestSelector} from './ReactTestSelectors.js';
 
 import {releaseCache} from './ReactFiberCacheComponent.js';

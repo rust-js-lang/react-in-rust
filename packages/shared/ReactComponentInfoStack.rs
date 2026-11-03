@@ -9,6 +9,7 @@ use js::JsError;
 
 use crate::environment::__DEV__;
 use crate::react_component_stack_frame::describe_built_in_component_frame;
+
 use crate::react_owner_stack_frames::format_owner_stack;
 use crate::react_types::ReactComponentInfo;
 

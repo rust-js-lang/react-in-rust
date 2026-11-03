@@ -89,7 +89,6 @@ use crate::react_fiber_flags::PASSIVE_STATIC as PASSIVE_STATIC_EFFECT;
 use crate::react_fiber_flags::STATIC_MASK as STATIC_MASK_EFFECT;
 #[cfg_attr(rust_js, rust_js::name = "UpdateEffect")]
 use crate::react_fiber_flags::UPDATE as UPDATE_EFFECT;
-
 use crate::react_fiber_flags::{FORM_RESET, Flags, STORE_CONSISTENCY};
 #[cfg_attr(rust_js, rust_js::name = "HookHasEffect")]
 use crate::react_hook_effect_tags::HAS_EFFECT as HOOK_HAS_EFFECT;
@@ -153,6 +152,7 @@ use crate::react_fiber_hidden_context::is_current_tree_hidden;
 use crate::react_fiber_transition::request_current_transition;
 
 use crate::react_fiber_call_user_space::{CALL_COMPONENT_IN_DEV, Component, Destroy};
+
 use crate::react_fiber_gesture_scheduler::{ScheduledGesture, schedule_gesture};
 
 pub struct Update {

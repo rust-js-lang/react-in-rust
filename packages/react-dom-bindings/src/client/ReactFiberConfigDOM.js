@@ -6,10 +6,13 @@
 // LICENSE file in the root directory of this source tree.
 
 import {NotPending} from '../shared/ReactDOMFormActions.js';
+
 import {setSrcObject} from './ReactDOMSrcObject.js';
+
 import {getCurrentRootHostContainer} from 'react-reconciler/src/ReactFiberHostContext';
 
 import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
+
 import hasOwnProperty from 'shared/hasOwnProperty';
 
 import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
@@ -100,10 +103,12 @@ import {
   ELEMENT_NODE,
   TEXT_NODE,
 } from './HTMLNodeType.js';
+
 import {
   flushEventReplaying,
   retryIfBlockedOn,
 } from '../events/ReactDOMEventReplaying.js';
+
 import {
   disableCommentsAsDOMContainers,
   disableLegacyMode,
@@ -131,6 +136,7 @@ import escapeSelectorAttributeValueInsideDoubleQuotes from './escapeSelectorAttr
 import {flushSyncWork as flushSyncWorkOnAllRoots} from 'react-reconciler/src/ReactFiberWorkLoop';
 
 import {requestFormReset as requestFormResetOnFiber} from 'react-reconciler/src/ReactFiberHooks';
+
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 
 export {default as rendererVersion} from 'shared/ReactVersion';

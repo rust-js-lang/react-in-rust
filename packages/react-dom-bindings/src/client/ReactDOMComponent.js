@@ -11,6 +11,7 @@ import {
   possibleRegistrationNames,
   registrationNameDependencies,
 } from '../events/EventRegistry.js';
+
 import {
   checkAttributeStringCoercion,
   checkHtmlStringCoercion,
@@ -65,6 +66,7 @@ import {validateProperties as validateInputProperties} from '../shared/ReactDOMN
 import {validateProperties as validateUnknownProperties} from '../shared/ReactDOMUnknownPropertyHook.js';
 import sanitizeURL from '../shared/sanitizeURL.js';
 import {trackHostMutation} from 'react-reconciler/src/ReactFiberMutationTracking';
+
 import {
   enableHydrationChangeEvent,
   enableScrollEndPolyfill,

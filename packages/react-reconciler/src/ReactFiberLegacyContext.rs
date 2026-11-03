@@ -17,6 +17,7 @@ use shared::react_feature_flags::DISABLE_LEGACY_CONTEXT;
 use crate::react_work_tags::{CLASS_COMPONENT, HOST_ROOT};
 
 use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+
 use crate::react_fiber_stack::{StackCursor, create_cursor, pop, push};
 
 #[cfg_attr(rust_js, rust_js::link_name = "getChildContext")]

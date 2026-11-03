@@ -17,6 +17,7 @@ import {getNodeFromInstance} from '../../client/ReactDOMComponentTree.js';
 
 import {updateValueIfChanged} from '../../client/inputValueTracking.js';
 import {enqueueStateRestore} from '../ReactDOMControlledComponent.js';
+
 import {batchedUpdates} from '../ReactDOMUpdateBatching.js';
 
 import {

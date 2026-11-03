@@ -38,7 +38,9 @@ import {
   IS_CAPTURE_PHASE,
   IS_EVENT_HANDLE_NON_MANAGED_NODE,
 } from '../EventSystemFlags.js';
+
 import getEventCharCode from '../getEventCharCode.js';
+
 import {enableCreateEventHandleAPI} from 'shared/ReactFeatureFlags';
 
 export {registerSimpleEvents as registerEvents} from '../DOMEventProperties.js';

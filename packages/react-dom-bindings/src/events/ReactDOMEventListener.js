@@ -24,6 +24,7 @@ import {
 } from 'react-reconciler/src/ReactWorkTags';
 
 import {IS_CAPTURE_PHASE} from './EventSystemFlags.js';
+
 import getEventTarget from './getEventTarget.js';
 import {
   getClosestInstanceFromNode,
@@ -35,6 +36,7 @@ import {
   getCurrentUpdatePriority,
   setCurrentUpdatePriority,
 } from '../client/ReactDOMUpdatePriority.js';
+
 import {
   IdlePriority as IdleSchedulerPriority,
   ImmediatePriority as ImmediateSchedulerPriority,

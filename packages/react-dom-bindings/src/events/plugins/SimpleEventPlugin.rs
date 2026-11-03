@@ -29,7 +29,9 @@ use crate::dom_plugin_event_system::{
 use crate::event_system_flags::{
     EventSystemFlags, IS_CAPTURE_PHASE, IS_EVENT_HANDLE_NON_MANAGED_NODE,
 };
+
 use crate::get_event_char_code::get_event_char_code;
+
 use shared::react_feature_flags::ENABLE_CREATE_EVENT_HANDLE_API;
 
 pub use crate::dom_event_properties::register_simple_events as register_events;

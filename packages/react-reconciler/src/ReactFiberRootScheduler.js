@@ -86,6 +86,7 @@ import {
   retainIsomorphicIndicator,
   startIsomorphicDefaultIndicatorIfNeeded,
 } from './ReactFiberAsyncAction.js';
+
 import noop from 'shared/noop';
 import reportGlobalError from 'shared/reportGlobalError';
 import {$unwrap} from '@rust-js/runtime';

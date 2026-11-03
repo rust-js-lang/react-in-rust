@@ -18,6 +18,7 @@ import {
 import isArray from './isArray.js';
 
 import getPrototypeOf from './getPrototypeOf.js';
+
 import {enableViewTransition} from './ReactFeatureFlags.js';
 
 // Used for DEV messages to keep track of which parent rendered some props,

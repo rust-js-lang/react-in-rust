@@ -16,6 +16,7 @@ import {
 } from './EventSystemFlags.js';
 
 import {isReplayingEvent} from './CurrentReplayingEvent.js';
+
 import {
   HostComponent,
   HostHoistable,
@@ -41,6 +42,7 @@ import {batchedUpdates} from './ReactDOMUpdateBatching.js';
 import getListener from './getListener.js';
 
 import {passiveBrowserEventsSupported} from './checkPassiveEvents.js';
+
 import {
   disableCommentsAsDOMContainers,
   enableCreateEventHandleAPI,
@@ -67,6 +69,7 @@ import * as SimpleEventPlugin from './plugins/SimpleEventPlugin.js';
 
 import * as FormActionEventPlugin from './plugins/FormActionEventPlugin.js';
 import * as ScrollEndEventPlugin from './plugins/ScrollEndEventPlugin.js';
+
 import reportGlobalError from 'shared/reportGlobalError';
 
 import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';

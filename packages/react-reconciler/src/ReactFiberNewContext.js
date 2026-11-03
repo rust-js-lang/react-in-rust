@@ -21,6 +21,7 @@ import {
   NeedsPropagation,
   NoFlags,
 } from './ReactFiberFlags.js';
+
 import is from 'shared/objectIs';
 
 import {getHostTransitionProvider} from './ReactFiberHostContext.js';

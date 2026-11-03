@@ -39,6 +39,7 @@ fn get_instance_from_scope(scope_instance: &Unknown) -> Option<Rc<Fiber>> {
 }
 
 use crate::react_fiber_tree_reflection::is_fiber_suspense_and_timed_out;
+
 use crate::react_work_tags::{CONTEXT_PROVIDER, HOST_COMPONENT, SCOPE_COMPONENT};
 use shared::react_feature_flags::ENABLE_SCOPE_API;
 

@@ -7,11 +7,13 @@
 
 import {registerTwoPhaseEvent} from '../EventRegistry.js';
 import {SyntheticUIEvent} from '../SyntheticEvent.js';
+
 import {canUseDOM} from 'shared/ExecutionEnvironment';
 
 import isEventSupported from '../isEventSupported.js';
 
 import {IS_CAPTURE_PHASE} from '../EventSystemFlags.js';
+
 import {batchedUpdates} from '../ReactDOMUpdateBatching.js';
 
 import {
@@ -19,11 +21,13 @@ import {
   accumulateTwoPhaseListeners,
   processDispatchQueue,
 } from '../DOMPluginEventSystem.js';
+
 import {
   clearScrollEndTimer,
   getScrollEndTimer,
   setScrollEndTimer,
 } from '../../client/ReactDOMComponentTree.js';
+
 import {enableScrollEndPolyfill} from 'shared/ReactFeatureFlags';
 
 const isScrollEndEventSupported =

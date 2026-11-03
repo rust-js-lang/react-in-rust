@@ -22,6 +22,7 @@ import {
 } from 'shared/ReactFeatureFlags';
 
 import {clearEntangledAsyncTransitionTypes} from './ReactFiberTransitionTypes.js';
+
 import noop from 'shared/noop';
 import reportGlobalError from 'shared/reportGlobalError';
 

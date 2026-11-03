@@ -8,6 +8,7 @@
 /* eslint-disable react-internal/no-production-logging */
 
 import {enableProfilerTimer} from 'shared/ReactFeatureFlags';
+
 import {
   addObjectToProperties,
   addValueToProperties,

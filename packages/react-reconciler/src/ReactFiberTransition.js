@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {NoLane} from './ReactFiberLane.js';
+
 import {
   enableGestureTransition,
   enableTransitionTracing,
@@ -31,6 +32,7 @@ import {
   entangledTransitionTypes as entangledTransitionTypes$2,
   queueTransitionTypes,
 } from './ReactFiberTransitionTypes.js';
+
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 import {

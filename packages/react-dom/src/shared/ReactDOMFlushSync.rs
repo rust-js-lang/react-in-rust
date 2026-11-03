@@ -11,6 +11,7 @@ use webapi::console;
 use shared::react_feature_flags::DISABLE_LEGACY_MODE;
 
 use react_reconciler::react_event_priorities::DISCRETE_EVENT_PRIORITY;
+
 use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 
 use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS;

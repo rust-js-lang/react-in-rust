@@ -11,6 +11,7 @@ use crate::react_dom_event_listener::get_event_priority;
 use react_reconciler::react_event_priorities::{
     DEFAULT_EVENT_PRIORITY, EventPriority, NO_EVENT_PRIORITY,
 };
+
 use shared::react_dom_shared_internals::REACT_DOM_SHARED_INTERNALS;
 
 pub fn set_current_update_priority(

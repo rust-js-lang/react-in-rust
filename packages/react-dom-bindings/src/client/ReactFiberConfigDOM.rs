@@ -38,10 +38,13 @@ use webapi::{
 };
 
 use crate::react_dom_form_actions::{FormStatus, NOT_PENDING};
+
 use crate::react_dom_src_object::set_src_object;
+
 use react_reconciler::react_fiber_host_context::get_current_root_host_container;
 
 use react_reconciler::react_current_fiber::run_with_fiber_in_dev;
+
 use shared::has_own_property::HAS_OWN_PROPERTY;
 
 use shared::check_string_coercion::check_attribute_string_coercion;
@@ -102,7 +105,9 @@ use crate::html_node_type::{
     COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE,
     TEXT_NODE,
 };
+
 use crate::react_dom_event_replaying::{flush_event_replaying, retry_if_blocked_on};
+
 use shared::react_feature_flags::{
     DISABLE_COMMENTS_AS_DOM_CONTAINERS, ENABLE_CREATE_EVENT_HANDLE_API,
     ENABLE_HYDRATION_CHANGE_EVENT, ENABLE_MOVE_BEFORE, ENABLE_PROFILER_TIMER, ENABLE_SCOPE_API,
@@ -121,6 +126,7 @@ use crate::escape_selector_attribute_value_inside_double_quotes::escape_selector
 use react_reconciler::react_fiber_work_loop::flush_sync_work as flush_sync_work_on_all_roots;
 
 use react_reconciler::react_fiber_hooks::request_form_reset as request_form_reset_on_fiber;
+
 use shared::react_dom_shared_internals::{HostDispatcher, REACT_DOM_SHARED_INTERNALS};
 
 #[cfg_attr(rust_js, rust_js::name = "rendererVersion")]

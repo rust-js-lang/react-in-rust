@@ -34,6 +34,7 @@ import {
   createServerObjectReference,
   registerBoundServerReference,
 } from './ReactFlightReplyClient.js';
+
 import {readTemporaryReference} from './ReactFlightTemporaryReferences.js';
 
 import {
@@ -48,6 +49,7 @@ import {
   logIOInfoErrored,
   markAllTracksInOrder,
 } from './ReactFlightPerformanceTrack.js';
+
 import {
   ASYNC_ITERATOR,
   REACT_ELEMENT_TYPE,
@@ -56,6 +58,7 @@ import {
 } from 'shared/ReactSymbols';
 
 import getComponentNameFromType from 'shared/getComponentNameFromType';
+
 import {getOwnerStackByComponentInfoInDev} from 'shared/ReactComponentInfoStack';
 
 import hasOwnProperty from 'shared/hasOwnProperty';
@@ -63,7 +66,9 @@ import hasOwnProperty from 'shared/hasOwnProperty';
 import getPrototypeOf from 'shared/getPrototypeOf';
 
 import {injectInternals} from './ReactFlightClientDevToolsHook.js';
+
 import {OMITTED_PROP_ERROR} from 'shared/ReactFlightPropertyAccess';
+
 import ReactVersion from 'shared/ReactVersion';
 
 import isArray from 'shared/isArray';

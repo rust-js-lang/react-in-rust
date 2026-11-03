@@ -21,10 +21,12 @@ use crate::react_internal_types::Fiber;
 use crate::react_work_tags::SUSPENSE_COMPONENT;
 
 use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+
 use crate::react_fiber_lane::{
     Lanes, get_group_name_of_highest_priority_lane, includes_only_hydration_lanes,
     includes_only_hydration_or_offscreen_lanes, includes_only_offscreen_lanes, includes_some_lane,
 };
+
 use shared::react_performance_track_properties::{
     add_object_diff_to_properties, add_object_to_properties, add_value_to_properties,
 };

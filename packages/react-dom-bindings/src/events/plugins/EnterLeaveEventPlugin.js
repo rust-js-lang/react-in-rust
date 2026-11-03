@@ -17,6 +17,7 @@ import {
 } from '../../client/ReactDOMComponentTree.js';
 
 import {accumulateEnterLeaveTwoPhaseListeners} from '../DOMPluginEventSystem.js';
+
 import {
   HostComponent,
   HostSingleton,

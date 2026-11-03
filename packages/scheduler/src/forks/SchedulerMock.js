@@ -16,7 +16,6 @@ import {
   NormalPriority,
   UserBlockingPriority,
 } from '../SchedulerPriorities.js';
-
 import {
   markSchedulerSuspended,
   markSchedulerUnsuspended,

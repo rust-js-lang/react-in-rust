@@ -28,6 +28,7 @@ use crate::react_work_tags::{CONTEXT_PROVIDER, DEHYDRATED_FRAGMENT, SUSPENSE_COM
 use crate::react_fiber_lane::{Lanes, NO_LANES, is_subset_of_lanes, merge_lanes};
 
 use crate::react_fiber_flags::{DID_PROPAGATE_CONTEXT, NEEDS_PROPAGATION, NO_FLAGS};
+
 #[cfg_attr(rust_js, rust_js::name = "is")]
 use shared::object_is::OBJECT_IS;
 

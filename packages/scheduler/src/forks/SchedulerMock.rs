@@ -19,7 +19,6 @@ use crate::scheduler_priorities::{
     IDLE_PRIORITY, IMMEDIATE_PRIORITY, LOW_PRIORITY, NORMAL_PRIORITY, PriorityLevel,
     USER_BLOCKING_PRIORITY,
 };
-
 use crate::scheduler_profiling::{
     mark_scheduler_suspended, mark_scheduler_unsuspended, mark_task_canceled, mark_task_completed,
     mark_task_errored, mark_task_run, mark_task_start, mark_task_yield,

@@ -15,20 +15,24 @@ use crate::react_synthetic_event_type::ReactSyntheticEvent;
 
 use crate::event_registry::register_two_phase_event;
 use crate::synthetic_event::SYNTHETIC_UI_EVENT;
+
 use shared::execution_environment::CAN_USE_DOM;
 
 use crate::is_event_supported::is_event_supported;
 
 use crate::event_system_flags::{EventSystemFlags, IS_CAPTURE_PHASE};
+
 use crate::react_dom_update_batching::batched_updates;
 
 use crate::dom_plugin_event_system::{
     DispatchEntry, DispatchQueue, accumulate_single_phase_listeners,
     accumulate_two_phase_listeners, process_dispatch_queue,
 };
+
 use crate::react_dom_component_tree::{
     clear_scroll_end_timer, get_scroll_end_timer, set_scroll_end_timer,
 };
+
 use shared::react_feature_flags::ENABLE_SCROLL_END_POLYFILL;
 
 thread_local! {

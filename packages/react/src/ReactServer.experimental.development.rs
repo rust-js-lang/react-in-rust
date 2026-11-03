@@ -37,10 +37,8 @@ pub use crate::react_memo::memo;
 
 pub use crate::react_cache_server::{cache, cache_signal};
 pub use crate::react_start_transition::start_transition;
-
 // DEV-only
 pub use crate::react_owner_stack::capture_owner_stack;
-
 #[cfg_attr(rust_js, rust_js::name = "version")]
 pub use shared::react_version::REACT_VERSION as VERSION;
 // Experimental

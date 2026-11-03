@@ -24,6 +24,7 @@ use crate::event_system_flags::{
 };
 
 use crate::current_replaying_event::is_replaying_event;
+
 use react_reconciler::react_work_tags::{
     HOST_COMPONENT, HOST_HOISTABLE, HOST_PORTAL, HOST_ROOT, HOST_SINGLETON, HOST_TEXT,
     SCOPE_COMPONENT,
@@ -42,6 +43,7 @@ use crate::react_dom_update_batching::batched_updates;
 use crate::get_listener::get_listener;
 
 use crate::check_passive_events::PASSIVE_BROWSER_EVENTS_SUPPORTED;
+
 use shared::react_feature_flags::{
     DISABLE_COMMENTS_AS_DOM_CONTAINERS, ENABLE_CREATE_EVENT_HANDLE_API, ENABLE_LEGACY_FB_SUPPORT,
     ENABLE_SCOPE_API, ENABLE_SCROLL_END_POLYFILL,
@@ -63,6 +65,7 @@ use crate::simple_event_plugin;
 
 use crate::form_action_event_plugin;
 use crate::scroll_end_event_plugin;
+
 use shared::report_global_error::REPORT_GLOBAL_ERROR;
 
 use react_reconciler::react_current_fiber::run_with_fiber_in_dev;

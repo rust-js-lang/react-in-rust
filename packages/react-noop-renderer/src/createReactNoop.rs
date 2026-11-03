@@ -88,6 +88,7 @@ use crate::react_fiber_config_noop::{
     Child, Container, HostContext, Instance, PublicInstance, TextInstance,
 };
 use shared::react_feature_flags::DISABLE_LEGACY_MODE;
+
 use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 #[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
 use shared::react_version::REACT_VERSION;

@@ -39,10 +39,8 @@ export {memo} from './ReactMemo.js';
 
 export {cache, cacheSignal} from './ReactCacheServer.js';
 export {startTransition} from './ReactStartTransition.js';
-
 // DEV-only
 export {captureOwnerStack} from './ReactOwnerStack.js';
-
 export {default as version} from 'shared/ReactVersion';
 // Experimental
 export {REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList} from 'shared/ReactSymbols';

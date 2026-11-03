@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {shorthandToLonghand} from './CSSShorthandProperty.js';
+
 import hyphenateStyleName from '../shared/hyphenateStyleName.js';
 import warnValidStyle from '../shared/warnValidStyle.js';
 

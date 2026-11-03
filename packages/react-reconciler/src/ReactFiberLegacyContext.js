@@ -10,6 +10,7 @@ import {disableLegacyContext} from 'shared/ReactFeatureFlags';
 import {ClassComponent, HostRoot} from './ReactWorkTags.js';
 
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+
 import {createCursor, pop, push} from './ReactFiberStack.js';
 
 const warnedAboutMissingGetChildContext = __DEV__ ? {} : undefined;

@@ -106,6 +106,7 @@ import {
 } from './ReactFiberFlags.js';
 
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+
 import {StrictLegacyMode} from './ReactTypeOfMode.js';
 
 import {
@@ -119,6 +120,7 @@ import {
   unsafe_markUpdateLaneFromFiberToRoot,
 } from './ReactFiberConcurrentUpdates.js';
 import {setIsStrictModeForDevtools} from './ReactFiberDevToolsHook.js';
+
 import assign from 'shared/assign';
 
 import {

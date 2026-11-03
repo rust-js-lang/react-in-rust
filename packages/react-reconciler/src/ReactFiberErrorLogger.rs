@@ -14,7 +14,9 @@ use crate::react_captured_value::CapturedValue;
 use crate::react_internal_types::{CaughtErrorInfo, ErrorInfo, Fiber, FiberRoot};
 
 use crate::get_component_name_from_fiber::get_component_name_from_fiber;
+
 use crate::react_work_tags::CLASS_COMPONENT;
+
 use shared::report_global_error::REPORT_GLOBAL_ERROR;
 
 use shared::react_shared_internals::REACT_SHARED_INTERNALS;

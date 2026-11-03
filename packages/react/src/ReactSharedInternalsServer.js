@@ -11,6 +11,7 @@ import {
   TaintRegistryPendingRequests,
   TaintRegistryValues,
 } from './ReactTaintRegistry.js';
+
 import {enableTaint} from 'shared/ReactFeatureFlags';
 
 const ReactSharedInternals = {

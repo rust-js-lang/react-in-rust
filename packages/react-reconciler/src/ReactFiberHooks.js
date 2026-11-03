@@ -74,7 +74,6 @@ import {
   StoreConsistency,
   Update as UpdateEffect,
 } from './ReactFiberFlags.js';
-
 import {
   HasEffect as HookHasEffect,
   Insertion as HookInsertion,
@@ -150,6 +149,7 @@ import {isCurrentTreeHidden} from './ReactFiberHiddenContext.js';
 import {requestCurrentTransition} from './ReactFiberTransition.js';
 
 import {callComponentInDEV} from './ReactFiberCallUserSpace.js';
+
 import {scheduleGesture} from './ReactFiberGestureScheduler.js';
 import {$roomFor, $unwrap} from '@rust-js/runtime';
 

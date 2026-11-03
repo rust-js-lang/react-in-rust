@@ -6,7 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 import {callLazyInitInDEV} from './ReactFiberCallUserSpace.js';
+
 import {getWorkInProgressRoot} from './ReactFiberWorkLoop.js';
+
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 import {enableConditionalUseWarning} from 'shared/ReactFeatureFlags';

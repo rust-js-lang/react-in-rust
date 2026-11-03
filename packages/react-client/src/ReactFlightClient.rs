@@ -148,6 +148,7 @@ unsafe extern "Rust" {
 use crate::react_flight_reply_client::{
     create_bound_server_reference, create_server_object_reference, register_bound_server_reference,
 };
+
 use crate::react_flight_temporary_references::{TemporaryReferenceSet, read_temporary_reference};
 
 use crate::react_flight_performance_track::{
@@ -155,11 +156,13 @@ use crate::react_flight_performance_track::{
     log_component_await_errored, log_component_errored, log_component_render,
     log_deduped_component_render, log_io_info, log_io_info_errored, mark_all_tracks_in_order,
 };
+
 use shared::react_symbols::{
     ASYNC_ITERATOR, REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE, REACT_LAZY_TYPE,
 };
 
 use shared::get_component_name_from_type::get_component_name_from_type;
+
 use shared::react_component_info_stack::get_owner_stack_by_component_info_in_dev;
 
 use shared::has_own_property::HAS_OWN_PROPERTY;
@@ -167,7 +170,9 @@ use shared::has_own_property::HAS_OWN_PROPERTY;
 use shared::get_prototype_of::GET_PROTOTYPE_OF;
 
 use crate::react_flight_client_dev_tools_hook::inject_internals;
+
 use shared::react_flight_property_access::OMITTED_PROP_ERROR;
+
 #[cfg_attr(rust_js, rust_js::name = "ReactVersion")]
 use shared::react_version::REACT_VERSION;
 

@@ -7,6 +7,7 @@
 
 import ReactSharedInternals from './ReactSharedInternalsClient.js';
 import queueMacrotask from 'shared/enqueueTask';
+
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 import {$at, $drain, $unwrap} from '@rust-js/runtime';
 

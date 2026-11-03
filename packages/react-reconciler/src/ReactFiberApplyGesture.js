@@ -82,6 +82,7 @@ import {
   getViewTransitionClassName,
   getViewTransitionName,
 } from './ReactFiberViewTransitionComponent.js';
+
 import {
   enableComponentPerformanceTrack,
   enableProfilerTimer,

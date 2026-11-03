@@ -32,7 +32,6 @@ export {memo} from './ReactMemo.js';
 
 export {cache, cacheSignal} from './ReactCacheServer.js';
 export {default as version} from 'shared/ReactVersion';
-
 // DEV-only
 export {captureOwnerStack} from './ReactOwnerStack.js';
 

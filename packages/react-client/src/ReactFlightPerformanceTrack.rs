@@ -8,6 +8,7 @@
 use js::{Kind, Unknown, function};
 use shared::environment::__DEV__;
 use shared::react_feature_flags::ENABLE_PROFILER_TIMER;
+
 use shared::react_performance_track_properties::{
     add_object_to_properties, add_value_to_properties,
 };

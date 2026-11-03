@@ -24,11 +24,13 @@ use react_reconciler::react_fiber_tree_reflection::{
 use react_reconciler::react_work_tags::{ACTIVITY_COMPONENT, HOST_ROOT, SUSPENSE_COMPONENT};
 
 use crate::event_system_flags::{EventSystemFlags, IS_CAPTURE_PHASE};
+
 use crate::get_event_target::get_event_target;
 use crate::react_dom_component_tree::{get_closest_instance_from_node, get_instance_from_node};
 
 use crate::dom_plugin_event_system::dispatch_event_for_plugin_event_system;
 use crate::react_dom_update_priority::{get_current_update_priority, set_current_update_priority};
+
 use react_reconciler::scheduler::{
     GET_CURRENT_PRIORITY_LEVEL as GET_CURRENT_SCHEDULER_PRIORITY_LEVEL,
     IDLE_PRIORITY as IDLE_SCHEDULER_PRIORITY, IMMEDIATE_PRIORITY as IMMEDIATE_SCHEDULER_PRIORITY,

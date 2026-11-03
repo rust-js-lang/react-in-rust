@@ -6,7 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
+
 import {ClassComponent} from './ReactWorkTags.js';
+
 import reportGlobalError from 'shared/reportGlobalError';
 
 import ReactSharedInternals from 'shared/ReactSharedInternals';

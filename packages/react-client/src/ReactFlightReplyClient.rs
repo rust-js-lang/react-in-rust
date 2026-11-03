@@ -26,9 +26,11 @@ use shared::react_serialization_errors::{
 };
 
 use crate::react_flight_temporary_references::{TemporaryReferenceSet, write_temporary_reference};
+
 use shared::is_array::is_array;
 
 use shared::get_prototype_of::GET_PROTOTYPE_OF;
+
 use shared::react_feature_flags::ENABLE_FLIGHT_OBJECT_REFERENCES;
 
 #[cfg_attr(
