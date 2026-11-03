@@ -24,8 +24,6 @@ unsafe extern "Rust" {
     safe static REACT_SHARED_INTERNALS_SERVER: &'static SharedStateServer;
 }
 
-// GAP rd651: the alias prints `import ReactSharedInternals`, where upstream
-// names it `ReactSharedInternalsClient`.
 use shared::react_shared_internals::REACT_SHARED_INTERNALS as REACT_SHARED_INTERNALS_CLIENT;
 
 use react_server::react_flight_server::{
@@ -46,8 +44,6 @@ use react_server::react_fizz_server::{
     start_work as start_fizz_work,
 };
 
-// GAP rd650: these re-exports of ReactFizzConfigDOM import from it, where
-// upstream imports them from './ReactFizzConfigMarkup'.
 use crate::react_fizz_config_markup::{
     create_render_state, create_resumable_state, create_root_format_context,
 };

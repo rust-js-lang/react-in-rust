@@ -17,8 +17,6 @@ use react_server::react_fizz_server::{
     start_work as start_fizz_work,
 };
 
-// GAP rd650: these re-exports of ReactFizzConfigDOM import from it, where
-// upstream imports them from './ReactFizzConfigMarkup'.
 use crate::react_fizz_config_markup::{
     create_render_state, create_resumable_state, create_root_format_context,
 };

@@ -7,9 +7,7 @@
 
 export {default as version} from 'shared/ReactVersion';
 import ReactSharedInternalsServer from 'react-server/src/ReactSharedInternalsServer';
-// GAP rd651: the alias prints `import ReactSharedInternals`, where upstream
-// names it `ReactSharedInternalsClient`.
-import ReactSharedInternals from 'shared/ReactSharedInternals';
+import ReactSharedInternalsClient from 'shared/ReactSharedInternals';
 import {
   abort as abortFlight,
   attachAbortSignal as attachFlightAbortSignal,
@@ -31,13 +29,11 @@ import {
   startFlowing as startFizzFlowing,
   startWork as startFizzWork,
 } from 'react-server/src/ReactFizzServer';
-// GAP rd650: these re-exports of ReactFizzConfigDOM import from it, where
-// upstream imports them from './ReactFizzConfigMarkup'.
 import {
   createRenderState,
   createResumableState,
   createRootFormatContext,
-} from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
+} from './ReactFizzConfigMarkup.js';
 import {$someGet, $someValue, $unwrap} from '@rust-js/runtime';
 
 function noServerCallOrFormAction(id, args) {
@@ -103,7 +99,7 @@ export function experimental_renderToHTML(children, options) {
           // "server" runtime so to get access to a stack trace within this callback we
           // need to override it to get it from the client runtime.
           ReactSharedInternalsServer.getCurrentStack =
-            ReactSharedInternals.getCurrentStack ?? null;
+            ReactSharedInternalsClient.getCurrentStack ?? null;
           try {
             onError(error, errorInfo);
           } finally {

@@ -991,13 +991,10 @@ These differences from upstream's output are accepted:
   Readability gaps (rust-js), not holding (rd557, a hoisted closure's
   comments, fixed in rust-js 4b8d58215): rd558 (an `Option` a
   `HashMap` holds is boxed, `$someValue($unwrap($someGet(stashedErrors,
-  id), ..))` for `stashedErrors.get(id)`); rd650 (the entries import
-  createResumableState and the rest from ReactFizzConfigDOM, where
-  upstream imports them from './ReactFizzConfigMarkup', which re-exports
-  them); rd651 (`use .. REACT_SHARED_INTERNALS as
-  REACT_SHARED_INTERNALS_CLIENT` prints `import ReactSharedInternals`,
-  where upstream names it `ReactSharedInternalsClient`); rd652 and rd654
-  above; and `getCurrentStack = .. ?? null`, the Fizz server's
+  id), ..))` for `stashedErrors.get(id)`); rd652 and rd654 above (rd650,
+  the entries' imports from './ReactFizzConfigMarkup.js', and rd651, the
+  `ReactSharedInternalsClient` alias, fixed in rust-js a6797eac5 and
+  d72ed8bb3); and `getCurrentStack = .. ?? null`, the Fizz server's
   form of a nullable field set from an `Option` (no id).
 - **React DOM's Bun server (the user, 2026-11-03: port Bun now)**:
   react-server's ReactServerStreamConfigBun and react-dom's
