@@ -1668,7 +1668,9 @@ The port is split between sessions by package:
   are. The plain re-export
   entries (`client*.js`, `react-flight-dom-client.*.js`) stay JS (rd55).
   Webpack's ReactFlightDOMClientEdge, ReactFlightDOMClientBrowser and
-  ReactFlightDOMClientNode are Rust (Batch 59). The Node client's `pub use
+  ReactFlightDOMClientNode are Rust (Batch 59), and so are Turbopack's three
+  (Batch 60), webpack's sources with their bundler's names, as upstream's
+  are webpack's. The Node client's `pub use
   crate::client::react_flight_dom_client_edge::*;` prints rd153's export
   list for upstream's `export * from './ReactFlightDOMClientEdge'`. Their `startReadingFromStream`'s `progress` is rd425's
   cell, and their createResponse arguments are the forms accepted above
@@ -1698,7 +1700,11 @@ The port is split between sessions by package:
   upstream tests `options && ..` by truth (an object or absent), and
   `__DEV__ && (options == null || options.replayConsoleLogs !== false)` for
   `__DEV__ ? (options ? options.replayConsoleLogs !== false : true) :
-  false`.
+  false`. Also by name (2026-11-03, the Node client's): its DEV debug
+  channel `{hasReadable: true, callback: null}` printed over four lines,
+  as rustfmt splits the `DebugChannel` struct literal, where upstream
+  writes it on one (rd627 B's kind: the printer breaks an object literal
+  where the Rust breaks it).
   **Pending in rust-js, not accepted**: rd643, encodeReply's promise is
   `Promise<ReplyBody>`, `string | FormData` in the `.d.ts`, where upstream
   declares `Promise<string | URLSearchParams | FormData>`: processReply

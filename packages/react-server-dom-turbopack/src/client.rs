@@ -10,3 +10,9 @@ pub mod react_flight_client_config_bundler_turbopack_server;
 pub mod react_flight_client_config_target_turbopack_browser;
 #[path = "client/ReactFlightClientConfigTargetTurbopackServer.rs"]
 pub mod react_flight_client_config_target_turbopack_server;
+#[path = "client/ReactFlightDOMClientBrowser.rs"]
+pub mod react_flight_dom_client_browser;
+#[path = "client/ReactFlightDOMClientEdge.rs"]
+pub mod react_flight_dom_client_edge;
+#[path = "client/ReactFlightDOMClientNode.rs"]
+pub mod react_flight_dom_client_node;

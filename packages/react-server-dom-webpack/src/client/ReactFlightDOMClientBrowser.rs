@@ -53,12 +53,12 @@ fn create_debug_callback_from_writable_stream(
     let writer = debug_writable.get_writer();
     Rc::new(move |message: &str| {
         if message.is_empty() {
-            let _ = writer.close();
+            let _: Promise<()> = writer.close();
         } else {
             // Note: It's important that this function doesn't close over the Response object or it can't be GC:ed.
             // Therefore, we can't report errors from this write back to the Response object.
             if __DEV__ {
-                let _ = writer
+                let _: Promise<()> = writer
                     .write(Some(
                         text_encoder.encode(Some(&(message.to_owned() + "\n"))),
                     ))
