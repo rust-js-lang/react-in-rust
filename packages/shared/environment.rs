@@ -19,6 +19,11 @@ unsafe extern "Rust" {
     #[link_name = "parcelRequire.meta.publicUrl"]
     pub safe static PARCEL_REQUIRE_META_PUBLIC_URL: &'static str;
 
+    /// Parcel's dev server, `parcelRequire.meta.devServer`: its URL, or
+    /// `null` where there's none.
+    #[link_name = "parcelRequire.meta.devServer"]
+    pub safe static PARCEL_REQUIRE_META_DEV_SERVER: Option<&'static str>;
+
     /// Webpack's chunk filename function, `__webpack_require__.u`.
     #[link_name = "__webpack_require__.u"]
     pub safe static WEBPACK_REQUIRE_U: &'static dyn Fn(&str) -> String;

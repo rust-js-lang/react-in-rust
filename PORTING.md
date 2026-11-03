@@ -1670,7 +1670,23 @@ The port is split between sessions by package:
   Webpack's ReactFlightDOMClientEdge, ReactFlightDOMClientBrowser and
   ReactFlightDOMClientNode are Rust (Batch 59), and so are Turbopack's three
   (Batch 60), webpack's sources with their bundler's names, as upstream's
-  are webpack's. The Node client's `pub use
+  are webpack's, and Parcel's three and ESM's Browser and Node (Batch 60):
+  webpack's sources with upstream's changes, Parcel's `findSourceMapURL`
+  (`#[rust_js::nullable]`, upstream's `return null;`, of
+  `shared::environment`'s `parcelRequire.meta.devServer`), its Browser's
+  module `callServer` (a `nullable` thread-local) and `setServerCallback`,
+  createServerReference's `id + '#' + exportName`, and ESM's
+  `moduleRootPath`/`moduleBaseURL`; the Rust keeps upstream's blank lines
+  (none between `let callServer` and `setServerCallback`, nor before ESM's
+  createFromReadableStream). ESM's Browser gives `options?.moduleBaseURL ??
+  ''` for upstream's `options && options.moduleBaseURL ? .. : ''`, the
+  accepted `?? false` kind. Upstream has no tests of either package's
+  clients: ReactFlightParcelDOMClients-test.js (10) and
+  ReactFlightESMDOMClients-test.js (6) hold them, and pass on upstream's
+  JS too. **Pending in rust-js** (rd646, not accepted): Parcel's Browser
+  reads the module's `callServer` into `const callServer$1 = callServer;`
+  before its `== null` test, where upstream tests and calls `callServer`
+  in place. The Node client's `pub use
   crate::client::react_flight_dom_client_edge::*;` prints rd153's export
   list for upstream's `export * from './ReactFlightDOMClientEdge'`. Their `startReadingFromStream`'s `progress` is rd425's
   cell, and their createResponse arguments are the forms accepted above

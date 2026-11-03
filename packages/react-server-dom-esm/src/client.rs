@@ -6,3 +6,7 @@ pub mod react_flight_client_config_bundler_esm;
 pub mod react_flight_client_config_target_esm_browser;
 #[path = "client/ReactFlightClientConfigTargetESMServer.rs"]
 pub mod react_flight_client_config_target_esm_server;
+#[path = "client/ReactFlightDOMClientBrowser.rs"]
+pub mod react_flight_dom_client_browser;
+#[path = "client/ReactFlightDOMClientNode.rs"]
+pub mod react_flight_dom_client_node;
