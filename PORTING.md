@@ -2054,6 +2054,22 @@ The port is split between sessions by package:
   before `Internals.Events =` (rd710's kind). ReactDOMRootFB is held (rd717, #572; rd718, #577),
   WIP on branch wip-rootfb; ReactDOMFB, ReactDOMFB.modern and the
   TestingFB entries re-export it, so they wait for it.
+  react-dom-bindings' events/forks/EventListener-www, www's listeners, is
+  Rust (Batch 64), declared beside EventListener as `#[path =
+  "src/events/forks/EventListener-www.rs"] pub mod event_listener_www;`;
+  rollup alone reads it. www's module is a required binding of the whole
+  module, `get EventListener#*` with `#[rust_js::require]`, held in a
+  thread-local named `EventListenerWWW`, so it prints upstream's `const
+  EventListenerWWW = require('EventListener');` and its functions line for
+  line. Upstream's type-only lines (`import typeof`, the Flow-magic cast)
+  print nothing, as the flag forks' don't. What www returns of a listener,
+  which removeEventListener calls `.remove()` on, is the fork's own `pub
+  struct RemovableListener`, `#[rust_js::types = "{ remove(): void }"]`,
+  where upstream types it `mixed` and `Function`. So its signatures differ
+  from EventListener's, which returns the listener. Its `.d.ts` writes `{
+  remove(): void }` inline in each of the five functions. Both are
+  accepted on the user's behalf while away (the coordinator, 2026-11-04;
+  no result changes).
   react-noop-renderer's createReactNoop and ReactFiberConfigNoop are Rust.
   react-noop-renderer's flight-modules, the Flight tests' module store, is
   Rust (Batch 64), declared in noop.rs as `#[path = "flight-modules.rs"]

@@ -37,6 +37,8 @@ pub mod escape_text_for_browser;
 pub mod estimate_bandwidth;
 #[path = "src/events/EventListener.rs"]
 pub mod event_listener;
+#[path = "src/events/forks/EventListener-www.rs"]
+pub mod event_listener_www;
 #[path = "src/events/EventRegistry.rs"]
 pub mod event_registry;
 #[path = "src/events/EventSystemFlags.rs"]
