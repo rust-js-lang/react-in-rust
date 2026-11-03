@@ -9,7 +9,6 @@ use std::rc::Rc;
 
 use js::{Kind, Promise, Unknown, promise};
 use react_dom_bindings::react_dom_legacy_server_stream_config::Destination;
-use react_isomorphic::react_shared_internals_server::SharedStateServer;
 use react_server::react_fizz_server::{ErrorInfo, OnError};
 use react_server::react_flight_server::EnvironmentName;
 use shared::environment::__DEV__;
@@ -18,11 +17,7 @@ use webapi::AbortSignal;
 #[cfg_attr(rust_js, rust_js::name = "version")]
 pub use shared::react_version::REACT_VERSION as VERSION;
 
-unsafe extern "Rust" {
-    #[cfg_attr(rust_js, rust_js::name = "ReactSharedInternalsServer")]
-    #[link_name = "react-server/src/ReactSharedInternalsServer#default"]
-    safe static REACT_SHARED_INTERNALS_SERVER: &'static SharedStateServer;
-}
+use react_server::react_shared_internals_server::REACT_SHARED_INTERNALS_SERVER;
 
 use shared::react_shared_internals::REACT_SHARED_INTERNALS as REACT_SHARED_INTERNALS_CLIENT;
 
@@ -68,7 +63,7 @@ struct RestoreGetCurrentStack(Option<&'static dyn Fn() -> String>);
 
 impl Drop for RestoreGetCurrentStack {
     fn drop(&mut self) {
-        REACT_SHARED_INTERNALS_SERVER.get_current_stack.set(self.0);
+        REACT_SHARED_INTERNALS_SERVER.with(|internals| internals.get_current_stack.set(self.0));
     }
 }
 
@@ -137,14 +132,16 @@ pub fn experimental_render_to_html(
                 let on_error = options.and_then(|options| options.on_error.as_ref());
                 if let Some(on_error) = on_error {
                     if __DEV__ {
-                        let prev_get_current_stack_impl =
-                            REACT_SHARED_INTERNALS_SERVER.get_current_stack.get();
+                        let prev_get_current_stack_impl = REACT_SHARED_INTERNALS_SERVER
+                            .with(|internals| internals.get_current_stack.get());
                         // We're inside a "client" callback from Fizz but we only have access to the
                         // "server" runtime so to get access to a stack trace within this callback we
                         // need to override it to get it from the client runtime.
-                        REACT_SHARED_INTERNALS_SERVER
-                            .get_current_stack
-                            .set(REACT_SHARED_INTERNALS_CLIENT.get_current_stack());
+                        REACT_SHARED_INTERNALS_SERVER.with(|internals| {
+                            internals
+                                .get_current_stack
+                                .set(REACT_SHARED_INTERNALS_CLIENT.get_current_stack());
+                        });
                         let _restore = RestoreGetCurrentStack(prev_get_current_stack_impl);
                         on_error(error, error_info);
                     } else {

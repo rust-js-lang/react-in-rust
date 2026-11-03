@@ -7,6 +7,6 @@
 
 import type {SharedStateServer} from 'react/src/ReactSharedInternalsServer';
 
-declare const ReactSharedInternalsServer: SharedStateServer | null | undefined;
+declare const ReactSharedInternalsServer: SharedStateServer;
 
 export default ReactSharedInternalsServer;

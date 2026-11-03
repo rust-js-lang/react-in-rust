@@ -1006,8 +1006,8 @@ These differences from upstream's output are accepted:
   `StringDecoder` is upstream's `null` alone, an untagged enum, as
   Parcel's `ModuleLoading` is. The two entries give Fizz, and Flight's
   server, react-dom-bindings' legacy `Destination` (`push`, `destroy`),
-  as upstream's markup stream config does; the server entry reaches
-  ReactSharedInternalsServer, still JS, by its JS path, and swaps its
+  as upstream's markup stream config does; the server entry `use`s
+  react-server's ReactSharedInternalsServer, and swaps its
   `getCurrentStack` for the client's around the user's `onError` with a
   guard whose `Drop` is upstream's `finally`. Port differences, none
   changing a result:
@@ -1272,14 +1272,21 @@ These differences from upstream's output are accepted:
     consumeBackingEntries names the stripped key, `const name =
     key.slice(formPrefix.length);`. ReplyServer's `resolveFile` takes a
     `&'static File`, which the store keeps.
-  - ReactSharedInternalsServer's check reads
-    `React.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE
-    == null` where upstream tests `!ReactSharedInternalsServer`, and its
-    message is one literal. Its default export is
-    `Option<&'static SharedStateServer>`, as the binding may be
-    `undefined`; ReactFlightServer keeps its JS-path binding of it, typed
-    `&'static SharedStateServer` (the module throws before it's
-    `undefined`).
+  - ReactSharedInternalsServer's default is a thread-local of the
+    binding's `expect`, `&'static SharedStateServer`, made as the module
+    loads (rust-js ADR 1006), its binding private and an `Option`; ReactFlightServer
+    and react-markup `use` it and read it through `with(|internals| ..)`,
+    `ReactSharedInternals.A` (rd661). Its JS is `const
+    ReactSharedInternalsServer = $unwrap(React.__SERVER_INTERNALS_.., '..');`,
+    rust-js's one form of an `expect` (ADR 0030), where upstream writes the
+    `const`, then `if (!ReactSharedInternalsServer) throw new Error(..)`,
+    whose message is three literals joined; which form an `expect` a
+    `const` is made of prints is the user's to decide (rd661). RequestInstance's
+    check holds the dispatcher it reads, `const a = ReactSharedInternals.A;
+    if (a != null && a !== DefaultAsyncDispatcher)`, where upstream reads
+    `ReactSharedInternals.A` twice: an `if let` of a variable's `Cell`
+    field holds it, as a binding's static's didn't (a rust-js gap, filed
+    with rd661).
   - createBackingFormData's callback is an arrow, `formData.forEach((value,
     key) => { appendBackingEntry(backingStore, value, key); })`, where
     upstream writes `formData.forEach(appendBackingEntry.bind(null,
@@ -1308,9 +1315,10 @@ These differences from upstream's output are accepted:
     rust-js 6dd3eee3d, its JS regenerated with rd574); rd663 (webapi's
     observer and timer callbacks are still lent their arguments, where
     `forEach`'s are JS's own, `'static`, since rd574); rd661 (a module whose load throws of
-    a `None` export still exports its `Option`, so ReactFlightServer and
-    react-markup bind ReactSharedInternalsServer by its JS path rather than
-    `use` it).
+    a `None` export exported its `Option`, so ReactFlightServer and
+    react-markup bound ReactSharedInternalsServer by its JS path rather than
+    `use` it; its natural form is a thread-local of the binding's `expect`,
+    which they `use`, a `with` in a `with` fixed in rust-js dea0a99bb for it).
 - **Accepted on the user's behalf while away, 2026-11-02** (each changes no
   result; the coordinator logs them for the user):
   - the Flight client's DEV `then` holds its wrapper promise in a cell its

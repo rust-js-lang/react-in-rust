@@ -6,15 +6,12 @@
 // LICENSE file in the root directory of this source tree.
 
 import * as React from 'react';
+import {$unwrap} from '@rust-js/runtime';
 
-const ReactSharedInternalsServer =
-  React.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-
-if (ReactSharedInternalsServer == null) {
-  throw new Error(
-    'The "react" package in this environment is not configured correctly. The "react-server" condition must be enabled in any environment that runs React Server Components.',
-  );
-}
+const ReactSharedInternalsServer = $unwrap(
+  React.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+  'The "react" package in this environment is not configured correctly. The "react-server" condition must be enabled in any environment that runs React Server Components.',
+);
 
 export default ReactSharedInternalsServer;
 //# sourceMappingURL=ReactSharedInternalsServer.js.map

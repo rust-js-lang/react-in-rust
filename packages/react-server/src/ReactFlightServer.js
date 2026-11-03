@@ -57,6 +57,8 @@ import {
   objectName,
 } from 'shared/ReactSerializationErrors';
 
+import ReactSharedInternals from './ReactSharedInternalsServer.js';
+
 import {
   ASYNC_ITERATOR,
   REACT_ELEMENT_TYPE,
@@ -122,7 +124,6 @@ import {
   supportsRequestStorage,
   unbadgeConsole,
 } from './ReactFlightServerConfig.js';
-import ReactSharedInternals from './ReactSharedInternalsServer.js';
 import {
   $borrow,
   $borrowMut,
@@ -571,10 +572,8 @@ function RequestInstance(
   filterStackFrame, // DEV-only
   keepDebugAlive, // DEV-only
 ) {
-  if (
-    ReactSharedInternals.A != null &&
-    ReactSharedInternals.A !== DefaultAsyncDispatcher
-  ) {
+  const a = ReactSharedInternals.A;
+  if (a != null && a !== DefaultAsyncDispatcher) {
     throw new Error(
       'Currently React only supports one RSC renderer at a time.',
     );

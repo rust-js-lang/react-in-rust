@@ -15,7 +15,6 @@ use js::{
     WeakRef, WeakSet, function,
 };
 use node::async_hooks::AsyncLocalStorage;
-use react_isomorphic::react_shared_internals_server::SharedStateServer;
 use react_isomorphic::react_taint_registry::{EntryValue, RequestCleanupQueue, TaintEntry};
 use shared::environment::__DEV__;
 use shared::react_types::{
@@ -65,6 +64,8 @@ use shared::react_serialization_errors::{
     JSX_CHILDREN_PARENTS, JSX_PROPS_PARENTS, describe_object_for_error_message, is_getter,
     is_simple_object, object_name,
 };
+
+use crate::react_shared_internals_server::REACT_SHARED_INTERNALS_SERVER as REACT_SHARED_INTERNALS;
 
 use shared::react_symbols::{
     ASYNC_ITERATOR, REACT_ELEMENT_TYPE, REACT_FORWARD_REF_TYPE, REACT_FRAGMENT_TYPE,
@@ -446,9 +447,6 @@ unsafe extern "Rust" {
     safe static SUPPORTS_COMPONENT_STORAGE: bool;
     #[link_name = "./src/ReactFlightServerConfig.js#componentStorage"]
     safe static COMPONENT_STORAGE: &'static ComponentStorage;
-    #[cfg_attr(rust_js, rust_js::name = "ReactSharedInternals")]
-    #[link_name = "./src/ReactSharedInternalsServer.js#default"]
-    safe static REACT_SHARED_INTERNALS: &'static SharedStateServer;
 }
 
 thread_local! {
@@ -1014,16 +1012,16 @@ pub struct Request {
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryObjects")]
     static TAINT_REGISTRY_OBJECTS: Option<&'static WeakMap<react_isomorphic::react_taint_registry::Reference, String>> =
-        REACT_SHARED_INTERNALS.taint_registry_objects.get();
+        REACT_SHARED_INTERNALS.with(|internals| internals.taint_registry_objects.get());
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryValues")]
     static TAINT_REGISTRY_VALUES: Option<&'static Map<EntryValue, Rc<TaintEntry>>> =
-        REACT_SHARED_INTERNALS.taint_registry_values.get();
+        REACT_SHARED_INTERNALS.with(|internals| internals.taint_registry_values.get());
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryByteLengths")]
     static TAINT_REGISTRY_BYTE_LENGTHS: Option<&'static js::Set<f64>> =
-        REACT_SHARED_INTERNALS.taint_registry_byte_lengths.get();
+        REACT_SHARED_INTERNALS.with(|internals| internals.taint_registry_byte_lengths.get());
     #[cfg_attr(rust_js, rust_js::name = "TaintRegistryPendingRequests")]
     static TAINT_REGISTRY_PENDING_REQUESTS: Option<Rc<RefCell<HashSet<&'static RequestCleanupQueue>>>> =
-        REACT_SHARED_INTERNALS.taint_registry_pending_requests.borrow().clone();
+        REACT_SHARED_INTERNALS.with(|internals| internals.taint_registry_pending_requests.borrow().clone());
 }
 
 fn throw_taint_violation(message: &str) -> ! {
@@ -1076,22 +1074,26 @@ impl Request {
         keep_debug_alive: bool,                    // DEV-only
     ) -> Rc<Self> {
         DEFAULT_ASYNC_DISPATCHER.with(|default_async_dispatcher| {
-            if let Some(a) = REACT_SHARED_INTERNALS.a.get()
-                && !js::strict_equals(a, default_async_dispatcher)
-            {
-                panic!("Currently React only supports one RSC renderer at a time.");
-            }
-            REACT_SHARED_INTERNALS.a.set(Some(unsafe {
-                js::cast(Some(js::unknown(default_async_dispatcher)))
-            }));
+            REACT_SHARED_INTERNALS.with(|internals| {
+                if let Some(a) = internals.a.get()
+                    && !js::strict_equals(a, default_async_dispatcher)
+                {
+                    panic!("Currently React only supports one RSC renderer at a time.");
+                }
+                internals.a.set(Some(unsafe {
+                    js::cast(Some(js::unknown(default_async_dispatcher)))
+                }));
+            });
         });
         if __DEV__ {
             // Unlike Fizz or Fiber, we don't reset this and just keep it on permanently.
             // This lets it act more like the AsyncDispatcher so that we can get the
             // stack asynchronously too.
-            REACT_SHARED_INTERNALS
-                .get_current_stack
-                .set(Some(&get_current_stack_in_dev));
+            REACT_SHARED_INTERNALS.with(|internals| {
+                internals
+                    .get_current_stack
+                    .set(Some(&get_current_stack_in_dev));
+            });
         }
 
         let abort_set: AbortSet = Rc::new(RefCell::new(HashSet::new()));
@@ -8162,10 +8164,12 @@ fn try_stream_task(request: &Rc<Request>, task: &Rc<Task>) {
 fn perform_work(request: &Rc<Request>) {
     mark_async_sequence_root_task();
 
-    let prev_dispatcher = REACT_SHARED_INTERNALS.h.get();
-    REACT_SHARED_INTERNALS.h.set(Some(unsafe {
-        js::cast(Some(js::unknown(&HOOKS_DISPATCHER)))
-    }));
+    let prev_dispatcher = REACT_SHARED_INTERNALS.with(|internals| internals.h.get());
+    REACT_SHARED_INTERNALS.with(|internals| {
+        internals.h.set(Some(unsafe {
+            js::cast(Some(js::unknown(&HOOKS_DISPATCHER)))
+        }));
+    });
     let prev_request = CURRENT_REQUEST.replace(Some(Rc::clone(request)));
     prepare_to_use_hooks_for_request(request);
 
@@ -8184,7 +8188,7 @@ fn perform_work(request: &Rc<Request>) {
             fatal_error(request, error);
         })),
     };
-    REACT_SHARED_INTERNALS.h.set(prev_dispatcher);
+    REACT_SHARED_INTERNALS.with(|internals| internals.h.set(prev_dispatcher));
     reset_hooks_for_request();
     CURRENT_REQUEST.set(prev_request);
     if let Err(thrown_value) = result {
