@@ -13,11 +13,9 @@ import type {
 import type {EncodeFormActionCallback} from 'react-client/src/ReactFlightReplyClient';
 import type {ServerConsumerManifest} from './ReactFlightDOMClientEdge.js';
 
-export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
-
-export {createTemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
-
 export {
+  registerServerReference,
+  createTemporaryReferenceSet,
   createServerReference,
   createFromReadableStream,
   createFromFetch,

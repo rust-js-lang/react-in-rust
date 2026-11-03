@@ -45,7 +45,7 @@ function createResponseFromOptions(options) {
 
   return createResponse(
     options.serverConsumerManifest.moduleMap,
-    options.serverConsumerManifest.serverModuleMap ?? null,
+    options.serverConsumerManifest.serverModuleMap,
     options.serverConsumerManifest.moduleLoading,
     noServerCall,
     options.encodeFormAction,

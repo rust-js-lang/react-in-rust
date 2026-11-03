@@ -9,11 +9,9 @@ import type {Readable} from 'stream';
 import type {ReactPromise} from 'react-client/src/ReactFlightClient';
 import type {EncodeFormActionCallback} from 'react-client/src/ReactFlightReplyClient';
 
-export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
-
-export {createTemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
-
 export {
+  registerServerReference,
+  createTemporaryReferenceSet,
   createServerReference,
   createFromReadableStream,
   createFromFetch,

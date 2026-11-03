@@ -1837,10 +1837,10 @@ The audit's last list (Batch 42) the user accepted on 2026-11-01 too:
   kind); ReactFiberConfigART's `props.opacity ?? 1`, appendInitialChild's
   `inject` and NO_CONTEXT declared a line before upstream's; `?? noop` for
   `|| noop` of the default transition indicator's result
-  (ReactFiberAsyncAction, ReactFiberRootScheduler); and ReactDOMRoot's
-  `unstable_scheduleHydration` a wrapper, `function (target) {
-  scheduleHydration(target); }`, where upstream assigns `scheduleHydration`
-  itself (routed to rust-js's forwarding rule; accepted until it lands).
+  (ReactFiberAsyncAction, ReactFiberRootScheduler). ReactDOMRoot's
+  `unstable_scheduleHydration` is upstream's
+  `ReactDOMHydrationRoot.prototype.unstable_scheduleHydration =
+  scheduleHydration;` (rd715, rust-js 9705a3711, Batch 65).
 - **`Date.now()`** in ReactOwnerStackReset and the scheduler, where upstream
   captures `const localDate = Date` as the module loads: only a `Date`
   replaced later, on a host without `performance`, tells them apart.
@@ -2249,12 +2249,15 @@ The port is split between sessions by package:
   (Batch 60, after rd645) are webpack's, as upstream's are: their
   manifest's `moduleMap` is a `&Dict` (upstream's non-null
   `ServerConsumerModuleMap`), and its `serverModuleMap`, upstream's `null |
-  void`, is given as `js::any_of(..)`. That prints
-  `serverConsumerManifest.serverModuleMap ?? null` where upstream passes it
-  as it is: **accepted by the user** (rd700, 2026-11-03, by name), because
-  the callee's `T | null` contract needs it. The Node client's `pub use
-  crate::client::react_flight_dom_client_edge::*;` prints rd153's export
-  list for upstream's `export * from './ReactFlightDOMClientEdge'`. Their `startReadingFromStream`'s `progress` is rd425's
+  void`, is given as `js::any_of(..)`, printed as upstream passes it,
+  `serverConsumerManifest.serverModuleMap` (Batch 65; it printed `?? null`
+  until then, rd700): ResponseInstance stores `serverReferenceConfig ??
+  null`, the one place a missing key becomes `null`, as for
+  `moduleLoading`. The Node client's `pub use
+  crate::client::react_flight_dom_client_edge::*;` prints one export
+  list from './ReactFlightDOMClientEdge.js', each name as the Edge client
+  exports it (rust-js #592, Batch 65), for upstream's `export * from
+  './ReactFlightDOMClientEdge'` (#593, pending). Their `startReadingFromStream`'s `progress` is rd425's
   cell, and their createResponse arguments are the forms accepted above
   (`?.`, `?? false`). The DOM clients' DebugChannel is an `Rc`, shared by
   the response and the FinalizationRegistry that closes it.

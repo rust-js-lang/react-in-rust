@@ -15,9 +15,9 @@ import {
   reportGlobalError,
 } from 'react-client/src/ReactFlightClient';
 
-export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
-export {createTemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
 export {
+  registerServerReference,
+  createTemporaryReferenceSet,
   createServerReference,
   createFromReadableStream,
   createFromFetch,

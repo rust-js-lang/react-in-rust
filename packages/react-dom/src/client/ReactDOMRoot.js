@@ -192,9 +192,7 @@ function ReactDOMHydrationRoot(internalRoot) {
   this._internalRoot = internalRoot;
 }
 
-ReactDOMHydrationRoot.prototype.unstable_scheduleHydration = function (target) {
-  scheduleHydration(target);
-};
+ReactDOMHydrationRoot.prototype.unstable_scheduleHydration = scheduleHydration;
 
 function scheduleHydration(target) {
   if (target) {

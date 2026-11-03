@@ -15,9 +15,9 @@ import {
   reportGlobalError,
 } from 'react-client/src/ReactFlightClient';
 
-export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
-export {createTemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
 export {
+  registerServerReference,
+  createTemporaryReferenceSet,
   createServerReference,
   createFromReadableStream,
   createFromFetch,
@@ -60,7 +60,7 @@ export function createFromNodeStream(stream, serverConsumerManifest, options) {
 
   const response = createResponse(
     serverConsumerManifest.moduleMap,
-    serverConsumerManifest.serverModuleMap ?? null,
+    serverConsumerManifest.serverModuleMap,
     serverConsumerManifest.moduleLoading,
     noServerCall,
     options?.encodeFormAction,
