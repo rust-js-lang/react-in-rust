@@ -1244,7 +1244,7 @@ These differences from upstream's output are accepted:
   `$KeySet`), rd694 (a thread-local `Cell<Option<..>>` is `let x;`, tested
   `== null`, where upstream writes `= null` and `=== null`), rd695 (an
   async fn's `.d.ts` result is `any`); rd673, the `.d.ts` of the
-  newtypes' `function` parameter, is fixed in rust-js a784aad38.
+  newtypes' `function` parameter, is fixed in rust-js f382a6a93.
 - **react-markup (the user, 2026-11-02: its forms accepted)**: its four modules
   are Rust, a crate of their own (`markup.rs`); the `*.stable.js` entries,
   which only throw, stay JS, as the re-export entries do (rd55).
