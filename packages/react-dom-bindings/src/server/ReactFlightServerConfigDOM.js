@@ -8,6 +8,7 @@
 // This module registers the host dispatcher so it needs to be imported
 // even if no exports are used.
 import {preload, preloadModule} from './ReactDOMFlightServerHostDispatcher.js';
+
 import {getCrossOriginString} from '../shared/crossOriginStrings.js';
 
 export function createHints() {

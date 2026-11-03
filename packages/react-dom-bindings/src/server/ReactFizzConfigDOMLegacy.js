@@ -21,8 +21,27 @@ import {
   writeStartClientRenderedSuspenseBoundary as writeStartClientRenderedSuspenseBoundaryImpl,
   writeStartCompletedSuspenseBoundary as writeStartCompletedSuspenseBoundaryImpl,
 } from './ReactFizzConfigDOM.js';
+
 import {NotPending} from '../shared/ReactDOMFormActions.js';
+
 import escapeTextForBrowser from './escapeTextForBrowser.js';
+
+export const isPrimaryRenderer = false;
+
+export function createRenderState(resumableState, generateStaticMarkup) {
+  const renderState = createRenderStateImpl(resumableState);
+  return {
+    ...renderState,
+    // Keep this in sync with ReactFizzConfigDOM
+
+    // This is an extra field for the legacy renderer
+    generateStaticMarkup,
+  };
+}
+
+// this chunk is empty on purpose because we do not want to emit the DOCTYPE in legacy mode
+export const doctypeChunk = stringToPrecomputedChunk('');
+
 export {
   supportsClientAPIs,
   completeResumableState,
@@ -58,22 +77,6 @@ export {
   writeStartPendingSuspenseBoundary,
   writeStartSegment,
 } from './ReactFizzConfigDOM.js';
-
-export const isPrimaryRenderer = false;
-
-export function createRenderState(resumableState, generateStaticMarkup) {
-  const renderState = createRenderStateImpl(resumableState);
-  return {
-    ...renderState,
-    // Keep this in sync with ReactFizzConfigDOM
-
-    // This is an extra field for the legacy renderer
-    generateStaticMarkup,
-  };
-}
-
-// this chunk is empty on purpose because we do not want to emit the DOCTYPE in legacy mode
-export const doctypeChunk = stringToPrecomputedChunk('');
 
 export function getViewTransitionFormatContext(
   resumableState,

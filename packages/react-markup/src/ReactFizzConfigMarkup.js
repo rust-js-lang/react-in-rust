@@ -9,9 +9,22 @@ import {
   pushStartInstance as pushStartInstanceImpl,
   writePreambleStart as writePreambleStartImpl,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
+
 import {NotPending} from 'react-dom-bindings/src/shared/ReactDOMFormActions';
+
 import hasOwnProperty from 'shared/hasOwnProperty';
+
+// GAP rd652: these two `const`s, declared between the `use`s, print after
+// all the imports.
+
+// Allow embedding inside another Fizz render.
+export const isPrimaryRenderer = false;
+
+// Disable Client Hooks
+export const supportsClientAPIs = false;
+
 import {stringToChunk} from 'react-server/src/ReactServerStreamConfig';
+
 export {
   doctypeChunk,
   canHavePreamble,
@@ -47,16 +60,8 @@ export {
   writeStartPendingSuspenseBoundary,
   writeStartSegment,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
+
 import escapeTextForBrowser from 'react-dom-bindings/src/server/escapeTextForBrowser';
-
-// GAP rd652: these two `const`s, declared between the `use`s, print after
-// all the imports.
-
-// Allow embedding inside another Fizz render.
-export const isPrimaryRenderer = false;
-
-// Disable Client Hooks
-export const supportsClientAPIs = false;
 
 export function getViewTransitionFormatContext(
   resumableState,

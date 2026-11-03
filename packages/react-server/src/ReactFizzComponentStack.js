@@ -19,6 +19,7 @@ import {
   REACT_SUSPENSE_TYPE,
   REACT_VIEW_TRANSITION_TYPE,
 } from 'shared/ReactSymbols';
+
 import {enableViewTransition} from 'shared/ReactFeatureFlags';
 import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
 import {$unwrap} from '@rust-js/runtime';

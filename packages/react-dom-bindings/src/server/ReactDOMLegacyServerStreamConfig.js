@@ -5,8 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export {createFastHashJS as createFastHash} from 'react-server/src/createFastHashJS';
-
 export function scheduleWork(callback) {
   callback();
 }
@@ -58,6 +56,8 @@ export function byteLengthOfBinaryChunk(chunk) {
 export function closeWithError(destination, error) {
   (0, destination.destroy)(error);
 }
+
+export {createFastHashJS as createFastHash} from 'react-server/src/createFastHashJS';
 
 export function readAsDataURL(blob) {
   return blob.arrayBuffer().then(arrayBuffer => {

@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {getTreeId} from './ReactFizzTreeContext.js';
+
 import {makeId} from './ReactFizzConfig.js';
 
 export function getViewTransitionName(props, treeContext, resumableState) {

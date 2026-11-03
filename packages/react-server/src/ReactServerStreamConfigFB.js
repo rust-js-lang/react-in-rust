@@ -5,8 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export {createFastHashJS as createFastHash} from './createFastHashJS.js';
-
 export function scheduleMicrotask(callback) {
   // TODO: Consider unifying this with the FB Flight stream config and
   // adopting its microtask scheduling implementation.
@@ -65,6 +63,8 @@ export function closeWithError(destination, error) {
   destination.fatal = true;
   destination.error = error;
 }
+
+export {createFastHashJS as createFastHash} from './createFastHashJS.js';
 
 export function readAsDataURL(blob) {
   throw new Error('Not implemented.');

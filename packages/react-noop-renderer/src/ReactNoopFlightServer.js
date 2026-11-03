@@ -11,9 +11,10 @@
 // environment.
 
 import {saveModule} from 'react-noop-renderer/flight-modules';
-import ReactFlightServer from 'react-server/flight';
 
 const textEncoder = new TextEncoder();
+
+import ReactFlightServer from 'react-server/flight';
 
 // $FlowFixMe[prop-missing]
 // $FlowFixMe[incompatible-type]

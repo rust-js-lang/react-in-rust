@@ -12,6 +12,7 @@ import {
   enableProfilerTimer,
   enableTaint,
 } from 'shared/ReactFeatureFlags';
+
 import {
   AWAIT_NODE,
   IO_NODE,
@@ -27,13 +28,17 @@ import {
   SuspenseException,
   getSuspendedThenable,
 } from './ReactFlightThenable.js';
+
 import {DefaultAsyncDispatcher} from './flight/ReactFlightAsyncDispatcher.js';
+
 import {
   resolveOwner,
   setCurrentOwner,
 } from './flight/ReactFlightCurrentOwner.js';
+
 import {getOwnerStackByComponentInfoInDev} from 'shared/ReactComponentInfoStack';
 import {resetOwnerStackLimit} from 'shared/ReactOwnerStackReset';
+
 import binaryToComparableString from 'shared/binaryToComparableString';
 import getPrototypeOf from 'shared/getPrototypeOf';
 import hasOwnProperty from 'shared/hasOwnProperty';
@@ -58,6 +63,7 @@ import {
   REACT_OPTIMISTIC_KEY,
   getIteratorFn,
 } from 'shared/ReactSymbols';
+
 import {
   callComponentInDEV,
   callIteratorInDEV,
@@ -71,6 +77,7 @@ import {
   prepareToUseHooksForRequest,
   resetHooksForRequest,
 } from './ReactFlightHooks.js';
+
 import {
   beginWriting,
   byteLengthOfBinaryChunk,
@@ -6303,7 +6310,7 @@ function retryTask(request, task) {
     }
 
     // Track the root again for the resolved object.
-    modelRoot = resolvedModel ?? null;
+    modelRoot = resolvedModel;
 
     // The keyPath resets at any terminal child node.
     $cellReplace($borrowMut($fieldCell(task, 'keyPath', true)));

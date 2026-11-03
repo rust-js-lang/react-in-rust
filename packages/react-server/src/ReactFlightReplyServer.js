@@ -10,15 +10,18 @@ import hasOwnProperty from 'shared/hasOwnProperty';
 import isArray from 'shared/isArray';
 import {enableFlightObjectReferences} from 'shared/ReactFeatureFlags';
 import {ASYNC_ITERATOR} from 'shared/ReactSymbols';
+
 import {
   createTemporaryReference,
   registerTemporaryReference,
 } from './ReactFlightServerTemporaryReferences.js';
+
 import {
   preloadModule,
   requireModule,
   resolveServerReference,
 } from 'react-client/src/ReactFlightClientConfig';
+
 import {
   appendBackingEntry,
   consumeBackingEntries,

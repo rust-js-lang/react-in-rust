@@ -6,7 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 import {TextEncoder} from 'util';
+
 import {createHash} from 'crypto';
+
 import hasOwnProperty from 'shared/hasOwnProperty';
 import {$unwrap} from '@rust-js/runtime';
 

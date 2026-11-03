@@ -10,6 +10,7 @@ import {
   getHints,
   resolveRequest,
 } from 'react-server/src/ReactFlightServer';
+
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 
 const previousDispatcher =
@@ -40,8 +41,10 @@ function prefetchDNS(href) {
       hints.add(key);
       emitHint(request, 'D', href);
     } else {
-      /* prefetchDNS */
-      previousDispatcher.D(href);
+      previousDispatcher.D(
+        /* prefetchDNS */
+        href,
+      );
     }
   }
 }
@@ -64,8 +67,8 @@ function preconnect(href, crossOrigin) {
     }
   } else {
     previousDispatcher.C(
-      href,
       /* preconnect */
+      href,
       crossOrigin,
     );
   }
@@ -162,8 +165,8 @@ function preinitStyle(href, precedence, options) {
     }
   } else {
     previousDispatcher.S(
-      href,
       /* preinitStyle */
+      href,
       precedence,
       options,
     );
@@ -189,8 +192,8 @@ function preinitScript(src, options) {
     }
   } else {
     previousDispatcher.X(
-      src,
       /* preinitScript */
+      src,
       options,
     );
   }
@@ -215,8 +218,8 @@ function preinitModuleScript(src, options) {
     }
   } else {
     previousDispatcher.M(
-      src,
       /* preinitModuleScript */
+      src,
       options,
     );
   }

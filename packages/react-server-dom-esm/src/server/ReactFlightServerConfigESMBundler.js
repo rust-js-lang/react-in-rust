@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 // GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
+
 export {
   isClientReference,
   isServerReference,

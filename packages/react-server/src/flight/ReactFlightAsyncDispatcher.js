@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {getCache, resolveRequest} from '../ReactFlightServer.js';
+
 import {resolveOwner} from './ReactFlightCurrentOwner.js';
 
 function resolveCache() {

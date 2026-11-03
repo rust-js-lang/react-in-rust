@@ -14,7 +14,9 @@ import {
 } from './ReactFlightAsyncSequence.js';
 import {resolveOwner} from './flight/ReactFlightCurrentOwner.js';
 import {isAwaitInUserspace, resolveRequest} from './ReactFlightServer.js';
+
 import {AsyncResource, createHook, executionAsyncId} from 'async_hooks';
+
 import {parseStackTracePrivate} from './ReactFlightServerConfig.js';
 import {$fieldCell, $try, $withBorrow} from '@rust-js/runtime';
 
@@ -94,7 +96,7 @@ export function initAsyncDebugInfo() {
               stack,
               start: performance.now(),
               end: -1.1, // set when resolved.
-              promise: promiseRef ?? null,
+              promise: promiseRef,
               // GAP rd567: a field's comment is lost where its value is a `let`-`else`'s binding.
               awaited: trigger,
               previous: current ?? null, // The path that led us here.

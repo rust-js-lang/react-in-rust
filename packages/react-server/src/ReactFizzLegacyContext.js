@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {disableLegacyContext} from 'shared/ReactFeatureFlags';
+
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 
 const warnedAboutMissingGetChildContext = __DEV__ ? {} : undefined;

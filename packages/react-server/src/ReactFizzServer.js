@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {describeObjectForErrorMessage} from 'shared/ReactSerializationErrors';
+
 import {
   constructClassInstance,
   mountClassInstance,
@@ -23,6 +24,7 @@ import {
   rootContextSnapshot,
   switchContext,
 } from './ReactFizzNewContext.js';
+
 import {
   HooksDispatcher,
   checkDidRenderIdHook,
@@ -41,13 +43,16 @@ import {
   setCurrentResumableState,
   unwrapThenable,
 } from './ReactFizzHooks.js';
+
 import {DefaultAsyncDispatcher} from './ReactFizzAsyncDispatcher.js';
 import {
   getOwnerStackByComponentStackNodeInDev,
   getStackByComponentStackNode,
 } from './ReactFizzComponentStack.js';
 import {emptyTreeContext, pushTreeContext} from './ReactFizzTreeContext.js';
+
 import {currentTaskInDEV, setCurrentTaskInDEV} from './ReactFizzCurrentTask.js';
+
 import {
   callComponentInDEV,
   callLazyInitInDEV,
@@ -57,6 +62,7 @@ import {
   getViewTransitionClassName,
   getViewTransitionName,
 } from './ReactFizzViewTransitionComponent.js';
+
 import {resetOwnerStackLimit} from 'shared/ReactOwnerStackReset';
 import {
   ASYNC_ITERATOR,
@@ -79,7 +85,9 @@ import {
   REACT_VIEW_TRANSITION_TYPE,
   getIteratorFn,
 } from 'shared/ReactSymbols';
+
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import {
   disableLegacyContext,
   disableLegacyContextForFunctionComponents,
@@ -90,11 +98,14 @@ import {
   enableViewTransition,
   enableViewTransitionParentEnterExit as enableParentEnterExit,
 } from 'shared/ReactFeatureFlags';
+
 import assign from 'shared/assign';
 import noop from 'shared/noop';
+
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import isArray from 'shared/isArray';
 import {REACT_RECOVERABLE_DIGEST} from 'shared/ReactRecoverable';
+
 import {
   SuspenseException,
   ensureSuspendableThenableStateDEV,
@@ -103,6 +114,7 @@ import {
   getSuspendedThenable,
   setCaptureSuspendedCallSiteDEV,
 } from './ReactFizzThenable.js';
+
 import {
   beginWriting,
   byteLengthOfChunk,
@@ -3920,7 +3932,7 @@ function trackPostponedBoundary(request, trackedPostpones, boundary) {
     const children = node[2];
     const slots = node[3];
     $assign(node, [
-      name ?? null,
+      name,
       key,
       children,
       slots,
@@ -4147,7 +4159,7 @@ function untrackBoundary(request, boundary) {
   const name = node[0];
   const key = node[1];
   // Remove any resumable slots.
-  $assign(node, [name ?? null, key, [], null]);
+  $assign(node, [name, key, [], null]);
 
   // TODO: We should really just remove the boundary from all parent paths too so
   // we don't replay the path to it.
@@ -5449,7 +5461,7 @@ function retryRenderTask(request, task, segment) {
           // the normal suspension path below that stores the thenable state.
           // Preserve it before finishing the abort so DEV can replay the task
           // and include this suspended use() call site in the owner stack.
-          task.thenableState = getThenableStateAfterSuspending() ?? null;
+          task.thenableState = getThenableStateAfterSuspending();
         }
         // The task has unwound from user code, so it must no longer appear to
         // be the currently rendering task while we synchronously finish it.
@@ -5585,7 +5597,7 @@ function retryReplayTask(request, task) {
           // the normal suspension path below that stores the thenable state.
           // Preserve it before finishing the abort so DEV can replay the task
           // and include this suspended use() call site in the owner stack.
-          task.thenableState = getThenableStateAfterSuspending() ?? null;
+          task.thenableState = getThenableStateAfterSuspending();
         }
         // The task has unwound from user code, so it must no longer appear to
         // be the currently rendering task while we synchronously finish it.
@@ -6562,7 +6574,6 @@ export function startFlowing(request, destination) {
     return;
   }
   request.destination = destination;
-
   try {
     flushCompletedQueues(request, destination);
   } catch (thrown) {

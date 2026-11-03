@@ -9,6 +9,7 @@
 // changes to one module should be reflected in the others.
 
 import noop from 'shared/noop';
+
 import {currentTaskInDEV} from './ReactFizzCurrentTask.js';
 import {$unwrap} from '@rust-js/runtime';
 

@@ -10,9 +10,6 @@
 // and for testing semantics of reconciliation separate from the host
 // environment.
 
-import ReactFizzServer from 'react-server';
-import {$index, $splice} from '@rust-js/runtime';
-
 const POP = Buffer.from('/', 'utf8');
 
 function write(destination, buffer) {
@@ -31,6 +28,9 @@ function write(destination, buffer) {
   }
   stack.push(instance);
 }
+
+import ReactFizzServer from 'react-server';
+import {$index, $splice} from '@rust-js/runtime';
 
 // $FlowFixMe[prop-missing]
 // $FlowFixMe[incompatible-type]

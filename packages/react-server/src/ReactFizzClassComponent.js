@@ -7,10 +7,13 @@
 
 import {emptyContextObject} from './ReactFizzLegacyContext.js';
 import {readContext} from './ReactFizzNewContext.js';
+
 import {disableLegacyContext} from 'shared/ReactFeatureFlags';
 import {get as getInstance, set as setInstance} from 'shared/ReactInstanceMap';
+
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+
 import assign from 'shared/assign';
 import isArray from 'shared/isArray';
 import {$index, $slice, $unwrap} from '@rust-js/runtime';
