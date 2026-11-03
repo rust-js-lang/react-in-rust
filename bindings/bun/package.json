@@ -1,0 +1,26 @@
+{
+  "name": "@rust-js-bindings/bun",
+  "version": "1.4.0",
+  "description": "rust-js bindings of Bun's own APIs: Bun.hash and its direct ReadableStream",
+  "license": "MIT",
+  "keywords": [
+    "rust-js",
+    "bun"
+  ],
+  "files": [
+    "Cargo.toml",
+    "src",
+    "README.md"
+  ],
+  "rust-js": {
+    "crate": "rust-js-bindings-bun"
+  },
+  "owners": [
+    "nguyenyou"
+  ],
+  "peerDependencies": {
+    "bun-types": ">=1.4.0 <1.5.0",
+    "@rust-js/builtins": "~0.0.2",
+    "@rust-js/webapi": "~0.0.3"
+  }
+}

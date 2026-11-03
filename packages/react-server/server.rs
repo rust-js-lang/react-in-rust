@@ -63,6 +63,8 @@ pub mod react_server_console_config_plain;
 pub mod react_server_console_config_server;
 #[path = "src/ReactServerStreamConfigBrowser.rs"]
 pub mod react_server_stream_config_browser;
+#[path = "src/ReactServerStreamConfigBun.rs"]
+pub mod react_server_stream_config_bun;
 #[path = "src/ReactServerStreamConfigEdge.rs"]
 pub mod react_server_stream_config_edge;
 #[path = "src/ReactServerStreamConfigFB.rs"]

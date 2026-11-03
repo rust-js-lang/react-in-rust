@@ -11,6 +11,7 @@ publish.workspace = true
 path = "server.rs"
 
 [dependencies]
+bun.workspace = true
 js.workspace = true
 node.workspace = true
 react-isomorphic = { path = "../react" }

@@ -1,0 +1,24 @@
+[package]
+name = "rust-js-bindings-bun"
+# bun-types' major and minor, and the binding's own patch (ADR 0116).
+version = "1.4.0"
+edition = "2024"
+license = "MIT"
+description = "rust-js bindings of Bun's own APIs: Bun.hash and its direct ReadableStream"
+publish = false
+
+[lib]
+name = "bun"
+path = "src/lib.rs"
+
+[dependencies]
+js = { package = "rust-js-builtins", version = "~0.0.2" }
+webapi = { package = "rust-js-webapi", version = "~0.0.3" }
+
+# What it binds is Bun's own JS: rustc checks it, and rust-js reads its
+# metadata (ADRs 0024, 0414).
+[package.metadata.rust-js]
+bindings = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(rust_js)"] }
