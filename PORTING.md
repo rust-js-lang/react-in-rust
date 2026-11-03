@@ -409,9 +409,12 @@ ReactFlightDOMNodeModuleLoading-test.js holds it. createResponse's
 `bundlerConfig`, `serverReferenceConfig` and `moduleLoading` are
 `nullable` (Batch 59), and the Edge client, Rust since Batch 59, gives the
 manifest's `moduleMap`, `serverModuleMap` and `moduleLoading` as upstream
-does, each a `nullable` field of its `ServerConsumerManifest`. The store
-keeps `?? null` while the Node clients, which that test runs, are JS:
-revisit it when they are Rust.
+does, each a `nullable` field of its `ServerConsumerManifest`. **Kept
+permanently, by the user** (2026-11-03, by name, Batch 60, once every Node
+client is Rust): the clients give the manifest's `moduleLoading` as it is,
+`undefined` where the key is left out, and ResponseInstance's store is the
+one place a missing key becomes `null`, Rust's `None`. It differs from
+upstream only for a manifest upstream crashes on.
 resolveModule reads `response._moduleLoading` as upstream does (rd628,
 rust-js e2669d625).
 
