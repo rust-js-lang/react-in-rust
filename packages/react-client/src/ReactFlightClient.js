@@ -151,18 +151,16 @@ Object.defineProperty(ReactPromise.prototype, 'then', {
       // allowing it to be read synchronously anyway.
       const resolveCallback = resolve;
       const rejectCallback = reject;
-      let wrapper;
       const wrapperPromise = new Promise((res, rej) => {
         resolve = value => {
-          $unwrap(wrapper)._debugInfo = this._debugInfo;
+          wrapperPromise._debugInfo = this._debugInfo;
           res(value);
         };
         reject = reason => {
-          $unwrap(wrapper)._debugInfo = this._debugInfo;
+          wrapperPromise._debugInfo = this._debugInfo;
           rej(reason);
         };
       });
-      wrapper = wrapperPromise;
       function onFulfilled(value) {
         if (resolveCallback != null) {
           resolveCallback(value);

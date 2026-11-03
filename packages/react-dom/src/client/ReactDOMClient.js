@@ -12,7 +12,7 @@ import {
 } from 'react-reconciler/src/ReactFiberReconciler';
 import {canUseDOM} from 'shared/ExecutionEnvironment';
 export {default as version} from 'shared/ReactVersion';
-import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
+import Internals from 'shared/ReactDOMSharedInternals';
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
 
 ensureCorrectIsomorphicReactVersion();
@@ -41,7 +41,7 @@ function findDOMNode(
 }
 
 // Expose findDOMNode on internals
-ReactDOMSharedInternals.findDOMNode = findDOMNode;
+Internals.findDOMNode = findDOMNode;
 
 const foundDevTools = injectIntoDevTools();
 

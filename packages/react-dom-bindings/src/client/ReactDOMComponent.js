@@ -525,7 +525,6 @@ function setProp(domElement, tag, key, value, props, prevValue) {
             'event.preventDefault().' +
             "')",
         );
-        break;
       } else {
         if (typeof prevValue === 'function') {
           // When we're switching off a Server Action that was originally hydrated.
@@ -583,8 +582,8 @@ function setProp(domElement, tag, key, value, props, prevValue) {
           const sanitizedValue = sanitizeURL(value);
           domElement.setAttribute(key, sanitizedValue);
         }
-        break;
       }
+      break;
     case 'onClick':
       // TODO: This cast may not be sound for SVG, MathML or custom elements.
       if (value != null) {
@@ -635,7 +634,6 @@ function setProp(domElement, tag, key, value, props, prevValue) {
             domElement.innerHTML = nextHtml;
           }
         }
-        break;
       }
       break;
     // Note: `option.selected` is not updated if `select.multiple` is
@@ -2643,8 +2641,8 @@ function diffHydratedGenericElement(
             extraAttributes,
             serverDifferences,
           );
-          break;
         }
+        break;
       }
       case 'xlinkHref':
         hydrateSanitizedAttribute(

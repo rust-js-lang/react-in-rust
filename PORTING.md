@@ -420,11 +420,20 @@ writes upstream's text above the arm fallen to: `// Fallthrough`,
 (ReactFiberCommitWork). SelectEventPlugin's is rust-js's own, upstream's
 `// falls through`.
 
+**Pending in rust-js from Batch 59** (none changes a result): rd640,
+ReplyClient's isSignatureEqual reads `let Some(bound_promise) =
+reference_closure.bound else ..` in place, `referenceClosure.bound` at each
+use, and each of its two `then` callbacks copies it, `const boundPromise =
+referenceClosure.bound; const boundPromise$1 = referenceClosure.bound;`,
+where upstream's `const boundPromise` is one variable both read.
+
 **Pending in rust-js from Batch 58** (none changes a result): rd637, the
 import header's blank lines, which aren't the Rust's.
 
 **Pending in rust-js from Batch 57** (none changes a result for React's
-own values): rd632, five strict null tests loose again; rd621, the DEV `then`'s `$unwrap(wrapper)._debugInfo`.
+own values): rd632, five strict null tests loose again. rd621 is fixed
+(rust-js 51d56e765, Batch 59): the DEV `then`'s callbacks write
+`wrapperPromise._debugInfo` as upstream's do.
 
 **`nullable(param)` promises `null`, never `undefined`** (the coordinator,
 2026-11-02, Batch 57). Where each of the crate's calls gives a

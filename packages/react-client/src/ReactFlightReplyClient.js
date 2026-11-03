@@ -275,9 +275,8 @@ export function processReply(
           resolve(data);
         }
       } else {
-        const captured = entry.value;
         const result = $catchUnwind(() => {
-          const partJson = stringify(captured);
+          const partJson = stringify(entry.value);
           data.append(streamPrefix, partJson);
           const progress$1 = $unwrap(progress);
           reader.read().then(entry => {
@@ -336,10 +335,9 @@ export function processReply(
         } else {
           // Unlike streams, the last value may not be undefined. If it's not
           // we outline it and encode a reference to it in the closing instruction.
-          const captured = entry.value;
           let partJson;
           try {
-            partJson = stringify(captured);
+            partJson = stringify(entry.value);
           } catch (thrown$1) {
             const x = $unwound(thrown$1);
             reject(thrown(x));
@@ -352,9 +350,8 @@ export function processReply(
           resolve(data);
         }
       } else {
-        const captured = entry.value;
         const result = $catchUnwind(() => {
-          const partJson = stringify(captured);
+          const partJson = stringify(entry.value);
           data.append(streamPrefix, partJson);
           const progress$1 = $unwrap(progress);
           iterator.next().then(entry => {
@@ -1104,16 +1101,16 @@ function isSignatureEqual(referenceId, numberOfBoundArgs) {
       } else {
         const pendingThenable = referenceClosure.bound;
         pendingThenable.status = 'pending';
-        const captured = referenceClosure.bound;
-        const captured$1 = referenceClosure.bound;
+        const boundPromise = referenceClosure.bound;
+        const boundPromise$1 = referenceClosure.bound;
         pendingThenable.then(
           boundArgs => {
-            const fulfilledThenable = captured;
+            const fulfilledThenable = boundPromise;
             fulfilledThenable.status = 'fulfilled';
             fulfilledThenable.value = boundArgs;
           },
           error => {
-            const rejectedThenable = captured$1;
+            const rejectedThenable = boundPromise$1;
             rejectedThenable.status = 'rejected';
             rejectedThenable.reason = error;
           },

@@ -4239,7 +4239,7 @@ fn dispatch_set_state_internal(
                     }
                     false
                 }));
-                // An error is suppressed. It will throw again in the render phase.
+                // Suppress the error. It will throw again in the render phase.
                 if let Ok(true) = did_bail_out {
                     return false;
                 }
