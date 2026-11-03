@@ -40,6 +40,8 @@ pub mod react_dom_legacy_server_impl;
 pub mod react_dom_legacy_server_node;
 #[path = "src/client/ReactDOMRoot.rs"]
 pub mod react_dom_root;
+#[path = "src/client/ReactDOMRootFB.rs"]
+pub mod react_dom_root_fb;
 #[path = "src/ReactDOMSharedInternals.rs"]
 pub mod react_dom_shared_internals;
 #[path = "src/ReactDOMSharedInternalsFB.rs"]

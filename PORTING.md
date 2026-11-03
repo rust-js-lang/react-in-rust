@@ -2051,9 +2051,46 @@ The port is split between sessions by package:
   reconciler's `flushSyncFromReconciler as flushSyncFromReconciler$2`,
   where upstream names it `flushSyncWithoutWarningIfAlreadyRendering`, as
   a namespace method can't be renamed (#566's kind); `/* Events */` prints
-  before `Internals.Events =` (rd710's kind). ReactDOMRootFB is held (rd717, #572; rd718, #577),
-  WIP on branch wip-rootfb; ReactDOMFB, ReactDOMFB.modern and the
-  TestingFB entries re-export it, so they wait for it.
+  before `Internals.Events =` (rd710's kind).
+  client/ReactDOMRootFB, www's roots and legacy API, is Rust (Batch 64).
+  www's ReactFiberErrorDialog is a required binding of the whole module,
+  `get ReactFiberErrorDialog#*` (#572). createRoot and hydrateRoot pass
+  their own literal of ReactDOMRoot's `CreateRootOptions` and
+  `HydrateRootOptions` through `assign`,
+  `js::cast(Some(assign(js::unknown(&CreateRootOptions {..}),
+  (options,))))`, so ReactDOMRoot's createRoot and hydrateRoot keep
+  upstream's form. A cast of another struct's object would make them read
+  each option once (ADR 1022). The legacy wrappers are made before the
+  root they read, sharing an `Rc<OnceCell<Rc<FiberRoot>>>` set right after
+  createContainer and createHydrationContainer (rust-js cd283ac93, #577).
+  They print `let root; .. callback = () => { const instance =
+  getPublicRootInstance($unwrap(root)); .. }; root = create..(..)`.
+  Readability differences, accepted on the user's behalf while away (the
+  coordinator, 2026-11-04; none changes a result):
+  - hydrateRoot's literal has a fourth key, `formState: null`, as
+    HydrateRootOptions' `form_state` is nullable;
+  - `const noopOnDefaultTransitionIndicator = () => undefined;` for
+    `= noop`;
+  - `errorInfo.componentStack ?? ''` for `!= null ? .. : ''`;
+  - topLevelUpdateWarnings is a function, where upstream has a DEV-assigned
+    `let` of an arrow;
+  - `const root = container._reactRootContainer; const current =
+    root.current;` for `container._reactRootContainer.current`, and
+    `const current = root.current; markContainerAsRoot(current, ..)`
+    (ReactDOMRoot's kind);
+  - getReactRootElementInContainer returns a ternary of `?? null` arms;
+  - the wrappers are arrows that `$unwrap(root)`, so a callback run before
+    the root is made panics, as Rust's `unwrap` does;
+  - warnOnInvalidCallback's `__DEV__ &&` is merged into its test;
+  - `!= null` tests of an Option (owner, stateNode, rootEl);
+  - parameter comments say what Flow typed, `// ReactFiberConfigDOM's
+    Container`.
+  Pending in rust-js: `export {batchedUpdates as unstable_batchedUpdates}
+  from 'react-reconciler/src/ReactFiberWorkLoop'`, where upstream imports
+  it from ReactFiberReconciler (rd704, names run 51); #578's lost `!!`s
+  and `$FlowFixMe` comments (rd719); `import {$unwrap} from
+  '@rust-js/runtime';` prints as the module's last line, after that
+  re-export (rd725, rust-js #590).
   react-dom-bindings' events/forks/EventListener-www, www's listeners, is
   Rust (Batch 64), declared beside EventListener as `#[path =
   "src/events/forks/EventListener-www.rs"] pub mod event_listener_www;`;
