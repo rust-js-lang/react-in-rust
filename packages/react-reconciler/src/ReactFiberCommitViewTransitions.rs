@@ -1120,8 +1120,7 @@ pub fn measure_update_view_transition(
     // If nothing changed due to a mutation, or children changing size
     // and the measurements end up unchanged, we should restore it to not animate.
     let previous_measurements: Option<Vec<&'static Unknown>> = if gesture {
-        let clones = state.clones.borrow();
-        clones.as_ref().map(|clones| {
+        state.clones.borrow().as_ref().map(|clones| {
             clones
                 .borrow()
                 .iter()
@@ -1166,8 +1165,7 @@ pub fn measure_nested_view_transitions(changed_parent: &Fiber, gesture: bool) {
             let name = get_view_transition_name(props, state);
             let class_name = get_view_transition_class_name(props.default, props.update);
             let previous_measurements: Option<Vec<&'static Unknown>> = if gesture {
-                let clones = state.clones.borrow();
-                clones.as_ref().map(|clones| {
+                state.clones.borrow().as_ref().map(|clones| {
                     clones
                         .borrow()
                         .iter()
