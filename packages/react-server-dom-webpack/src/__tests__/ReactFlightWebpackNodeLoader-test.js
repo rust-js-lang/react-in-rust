@@ -47,6 +47,8 @@ const files = {
   }),
   'file:///app/both.js': "'use client';\n'use server';\nexport const a = 1;\n",
   'file:///app/late.js': "const a = 1;\n'use client';\nexport const b = 2;\n",
+  'file:///app/empty-directive.js':
+    "'';\n'use client';\nexport const b = 2;\n",
 };
 
 function nextLoad(calls) {
@@ -148,6 +150,13 @@ describe('ReactFlightWebpackNodeLoader', () => {
     });
     const late = await Loader.load('file:///app/late.js', {}, nextLoad(calls));
     expect(late.source).toBe(files['file:///app/late.js']);
+    // An empty directive ends the prologue, as upstream tests its truth.
+    const empty = await Loader.load(
+      'file:///app/empty-directive.js',
+      {},
+      nextLoad(calls),
+    );
+    expect(empty.source).toBe(files['file:///app/empty-directive.js']);
   });
 
   it('makes a client module of references to each of its exports, those of its export * too', async () => {

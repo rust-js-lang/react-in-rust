@@ -7,7 +7,7 @@
 
 import createMappingsSerializer from 'webpack-sources/lib/helpers/createMappingsSerializer.js';
 import readMappings from 'webpack-sources/lib/helpers/readMappings.js';
-import {parse} from 'acorn-loose';
+import * as acorn from 'acorn-loose';
 import {$KeySet, $index, $try, $unwrap} from '@rust-js/runtime';
 
 let warnedAboutConditionsFlag = false;
@@ -429,7 +429,7 @@ async function parseExportNamesInto(body, names, parentUrl, loader) {
         // GAP rd690: a `match` of the `Result` whose `Err` continues is `$try`, not `try`/`catch`.
         // GAP rd692: `Default` of the untagged `EcmaVersion` is refused, so each field is named.
         const value = $try(() =>
-          parse(loaded.source, {ecmaVersion: 2024, sourceType: 'module'}),
+          acorn.parse(loaded.source, {ecmaVersion: 2024, sourceType: 'module'}),
         );
         if (value.TAG === 'Ok') {
           const program = value._0;
@@ -555,7 +555,7 @@ async function transformModuleIfNeeded(source, url, loader) {
   }
   let program;
   try {
-    program = parse(source, {
+    program = acorn.parse(source, {
       ecmaVersion: 2024,
       sourceType: 'module',
       locations: true,
@@ -574,13 +574,18 @@ async function transformModuleIfNeeded(source, url, loader) {
   const body = program.body;
   for (let i = 0; i < body.length; i++) {
     const node = body[i];
-    if (node.type !== 'ExpressionStatement' || node.directive == null) {
+    if (
+      node.type !== 'ExpressionStatement' ||
+      node.directive == null ||
+      !node.directive
+    ) {
       break;
     }
-    if (node.directive === 'use client') {
+    const directive = node.directive;
+    if (directive === 'use client') {
       useClient = true;
     }
-    if (node.directive === 'use server') {
+    if (directive === 'use server') {
       useServer = true;
     }
   }

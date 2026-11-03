@@ -1173,7 +1173,18 @@ These differences from upstream's output are accepted:
   kinds the loaders read and `Node::Other`, with `name`, `loc` and `id`
   getters for what upstream reads of a node of any kind) and
   `bindings/webpack-sources` (`helpers::read_mappings` and
-  `create_mappings_serializer`, of `webpack-sources/lib/helpers/*.js`).
+  `create_mappings_serializer`, of `webpack-sources/lib/helpers/*.js`). The
+  plugin's port had its own `bindings/acorn-loose` (a `Program` and a
+  `Statement` of `type` and `directive` getters, `ecma_version: u32`,
+  `source_type: Option<&str>`): the two are one crate, the loaders' typed
+  `Node`, `EcmaVersion` and `SourceType`, its `parse` read of the namespace
+  as upstream imports it, `acorn.parse(..)` of `import * as acorn from
+  'acorn-loose'` (the plugin's link), and the plugin migrated to it. Each
+  directive loop ends at an empty directive, `directive: Some(directive) if
+  !directive.is_empty()`, upstream's `!node.directive`: before, a module
+  of `'';` then `'use client';` was made a client module where upstream
+  leaves it as it is (a wrong answer, found as the two bindings were made
+  one; each loader test holds it).
   Node's hooks' next functions are upstream's recursive types, each a
   `#[repr(transparent)]` newtype of its `dyn Fn` (`ResolveFunction(&'static
   ResolveFn)`, the transform's loader an `Rc<LoadFn>`), printed as the

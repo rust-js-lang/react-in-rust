@@ -81,11 +81,11 @@ js::export_default! {
                 let mut use_client = false;
                 let mut use_server = false;
                 for node in body {
-                    let Node::ExpressionStatement {
-                        directive: Some(directive),
-                    } = node
-                    else {
-                        break;
+                    let directive = match node {
+                        Node::ExpressionStatement {
+                            directive: Some(directive),
+                        } if !directive.is_empty() => directive,
+                        _ => break,
                     };
                     if directive == "use client" {
                         use_client = true;

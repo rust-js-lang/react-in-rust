@@ -380,10 +380,14 @@ export default class ReactFlightWebpackPlugin {
       const body = program.body;
       for (let i = 0; i < body.length; i++) {
         const node = body[i];
-        const directive = node.directive;
-        if (node.type !== 'ExpressionStatement' || !directive) {
+        if (
+          node.type !== 'ExpressionStatement' ||
+          node.directive == null ||
+          !node.directive
+        ) {
           break;
         }
+        const directive = node.directive;
         if (directive === 'use client') {
           return true;
         }

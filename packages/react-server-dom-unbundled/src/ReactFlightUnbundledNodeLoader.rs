@@ -786,11 +786,11 @@ async fn transform_module_if_needed(
 
     let body = program.body;
     for node in body {
-        let Node::ExpressionStatement {
-            directive: Some(directive),
-        } = node
-        else {
-            break;
+        let directive = match node {
+            Node::ExpressionStatement {
+                directive: Some(directive),
+            } if !directive.is_empty() => directive,
+            _ => break,
         };
         if directive == "use client" {
             use_client = true;

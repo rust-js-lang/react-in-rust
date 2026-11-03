@@ -7,7 +7,7 @@
 
 import Module from 'module';
 import {pathToFileURL} from 'url';
-import {parse} from 'acorn-loose';
+import * as acorn from 'acorn-loose';
 import {$unwrap} from '@rust-js/runtime';
 
 export default function register() {
@@ -29,7 +29,7 @@ export default function register() {
 
     let program;
     try {
-      program = parse(content, {ecmaVersion: 2024, sourceType: 'script'});
+      program = acorn.parse(content, {ecmaVersion: 2024, sourceType: 'script'});
     } catch (x) {
       console.error('Error parsing %s %s', filename, x.message);
       return originalCompile.apply(this, arguments);
@@ -40,13 +40,18 @@ export default function register() {
     let useServer = false;
     for (let i = 0; i < body.length; i++) {
       const node = body[i];
-      if (node.type !== 'ExpressionStatement' || node.directive == null) {
+      if (
+        node.type !== 'ExpressionStatement' ||
+        node.directive == null ||
+        !node.directive
+      ) {
         break;
       }
-      if (node.directive === 'use client') {
+      const directive = node.directive;
+      if (directive === 'use client') {
         useClient = true;
       }
-      if (node.directive === 'use server') {
+      if (directive === 'use server') {
         useServer = true;
       }
     }
