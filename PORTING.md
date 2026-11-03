@@ -954,8 +954,9 @@ These differences from upstream's output are accepted:
     `resolve`, ADR 0863, though `resolve` of a string runs no crate code);
   - noServerCallOrFormAction is generic, `(id, args)`, given as both the
     Flight client's callServer and encodeFormAction;
-  - stashErrorIdx is a number, as upstream's, its text `$displayF64(..)`
-    where upstream writes `'' + stashErrorIdx++` (rd653);
+  - stashErrorIdx is a number, as upstream's, its text `String(stashErrorIdx)`
+    and its increment a statement of its own, where upstream writes `'' +
+    stashErrorIdx++` (rd653 fixed in rust-js f87ccdf31);
   - the webpack server entries' forms: `options?.x` and `!= null`, error
     messages as template literals, trailing `undefined`s left out, `null`
     arguments of an `Option` given `undefined` (createFlightResponse's
@@ -964,17 +965,16 @@ These differences from upstream's output are accepted:
     `return;` and `return writePreambleStartImpl(..)` as statements (rd364),
     and `export const isPrimaryRenderer`/`supportsClientAPIs` after the
     imports, where upstream declares them between two (rd652).
-  Readability gaps (rust-js), not holding: rd557 (a closure printed as a
-  function declaration prints its body's comments above it, handleError's,
-  or inside its first call, handleFlightError's); rd558 (an `Option` a
+  Readability gaps (rust-js), not holding (rd557, a hoisted closure's
+  comments, fixed in rust-js 4b8d58215): rd558 (an `Option` a
   `HashMap` holds is boxed, `$someValue($unwrap($someGet(stashedErrors,
   id), ..))` for `stashedErrors.get(id)`); rd650 (the entries import
   createResumableState and the rest from ReactFizzConfigDOM, where
   upstream imports them from './ReactFizzConfigMarkup', which re-exports
   them); rd651 (`use .. REACT_SHARED_INTERNALS as
   REACT_SHARED_INTERNALS_CLIENT` prints `import ReactSharedInternals`,
-  where upstream names it `ReactSharedInternalsClient`); rd652, rd653 and
-  rd654 above; and `getCurrentStack = .. ?? null`, the Fizz server's
+  where upstream names it `ReactSharedInternalsClient`); rd652 and rd654
+  above; and `getCurrentStack = .. ?? null`, the Fizz server's
   form of a nullable field set from an `Option` (no id).
 - **The Flight clients' names and arms** (the user, 2026-11-01; its
   acronym rule extended to the servers, the user, 2026-11-02, ESM's

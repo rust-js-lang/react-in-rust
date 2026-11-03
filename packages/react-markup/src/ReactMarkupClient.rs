@@ -55,8 +55,6 @@ pub fn experimental_render_to_html(
                 reject(error);
             }),
         };
-        // GAP rd557: a closure printed as a function declaration prints its
-        // body's comments above it.
         let handle_error = move |error: Option<&'static Unknown>, error_info: &ErrorInfo| {
             // Any error rejects the promise, regardless of where it happened.
             // Unlike other React SSR we don't want to put Suspense boundaries into

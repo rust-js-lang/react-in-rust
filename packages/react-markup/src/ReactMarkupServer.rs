@@ -103,16 +103,12 @@ pub fn experimental_render_to_html(
         let stashed_errors: Rc<RefCell<HashMap<String, Option<&'static Unknown>>>> =
             Rc::new(RefCell::new(HashMap::new()));
 
-        // GAP rd557: a closure printed as a function declaration prints its
-        // body's comments above it, or inside its first statement's call.
         let handle_flight_error = {
             let stashed_errors = Rc::clone(&stashed_errors);
             move |error: Option<&'static Unknown>| -> Option<String> {
                 // For Flight errors we don't immediately reject, because they might not matter
                 // to the output of the HTML. We stash the error with a digest in case we need
                 // to get to the original error from the Fizz render.
-                // GAP rd653: an f64's text prints `$displayF64(..)`, where upstream
-                // writes `'' + stashErrorIdx++`.
                 let id = stash_error_idx.get().to_string();
                 stash_error_idx.set(stash_error_idx.get() + 1.0);
                 stashed_errors.borrow_mut().insert(id.clone(), error);
@@ -120,7 +116,6 @@ pub fn experimental_render_to_html(
             }
         };
 
-        // GAP rd557: these closures' comments print above the function.
         // GAP rd558: an `Option` a `HashMap` holds is boxed, so
         // `stashed_errors[id]` reads `$someValue($unwrap($someGet(..)))`
         // where upstream reads `stashedErrors.get(id)`.
