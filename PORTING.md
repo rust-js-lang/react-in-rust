@@ -1426,8 +1426,10 @@ These differences from upstream's output are accepted:
   Unknown>`, as upstream's `.apply` takes it; the bindings of each module
   required are a private `mod` named after it, and the call is
   `function::apply(react_dom_server_node::render_to_pipeable_stream(),
-  None, Some(js::arguments()))`, printed
-  `require('./src/server/react-dom-server.node').renderToPipeableStream.apply(undefined,
+  js::this().map(|this| this as &dyn IntoUnknown), Some(js::arguments()))`,
+  the entry's own `this` and arguments (rust-js ADR 1076, rd683), printed
+  upstream's
+  `require('./src/server/react-dom-server.node').renderToPipeableStream.apply(this,
   arguments)`. A `use` can't stand in: it imports as the entry loads,
   where setupHostConfigs mocks the configs of the renderer each module it
   requires is an entry of (ReactDOMLegacyServerBrowser's dom-legacy,
@@ -1436,10 +1438,6 @@ These differences from upstream's output are accepted:
   the bindings it reads, as each upstream file writes its own `require`s
   (server.browser, .bun and .edge each read the legacy browser server's
   two). Differences from upstream, none changing a result:
-  - rd683: `.apply(undefined, arguments)` where upstream passes `this`: a
-    function of the crate's has no Rust for its own `this` (`js::arguments()`
-    has no `this` beside it); the implementations, ReactDOMLegacyServer*
-    and ReactDOMFizz*'s functions, read none;
   - `export {default as version} from 'shared/ReactVersion'` where upstream
     imports `ReactVersion` and exports it `as version` (Bun's form);
   - server.browser's and server.node's renderToString and

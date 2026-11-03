@@ -6,7 +6,7 @@
 // This file is only used for tests.
 // It lazily loads the implementation so that we get the correct set of host configs.
 
-use js::{Unknown, function};
+use js::{IntoUnknown, Unknown, function};
 
 #[cfg_attr(rust_js, rust_js::name = "version")]
 pub use shared::react_version::REACT_VERSION as VERSION;
@@ -51,12 +51,10 @@ mod react_dom_server_node {
     }
 }
 
-// GAP rd683: each function is `.apply(this, arguments)` upstream, where a
-// function of the crate's reads no `this` of its own, so it passes none.
 pub fn prerender_to_node_stream() -> Option<&'static Unknown> {
     function::apply(
         react_dom_server_node::prerender_to_node_stream(),
-        None,
+        js::this().map(|this| this as &dyn IntoUnknown),
         Some(js::arguments()),
     )
 }
@@ -64,7 +62,7 @@ pub fn prerender_to_node_stream() -> Option<&'static Unknown> {
 pub fn prerender() -> Option<&'static Unknown> {
     function::apply(
         react_dom_server_node::prerender(),
-        None,
+        js::this().map(|this| this as &dyn IntoUnknown),
         Some(js::arguments()),
     )
 }
@@ -72,7 +70,7 @@ pub fn prerender() -> Option<&'static Unknown> {
 pub fn resume_and_prerender_to_node_stream() -> Option<&'static Unknown> {
     function::apply(
         react_dom_server_node::resume_and_prerender_to_node_stream(),
-        None,
+        js::this().map(|this| this as &dyn IntoUnknown),
         Some(js::arguments()),
     )
 }
@@ -80,7 +78,7 @@ pub fn resume_and_prerender_to_node_stream() -> Option<&'static Unknown> {
 pub fn resume_and_prerender() -> Option<&'static Unknown> {
     function::apply(
         react_dom_server_node::resume_and_prerender(),
-        None,
+        js::this().map(|this| this as &dyn IntoUnknown),
         Some(js::arguments()),
     )
 }

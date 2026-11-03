@@ -6,7 +6,7 @@
 // This file is only used for tests.
 // It lazily loads the implementation so that we get the correct set of host configs.
 
-use js::{Unknown, function};
+use js::{IntoUnknown, Unknown, function};
 
 #[cfg_attr(rust_js, rust_js::name = "version")]
 pub use shared::react_version::REACT_VERSION as VERSION;
@@ -73,12 +73,10 @@ mod react_dom_legacy_server_browser {
     }
 }
 
-// GAP rd683: each function is `.apply(this, arguments)` upstream, where a
-// function of the crate's reads no `this` of its own, so it passes none.
 pub fn render_to_readable_stream() -> Option<&'static Unknown> {
     function::apply(
         react_dom_server_bun::render_to_readable_stream(),
-        None,
+        js::this().map(|this| this as &dyn IntoUnknown),
         Some(js::arguments()),
     )
 }
@@ -86,7 +84,7 @@ pub fn render_to_readable_stream() -> Option<&'static Unknown> {
 pub fn render_to_string() -> Option<&'static Unknown> {
     function::apply(
         react_dom_legacy_server_browser::render_to_string(),
-        None,
+        js::this().map(|this| this as &dyn IntoUnknown),
         Some(js::arguments()),
     )
 }
@@ -94,19 +92,23 @@ pub fn render_to_string() -> Option<&'static Unknown> {
 pub fn render_to_static_markup() -> Option<&'static Unknown> {
     function::apply(
         react_dom_legacy_server_browser::render_to_static_markup(),
-        None,
+        js::this().map(|this| this as &dyn IntoUnknown),
         Some(js::arguments()),
     )
 }
 
 pub fn resume() -> Option<&'static Unknown> {
-    function::apply(react_dom_server_bun::resume(), None, Some(js::arguments()))
+    function::apply(
+        react_dom_server_bun::resume(),
+        js::this().map(|this| this as &dyn IntoUnknown),
+        Some(js::arguments()),
+    )
 }
 
 pub fn render_to_pipeable_stream() -> Option<&'static Unknown> {
     function::apply(
         react_dom_server_bun::render_to_pipeable_stream(),
-        None,
+        js::this().map(|this| this as &dyn IntoUnknown),
         Some(js::arguments()),
     )
 }
@@ -114,7 +116,7 @@ pub fn render_to_pipeable_stream() -> Option<&'static Unknown> {
 pub fn resume_to_pipeable_stream() -> Option<&'static Unknown> {
     function::apply(
         react_dom_server_bun::resume_to_pipeable_stream(),
-        None,
+        js::this().map(|this| this as &dyn IntoUnknown),
         Some(js::arguments()),
     )
 }

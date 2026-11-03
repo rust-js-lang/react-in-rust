@@ -10,32 +10,30 @@
 
 export {default as version} from 'shared/ReactVersion';
 
-// GAP rd683: each function is `.apply(this, arguments)` upstream, where a
-// function of the crate's reads no `this` of its own, so it passes none.
 export function prerenderToNodeStream() {
   return require('./src/server/react-dom-server.node').prerenderToNodeStream.apply(
-    undefined,
+    this,
     arguments,
   );
 }
 
 export function prerender() {
   return require('./src/server/react-dom-server.node').prerender.apply(
-    undefined,
+    this,
     arguments,
   );
 }
 
 export function resumeAndPrerenderToNodeStream() {
   return require('./src/server/react-dom-server.node').resumeAndPrerenderToNodeStream.apply(
-    undefined,
+    this,
     arguments,
   );
 }
 
 export function resumeAndPrerender() {
   return require('./src/server/react-dom-server.node').resumeAndPrerender.apply(
-    undefined,
+    this,
     arguments,
   );
 }

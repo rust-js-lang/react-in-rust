@@ -10,8 +10,6 @@
 
 export {default as version} from 'shared/ReactVersion';
 
-// GAP rd683: each function is `.apply(this, arguments)` upstream, where a
-// function of the crate's reads no `this` of its own, so it passes none.
 export function renderToReadableStream(): unknown | null | undefined;
 
 export function renderToString(): unknown | null | undefined;

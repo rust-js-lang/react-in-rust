@@ -10,46 +10,44 @@
 
 export {default as version} from 'shared/ReactVersion';
 
-// GAP rd683: each function is `.apply(this, arguments)` upstream, where a
-// function of the crate's reads no `this` of its own, so it passes none.
 export function renderToString() {
   return require('./src/server/ReactDOMLegacyServerNode').renderToString.apply(
-    undefined,
+    this,
     arguments,
   );
 }
 
 export function renderToStaticMarkup() {
   return require('./src/server/ReactDOMLegacyServerNode').renderToStaticMarkup.apply(
-    undefined,
+    this,
     arguments,
   );
 }
 
 export function renderToPipeableStream() {
   return require('./src/server/react-dom-server.node').renderToPipeableStream.apply(
-    undefined,
+    this,
     arguments,
   );
 }
 
 export function resumeToPipeableStream() {
   return require('./src/server/react-dom-server.node').resumeToPipeableStream.apply(
-    undefined,
+    this,
     arguments,
   );
 }
 
 export function renderToReadableStream() {
   return require('./src/server/react-dom-server.node').renderToReadableStream.apply(
-    undefined,
+    this,
     arguments,
   );
 }
 
 export function resume() {
   return require('./src/server/react-dom-server.node').resume.apply(
-    undefined,
+    this,
     arguments,
   );
 }
