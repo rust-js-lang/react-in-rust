@@ -1,0 +1,25 @@
+{
+  "name": "@rust-js-bindings/webpack-sources",
+  "version": "3.2.0",
+  "description": "rust-js bindings of webpack-sources' source map helpers",
+  "license": "MIT",
+  "keywords": [
+    "rust-js",
+    "webpack-sources"
+  ],
+  "files": [
+    "Cargo.toml",
+    "src",
+    "README.md"
+  ],
+  "rust-js": {
+    "crate": "rust-js-bindings-webpack-sources"
+  },
+  "owners": [
+    "nguyenyou"
+  ],
+  "peerDependencies": {
+    "webpack-sources": ">=3.2.0 <4.0.0",
+    "@rust-js/builtins": "~0.0.2"
+  }
+}

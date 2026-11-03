@@ -524,21 +524,24 @@ impl ReactFlightWebpackPlugin {
             let body = match acorn::parse(
                 source,
                 &acorn::Options {
-                    ecma_version: 2024,
-                    source_type: Some("module"),
+                    ecma_version: acorn::EcmaVersion::Version(2024),
+                    source_type: Some(acorn::SourceType::Module),
+                    locations: None,
+                    on_comment: None,
+                    preserve_parens: None,
                 },
             ) {
-                Ok(program) => program.body(),
+                Ok(program) => program.body,
                 Err(_) => return false,
             };
             for node in body {
-                let directive = node.directive();
-                if node.r#type() != "ExpressionStatement"
-                    || directive.as_deref().is_none_or(str::is_empty)
-                {
-                    break;
-                }
-                if directive.as_deref() == Some("use client") {
+                let directive = match node {
+                    acorn::Node::ExpressionStatement {
+                        directive: Some(directive),
+                    } if !directive.is_empty() => directive,
+                    _ => break,
+                };
+                if directive == "use client" {
                     return true;
                 }
             }

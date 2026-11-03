@@ -21,6 +21,7 @@ shared.workspace = true
 tapable.workspace = true
 webapi.workspace = true
 webpack.workspace = true
+webpack-sources.workspace = true
 
 [lints]
 workspace = true

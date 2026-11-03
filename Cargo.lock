@@ -132,7 +132,9 @@ version = "0.0.0"
 dependencies = [
  "react-client",
  "react-server",
+ "rust-js-bindings-acorn-loose",
  "rust-js-bindings-busboy",
+ "rust-js-bindings-webpack-sources",
  "rust-js-builtins",
  "rust-js-node",
  "rust-js-webapi",
@@ -181,7 +183,9 @@ version = "0.0.0"
 dependencies = [
  "react-client",
  "react-server",
+ "rust-js-bindings-acorn-loose",
  "rust-js-bindings-busboy",
+ "rust-js-bindings-webpack-sources",
  "rust-js-builtins",
  "rust-js-node",
  "rust-js-webapi",
@@ -199,6 +203,7 @@ dependencies = [
  "rust-js-bindings-neo-async",
  "rust-js-bindings-tapable",
  "rust-js-bindings-webpack",
+ "rust-js-bindings-webpack-sources",
  "rust-js-builtins",
  "rust-js-node",
  "rust-js-webapi",
@@ -265,6 +270,13 @@ name = "rust-js-bindings-webpack"
 version = "5.82.0"
 dependencies = [
  "rust-js-bindings-tapable",
+ "rust-js-builtins",
+]
+
+[[package]]
+name = "rust-js-bindings-webpack-sources"
+version = "3.2.0"
+dependencies = [
  "rust-js-builtins",
 ]
 

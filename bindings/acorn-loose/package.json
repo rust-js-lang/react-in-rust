@@ -1,7 +1,7 @@
 {
   "name": "@rust-js-bindings/acorn-loose",
   "version": "8.3.0",
-  "description": "rust-js bindings of acorn-loose, a JavaScript parser that never fails",
+  "description": "rust-js bindings of acorn-loose, acorn's error-tolerant JavaScript parser",
   "license": "MIT",
   "keywords": [
     "rust-js",

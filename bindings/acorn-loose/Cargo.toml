@@ -4,7 +4,7 @@ name = "rust-js-bindings-acorn-loose"
 version = "8.3.0"
 edition = "2024"
 license = "MIT"
-description = "rust-js bindings of acorn-loose, a JavaScript parser that never fails"
+description = "rust-js bindings of acorn-loose, acorn's error-tolerant JavaScript parser"
 publish = false
 
 [lib]
@@ -14,8 +14,8 @@ path = "src/lib.rs"
 [dependencies]
 js = { package = "rust-js-builtins", version = "~0.0.2" }
 
-# What it binds is acorn-loose's own JS: rustc checks it, and rust-js reads its
-# metadata (ADRs 0024, 0414).
+# What it binds is acorn-loose's own JS: rustc checks it, and rust-js reads
+# its metadata (ADRs 0024, 0414).
 [package.metadata.rust-js]
 bindings = true
 

@@ -4,7 +4,7 @@
 # read the rest. rust-js is a checkout beside this one, built from source.
 [workspace]
 resolver = "3"
-members = ["bindings/acorn-loose", "bindings/art", "bindings/bun", "bindings/busboy", "bindings/neo-async", "bindings/tapable", "bindings/webpack", "packages/react", "packages/react-art", "packages/react-client", "packages/react-dom", "packages/react-dom-bindings", "packages/react-dom-bindings/src/server/fizz-instruction-set", "packages/react-is", "packages/react-markup", "packages/react-noop-renderer", "packages/react-reconciler", "packages/react-server", "packages/react-server-dom-esm", "packages/react-server-dom-fb", "packages/react-server-dom-parcel", "packages/react-server-dom-turbopack", "packages/react-server-dom-unbundled", "packages/react-server-dom-webpack", "packages/react-test-renderer", "packages/scheduler", "packages/shared"]
+members = ["bindings/acorn-loose", "bindings/art", "bindings/bun", "bindings/busboy", "bindings/neo-async", "bindings/tapable", "bindings/webpack", "bindings/webpack-sources", "packages/react", "packages/react-art", "packages/react-client", "packages/react-dom", "packages/react-dom-bindings", "packages/react-dom-bindings/src/server/fizz-instruction-set", "packages/react-is", "packages/react-markup", "packages/react-noop-renderer", "packages/react-reconciler", "packages/react-server", "packages/react-server-dom-esm", "packages/react-server-dom-fb", "packages/react-server-dom-parcel", "packages/react-server-dom-turbopack", "packages/react-server-dom-unbundled", "packages/react-server-dom-webpack", "packages/react-test-renderer", "packages/scheduler", "packages/shared"]
 
 [workspace.package]
 version = "0.0.0"
@@ -16,13 +16,14 @@ js = { package = "rust-js-builtins", path = "../rust-js/builtins" }
 webapi = { package = "rust-js-webapi", path = "../rust-js/webapi" }
 node = { package = "rust-js-node", path = "../rust-js/node" }
 shared = { path = "packages/shared" }
+acorn-loose = { package = "rust-js-bindings-acorn-loose", path = "bindings/acorn-loose" }
 art = { package = "rust-js-bindings-art", path = "bindings/art" }
 bun = { package = "rust-js-bindings-bun", path = "bindings/bun" }
 busboy = { package = "rust-js-bindings-busboy", path = "bindings/busboy" }
-acorn-loose = { package = "rust-js-bindings-acorn-loose", path = "bindings/acorn-loose" }
 neo-async = { package = "rust-js-bindings-neo-async", path = "bindings/neo-async" }
 tapable = { package = "rust-js-bindings-tapable", path = "bindings/tapable" }
 webpack = { package = "rust-js-bindings-webpack", path = "bindings/webpack" }
+webpack-sources = { package = "rust-js-bindings-webpack-sources", path = "bindings/webpack-sources" }
 
 [workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(rust_js)"] }
