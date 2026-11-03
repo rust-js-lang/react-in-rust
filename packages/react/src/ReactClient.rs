@@ -5,6 +5,18 @@
 
 use js::Unknown;
 
+#[cfg_attr(rust_js, rust_js::name = "version")]
+pub use shared::react_version::REACT_VERSION as VERSION;
+
+#[cfg_attr(rust_js, rust_js::name = "Fragment")]
+pub use shared::react_symbols::REACT_FRAGMENT_TYPE as FRAGMENT;
+#[cfg_attr(rust_js, rust_js::name = "Profiler")]
+pub use shared::react_symbols::REACT_PROFILER_TYPE as PROFILER;
+#[cfg_attr(rust_js, rust_js::name = "StrictMode")]
+pub use shared::react_symbols::REACT_STRICT_MODE_TYPE as STRICT_MODE;
+#[cfg_attr(rust_js, rust_js::name = "Suspense")]
+pub use shared::react_symbols::REACT_SUSPENSE_TYPE as SUSPENSE;
+
 pub use crate::react_base_classes::{Component, PureComponent};
 pub use crate::react_create_ref::create_ref;
 
@@ -23,24 +35,14 @@ pub use crate::react_hooks::{
     use_imperative_handle, use_insertion_effect, use_layout_effect, use_memo, use_optimistic,
     use_reducer, use_ref, use_state, use_sync_external_store,
 };
-
-#[cfg_attr(rust_js, rust_js::name = "__COMPILER_RUNTIME")]
-pub use crate::react_compiler_runtime as __COMPILER_RUNTIME;
 #[cfg_attr(
     rust_js,
     rust_js::name = "__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE"
 )]
 pub use crate::react_shared_internals_client::REACT_SHARED_INTERNALS as __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-#[cfg_attr(rust_js, rust_js::name = "Fragment")]
-pub use shared::react_symbols::REACT_FRAGMENT_TYPE as FRAGMENT;
-#[cfg_attr(rust_js, rust_js::name = "Profiler")]
-pub use shared::react_symbols::REACT_PROFILER_TYPE as PROFILER;
-#[cfg_attr(rust_js, rust_js::name = "StrictMode")]
-pub use shared::react_symbols::REACT_STRICT_MODE_TYPE as STRICT_MODE;
-#[cfg_attr(rust_js, rust_js::name = "Suspense")]
-pub use shared::react_symbols::REACT_SUSPENSE_TYPE as SUSPENSE;
-#[cfg_attr(rust_js, rust_js::name = "version")]
-pub use shared::react_version::REACT_VERSION as VERSION;
+
+#[cfg_attr(rust_js, rust_js::name = "__COMPILER_RUNTIME")]
+pub use crate::react_compiler_runtime as __COMPILER_RUNTIME;
 // Concurrent Mode
 #[cfg_attr(rust_js, rust_js::name = "unstable_getCacheForType")]
 pub use crate::react_hooks::get_cache_for_type as unstable_get_cache_for_type;

@@ -137,15 +137,15 @@ export interface DebugChannel {
 
 export interface ResponseInstance {
   _bundlerConfig: unknown | null | undefined;
-  _serverReferenceConfig?: unknown | null | undefined;
-  _moduleLoading?: unknown | null | undefined;
+  _serverReferenceConfig: unknown | null;
+  _moduleLoading: unknown | null;
   _callServer: CallServerCallback | null | undefined;
   _encodeFormAction: EncodeFormActionCallback | null | undefined;
   _nonce: string | null | undefined;
   _chunks: Map<number, ReactPromise> | null | undefined;
   _stringDecoder: unknown | null | undefined;
   _closed: boolean;
-  _closedReason?: unknown | null | undefined;
+  _closedReason: unknown | null;
   _allowPartialStream: boolean;
   // the set temporary references can be resolved from
   _tempRefs: TemporaryReferenceSet | null | undefined;

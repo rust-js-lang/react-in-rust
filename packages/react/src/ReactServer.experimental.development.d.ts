@@ -10,15 +10,21 @@ import type {Children} from './ReactClient.js';
 export {default as __SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE} from './ReactSharedInternalsServer.js';
 
 export {
-  taintObjectReference as experimental_taintObjectReference,
-  taintUniqueValue as experimental_taintUniqueValue,
-} from './ReactTaint.js';
+  REACT_ACTIVITY_TYPE as Activity,
+  REACT_FRAGMENT_TYPE as Fragment,
+  REACT_PROFILER_TYPE as Profiler,
+  REACT_STRICT_MODE_TYPE as StrictMode,
+  REACT_SUSPENSE_TYPE as Suspense,
+  REACT_VIEW_TRANSITION_TYPE as ViewTransition,
+} from 'shared/ReactSymbols';
 
-export {cache, cacheSignal} from './ReactCacheServer.js';
+export {
+  cloneElement,
+  createElement,
+  isValidElement,
+} from './jsx/ReactJSXElement.js';
 
 export {createRef} from './ReactCreateRef.js';
-
-export {forwardRef} from './ReactForwardRef.js';
 
 export {
   getCacheForType as unstable_getCacheForType,
@@ -29,26 +35,17 @@ export {
   useMemo,
 } from './ReactHooks.js';
 
-export {
-  cloneElement,
-  createElement,
-  isValidElement,
-} from './jsx/ReactJSXElement.js';
+export {forwardRef} from './ReactForwardRef.js';
 
 export {lazy} from './ReactLazy.js';
 
 export {memo} from './ReactMemo.js';
 
+export {cache, cacheSignal} from './ReactCacheServer.js';
+
 export {startTransition} from './ReactStartTransition.js';
 
-export {
-  REACT_ACTIVITY_TYPE as Activity,
-  REACT_FRAGMENT_TYPE as Fragment,
-  REACT_PROFILER_TYPE as Profiler,
-  REACT_STRICT_MODE_TYPE as StrictMode,
-  REACT_SUSPENSE_TYPE as Suspense,
-  REACT_VIEW_TRANSITION_TYPE as ViewTransition,
-} from 'shared/ReactSymbols';
+export {captureOwnerStack} from './ReactOwnerStack.js';
 
 export {default as version} from 'shared/ReactVersion';
 
@@ -56,6 +53,9 @@ export {REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList} from 'shared/ReactSym
 
 export {REACT_OPTIMISTIC_KEY as optimisticKey} from 'shared/ReactSymbols';
 
-export {captureOwnerStack} from './ReactOwnerStack.js';
+export {
+  taintObjectReference as experimental_taintObjectReference,
+  taintUniqueValue as experimental_taintUniqueValue,
+} from './ReactTaint.js';
 
 export const Children: Children;

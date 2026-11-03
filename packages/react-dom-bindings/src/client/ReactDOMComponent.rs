@@ -453,6 +453,7 @@ fn set_prop(
         }
         // These attributes accept URLs. These must not allow javascript: URLS.
         "data" if tag != "object" => set_value_for_known_attribute(dom_element, "data", value),
+        // fallthrough
         "data" | "src" | "href" => {
             if key != "href"
                 && ENABLE_SRC_OBJECT.with(|&enabled| enabled)
@@ -2638,6 +2639,7 @@ fn diff_hydrated_generic_element(
                 let server_value = dom_element.get_attribute("data");
                 warn_for_prop_difference(&prop_key, server_value.map(js::unknown_of), value, server_differences);
             }
+            // fallthrough
             "data" | "src" | "href" => {
                 if prop_key != "href"
                     && ENABLE_SRC_OBJECT.with(|&enabled| enabled)

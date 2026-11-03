@@ -329,10 +329,18 @@ them. A `use` of another crate's binding through the module that holds it
 `assign`) places that module's import at the `use` too (rd609, rust-js
 5c63e9442), and so does a `use` of another crate's namespace
 (`ReactFiberReconciler`) or of a binding crate's module (`art::{mode,
-transform}`) (rd611, 40051fd39). Pending in rust-js (rd620, not accepted):
-a `use crate::module;` of the crate's own module called qualified
-(ReactFiberReconciler's `react_portal`, `react_fiber_error_logger`, ..)
-still prints its import after the others.
+transform}`) (rd611, 40051fd39), and a `use crate::module;` of the crate's own module
+called qualified (ReactFiberReconciler's `react_portal`) and a `pub use`'s
+re-export print at the `use` too (rd620, 157e916f1). So a module of
+`pub use`s, ReactClient's or ReactServer's, writes them in upstream's
+import order, its first of each module where upstream imports that module.
+ReactClient's `export * as __COMPILER_RUNTIME` stays where upstream's
+export list has it, after `__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE`,
+though upstream imports ReactCompilerRuntime last (the user, 2026-11-02,
+Batch 58), and ReactServer.experimental's taint re-export lists
+`taintObjectReference` before `taintUniqueValue`, as rustfmt sorts one
+`pub use` run, where upstream lists `taintUniqueValue` first (the user,
+2026-11-02, Batch 58).
 
 ## Null and undefined
 
@@ -389,19 +397,24 @@ where the key is left out. There ours preinits nothing, as Rust's `None`
 does, and upstream's `undefined !== null` throws on `.prefix`.
 ReactFlightDOMNodeModuleLoading-test.js holds it. Revisit when the DOM
 clients are Rust: their createResponse call then gives `?? null` (rd613's
-rule for another crate's call), and the store can be upstream's. Pending
-in rust-js: resolveModule's `response._moduleLoading ?? null` (rd628).
+rule for another crate's call), and the store can be upstream's.
+resolveModule reads `response._moduleLoading` as upstream does (rd628,
+rust-js e2669d625).
+
+**Fall-through comments are upstream's** (rd635, rd638; rust-js c62897ba7,
+4510511c8): rust-js writes `// falls through` before a case another falls
+through to, and keeps the program's own comment there instead. So the port
+writes upstream's text above the arm fallen to: `// Fallthrough`,
+`// fallthrough` (ReactDOMComponent), `/* falls through */`
+(SimpleEventPlugin), `// Intentional fallthrough to next branch`
+(ReactFiberCommitWork). SelectEventPlugin's is rust-js's own, upstream's
+`// falls through`.
+
+**Pending in rust-js from Batch 58** (none changes a result): rd637, the
+import header's blank lines, which aren't the Rust's.
 
 **Pending in rust-js from Batch 57** (none changes a result for React's
-own values): rd636 (rust-js #485, a P0 of 474b193f9, being fixed),
-ReactInputSelection's hasSelectionCapabilities, which
-reads `elem.type` in each of five comparisons and leaves a dead `const
-type = elem.type;` in the branch (Rust reads it once; a getter that runs
-code would see the difference); rd634, FizzInstructionSetShared's two
-"// Fall through to reveal." above the `try`; rd635, SelectEventPlugin's
-`// Fallthrough` for upstream's `// falls through`; rd632, five strict
-null tests loose again; rd628, resolveModule's `response._moduleLoading ??
-null`; rd621, the DEV `then`'s `$unwrap(wrapper)._debugInfo`.
+own values): rd632, five strict null tests loose again; rd621, the DEV `then`'s `$unwrap(wrapper)._debugInfo`.
 
 **`nullable(param)` promises `null`, never `undefined`** (the coordinator,
 2026-11-02, Batch 57). Where each of the crate's calls gives a

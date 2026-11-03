@@ -36,6 +36,8 @@ use react_reconciler::react_work_tags::{
     SIMPLE_MEMO_COMPONENT, WorkTag,
 };
 use shared::get_component_name_from_type::get_component_name_from_type;
+#[cfg_attr(rust_js, rust_js::name = "version")]
+pub use shared::react_version::REACT_VERSION as VERSION;
 
 use shared::check_string_coercion::check_prop_string_coercion;
 
@@ -772,5 +774,3 @@ pub use self::SCHEDULER as _Scheduler;
 pub fn unstable_batched_updates<A, R>(r#fn: impl FnOnce(A) -> R, a: A) -> R {
     ReactFiberReconciler.batched_updates(r#fn, a)
 }
-#[cfg_attr(rust_js, rust_js::name = "version")]
-pub use shared::react_version::REACT_VERSION as VERSION;

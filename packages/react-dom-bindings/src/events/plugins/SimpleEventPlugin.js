@@ -73,7 +73,7 @@ export function extractEvents(
       if (getEventCharCode(nativeEvent) === 0) {
         return;
       }
-    // Fallthrough
+    /* falls through */
     case 'keydown':
     case 'keyup':
       SyntheticEventCtor = SyntheticKeyboardEvent;
@@ -98,13 +98,14 @@ export function extractEvents(
       if (nativeEvent.button === 2) {
         return;
       }
-    // Fallthrough
+    /* falls through */
     case 'auxclick':
     case 'dblclick':
     case 'mousedown':
     case 'mousemove':
     case 'mouseup':
     // TODO: Disabled elements should not respond to mouse events
+    /* falls through */
     case 'mouseout':
     case 'mouseover':
     case 'contextmenu':

@@ -5,6 +5,15 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+export {default as version} from 'shared/ReactVersion';
+
+export {
+  REACT_FRAGMENT_TYPE as Fragment,
+  REACT_PROFILER_TYPE as Profiler,
+  REACT_STRICT_MODE_TYPE as StrictMode,
+  REACT_SUSPENSE_TYPE as Suspense,
+} from 'shared/ReactSymbols';
+
 export {Component, PureComponent} from './ReactBaseClasses.js';
 export {createRef} from './ReactCreateRef.js';
 import {count, forEach, map, only, toArray} from './ReactChildren.js';
@@ -37,17 +46,8 @@ export {
   useSyncExternalStore,
 } from './ReactHooks.js';
 
-export * as __COMPILER_RUNTIME from './ReactCompilerRuntime.js';
 export {default as __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE} from './ReactSharedInternalsClient.js';
-
-export {
-  REACT_FRAGMENT_TYPE as Fragment,
-  REACT_PROFILER_TYPE as Profiler,
-  REACT_STRICT_MODE_TYPE as StrictMode,
-  REACT_SUSPENSE_TYPE as Suspense,
-} from 'shared/ReactSymbols';
-
-export {default as version} from 'shared/ReactVersion';
+export * as __COMPILER_RUNTIME from './ReactCompilerRuntime.js';
 
 // Concurrent Mode
 export {

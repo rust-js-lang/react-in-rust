@@ -3060,7 +3060,7 @@ function resolveModule(response, id, model, streamState) {
   );
 
   prepareDestinationForModule(
-    response._moduleLoading ?? null,
+    response._moduleLoading,
     response._nonce,
     clientReferenceMetadata,
   );

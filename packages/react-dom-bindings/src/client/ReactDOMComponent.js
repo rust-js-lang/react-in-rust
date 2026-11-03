@@ -423,7 +423,7 @@ function setProp(domElement, tag, key, value, props, prevValue) {
         setValueForKnownAttribute(domElement, 'data', value);
         break;
       }
-    // Fallthrough
+    // fallthrough
     case 'src':
     case 'href':
       if (
@@ -2470,7 +2470,7 @@ function diffHydratedGenericElement(
             serverDifferences[propKey] = {__html: serverHTML};
           }
         }
-        break;
+        continue;
       }
       case 'className':
         hydrateAttribute(
@@ -2481,7 +2481,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'tabIndex':
         hydrateAttribute(
           domElement,
@@ -2491,28 +2491,28 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'style':
         extraAttributes.delete(propKey);
         diffHydratedStyles(domElement, value, serverDifferences);
-        break;
+        continue;
       case 'multiple': {
         extraAttributes.delete(propKey);
         const serverValue = domElement.multiple;
         warnForPropDifference(propKey, serverValue, value, serverDifferences);
-        break;
+        continue;
       }
       case 'muted': {
         extraAttributes.delete(propKey);
         const serverValue = domElement.muted;
         warnForPropDifference(propKey, serverValue, value, serverDifferences);
-        break;
+        continue;
       }
       case 'autoFocus': {
         extraAttributes.delete('autofocus');
         const serverValue = domElement.autofocus;
         warnForPropDifference(propKey, serverValue, value, serverDifferences);
-        break;
+        continue;
       }
       case 'data':
         if (tag !== 'object') {
@@ -2521,7 +2521,7 @@ function diffHydratedGenericElement(
           warnForPropDifference(propKey, serverValue, value, serverDifferences);
           break;
         }
-      // Fallthrough
+      // fallthrough
       case 'src':
       case 'href':
         if (
@@ -2599,7 +2599,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'action':
       case 'formAction': {
         const serverValue = domElement.getAttribute(propKey);
@@ -2655,7 +2655,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'contentEditable':
         // Lower-case Booleanish String
         hydrateBooleanishAttribute(
@@ -2666,7 +2666,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'spellCheck':
         // Lower-case Booleanish String
         hydrateBooleanishAttribute(
@@ -2677,7 +2677,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'draggable':
       case 'autoReverse':
       case 'externalResourcesRequired':
@@ -2692,7 +2692,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'allowFullScreen':
       case 'async':
       case 'autoPlay':
@@ -2725,7 +2725,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'capture':
       case 'download':
         hydrateOverloadedBooleanAttribute(
@@ -2736,7 +2736,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'cols':
       case 'rows':
       case 'size':
@@ -2749,7 +2749,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'rowSpan':
         hydrateNumericAttribute(
           domElement,
@@ -2759,7 +2759,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'start':
         hydrateNumericAttribute(
           domElement,
@@ -2769,7 +2769,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'xHeight':
         hydrateAttribute(
           domElement,
@@ -2779,7 +2779,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'xlinkActuate':
         hydrateAttribute(
           domElement,
@@ -2789,7 +2789,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'xlinkArcrole':
         hydrateAttribute(
           domElement,
@@ -2799,7 +2799,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'xlinkRole':
         hydrateAttribute(
           domElement,
@@ -2809,7 +2809,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'xlinkShow':
         hydrateAttribute(
           domElement,
@@ -2819,7 +2819,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'xlinkTitle':
         hydrateAttribute(
           domElement,
@@ -2829,7 +2829,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'xlinkType':
         hydrateAttribute(
           domElement,
@@ -2839,7 +2839,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'xmlBase':
         hydrateAttribute(
           domElement,
@@ -2849,7 +2849,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'xmlLang':
         hydrateAttribute(
           domElement,
@@ -2859,7 +2859,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'xmlSpace':
         hydrateAttribute(
           domElement,
@@ -2869,7 +2869,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       case 'inert':
         if (__DEV__) {
           if (
@@ -2894,7 +2894,7 @@ function diffHydratedGenericElement(
           extraAttributes,
           serverDifferences,
         );
-        break;
+        continue;
       default: {
         if (
           // shouldIgnoreAttribute
@@ -2938,6 +2938,7 @@ function diffHydratedGenericElement(
         if (!isMismatchDueToBadCasing) {
           warnForPropDifference(propKey, serverValue, value, serverDifferences);
         }
+        continue;
       }
     }
   }
@@ -3125,10 +3126,10 @@ export function diffHydratedProperties(domElement, tag, props, hostContext) {
             // that's an error.
             break;
           }
-        // Intentionally use the original name.
-        // See discussion in https://github.com/react/react/pull/10676.
         // Fallthrough
         default:
+          // Intentionally use the original name.
+          // See discussion in https://github.com/react/react/pull/10676.
           extraAttributes.add(attributes[i].name);
       }
     }

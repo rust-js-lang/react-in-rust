@@ -5,15 +5,15 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+export {createRoot, hydrateRoot} from './ReactDOMRoot.js';
 import {
   findHostInstance,
   injectIntoDevTools,
 } from 'react-reconciler/src/ReactFiberReconciler';
 import {canUseDOM} from 'shared/ExecutionEnvironment';
+export {default as version} from 'shared/ReactVersion';
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
-export {createRoot, hydrateRoot} from './ReactDOMRoot.js';
-export {default as version} from 'shared/ReactVersion';
 
 ensureCorrectIsomorphicReactVersion();
 

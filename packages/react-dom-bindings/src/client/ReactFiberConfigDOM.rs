@@ -47,6 +47,10 @@ use shared::has_own_property::HAS_OWN_PROPERTY;
 use shared::check_string_coercion::check_attribute_string_coercion;
 use shared::react_symbols::REACT_CONTEXT_TYPE;
 
+pub use crate::react_dom_update_priority::{
+    get_current_update_priority, resolve_update_priority, set_current_update_priority,
+};
+
 use crate::react_dom_component_tree::is_owned_instance;
 
 #[cfg_attr(rust_js, rust_js::name = "getInstanceFromNodeDOMTree")]
@@ -67,6 +71,8 @@ use react_reconciler::react_fiber_tree_reflection::{
 };
 
 use crate::react_dom_fragment_ref_shared::compare_document_position_for_empty_fragment;
+
+pub use crate::react_dom_component_tree::detach_deleted_instance;
 
 use crate::dom_accessibility_roles::has_role;
 use crate::react_dom_component::{
@@ -117,17 +123,12 @@ use react_reconciler::react_fiber_work_loop::flush_sync_work as flush_sync_work_
 use react_reconciler::react_fiber_hooks::request_form_reset as request_form_reset_on_fiber;
 use shared::react_dom_shared_internals::{HostDispatcher, REACT_DOM_SHARED_INTERNALS};
 
+#[cfg_attr(rust_js, rust_js::name = "rendererVersion")]
+pub use shared::react_version::REACT_VERSION as RENDERER_VERSION;
+
 use shared::noop::noop;
 
 use crate::estimate_bandwidth::estimate_bandwidth;
-
-pub use crate::react_dom_update_priority::{
-    get_current_update_priority, resolve_update_priority, set_current_update_priority,
-};
-
-pub use crate::react_dom_component_tree::detach_deleted_instance;
-#[cfg_attr(rust_js, rust_js::name = "rendererVersion")]
-pub use shared::react_version::REACT_VERSION as RENDERER_VERSION;
 
 #[cfg_attr(rust_js, rust_js::name = "rendererPackageName")]
 pub const RENDERER_PACKAGE_NAME: &str = "react-dom";

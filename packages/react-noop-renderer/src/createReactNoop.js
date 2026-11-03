@@ -173,7 +173,7 @@ function createReactNoop(reconciler, useMutation) {
     };
 
     if (type === 'suspensey-thing' && typeof newProps.src === 'string') {
-      clone.src = newProps.src ?? null;
+      clone.src = newProps.src;
     }
 
     Object.defineProperty(clone, 'id', {
@@ -330,7 +330,7 @@ function createReactNoop(reconciler, useMutation) {
       };
 
       if (type === 'suspensey-thing' && typeof props.src === 'string') {
-        inst.src = props.src ?? null;
+        inst.src = props.src;
       }
 
       // Hide from unit tests
@@ -603,7 +603,7 @@ function createReactNoop(reconciler, useMutation) {
       instance.hidden = !!newProps.hidden;
 
       if (type === 'suspensey-thing' && typeof newProps.src === 'string') {
-        instance.src = newProps.src ?? null;
+        instance.src = newProps.src;
       }
 
       if (shouldSetTextContent(type, newProps)) {
@@ -1297,6 +1297,7 @@ function createReactNoop(reconciler, useMutation) {
             log(indent + '- ' + child.text);
           } else {
             log(`${indent}- ${child.type}#${$displayF64(child.id)}`);
+
             logHostInstances(log, child.children.slice(), (depth + 1) >>> 0);
           }
         }
@@ -1317,6 +1318,7 @@ function createReactNoop(reconciler, useMutation) {
             );
           }
         }
+
         const lastPending = $unwrap(updateQueue.shared).pending;
         if (lastPending != null) {
           const firstPending = lastPending.next;
@@ -1331,18 +1333,7 @@ function createReactNoop(reconciler, useMutation) {
           }
         }
       }
-      // const childInProgress = fiber.progressedChild;
-      // if (childInProgress && childInProgress !== fiber.child) {
-      //   log(
-      //     '  '.repeat(depth + 1) + 'IN PROGRESS: ' + fiber.pendingWorkPriority,
-      //   );
-      //   logFiber(childInProgress, depth + 1);
-      //   if (fiber.child) {
-      //     log('  '.repeat(depth + 1) + 'CURRENT');
-      //   }
-      // } else if (fiber.child && fiber.updateQueue) {
-      //   log('  '.repeat(depth + 1) + 'CHILDREN');
-      // }
+
       function logFiber(log, fiber, depth) {
         const type = fiber.type;
         const value =
@@ -1367,6 +1358,18 @@ function createReactNoop(reconciler, useMutation) {
         if (updateQueue) {
           logUpdateQueue(log, updateQueue, depth);
         }
+        // const childInProgress = fiber.progressedChild;
+        // if (childInProgress && childInProgress !== fiber.child) {
+        //   log(
+        //     '  '.repeat(depth + 1) + 'IN PROGRESS: ' + fiber.pendingWorkPriority,
+        //   );
+        //   logFiber(childInProgress, depth + 1);
+        //   if (fiber.child) {
+        //     log('  '.repeat(depth + 1) + 'CURRENT');
+        //   }
+        // } else if (fiber.child && fiber.updateQueue) {
+        //   log('  '.repeat(depth + 1) + 'CHILDREN');
+        // }
         const child = fiber.child;
         if (child) {
           logFiber(log, child, (depth + 1) >>> 0);

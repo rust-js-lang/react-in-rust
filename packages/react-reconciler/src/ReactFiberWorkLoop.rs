@@ -1592,6 +1592,7 @@ fn finish_concurrent_render(
         {
             // Commit the placeholder.
         }
+        // Fallthrough
         ROOT_SUSPENDED_WITH_DELAY | ROOT_SUSPENDED_AT_THE_SHELL => {
             // This is a transition, so we should exit without committing a
             // placeholder and without scheduling a timeout. Delay indefinitely

@@ -8,18 +8,6 @@
 export {default as __SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE} from './ReactSharedInternalsServer.js';
 import {count, forEach, map, only, toArray} from './ReactChildren.js';
 import {captureOwnerStack as captureOwnerStackImpl} from './ReactOwnerStack.js';
-export {cache, cacheSignal} from './ReactCacheServer.js';
-export {createRef} from './ReactCreateRef.js';
-export {forwardRef} from './ReactForwardRef.js';
-export {use, useCallback, useDebugValue, useId, useMemo} from './ReactHooks.js';
-export {
-  cloneElement,
-  createElement,
-  isValidElement,
-} from './jsx/ReactJSXElement.js';
-export {lazy} from './ReactLazy.js';
-export {memo} from './ReactMemo.js';
-
 export {
   REACT_ACTIVITY_TYPE as Activity,
   REACT_FRAGMENT_TYPE as Fragment,
@@ -30,6 +18,17 @@ export {
   REACT_VIEW_TRANSITION_TYPE as unstable_ViewTransition,
 } from 'shared/ReactSymbols';
 
+export {
+  cloneElement,
+  createElement,
+  isValidElement,
+} from './jsx/ReactJSXElement.js';
+export {createRef} from './ReactCreateRef.js';
+export {use, useCallback, useDebugValue, useId, useMemo} from './ReactHooks.js';
+export {forwardRef} from './ReactForwardRef.js';
+export {lazy} from './ReactLazy.js';
+export {memo} from './ReactMemo.js';
+export {cache, cacheSignal} from './ReactCacheServer.js';
 export {default as version} from 'shared/ReactVersion';
 // Experimental
 export {REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList} from 'shared/ReactSymbols';

@@ -12,6 +12,11 @@ import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
 import hasOwnProperty from 'shared/hasOwnProperty';
 import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
 import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+export {
+  getCurrentUpdatePriority,
+  resolveUpdatePriority,
+  setCurrentUpdatePriority,
+} from './ReactDOMUpdatePriority.js';
 import {
   clearPendingLoadOnNode,
   detachDeletedInstance,
@@ -44,6 +49,7 @@ import {
   traverseFragmentInstancesAndTextInstancesDeeply,
 } from 'react-reconciler/src/ReactFiberTreeReflection';
 import {compareDocumentPositionForEmptyFragment} from 'shared/ReactDOMFragmentRefShared';
+export {detachDeletedInstance} from './ReactDOMComponentTree.js';
 import {hasRole} from './DOMAccessibilityRoles.js';
 import {
   clearClickListener,
@@ -111,17 +117,9 @@ import escapeSelectorAttributeValueInsideDoubleQuotes from './escapeSelectorAttr
 import {flushSyncWork as flushSyncWorkOnAllRoots} from 'react-reconciler/src/ReactFiberWorkLoop';
 import {requestFormReset as requestFormResetOnFiber} from 'react-reconciler/src/ReactFiberHooks';
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
+export {default as rendererVersion} from 'shared/ReactVersion';
 import noop from 'shared/noop';
 import estimateBandwidth from './estimateBandwidth.js';
-export {
-  getCurrentUpdatePriority,
-  resolveUpdatePriority,
-  setCurrentUpdatePriority,
-} from './ReactDOMUpdatePriority.js';
-
-export {detachDeletedInstance} from './ReactDOMComponentTree.js';
-export {default as rendererVersion} from 'shared/ReactVersion';
-
 export {
   supportsPersistence,
   cloneInstance,

@@ -7,9 +7,9 @@
 
 import type {Fiber} from 'react-reconciler/src/ReactInternalTypes';
 
-export * as _Scheduler from 'scheduler/unstable_mock';
-
 export {default as version} from 'shared/ReactVersion';
+
+export * as _Scheduler from 'scheduler/unstable_mock';
 
 export const act: unknown | null | undefined;
 

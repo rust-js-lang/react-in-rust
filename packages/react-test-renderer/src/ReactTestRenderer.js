@@ -42,6 +42,7 @@ import {
   SimpleMemoComponent,
 } from 'react-reconciler/src/ReactWorkTags';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
+export {default as version} from 'shared/ReactVersion';
 import {checkPropStringCoercion} from 'shared/CheckStringCoercion';
 import {getPublicInstance} from './ReactFiberConfigTestHost.js';
 import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
@@ -50,7 +51,6 @@ import {
   enableReactTestRendererWarning,
 } from 'shared/ReactFeatureFlags';
 export * as _Scheduler from 'scheduler/unstable_mock';
-export {default as version} from 'shared/ReactVersion';
 import {$index, $unwrap} from '@rust-js/runtime';
 
 function defaultOnDefaultTransitionIndicator() {}

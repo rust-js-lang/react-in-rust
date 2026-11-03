@@ -159,6 +159,7 @@ pub fn get_owner_stack_by_fiber_in_dev(mut work_in_progress: Rc<Fiber>) -> Strin
             VIEW_TRANSITION_COMPONENT if ENABLE_VIEW_TRANSITION => {
                 info += &describe_built_in_component_frame("ViewTransition");
             }
+            // Fallthrough
             VIEW_TRANSITION_COMPONENT
             | FUNCTION_COMPONENT
             | SIMPLE_MEMO_COMPONENT

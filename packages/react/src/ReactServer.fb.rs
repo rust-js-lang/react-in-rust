@@ -14,14 +14,6 @@ pub use crate::react_shared_internals_server::REACT_SHARED_INTERNALS as __SERVER
 use crate::react_children::{count, for_each, map, only, to_array};
 use crate::react_client::Children;
 use crate::react_owner_stack::capture_owner_stack as capture_owner_stack_impl;
-
-pub use crate::react_cache_server::{cache, cache_signal};
-pub use crate::react_create_ref::create_ref;
-pub use crate::react_forward_ref::forward_ref;
-pub use crate::react_hooks::{r#use, use_callback, use_debug_value, use_id, use_memo};
-pub use crate::react_jsx_element::{clone_element, create_element, is_valid_element};
-pub use crate::react_lazy::lazy;
-pub use crate::react_memo::memo;
 #[cfg_attr(rust_js, rust_js::name = "Activity")]
 pub use shared::react_symbols::REACT_ACTIVITY_TYPE as ACTIVITY;
 #[cfg_attr(rust_js, rust_js::name = "Fragment")]
@@ -36,6 +28,17 @@ pub use shared::react_symbols::REACT_SUSPENSE_TYPE as SUSPENSE;
 pub use shared::react_symbols::REACT_VIEW_TRANSITION_TYPE as VIEW_TRANSITION;
 #[cfg_attr(rust_js, rust_js::name = "unstable_ViewTransition")]
 pub use shared::react_symbols::REACT_VIEW_TRANSITION_TYPE as UNSTABLE_VIEW_TRANSITION;
+
+pub use crate::react_jsx_element::{clone_element, create_element, is_valid_element};
+
+pub use crate::react_create_ref::create_ref;
+pub use crate::react_hooks::{r#use, use_callback, use_debug_value, use_id, use_memo};
+
+pub use crate::react_forward_ref::forward_ref;
+pub use crate::react_lazy::lazy;
+pub use crate::react_memo::memo;
+
+pub use crate::react_cache_server::{cache, cache_signal};
 #[cfg_attr(rust_js, rust_js::name = "version")]
 pub use shared::react_version::REACT_VERSION as VERSION;
 // Experimental

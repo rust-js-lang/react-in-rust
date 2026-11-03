@@ -186,7 +186,7 @@ export function extractEvents(
       if (skipSelectionChangeEvent) {
         break;
       }
-    // Fallthrough
+    // falls through
     case 'keydown':
     case 'keyup':
       constructSelectEvent(dispatchQueue, nativeEvent, nativeEventTarget);

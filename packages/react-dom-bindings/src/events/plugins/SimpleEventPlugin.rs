@@ -63,6 +63,7 @@ pub fn extract_events(
         "keypress" if get_event_char_code(keyboard_event::unchecked_from(native_event)) == 0.0 => {
             return;
         }
+        /* falls through */
         "keypress" | "keydown" | "keyup" => {
             synthetic_event_ctor = SYNTHETIC_KEYBOARD_EVENT.with(|ctor| *ctor);
         }
@@ -84,8 +85,10 @@ pub fn extract_events(
         "click" if mouse_event::unchecked_from(native_event).button() == 2.0 => {
             return;
         }
+        /* falls through */
         "click" | "auxclick" | "dblclick" | "mousedown" | "mousemove" | "mouseup"
         // TODO: Disabled elements should not respond to mouse events
+        /* falls through */
         | "mouseout" | "mouseover" | "contextmenu" => {
             synthetic_event_ctor = SYNTHETIC_MOUSE_EVENT.with(|ctor| *ctor);
         }

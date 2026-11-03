@@ -39,7 +39,7 @@ export interface ReactSyntheticEvent {
   target: unknown | null | undefined;
   relatedTarget: unknown | null | undefined;
   type: string;
-  currentTarget?: EventTarget | null | undefined;
+  currentTarget: EventTarget | null;
   _reactName?: string | null | undefined;
   preventDefault(): void;
   stopPropagation(): void;

@@ -88,16 +88,19 @@ export function hasSelectionCapabilities(elem) {
   if (!nodeName) {
     return false;
   }
-  if (
-    nodeName === 'input' &&
-    (elem.type === 'text' ||
-      elem.type === 'search' ||
-      elem.type === 'tel' ||
-      elem.type === 'url' ||
-      elem.type === 'password')
-  ) {
+  if (nodeName === 'input') {
     const type = elem.type;
-  } else if (nodeName !== 'textarea') {
+    if (
+      type === 'text' ||
+      type === 'search' ||
+      type === 'tel' ||
+      type === 'url' ||
+      type === 'password'
+    ) {
+      return true;
+    }
+  }
+  if (nodeName !== 'textarea') {
     return elem.contentEditable === 'true';
   }
   return true;

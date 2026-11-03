@@ -4058,7 +4058,7 @@ function commitPassiveMountOnFiber(
         }
         break;
       }
-    // Fallthrough
+    // Intentional fallthrough to next branch
     default:
       recursivelyTraversePassiveMountEffects(
         finishedRoot,
@@ -4336,7 +4336,7 @@ export function reconnectPassiveEffects(
         }
         break;
       }
-    // Fallthrough
+    // Intentional fallthrough to next branch
     default:
       recursivelyTraverseReconnectPassiveEffects(
         finishedRoot,

@@ -3327,6 +3327,7 @@ function dispatchSetStateInternal(fiber, queue, action, lane) {
             return false;
           }
         } catch {
+          // An error is suppressed. It will throw again in the render phase.
         } finally {
           if (__DEV__) {
             ReactSharedInternals.H = prevDispatcher ?? null;

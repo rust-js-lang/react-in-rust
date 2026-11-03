@@ -11,14 +11,6 @@ pub use crate::react_shared_internals_server::REACT_SHARED_INTERNALS as __SERVER
 
 use crate::react_children::{count, for_each, map, only, to_array};
 use crate::react_client::Children;
-
-pub use crate::react_cache_server::{cache, cache_signal};
-pub use crate::react_create_ref::create_ref;
-pub use crate::react_forward_ref::forward_ref;
-pub use crate::react_hooks::{r#use, use_callback, use_debug_value, use_id, use_memo};
-pub use crate::react_jsx_element::{clone_element, create_element, is_valid_element};
-pub use crate::react_lazy::lazy;
-pub use crate::react_memo::memo;
 #[cfg_attr(rust_js, rust_js::name = "Activity")]
 pub use shared::react_symbols::REACT_ACTIVITY_TYPE as ACTIVITY;
 #[cfg_attr(rust_js, rust_js::name = "Fragment")]
@@ -31,8 +23,20 @@ pub use shared::react_symbols::REACT_STRICT_MODE_TYPE as STRICT_MODE;
 pub use shared::react_symbols::REACT_SUSPENSE_TYPE as SUSPENSE;
 #[cfg_attr(rust_js, rust_js::name = "ViewTransition")]
 pub use shared::react_symbols::REACT_VIEW_TRANSITION_TYPE as VIEW_TRANSITION;
+
+pub use crate::react_jsx_element::{clone_element, create_element, is_valid_element};
+
+pub use crate::react_create_ref::create_ref;
+pub use crate::react_hooks::{r#use, use_callback, use_debug_value, use_id, use_memo};
+
+pub use crate::react_forward_ref::forward_ref;
+pub use crate::react_lazy::lazy;
+pub use crate::react_memo::memo;
+
+pub use crate::react_cache_server::{cache, cache_signal};
 #[cfg_attr(rust_js, rust_js::name = "version")]
 pub use shared::react_version::REACT_VERSION as VERSION;
+
 // DEV-only
 pub use crate::react_owner_stack::capture_owner_stack;
 

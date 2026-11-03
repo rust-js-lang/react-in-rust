@@ -293,7 +293,7 @@ export function createHydrationContainer(
   registerDefaultIndicator(onDefaultTransitionIndicator);
 
   // TODO: Move this to FiberRoot constructor
-  root.context = getContextForSubtree(null) ?? null;
+  root.context = getContextForSubtree(null);
 
   // Schedule the initial render. In a hydration root, this is different from
   // a regular update because the initial render must match was was rendered

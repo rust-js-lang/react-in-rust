@@ -128,8 +128,10 @@ js::export_default! {
                 return Some("ViewTransition".to_string());
             }
             // The display name for these tags come from the user-provided type:
+            // Fallthrough
             VIEW_TRANSITION_COMPONENT | INCOMPLETE_CLASS_COMPONENT | INCOMPLETE_FUNCTION_COMPONENT
                 if DISABLE_LEGACY_MODE => {}
+            // Fallthrough
             VIEW_TRANSITION_COMPONENT
             | INCOMPLETE_CLASS_COMPONENT
             | INCOMPLETE_FUNCTION_COMPONENT
