@@ -803,7 +803,7 @@ function fulfillReference(response, reference, value, arrayRoot) {
 
     // Add any array counts to the reference's array root. The value that we're
     // resolving might have deep nesting that we need to resolve.
-    if (reference.arrayRoot != null) {
+    if (reference.arrayRoot !== null) {
       if (arrayRoot$1 != null) {
         if (arrayRoot$1.fork) {
           reference.arrayRoot.fork = true;

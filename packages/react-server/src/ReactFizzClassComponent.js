@@ -90,7 +90,7 @@ function warnNoop(publicInstance, callerName) {
 const classComponentUpdater = {
   enqueueSetState(inst, payload, callback) {
     const internals = getInstance(inst);
-    if (internals.queue == null) {
+    if (internals.queue === null) {
       warnNoop(inst, 'setState');
     } else {
       $unwrap(internals.queue).push(payload);
@@ -109,7 +109,7 @@ const classComponentUpdater = {
   },
   enqueueForceUpdate(inst, callback) {
     const internals = getInstance(inst);
-    if (internals.queue == null) {
+    if (internals.queue === null) {
       warnNoop(inst, 'forceUpdate');
     } else if (__DEV__ && callback != null) {
       warnOnInvalidCallback(callback);
