@@ -42,3 +42,13 @@ pub mod react_dom_shared_internals;
 pub mod react_dom_types;
 #[path = "src/test-utils/ReactTestUtils.rs"]
 pub mod react_test_utils;
+#[path = "server.browser.rs"]
+pub mod server_browser;
+#[path = "server.bun.rs"]
+pub mod server_bun;
+#[path = "server.edge.rs"]
+pub mod server_edge;
+#[path = "server.node.rs"]
+pub mod server_node;
+#[path = "static.node.rs"]
+pub mod static_node;

@@ -1176,6 +1176,68 @@ These differences from upstream's output are accepted:
   - readability gap (rust-js), not holding: rd669 (renderNextChunk's
     `const old = destination.buffer; destination.buffer = ''; return old;`,
     `RefCell::take`'s name, where upstream names it `chunk`).
+- **React DOM's root server entries** (2026-11-03, the second session's;
+  its forms for the user's word): `server.browser.js`, `server.bun.js`,
+  `server.edge.js`, `server.node.js` and `static.node.js`, which only
+  tests import and which load their implementation where it's called "so
+  that we get the correct set of host configs", are Rust,
+  `server.browser.rs` .. `static.node.rs` beside them, declared in
+  `react_dom.rs`. The entries of re-exports alone stay JS (rd55):
+  `server.js`, `static.js`, `static.browser.js`, `static.edge.js`,
+  `client.js`, `index.js`, `profiling.js`, `test-utils.js` and the
+  `unstable_*` ones. Each function reads its implementation through a
+  getter binding marked `#[rust_js::require]` (rust-js ADR 0305),
+  `link_name = "get ./src/server/react-dom-server.node#renderToPipeableStream"`,
+  typed a JS function of any shape, `&'static dyn Fn() -> Option<&'static
+  Unknown>`, as upstream's `.apply` takes it; the bindings of each module
+  required are a private `mod` named after it, and the call is
+  `function::apply(react_dom_server_node::render_to_pipeable_stream(),
+  None, Some(js::arguments()))`, printed
+  `require('./src/server/react-dom-server.node').renderToPipeableStream.apply(undefined,
+  arguments)`. A `use` can't stand in: it imports as the entry loads,
+  where setupHostConfigs mocks the configs of the renderer each module it
+  requires is an entry of (ReactDOMLegacyServerBrowser's dom-legacy,
+  `react-dom-server.browser`'s dom-browser), so loading both at once gives
+  the shared ReactFizzServer whichever loaded first. Each entry declares
+  the bindings it reads, as each upstream file writes its own `require`s
+  (server.browser, .bun and .edge each read the legacy browser server's
+  two). Differences from upstream, none changing a result:
+  - rd683: `.apply(undefined, arguments)` where upstream passes `this`: a
+    function of the crate's has no Rust for its own `this` (`js::arguments()`
+    has no `this` beside it); the implementations, ReactDOMLegacyServer*
+    and ReactDOMFizz*'s functions, read none;
+  - `export {default as version} from 'shared/ReactVersion'` where upstream
+    imports `ReactVersion` and exports it `as version` (Bun's form);
+  - server.browser's and server.node's renderToString and
+    renderToStaticMarkup have a blank line between them, as rustfmt keeps
+    between items;
+  - each `.d.ts` declares the functions `(): unknown | null | undefined`
+    (upstream's JS has no types).
+- **FizzTestUtils is held** (2026-11-03, the second session's): its Rust is
+  written (insertNodesAndExecuteScripts and executeScript `async fn`s, as
+  upstream's, `badNonceScriptNodes` a `js::Map`, `Document | Element` an
+  untagged enum, `HTMLElement[] | HTMLCollection` one of a `Vec` and an
+  `HTMLCollection`, printed `Array.isArray(nodes) ? nodes :
+  Array.from(nodes)`), and with rd687's arms collapsed by hand its JS passes
+  the 9 suites that import it as upstream's does (444 / 0 / 1), but it's
+  held for a behavior difference and a binding:
+  - rd687: an untagged enum's `match` whose arms are alike in JS, in an
+    expression (`source.firstChild`, `source.querySelectorAll('script')`),
+    still tests `source instanceof Document`, which throws `ReferenceError:
+    Document is not defined` in the Fizz suites' environment, Jest's node
+    one with a JSDOM window and no `Document` global;
+  - rd686: no binding of a window's own constructor, `new
+    window.ErrorEvent('error', {error: x})`: the Fizz suites replace
+    `window` with a JSDOM of their own, and that environment has no global
+    `ErrorEvent`;
+  - and, holding nothing: rd684, getVisibleChildren's `require('react')
+    .createElement(..)` where it's called (the React a test loaded last,
+    after `jest.resetModules()`) is a hand-typed `#[rust_js::require]`
+    binding of react's `createElement`, as a `use` of react-isomorphic's
+    imports it where the module loads; rd685, executeScript's
+    `require(scriptSrc)` of a path it's given is `node::module.require(..)`,
+    `module.require(scriptSrc)`, Jest's same function, as the node crate
+    binds no CommonJS `require` itself.
 - **The Flight clients' names and arms** (the user, 2026-11-01; its
   acronym rule extended to the servers, the user, 2026-11-02, ESM's
   resolveClientReferenceMetadata's `baseUrl` and `fullUrl`):
