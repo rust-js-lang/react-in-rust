@@ -3,6 +3,8 @@
 
 #[path = "src/ReactFizzConfigMarkup.rs"]
 pub mod react_fizz_config_markup;
+#[path = "../react-client/src/forks/ReactFlightClientConfig.markup.rs"]
+pub mod react_flight_client_config_markup;
 #[path = "src/ReactMarkupClient.rs"]
 pub mod react_markup_client;
 #[path = "src/ReactMarkupLegacyClientStreamConfig.rs"]

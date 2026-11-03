@@ -1889,6 +1889,12 @@ The port is split between sessions by package:
   shared/forks/ReactFeatureFlags.native-oss and .test-renderer are Rust
   (Batch 62), as ReactFeatureFlags is, and print upstream's flags line for
   line; rollup alone reads them.
+  react-client/src/forks/ReactFlightClientConfig.markup is react-markup's
+  module (it re-exports react-markup's stream config, and react-markup
+  uses react-client), declared in markup.rs as `#[path =
+  "../react-client/src/forks/ReactFlightClientConfig.markup.rs"]` (agreed
+  with m6-wife, 2026-11-04); its `null` types are an untagged enum's one
+  `#[rust_js::null]` variant, and its imports rd713's.
   react-noop-renderer's createReactNoop and ReactFiberConfigNoop are Rust.
   react-test-renderer's ReactFiberConfigTestHost and ReactTestRenderer are
   Rust; react-art's ReactARTInternals, ReactFiberConfigART and ReactART
