@@ -2055,6 +2055,16 @@ The port is split between sessions by package:
   WIP on branch wip-rootfb; ReactDOMFB, ReactDOMFB.modern and the
   TestingFB entries re-export it, so they wait for it.
   react-noop-renderer's createReactNoop and ReactFiberConfigNoop are Rust.
+  react-noop-renderer's flight-modules, the Flight tests' module store, is
+  Rust (Batch 64), declared in noop.rs as `#[path = "flight-modules.rs"]
+  pub mod flight_modules;`. Its counter is a private thread-local
+  `Cell<f64>`, whole (rust-js 7f53c97ba, rd707), and its modules a
+  `RefCell<HashMap<String, &Unknown>>`, `new Map()`. Differences, pending
+  the coordinator's decision: saveModule prints `const idx =
+  String(moduleIdx); moduleIdx++;` where upstream writes `const idx = '' +
+  moduleIdx++;`; and the `.d.ts` types a module `unknown` (`render:
+  unknown`, readModule's `unknown | null | undefined`), where upstream's
+  Flow type is `Function`.
   react-test-renderer's ReactFiberConfigTestHost and ReactTestRenderer are
   Rust; react-art's ReactARTInternals, ReactFiberConfigART and ReactART
   are Rust. ReactART's Surface and Text are class components (rust-js ADR

@@ -1,6 +1,8 @@
 //! React's renderer for testing the reconciler, `react-noop-renderer`: its
 //! modules, each its file's.
 
+#[path = "flight-modules.rs"]
+pub mod flight_modules;
 #[path = "src/createReactNoop.rs"]
 pub mod create_react_noop;
 #[path = "src/ReactFiberConfigNoop.rs"]
