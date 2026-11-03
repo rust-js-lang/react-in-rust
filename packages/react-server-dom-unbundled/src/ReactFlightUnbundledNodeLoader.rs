@@ -93,6 +93,9 @@ pub enum Source {
     Uint8Array(&'static js::Uint8Array),
 }
 
+// SAFETY: each variant is its payload, a string or a buffer, never `undefined` nor `null`.
+unsafe impl js::Defined for Source {}
+
 thread_local! {
     static WARNED_ABOUT_CONDITIONS_FLAG: Cell<bool> = const { Cell::new(false) };
 
@@ -828,16 +831,11 @@ async fn transform_module_if_needed(
         let source_map_string = match &source_map_result.source {
             Source::String(source) => source.clone(),
             // SAFETY: Node loads a module's source as a `Buffer`.
-            Source::ArrayBuffer(source) => {
-                unsafe { js::cast::<&Buffer>(Some(js::unknown(source))) }.to_string(
-                    Some(BufferEncoding::Utf8),
-                    None,
-                    None,
-                )
-            }
-            // SAFETY: Node loads a module's source as a `Buffer`.
-            Source::Uint8Array(source) => unsafe { js::cast::<&Buffer>(Some(js::unknown(source))) }
-                .to_string(Some(BufferEncoding::Utf8), None, None),
+            source => unsafe { js::cast::<&Buffer>(Some(js::unknown(source))) }.to_string(
+                Some(BufferEncoding::Utf8),
+                None,
+                None,
+            ),
         };
         source_map = json::parse(&source_map_string).unwrap();
 

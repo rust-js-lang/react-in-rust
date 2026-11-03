@@ -612,12 +612,10 @@ async function transformModuleIfNeeded(source, url, loader) {
       },
       loader,
     );
-    let sourceMapString;
-    if (typeof sourceMapResult.source === 'string') {
-      sourceMapString = sourceMapResult.source;
-    } else {
-      sourceMapString = sourceMapResult.source.toString('utf8');
-    }
+    const sourceMapString =
+      typeof sourceMapResult.source === 'string'
+        ? sourceMapResult.source
+        : sourceMapResult.source.toString('utf8');
     sourceMap = JSON.parse(sourceMapString);
 
     // Strip the source mapping comment. We'll re-add it below if needed.
