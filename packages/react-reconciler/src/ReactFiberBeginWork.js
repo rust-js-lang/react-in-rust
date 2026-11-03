@@ -2403,7 +2403,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
     const prevState = current.memoizedState;
     if (prevState != null) {
       const dehydrated = prevState.dehydrated;
-      if (dehydrated != null) {
+      if (dehydrated !== null) {
         return updateDehydratedSuspenseComponent(
           current,
           workInProgress,
@@ -3753,7 +3753,6 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
   // This fiber does not have any pending work. Bailout without entering
   // the begin phase. There's still some bookkeeping we that needs to be done
   // in this optimized path, mostly pushing stuff onto the stack.
-  // Fallthrough
   switch (workInProgress.tag) {
     case HostRoot: {
       pushHostRootContext(workInProgress);
@@ -3767,29 +3766,30 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
       const cache = current.memoizedState.cache;
       pushCacheProvider(workInProgress, cache);
       resetHydrationState();
-      break;
+      // Fallthrough
+      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
     case HostSingleton:
     case HostComponent:
       pushHostContext(workInProgress);
-      break;
+      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     case ClassComponent: {
       const component = workInProgress.type;
       if (isLegacyContextProvider(component)) {
         pushLegacyContextProvider(workInProgress);
       }
-      break;
+      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
     case HostPortal: {
       const stateNode = workInProgress.stateNode;
       pushHostContainer(workInProgress, stateNode.containerInfo);
-      break;
+      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
     case ContextProvider: {
       const newValue = workInProgress.memoizedProps.value;
       const context = workInProgress.type;
       pushProvider(workInProgress, context, newValue);
-      break;
+      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
     case Profiler:
       if (enableProfilerTimer) {
@@ -3814,7 +3814,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
           stateNode.passiveEffectDuration = -0;
         }
       }
-      break;
+      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     case ActivityComponent: {
       const state = workInProgress.memoizedState;
       if (state != null) {
@@ -3827,12 +3827,12 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
         pushDehydratedActivitySuspenseHandler(workInProgress);
         return null;
       }
-      break;
+      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
     case SuspenseComponent: {
       const state = workInProgress.memoizedState;
       if (state != null) {
-        if (state.dehydrated != null) {
+        if (state.dehydrated !== null) {
           // We're not going to render the children, so this is just to maintain
           // push/pop symmetry
           pushPrimaryTreeSuspenseHandler(workInProgress);
@@ -3891,7 +3891,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
         }
       }
       pushPrimaryTreeSuspenseHandler(workInProgress);
-      break;
+      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
     case SuspenseListComponent: {
       if (workInProgress.flags & DidCapture) {
@@ -3962,7 +3962,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
         // as before. We can fast bail out.
         return null;
       }
-      break;
+      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
     case OffscreenComponent:
       // Need to check if the tree still needs to be deferred. This is
@@ -3983,7 +3983,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
     case CacheComponent: {
       const cache = current.memoizedState.cache;
       pushCacheProvider(workInProgress, cache);
-      break;
+      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
     case TracingMarkerComponent:
       if (enableTransitionTracing) {
@@ -3991,7 +3991,11 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
         if (instance != null) {
           pushMarkerInstance(workInProgress, instance);
         }
-        break;
+        return bailoutOnAlreadyFinishedWork(
+          current,
+          workInProgress,
+          renderLanes,
+        );
       }
     // Fallthrough
     case LegacyHiddenComponent:

@@ -40,6 +40,7 @@ fn has_instance_changed(old_measurement: &Unknown, new_measurement: &Unknown) ->
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#measureClonedInstance"
 )]
+#[cfg_attr(rust_js, rust_js::reads_only_its_parameters)]
 fn measure_cloned_instance(instance: &'static Unknown) -> &'static Unknown {
     unreachable!()
 }

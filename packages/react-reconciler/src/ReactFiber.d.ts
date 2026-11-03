@@ -28,7 +28,7 @@ export interface ProfilerStateNode {
 export interface PortalStateNode {
   containerInfo?: unknown;
   // Used by persistent updates
-  pendingChildren?: unknown | null | undefined;
+  pendingChildren: unknown | null;
   implementation?: unknown;
 }
 

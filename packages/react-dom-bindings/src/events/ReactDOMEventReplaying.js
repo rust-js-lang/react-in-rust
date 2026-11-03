@@ -547,12 +547,12 @@ export function retryIfBlockedOn(unblocked) {
 
   let nextExplicitTarget;
   while ((nextExplicitTarget = queuedExplicitHydrationTargets[0]) != null) {
-    if (nextExplicitTarget.blockedOn != null) {
+    if (nextExplicitTarget.blockedOn !== null) {
       // We're still blocked.
       break;
     }
     attemptExplicitHydrationTarget(nextExplicitTarget);
-    if (nextExplicitTarget.blockedOn == null) {
+    if (nextExplicitTarget.blockedOn === null) {
       // We're unblocked.
       $removeAt(queuedExplicitHydrationTargets, 0);
     }

@@ -550,7 +550,7 @@ function finishRenderingHooks(current, workInProgress, component) {
 
   // This check uses currentHook so that it works the same in DEV and prod bundles.
   // hookTypesDev could catch more cases (e.g. context) but only in DEV bundles.
-  const didRenderTooFewHooks = currentHook != null && currentHook.next != null;
+  const didRenderTooFewHooks = currentHook != null && currentHook.next !== null;
 
   renderLanes = NoLanes;
   currentlyRenderingFiber = null;
@@ -1501,7 +1501,7 @@ function rerenderReducer(reducer, initialArg, init) {
     // the base state unless the queue is empty.
     // TODO: Not sure if this is the desired semantics, but it's what we
     // do for gDSFP. I can't remember why.
-    if (hook.baseQueue == null) {
+    if (hook.baseQueue === null) {
       hook.baseState = newState;
     }
 
@@ -3060,7 +3060,7 @@ export function requestFormReset(formFiber) {
 
   let stateHook = ensureFormComponentIsStateful(formFiber);
   const newResetState = {};
-  if (stateHook.next == null) {
+  if (stateHook.next === null) {
     // Hack alert. If formFiber is the workInProgress Fiber then
     // we might get a broken intermediate state. Try the alternate
     // instead.

@@ -17,7 +17,7 @@ import type {Fiber} from './ReactInternalTypes.js';
  */
 export interface DevToolsDetails {
   color: string;
-  properties?: [string, string][] | null | undefined;
+  properties: [string, string][] | null;
   tooltipText?: string | undefined;
   track: string;
   trackGroup?: string | undefined;

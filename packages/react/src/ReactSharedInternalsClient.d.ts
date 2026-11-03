@@ -12,15 +12,14 @@ import type {
 
 export interface SharedStateClient {
   // ReactCurrentDispatcher for Hooks
-  H?: any | null | undefined;
+  H: any | null;
   // ReactCurrentCache for Cache
-  A?: unknown | null | undefined;
+  A: unknown | null;
   // ReactCurrentBatchConfig for Transitions
-  T?: Transition | null | undefined;
-  S?:
+  T: Transition | null;
+  S:
     | ((transition: Transition, value: unknown | null | undefined) => void)
-    | null
-    | undefined;
+    | null;
   G?:
     | ((
         transition: Transition,

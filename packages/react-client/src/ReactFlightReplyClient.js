@@ -1022,7 +1022,7 @@ function defaultEncodeFormAction(identifierPrefix) {
   let data;
   const boundPromise = referenceClosure.bound;
   let name;
-  if (boundPromise != null) {
+  if (boundPromise !== null) {
     let thenable = boundCache.get(referenceClosure);
     if (thenable == null) {
       const {id, bound} = referenceClosure;
@@ -1078,7 +1078,7 @@ function isSignatureEqual(referenceId, numberOfBoundArgs) {
     return false;
   }
   // Now check if the number of bound arguments is the same.
-  if (referenceClosure.bound == null) {
+  if (referenceClosure.bound === null) {
     // No bound arguments.
     return numberOfBoundArgs === 0;
   }
@@ -1343,7 +1343,7 @@ function bind() {
 
   const args = ArraySlice.call(arguments, 1);
   const boundPromise =
-    referenceClosure.bound != null
+    referenceClosure.bound !== null
       ? Promise.resolve(referenceClosure.bound).then(boundArgs => [
           ...boundArgs,
           ...args,

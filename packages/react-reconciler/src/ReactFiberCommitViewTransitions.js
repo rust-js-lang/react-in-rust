@@ -1015,9 +1015,7 @@ export function measureUpdateViewTransition(current, finishedWork, gesture) {
     if (clones == null) {
       previousMeasurements = null;
     } else {
-      previousMeasurements = clones.map(instance =>
-        measureClonedInstance(instance),
-      );
+      previousMeasurements = clones.map(measureClonedInstance);
     }
   } else {
     previousMeasurements = oldFiber.memoizedState ?? null;
@@ -1057,9 +1055,7 @@ export function measureNestedViewTransitions(changedParent, gesture) {
         if (clones == null) {
           previousMeasurements = null;
         } else {
-          previousMeasurements = clones.map(instance =>
-            measureClonedInstance(instance),
-          );
+          previousMeasurements = clones.map(measureClonedInstance);
         }
       } else {
         previousMeasurements = child.memoizedState ?? null;

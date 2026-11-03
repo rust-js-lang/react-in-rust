@@ -312,8 +312,8 @@ function isHydratingParent(current, finishedWork) {
     const nextState = finishedWork.memoizedState;
     return (
       prevState != null &&
-      prevState.dehydrated != null &&
-      (nextState == null || nextState.dehydrated == null)
+      prevState.dehydrated !== null &&
+      (nextState == null || nextState.dehydrated === null)
     );
   } else {
     return (
@@ -714,7 +714,7 @@ function commitLayoutEffectOnFiber(
         const finishedState = finishedWork.memoizedState;
         if (finishedState != null) {
           const dehydrated = finishedState.dehydrated;
-          if (dehydrated != null) {
+          if (dehydrated !== null) {
             // Register a callback to retry this boundary once the server has sent the result.
             const retry = retryDehydratedSuspenseBoundary.bind(
               null,
@@ -1783,7 +1783,7 @@ function commitSuspenseHydrationCallbacks(finishedRoot, finishedWork) {
       const prevState = current.memoizedState;
       if (prevState != null) {
         const suspenseInstance = prevState.dehydrated;
-        if (suspenseInstance != null) {
+        if (suspenseInstance !== null) {
           commitHostHydratedSuspense(suspenseInstance, finishedWork);
           if (enableSuspenseCallback) {
             try {
@@ -1871,9 +1871,9 @@ function attachSuspenseRetryListeners(finishedWork, wakeables) {
 function isSuspenseBoundaryBeingHidden(current, finishedWork) {
   if (current != null) {
     const oldState = current.memoizedState;
-    if (oldState == null || oldState.dehydrated != null) {
+    if (oldState == null || oldState.dehydrated !== null) {
       const newState = finishedWork.memoizedState;
-      return newState != null && newState.dehydrated == null;
+      return newState != null && newState.dehydrated === null;
     }
   }
   return false;
@@ -2488,7 +2488,7 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
         const offscreenQueue = finishedWork.updateQueue;
         if (offscreenQueue != null) {
           const retryQueue = offscreenQueue.retryQueue;
-          if (retryQueue != null) {
+          if (retryQueue !== null) {
             offscreenQueue.retryQueue = null;
             attachSuspenseRetryListeners(finishedWork, retryQueue);
           }
@@ -3332,13 +3332,13 @@ function commitOffscreenPassiveMountEffects(current, finishedWork, instance) {
   if (
     current != null &&
     current.memoizedState != null &&
-    current.memoizedState.cachePool != null
+    current.memoizedState.cachePool !== null
   ) {
     previousCache = current.memoizedState.cachePool.pool;
   }
   let nextCache = null;
   const memoizedState = finishedWork.memoizedState;
-  if (memoizedState != null && memoizedState.cachePool != null) {
+  if (memoizedState != null && memoizedState.cachePool !== null) {
     nextCache = memoizedState.cachePool.pool;
   }
   // Retain/release the cache used for pending (suspended) nodes.
@@ -3828,8 +3828,8 @@ function commitPassiveMountOnFiber(
         const nextState = finishedWork.memoizedState;
         if (
           prevState != null &&
-          prevState.dehydrated != null &&
-          (nextState == null || nextState.dehydrated == null)
+          prevState.dehydrated !== null &&
+          (nextState == null || nextState.dehydrated === null)
         ) {
           // This was dehydrated but is no longer dehydrated. We may have now either hydrated it
           // or client rendered it.
@@ -5055,7 +5055,7 @@ function commitPassiveUnmountInsideDeletedTreeOnFiber(
     case LegacyHiddenComponent:
     case OffscreenComponent: {
       const memoizedState = current.memoizedState;
-      if (memoizedState != null && memoizedState.cachePool != null) {
+      if (memoizedState != null && memoizedState.cachePool !== null) {
         const cache = memoizedState.cachePool.pool;
         // Retain/release the cache used for pending (suspended) nodes.
         // Note that this is only reached in the non-suspended/visible case:
@@ -5077,7 +5077,7 @@ function commitPassiveUnmountInsideDeletedTreeOnFiber(
             name: current.memoizedProps.name || null,
           };
           const memoizedState = current.memoizedState;
-          if (memoizedState == null || memoizedState.dehydrated == null) {
+          if (memoizedState == null || memoizedState.dehydrated === null) {
             abortParentMarkerTransitionsForDeletedFiber(
               offscreenFiber,
               abortReason,

@@ -28,7 +28,7 @@ export interface FlightStreamController {
 export interface ProfilingResult {
   track: number;
   endTime: number;
-  component?: ReactComponentInfo | null | undefined;
+  component: ReactComponentInfo | null;
 }
 
 /**
@@ -251,18 +251,18 @@ export interface ElementStore {}
 export interface DevElement {
   $$typeof: symbol;
   type?: unknown;
-  key?: unknown | null | undefined;
-  props?: unknown | null | undefined;
-  _owner?: unknown | null | undefined;
+  key: unknown | null;
+  props: unknown | null;
+  _owner: unknown | null;
 }
 
 /** A production element as the Flight client makes it. */
 export interface ProdElement {
   $$typeof: symbol;
   type?: unknown;
-  key?: unknown | null | undefined;
-  ref?: unknown | null | undefined;
-  props?: unknown | null | undefined;
+  key: unknown | null;
+  ref: unknown | null;
+  props: unknown | null;
 }
 
 export function createResponse(

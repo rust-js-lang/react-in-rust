@@ -108,7 +108,7 @@ export type SuspenseInstance = Comment;
  */
 export interface HostContextDev {
   context: HostContextNamespace;
-  ancestorInfo?: AncestorInfoDev | null | undefined;
+  ancestorInfo: AncestorInfoDev | null;
 }
 
 /** `HostContextDev` in DEV, a `HostContextNamespace` in production. */

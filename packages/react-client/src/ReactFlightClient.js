@@ -1892,7 +1892,7 @@ function loadServerReference(response, metaData, parentObject, key) {
     return null;
   }
   const serverReferenceConfig = response._serverReferenceConfig;
-  if (serverReferenceConfig == null) {
+  if (serverReferenceConfig === null) {
     // In the normal case, we can't load this Server Reference in the current environment and
     // we just return a proxy to it.
     return createBoundServerReference(
@@ -4488,7 +4488,7 @@ function flushComponentPerformance(
         const previousEndTime = previousResult.endTime;
         if (parentEndTime > -Infinity && parentEndTime < previousEndTime) {
           const component = previousResult.component;
-          if (component != null) {
+          if (component !== null) {
             // Log a placeholder for the deduped value under this child starting
             // from the end of the self time of the parent and spanning until the
             // the deduped end.
@@ -4589,7 +4589,7 @@ function flushComponentPerformance(
       parentEndTime,
     );
     const component = childResult.component;
-    if (component != null) {
+    if (component !== null) {
       result.component = component;
     }
     childTrackIdx = childResult.track;

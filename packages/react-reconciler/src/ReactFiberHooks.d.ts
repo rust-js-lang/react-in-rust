@@ -80,9 +80,9 @@ export interface UpdateQueue {
 export interface Hook {
   memoizedState: unknown | null | undefined;
   baseState: unknown | null | undefined;
-  baseQueue?: Update | null | undefined;
+  baseQueue: Update | null;
   queue: unknown | null | undefined;
-  next?: Hook | null | undefined;
+  next: Hook | null;
 }
 
 /** What an effect runs: what it gives is its destroy function, or nothing. */
@@ -92,7 +92,7 @@ export interface Effect {
   tag: HookFlags;
   inst: EffectInstance;
   create: Create;
-  deps?: Deps | null | undefined;
+  deps: Deps | null;
   next: Effect | null | undefined;
 }
 
@@ -121,10 +121,10 @@ export interface EventFunctionPayload {
 }
 
 export interface FunctionComponentUpdateQueue {
-  lastEffect?: Effect | null | undefined;
-  events?: EventFunctionPayload[] | null | undefined;
-  stores?: StoreConsistencyCheck[] | null | undefined;
-  memoCache?: MemoCache | null | undefined;
+  lastEffect: Effect | null;
+  events: EventFunctionPayload[] | null;
+  stores: StoreConsistencyCheck[] | null;
+  memoCache: MemoCache | null;
 }
 
 export function renderWithHooks(

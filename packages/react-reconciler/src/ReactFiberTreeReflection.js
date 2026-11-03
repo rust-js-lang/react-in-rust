@@ -312,7 +312,7 @@ export function isFiberSuspenseAndTimedOut(fiber) {
   return (
     fiber.tag === SuspenseComponent &&
     memoizedState != null &&
-    memoizedState.dehydrated == null
+    memoizedState.dehydrated === null
   );
 }
 

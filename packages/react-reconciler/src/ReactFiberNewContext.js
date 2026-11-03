@@ -271,7 +271,7 @@ function propagateContextChanges(
     } else if (
       fiber.tag === SuspenseComponent &&
       fiber.memoizedState != null &&
-      fiber.memoizedState.dehydrated == null
+      fiber.memoizedState.dehydrated === null
     ) {
       // This is a client-rendered Suspense boundary that is currently
       // showing its fallback. The primary children may include context

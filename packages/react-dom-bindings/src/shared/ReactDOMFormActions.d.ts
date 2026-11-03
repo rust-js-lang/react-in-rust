@@ -11,10 +11,10 @@
  */
 export interface FormStatus {
   pending: boolean;
-  data?: FormData | null | undefined;
-  method?: string | null | undefined;
+  data: FormData | null;
+  method: string | null;
   // A URL, or a function of the form's data.
-  action?: unknown | null | undefined;
+  action: unknown | null;
 }
 
 export const NotPending: FormStatus;

@@ -482,7 +482,7 @@ export function throwException(
                 suspenseBoundary.updateQueue = newOffscreenQueue;
               } else {
                 const retryQueue = offscreenQueue.retryQueue;
-                if (retryQueue == null) {
+                if (retryQueue === null) {
                   offscreenQueue.retryQueue = new Set([wakeable]);
                 } else {
                   retryQueue.add(wakeable);

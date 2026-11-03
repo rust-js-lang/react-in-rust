@@ -38,13 +38,13 @@ export interface OffscreenState {
   // order to unhide the component.
   baseLanes: Lanes;
   // ReactFiberCacheComponent's `SpawnedCachePool`.
-  cachePool?: unknown | null | undefined;
+  cachePool: unknown | null;
 }
 
 export interface OffscreenQueue {
-  transitions?: Transition[] | null | undefined;
-  markerInstances?: TracingMarkerInstance[] | null | undefined;
-  retryQueue?: Set<unknown> | null | undefined;
+  transitions: Transition[] | null;
+  markerInstances: TracingMarkerInstance[] | null;
+  retryQueue: Set<unknown> | null;
 }
 
 export type OffscreenVisibility = number;

@@ -159,7 +159,7 @@ export interface Instance {
   id: number;
   parent: number | null | undefined;
   children: Child[];
-  text?: string | null | undefined;
+  text: string | null;
   prop: unknown | null | undefined;
   hidden: boolean;
   context: HostContext;

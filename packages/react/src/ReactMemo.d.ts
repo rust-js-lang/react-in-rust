@@ -15,7 +15,7 @@ export type Compare = (
 export interface Memo {
   $$typeof: symbol;
   type?: unknown;
-  compare?: Compare | null | undefined;
+  compare: Compare | null;
 }
 
 export function memo(

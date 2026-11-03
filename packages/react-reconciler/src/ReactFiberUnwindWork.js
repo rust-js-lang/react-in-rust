@@ -144,7 +144,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
     case SuspenseComponent: {
       popSuspenseHandler(workInProgress);
       const suspenseState = workInProgress.memoizedState;
-      if (suspenseState != null && suspenseState.dehydrated != null) {
+      if (suspenseState != null && suspenseState.dehydrated !== null) {
         if (workInProgress.alternate == null) {
           throw new Error(
             'Threw in newly mounted dehydrated component. This is likely a bug in ' +

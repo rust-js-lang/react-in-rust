@@ -23,29 +23,26 @@ export interface SuspenseState {
   // here to indicate that it is dehydrated (flag) and for quick access
   // to check things like isSuspenseInstancePending.
   // ReactFiberConfig's `SuspenseInstance`.
-  dehydrated?: unknown | null | undefined;
-  treeContext?: TreeContext | null | undefined;
+  dehydrated: unknown | null;
+  treeContext: TreeContext | null;
   // Represents the lane we should attempt to hydrate a dehydrated boundary at.
   // OffscreenLane is the default for dehydrated boundaries.
   // NoLane is the default for normal boundaries, which turns into "normal" pri.
   retryLane: Lane;
   // Stashed Errors that happened while attempting to hydrate this boundary.
-  hydrationErrors?:
-    | CapturedValue<unknown | null | undefined>[]
-    | null
-    | undefined;
+  hydrationErrors: CapturedValue<unknown | null | undefined>[] | null;
 }
 
 export interface SuspenseListRenderState {
   isBackwards: boolean;
   // The currently rendering tail row.
-  rendering?: Fiber | null | undefined;
+  rendering: Fiber | null;
   // The absolute time when we started rendering the most recent tail row.
   renderingStartTime: number;
   // The last of the already rendered children.
-  last?: Fiber | null | undefined;
+  last: Fiber | null;
   // Remaining rows on the tail of the list.
-  tail?: Fiber | null | undefined;
+  tail: Fiber | null;
   // Tail insertions setting.
   tailMode: SuspenseListTailMode | null | undefined;
   // Keep track of total number of forks during multiple passes

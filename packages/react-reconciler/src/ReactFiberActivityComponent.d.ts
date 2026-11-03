@@ -13,14 +13,11 @@ import type {TreeContext} from './ReactFiberTreeContext.js';
 export interface ActivityState {
   // ReactFiberConfig's `ActivityInstance`.
   dehydrated: unknown;
-  treeContext?: TreeContext | null | undefined;
+  treeContext: TreeContext | null;
   // Represents the lane we should attempt to hydrate a dehydrated boundary at.
   // OffscreenLane is the default for dehydrated boundaries.
   // NoLane is the default for normal boundaries, which turns into "normal" pri.
   retryLane: Lane;
   // Stashed Errors that happened while attempting to hydrate this boundary.
-  hydrationErrors?:
-    | CapturedValue<unknown | null | undefined>[]
-    | null
-    | undefined;
+  hydrationErrors: CapturedValue<unknown | null | undefined>[] | null;
 }

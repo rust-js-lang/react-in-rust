@@ -449,6 +449,16 @@ use, and each of its two `then` callbacks copies it, `const boundPromise =
 referenceClosure.bound; const boundPromise$1 = referenceClosure.bound;`,
 where upstream's `const boundPromise` is one variable both read.
 
+**Pending in rust-js from Batch 61** (no result changes; control-flow run
+44 is fixing it): rd701, a regression of rust-js 87ea19263. A comment above
+`_ => {}` takes the `switch`'s `break`s away. ReactFiberBeginWork's
+attemptEarlyBailoutIfNoScheduledUpdate (`// Fallthrough` above its last
+arm, `_ => {}`) ends each of its 12 cases with its own `return
+bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);`, and
+prints the `// Fallthrough` at the end of HostRoot's case. Upstream has
+`break;` in each case, one return after the switch, and the comment at the
+end of the LegacyHidden case.
+
 **The imports' blank lines are the Rust's** (rd637, rd652, rust-js
 4c84d5bb9..0f95f0962, Batch 60): each `use` is its import's statement, and
 the blank lines between `use`s are those between the imports. The port's
@@ -609,6 +619,25 @@ These differences from upstream's output are accepted:
   borrow the types. Only a replacement of startViewTransition that keeps
   the array and compares it, or watches it change, tells them apart; the
   browser copies `types` into the ViewTransition's set.
+
+- **Upstream's destructurings are a run of `const`s** (the user,
+  2026-11-03, by name; rust-js ADR 0598, #534 closed): where upstream
+  destructures and the Rust is a run of `let`s, each is its own `const`.
+  There are 16 sites: getComponentNameFromFiber, ReactFiberHotReloading,
+  ReactFiberScope (two), ReactDOMSelection, DOMPluginEventSystem (two),
+  m6-wife's ReactFizzConfigDOM bootstrap, and the rest of #534's list.
+
+- **rd647 (B)** (the user, 2026-11-03, by name, following from their
+  option (1) of rust-js ADR 1072): ViewTransitions' measureUpdateViewTransition
+  and measureNestedViewTransitions test `clones == null`, where upstream
+  tests `clones === null`. Since rust-js c262da832 and 852389d4c, a
+  nullable field is tested strictly only where JS can't give its struct.
+  ViewTransitionState can arrive from JS, through the exported
+  `trackAppearingViewTransition(name, state)`, and JS may leave the field
+  out. The same regen made 42 other nullable-field tests in our crates
+  strict (`dehydrated !== null`, `cachePool !== null`, `tail === null`,
+  `blockedOn !== null` and so on), as upstream writes them, and their
+  `.d.ts` fields `field: T | null` (rust-js 67b13d7ef).
 
 - **rd229** (the user): getViewTransitionName's two Rust bindings of one
   name, `if let Some(name) = &props.name && name != "auto" { return
@@ -1743,9 +1772,10 @@ The port is split between sessions by package:
   (Batch 60, after rd645) are webpack's, as upstream's are: their
   manifest's `moduleMap` is a `&Dict` (upstream's non-null
   `ServerConsumerModuleMap`), and its `serverModuleMap`, upstream's `null |
-  void`, is given as `js::any_of(..)`. **Pending in rust-js** (rd700, not
-  accepted): that prints `serverConsumerManifest.serverModuleMap ?? null`
-  where upstream passes it as it is. The Node client's `pub use
+  void`, is given as `js::any_of(..)`. That prints
+  `serverConsumerManifest.serverModuleMap ?? null` where upstream passes it
+  as it is: **accepted by the user** (rd700, 2026-11-03, by name), because
+  the callee's `T | null` contract needs it. The Node client's `pub use
   crate::client::react_flight_dom_client_edge::*;` prints rd153's export
   list for upstream's `export * from './ReactFlightDOMClientEdge'`. Their `startReadingFromStream`'s `progress` is rd425's
   cell, and their createResponse arguments are the forms accepted above

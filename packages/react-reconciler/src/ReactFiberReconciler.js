@@ -469,7 +469,7 @@ export function attemptSynchronousHydration(fiber) {
 function markRetryLaneImpl(fiber, retryLane) {
   // A SuspenseState or an ActivityState, which share these fields.
   const suspenseState = fiber.memoizedState;
-  if (suspenseState != null && suspenseState.dehydrated != null) {
+  if (suspenseState != null && suspenseState.dehydrated !== null) {
     suspenseState.retryLane = higherPriorityLane(
       suspenseState.retryLane,
       retryLane,

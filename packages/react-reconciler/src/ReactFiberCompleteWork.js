@@ -982,7 +982,7 @@ function completeDehydratedSuspenseBoundary(
 ) {
   const wasHydrated = popHydrationState(workInProgress);
 
-  if (nextState != null && nextState.dehydrated != null) {
+  if (nextState != null && nextState.dehydrated !== null) {
     // We might be inside a hydration state the first time we're picking up this
     // Suspense boundary, and also after we've reentered it for further hydration.
     if (current == null) {
@@ -1525,7 +1525,7 @@ export function completeWork(current, workInProgress, renderLanes) {
       if (
         current == null ||
         (current.memoizedState != null &&
-          current.memoizedState.dehydrated != null)
+          current.memoizedState.dehydrated !== null)
       ) {
         const fallthroughToNormalSuspensePath =
           completeDehydratedSuspenseBoundary(
@@ -1575,13 +1575,13 @@ export function completeWork(current, workInProgress, renderLanes) {
         if (
           alternate != null &&
           alternate.memoizedState != null &&
-          alternate.memoizedState.cachePool != null
+          alternate.memoizedState.cachePool !== null
         ) {
           previousCache = alternate.memoizedState.cachePool.pool;
         }
         let cache = null;
         const memoizedState = offscreenFiber.memoizedState;
-        if (memoizedState != null && memoizedState.cachePool != null) {
+        if (memoizedState != null && memoizedState.cachePool !== null) {
           cache = memoizedState.cachePool.pool;
         }
         if (cache !== previousCache) {
@@ -1757,7 +1757,7 @@ export function completeWork(current, workInProgress, renderLanes) {
             }
           }
 
-          if (renderState.tail != null && now() > getRenderTargetTime()) {
+          if (renderState.tail !== null && now() > getRenderTargetTime()) {
             // We have already passed our CPU deadline but we still have rows
             // left in the tail. We'll just give up further attempts to render
             // the main content and only render fallbacks.
@@ -1797,7 +1797,7 @@ export function completeWork(current, workInProgress, renderLanes) {
             cutOffTailIfNeeded(renderState, true);
             // This might have been modified.
             if (
-              renderState.tail == null &&
+              renderState.tail === null &&
               renderState.tailMode !== 'collapsed' &&
               renderState.tailMode !== 'visible' &&
               renderedTail.alternate == null &&
@@ -1987,13 +1987,13 @@ export function completeWork(current, workInProgress, renderLanes) {
       if (
         current != null &&
         current.memoizedState != null &&
-        current.memoizedState.cachePool != null
+        current.memoizedState.cachePool !== null
       ) {
         previousCache = current.memoizedState.cachePool.pool;
       }
       let cache = null;
       const memoizedState = workInProgress.memoizedState;
-      if (memoizedState != null && memoizedState.cachePool != null) {
+      if (memoizedState != null && memoizedState.cachePool !== null) {
         cache = memoizedState.cachePool.pool;
       }
       if (cache !== previousCache) {
