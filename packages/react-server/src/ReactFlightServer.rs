@@ -25,7 +25,10 @@ use webapi::{
     AbortController, AbortSignal, Blob, ConsoleTask, FormData, ReadableStream, console, performance,
 };
 
-use shared::react_feature_flags::{ENABLE_PROFILER_TIMER, ENABLE_TAINT};
+use shared::react_feature_flags::{
+    ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_FLIGHT_OBJECT_REFERENCES,
+    ENABLE_FLIGHT_WEAK_THENABLES, ENABLE_PROFILER_TIMER, ENABLE_TAINT,
+};
 
 use crate::react_flight_async_sequence::{AsyncSequence, PromiseWithDebugInfo};
 
@@ -34,8 +37,6 @@ use crate::react_flight_server_temporary_references::TemporaryReferenceSet;
 use crate::react_flight_thenable::{SUSPENSE_EXCEPTION, ThenableState};
 
 use crate::react_flight_async_dispatcher::DEFAULT_ASYNC_DISPATCHER;
-
-use crate::react_flight_current_owner::resolve_owner;
 
 use shared::react_component_info_stack::get_owner_stack_by_component_info_in_dev;
 use shared::react_owner_stack_reset::reset_owner_stack_limit;
@@ -55,10 +56,6 @@ use shared::is_array::is_array;
 
 use shared::noop::noop;
 use shared::react_element_type::ReactElement;
-use shared::react_feature_flags::{
-    ENABLE_COMPONENT_PERFORMANCE_TRACK, ENABLE_FLIGHT_OBJECT_REFERENCES,
-    ENABLE_FLIGHT_WEAK_THENABLES,
-};
 
 use shared::react_serialization_errors::{
     JSX_CHILDREN_PARENTS, JSX_PROPS_PARENTS, describe_object_for_error_message, is_getter,
@@ -89,7 +86,7 @@ use crate::react_flight_call_user_space::{
     CALL_COMPONENT_IN_DEV, CALL_ITERATOR_IN_DEV, CALL_LAZY_INIT_IN_DEV, IteratorError,
     Progress as IteratorProgress,
 };
-use crate::react_flight_current_owner::set_current_owner;
+use crate::react_flight_current_owner::{resolve_owner, set_current_owner};
 
 use crate::react_flight_hooks::{
     HOOKS_DISPATCHER, get_thenable_state_after_suspending, get_tracked_thenables_after_rendering,

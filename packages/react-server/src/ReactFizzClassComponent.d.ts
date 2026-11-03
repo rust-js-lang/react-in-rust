@@ -15,7 +15,7 @@ export type GetDerivedStateFromProps = (
 ) => unknown | null | undefined;
 
 export interface InternalInstance {
-  queue?: (unknown | null | undefined)[] | null | undefined;
+  queue: (unknown | null | undefined)[] | null;
   replace: boolean;
 }
 

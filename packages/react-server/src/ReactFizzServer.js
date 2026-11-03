@@ -3016,6 +3016,34 @@ function isSuspending(x) {
   );
 }
 
+function cloneReplayNode(replayNode) {
+  return replayNode.length === 4
+    ? cloneReplayElement(replayNode)
+    : replayNode.length === 6
+      ? cloneReplaySuspenseBoundary(replayNode)
+      : replayNode;
+}
+
+function cloneReplaySuspenseBoundary(replaySuspenseBoundary) {
+  return [
+    replaySuspenseBoundary[0],
+    replaySuspenseBoundary[1],
+    replaySuspenseBoundary[2],
+    replaySuspenseBoundary[3],
+    replaySuspenseBoundary[4],
+    replaySuspenseBoundary[5],
+  ];
+}
+
+function cloneReplayElement(replayElement) {
+  return [
+    replayElement[0],
+    replayElement[1],
+    replayElement[2],
+    replayElement[3],
+  ];
+}
+
 function replayElement(
   request,
   task,
@@ -3034,27 +3062,6 @@ function replayElement(
   // Matched a replayable path.
   while (i < $borrow(replayNodes).length) {
     // Flow doesn't support refinement on tuples so we do it manually here.
-    function cloneReplayNode(replayNode) {
-      const cloneReplaySuspenseBoundary = replaySuspenseBoundary => [
-        replaySuspenseBoundary[0],
-        replaySuspenseBoundary[1],
-        replaySuspenseBoundary[2],
-        replaySuspenseBoundary[3],
-        replaySuspenseBoundary[4],
-        replaySuspenseBoundary[5],
-      ];
-      const cloneReplayElement = replayElement => [
-        replayElement[0],
-        replayElement[1],
-        replayElement[2],
-        replayElement[3],
-      ];
-      return replayNode.length === 4
-        ? cloneReplayElement(replayNode)
-        : replayNode.length === 6
-          ? cloneReplaySuspenseBoundary(replayNode)
-          : replayNode;
-    }
     const node = cloneReplayNode($borrow($borrow(replayNodes)[i]));
     const nodeKey = node[1];
     if (keyOrIndex !== nodeKey) {
@@ -3605,27 +3612,6 @@ function replayFragment(request, task, children, childIndex) {
   let j = 0;
   while (true) {
     if (j < $borrow(replayNodes).length) {
-      function cloneReplayNode(replayNode) {
-        const cloneReplaySuspenseBoundary = replaySuspenseBoundary => [
-          replaySuspenseBoundary[0],
-          replaySuspenseBoundary[1],
-          replaySuspenseBoundary[2],
-          replaySuspenseBoundary[3],
-          replaySuspenseBoundary[4],
-          replaySuspenseBoundary[5],
-        ];
-        const cloneReplayElement = replayElement => [
-          replayElement[0],
-          replayElement[1],
-          replayElement[2],
-          replayElement[3],
-        ];
-        return replayNode.length === 4
-          ? cloneReplayElement(replayNode)
-          : replayNode.length === 6
-            ? cloneReplaySuspenseBoundary(replayNode)
-            : replayNode;
-      }
       const node = cloneReplayNode($borrow($borrow(replayNodes)[j]));
       const nodeKey = node[1];
       const childNodes = node[2];

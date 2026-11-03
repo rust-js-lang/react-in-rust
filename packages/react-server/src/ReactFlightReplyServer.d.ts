@@ -128,7 +128,7 @@ export interface InitializationReference {
     value3: string,
   ) => unknown | null | undefined;
   path: string[];
-  arrayRoot?: NestedArrayContext | null | undefined;
+  arrayRoot: NestedArrayContext | null;
 }
 
 export interface InitializationHandler {

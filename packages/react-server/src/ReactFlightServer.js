@@ -13,30 +13,9 @@ import {
   enableTaint,
 } from 'shared/ReactFeatureFlags';
 
-import {
-  AWAIT_NODE,
-  IO_NODE,
-  PROMISE_NODE,
-  UNRESOLVED_AWAIT_NODE,
-  UNRESOLVED_PROMISE_NODE,
-} from './ReactFlightAsyncSequence.js';
-
-import {
-  isOpaqueTemporaryReference,
-  resolveTemporaryReference,
-} from './ReactFlightServerTemporaryReferences.js';
-
-import {
-  SuspenseException,
-  getSuspendedThenable,
-} from './ReactFlightThenable.js';
+import {SuspenseException} from './ReactFlightThenable.js';
 
 import {DefaultAsyncDispatcher} from './flight/ReactFlightAsyncDispatcher.js';
-
-import {
-  resolveOwner,
-  setCurrentOwner,
-} from './flight/ReactFlightCurrentOwner.js';
 
 import {getOwnerStackByComponentInfoInDev} from 'shared/ReactComponentInfoStack';
 import {resetOwnerStackLimit} from 'shared/ReactOwnerStackReset';
@@ -72,10 +51,21 @@ import {
 } from 'shared/ReactSymbols';
 
 import {
+  AWAIT_NODE,
+  IO_NODE,
+  PROMISE_NODE,
+  UNRESOLVED_AWAIT_NODE,
+  UNRESOLVED_PROMISE_NODE,
+} from './ReactFlightAsyncSequence.js';
+import {
   callComponentInDEV,
   callIteratorInDEV,
   callLazyInitInDEV,
 } from './ReactFlightCallUserSpace.js';
+import {
+  resolveOwner,
+  setCurrentOwner,
+} from './flight/ReactFlightCurrentOwner.js';
 
 import {
   HooksDispatcher,
@@ -85,6 +75,11 @@ import {
   prepareToUseHooksForRequest,
   resetHooksForRequest,
 } from './ReactFlightHooks.js';
+import {
+  isOpaqueTemporaryReference,
+  resolveTemporaryReference,
+} from './ReactFlightServerTemporaryReferences.js';
+import {getSuspendedThenable} from './ReactFlightThenable.js';
 
 import {
   beginWriting,
