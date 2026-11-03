@@ -181,7 +181,6 @@ pub fn switch_context(new_snapshot: ContextSnapshot) {
                 pop_previous_to_common_level(prev, next);
             }
             (Some(prev), Some(next)) => pop_next_to_common_level(prev, next),
-            // Not equal, so not both the root.
             (None, None) => {}
         }
         CURRENT_ACTIVE_SNAPSHOT.set(next);
