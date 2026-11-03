@@ -495,6 +495,14 @@ the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
   `const prevState = current.memoizedState; prevState.hydrationErrors =
   hydrationErrors;`, the `if let`'s `prev_state`.
 
+**Held until rust-js prints an untagged string-or-integer `{}` in place**
+(the user's condition, 2026-11-03; the coordinator's rust-js P3): webpack's
+ImportManifestEntry `id` stays `String`, as upstream's Flow type `string`
+is, though webpack's plugin writes numeric ids (upstream's `$FlowFixMe`).
+As a `ModuleId { Name(String), Number(..) }`, resolveClientReference's panic
+message would print `${moduleIdDisplay_fmt(id)}` where upstream writes
+`${metadata[ID]}`, and the client's JS must stay unchanged.
+
 **Fixed in rust-js from Batch 61**:
 - rd643 (7db76060d): `ReplyBody` has upstream's third type,
   `UrlSearchParams(..) => unsafe { std::hint::unreachable_unchecked() }`
