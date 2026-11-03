@@ -41,13 +41,12 @@ export function experimental_renderToHTML(children, options) {
         reject(error);
       },
     };
-    // GAP rd557: a closure printed as a function declaration prints its
-    // body's comments above it.
-    // Any error rejects the promise, regardless of where it happened.
-    // Unlike other React SSR we don't want to put Suspense boundaries into
-    // client rendering mode because there's no client rendering here.
     function handleError(error, errorInfo) {
+      // Any error rejects the promise, regardless of where it happened.
+      // Unlike other React SSR we don't want to put Suspense boundaries into
+      // client rendering mode because there's no client rendering here.
       reject(error);
+
       const onError = options?.onError;
       if (onError != null) {
         onError(error, errorInfo);

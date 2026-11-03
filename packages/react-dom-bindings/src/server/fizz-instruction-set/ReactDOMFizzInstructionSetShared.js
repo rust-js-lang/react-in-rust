@@ -150,8 +150,6 @@ export function revealCompletedBoundariesWithViewTransitions(
     elementStyle.viewTransitionName = escapedName;
     shouldStartViewTransition = true;
   }
-  // Fall through to reveal.
-  // Fall through to reveal.
   try {
     const existingTransition = document.__reactViewTransition;
     if (existingTransition) {
@@ -397,7 +395,10 @@ export function revealCompletedBoundariesWithViewTransitions(
       window.$RB = [];
       return;
     }
-  } catch {}
+    // Fall through to reveal.
+  } catch {
+    // Fall through to reveal.
+  }
   // ViewTransitions v2 not supported or no ViewTransitions found. Reveal immediately.
   revealBoundaries(batch);
 }

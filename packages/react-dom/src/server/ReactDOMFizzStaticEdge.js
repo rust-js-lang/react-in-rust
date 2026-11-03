@@ -51,6 +51,7 @@ export function prerender(children, options) {
           highWaterMark: 0,
         },
       );
+
       const result = {
         postponed: getPostponedState(request$1),
         prelude: stream,
@@ -124,6 +125,7 @@ export function resumeAndPrerender(children, postponedState, options) {
           highWaterMark: 0,
         },
       );
+
       const result = {
         postponed: getPostponedState(request$1),
         prelude: stream,

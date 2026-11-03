@@ -379,7 +379,7 @@ function patchConsole(consoleInst, methodName) {
       descriptor.value,
       'name',
     );
-    const captured = descriptor.value;
+    const originalMethod = descriptor.value;
     // Otherwise add the current environment.
     function wrapperMethod() {
       const request = resolveRequest();
@@ -404,7 +404,7 @@ function patchConsole(consoleInst, methodName) {
       }
       // $FlowFixMe[incompatible-call]
       // $FlowFixMe[incompatible-type]
-      return captured.apply(this, arguments);
+      return originalMethod.apply(this, arguments);
     }
     if (originalName != null) {
       Object.defineProperty(
@@ -1059,7 +1059,7 @@ function serializeThenable(request, task, thenable) {
         );
         return id;
       }
-    // falls through
+    // Fallthrough
     default: {
       const newTask = createThenableTask(request, task, thenable);
       if (request.status === ABORTING) {
@@ -1407,10 +1407,9 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
       } else {
         // Unlike streams, the last value may not be undefined. If it's not
         // we outline it and encode a reference to it in the closing instruction.
-        const captured = entry.value;
         let chunkId;
         try {
-          chunkId = outlineModel(request, captured);
+          chunkId = outlineModel(request, entry.value);
         } catch (thrown) {
           const x = $unwound(thrown);
           error(thrownValueOf(x));
@@ -1431,9 +1430,8 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
       enqueueFlush(request);
       callOnAllReadyIfReady(request);
     } else {
-      const captured = entry.value;
       try {
-        streamTask.model = captured;
+        streamTask.model = entry.value;
         request.pendingChunks++;
         tryStreamTask(request, streamTask);
         enqueueFlush(request);

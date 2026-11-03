@@ -144,7 +144,6 @@ export function renderToReadableStream(children, options) {
     });
 
     let request;
-    // TODO: Move to sub-classing ReadableStream.
     function onShellReady() {
       const request$1 = $unwrap(request);
       let writable;
@@ -169,13 +168,14 @@ export function renderToReadableStream(children, options) {
           highWaterMark: 0,
         },
       );
+      // TODO: Move to sub-classing ReadableStream.
       stream.allReady = allReady;
       resolve(stream);
     }
-    // If the shell errors the caller of `renderToReadableStream` won't have access to `allReady`.
-    // However, `allReady` will be rejected by `onFatalError` as well.
-    // So we need to catch the duplicate, uncatchable fatal error in `allReady` to prevent a `UnhandledPromiseRejection`.
     function onShellError(error) {
+      // If the shell errors the caller of `renderToReadableStream` won't have access to `allReady`.
+      // However, `allReady` will be rejected by `onFatalError` as well.
+      // So we need to catch the duplicate, uncatchable fatal error in `allReady` to prevent a `UnhandledPromiseRejection`.
       allReady.catch(() => {});
       reject(error);
     }
@@ -282,7 +282,6 @@ export function resume(children, postponedState, options) {
     });
 
     let request;
-    // TODO: Move to sub-classing ReadableStream.
     function onShellReady() {
       const request$1 = $unwrap(request);
       let writable;
@@ -307,13 +306,14 @@ export function resume(children, postponedState, options) {
           highWaterMark: 0,
         },
       );
+      // TODO: Move to sub-classing ReadableStream.
       stream.allReady = allReady;
       resolve(stream);
     }
-    // If the shell errors the caller of `renderToReadableStream` won't have access to `allReady`.
-    // However, `allReady` will be rejected by `onFatalError` as well.
-    // So we need to catch the duplicate, uncatchable fatal error in `allReady` to prevent a `UnhandledPromiseRejection`.
     function onShellError(error) {
+      // If the shell errors the caller of `renderToReadableStream` won't have access to `allReady`.
+      // However, `allReady` will be rejected by `onFatalError` as well.
+      // So we need to catch the duplicate, uncatchable fatal error in `allReady` to prevent a `UnhandledPromiseRejection`.
       allReady.catch(() => {});
       reject(error);
     }

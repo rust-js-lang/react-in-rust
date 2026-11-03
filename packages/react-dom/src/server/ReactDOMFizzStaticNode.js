@@ -84,6 +84,7 @@ export function prerenderToNodeStream(children, options) {
         },
       });
       writable = createFakeWritableFromReadable(readable);
+
       const result = {
         postponed: getPostponedState(request$1),
         prelude: readable,
@@ -154,6 +155,7 @@ export function prerender(children, options) {
           highWaterMark: 0,
         },
       );
+
       const result = {
         postponed: getPostponedState(request$1),
         prelude: stream,
@@ -221,6 +223,7 @@ export function resumeAndPrerenderToNodeStream(
         },
       });
       writable = createFakeWritableFromReadable(readable);
+
       const result = {
         postponed: getPostponedState(request$1),
         prelude: readable,
@@ -275,6 +278,7 @@ export function resumeAndPrerender(children, postponedState, options) {
           highWaterMark: 0,
         },
       );
+
       const result = {
         postponed: getPostponedState(request$1),
         prelude: stream,

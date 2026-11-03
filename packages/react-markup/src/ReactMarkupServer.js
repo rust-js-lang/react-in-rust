@@ -38,7 +38,7 @@ import {
   createResumableState,
   createRootFormatContext,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
-import {$displayF64, $someGet, $someValue, $unwrap} from '@rust-js/runtime';
+import {$someGet, $someValue, $unwrap} from '@rust-js/runtime';
 
 function noServerCallOrFormAction(id, args) {
   throw new Error(
@@ -64,50 +64,44 @@ export function experimental_renderToHTML(children, options) {
     let stashErrorIdx = 1;
     const stashedErrors = new Map();
 
-    // GAP rd557: a closure printed as a function declaration prints its
-    // body's comments above it, or inside its first statement's call.
     function handleFlightError(error) {
-      const id = $displayF64(
-        // For Flight errors we don't immediately reject, because they might not matter
-        // to the output of the HTML. We stash the error with a digest in case we need
-        // to get to the original error from the Fizz render.
-        // GAP rd653: an f64's text prints `$displayF64(..)`, where upstream
-        // writes `'' + stashErrorIdx++`.
-        stashErrorIdx,
-      );
+      // For Flight errors we don't immediately reject, because they might not matter
+      // to the output of the HTML. We stash the error with a digest in case we need
+      // to get to the original error from the Fizz render.
+      const id = String(stashErrorIdx);
       stashErrorIdx++;
       stashedErrors.set(id, error);
       return id;
     }
 
-    // GAP rd557: these closures' comments print above the function.
     // GAP rd558: an `Option` a `HashMap` holds is boxed, so
     // `stashed_errors[id]` reads `$someValue($unwrap($someGet(..)))`
     // where upstream reads `stashedErrors.get(id)`.
-    // Note that the original error might be `undefined` so we need a has check.
-    // Get the original error thrown inside Flight.
-
-    // Any error rejects the promise, regardless of where it happened.
-    // Unlike other React SSR we don't want to put Suspense boundaries into
-    // client rendering mode because there's no client rendering here.
-    // We're inside a "client" callback from Fizz but we only have access to the
-    // "server" runtime so to get access to a stack trace within this callback we
-    // need to override it to get it from the client runtime.
     function handleError(error, errorInfo) {
       if (typeof error === 'object' && error !== null) {
         const id = error.digest;
+        // Note that the original error might be `undefined` so we need a has check.
         if (typeof id === 'string' && stashedErrors.has(id)) {
+          // Get the original error thrown inside Flight.
           error = $someValue(
             $unwrap($someGet(stashedErrors, id), 'no entry found for key'),
           );
         }
       }
+
+      // Any error rejects the promise, regardless of where it happened.
+      // Unlike other React SSR we don't want to put Suspense boundaries into
+      // client rendering mode because there's no client rendering here.
       reject(error);
+
       const onError = options?.onError;
       if (onError != null) {
         if (__DEV__) {
           const prevGetCurrentStackImpl =
             ReactSharedInternalsServer.getCurrentStack;
+          // We're inside a "client" callback from Fizz but we only have access to the
+          // "server" runtime so to get access to a stack trace within this callback we
+          // need to override it to get it from the client runtime.
           ReactSharedInternalsServer.getCurrentStack =
             ReactSharedInternals.getCurrentStack ?? null;
           try {
