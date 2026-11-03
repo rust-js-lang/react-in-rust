@@ -5,8 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$iter} from '@rust-js/runtime';
-
 let framesToSkip = 0;
 let collectedStackTrace = null;
 
@@ -51,8 +49,7 @@ function collectStackTracePrivate(error, structuredStackTrace) {
   const result = [];
   // Collect structured stack traces from the callsites.
   // We mirror how V8 serializes stack frames and how we later parse them.
-  const value = $iter(structuredStackTrace);
-  for (const callSite of value.drop(framesToSkip)) {
+  for (const callSite of structuredStackTrace.values().drop(framesToSkip)) {
     let name = callSite.getFunctionName() || '<anonymous>';
     if (name.includes('react_stack_bottom_frame')) {
       // Skip everything after the bottom frame since it'll be internals.

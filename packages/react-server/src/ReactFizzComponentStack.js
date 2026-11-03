@@ -11,6 +11,7 @@ import {
   describeDebugInfoFrame,
   describeFunctionComponentFrame,
 } from 'shared/ReactComponentStackFrame';
+
 import {
   REACT_FORWARD_REF_TYPE,
   REACT_LAZY_TYPE,
@@ -21,6 +22,7 @@ import {
 } from 'shared/ReactSymbols';
 
 import {enableViewTransition} from 'shared/ReactFeatureFlags';
+
 import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
 import {$unwrap} from '@rust-js/runtime';
 

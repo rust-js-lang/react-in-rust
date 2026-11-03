@@ -16,7 +16,7 @@ import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
 
 import assign from 'shared/assign';
 import isArray from 'shared/isArray';
-import {$index, $slice, $unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/runtime';
 
 const didWarnAboutNoopUpdateForComponent = {};
 const didWarnAboutDeprecatedWillMount = {};
@@ -563,10 +563,10 @@ function processUpdateQueue(
     if (oldReplace && oldQueue.length === 1) {
       inst.state = oldQueue[0];
     } else {
-      let nextState = oldReplace ? $index(oldQueue, 0) : inst.state;
+      let nextState = oldReplace ? oldQueue[0] : inst.state;
       let dontMutate = true;
-      const value = oldReplace ? 1 : 0;
-      for (const partial of $slice(oldQueue, value)) {
+      for (let i = oldReplace ? 1 : 0; i < oldQueue.length; i++) {
+        const partial = oldQueue[i];
         let partialState;
         if (typeof partial === 'function') {
           partialState = partial.call(

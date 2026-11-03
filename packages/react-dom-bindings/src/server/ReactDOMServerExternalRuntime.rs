@@ -1,8 +1,3 @@
-// Copyright (c) Meta Platforms, Inc. and affiliates.
-//
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree.
-
 //! This file is compiled to a standalone browser script by rollup and loaded by Fizz
 //!  clients. Therefore, it should be fast and not have many external dependencies.
 

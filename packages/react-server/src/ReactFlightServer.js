@@ -20,10 +20,12 @@ import {
   UNRESOLVED_AWAIT_NODE,
   UNRESOLVED_PROMISE_NODE,
 } from './ReactFlightAsyncSequence.js';
+
 import {
   isOpaqueTemporaryReference,
   resolveTemporaryReference,
 } from './ReactFlightServerTemporaryReferences.js';
+
 import {
   SuspenseException,
   getSuspendedThenable,
@@ -43,7 +45,9 @@ import binaryToComparableString from 'shared/binaryToComparableString';
 import getPrototypeOf from 'shared/getPrototypeOf';
 import hasOwnProperty from 'shared/hasOwnProperty';
 import isArray from 'shared/isArray';
+
 import noop from 'shared/noop';
+
 import {
   describeObjectForErrorMessage,
   isGetter,
@@ -52,6 +56,7 @@ import {
   jsxPropsParents,
   objectName,
 } from 'shared/ReactSerializationErrors';
+
 import {
   ASYNC_ITERATOR,
   REACT_ELEMENT_TYPE,
@@ -69,6 +74,7 @@ import {
   callIteratorInDEV,
   callLazyInitInDEV,
 } from './ReactFlightCallUserSpace.js';
+
 import {
   HooksDispatcher,
   getThenableStateAfterSuspending,

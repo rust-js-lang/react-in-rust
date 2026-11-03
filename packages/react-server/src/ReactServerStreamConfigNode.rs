@@ -19,7 +19,6 @@ use webapi::{Blob, TextEncoderEncodeIntoResult, console};
 use node::util::{TextEncoder, text_encoder};
 
 use node::crypto::{BinaryToTextEncoding, create_hash};
-
 use shared::has_own_property::HAS_OWN_PROPERTY;
 
 /// A destination that might be flushable, `interface MightBeFlushable`.

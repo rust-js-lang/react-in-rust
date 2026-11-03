@@ -14,7 +14,6 @@ import {
 } from './ReactFlightAsyncSequence.js';
 import {resolveOwner} from './flight/ReactFlightCurrentOwner.js';
 import {isAwaitInUserspace, resolveRequest} from './ReactFlightServer.js';
-
 import {AsyncResource, createHook, executionAsyncId} from 'async_hooks';
 
 import {parseStackTracePrivate} from './ReactFlightServerConfig.js';

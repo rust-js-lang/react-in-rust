@@ -42,11 +42,9 @@ import warnValidStyle from '../shared/warnValidStyle.js';
 import {getCrossOriginString} from '../shared/crossOriginStrings.js';
 import escapeTextForBrowser from './escapeTextForBrowser.js';
 import hyphenateStyleName from '../shared/hyphenateStyleName.js';
-
 import hasOwnProperty from 'shared/hasOwnProperty';
 
 import sanitizeURL from '../shared/sanitizeURL.js';
-
 import isArray from 'shared/isArray';
 
 import {
@@ -58,6 +56,7 @@ import {
   formReplaying as formReplayingRuntime,
   markShellTime,
 } from './fizz-instruction-set/ReactDOMFizzInstructionSetInlineCodeStrings.js';
+
 import {getValueDescriptorExpectingObjectForWarning} from '../shared/ReactDOMResourceValidation.js';
 
 import {NotPending} from '../shared/ReactDOMFormActions.js';
