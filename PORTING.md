@@ -51,7 +51,7 @@ Cargo.toml's `[lib] path`: `shared.rs`, `src/forks/Scheduler.rs`,
 
 The crates are `shared`, `scheduler`, `react-isomorphic` (packages/react),
 `react-reconciler`, `react-dom-bindings`, `react-dom`,
-`react-noop-renderer`, `react-test-renderer`, `react-art`, `react-client`, `react-server-dom-webpack`, `react-server-dom-turbopack`, `react-server-dom-parcel`, `react-server-dom-esm`, `react-server-dom-unbundled` and `react-markup`. A new package is a new crate,
+`react-noop-renderer`, `react-test-renderer`, `react-art`, `react-client`, `react-server-dom-webpack`, `react-server-dom-turbopack`, `react-server-dom-parcel`, `react-server-dom-esm`, `react-server-dom-unbundled`, `react-server-dom-fb` and `react-markup`. A new package is a new crate,
 added to the workspace's `members`.
 
 **A react-server-dom-* package is one crate of both sessions' modules**
@@ -158,7 +158,7 @@ react-server, react-client, the Fizz suites and react-server-dom-fb,
 | client | `yarn test packages/react-client/src/__tests__` (4 suites) | 98 / 0 / 0⁴ |
 | webpack | `yarn test packages/react-server-dom-webpack/src/__tests__` (9 suites) | 278 / 0 / 0 |
 | turbopack | `yarn test packages/react-server-dom-turbopack/src/__tests__` (7 suites) | 43 / 0 / 0 |
-| fb | `yarn test packages/react-server-dom-fb/src/__tests__` (1 suite) | 8 / 0 / 0 |
+| fb | `yarn test packages/react-server-dom-fb/src/__tests__` (2 suites) | 10 / 0 / 0⁷ |
 
 The `ssr` gate's 21 suites are the 20 `ReactDOMServerIntegration*` files plus
 `ReactDOMserverIntegrationProgress` (lowercase s), which the same pattern
@@ -185,6 +185,10 @@ ReactFlightServer's migration; upstream's suites alone are 26 in 4.
 ⁶ With the port's own `ReactDOMFizzServerBun-test.js` (7 tests) and
 `ReactServerStreamConfigBun-test.js` (10 tests), added with the Bun server
 entry, as no upstream test runs it.
+
+⁷ With the port's own `ReactDOMServerFBStream-test.internal.js` (2 tests:
+each chunk is only what was written since the last, and `debug`'s counts),
+added with ReactDOMServerFB; upstream's suite alone is 8 in 1.
 
 ² One run in five of `-r=www-modern packages/react-server/src/__tests__`
 failed one test (25 / 1 / 0) while the machine was loaded. The default
@@ -1125,6 +1129,50 @@ These differences from upstream's output are accepted:
     highWaterMark: 2048, }`, as rustfmt lays out its struct, where upstream
     writes `{highWaterMark: 2048}`; Edge's, Static's and the Flight
     entries' `{highWaterMark: 0}` alike).
+- **React DOM's FB server, react-server-dom-fb** (2026-11-03): its one
+  module, ReactDOMServerFB, is Rust, a crate of its own whose root is
+  Cargo's default `src/lib.rs`, as the other react-server-dom-* crates'
+  are, `#[path = "ReactDOMServerFB.rs"] pub mod react_dom_server_fb;`.
+  Upstream imports createResumableState, createRenderState and
+  createRootFormatContext from the Fizz config fork,
+  `react-server/src/ReactFizzConfig` (dom-fb's re-exports
+  ReactFizzConfigDOM's and adds `isWorkLoopExternallyDriven`), so the port
+  reaches them as JS-path bindings of the fork, `link_name =
+  "react-server/src/ReactFizzConfig#createResumableState"`, of
+  ReactFizzConfigDOM's signatures and types. The destination is
+  ReactServerStreamConfigFB's `Destination`, an `Rc` the `Stream` holds and
+  gives startFlowing; `debug` reads the request `as any` by `js::get`, as
+  upstream does, into a struct of the port's, `DebugInfo`, a JS object of
+  its fields. ReactFlightServerConfigBundlerCustom stays JS: a `$$$config`
+  shim, which the custom, dom-bun, dom-legacy and noop Flight configs
+  re-export and jest mocks. Upstream's ReactDOMServerFB-test.internal.js
+  (8 tests) and the port's ReactDOMServerFBStream-test.internal.js (2: each
+  chunk is only what was written since the last, which no upstream test
+  holds, and `debug`'s counts) hold it; both pass on upstream's JS too (dev,
+  stable, prod) and fail on mutations of the generated JS (the buffer's
+  reset, the fatal throw, the abort's reason, the options given on, each
+  of `debug`'s fields). Differences from upstream, none changing a result
+  for options upstream's type allows:
+  - `options.x` where upstream writes `options ? options.x : undefined`:
+    upstream types `options` as a required `Options` and reads
+    `options.onError` unguarded, so the port's `&Options` is required; of
+    no options, which the type forbids, both throw a TypeError, the port's
+    at `options.identifierPrefix`, upstream's at `options.onError` after
+    createResumableState has run (which nothing observes);
+  - `bootstrapScripts` and `bootstrapModules` are optional `Array<string |
+    BootstrapScriptDescriptor>`, createResumableState's own type, where
+    upstream's Options types them as required `Array<string>`: React's own
+    tests leave them out, and a Rust slice of text can't be given as one of
+    `BootstrapScript` without a copy;
+  - the Bun entry's forms: the imports' names in rustfmt's order, `export
+    function` (rd350), and trailing `undefined`s left out
+    (`createRootFormatContext()`, createRequest's last two);
+  - the `.d.ts` exports `Options` and `Stream` as interfaces, where
+    upstream's `Options` is the module's own and `Stream` opaque; `debug`
+    returns `unknown`, upstream's `any`;
+  - readability gap (rust-js), not holding: rd669 (renderNextChunk's
+    `const old = destination.buffer; destination.buffer = ''; return old;`,
+    `RefCell::take`'s name, where upstream names it `chunk`).
 - **The Flight clients' names and arms** (the user, 2026-11-01; its
   acronym rule extended to the servers, the user, 2026-11-02, ESM's
   resolveClientReferenceMetadata's `baseUrl` and `fullUrl`):

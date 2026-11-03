@@ -140,6 +140,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "react-server-dom-fb"
+version = "0.0.0"
+dependencies = [
+ "react-dom-bindings",
+ "react-server",
+ "rust-js-builtins",
+ "shared",
+]
+
+[[package]]
 name = "react-server-dom-parcel"
 version = "0.0.0"
 dependencies = [

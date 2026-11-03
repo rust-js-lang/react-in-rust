@@ -1,0 +1,19 @@
+[package]
+name = "react-server-dom-fb"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# React DOM's streaming server renderer for Facebook's servers,
+# `react-server-dom-fb`. Its modules are its files, each beside the JS
+# rust-js writes from it; its root declares them and writes no JS of its
+# own.
+
+[dependencies]
+js.workspace = true
+react-dom-bindings = { path = "../react-dom-bindings" }
+react-server = { path = "../react-server" }
+shared.workspace = true
+
+[lints]
+workspace = true
