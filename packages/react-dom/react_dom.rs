@@ -14,6 +14,10 @@ pub mod react_dom_client;
 pub mod react_dom_client_fb;
 #[path = "src/client/ReactDOMDefaultTransitionIndicator.rs"]
 pub mod react_dom_default_transition_indicator;
+#[path = "src/ReactDOMFB.rs"]
+pub mod react_dom_fb;
+#[path = "src/ReactDOMFB.modern.rs"]
+pub mod react_dom_fb_modern;
 #[path = "src/server/ReactDOMFizzServerBrowser.rs"]
 pub mod react_dom_fizz_server_browser;
 #[path = "src/server/ReactDOMFizzServerBun.rs"]

@@ -24,6 +24,8 @@ pub struct ReactDOMInternals {
     pub find_dom_node: Cell<Option<&'static FindDOMNode>>,
 }
 
+unsafe impl js::Defined for ReactDOMInternals {}
+
 #[cfg_attr(rust_js, rust_js::name = "DefaultDispatcher")]
 const DEFAULT_DISPATCHER: &HostDispatcher = &HostDispatcher {
     f /* flushSyncWork */: &|| None,

@@ -2069,6 +2069,25 @@ The port is split between sessions by package:
   and `$FlowFixMe` comments (rd719); `import {$unwrap} from
   '@rust-js/runtime';` prints as the module's last line, after that
   re-export (rd725, rust-js #590).
+  react-dom's ReactDOMFB and ReactDOMFB.modern, www's classic and modern
+  entries, are Rust (Batch 64): `pub use`s of ReactDOMSharedInternalsFB's
+  `INTERNALS as __DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE`,
+  of ReactDOMClientFB and of ReactDOMRootFB. ReactDOMFB's `js::on_load!`
+  assigns `{ReactBrowserEventEmitter: {isEnabled}}` onto the internals
+  (`unsafe impl js::Defined for ReactDOMInternals`), printed upstream's
+  `Object.assign(Internals, {ReactBrowserEventEmitter: {isEnabled}});`.
+  Each `export {..} from` lists its names in rustfmt's order of one `pub
+  use` list, its SCREAMING constants first (`flushSync, version, browser,
+  createPortal, ..`), where upstream lists `browser, createPortal,
+  flushSync, ..` (accepted on the user's behalf while away, the
+  coordinator, 2026-11-04, as the taint list's order was). Pending in
+  rust-js (rd704, names run 51): ReactDOMFB prints `export {default as
+  __DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE} from
+  './ReactDOMSharedInternalsFB.js';` where upstream imports Internals and
+  writes `export {Internals as ..};`. ReactDOMTestingFB and
+  ReactDOMTestingFB.modern are held on rust-js #592 (rd726, P0): a glob
+  `pub use crate::react_dom_fb::*;` exports a renamed re-export by its
+  definer's name, `createEventHandle` for `unstable_createEventHandle`.
   react-dom-bindings' events/forks/EventListener-www, www's listeners, is
   Rust (Batch 64), declared beside EventListener as `#[path =
   "src/events/forks/EventListener-www.rs"] pub mod event_listener_www;`;
