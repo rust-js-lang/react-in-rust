@@ -11,6 +11,10 @@ use js::{ArrayBuffer, IntoUnknown, Rest, Unknown, function};
 
 #[path = "../SchedulerFeatureFlags.rs"]
 pub mod scheduler_feature_flags;
+#[path = "SchedulerFeatureFlags.native-fb.rs"]
+pub mod scheduler_feature_flags_native_fb;
+#[path = "SchedulerFeatureFlags.www-dynamic.rs"]
+pub mod scheduler_feature_flags_www_dynamic;
 #[path = "../SchedulerMinHeap.rs"]
 pub mod scheduler_min_heap;
 #[path = "SchedulerMock.rs"]

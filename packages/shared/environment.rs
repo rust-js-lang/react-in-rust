@@ -15,6 +15,10 @@ unsafe extern "Rust" {
     /// Whether this is the experimental release channel's build.
     pub safe static __EXPERIMENTAL__: bool;
 
+    /// Whether this run takes www's gatekeepers' other value: the tests run
+    /// www's and React Native's dynamic flags once with each.
+    pub safe static __VARIANT__: bool;
+
     /// Parcel's `parcelRequire.meta.publicUrl`.
     #[link_name = "parcelRequire.meta.publicUrl"]
     pub safe static PARCEL_REQUIRE_META_PUBLIC_URL: &'static str;
