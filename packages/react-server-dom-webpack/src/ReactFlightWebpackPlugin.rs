@@ -90,7 +90,7 @@ const PLUGIN_NAME: &str = "React Server Plugin";
 // whose `id` and `chunks` the port types `String`, where webpack's `Id` is
 // `string | number`; widening it changes the Flight client's JS. One type
 // waits on rust-js's untagged string-or-integer enum formatted in place
-// (m6-react's gap); until then the plugin writes its own entry.
+// (#557); until then the plugin writes its own entry.
 /// An `ImportManifestEntry` of what webpack gives: a module's id and its
 /// chunks' ids, each a string or a number.
 struct ClientManifestEntry {
