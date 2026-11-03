@@ -59,9 +59,7 @@ function defaultOnDefaultTransitionIndicator() {}
 
 export const act = React.act;
 
-const defaultTestOptions = {
-  createNodeMock: element => null,
-};
+const defaultTestOptions = {createNodeMock: element => null};
 
 function toJSON(inst) {
   if (isHidden(inst)) {

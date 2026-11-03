@@ -34,9 +34,7 @@ export function addEventBubbleListenerWithPassiveFlag(
   listener,
   passive,
 ) {
-  target.addEventListener(eventType, listener, {
-    passive,
-  });
+  target.addEventListener(eventType, listener, {passive});
   return listener;
 }
 

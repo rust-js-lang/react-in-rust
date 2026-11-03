@@ -162,9 +162,7 @@ export function initializeClassErrorUpdate(update, root, fiber, errorInfo) {
       } else {
         const error = errorInfo.value;
         const stack = errorInfo.stack;
-        this.componentDidCatch(error, {
-          componentStack: stack ?? '',
-        });
+        this.componentDidCatch(error, {componentStack: stack ?? ''});
       }
       if (
         __DEV__ &&
@@ -562,9 +560,7 @@ export function throwException(
         const wrapperError = new Error(
           'There was an error while hydrating but React was able to recover by ' +
             'instead client rendering from the nearest Suspense boundary.',
-          {
-            cause: value,
-          },
+          {cause: value},
         );
         queueHydrationError(
           createCapturedValueAtFiber(wrapperError, sourceFiber),
@@ -576,9 +572,7 @@ export function throwException(
         const wrapperError = new Error(
           'There was an error while hydrating but React was able to recover by ' +
             'instead client rendering the entire root.',
-          {
-            cause: value,
-          },
+          {cause: value},
         );
         queueHydrationError(
           createCapturedValueAtFiber(wrapperError, sourceFiber),
@@ -608,9 +602,7 @@ export function throwException(
   const wrapperError = new Error(
     'There was an error during concurrent rendering but React was able to recover by ' +
       'instead synchronously rendering the entire root.',
-    {
-      cause: value,
-    },
+    {cause: value},
   );
   queueConcurrentError(createCapturedValueAtFiber(wrapperError, sourceFiber));
   renderDidError();

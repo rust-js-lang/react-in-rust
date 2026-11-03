@@ -393,39 +393,19 @@ function replayChangeEvent(target) {
       // Checkboxes always fire a click event regardless of how the change was made.
       const EventCtr =
         typeof PointerEvent === 'function' ? PointerEvent : Event;
-      target.dispatchEvent(
-        new EventCtr('click', {
-          bubbles: true,
-        }),
-      );
+      target.dispatchEvent(new EventCtr('click', {bubbles: true}));
       // For checkboxes the input event uses the Event constructor instead of InputEvent.
-      target.dispatchEvent(
-        new Event('input', {
-          bubbles: true,
-        }),
-      );
+      target.dispatchEvent(new Event('input', {bubbles: true}));
     } else if (typeof InputEvent === 'function') {
-      target.dispatchEvent(
-        new InputEvent('input', {
-          bubbles: true,
-        }),
-      );
+      target.dispatchEvent(new InputEvent('input', {bubbles: true}));
     }
   } else if (
     element.nodeName === 'TEXTAREA' &&
     typeof InputEvent === 'function'
   ) {
-    target.dispatchEvent(
-      new InputEvent('input', {
-        bubbles: true,
-      }),
-    );
+    target.dispatchEvent(new InputEvent('input', {bubbles: true}));
   }
-  target.dispatchEvent(
-    new Event('change', {
-      bubbles: true,
-    }),
-  );
+  target.dispatchEvent(new Event('change', {bubbles: true}));
 }
 
 function replayUnblockedEvents() {

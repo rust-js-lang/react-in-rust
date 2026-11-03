@@ -2367,16 +2367,12 @@ function pushEffectImpl(effect) {
 }
 
 function createEffectInstance() {
-  return {
-    destroy: undefined,
-  };
+  return {destroy: undefined};
 }
 
 function mountRef(initialValue) {
   const hook = mountWorkInProgressHook();
-  const ref = {
-    current: initialValue,
-  };
+  const ref = {current: initialValue};
   hook.memoizedState = ref;
   return ref;
 }
@@ -2468,9 +2464,7 @@ function useEffectEventImpl(payload) {
 
 function mountEvent(callback) {
   const hook = mountWorkInProgressHook();
-  const ref = {
-    impl: callback,
-  };
+  const ref = {impl: callback};
   hook.memoizedState = ref;
   // $FlowFixMe[incompatible-type]
   return (...args) => {
@@ -3217,9 +3211,7 @@ function refreshCache(fiber, seedKey, seedValue) {
           }
         }
 
-        const payload = {
-          cache: seededCache,
-        };
+        const payload = {cache: seededCache};
         refreshUpdate.payload = payload;
         return;
       }

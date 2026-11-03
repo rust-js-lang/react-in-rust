@@ -158,11 +158,7 @@ export function trackUsedThenable(
     };
     // We can infer the await owner/stack lazily from where this promise ends up
     // used. It can be used in more than one place so we can't assign it here.
-    thenable._debugInfo = [
-      {
-        awaited: ioInfo,
-      },
-    ];
+    thenable._debugInfo = [{awaited: ioInfo}];
     // Track when we resolved the Promise as the approximate end time.
     const status = thenable.status;
     if (status !== 'fulfilled' && status !== 'rejected') {

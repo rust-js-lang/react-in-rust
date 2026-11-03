@@ -875,9 +875,7 @@ function createReactNoop(reconciler, useMutation) {
     if (Array.isArray(child.children)) {
       // This is an instance.
       const children = childToJSX(child.children, child.text);
-      const props = {
-        prop: child.prop,
-      };
+      const props = {prop: child.prop};
       if (child.hidden) {
         props.hidden = true;
       }
@@ -1225,13 +1223,7 @@ function createReactNoop(reconciler, useMutation) {
     },
 
     stopTrackingHostCounters() {
-      const result = useMutation
-        ? {
-            hostUpdateCounter,
-          }
-        : {
-            hostCloneCounter,
-          };
+      const result = useMutation ? {hostUpdateCounter} : {hostCloneCounter};
       hostUpdateCounter = 0;
       hostCloneCounter = 0;
 

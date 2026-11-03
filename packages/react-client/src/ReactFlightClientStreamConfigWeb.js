@@ -6,9 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 export function createStringDecoder(preserveByteOrderMark) {
-  return new TextDecoder('utf-8', {
-    ignoreBOM: preserveByteOrderMark ?? false,
-  });
+  return new TextDecoder('utf-8', {ignoreBOM: preserveByteOrderMark ?? false});
 }
 
 const decoderOptions = {stream: true};

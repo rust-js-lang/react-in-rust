@@ -84,9 +84,7 @@ const callComponentDidCatch = {
   react_stack_bottom_frame(instance, errorInfo) {
     const error = errorInfo.value;
     const stack = errorInfo.stack;
-    instance.componentDidCatch(error, {
-      componentStack: stack ?? '',
-    });
+    instance.componentDidCatch(error, {componentStack: stack ?? ''});
   },
 };
 

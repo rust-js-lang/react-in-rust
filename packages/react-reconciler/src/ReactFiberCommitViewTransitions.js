@@ -891,7 +891,7 @@ function measureViewTransitionHostInstancesRecursive(
     if (current.tag === HostComponent) {
       const instance = current.stateNode;
       if (
-        previousMeasurements != null &&
+        previousMeasurements !== null &&
         viewTransitionHostInstanceIdx < previousMeasurements.length
       ) {
         // The previous measurement of the Instance in this location within the ViewTransition.
@@ -1013,14 +1013,14 @@ export function measureUpdateViewTransition(current, finishedWork, gesture) {
   if (gesture) {
     const clones = state.clones;
     if (clones == null) {
-      previousMeasurements = undefined;
+      previousMeasurements = null;
     } else {
       previousMeasurements = clones.map(instance =>
         measureClonedInstance(instance),
       );
     }
   } else {
-    previousMeasurements = oldFiber.memoizedState;
+    previousMeasurements = oldFiber.memoizedState ?? null;
     oldFiber.memoizedState = null; // Clear it. We won't need it anymore.
   }
   const child = newFiber.child;
@@ -1055,14 +1055,14 @@ export function measureNestedViewTransitions(changedParent, gesture) {
       if (gesture) {
         const clones = state.clones;
         if (clones == null) {
-          previousMeasurements = undefined;
+          previousMeasurements = null;
         } else {
           previousMeasurements = clones.map(instance =>
             measureClonedInstance(instance),
           );
         }
       } else {
-        previousMeasurements = child.memoizedState;
+        previousMeasurements = child.memoizedState ?? null;
         child.memoizedState = null; // Clear it. We won't need it anymore.
       }
       const grandchild = child.child;

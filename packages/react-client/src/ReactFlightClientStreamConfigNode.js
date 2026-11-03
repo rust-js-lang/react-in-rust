@@ -8,9 +8,7 @@
 import {TextDecoder} from 'util';
 
 export function createStringDecoder(preserveByteOrderMark) {
-  return new TextDecoder('utf-8', {
-    ignoreBOM: preserveByteOrderMark ?? false,
-  });
+  return new TextDecoder('utf-8', {ignoreBOM: preserveByteOrderMark ?? false});
 }
 
 const decoderOptions = {stream: true};

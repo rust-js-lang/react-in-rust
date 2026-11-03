@@ -38,9 +38,7 @@ export function memo(type, compare) {
         //   React.memo((props) => {...});
         // This kind of inner function is not used elsewhere so the side effect is okay.
         if (!type.name && !type.displayName) {
-          Object.defineProperty(type, 'name', {
-            value: name,
-          });
+          Object.defineProperty(type, 'name', {value: name});
           type.displayName = name;
         }
       },

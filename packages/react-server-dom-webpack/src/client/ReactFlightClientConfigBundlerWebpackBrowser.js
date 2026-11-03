@@ -114,9 +114,7 @@ export function addChunkDebugInfo(target, chunkId, filename) {
     chunkIOInfoCache.set(chunkId, ioInfo);
   }
   // We could dedupe the async info too but conceptually each request is its own await.
-  const asyncInfo = {
-    awaited: ioInfo,
-  };
+  const asyncInfo = {awaited: ioInfo};
   target.push(asyncInfo);
 }
 //# sourceMappingURL=ReactFlightClientConfigBundlerWebpackBrowser.js.map

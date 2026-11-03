@@ -43,13 +43,12 @@ export function setServerCallback(fn) {
 }
 
 function callCurrentServerCallback(id, args) {
-  const callServer$1 = callServer;
-  if (callServer$1 == null) {
+  if (callServer == null) {
     throw new Error(
       'No server callback has been registered. Call setServerCallback to register one.',
     );
   }
-  return callServer$1(id, args);
+  return callServer(id, args);
 }
 
 export function createServerReference(id, exportName) {

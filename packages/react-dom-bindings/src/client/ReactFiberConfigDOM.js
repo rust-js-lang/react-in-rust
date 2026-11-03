@@ -482,9 +482,7 @@ export function createInstance(
         case 'select': {
           const is = props.is;
           if (typeof is === 'string') {
-            domElement = ownerDocument.createElement('select', {
-              is,
-            });
+            domElement = ownerDocument.createElement('select', {is});
           } else {
             // Separate else branch instead of using `props.is || undefined` above because of a Firefox bug.
             // See discussion in https://github.com/react/react/pull/6896
@@ -505,9 +503,7 @@ export function createInstance(
         default: {
           const is = props.is;
           if (typeof is === 'string') {
-            domElement = ownerDocument.createElement(type, {
-              is,
-            });
+            domElement = ownerDocument.createElement(type, {is});
           } else {
             // Separate else branch instead of using `props.is || undefined` above because of a Firefox bug.
             // See discussion in https://github.com/react/react/pull/6896
@@ -1900,9 +1896,7 @@ function customizeViewTransitionError(error, ignoreAbort) {
               'This can happen if a Navigation is blocked on React itself. ' +
               "Such as if it's resolved inside useEffect. " +
               'This can be solved by moving the resolution to useLayoutEffect.',
-            {
-              cause: error,
-            },
+            {cause: error},
           );
         }
         break;
@@ -1917,9 +1911,7 @@ function customizeViewTransitionError(error, ignoreAbort) {
               'other View Transition libraries on the page and only one can run at ' +
               "a time. To avoid this, use only React's built-in <ViewTransition> " +
               'to coordinate.',
-            {
-              cause: error,
-            },
+            {cause: error},
           );
         }
         break;
@@ -2105,9 +2097,7 @@ export function startViewTransition(
       // Loop through all View Transition Animations.
       // $FlowFixMe[prop-missing]
       // $FlowFixMe[incompatible-type]
-      const animations = documentElement.getAnimations({
-        subtree: true,
-      });
+      const animations = documentElement.getAnimations({subtree: true});
       for (let i = 0; i < animations.length; i++) {
         const animation = animations[i];
         const effect = animation.effect;
@@ -2448,9 +2438,7 @@ export function startGestureTransition(
       // Loop through all View Transition Animations.
       // $FlowFixMe[prop-missing]
       // $FlowFixMe[incompatible-type]
-      const animations = documentElement.getAnimations({
-        subtree: true,
-      });
+      const animations = documentElement.getAnimations({subtree: true});
       // First do a pass to collect all known group and new items so we can look
       // up if they exist later.
       const foundGroups = new Set();
@@ -2734,9 +2722,7 @@ ViewTransitionPseudoElement.prototype.getAnimations = function (options) {
   const animations = scope.getAnimations(
     // $FlowFixMe[prop-missing]
     // $FlowFixMe[incompatible-type]
-    {
-      subtree: true,
-    },
+    {subtree: true},
   );
   const result = [];
   for (let i = 0; i < animations.length; i++) {
@@ -2840,9 +2826,7 @@ FragmentInstance.prototype.addEventListener = function (
           optionsOrUseCapture,
         );
       }
-      signal.addEventListener('abort', onAbort, {
-        once: true,
-      });
+      signal.addEventListener('abort', onAbort, {once: true});
       // $FlowFixMe[method-unbinding]
       cleanup = () => {
         signal.removeEventListener('abort', onAbort);
@@ -4006,9 +3990,7 @@ export function getSuspenseInstanceFallbackErrorDetails(instance) {
         componentStack,
       }
     : // Object gets DCE'd if constructed in tail position and matches callsite destructuring
-      {
-        digest,
-      };
+      {digest};
 }
 
 export function registerSuspenseInstanceRetry(instance, callback) {

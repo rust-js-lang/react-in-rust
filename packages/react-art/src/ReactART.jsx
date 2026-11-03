@@ -147,9 +147,7 @@ export class Text extends Component {
     // We allow reading these props. Ideally we could expose the Text node as
     // ref directly.
     ['height', 'width', 'x', 'y'].forEach(key => {
-      Object.defineProperty(this, key, {
-        get: () => this._text?.[key],
-      });
+      Object.defineProperty(this, key, {get: () => this._text?.[key]});
     });
   }
   render() {

@@ -113,9 +113,7 @@ export function logUncaughtError(root, errorInfo) {
       return;
     }
     const onUncaughtError = root.onUncaughtError;
-    onUncaughtError(error, {
-      componentStack: errorInfo.stack,
-    });
+    onUncaughtError(error, {componentStack: errorInfo.stack});
   } catch (e) {
     // This method must not throw, or React internal state will get messed up.
     // If console.error is overridden, or logCapturedError() shows a dialog that throws,

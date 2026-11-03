@@ -188,11 +188,7 @@ export function lazy(ctor) {
     payload._ioInfo = ioInfo;
     // Add debug info to the lazy, but this doesn't have an await stack yet.
     // That will be inferred by later usage.
-    lazyType._debugInfo = [
-      {
-        awaited: ioInfo,
-      },
-    ];
+    lazyType._debugInfo = [{awaited: ioInfo}];
   }
 
   return lazyType;

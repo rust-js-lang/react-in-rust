@@ -14,9 +14,7 @@ const fiberStack = [];
 let index = -1;
 
 export function createCursor(defaultValue) {
-  return {
-    current: defaultValue,
-  };
+  return {current: defaultValue};
 }
 
 export function pop(cursor, fiber) {

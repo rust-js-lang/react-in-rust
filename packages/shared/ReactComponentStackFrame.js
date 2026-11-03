@@ -212,9 +212,7 @@ export function describeNativeComponentFrame(fn, construct) {
         // is set to `false`.
         // $FlowFixMe[cannot-write]
         'name',
-        {
-          value: 'DetermineComponentFrameRoot',
-        },
+        {value: 'DetermineComponentFrameRoot'},
       );
     }
 

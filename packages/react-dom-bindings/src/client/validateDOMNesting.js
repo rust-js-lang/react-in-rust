@@ -210,9 +210,7 @@ export function updatedAncestorInfoDev(oldInfo, tag) {
     const ancestorInfo = (oldInfo == null ? oldInfo : {...oldInfo}) ?? {
       ...EMPTY_ANCESTOR_INFO_DEV,
     };
-    const info = {
-      tag,
-    };
+    const info = {tag};
 
     if (IN_SCOPE_TAGS.includes(tag)) {
       ancestorInfo.aTagInScope = null;
@@ -618,11 +616,7 @@ export function validateTextNesting(childText, parentTag, implicitRootScope) {
         ? describeAncestors(
             ancestor,
             child,
-            child.tag !== HostText
-              ? {
-                  children: null,
-                }
-              : null,
+            child.tag !== HostText ? {children: null} : null,
           )
         : '';
 

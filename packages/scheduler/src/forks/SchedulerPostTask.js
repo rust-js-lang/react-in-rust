@@ -68,17 +68,13 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
       postTaskPriority = 'user-visible';
   }
 
-  const controller = new TaskController({
-    priority: postTaskPriority,
-  });
+  const controller = new TaskController({priority: postTaskPriority});
   const postTaskOptions = {
     delay: options != null ? options.delay : 0,
     signal: controller.signal,
   };
 
-  const node = {
-    _controller: controller,
-  };
+  const node = {_controller: controller};
 
   scheduler
     .postTask(() => {
@@ -98,9 +94,7 @@ function runTask(priorityLevel, postTaskPriority, node, callback) {
     const result = callback(didTimeout_DEPRECATED);
     if (typeof result === 'function') {
       // Assume this is a continuation
-      const continuationOptions = {
-        signal: node._controller.signal,
-      };
+      const continuationOptions = {signal: node._controller.signal};
 
       const nextTask = () =>
         runTask(priorityLevel, postTaskPriority, node, result);

@@ -2348,9 +2348,7 @@ function createSet(response, model, parentObject, key) {
 
 function createBlob(response, model, parentObject, key) {
   const parts = $slice(model, 1);
-  return new Blob(parts, {
-    type: $index(model, 0),
-  });
+  return new Blob(parts, {type: $index(model, 0)});
 }
 
 function createFormData(response, model, parentObject, key) {
@@ -2688,9 +2686,7 @@ function parseModelString(response, parentObject, key, value) {
                 const name = JSON.parse(
                   code.slice(idx + DESCRIPTOR.length - 1, code.length - 2),
                 );
-                Object.defineProperty($unwrap(fn), 'name', {
-                  value: name,
-                });
+                Object.defineProperty($unwrap(fn), 'name', {value: name});
               }
             }
             return fn;
@@ -2950,9 +2946,7 @@ function resolveChunkDebugInfo(response, streamState, chunk) {
   if (__DEV__ && response._debugIOStarted === true) {
     // Add the currently resolving chunk's debug info representing the stream
     // to the Promise that was waiting on the stream, or its underlying value.
-    const asyncInfo = {
-      awaited: $unwrap(streamState._debugInfo),
-    };
+    const asyncInfo = {awaited: $unwrap(streamState._debugInfo)};
     if (chunk.status === 'pending' || chunk.status === 'blocked') {
       const boundAddAsyncInfo = addAsyncInfoListener.bind(
         null,
@@ -3410,13 +3404,7 @@ function startAsyncIterable(response, id, iterator, streamState) {
       }
       if (nextReadIndex === buffer.length) {
         if (closed) {
-          return new ReactPromise(
-            'fulfilled',
-            {
-              done: true,
-            },
-            null,
-          );
+          return new ReactPromise('fulfilled', {done: true}, null);
         }
         const chunk = createPendingChunk(response);
         buffer.push(chunk);
@@ -3868,9 +3856,7 @@ function createFakeFunction(
     }
     // Using the usual {[name]: _() => _()}.bind() trick to avoid minifiers
     // doesn't work here since this will produce `Object.*` names.
-    Object.defineProperty(fn, 'name', {
-      value: name,
-    });
+    Object.defineProperty(fn, 'name', {value: name});
     return fn;
   }
 }
@@ -4129,9 +4115,7 @@ function initializeDebugInfo(response, debugInfo) {
       // Adjust the time to the current environment's time space.
       // Since this might be a deduped object, we clone it to avoid
       // applying the adjustment twice.
-      return {
-        time: time + $unwrap(response._timeOrigin),
-      };
+      return {time: time + $unwrap(response._timeOrigin)};
     }
   }
   return debugInfo;

@@ -415,6 +415,13 @@ revisit it when they are Rust.
 resolveModule reads `response._moduleLoading` as upstream does (rd628,
 rust-js e2669d625).
 
+**A one-field object prints on one line where it fits** (rd665, rust-js
+f31feed94..ad93f3817, Batch 60; **decided by the user**, m6-wife's), unless
+a comment is inside it: `{subtree: true}`, `{cause: error}`, `{is}`,
+`[{awaited: ioInfo}]`, as upstream writes most; where upstream breaks one
+over lines it's now on one, ReactFiberStack's `{current: defaultValue}`
+among them.
+
 **A `let` read once by the next statement's `||` or `??` is read in
 place** (rd664, rust-js 143ecdeb4, Batch 60; **decided by the user**,
 m6-wife's): `ioInfo.name || 'unknown'`, `unblocked.ownerDocument ||
@@ -1721,10 +1728,8 @@ The port is split between sessions by package:
   accepted `?? false` kind. Upstream has no tests of either package's
   clients: ReactFlightParcelDOMClients-test.js (10) and
   ReactFlightESMDOMClients-test.js (6) hold them, and pass on upstream's
-  JS too. **Pending in rust-js** (rd646, not accepted): Parcel's Browser
-  reads the module's `callServer` into `const callServer$1 = callServer;`
-  before its `== null` test, where upstream tests and calls `callServer`
-  in place. The Node client's `pub use
+  JS too. Parcel's Browser tests and calls the module's `callServer` in
+  place, as upstream (rd646, rust-js e5818acfc). The Node client's `pub use
   crate::client::react_flight_dom_client_edge::*;` prints rd153's export
   list for upstream's `export * from './ReactFlightDOMClientEdge'`. Their `startReadingFromStream`'s `progress` is rd425's
   cell, and their createResponse arguments are the forms accepted above

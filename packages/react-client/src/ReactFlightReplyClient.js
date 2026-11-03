@@ -186,9 +186,7 @@ export function processReply(
       () => {
         abort(abortSignal.reason);
       },
-      {
-        signal: replyLifetimeController.signal,
-      },
+      {signal: replyLifetimeController.signal},
     );
   }
 
@@ -443,9 +441,7 @@ export function processReply(
             // as a Server Reference. Encode its metadata on this first visit.
             modelRoot = undefined;
           }
-          const referenceJson = stringify({
-            id: objectReferenceId,
-          });
+          const referenceJson = stringify({id: objectReferenceId});
           // Upgrade to use FormData to allow us to stream this value.
           const formData$1 = formData();
           // The reference to this object came from the same client so we can
@@ -1252,15 +1248,9 @@ export function registerBoundServerReference(
             );
           };
     Object.defineProperties(reference, {
-      $$FORM_ACTION: {
-        value: formAction,
-      },
-      $$IS_SIGNATURE_EQUAL: {
-        value: isSignatureEqual,
-      },
-      bind: {
-        value: bind,
-      },
+      $$FORM_ACTION: {value: formAction},
+      $$IS_SIGNATURE_EQUAL: {value: isSignatureEqual},
+      bind: {value: bind},
     });
   }
 }
@@ -1372,9 +1362,7 @@ function bind() {
     // Only expose this in builds that would actually use it. Not needed on the client.
     Object.defineProperties(newFn, {
       $$FORM_ACTION: {value: this.$$FORM_ACTION},
-      $$IS_SIGNATURE_EQUAL: {
-        value: isSignatureEqual,
-      },
+      $$IS_SIGNATURE_EQUAL: {value: isSignatureEqual},
       bind: {value: bind},
     });
   }
