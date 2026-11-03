@@ -93,12 +93,10 @@ export function logComponentRender(
     if (__DEV__ && debugTask != null) {
       const properties = [];
       if (componentInfo.key != null) {
-        const key = componentInfo.key;
-        addValueToProperties('key', key, properties, 0, '');
+        addValueToProperties('key', componentInfo.key, properties, 0, '');
       }
       if (componentInfo.props != null) {
-        const props = componentInfo.props;
-        addObjectToProperties(props, properties, 0, '');
+        addObjectToProperties(componentInfo.props, properties, 0, '');
       }
 
       debugTask.run(
@@ -152,12 +150,10 @@ export function logComponentAborted(
         ],
       ];
       if (componentInfo.key != null) {
-        const key = componentInfo.key;
-        addValueToProperties('key', key, properties, 0, '');
+        addValueToProperties('key', componentInfo.key, properties, 0, '');
       }
       if (componentInfo.props != null) {
-        const props = componentInfo.props;
-        addObjectToProperties(props, properties, 0, '');
+        addObjectToProperties(componentInfo.props, properties, 0, '');
       }
 
       performance.measure(measureName, {
@@ -214,12 +210,10 @@ export function logComponentErrored(
             String(error);
       const properties = [['Error', message]];
       if (componentInfo.key != null) {
-        const key = componentInfo.key;
-        addValueToProperties('key', key, properties, 0, '');
+        addValueToProperties('key', componentInfo.key, properties, 0, '');
       }
       if (componentInfo.props != null) {
-        const props = componentInfo.props;
-        addObjectToProperties(props, properties, 0, '');
+        addObjectToProperties(componentInfo.props, properties, 0, '');
       }
 
       performance.measure(measureName, {

@@ -31,13 +31,7 @@ import {
   checkEvalAvailabilityOnceDev,
   usedWithSSR,
 } from './ReactFlightClientConfig.js';
-import {
-  $catchUnwind,
-  $displayF64,
-  $getOrInit,
-  $unwound,
-  $unwrap,
-} from '@rust-js/runtime';
+import {$catchUnwind, $getOrInit, $unwound, $unwrap} from '@rust-js/runtime';
 
 const ObjectPrototype = Object.prototype;
 
@@ -1189,10 +1183,8 @@ function createFakeServerFunction(
       encodeURIComponent(environmentName) +
       '/' +
       encodeURI(filename) +
-      '?s' +
-      $displayF64(
-        idx, // We add an extra s here to distinguish from the fake stack frames
-      );
+      '?s' + // We add an extra s here to distinguish from the fake stack frames
+      idx;
     code += '\n//# sourceMappingURL=' + sourceMap;
   } else if (filename) {
     code += '\n//# sourceURL=' + filename;

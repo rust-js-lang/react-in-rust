@@ -68,8 +68,6 @@ import {
   $borrowMut,
   $cellReplace,
   $fieldCell,
-  $iter,
-  $next,
   $unborrow,
 } from '@rust-js/runtime';
 
@@ -2032,7 +2030,6 @@ function createChildReconciler(shouldTrackSideEffects) {
     const prevDebugInfo = currentDebugInfo;
     currentDebugInfo = null;
     const restore = prevDebugInfo;
-    let result;
     try {
       // This indirection only exists so we can reset `thenableState` at the end.
       // It should get inlined by Closure.
@@ -2047,7 +2044,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       thenableState = null;
       // Don't bother to reset `thenableIndexCounter` to 0 because it always gets
       // set at the beginning.
-      result = firstChildFiber;
+      return firstChildFiber;
     } catch (x) {
       const thrown = x;
       if (
@@ -2086,9 +2083,8 @@ function createChildReconciler(shouldTrackSideEffects) {
         throwFiber._debugOwner = returnFiber._debugOwner;
         throwFiber._debugTask = returnFiber._debugTask;
         if (debugInfo != null) {
-          const iter = $iter(debugInfo.toReversed());
-          let info;
-          while ((info = $next(iter)) != null) {
+          for (let i = debugInfo.length - 1; i >= 0; i--) {
+            const info = debugInfo[i];
             if (typeof info.stack === 'string') {
               throwFiber._debugOwner = info;
               throwFiber._debugTask = info.debugTask ?? null;
@@ -2097,11 +2093,10 @@ function createChildReconciler(shouldTrackSideEffects) {
           }
         }
       }
-      result = throwFiber;
+      return throwFiber;
     } finally {
       currentDebugInfo = restore;
     }
-    return result;
   };
 }
 

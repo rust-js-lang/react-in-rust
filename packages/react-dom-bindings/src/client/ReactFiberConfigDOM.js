@@ -3722,10 +3722,11 @@ function clearHead(head) {
     if (
       isMarkedHoistable(node) ||
       nodeName === 'SCRIPT' ||
-      nodeName === 'STYLE'
+      nodeName === 'STYLE' ||
+      (nodeName === 'LINK' && node.rel.toLowerCase() === 'stylesheet')
     ) {
       // retain these nodes
-    } else if (nodeName !== 'LINK' || node.rel.toLowerCase() !== 'stylesheet') {
+    } else {
       head.removeChild(node);
     }
     node = nextNode;

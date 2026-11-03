@@ -989,6 +989,12 @@ function updateDehydratedActivityComponent(
           root,
           renderLanes,
         );
+        // We have already tried to ping at a higher priority than we're rendering with
+        // so if we got here, we must have failed to hydrate at those levels. We must
+        // now give up. Instead, we're going to delete the whole subtree and instead inject
+        // a new real Activity boundary to take its place. This might suspend for a while
+        // and if it does we might still have an opportunity to hydrate before this pass
+        // commits.
         if (
           attemptHydrationAtLane !== NoLane &&
           attemptHydrationAtLane !== activityState.retryLane
@@ -1009,13 +1015,6 @@ function updateDehydratedActivityComponent(
           // check for this case on every iteration of the work loop. So doing
           // it this way moves the check out of the fast path.
           throw SelectiveHydrationException;
-        } else {
-          // We have already tried to ping at a higher priority than we're rendering with
-          // so if we got here, we must have failed to hydrate at those levels. We must
-          // now give up. Instead, we're going to delete the whole subtree and instead inject
-          // a new real Activity boundary to take its place. This might suspend for a while
-          // and if it does we might still have an opportunity to hydrate before this pass
-          // commits.
         }
       }
 
@@ -2927,6 +2926,12 @@ function updateDehydratedSuspenseComponent(
           root,
           renderLanes,
         );
+        // We have already tried to ping at a higher priority than we're rendering with
+        // so if we got here, we must have failed to hydrate at those levels. We must
+        // now give up. Instead, we're going to delete the whole subtree and instead inject
+        // a new real Suspense boundary to take its place, which may render content
+        // or fallback. This might suspend for a while and if it does we might still have
+        // an opportunity to hydrate before this pass commits.
         if (
           attemptHydrationAtLane !== NoLane &&
           attemptHydrationAtLane !== suspenseState.retryLane
@@ -2947,13 +2952,6 @@ function updateDehydratedSuspenseComponent(
           // check for this case on every iteration of the work loop. So doing
           // it this way moves the check out of the fast path.
           throw SelectiveHydrationException;
-        } else {
-          // We have already tried to ping at a higher priority than we're rendering with
-          // so if we got here, we must have failed to hydrate at those levels. We must
-          // now give up. Instead, we're going to delete the whole subtree and instead inject
-          // a new real Suspense boundary to take its place, which may render content
-          // or fallback. This might suspend for a while and if it does we might still have
-          // an opportunity to hydrate before this pass commits.
         }
       }
 
@@ -3770,30 +3768,29 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
       const cache = current.memoizedState.cache;
       pushCacheProvider(workInProgress, cache);
       resetHydrationState();
-      // Fallthrough
-      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
+      break;
     }
     case HostSingleton:
     case HostComponent:
       pushHostContext(workInProgress);
-      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
+      break;
     case ClassComponent: {
       const component = workInProgress.type;
       if (isLegacyContextProvider(component)) {
         pushLegacyContextProvider(workInProgress);
       }
-      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
+      break;
     }
     case HostPortal: {
       const stateNode = workInProgress.stateNode;
       pushHostContainer(workInProgress, stateNode.containerInfo);
-      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
+      break;
     }
     case ContextProvider: {
       const newValue = workInProgress.memoizedProps.value;
       const context = workInProgress.type;
       pushProvider(workInProgress, context, newValue);
-      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
+      break;
     }
     case Profiler:
       if (enableProfilerTimer) {
@@ -3818,7 +3815,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
           stateNode.passiveEffectDuration = -0;
         }
       }
-      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
+      break;
     case ActivityComponent: {
       const state = workInProgress.memoizedState;
       if (state != null) {
@@ -3831,7 +3828,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
         pushDehydratedActivitySuspenseHandler(workInProgress);
         return null;
       }
-      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
+      break;
     }
     case SuspenseComponent: {
       const state = workInProgress.memoizedState;
@@ -3895,7 +3892,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
         }
       }
       pushPrimaryTreeSuspenseHandler(workInProgress);
-      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
+      break;
     }
     case SuspenseListComponent: {
       if (workInProgress.flags & DidCapture) {
@@ -3966,7 +3963,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
         // as before. We can fast bail out.
         return null;
       }
-      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
+      break;
     }
     case OffscreenComponent:
       // Need to check if the tree still needs to be deferred. This is
@@ -3987,7 +3984,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
     case CacheComponent: {
       const cache = current.memoizedState.cache;
       pushCacheProvider(workInProgress, cache);
-      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
+      break;
     }
     case TracingMarkerComponent:
       if (enableTransitionTracing) {
@@ -3995,11 +3992,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
         if (instance != null) {
           pushMarkerInstance(workInProgress, instance);
         }
-        return bailoutOnAlreadyFinishedWork(
-          current,
-          workInProgress,
-          renderLanes,
-        );
+        break;
       }
     // Fallthrough
     case LegacyHiddenComponent:
@@ -4011,6 +4004,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
           renderLanes,
         );
       }
+      // Fallthrough
       break;
   }
   return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);

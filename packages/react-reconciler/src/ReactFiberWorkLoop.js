@@ -5325,30 +5325,15 @@ export function warnAboutUpdateOnNotYetMountedFiberInDEV(fiber) {
     // the problematic code almost always lies inside that component.
     // Upstream's `|| 'ReactComponent'`: an empty name is none.
     const componentName = getComponentNameFromFiber(fiber) || 'ReactComponent';
-    const didWarn = (didWarnStateUpdateForNotYetMountedComponent => {
-      if (didWarnStateUpdateForNotYetMountedComponent.value != null) {
-        const didWarnStateUpdateForNotYetMountedComponent$1 =
-          didWarnStateUpdateForNotYetMountedComponent.value;
-        if (didWarnStateUpdateForNotYetMountedComponent$1.has(componentName)) {
-          return true;
-        }
-        didWarnStateUpdateForNotYetMountedComponent$1.add(componentName);
-      } else {
-        didWarnStateUpdateForNotYetMountedComponent.value = new Set([
-          componentName,
-        ]);
+    if (didWarnStateUpdateForNotYetMountedComponent != null) {
+      const didWarnStateUpdateForNotYetMountedComponent$1 =
+        didWarnStateUpdateForNotYetMountedComponent;
+      if (didWarnStateUpdateForNotYetMountedComponent$1.has(componentName)) {
+        return;
       }
-      return false;
-    })({
-      get value() {
-        return didWarnStateUpdateForNotYetMountedComponent;
-      },
-      set value(value) {
-        didWarnStateUpdateForNotYetMountedComponent = value ?? null;
-      },
-    });
-    if (didWarn) {
-      return;
+      didWarnStateUpdateForNotYetMountedComponent$1.add(componentName);
+    } else {
+      didWarnStateUpdateForNotYetMountedComponent = new Set([componentName]);
     }
 
     runWithFiberInDEV(fiber, () => {
