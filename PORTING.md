@@ -468,18 +468,13 @@ callbacks read, but it still tests `referenceClosure.bound === null` before
 the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
 
 **Pending in rust-js from Batch 61** (no result changes):
-- rd702 (control-flow run 48): ReactFiberBeginWork's
+- rd702 (control-flow run 49): ReactFiberBeginWork's
   attemptEarlyBailoutIfNoScheduledUpdate has upstream's one return after
   its switch since rust-js 48c3b4ed5, and `// Fallthrough` between the
   TracingMarker and LegacyHidden cases. Its guarded TracingMarker case
   still ends `return bailoutOnAlreadyFinishedWork(..)` where upstream
   breaks, and the LegacyHidden case's `// Fallthrough` above its `break;`
   doesn't print.
-- rd703 (control-flow): in a loop's `match`, an arm ending `if c { a }
-  else { b } continue;` prints guard-first, `if (c) { a; continue; } b;
-  continue;`, and an `if`/`else if`/`else` chain has its tests inverted.
-  This affects ReactFlightClient's processBinaryChunk and
-  processStringChunk, cases ROW_ID, ROW_TAG and ROW_LENGTH.
 - rd704 (modules): a `use` that names an item through another module's
   `pub use` imports it from the module that defines it. ReactART,
   ReactDOMRoot and ReactTestRenderer take ReactFiberReconciler's
@@ -500,13 +495,13 @@ the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
   hydrationErrors;`, the `if let`'s `prev_state`.
 
 **Pending in rust-js from Batch 62** (no result changes):
-- rd710 (control-flow run 48): a call whose arguments rustfmt breaks over
+- rd710 (control-flow run 49): a call whose arguments rustfmt breaks over
   lines loses a comment between its receiver's parts,
   ReactFlightClientConfigDOM's preinitModuleForSSR and preinitScriptForSSR
   `ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */`, and prints
   a comment before an argument on a line of its own, `dispatcher.M(\n
   /* preinitModuleScript */\n href, ..)`.
-- rd711 (control-flow run 48): ReactChildFiber's thrown fiber's owner loop,
+- rd711 (control-flow run 49): ReactChildFiber's thrown fiber's owner loop,
   `for &info in debug_info.iter().rev()` with a `break`, prints
   `$iter(debugInfo.toReversed())`, where its twin in getCurrentDebugTask
   prints upstream's `for (let i = debugInfo.length - 1; i >= 0; i--)`.
@@ -516,9 +511,24 @@ the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
   module at `../react-client/src/forks/`, imports react-markup's stream
   config as `'../../../react-markup/src/ReactMarkupLegacyClientStreamConfig.js'`
   where upstream writes `'react-markup/src/ReactMarkupLegacyClientStreamConfig.js'`.
-- rd714 (control-flow run 48): ReactFiberConfigDOM's clearHead prints its
+- rd714 (control-flow run 49): ReactFiberConfigDOM's clearHead prints its
   test `a || b || c || (d && e)` as `if (a || b || c) { // retain }
   else if (d' || e') { .. }` since rust-js 48c3b4ed5..707d7eea0.
+
+**Pending in rust-js from Batch 63** (no result changes):
+- #570 (since rust-js 440015731, #541's nullable places): ReactFlightClient
+  writes `chunk.reason = rejectListeners ?? null;` (and `cyclicChunk.reason`)
+  in three places, where upstream writes `chunk.reason = rejectListeners;`.
+- #571 (since 440015731): ReactFiberWorkLoop's
+  `didWarnStateUpdateForNotYetMountedComponent` is upstream's `let .. =
+  null;`, but warnAboutUpdateOnNotYetMountedFiberInDEV's `with_borrow_mut`
+  closure is given a seven-line `{get value() {..}, set value(value) {..}}`
+  object of it.
+- rd720 (since 440015731): ReactTestRenderer's findAllByProps prints `node =>
+  { const option = node.props; return option != null && propsMatch(option,
+  props); }`, where it printed `node => node.props != null &&
+  propsMatch(node.props, props)` (upstream: `node => node.props &&
+  propsMatch(node.props, props)`).
 
 **Held until rust-js prints an untagged string-or-integer `{}` in place**
 (the user's condition, 2026-11-03; the coordinator's rust-js P3): webpack's

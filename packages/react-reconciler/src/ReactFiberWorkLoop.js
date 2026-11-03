@@ -5295,7 +5295,7 @@ function invokeEffectsInDev(firstChild, fiberFlags, invokeEffectFn) {
   }
 }
 
-const didWarnStateUpdateForNotYetMountedComponent = {value: null};
+let didWarnStateUpdateForNotYetMountedComponent = null;
 
 export function warnAboutUpdateOnNotYetMountedFiberInDEV(fiber) {
   if (__DEV__) {
@@ -5339,7 +5339,14 @@ export function warnAboutUpdateOnNotYetMountedFiberInDEV(fiber) {
         ]);
       }
       return false;
-    })(didWarnStateUpdateForNotYetMountedComponent);
+    })({
+      get value() {
+        return didWarnStateUpdateForNotYetMountedComponent;
+      },
+      set value(value) {
+        didWarnStateUpdateForNotYetMountedComponent = value ?? null;
+      },
+    });
     if (didWarn) {
       return;
     }

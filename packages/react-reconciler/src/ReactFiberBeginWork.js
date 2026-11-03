@@ -1517,9 +1517,8 @@ function updateClassComponent(
 ) {
   if (__DEV__) {
     // This is used by DevTools to force a boundary to error.
-    const value = shouldError(workInProgress);
-    if (value != null) {
-      if (value === false) {
+    switch (shouldError(workInProgress)) {
+      case false: {
         // We previously simulated an error on this boundary
         // so the instance must have been constructed in a previous
         // commit.
@@ -1533,7 +1532,9 @@ function updateClassComponent(
         );
         const state = tempInstance.state;
         instance.updater.enqueueSetState(instance, state, null);
-      } else {
+        break;
+      }
+      case true: {
         workInProgress.flags |= DidCapture;
         workInProgress.flags |= ShouldCapture;
         // eslint-disable-next-line react-internal/prod-error-codes
@@ -1555,6 +1556,7 @@ function updateClassComponent(
           createCapturedValueAtFiber(error, workInProgress),
         );
         enqueueCapturedUpdate(workInProgress, update);
+        break;
       }
     }
   }

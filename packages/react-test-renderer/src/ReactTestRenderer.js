@@ -355,7 +355,10 @@ ReactTestInstance.prototype.findAllByType = function (type, options) {
 ReactTestInstance.prototype.findAllByProps = function (props, options) {
   return findAll(
     this,
-    node => node.props != null && propsMatch(node.props, props),
+    node => {
+      const option = node.props;
+      return option != null && propsMatch(option, props);
+    },
     options,
   );
 };
