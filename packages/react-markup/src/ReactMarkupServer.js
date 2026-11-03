@@ -40,7 +40,6 @@ import {
   createResumableState,
   createRootFormatContext,
 } from './ReactFizzConfigMarkup.js';
-import {$someGet, $someValue, $unwrap} from '@rust-js/runtime';
 
 function noServerCallOrFormAction(id, args) {
   throw new Error(
@@ -76,18 +75,13 @@ export function experimental_renderToHTML(children, options) {
       return id;
     }
 
-    // GAP rd558: an `Option` a `HashMap` holds is boxed, so
-    // `stashed_errors[id]` reads `$someValue($unwrap($someGet(..)))`
-    // where upstream reads `stashedErrors.get(id)`.
     function handleError(error, errorInfo) {
       if (typeof error === 'object' && error !== null) {
         const id = error.digest;
         // Note that the original error might be `undefined` so we need a has check.
         if (typeof id === 'string' && stashedErrors.has(id)) {
           // Get the original error thrown inside Flight.
-          error = $someValue(
-            $unwrap($someGet(stashedErrors, id), 'no entry found for key'),
-          );
+          error = stashedErrors.get(id);
         }
       }
 

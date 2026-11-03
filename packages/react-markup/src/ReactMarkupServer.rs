@@ -107,9 +107,6 @@ pub fn experimental_render_to_html(
             }
         };
 
-        // GAP rd558: an `Option` a `HashMap` holds is boxed, so
-        // `stashed_errors[id]` reads `$someValue($unwrap($someGet(..)))`
-        // where upstream reads `stashedErrors.get(id)`.
         let handle_error =
             move |error: Option<&'static Unknown>, error_info: &ErrorInfo| -> Option<String> {
                 let mut error = error;

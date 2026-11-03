@@ -1032,9 +1032,8 @@ These differences from upstream's output are accepted:
     and `export const isPrimaryRenderer`/`supportsClientAPIs` after the
     imports, where upstream declares them between two (rd652).
   Readability gaps (rust-js), not holding (rd557, a hoisted closure's
-  comments, fixed in rust-js 4b8d58215): rd558 (an `Option` a
-  `HashMap` holds is boxed, `$someValue($unwrap($someGet(stashedErrors,
-  id), ..))` for `stashedErrors.get(id)`); rd652 above (rd650,
+  comments, fixed in rust-js 4b8d58215; rd558, `stashedErrors.get(id)`
+  under its `has` test, fixed in rust-js 39fc4b61b): rd652 above (rd650,
   the entries' imports from './ReactFizzConfigMarkup.js', and rd651, the
   `ReactSharedInternalsClient` alias, fixed in rust-js a6797eac5 and
   d72ed8bb3); and `getCurrentStack = .. ?? null`, the Fizz server's
