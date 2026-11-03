@@ -505,6 +505,13 @@ the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
   the object and calls its method. (ReactLazy's DEV `const error = new
   Error('react-stack-top-frame');`, was `value`, is rd413's name, names
   run 50, 6a4d64fc9.)
+- rd751 (the FB flag forks): a module's flags read off another module's
+  object are each their own `export const x = flags.x;`, where upstream
+  destructures them in one `export const {x, y} = flags;`
+  (ReactFeatureFlags.www and .native-fb, SchedulerFeatureFlags.www).
+- rd752 (the FB flag forks): the comments above a binding whose import
+  prints at the top, ReactFeatureFlags.native-fb's two above `import * as
+  dynamicFlagsUntyped from 'ReactNativeInternalFeatureFlags'`, are dropped.
 
 **Accepted on the user's behalf while away** (the coordinator, 2026-11-04;
 no result changes): #570, ReactFlightClient writes `chunk.reason =
@@ -2023,19 +2030,33 @@ The port is split between sessions by package:
   header and the Flow-only `null as any as ..` check differ). jest's
   `setupTests.www.js` reads www-dynamic as the `ReactFeatureFlags` module
   and sets the www fork's static flags per variant, as upstream's does.
-  ReactFeatureFlags.www and .native-fb and SchedulerFeatureFlags.www,
-  which read the dynamic module whole (`require('ReactFeatureFlags')`,
-  `import * as .. from 'ReactNativeInternalFeatureFlags'`), wait on
-  rust-js #572.
+  ReactFeatureFlags.www and .native-fb and SchedulerFeatureFlags.www read
+  the dynamic module whole: www's by `require` (`#[rust_js::link_name =
+  "get ReactFeatureFlags#*"] #[rust_js::require]`, ReactDOMRootFB's form,
+  `const dynamicFeatureFlags = require('ReactFeatureFlags');`), React
+  Native's by `import * as dynamicFlagsUntyped from
+  'ReactNativeInternalFeatureFlags'` (`get .. #* as dynamicFlagsUntyped`);
+  the module is a struct of the dynamic fork's flags, held in a
+  `thread_local!` of upstream's name, and each flag read off it. The
+  static flags setupTests.www.js and setupTests.xplat.js set per variant
+  stay writable `export const`s (checked under jest, both variants, www
+  and xplat). Their differences, beside the license header and the Flow
+  check: each dynamic flag is its own `export const alwaysThrottleRetries
+  = dynamicFeatureFlags.alwaysThrottleRetries;`, where upstream
+  destructures them in one `export const {..} = dynamicFeatureFlags;`
+  (rd751, the compiler's: a `pub` thread-local is one export); and
+  native-fb's two comments above its import are dropped where the
+  binding's import prints (rd752).
   react's index.fb.js, www's entry, is Rust, `index.fb.rs`: it holds code,
-  `captureOwnerStack` in DEV alone. Its export list is in rustfmt's order
-  (one `pub use` of ReactClient, its four renamed exports first, as
-  rustfmt sorts them), where upstream lists them by hand; blank lines
-  between `pub use`s to keep upstream's order split it into eleven `export
-  {..}` statements. Its `captureOwnerStack` is ReactServer.fb's form,
+  `captureOwnerStack` in DEV alone. **Accepted by the user** (2026-11-04,
+  by name): its export list is in rustfmt's order (one `pub use` of
+  ReactClient, its four renamed exports first, as rustfmt sorts them),
+  where upstream lists them by hand (blank lines between `pub use`s to
+  keep upstream's order would split it into eleven `export {..}`
+  statements); and its `captureOwnerStack`, as ReactServer.fb's, is
   `export const captureOwnerStack = __DEV__ ? captureOwnerStackImpl :
   undefined;`, where upstream declares `let captureOwnerStack;`, sets it
-  in `if (__DEV__) {..}` and exports it after.
+  in `if (__DEV__) {..}` and exports it after (accepted for both files).
   react-client/src/forks/ReactFlightClientConfig.markup is react-markup's
   module (it re-exports react-markup's stream config, and react-markup
   uses react-client), declared in markup.rs as `#[path =

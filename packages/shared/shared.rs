@@ -45,6 +45,8 @@ pub mod react_element_type;
 pub mod react_feature_flags;
 #[path = "forks/ReactFeatureFlags.eslint-plugin.www.rs"]
 pub mod react_feature_flags_eslint_plugin_www;
+#[path = "forks/ReactFeatureFlags.native-fb.rs"]
+pub mod react_feature_flags_native_fb;
 #[path = "forks/ReactFeatureFlags.native-fb-dynamic.rs"]
 pub mod react_feature_flags_native_fb_dynamic;
 #[path = "forks/ReactFeatureFlags.native-oss.rs"]
@@ -55,6 +57,8 @@ pub mod react_feature_flags_test_renderer;
 pub mod react_feature_flags_test_renderer_native_fb;
 #[path = "forks/ReactFeatureFlags.test-renderer.www.rs"]
 pub mod react_feature_flags_test_renderer_www;
+#[path = "forks/ReactFeatureFlags.www.rs"]
+pub mod react_feature_flags_www;
 #[path = "forks/ReactFeatureFlags.www-dynamic.rs"]
 pub mod react_feature_flags_www_dynamic;
 #[path = "ReactFlightPropertyAccess.rs"]
