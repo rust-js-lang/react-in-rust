@@ -1667,8 +1667,10 @@ The port is split between sessions by package:
   ReactFlightClientConfigTargetNodeServer are webpack's, as upstream's
   are. The plain re-export
   entries (`client*.js`, `react-flight-dom-client.*.js`) stay JS (rd55).
-  Webpack's ReactFlightDOMClientEdge and ReactFlightDOMClientBrowser are
-  Rust (Batch 59). Their `startReadingFromStream`'s `progress` is rd425's
+  Webpack's ReactFlightDOMClientEdge, ReactFlightDOMClientBrowser and
+  ReactFlightDOMClientNode are Rust (Batch 59). The Node client's `pub use
+  crate::client::react_flight_dom_client_edge::*;` prints rd153's export
+  list for upstream's `export * from './ReactFlightDOMClientEdge'`. Their `startReadingFromStream`'s `progress` is rd425's
   cell, and their createResponse arguments are the forms accepted above
   (`?.`, `?? false`). The DOM clients' DebugChannel is an `Rc`, shared by
   the response and the FinalizationRegistry that closes it.
@@ -1691,7 +1693,12 @@ The port is split between sessions by package:
   upstream declares `function error(e)` after it; the names in one import
   in rustfmt's order, where upstream lists them in its own; and
   ReplyClient's `// Serializable values`, printed only in the `.d.ts`
-  above ReactServerValue's union.
+  above ReactServerValue's union. Also by name (2026-11-03, the Browser
+  client's): `options != null && options.debugChannel != null` where
+  upstream tests `options && ..` by truth (an object or absent), and
+  `__DEV__ && (options == null || options.replayConsoleLogs !== false)` for
+  `__DEV__ ? (options ? options.replayConsoleLogs !== false : true) :
+  false`.
   **Pending in rust-js, not accepted**: rd643, encodeReply's promise is
   `Promise<ReplyBody>`, `string | FormData` in the `.d.ts`, where upstream
   declares `Promise<string | URLSearchParams | FormData>`: processReply

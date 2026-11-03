@@ -14,3 +14,5 @@ pub mod react_flight_client_config_target_webpack_server;
 pub mod react_flight_dom_client_browser;
 #[path = "client/ReactFlightDOMClientEdge.rs"]
 pub mod react_flight_dom_client_edge;
+#[path = "client/ReactFlightDOMClientNode.rs"]
+pub mod react_flight_dom_client_node;
