@@ -1876,7 +1876,8 @@ The port is split between sessions by package:
   `'X'` and `'M'`'s `href | [href, options]`, `'S'`'s `href | [href,
   precedence, options?]`), and each `match` tests as upstream does,
   `typeof refined === 'string'`, `refined.length === 3`. Readability
-  differences, pending the coordinator's decision: the arrays are
+  differences, accepted on the user's behalf while away (the coordinator,
+  2026-11-04; none changes a result): the arrays are
   destructured (`const [href, crossOrigin] = refined;`, rd712's kind); a
   string model is passed as `refined` where upstream copies it to `const
   href = refined;`; `'L'` reads href and as in each branch; `'S'`'s
@@ -1885,7 +1886,8 @@ The port is split between sessions by package:
   needless_return); the SSR preinits leave out upstream's `integrity:
   undefined` and `fetchPriority: undefined` keys (rd391's kind: the
   dispatchers `Object.assign` them into a script's props, where an
-  `undefined` prop writes nothing); and rd710's comments.
+  `undefined` prop writes nothing). rd710's comments stay pending (below,
+  Batch 62).
   shared/forks/ReactFeatureFlags.native-oss and .test-renderer are Rust
   (Batch 62), as ReactFeatureFlags is, and print upstream's flags line for
   line; rollup alone reads them.
