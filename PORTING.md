@@ -628,6 +628,11 @@ These differences from upstream's output are accepted:
   `import * as Ui; const Selected = Ui.Empty;`.
 - **rd153**: upstream's `export * from '..'` is written `pub use m::*;`,
   which prints `export {..each name..} from '..'`.
+- **rd661**: ReactSharedInternalsServer's `const ReactSharedInternalsServer
+  = $unwrap(React.__SERVER_INTERNALS_.., '..');`, where upstream writes the
+  `const`, then `if (!ReactSharedInternalsServer) throw new Error(..)`
+  (the user, 2026-11-04): `$unwrap` stays rust-js's one form of `expect`
+  (rust-js ADR 0030, amended).
 - **rd712's destructuring** (the coordinator, 2026-11-04, for the user):
   the bundler configs' `let (ImportMetadata::Async((id, chunks, ..)) |
   ImportMetadata::Sync((id, chunks, ..))) = metadata;` prints `const [id,
@@ -1651,8 +1656,8 @@ These differences from upstream's output are accepted:
     ReactSharedInternalsServer = $unwrap(React.__SERVER_INTERNALS_.., '..');`,
     rust-js's one form of an `expect` (ADR 0030), where upstream writes the
     `const`, then `if (!ReactSharedInternalsServer) throw new Error(..)`,
-    whose message is three literals joined; which form an `expect` a
-    `const` is made of prints is the user's to decide (rd661). RequestInstance's
+    whose message is three literals joined; accepted by the user
+    (2026-11-04, **rd661** in the accepted list). RequestInstance's
     check holds the dispatcher it reads, `const a = ReactSharedInternals.A;
     if (a != null && a !== DefaultAsyncDispatcher)`, where upstream reads
     `ReactSharedInternals.A` twice: an `if let` of a variable's `Cell`
