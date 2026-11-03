@@ -50,6 +50,10 @@ pub mod react_dom_root_fb;
 pub mod react_dom_shared_internals;
 #[path = "src/ReactDOMSharedInternalsFB.rs"]
 pub mod react_dom_shared_internals_fb;
+#[path = "src/ReactDOMTestingFB.rs"]
+pub mod react_dom_testing_fb;
+#[path = "src/ReactDOMTestingFB.modern.rs"]
+pub mod react_dom_testing_fb_modern;
 #[path = "src/shared/ReactDOMTypes.rs"]
 pub mod react_dom_types;
 #[path = "src/test-utils/ReactTestUtils.rs"]

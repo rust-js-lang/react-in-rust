@@ -2090,9 +2090,18 @@ The port is split between sessions by package:
   __DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE} from
   './ReactDOMSharedInternalsFB.js';` where upstream imports Internals and
   writes `export {Internals as ..};`. ReactDOMTestingFB and
-  ReactDOMTestingFB.modern are held on rust-js #592 (rd726, P0): a glob
-  `pub use crate::react_dom_fb::*;` exports a renamed re-export by its
-  definer's name, `createEventHandle` for `unstable_createEventHandle`.
+  ReactDOMTestingFB.modern, www's testing entries, are Rust (Batch 65,
+  after rust-js #592, rd726): `pub use crate::react_dom_fb::*;` (`_modern`
+  for .modern) prints `export {createPortal, .., unstable_batchedUpdates}
+  from './ReactDOMFB.js';`, each name as ReactDOMFB exports it, where
+  upstream writes `export * from './ReactDOMFB';` (pending in rust-js,
+  #593). The test selectors are a `pub use` of
+  react_reconciler::react_test_selectors's functions, `export {..} from
+  'react-reconciler/src/ReactTestSelectors'` in rustfmt's order, where
+  upstream re-exports them from 'react-reconciler/src/ReactFiberReconciler':
+  the port's ReactFiberReconciler is the reconciler's namespace, whose
+  selector methods a `pub use` can't name (rd729, pending the
+  coordinator's decision).
   react-dom-bindings' events/forks/EventListener-www, www's listeners, is
   Rust (Batch 64), declared beside EventListener as `#[path =
   "src/events/forks/EventListener-www.rs"] pub mod event_listener_www;`;
