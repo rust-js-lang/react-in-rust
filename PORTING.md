@@ -1667,15 +1667,41 @@ The port is split between sessions by package:
   ReactFlightClientConfigTargetNodeServer are webpack's, as upstream's
   are. The plain re-export
   entries (`client*.js`, `react-flight-dom-client.*.js`) stay JS (rd55).
-  Webpack's ReactFlightDOMClientEdge is Rust (Batch 59). Its
-  `startReadingFromStream`'s `progress` is rd425's cell, and its
-  createResponse arguments are the forms accepted above (`?.`, `?? false`).
-  ReplyClient's processReply resolves with `ReplyBody`, an untagged
-  `Text(String) | Form(&FormData)`, which is upstream's `string | FormData`.
-  So encodeReply's promise is `Promise<ReplyBody>`, where upstream declares
-  `Promise<string | URLSearchParams | FormData>` and notes that it makes no
-  URLSearchParams yet. The DOM client's DebugChannel is an `Rc`, shared by
+  Webpack's ReactFlightDOMClientEdge and ReactFlightDOMClientBrowser are
+  Rust (Batch 59). Their `startReadingFromStream`'s `progress` is rd425's
+  cell, and their createResponse arguments are the forms accepted above
+  (`?.`, `?? false`). The DOM clients' DebugChannel is an `Rc`, shared by
   the response and the FinalizationRegistry that closes it.
+  **Accepted by the user** (2026-11-03, by name, the Edge client's; none
+  changes a result for React's inputs): noServerCall takes `(id, args)`,
+  the CallServerCallback Rust's fn type requires, where upstream declares
+  none; the debug channel is tested `options.debugChannel != null` and
+  `readable != null` (an `Option`) where upstream writes `!== undefined`;
+  `__DEV__ ? options.startTime : undefined` (and endTime) where upstream
+  writes `startTime != null ? startTime : undefined`; the stream counter's
+  `streamDoneCount++; if (streamDoneCount === 2)` for `if
+  (++streamDoneCount === 2)`; `() => { close(response); }` for
+  `close.bind(null, response)`, and createFromFetch's callbacks as arrows
+  where upstream writes `function (r)` and `function (e)`; the let-chain's
+  `const readable = options.debugChannel.readable;` after the test, where
+  upstream reads it in the call; progress reading `entry.done` and
+  `entry.value` where upstream destructures `{done, value}`, ending with
+  `onDone(); return;` and the next read's chain unreturned, and its `error`
+  a `reportGlobalError.bind(null, response)` declared before it, where
+  upstream declares `function error(e)` after it; the names in one import
+  in rustfmt's order, where upstream lists them in its own; and
+  ReplyClient's `// Serializable values`, printed only in the `.d.ts`
+  above ReactServerValue's union.
+  **Pending in rust-js, not accepted**: rd643, encodeReply's promise is
+  `Promise<ReplyBody>`, `string | FormData` in the `.d.ts`, where upstream
+  declares `Promise<string | URLSearchParams | FormData>`: processReply
+  resolves with `ReplyBody`, an untagged `Text(String) | Form(&FormData)`,
+  upstream's `string | FormData`, because a third variant no code builds
+  prints an unreachable branch, `else if (body instanceof FormData) ..
+  else throw ..`, in encodeFormData; rd641, encodeReply's `/* We don't use
+  URLSearchParams yet but maybe */` after its return type is lost; rd642,
+  the `.d.ts`'s optional `nullable` fields and its missing `export type
+  {TemporaryReferenceSet}`.
   **Accepted by the user** (2026-11-02, by name): rd543, a tuple's
   element is read by destructuring, `const chunks = metadata[1];`, where
   upstream reads `metadata[CHUNKS]` in place; rd544, the async marker,
