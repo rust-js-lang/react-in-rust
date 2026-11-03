@@ -156,7 +156,7 @@ react-server, react-client, the Fizz suites and react-server-dom-fb,
 | ssrmisc | `yarn test react-dom/src/__tests__/ReactServerRendering react-dom/src/__tests__/ReactDOMServerLifecycles react-dom/src/__tests__/ReactDOMInReactServer react-dom/src/__tests__/ReactClassComponentPropResolutionFizz packages/react-markup packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShimServer` (9 suites) | 104 / 0 / 0 |
 | server | `yarn test packages/react-server/src/__tests__` (8 suites) | 41 / 0 / 0²⁵⁶ |
 | client | `yarn test packages/react-client/src/__tests__` (4 suites) | 98 / 0 / 0⁴ |
-| webpack | `yarn test packages/react-server-dom-webpack/src/__tests__` (9 suites) | 278 / 0 / 0 |
+| webpack | `yarn test packages/react-server-dom-webpack/src/__tests__` (11 suites) | 288 / 0 / 0⁸ |
 | turbopack | `yarn test packages/react-server-dom-turbopack/src/__tests__` (7 suites) | 43 / 0 / 0 |
 | fb | `yarn test packages/react-server-dom-fb/src/__tests__` (2 suites) | 10 / 0 / 0⁷ |
 
@@ -189,6 +189,15 @@ entry, as no upstream test runs it.
 ⁷ With the port's own `ReactDOMServerFBStream-test.internal.js` (2 tests:
 each chunk is only what was written since the last, and `debug`'s counts),
 added with ReactDOMServerFB; upstream's suite alone is 8 in 1.
+⁸ With the port's own `ReactFlightWebpackPlugin-test.js` (7 tests: the
+plugin's options, and the client and SSR manifests of a development and a
+production build of a small app, read off webpack's output), as no
+upstream test runs the plugin; it passes on upstream's JS. Without it
+the gate is 281 in 10. ReactFlightWebpackPlugin is held: rust-js can't
+yet extend a binding's class that's a module's default export (rd678, its
+`.d.ts` fails), and drops a subclass's `get type()` to a method (rd679, a
+wrong answer: webpack's `dependency.type` is a function), so the test's
+`reasons` type check fails on it.
 
 ² One run in five of `-r=www-modern packages/react-server/src/__tests__`
 failed one test (25 / 1 / 0) while the machine was loaded. The default
