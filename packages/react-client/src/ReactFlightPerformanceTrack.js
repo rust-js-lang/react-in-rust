@@ -12,6 +12,7 @@ import {
   addObjectToProperties,
   addValueToProperties,
 } from 'shared/ReactPerformanceTrackProperties';
+
 import {getIODescription} from 'shared/ReactIODescription';
 
 const supportsUserTiming =

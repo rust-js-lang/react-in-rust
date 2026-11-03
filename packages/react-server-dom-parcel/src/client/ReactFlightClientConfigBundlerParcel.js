@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {prepareDestinationWithChunks} from 'react-client/src/ReactFlightClientConfig';
+
 import hasOwnProperty from 'shared/hasOwnProperty';
 
 export function prepareDestinationForModule(moduleLoading, nonce, metadata) {

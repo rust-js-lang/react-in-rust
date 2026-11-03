@@ -19,6 +19,7 @@ import {
   createServerReference as createServerReferenceImpl,
   processReply,
 } from 'react-client/src/ReactFlightReplyClient';
+
 export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
 export {createTemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
 import {$unwrap} from '@rust-js/runtime';
@@ -240,7 +241,10 @@ export function createFromFetch(promiseForResponse, options) {
   return getRoot(response);
 }
 
-export function encodeReply(value, options) {
+export function encodeReply(
+  value,
+  options,
+) /* We don't use URLSearchParams yet but maybe */ {
   return new Promise((resolve, reject) => {
     processReply(
       value,

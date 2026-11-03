@@ -15,19 +15,24 @@ import {
   disableLegacyContext,
   enableSchedulingProfiler,
 } from 'shared/ReactFeatureFlags';
+
 import ReactStrictModeWarnings from './ReactStrictModeWarnings.js';
 import {get as getInstance, set as setInstance} from 'shared/ReactInstanceMap';
 import shallowEqual from 'shared/shallowEqual';
+
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
+
 import assign from 'shared/assign';
 import isArray from 'shared/isArray';
 import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+
 import {
   NoMode,
   StrictEffectsMode,
   StrictLegacyMode,
 } from './ReactTypeOfMode.js';
+
 import {
   checkHasForceUpdateAfterProcessing,
   cloneUpdateQueue,
@@ -52,6 +57,7 @@ import {
   requestUpdateLane,
   scheduleUpdateOnFiber,
 } from './ReactFiberWorkLoop.js';
+
 import {
   markForceUpdateScheduled,
   markStateUpdateScheduled,

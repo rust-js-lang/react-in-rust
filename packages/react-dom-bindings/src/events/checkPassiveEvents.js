@@ -9,8 +9,6 @@ import {canUseDOM} from 'shared/ExecutionEnvironment';
 
 export let passiveBrowserEventsSupported = false;
 
-// Check if browser support events with passive listeners
-// https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Safely_detecting_option_support
 if (canUseDOM) {
   try {
     const options = {};
@@ -23,6 +21,8 @@ if (canUseDOM) {
     window.addEventListener('test', listener, options);
     window.removeEventListener('test', listener, options);
   } catch {
+    // Check if browser support events with passive listeners
+    // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Safely_detecting_option_support
     passiveBrowserEventsSupported = false;
   }
 }

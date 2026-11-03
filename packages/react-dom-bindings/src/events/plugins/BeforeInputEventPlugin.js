@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {canUseDOM} from 'shared/ExecutionEnvironment';
+
 import {registerTwoPhaseEvent} from '../EventRegistry.js';
 import {
   getData as fallbackCompositionStateGetData,
@@ -16,6 +17,7 @@ import {
   SyntheticCompositionEvent,
   SyntheticInputEvent,
 } from '../SyntheticEvent.js';
+
 import {accumulateTwoPhaseListeners} from '../DOMPluginEventSystem.js';
 
 const END_KEYCODES = [9, 13, 27, 32]; // Tab, Return, Esc, Space

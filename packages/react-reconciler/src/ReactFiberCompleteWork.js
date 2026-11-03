@@ -17,7 +17,9 @@ import {
   enableViewTransitionParentEnterExit,
   passChildrenWhenCloningPersistedNodes,
 } from 'shared/ReactFeatureFlags';
+
 import {now} from './Scheduler.js';
+
 import {
   ActivityComponent,
   CacheComponent,
@@ -49,12 +51,14 @@ import {
   TracingMarkerComponent,
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
+
 import {
   ConcurrentMode,
   NoMode,
   ProfileMode,
   SuspenseyImagesMode,
 } from './ReactTypeOfMode.js';
+
 import {
   ChildDeletion,
   Cloned,
@@ -75,6 +79,7 @@ import {
   ViewTransitionStaticParent,
   Visibility,
 } from './ReactFiberFlags.js';
+
 import {
   appendChildToContainerChildSet,
   appendInitialChild,
@@ -101,6 +106,7 @@ import {
   supportsResources,
   supportsSingletons,
 } from './ReactFiberConfig.js';
+
 import {
   getHostContext,
   getRootHostContainer,
@@ -117,14 +123,17 @@ import {
   setShallowSuspenseListContext,
   suspenseStackCursor,
 } from './ReactFiberSuspenseContext.js';
+
 import {popHiddenContext} from './ReactFiberHiddenContext.js';
 import {findFirstSuspended} from './ReactFiberSuspenseComponent.js';
+
 import {
   isContextProvider as isLegacyContextProvider,
   popContext as popLegacyContext,
   popTopLevelContextObject as popTopLevelLegacyContextObject,
 } from './ReactFiberLegacyContext.js';
 import {popProvider} from './ReactFiberNewContext.js';
+
 import {
   emitPendingHydrationWarnings,
   getIsHydrating,
@@ -143,6 +152,7 @@ import {
   renderHasNotSuspendedYet,
   shouldRemainOnPreviousScreen,
 } from './ReactFiberWorkLoop.js';
+
 import {
   NoLanes,
   OffscreenLane,
@@ -152,16 +162,21 @@ import {
   includesSomeLane,
   mergeLanes,
 } from './ReactFiberLane.js';
+
 import {resetChildFibers} from './ReactChildFiber.js';
 import {createScopeInstance} from './ReactFiberScope.js';
 import {transferActualDuration} from './ReactProfilerTimer.js';
+
 import {popCacheProvider} from './ReactFiberCacheComponent.js';
 import {popTreeContext, pushTreeFork} from './ReactFiberTreeContext.js';
+
 import {popRootTransition, popTransition} from './ReactFiberTransition.js';
+
 import {
   popMarkerInstance,
   popRootMarkerInstance,
 } from './ReactFiberTracingMarkerComponent.js';
+
 import {suspendCommit} from './ReactFiberThenable.js';
 import {$unwrap} from '@rust-js/runtime';
 

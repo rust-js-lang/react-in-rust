@@ -5,8 +5,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+const slice = Array.prototype.slice;
 import {Component} from 'react';
 import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
+
 import {
   createContainer,
   defaultOnCaughtError,
@@ -16,15 +18,12 @@ import {
   injectIntoDevTools,
   updateContainerSync,
 } from 'react-reconciler/src/ReactFiberReconciler';
+
 import Mode from 'art/modes/current';
 import FastNoSideEffects from 'art/modes/fast-noSideEffects';
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
-import {TYPES, childrenAsString} from './ReactARTInternals.js';
-export {default as Transform} from 'art/core/transform';
-export {default as version} from 'shared/ReactVersion';
-import {$unwrap} from '@rust-js/runtime';
 
-const slice = Array.prototype.slice;
+import {TYPES, childrenAsString} from './ReactARTInternals.js';
 
 function defaultOnDefaultTransitionIndicator() {
   // Noop
@@ -176,4 +175,8 @@ export const ClippingRectangle = TYPES.CLIPPING_RECTANGLE;
 export const Group = TYPES.GROUP;
 export const Shape = TYPES.SHAPE;
 export const Path = Mode.Path;
+export {default as Transform} from 'art/core/transform';
+
+export {default as version} from 'shared/ReactVersion';
+import {$unwrap} from '@rust-js/runtime';
 //# sourceMappingURL=ReactART.jsx.map

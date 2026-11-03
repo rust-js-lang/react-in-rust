@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {disableCommentsAsDOMContainers} from 'shared/ReactFeatureFlags';
+
 import {
   COMMENT_NODE,
   DOCUMENT_FRAGMENT_NODE,

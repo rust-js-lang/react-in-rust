@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {REACT_LAZY_TYPE} from 'shared/ReactSymbols';
+
 import noop from 'shared/noop';
 import {$unwrap} from '@rust-js/runtime';
 

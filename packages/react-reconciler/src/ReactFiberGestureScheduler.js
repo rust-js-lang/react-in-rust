@@ -16,10 +16,12 @@ import {
   ensureRootIsScheduled,
   requestTransitionLane,
 } from './ReactFiberRootScheduler.js';
+
 import {
   getCurrentGestureOffset,
   stopViewTransition,
 } from './ReactFiberConfig.js';
+
 import {pingGestureRoot, restartGestureRoot} from './ReactFiberWorkLoop.js';
 
 export function scheduleGesture(root, provider) {

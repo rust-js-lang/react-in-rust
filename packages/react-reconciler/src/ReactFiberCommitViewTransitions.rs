@@ -1119,20 +1119,28 @@ pub fn measure_update_view_transition(
     }
     // If nothing changed due to a mutation, or children changing size
     // and the measurements end up unchanged, we should restore it to not animate.
-    let previous_measurements: Option<Vec<&'static Unknown>> = if gesture {
-        state.clones.borrow().as_ref().map(|clones| {
-            clones
-                .borrow()
-                .iter()
-                .copied()
-                .map(measure_cloned_instance)
-                .collect()
-        })
+    let previous_measurements: Option<Vec<&'static Unknown>>;
+    if gesture {
+        let clones = state.clones.borrow();
+        match clones.as_ref() {
+            None => {
+                previous_measurements = None;
+            }
+            Some(clones) => {
+                previous_measurements = Some(
+                    clones
+                        .borrow()
+                        .iter()
+                        .copied()
+                        .map(measure_cloned_instance)
+                        .collect(),
+                );
+            }
+        }
     } else {
-        let previous_measurements = unsafe { js::cast(old_fiber.memoized_state.get()) };
+        previous_measurements = unsafe { js::cast(old_fiber.memoized_state.get()) };
         old_fiber.memoized_state.set(js::null()); // Clear it. We won't need it anymore.
-        previous_measurements
-    };
+    }
     let child = new_fiber.child.borrow().clone();
     let in_viewport = measure_view_transition_host_instances(
         finished_work, // This is always finishedWork since it's used to assign flags.
@@ -1164,20 +1172,28 @@ pub fn measure_nested_view_transitions(changed_parent: &Fiber, gesture: bool) {
             let state: &ViewTransitionState = unsafe { js::cast(current.state_node.get()) };
             let name = get_view_transition_name(props, state);
             let class_name = get_view_transition_class_name(props.default, props.update);
-            let previous_measurements: Option<Vec<&'static Unknown>> = if gesture {
-                state.clones.borrow().as_ref().map(|clones| {
-                    clones
-                        .borrow()
-                        .iter()
-                        .copied()
-                        .map(measure_cloned_instance)
-                        .collect()
-                })
+            let previous_measurements: Option<Vec<&'static Unknown>>;
+            if gesture {
+                let clones = state.clones.borrow();
+                match clones.as_ref() {
+                    None => {
+                        previous_measurements = None;
+                    }
+                    Some(clones) => {
+                        previous_measurements = Some(
+                            clones
+                                .borrow()
+                                .iter()
+                                .copied()
+                                .map(measure_cloned_instance)
+                                .collect(),
+                        );
+                    }
+                }
             } else {
-                let previous_measurements = unsafe { js::cast(current.memoized_state.get()) };
+                previous_measurements = unsafe { js::cast(current.memoized_state.get()) };
                 current.memoized_state.set(js::null()); // Clear it. We won't need it anymore.
-                previous_measurements
-            };
+            }
             let grandchild = current.child.borrow().clone();
             let in_viewport = measure_view_transition_host_instances(
                 &current,

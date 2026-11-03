@@ -7,6 +7,7 @@
 
 import {enableProfiling} from '../SchedulerFeatureFlags.js';
 import {peek, pop, push} from '../SchedulerMinHeap.js';
+
 // TODO: Use symbols?
 import {
   IdlePriority,
@@ -15,6 +16,7 @@ import {
   NormalPriority,
   UserBlockingPriority,
 } from '../SchedulerPriorities.js';
+
 import {
   markSchedulerSuspended,
   markSchedulerUnsuspended,
@@ -27,14 +29,6 @@ import {
   startLoggingProfilingEvents,
   stopLoggingProfilingEvents,
 } from '../SchedulerProfiling.js';
-export {
-  IdlePriority as unstable_IdlePriority,
-  ImmediatePriority as unstable_ImmediatePriority,
-  LowPriority as unstable_LowPriority,
-  NormalPriority as unstable_NormalPriority,
-  UserBlockingPriority as unstable_UserBlockingPriority,
-} from '../SchedulerPriorities.js';
-import {$withBorrow, $withBorrowMut} from '@rust-js/runtime';
 
 // Max 31 bit integer. The max integer size in V8 for 32-bit systems.
 // Math.pow(2, 30) - 1
@@ -615,6 +609,15 @@ export function unstable_advanceTime(ms) {
 function requestPaint() {
   needsPaint = true;
 }
+
+export {
+  IdlePriority as unstable_IdlePriority,
+  ImmediatePriority as unstable_ImmediatePriority,
+  LowPriority as unstable_LowPriority,
+  NormalPriority as unstable_NormalPriority,
+  UserBlockingPriority as unstable_UserBlockingPriority,
+} from '../SchedulerPriorities.js';
+import {$withBorrow, $withBorrowMut} from '@rust-js/runtime';
 
 export const unstable_Profiling = enableProfiling
   ? {

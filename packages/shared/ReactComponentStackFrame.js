@@ -7,6 +7,7 @@
 
 import {disableLogs, reenableLogs} from './ConsolePatchingDev.js';
 import ReactSharedInternals from './ReactSharedInternals.js';
+
 import DefaultPrepareStackTrace from './DefaultPrepareStackTrace.js';
 import {formatOwnerStack} from './ReactOwnerStackFrames.js';
 
@@ -93,11 +94,11 @@ function DetermineComponentFrameRoot(fn, construct) {
         typeof Reflect !== 'undefined' &&
         typeof Reflect.construct !== 'undefined'
       ) {
-        // We construct a different control for this case to include any extra
-        // frames added by the construct call.
         try {
           Reflect.construct(Fake, []);
         } catch (x) {
+          // We construct a different control for this case to include any extra
+          // frames added by the construct call.
           control = x;
         }
         Reflect.construct(fn, [], Fake);

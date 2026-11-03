@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
+
 import {
   getCrossOriginString,
   getCrossOriginStringAs,
@@ -130,8 +131,8 @@ export function preload(href, options) {
       d.L(
         /* ReactDOMCurrentDispatcher */
         href,
-        as,
         /* preload */
+        as,
         {
           crossOrigin,
           integrity: typeof integrity === 'string' ? integrity : undefined,

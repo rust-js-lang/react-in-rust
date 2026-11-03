@@ -6,11 +6,13 @@
 // LICENSE file in the root directory of this source tree.
 
 import {Async, isAsyncImport} from '../shared/ReactFlightImportMetadata.js';
+
 import {
   addChunkDebugInfo,
   loadChunk,
   prepareDestinationWithChunks,
 } from 'react-client/src/ReactFlightClientConfig';
+
 import hasOwnProperty from 'shared/hasOwnProperty';
 
 // The reason this function needs to defined here in this file instead of just

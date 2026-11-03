@@ -6,7 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import {getOwnerStackByFiberInDev} from './ReactFiberComponentStack.js';
+
 import {getComponentNameFromOwner} from './getComponentNameFromFiber.js';
 
 export let current = null;

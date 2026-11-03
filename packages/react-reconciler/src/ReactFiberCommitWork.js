@@ -26,6 +26,7 @@ import {
   enableUpdaterTracking,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
+
 import {
   ActivityComponent,
   CacheComponent,
@@ -52,6 +53,7 @@ import {
   TracingMarkerComponent,
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
+
 import {
   AffectedParentLayout,
   BeforeAndAfterMutationTransitionMask,
@@ -102,6 +104,7 @@ import {
   pushNestedEffectDurations,
   resetComponentEffectTimers,
 } from './ReactProfilerTimer.js';
+
 import {
   logComponentDisappeared,
   logComponentEffect,
@@ -114,7 +117,9 @@ import {
   pushDeepEquality,
 } from './ReactFiberPerformanceTrack.js';
 import {ConcurrentMode, NoMode, ProfileMode} from './ReactTypeOfMode.js';
+
 import {deferHiddenCallbacks} from './ReactFiberClassUpdateQueue.js';
+
 import {
   acquireResource,
   beforeActiveInstanceBlur,
@@ -148,6 +153,7 @@ import {
   unmountHoistable,
   updateFragmentInstanceFiber,
 } from './ReactFiberConfig.js';
+
 import {
   addMarkerCompleteCallbackToPendingTransition,
   addMarkerIncompleteCallbackToPendingTransition,
@@ -168,8 +174,11 @@ import {
   Layout as HookLayout,
   Passive as HookPassive,
 } from './ReactHookEffectTags.js';
+
 import {doesFiberContain} from './ReactFiberTreeReflection.js';
+
 import {isDevToolsPresent, onCommitUnmount} from './ReactFiberDevToolsHook.js';
+
 import {releaseCache, retainCache} from './ReactFiberCacheComponent.js';
 import {
   OffscreenPassiveEffectsConnected,
@@ -180,6 +189,7 @@ import {
   TransitionTracingMarker,
 } from './ReactFiberTracingMarkerComponent.js';
 import {getViewTransitionClassName} from './ReactFiberViewTransitionComponent.js';
+
 import {
   commitClassCallbacks,
   commitClassDidMount,
@@ -223,6 +233,7 @@ import {
   commitFragmentInstanceDeletionEffects,
   commitFragmentInstanceInsertionEffects,
 } from './ReactFiberFragmentInstance.js';
+
 import {
   commitBeforeUpdateViewTransition,
   commitEnterViewTransitions,
@@ -247,6 +258,7 @@ import {
   rootMutationContext,
   viewTransitionMutationContext,
 } from './ReactFiberMutationTracking.js';
+
 import {
   trackNamedViewTransition,
   untrackNamedViewTransition,

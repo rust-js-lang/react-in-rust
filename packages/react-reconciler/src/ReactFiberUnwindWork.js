@@ -21,17 +21,20 @@ import {
   SuspenseListComponent,
   TracingMarkerComponent,
 } from './ReactWorkTags.js';
+
 import {DidCapture, NoFlags, ShouldCapture, Update} from './ReactFiberFlags.js';
 import {NoMode, ProfileMode} from './ReactTypeOfMode.js';
 import {
   enableProfilerTimer,
   enableTransitionTracing,
 } from 'shared/ReactFeatureFlags';
+
 import {popHostContainer, popHostContext} from './ReactFiberHostContext.js';
 import {
   popSuspenseHandler,
   popSuspenseListContext,
 } from './ReactFiberSuspenseContext.js';
+
 import {popHiddenContext} from './ReactFiberHiddenContext.js';
 import {resetHydrationState} from './ReactFiberHydrationContext.js';
 import {
@@ -40,10 +43,14 @@ import {
   popTopLevelContextObject as popTopLevelLegacyContextObject,
 } from './ReactFiberLegacyContext.js';
 import {popProvider} from './ReactFiberNewContext.js';
+
 import {popCacheProvider} from './ReactFiberCacheComponent.js';
 import {transferActualDuration} from './ReactProfilerTimer.js';
+
 import {popTreeContext} from './ReactFiberTreeContext.js';
+
 import {popRootTransition, popTransition} from './ReactFiberTransition.js';
+
 import {
   popMarkerInstance,
   popRootMarkerInstance,

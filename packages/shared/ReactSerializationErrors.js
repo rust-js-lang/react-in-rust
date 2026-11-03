@@ -14,7 +14,9 @@ import {
   REACT_SUSPENSE_TYPE,
   REACT_VIEW_TRANSITION_TYPE,
 } from './ReactSymbols.js';
+
 import isArray from './isArray.js';
+
 import getPrototypeOf from './getPrototypeOf.js';
 import {enableViewTransition} from './ReactFeatureFlags.js';
 

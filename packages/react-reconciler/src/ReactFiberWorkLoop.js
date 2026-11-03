@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {REACT_STRICT_MODE_TYPE} from 'shared/ReactSymbols';
+
 import {getViewTransitionName} from './ReactFiberViewTransitionComponent.js';
 import {
   alwaysThrottleRetries,
@@ -29,8 +30,10 @@ import {
 } from 'shared/ReactFeatureFlags';
 import {resetOwnerStackLimit} from 'shared/ReactOwnerStackReset';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import objectIs from 'shared/objectIs';
 import reportGlobalError from 'shared/reportGlobalError';
+
 import {
   IdlePriority as IdleSchedulerPriority,
   NormalPriority as NormalSchedulerPriority,
@@ -39,6 +42,7 @@ import {
   scheduleCallback as Scheduler_scheduleCallback,
   shouldYield,
 } from './Scheduler.js';
+
 import {
   logActionYieldTime,
   logAnimatingPhase,
@@ -64,6 +68,7 @@ import {
   markAllLanesInOrder,
   setCurrentTrackFromLanes,
 } from './ReactFiberPerformanceTrack.js';
+
 import {
   addViewTransitionFinishedListener,
   afterActiveInstanceBlur,
@@ -88,8 +93,10 @@ import {
   trackSchedulerEvent,
   waitForCommitToBeReady,
 } from './ReactFiberConfig.js';
+
 import {createWorkInProgress, resetWorkInProgress} from './ReactFiber.js';
 import {isRootDehydrated} from './ReactFiberShellHydration.js';
+
 import {
   getIsHydrating,
   popHydrationStateOnInterruptedWork,
@@ -116,7 +123,9 @@ import {
   SuspenseComponent,
   SuspenseListComponent,
 } from './ReactWorkTags.js';
+
 import {ConcurrentRoot, LegacyRoot} from './ReactRootTags.js';
+
 import {
   BeforeMutationMask,
   DidDefer,
@@ -180,6 +189,7 @@ import {
   removeLanes,
   upgradePendingLanesToSync,
 } from './ReactFiberLane.js';
+
 import {
   DefaultEventPriority,
   DiscreteEventPriority,
@@ -188,6 +198,7 @@ import {
   lowerEventPriority,
 } from './ReactEventPriorities.js';
 import {requestCurrentTransition} from './ReactFiberTransition.js';
+
 import {
   SelectiveHydrationException,
   beginWork,
@@ -195,12 +206,14 @@ import {
 } from './ReactFiberBeginWork.js';
 import {completeWork} from './ReactFiberCompleteWork.js';
 import {unwindInterruptedWork, unwindWork} from './ReactFiberUnwindWork.js';
+
 import {
   createClassErrorUpdate,
   createRootErrorUpdate,
   initializeClassErrorUpdate,
   throwException,
 } from './ReactFiberThrow.js';
+
 import {
   accumulateSuspenseyCommit,
   commitAfterMutationEffects,
@@ -219,10 +232,12 @@ import {
   reconnectPassiveEffects,
   shouldFireAfterActiveInstanceBlur,
 } from './ReactFiberCommitWork.js';
+
 import {
   resetShouldStartViewTransition,
   shouldStartViewTransition,
 } from './ReactFiberCommitViewTransitions.js';
+
 import {
   applyDepartureTransitions,
   insertDestinationClones,
@@ -230,12 +245,15 @@ import {
 } from './ReactFiberApplyGesture.js';
 import {enqueueUpdate} from './ReactFiberClassUpdateQueue.js';
 import {resetContextDependencies} from './ReactFiberNewContext.js';
+
 import {
   ContextOnlyDispatcher,
   resetHooksAfterThrow,
   resetHooksOnUnwind,
 } from './ReactFiberHooks.js';
+
 import {DefaultAsyncDispatcher} from './ReactFiberAsyncDispatcher.js';
+
 import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
 import {
   enqueueConcurrentRenderForLane,
@@ -310,8 +328,10 @@ import {
   yieldReason,
   yieldStartTime,
 } from './ReactProfilerTimer.js';
+
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import ReactStrictModeWarnings from './ReactStrictModeWarnings.js';
+
 import {
   isRendering,
   resetCurrentFiber,
@@ -335,13 +355,17 @@ import {
   onPostCommitRoot as onPostCommitRootDevTools,
   setIsStrictModeForDevtools,
 } from './ReactFiberDevToolsHook.js';
+
 import {onCommitRoot as onCommitRootTestSelector} from './ReactTestSelectors.js';
+
 import {releaseCache} from './ReactFiberCacheComponent.js';
+
 import {
   isConcurrentActEnvironment,
   isLegacyActEnvironment,
 } from './ReactFiberAct.js';
 import {processTransitionCallbacks} from './ReactFiberTracingMarkerComponent.js';
+
 import {
   SuspenseActionException,
   SuspenseException,
@@ -352,10 +376,12 @@ import {
   isThenableResolved,
 } from './ReactFiberThenable.js';
 import {schedulePostPaintCallback} from './ReactPostPaintCallback.js';
+
 import {
   getShellBoundary,
   getSuspenseHandler,
 } from './ReactFiberSuspenseContext.js';
+
 import {resetChildReconcilerOnUnwind} from './ReactChildFiber.js';
 import {
   ensureRootIsScheduled,
@@ -363,10 +389,12 @@ import {
   flushSyncWorkOnLegacyRootsOnly,
   requestTransitionLane,
 } from './ReactFiberRootScheduler.js';
+
 import {
   getMaskedContext,
   getUnmaskedContext,
 } from './ReactFiberLegacyContext.js';
+
 import {logUncaughtError} from './ReactFiberErrorLogger.js';
 import {
   scheduleGestureCommit,
@@ -3089,7 +3117,7 @@ function replayBeginWork(unitOfWork) {
     stopProfilerTimerIfRunningAndRecordDuration(unitOfWork);
   }
 
-  return next ?? null;
+  return next;
 }
 
 function throwAndUnwindWorkLoop(
@@ -3453,7 +3481,7 @@ function completeRoot(
     markCommitStarted(lanes);
   }
 
-  if (finishedWork == null) {
+  if (finishedWork === null) {
     if (enableSchedulingProfiler) {
       markCommitStopped();
     }
@@ -3520,7 +3548,7 @@ function completeRoot(
           recoverableErrors,
           suspendedState,
           enableProfilerTimer
-            ? suspendedCommitReason == null
+            ? suspendedCommitReason === null
               ? completedRenderEndTime
               : commitStartTime
             : 0,
@@ -3687,7 +3715,7 @@ function commitRoot(
     // batch. This enables them to be grouped later.
     resetCommitErrors();
     recordCommitTime();
-    if (enableComponentPerformanceTrack && suspendedCommitReason != null) {
+    if (enableComponentPerformanceTrack && suspendedCommitReason !== null) {
       logSuspendedCommitPhase(
         completedRenderEndTime,
         commitStartTime,

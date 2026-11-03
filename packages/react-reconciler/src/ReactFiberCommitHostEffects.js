@@ -14,7 +14,9 @@ import {
   HostSingleton,
   HostText,
 } from './ReactWorkTags.js';
+
 import {ContentReset, Placement} from './ReactFiberFlags.js';
+
 import {
   acquireSingletonInstance,
   appendChild,
@@ -44,8 +46,11 @@ import {
   unhideInstance,
   unhideTextInstance,
 } from './ReactFiberConfig.js';
+
 import {captureCommitPhaseError} from './ReactFiberWorkLoop.js';
+
 import {trackHostMutation} from './ReactFiberMutationTracking.js';
+
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {
   commitNewChildToFragmentInstances,
@@ -767,7 +772,6 @@ export function commitHostHydratedSuspense(suspenseInstance, finishedWork) {
 export function commitHostSingletonAcquisition(finishedWork) {
   const singleton = finishedWork.stateNode;
   const props = finishedWork.memoizedProps;
-
   try {
     // This was a new mount, acquire the DOM instance and set initial properties
     if (__DEV__) {

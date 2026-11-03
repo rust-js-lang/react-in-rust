@@ -136,7 +136,6 @@ export function act(callback) {
             returnValue => {
               popActScope(prevActQueue, prevActScopeDepth);
               if (prevActScopeDepth === 0) {
-                // We're exiting the outermost `act` scope. Flush the queue.
                 try {
                   flushActQueue(queue);
                   queueMacrotask(() =>
@@ -144,6 +143,7 @@ export function act(callback) {
                     recursivelyFlushAsyncActWork(returnValue, resolve, reject),
                   );
                 } catch (error) {
+                  // We're exiting the outermost `act` scope. Flush the queue.
                   // `thenable` might not be a real promise, and `flushActQueue`
                   // might throw, so we need to wrap `flushActQueue` in a
                   // try/catch.

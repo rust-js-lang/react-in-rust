@@ -27,20 +27,19 @@ export function getOffsets(outerNode) {
   const anchorOffset = selection.anchorOffset;
   const focusNode = selection.focusNode;
   const focusOffset = selection.focusOffset;
-
-  // In Firefox, anchorNode and focusNode can be "anonymous divs", e.g. the
-  // up/down buttons on an <input type="number">. Anonymous divs do not seem to
-  // expose properties, triggering a "Permission denied error" if any of its
-  // properties are accessed. The only seemingly possible way to avoid erroring
-  // is to access a property that typically works for non-anonymous divs and
-  // catch any error that may otherwise arise. See
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=208427
   try {
     /* eslint-disable ft-flow/no-unused-expressions */
     $unwrap(anchorNode).nodeType;
     $unwrap(focusNode).nodeType;
     /* eslint-enable ft-flow/no-unused-expressions */
   } catch {
+    // In Firefox, anchorNode and focusNode can be "anonymous divs", e.g. the
+    // up/down buttons on an <input type="number">. Anonymous divs do not seem to
+    // expose properties, triggering a "Permission denied error" if any of its
+    // properties are accessed. The only seemingly possible way to avoid erroring
+    // is to access a property that typically works for non-anonymous divs and
+    // catch any error that may otherwise arise. See
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=208427
     return null;
   }
 

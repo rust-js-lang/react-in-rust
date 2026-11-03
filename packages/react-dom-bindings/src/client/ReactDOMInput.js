@@ -7,8 +7,10 @@
 
 // TODO: direct imports like some-package/src/* are bad. Fix me.
 import {getCurrentFiberOwnerNameInDevOrNull} from 'react-reconciler/src/ReactCurrentFiber';
+
 import {getFiberCurrentPropsFromNode} from './ReactDOMComponentTree.js';
 import {getToStringValue, toString} from './ToStringValue.js';
+
 import {
   track,
   trackHydrated,
@@ -18,7 +20,9 @@ import {
   disableInputAttributeSyncing,
   enableHydrationChangeEvent,
 } from 'shared/ReactFeatureFlags';
+
 import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
+
 import escapeSelectorAttributeValueInsideDoubleQuotes from './escapeSelectorAttributeValueInsideDoubleQuotes.js';
 import {queueChangeEvent} from '../events/ReactDOMEventReplaying.js';
 

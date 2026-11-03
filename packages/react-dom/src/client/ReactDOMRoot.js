@@ -10,18 +10,22 @@ import {
   defaultOnRecoverableError,
   defaultOnUncaughtError,
 } from 'react-reconciler/src/ReactFiberErrorLogger';
+
 import {isValidContainer} from 'react-dom-bindings/src/client/ReactDOMContainer';
 import {queueExplicitHydrationTarget} from 'react-dom-bindings/src/events/ReactDOMEventReplaying';
 import {REACT_ELEMENT_TYPE} from 'shared/ReactSymbols';
+
 import {
   disableCommentsAsDOMContainers,
   enableDefaultTransitionIndicator,
 } from 'shared/ReactFeatureFlags';
+
 import {
   isContainerMarkedAsRoot,
   markContainerAsRoot,
   unmarkContainerAsRoot,
 } from 'react-dom-bindings/src/client/ReactDOMComponentTree';
+
 import {listenToAllSupportedEvents} from 'react-dom-bindings/src/events/DOMPluginEventSystem';
 import {COMMENT_NODE} from 'react-dom-bindings/src/client/HTMLNodeType';
 import {
@@ -32,6 +36,7 @@ import {
   updateContainer,
   updateContainerSync,
 } from 'react-reconciler/src/ReactFiberReconciler';
+
 import {defaultOnDefaultTransitionIndicator} from './ReactDOMDefaultTransitionIndicator.js';
 import {ConcurrentRoot} from 'react-reconciler/src/ReactRootTags';
 

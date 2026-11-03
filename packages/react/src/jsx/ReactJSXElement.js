@@ -7,7 +7,9 @@
 
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import hasOwnProperty from 'shared/hasOwnProperty';
+
 import assign from 'shared/assign';
 import {
   REACT_ELEMENT_TYPE,
@@ -15,6 +17,7 @@ import {
   REACT_LAZY_TYPE,
   REACT_OPTIMISTIC_KEY,
 } from 'shared/ReactSymbols';
+
 import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
 import isArray from 'shared/isArray';
 import {enableOptimisticKey, ownerStackLimit} from 'shared/ReactFeatureFlags';

@@ -6,12 +6,14 @@
 // LICENSE file in the root directory of this source tree.
 
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import {
   enableGestureTransition,
   enableTransitionTracing,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
 import reportGlobalError from 'shared/reportGlobalError';
+
 import noop from 'shared/noop';
 
 function releaseAsyncTransition() {
@@ -42,7 +44,6 @@ export function startTransition(scope, options) {
     currentTransition._updatedFibers = new Set();
   }
   ReactSharedInternals.T = currentTransition;
-
   try {
     const returnValue = scope();
     const onStartTransitionFinish = ReactSharedInternals.S;

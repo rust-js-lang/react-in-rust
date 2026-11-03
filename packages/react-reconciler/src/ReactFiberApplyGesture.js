@@ -23,12 +23,14 @@ import {
   unhideInstance,
   unhideTextInstance,
 } from './ReactFiberConfig.js';
+
 import {
   popMutationContext,
   pushMutationContext,
   trackHostMutation,
   viewTransitionMutationContext,
 } from './ReactFiberMutationTracking.js';
+
 import {
   AffectedParentLayout,
   ContentReset,
@@ -57,6 +59,7 @@ import {
   SimpleMemoComponent,
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
+
 import {
   appearingViewTransitions,
   commitEnterViewTransitions,
@@ -70,6 +73,7 @@ import {
   restoreUpdateViewTransitionForGesture,
   viewTransitionCancelableChildren,
 } from './ReactFiberCommitViewTransitions.js';
+
 import {
   commitHookEffectListMount,
   commitHookEffectListUnmount,
@@ -83,7 +87,9 @@ import {
   enableProfilerTimer,
   enableViewTransitionParentEnterExit,
 } from 'shared/ReactFeatureFlags';
+
 import {trackAnimatingTask} from './ReactProfilerTimer.js';
+
 import {scheduleGestureTransitionEvent} from './ReactFiberWorkLoop.js';
 import {$index, $unwrap} from '@rust-js/runtime';
 

@@ -49,12 +49,10 @@ export {
   validateHydratableInstance,
   validateHydratableTextInstance,
 } from './ReactFiberConfigNoopHydration.js';
-
 export {
   prepareScopeUpdate,
   getInstanceFromScope,
 } from './ReactFiberConfigNoopScopes.js';
-
 export {
   supportsTestSelectors,
   findFiberRoot,
@@ -82,7 +80,6 @@ export {
   preloadResource,
   suspendResource,
 } from './ReactFiberConfigNoopResources.js';
-
 export {
   supportsSingletons,
   resolveSingletonInstance,
@@ -131,7 +128,6 @@ export {
   createViewTransitionInstance,
   getCurrentGestureOffset,
 } from './ReactFiberConfigNoopNoMutation.js';
-
 export {
   supportsPersistence,
   cloneInstance,

@@ -12,6 +12,7 @@ import {
   getRootHostContext,
   isPrimaryRenderer,
 } from './ReactFiberConfig.js';
+
 import {createCursor, pop, push} from './ReactFiberStack.js';
 
 // ReactFiberConfig's `HostContext`.

@@ -10,6 +10,7 @@ import {
   getEntangledRenderLanes,
   setEntangledRenderLanes,
 } from './ReactFiberWorkLoop.js';
+
 import {NoLanes, mergeLanes} from './ReactFiberLane.js';
 
 // TODO: This isn't being used yet, but it's intended to replace the

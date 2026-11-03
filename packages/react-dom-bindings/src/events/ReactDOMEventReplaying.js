@@ -7,16 +7,19 @@
 
 import {unstable_scheduleCallback as scheduleCallback} from 'scheduler';
 import {NormalPriority} from 'scheduler/src/SchedulerPriorities';
+
 import {
   getActivityInstanceFromFiber,
   getContainerFromFiber,
   getNearestMountedFiber,
   getSuspenseInstanceFromFiber,
 } from 'react-reconciler/src/ReactFiberTreeReflection';
+
 import {
   findInstanceBlockingEvent,
   findInstanceBlockingTarget,
 } from './ReactDOMEventListener.js';
+
 import {
   resetReplayingEvent,
   setReplayingEvent,
@@ -31,8 +34,10 @@ import {
   HostRoot,
   SuspenseComponent,
 } from 'react-reconciler/src/ReactWorkTags';
+
 import {isHigherEventPriority} from 'react-reconciler/src/ReactEventPriorities';
 import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
+
 import {dispatchReplayedFormAction} from './plugins/FormActionEventPlugin.js';
 import {
   resolveUpdatePriority,

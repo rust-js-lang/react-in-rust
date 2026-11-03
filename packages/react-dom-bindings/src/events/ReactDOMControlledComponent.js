@@ -9,6 +9,7 @@ import {
   getFiberCurrentPropsFromNode,
   getInstanceFromNode,
 } from '../client/ReactDOMComponentTree.js';
+
 import {restoreControlledState} from '../client/ReactDOMComponent.js';
 
 // Use to restore controlled state after a change event has fired.

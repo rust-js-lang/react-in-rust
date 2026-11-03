@@ -11,13 +11,16 @@ import {
   enableTransitionTracing,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
+
 import {isPrimaryRenderer} from './ReactFiberConfig.js';
+
 import {createCursor, pop, push} from './ReactFiberStack.js';
 import {
   getWorkInProgressRoot,
   getWorkInProgressTransitions,
   markTransitionStarted,
 } from './ReactFiberWorkLoop.js';
+
 import {
   CacheContext,
   createCache,
@@ -29,12 +32,15 @@ import {
   queueTransitionTypes,
 } from './ReactFiberTransitionTypes.js';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import {
   entangleAsyncAction,
   peekEntangledActionLane,
 } from './ReactFiberAsyncAction.js';
 import {startAsyncTransitionTimer} from './ReactProfilerTimer.js';
+
 import {firstScheduledRoot} from './ReactFiberRootScheduler.js';
+
 import {
   cancelScheduledGesture,
   startScheduledGesture,

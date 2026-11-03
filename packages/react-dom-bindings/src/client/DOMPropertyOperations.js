@@ -7,6 +7,7 @@
 
 import isAttributeNameSafe from '../shared/isAttributeNameSafe.js';
 import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
+
 import {getFiberCurrentPropsFromNode} from './ReactDOMComponentTree.js';
 import {trackHostMutation} from 'react-reconciler/src/ReactFiberMutationTracking';
 

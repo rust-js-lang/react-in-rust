@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {HostContextNamespaceNone} from './ReactFiberConfigDOM.js';
+
 import {
   possibleRegistrationNames,
   registrationNameDependencies,
@@ -14,7 +15,9 @@ import {
   checkAttributeStringCoercion,
   checkHtmlStringCoercion,
 } from 'shared/CheckStringCoercion';
+
 import {checkControlledValueProps} from '../shared/ReactControlledValuePropTypes.js';
+
 import {
   getValueForAttribute,
   getValueForAttributeOnCustomComponent,
@@ -42,15 +45,19 @@ import {
   updateTextarea,
   validateTextareaProps,
 } from './ReactDOMTextarea.js';
+
 import {setSrcObject} from './ReactDOMSrcObject.js';
 import {validateTextNesting} from './validateDOMNesting.js';
+
 import setTextContent from './setTextContent.js';
+
 import {
   createDangerousStringForStyles,
   setValueForStyles,
 } from './CSSPropertyOperations.js';
 import {MATH_NAMESPACE, SVG_NAMESPACE} from './DOMNamespaces.js';
 import isCustomElement from '../shared/isCustomElement.js';
+
 import getAttributeAlias from '../shared/getAttributeAlias.js';
 import possibleStandardNames from '../shared/possibleStandardNames.js';
 import {validateProperties as validateARIAProperties} from '../shared/ReactDOMInvalidARIAHook.js';
@@ -65,6 +72,7 @@ import {
   enableViewTransition,
   enableViewTransitionParentEnterExit,
 } from 'shared/ReactFeatureFlags';
+
 import {
   listenToNonDelegatedEvent,
   mediaEventTypes,

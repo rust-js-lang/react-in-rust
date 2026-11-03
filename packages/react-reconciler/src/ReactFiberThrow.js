@@ -19,6 +19,7 @@ import {
   SuspenseComponent,
   SuspenseListComponent,
 } from './ReactWorkTags.js';
+
 import {
   DidCapture,
   ForceClientRender,
@@ -34,6 +35,7 @@ import {
   disableLegacyMode,
   enableUpdaterTracking,
 } from 'shared/ReactFeatureFlags';
+
 import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
 import {
   CaptureUpdate,
@@ -57,8 +59,11 @@ import {
   renderDidSuspendDelayIfPossible,
   restorePendingUpdaters,
 } from './ReactFiberWorkLoop.js';
+
 import {propagateParentContextChangesToDeferredTree} from './ReactFiberNewContext.js';
+
 import {logCaughtError, logUncaughtError} from './ReactFiberErrorLogger.js';
+
 import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
 import {
   SyncLane,
@@ -66,6 +71,7 @@ import {
   mergeLanes,
   pickArbitraryLane,
 } from './ReactFiberLane.js';
+
 import {
   HydrationMismatchException,
   getIsHydrating,
@@ -73,7 +79,9 @@ import {
   queueHydrationError,
 } from './ReactFiberHydrationContext.js';
 import {ConcurrentRoot} from './ReactRootTags.js';
+
 import {noopSuspenseyCommitThenable} from './ReactFiberThenable.js';
+
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {callComponentDidCatchInDEV} from './ReactFiberCallUserSpace.js';
 import {$unwrap} from '@rust-js/runtime';

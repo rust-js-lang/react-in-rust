@@ -6,8 +6,10 @@
 // LICENSE file in the root directory of this source tree.
 
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
+
 import {DiscreteEventPriority} from 'react-reconciler/src/ReactEventPriorities';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 
 function flushSyncImpl(fn) {

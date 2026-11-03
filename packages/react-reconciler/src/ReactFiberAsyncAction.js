@@ -9,6 +9,7 @@ import {
   ensureScheduleIsScheduled,
   requestTransitionLane,
 } from './ReactFiberRootScheduler.js';
+
 import {NoLane} from './ReactFiberLane.js';
 import {
   clearAsyncTransitionTimer,
@@ -19,6 +20,7 @@ import {
   enableDefaultTransitionIndicator,
   enableProfilerTimer,
 } from 'shared/ReactFeatureFlags';
+
 import {clearEntangledAsyncTransitionTypes} from './ReactFiberTransitionTypes.js';
 import noop from 'shared/noop';
 import reportGlobalError from 'shared/reportGlobalError';

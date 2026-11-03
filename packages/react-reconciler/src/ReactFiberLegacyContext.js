@@ -6,7 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 import {disableLegacyContext} from 'shared/ReactFeatureFlags';
+
 import {ClassComponent, HostRoot} from './ReactWorkTags.js';
+
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {createCursor, pop, push} from './ReactFiberStack.js';
 

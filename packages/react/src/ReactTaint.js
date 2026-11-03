@@ -6,8 +6,11 @@
 // LICENSE file in the root directory of this source tree.
 
 import {enableTaint} from 'shared/ReactFeatureFlags';
+
 import getPrototypeOf from 'shared/getPrototypeOf';
+
 import binaryToComparableString from 'shared/binaryToComparableString';
+
 import ReactSharedInternals from './ReactSharedInternalsServer.js';
 import {$unwrap} from '@rust-js/runtime';
 

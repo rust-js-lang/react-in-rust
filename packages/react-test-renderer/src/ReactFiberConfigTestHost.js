@@ -7,13 +7,17 @@
 
 import isArray from 'shared/isArray';
 import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+
 import {
   DefaultEventPriority,
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import {enableProfilerTimer} from 'shared/ReactFeatureFlags';
+
 // TODO: Consider exporting the react-native version.
 export {default as rendererVersion} from 'shared/ReactVersion';
+export const rendererPackageName = 'react-test-renderer';
+export const extraDevToolsConfig = null;
 
 export {
   supportsPersistence,
@@ -70,7 +74,6 @@ export {
   validateHydratableInstance,
   validateHydratableTextInstance,
 } from 'react-reconciler/src/ReactFiberConfigWithNoHydration';
-
 export {
   supportsTestSelectors,
   findFiberRoot,
@@ -86,7 +89,6 @@ export {
   supportsMicrotasks,
   scheduleMicrotask,
 } from 'react-reconciler/src/ReactFiberConfigWithNoMicrotasks';
-
 export {
   supportsResources,
   isHostHoistableType,
@@ -103,7 +105,6 @@ export {
   preloadResource,
   suspendResource,
 } from 'react-reconciler/src/ReactFiberConfigWithNoResources';
-
 export {
   supportsSingletons,
   resolveSingletonInstance,
@@ -113,9 +114,6 @@ export {
   isSingletonScope,
 } from 'react-reconciler/src/ReactFiberConfigWithNoSingletons';
 import {$insertAt, $position} from '@rust-js/runtime';
-
-export const rendererPackageName = 'react-test-renderer';
-export const extraDevToolsConfig = null;
 
 const ContainerOrInstance = {
   children(containerOrInstance) {

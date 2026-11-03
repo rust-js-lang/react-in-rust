@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import assign from 'shared/assign';
+
 import getEventCharCode from './getEventCharCode.js';
 import {$unwrap} from '@rust-js/runtime';
 

@@ -14,8 +14,11 @@ import {
   REACT_PORTAL_TYPE,
   getIteratorFn,
 } from 'shared/ReactSymbols';
+
 import {enableOptimisticKey} from 'shared/ReactFeatureFlags';
+
 import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
+
 import {cloneAndReplaceKey, isValidElement} from './jsx/ReactJSXElement.js';
 
 const SEPARATOR = '.';

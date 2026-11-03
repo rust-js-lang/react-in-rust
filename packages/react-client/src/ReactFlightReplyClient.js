@@ -12,15 +12,19 @@ import {
   REACT_LAZY_TYPE,
   getIteratorFn,
 } from 'shared/ReactSymbols';
+
 import {
   describeObjectForErrorMessage,
   isSimpleObject,
   objectName,
 } from 'shared/ReactSerializationErrors';
+
 import {writeTemporaryReference} from './ReactFlightTemporaryReferences.js';
 import isArray from 'shared/isArray';
+
 import getPrototypeOf from 'shared/getPrototypeOf';
 import {enableFlightObjectReferences} from 'shared/ReactFeatureFlags';
+
 import {
   checkEvalAvailabilityOnceDev,
   usedWithSSR,

@@ -10,9 +10,12 @@ import {
   flushSyncWork,
   scheduleUpdateOnFiber,
 } from './ReactFiberWorkLoop.js';
+
 import {enqueueConcurrentRenderForLane} from './ReactFiberConcurrentUpdates.js';
 import {updateContainerSync} from './ReactFiberReconciler.js';
+
 import {emptyContextObject} from './ReactFiberLegacyContext.js';
+
 import {SyncLane} from './ReactFiberLane.js';
 import {
   ClassComponent,

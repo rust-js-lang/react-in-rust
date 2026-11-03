@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 
 // Since the "not pending" value is always the same, we can reuse the
@@ -52,6 +53,7 @@ export function useFormState(action, initialState, permalink) {
 }
 
 export function requestFormReset(form) {
-  ReactDOMSharedInternals.d.r(form /* requestFormReset */);
+  ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */
+    .r(/* requestFormReset */ form);
 }
 //# sourceMappingURL=ReactDOMFormActions.js.map

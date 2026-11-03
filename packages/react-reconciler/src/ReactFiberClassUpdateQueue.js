@@ -97,25 +97,30 @@ import {
   enterDisallowedContextReadInDEV,
   exitDisallowedContextReadInDEV,
 } from './ReactFiberNewContext.js';
+
 import {
   Callback,
   DidCapture,
   ShouldCapture,
   Visibility,
 } from './ReactFiberFlags.js';
+
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {StrictLegacyMode} from './ReactTypeOfMode.js';
+
 import {
   getWorkInProgressRootRenderLanes,
   isUnsafeClassRenderPhaseUpdate,
   markSkippedUpdateLanes,
 } from './ReactFiberWorkLoop.js';
+
 import {
   enqueueConcurrentClassUpdate,
   unsafe_markUpdateLaneFromFiberToRoot,
 } from './ReactFiberConcurrentUpdates.js';
 import {setIsStrictModeForDevtools} from './ReactFiberDevToolsHook.js';
 import assign from 'shared/assign';
+
 import {
   peekEntangledActionLane,
   peekEntangledActionThenable,

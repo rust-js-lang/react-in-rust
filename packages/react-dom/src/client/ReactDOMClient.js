@@ -6,13 +6,16 @@
 // LICENSE file in the root directory of this source tree.
 
 export {createRoot, hydrateRoot} from './ReactDOMRoot.js';
+
 import {
   findHostInstance,
   injectIntoDevTools,
 } from 'react-reconciler/src/ReactFiberReconciler';
 import {canUseDOM} from 'shared/ExecutionEnvironment';
 export {default as version} from 'shared/ReactVersion';
+
 import Internals from 'shared/ReactDOMSharedInternals';
+
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
 
 ensureCorrectIsomorphicReactVersion();

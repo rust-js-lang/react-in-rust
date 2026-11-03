@@ -22,6 +22,7 @@ import {
   NormalPriority,
   UserBlockingPriority,
 } from '../SchedulerPriorities.js';
+
 import {
   markSchedulerSuspended,
   markSchedulerUnsuspended,
@@ -34,14 +35,6 @@ import {
   startLoggingProfilingEvents,
   stopLoggingProfilingEvents,
 } from '../SchedulerProfiling.js';
-export {
-  IdlePriority as unstable_IdlePriority,
-  ImmediatePriority as unstable_ImmediatePriority,
-  LowPriority as unstable_LowPriority,
-  NormalPriority as unstable_NormalPriority,
-  UserBlockingPriority as unstable_UserBlockingPriority,
-} from '../SchedulerPriorities.js';
-import {$withBorrow, $withBorrowMut} from '@rust-js/runtime';
 
 let getCurrentTime;
 if (typeof performance === 'object' && typeof performance.now === 'function') {
@@ -543,6 +536,15 @@ function cancelHostTimeout() {
   }
   taskTimeoutId = undefined;
 }
+
+export {
+  IdlePriority as unstable_IdlePriority,
+  ImmediatePriority as unstable_ImmediatePriority,
+  LowPriority as unstable_LowPriority,
+  NormalPriority as unstable_NormalPriority,
+  UserBlockingPriority as unstable_UserBlockingPriority,
+} from '../SchedulerPriorities.js';
+import {$withBorrow, $withBorrowMut} from '@rust-js/runtime';
 
 export const unstable_Profiling = enableProfiling
   ? {

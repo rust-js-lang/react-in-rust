@@ -6,14 +6,19 @@
 // LICENSE file in the root directory of this source tree.
 
 import {canUseDOM} from 'shared/ExecutionEnvironment';
+
 import {SyntheticEvent} from '../SyntheticEvent.js';
+
 import isTextInputElement from '../isTextInputElement.js';
 import shallowEqual from 'shared/shallowEqual';
+
 import {registerTwoPhaseEvent} from '../EventRegistry.js';
 import getActiveElement from '../../client/getActiveElement.js';
 import {getNodeFromInstance} from '../../client/ReactDOMComponentTree.js';
 import {hasSelectionCapabilities} from '../../client/ReactInputSelection.js';
+
 import {DOCUMENT_NODE} from '../../client/HTMLNodeType.js';
+
 import {accumulateTwoPhaseListeners} from '../DOMPluginEventSystem.js';
 import {$unwrap} from '@rust-js/runtime';
 

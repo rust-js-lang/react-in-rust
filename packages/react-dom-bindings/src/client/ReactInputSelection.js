@@ -7,6 +7,7 @@
 
 import getActiveElement from './getActiveElement.js';
 import {getOffsets, setOffsets} from './ReactDOMSelection.js';
+
 import {ELEMENT_NODE, TEXT_NODE} from './HTMLNodeType.js';
 import {$some, $someValue, $unwrap} from '@rust-js/runtime';
 

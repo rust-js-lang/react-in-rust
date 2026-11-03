@@ -8,6 +8,7 @@
 // eslint-disable react-internal/no-production-logging
 
 import {SuspenseComponent} from './ReactWorkTags.js';
+
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {
   getGroupNameOfHighestPriorityLane,
@@ -21,6 +22,7 @@ import {
   addObjectToProperties,
   addValueToProperties,
 } from 'shared/ReactPerformanceTrackProperties';
+
 import {
   enableGestureTransition,
   enablePerformanceIssueReporting,

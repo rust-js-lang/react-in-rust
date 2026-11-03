@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {registerTwoPhaseEvent} from './EventRegistry.js';
+
 import {
   ANIMATION_CANCEL,
   ANIMATION_END,

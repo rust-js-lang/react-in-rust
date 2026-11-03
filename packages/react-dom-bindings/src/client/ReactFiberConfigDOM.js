@@ -8,15 +8,19 @@
 import {NotPending} from '../shared/ReactDOMFormActions.js';
 import {setSrcObject} from './ReactDOMSrcObject.js';
 import {getCurrentRootHostContainer} from 'react-reconciler/src/ReactFiberHostContext';
+
 import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
 import hasOwnProperty from 'shared/hasOwnProperty';
+
 import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
 import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+
 export {
   getCurrentUpdatePriority,
   resolveUpdatePriority,
   setCurrentUpdatePriority,
 } from './ReactDOMUpdatePriority.js';
+
 import {
   clearPendingLoadOnNode,
   detachDeletedInstance,
@@ -34,6 +38,7 @@ import {
   precacheFiberNode,
   updateFiberProps,
 } from './ReactDOMComponentTree.js';
+
 import {
   fiberIsPortaledIntoHost,
   getFragmentInstanceOrTextInstanceSiblings,
@@ -48,8 +53,11 @@ import {
   traverseFragmentInstancesAndTextInstances,
   traverseFragmentInstancesAndTextInstancesDeeply,
 } from 'react-reconciler/src/ReactFiberTreeReflection';
+
 import {compareDocumentPositionForEmptyFragment} from 'shared/ReactDOMFragmentRefShared';
+
 export {detachDeletedInstance} from './ReactDOMComponentTree.js';
+
 import {hasRole} from './DOMAccessibilityRoles.js';
 import {
   clearClickListener,
@@ -65,6 +73,7 @@ import {
 } from './ReactDOMComponent.js';
 import {hydrateInput} from './ReactDOMInput.js';
 import {hydrateTextarea} from './ReactDOMTextarea.js';
+
 import {hydrateSelect} from './ReactDOMSelect.js';
 import {
   getSelectionInformation,
@@ -76,10 +85,12 @@ import {
   validateDOMNesting,
   validateTextNesting,
 } from './validateDOMNesting.js';
+
 import {
   isEnabled as ReactBrowserEventEmitterIsEnabled,
   setEnabled as ReactBrowserEventEmitterSetEnabled,
 } from '../events/ReactDOMEventListener.js';
+
 import {MATH_NAMESPACE, SVG_NAMESPACE} from './DOMNamespaces.js';
 import {
   COMMENT_NODE,
@@ -105,47 +116,28 @@ import {
   enableSuspenseyImages,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
+
 import {
   HostComponent,
   HostHoistable,
   HostSingleton,
   HostText,
 } from 'react-reconciler/src/ReactWorkTags';
+
 import {listenToAllSupportedEvents} from '../events/DOMPluginEventSystem.js';
 import {validateLinkPropsForStyleResource} from '../shared/ReactDOMResourceValidation.js';
+
 import escapeSelectorAttributeValueInsideDoubleQuotes from './escapeSelectorAttributeValueInsideDoubleQuotes.js';
 import {flushSyncWork as flushSyncWorkOnAllRoots} from 'react-reconciler/src/ReactFiberWorkLoop';
+
 import {requestFormReset as requestFormResetOnFiber} from 'react-reconciler/src/ReactFiberHooks';
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
-export {default as rendererVersion} from 'shared/ReactVersion';
-import noop from 'shared/noop';
-import estimateBandwidth from './estimateBandwidth.js';
-export {
-  supportsPersistence,
-  cloneInstance,
-  createContainerChildSet,
-  appendChildToContainerChildSet,
-  finalizeContainerChildren,
-  replaceContainerChildren,
-  cloneHiddenInstance,
-  cloneHiddenTextInstance,
-} from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
 
-export {getClosestInstanceFromNode as getInstanceFromNode} from './ReactDOMComponentTree.js';
-import {
-  $borrow,
-  $borrowMut,
-  $extend,
-  $index,
-  $lazyRange,
-  $position,
-  $removeAt,
-  $retain,
-  $truncate,
-  $unborrow,
-  $unwrap,
-  $withBorrowMut,
-} from '@rust-js/runtime';
+export {default as rendererVersion} from 'shared/ReactVersion';
+
+import noop from 'shared/noop';
+
+import estimateBandwidth from './estimateBandwidth.js';
 
 export const rendererPackageName = 'react-dom';
 export const extraDevToolsConfig = null;
@@ -172,6 +164,17 @@ const STYLE = 'style';
 export const HostContextNamespaceNone = 0;
 const HostContextNamespaceSvg = 1;
 const HostContextNamespaceMath = 2;
+
+export {
+  supportsPersistence,
+  cloneInstance,
+  createContainerChildSet,
+  appendChildToContainerChildSet,
+  finalizeContainerChildren,
+  replaceContainerChildren,
+  cloneHiddenInstance,
+  cloneHiddenTextInstance,
+} from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
 
 let eventsEnabled = null;
 let selectionInformation = null;
@@ -716,6 +719,22 @@ const localRequestAnimationFrame =
           });
         }
       : undefined;
+
+export {getClosestInstanceFromNode as getInstanceFromNode} from './ReactDOMComponentTree.js';
+import {
+  $borrow,
+  $borrowMut,
+  $extend,
+  $index,
+  $lazyRange,
+  $position,
+  $removeAt,
+  $retain,
+  $truncate,
+  $unborrow,
+  $unwrap,
+  $withBorrowMut,
+} from '@rust-js/runtime';
 
 export function preparePortalMount(portalInstance) {
   listenToAllSupportedEvents(portalInstance);
@@ -4194,7 +4213,7 @@ export function diffHydratedPropsForDevWarnings(
   props,
   hostContext,
 ) {
-  return diffHydratedProperties(instance, type, props, hostContext) ?? null;
+  return diffHydratedProperties(instance, type, props, hostContext);
 }
 
 export function validateHydratableTextInstance(text, hostContext) {
@@ -4230,7 +4249,7 @@ export function diffHydratedTextForDevWarnings(
   parentProps,
 ) {
   if (parentProps == null || parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
-    return diffHydratedText(textInstance, text) ?? null;
+    return diffHydratedText(textInstance, text);
   }
   return null;
 }

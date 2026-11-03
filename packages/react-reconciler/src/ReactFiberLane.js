@@ -17,7 +17,9 @@ import {
   syncLaneExpirationMs,
   transitionLaneExpirationMs,
 } from 'shared/ReactFeatureFlags';
+
 import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
+
 import {clz32} from './clz32.js';
 import {LegacyRoot} from './ReactRootTags.js';
 import {$at, $index} from '@rust-js/runtime';

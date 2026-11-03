@@ -12,8 +12,11 @@ import {
   getEventHandlerListeners,
   setEventHandlerListeners,
 } from './ReactDOMComponentTree.js';
+
 import {ELEMENT_NODE} from './HTMLNodeType.js';
+
 import {listenToNativeEventForNonManagedEventTarget} from '../events/DOMPluginEventSystem.js';
+
 import {
   enableCreateEventHandleAPI,
   enableScopeAPI,

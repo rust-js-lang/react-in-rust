@@ -11,6 +11,7 @@ import {
   supportsResources,
   supportsSingletons,
 } from './ReactFiberConfig.js';
+
 import {
   disableLegacyMode,
   enableLegacyHidden,
@@ -21,6 +22,7 @@ import {
   enableTransitionTracing,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
+
 import {NoFlags, Placement, StaticMask} from './ReactFiberFlags.js';
 import {ConcurrentRoot} from './ReactRootTags.js';
 import {
@@ -52,8 +54,11 @@ import {
   TracingMarkerComponent,
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
+
 import {getComponentNameFromOwner} from './getComponentNameFromFiber.js';
+
 import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
+
 import {resolveTypeForHotReloading} from './ReactFiberHotReloading.js';
 import {NoLanes} from './ReactFiberLane.js';
 import {
@@ -82,9 +87,12 @@ import {
   REACT_TRACING_MARKER_TYPE,
   REACT_VIEW_TRANSITION_TYPE,
 } from 'shared/ReactSymbols';
+
 import {TransitionTracingMarker} from './ReactFiberTracingMarkerComponent.js';
+
 import {getHostContext} from './ReactFiberHostContext.js';
 import isArray from 'shared/isArray';
+
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import {
   $borrow,

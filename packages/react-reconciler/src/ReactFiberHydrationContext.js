@@ -12,8 +12,10 @@ import {
   HostSingleton,
   SuspenseComponent,
 } from './ReactWorkTags.js';
+
 import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
 import {createFiberFromDehydratedFragment} from './ReactFiber.js';
+
 import {
   canHydrateActivityInstance,
   canHydrateFormStateMarker,
@@ -45,14 +47,17 @@ import {
   validateHydratableInstance,
   validateHydratableTextInstance,
 } from './ReactFiberConfig.js';
+
 import {OffscreenLane} from './ReactFiberLane.js';
 import {
   getSuspendedTreeContext,
   restoreSuspendedTreeContext,
 } from './ReactFiberTreeContext.js';
 import {queueRecoverableErrors} from './ReactFiberWorkLoop.js';
+
 import {getHostContext, getRootHostContainer} from './ReactFiberHostContext.js';
 import {describeDiff} from './ReactFiberHydrationDiffs.js';
+
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {$borrowMut, $index} from '@rust-js/runtime';
 

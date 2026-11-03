@@ -22,12 +22,14 @@ import {
   HostRoot,
   SuspenseComponent,
 } from 'react-reconciler/src/ReactWorkTags';
+
 import {IS_CAPTURE_PHASE} from './EventSystemFlags.js';
 import getEventTarget from './getEventTarget.js';
 import {
   getClosestInstanceFromNode,
   getInstanceFromNode,
 } from '../client/ReactDOMComponentTree.js';
+
 import {dispatchEventForPluginEventSystem} from './DOMPluginEventSystem.js';
 import {
   getCurrentUpdatePriority,
@@ -41,6 +43,7 @@ import {
   UserBlockingPriority as UserBlockingSchedulerPriority,
   getCurrentPriorityLevel as getCurrentSchedulerPriorityLevel,
 } from 'react-reconciler/src/Scheduler';
+
 import {
   ContinuousEventPriority,
   DefaultEventPriority,
@@ -48,6 +51,7 @@ import {
   IdleEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
 
 // TODO: can we stop exporting these?

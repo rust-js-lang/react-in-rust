@@ -24,6 +24,7 @@ import {
   REACT_PORTAL_TYPE,
   getIteratorFn,
 } from 'shared/ReactSymbols';
+
 import {
   Fragment,
   FunctionComponent,
@@ -37,6 +38,7 @@ import {
   enableAsyncIterableChildren,
   enableOptimisticKey,
 } from 'shared/ReactFeatureFlags';
+
 import {
   createFiberFromElement,
   createFiberFromFragment,
@@ -49,6 +51,7 @@ import {
 import {isCompatibleFamilyForHotReloading} from './ReactFiberHotReloading.js';
 import {getIsHydrating} from './ReactFiberHydrationContext.js';
 import {pushTreeFork} from './ReactFiberTreeContext.js';
+
 import {
   SuspenseActionException,
   SuspenseException,
@@ -56,7 +59,9 @@ import {
   resolveLazy,
   trackUsedThenable,
 } from './ReactFiberThenable.js';
+
 import {readContextDuringReconciliation} from './ReactFiberNewContext.js';
+
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {
   $borrow,

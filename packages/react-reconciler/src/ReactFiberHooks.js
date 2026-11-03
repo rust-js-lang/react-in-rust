@@ -11,7 +11,9 @@ import {
   getCurrentUpdatePriority,
   setCurrentUpdatePriority,
 } from './ReactFiberConfig.js';
+
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import {
   disableLegacyMode,
   enableGestureTransition,
@@ -26,12 +28,14 @@ import {
   REACT_MEMO_CACHE_SENTINEL,
   REACT_RECOVERABLE_TYPE,
 } from 'shared/ReactSymbols';
+
 import {
   ConcurrentMode,
   NoMode,
   StrictEffectsMode,
   StrictLegacyMode,
 } from './ReactTypeOfMode.js';
+
 import {
   DeferredLane,
   GestureLane,
@@ -51,12 +55,14 @@ import {
   mergeLanes,
   removeLanes,
 } from './ReactFiberLane.js';
+
 import {
   ContinuousEventPriority,
   higherEventPriority,
 } from './ReactEventPriorities.js';
 import {checkIfContextChanged, readContext} from './ReactFiberNewContext.js';
 import {CacheComponent, HostComponent, HostRoot} from './ReactWorkTags.js';
+
 import {
   FormReset,
   LayoutStatic as LayoutStaticEffect,
@@ -68,6 +74,7 @@ import {
   StoreConsistency,
   Update as UpdateEffect,
 } from './ReactFiberFlags.js';
+
 import {
   HasEffect as HookHasEffect,
   Insertion as HookInsertion,
@@ -75,6 +82,7 @@ import {
   NoFlags as HookNoFlags,
   Passive as HookPassive,
 } from './ReactHookEffectTags.js';
+
 import {
   getWorkInProgressRoot,
   getWorkInProgressRootRenderLanes,
@@ -84,9 +92,12 @@ import {
   requestUpdateLane,
   scheduleUpdateOnFiber,
 } from './ReactFiberWorkLoop.js';
+
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import is from 'shared/objectIs';
+
 import isArray from 'shared/isArray';
+
 import {
   checkIfWorkInProgressReceivedUpdate,
   markWorkInProgressReceivedUpdate,
@@ -95,6 +106,7 @@ import {
   getIsHydrating,
   tryToClaimNextHydratableFormMarkerInstance,
 } from './ReactFiberHydrationContext.js';
+
 import {
   markStateUpdateScheduled,
   setIsStrictModeForDevtools,
@@ -103,6 +115,7 @@ import {
   startHostActionTimer,
   startUpdateTimerByLane,
 } from './ReactProfilerTimer.js';
+
 import {createCache} from './ReactFiberCacheComponent.js';
 import {
   createUpdate as createLegacyQueueUpdate,
@@ -116,6 +129,7 @@ import {
 } from './ReactFiberConcurrentUpdates.js';
 import {getTreeId} from './ReactFiberTreeContext.js';
 import {now} from './Scheduler.js';
+
 import {
   SuspenseActionException,
   SuspenseException,
@@ -124,14 +138,17 @@ import {
   createThenableState,
   trackUsedThenable,
 } from './ReactFiberThenable.js';
+
 import {
   chainThenableValue,
   peekEntangledActionLane,
   peekEntangledActionThenable,
 } from './ReactFiberAsyncAction.js';
 import {requestTransitionLane} from './ReactFiberRootScheduler.js';
+
 import {isCurrentTreeHidden} from './ReactFiberHiddenContext.js';
 import {requestCurrentTransition} from './ReactFiberTransition.js';
+
 import {callComponentInDEV} from './ReactFiberCallUserSpace.js';
 import {scheduleGesture} from './ReactFiberGestureScheduler.js';
 import {$roomFor, $unwrap} from '@rust-js/runtime';
@@ -2020,11 +2037,11 @@ function runActionStateAction(actionQueue, node) {
       }
     }
   } else {
-    // The original dispatch was not part of a transition.
     try {
       const returnValue = action(prevState, payload);
       handleActionReturnValue(actionQueue, node, returnValue);
     } catch (error) {
+      // The original dispatch was not part of a transition.
       onActionError(actionQueue, node, error);
     }
   }
@@ -2813,7 +2830,6 @@ function startTransition(
   // share the same lane.
   ReactSharedInternals.T = currentTransition;
   dispatchOptimisticSetState(fiber, false, queue, pendingState);
-
   try {
     const returnValue = callback();
     const onStartTransitionFinish = ReactSharedInternals.S;

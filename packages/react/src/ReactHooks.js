@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {REACT_CONSUMER_TYPE} from 'shared/ReactSymbols';
+
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 function resolveDispatcher() {

@@ -6,7 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 import {SuspenseComponent, SuspenseListComponent} from './ReactWorkTags.js';
+
 import {DidCapture, NoFlags} from './ReactFiberFlags.js';
+
 import {
   isSuspenseInstanceFallback,
   isSuspenseInstancePending,

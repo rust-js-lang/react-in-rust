@@ -6,7 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 import * as React from 'react';
+
 import * as Scheduler from 'scheduler/unstable_mock';
+
 import {
   defaultOnCaughtError,
   defaultOnRecoverableError,
@@ -43,15 +45,15 @@ import {
 } from 'react-reconciler/src/ReactWorkTags';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 export {default as version} from 'shared/ReactVersion';
+
 import {checkPropStringCoercion} from 'shared/CheckStringCoercion';
+
 import {getPublicInstance} from './ReactFiberConfigTestHost.js';
 import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
 import {
   disableLegacyMode,
   enableReactTestRendererWarning,
 } from 'shared/ReactFeatureFlags';
-export * as _Scheduler from 'scheduler/unstable_mock';
-import {$index, $unwrap} from '@rust-js/runtime';
 
 function defaultOnDefaultTransitionIndicator() {}
 
@@ -575,6 +577,9 @@ function wrapFiber(fiber) {
 
 // Enable ReactTestRenderer to be used to test DevTools integration.
 injectIntoDevTools();
+
+export * as _Scheduler from 'scheduler/unstable_mock';
+import {$index, $unwrap} from '@rust-js/runtime';
 
 export function unstable_batchedUpdates(fn, a) {
   return batchedUpdates(fn, a);

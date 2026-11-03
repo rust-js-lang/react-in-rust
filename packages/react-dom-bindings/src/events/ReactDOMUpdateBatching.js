@@ -10,6 +10,7 @@ import {
   discreteUpdates as discreteUpdatesImpl,
   flushSyncWork,
 } from 'react-reconciler/src/ReactFiberWorkLoop';
+
 import {
   needsStateRestore,
   restoreStateIfNeeded,

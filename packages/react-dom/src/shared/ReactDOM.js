@@ -6,8 +6,10 @@
 // LICENSE file in the root directory of this source tree.
 
 export {default as version} from 'shared/ReactVersion';
+
 import {isValidContainer} from 'react-dom-bindings/src/client/ReactDOMContainer';
 import {createPortal as createPortalImpl} from 'react-reconciler/src/ReactPortal';
+
 export {flushSync} from './ReactDOMFlushSync.js';
 
 export {
@@ -18,7 +20,6 @@ export {
   preload,
   preloadModule,
 } from './ReactDOMFloat.js';
-
 export {
   requestFormReset,
   useFormState,

@@ -13,15 +13,19 @@ import {
   isGestureRender,
   isTransitionLane,
 } from './ReactFiberLane.js';
+
 import {resolveEventTimeStamp, resolveEventType} from './ReactFiberConfig.js';
+
 import {
   enableComponentPerformanceTrack,
   enableProfilerCommitHooks,
   enableProfilerNestedUpdatePhase,
   enableProfilerTimer,
 } from 'shared/ReactFeatureFlags';
+
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {isAlreadyRendering} from './ReactFiberWorkLoop.js';
+
 import * as Scheduler from 'scheduler';
 
 function noTask(name) {

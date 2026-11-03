@@ -41,6 +41,7 @@ import {
   TracingMarkerComponent,
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
+
 import {
   Callback,
   ChildDeletion,
@@ -78,8 +79,10 @@ import {
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
 import shallowEqual from 'shared/shallowEqual';
+
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
+
 import ReactStrictModeWarnings from './ReactStrictModeWarnings.js';
 import {
   REACT_CONTEXT_TYPE,
@@ -87,8 +90,10 @@ import {
   REACT_LAZY_TYPE,
   REACT_MEMO_TYPE,
 } from 'shared/ReactSymbols';
+
 import {setCurrentFiber} from './ReactCurrentFiber.js';
 import {resolveTypeForHotReloading} from './ReactFiberHotReloading.js';
+
 import {
   cloneChildFibers,
   mountChildFibers,
@@ -122,6 +127,7 @@ import {
   ProfileMode,
   StrictLegacyMode,
 } from './ReactTypeOfMode.js';
+
 import {
   HostTransitionContext,
   createHoistableInstance,
@@ -135,7 +141,9 @@ import {
   supportsResources,
   supportsSingletons,
 } from './ReactFiberConfig.js';
+
 import {shouldError, shouldSuspend} from './ReactFiberReconciler.js';
+
 import {
   getRootHostContainer,
   pushHostContainer,
@@ -155,12 +163,14 @@ import {
   setShallowSuspenseListContext,
   suspenseStackCursor,
 } from './ReactFiberSuspenseContext.js';
+
 import {
   isCurrentTreeHidden,
   pushHiddenContext,
   reuseHiddenContextOnStack,
 } from './ReactFiberHiddenContext.js';
 import {findFirstSuspended} from './ReactFiberSuspenseComponent.js';
+
 import {
   checkIfContextChanged,
   lazilyPropagateParentContextChanges,
@@ -171,6 +181,7 @@ import {
   readContext,
   scheduleContextWorkOnParentPath,
 } from './ReactFiberNewContext.js';
+
 import {
   bailoutHooks,
   checkDidRenderIdHook,
@@ -179,6 +190,7 @@ import {
   replaySuspendedComponentWithHooks,
 } from './ReactFiberHooks.js';
 import {stopProfilerTimerIfRunning} from './ReactProfilerTimer.js';
+
 import {
   getMaskedContext,
   getUnmaskedContext,
@@ -188,6 +200,7 @@ import {
   pushContextProvider as pushLegacyContextProvider,
   pushTopLevelContextObject,
 } from './ReactFiberLegacyContext.js';
+
 import {
   claimHydratableSingleton,
   claimNextHydratableActivityInstance,
@@ -202,6 +215,7 @@ import {
   tryToClaimNextHydratableTextInstance,
   warnIfHydrating,
 } from './ReactFiberHydrationContext.js';
+
 import {
   constructClassInstance,
   mountClassInstance,
@@ -209,6 +223,7 @@ import {
   resumeMountClassInstance,
   updateClassInstance,
 } from './ReactFiberClassComponent.js';
+
 import {
   createFiberFromFragment,
   createFiberFromOffscreen,
@@ -225,8 +240,11 @@ import {
   renderDidSuspendDelayIfPossible,
   scheduleUpdateOnFiber,
 } from './ReactFiberWorkLoop.js';
+
 import {enqueueConcurrentRenderForLane} from './ReactFiberConcurrentUpdates.js';
+
 import {CacheContext, pushCacheProvider} from './ReactFiberCacheComponent.js';
+
 import {
   createCapturedValueAtFiber,
   createCapturedValueFromError,
@@ -242,6 +260,7 @@ import {
   pushMaterializedTreeId,
   pushTreeId,
 } from './ReactFiberTreeContext.js';
+
 import {
   getOffscreenDeferredCache,
   getPendingTransitions,
@@ -250,12 +269,14 @@ import {
   pushTransition,
   requestCacheFromPool,
 } from './ReactFiberTransition.js';
+
 import {
   TransitionTracingMarker,
   getMarkerInstances,
   pushMarkerInstance,
   pushRootMarkerInstance,
 } from './ReactFiberTracingMarkerComponent.js';
+
 import {
   callComponentInDEV,
   callRenderInDEV,
@@ -2179,7 +2200,7 @@ function updateSuspenseOffscreenState(prevOffscreenState, renderLanes) {
   }
   return {
     baseLanes: mergeLanes(prevOffscreenState.baseLanes, renderLanes),
-    cachePool: cachePool ?? null,
+    cachePool,
   };
 }
 

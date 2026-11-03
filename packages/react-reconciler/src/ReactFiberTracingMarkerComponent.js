@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {enableTransitionTracing} from 'shared/ReactFeatureFlags';
+
 import {createCursor, pop, push} from './ReactFiberStack.js';
 import {getWorkInProgressTransitions} from './ReactFiberWorkLoop.js';
 import {$unwrap} from '@rust-js/runtime';

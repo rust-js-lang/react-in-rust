@@ -14,6 +14,7 @@ import {
   SHOULD_NOT_DEFER_CLICK_FOR_FB_SUPPORT_MODE,
   SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS,
 } from './EventSystemFlags.js';
+
 import {isReplayingEvent} from './CurrentReplayingEvent.js';
 import {
   HostComponent,
@@ -24,16 +25,21 @@ import {
   HostText,
   ScopeComponent,
 } from 'react-reconciler/src/ReactWorkTags';
+
 import {getLowestCommonAncestor} from 'react-reconciler/src/ReactFiberTreeReflection';
+
 import getEventTarget from './getEventTarget.js';
 import {
   getClosestInstanceFromNode,
   getEventHandlerListeners,
   getEventListenerSet,
 } from '../client/ReactDOMComponentTree.js';
+
 import {COMMENT_NODE, DOCUMENT_NODE} from '../client/HTMLNodeType.js';
 import {batchedUpdates} from './ReactDOMUpdateBatching.js';
+
 import getListener from './getListener.js';
+
 import {passiveBrowserEventsSupported} from './checkPassiveEvents.js';
 import {
   disableCommentsAsDOMContainers,
@@ -42,7 +48,9 @@ import {
   enableScopeAPI,
   enableScrollEndPolyfill,
 } from 'shared/ReactFeatureFlags';
+
 import {createEventListenerWrapperWithPriority} from './ReactDOMEventListener.js';
+
 import {
   addEventBubbleListener,
   addEventBubbleListenerWithPassiveFlag,
@@ -50,14 +58,17 @@ import {
   addEventCaptureListenerWithPassiveFlag,
   removeEventListener,
 } from './EventListener.js';
+
 import * as BeforeInputEventPlugin from './plugins/BeforeInputEventPlugin.js';
 import * as ChangeEventPlugin from './plugins/ChangeEventPlugin.js';
 import * as EnterLeaveEventPlugin from './plugins/EnterLeaveEventPlugin.js';
 import * as SelectEventPlugin from './plugins/SelectEventPlugin.js';
 import * as SimpleEventPlugin from './plugins/SimpleEventPlugin.js';
+
 import * as FormActionEventPlugin from './plugins/FormActionEventPlugin.js';
 import * as ScrollEndEventPlugin from './plugins/ScrollEndEventPlugin.js';
 import reportGlobalError from 'shared/reportGlobalError';
+
 import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
 
 // TODO: remove top-level side effect.

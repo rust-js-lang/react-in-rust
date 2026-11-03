@@ -8,9 +8,12 @@
 import {registerTwoPhaseEvent} from '../EventRegistry.js';
 import {SyntheticUIEvent} from '../SyntheticEvent.js';
 import {canUseDOM} from 'shared/ExecutionEnvironment';
+
 import isEventSupported from '../isEventSupported.js';
+
 import {IS_CAPTURE_PHASE} from '../EventSystemFlags.js';
 import {batchedUpdates} from '../ReactDOMUpdateBatching.js';
+
 import {
   accumulateSinglePhaseListeners,
   accumulateTwoPhaseListeners,
@@ -114,7 +117,7 @@ export function extractEvents(
     if (!isScrollEndEventSupported && inCapturePhase) {
       switch (domEventName) {
         case 'scroll':
-          if (nativeEventTarget != null) {
+          if (nativeEventTarget !== null) {
             debounceScrollEnd(targetInst, nativeEvent, nativeEventTarget);
           }
           break;
@@ -137,7 +140,7 @@ export function extractEvents(
     return;
   }
 
-  if (!isScrollEndEventSupported && nativeEventTarget != null) {
+  if (!isScrollEndEventSupported && nativeEventTarget !== null) {
     const existingTimer = getScrollEndTimer(nativeEventTarget);
     if (existingTimer != null) {
       // If we do get a native scrollend event fired, we cancel the polyfill.

@@ -11,6 +11,7 @@
 // environment.
 
 import ReactFiberReconciler from 'react-reconciler';
+
 import createReactNoop from './createReactNoop.js';
 
 export const {

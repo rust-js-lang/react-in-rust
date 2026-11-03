@@ -6,7 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+
 import {popProvider, pushProvider} from './ReactFiberNewContext.js';
+
 import * as Scheduler from 'scheduler';
 
 function AbortControllerShim() {

@@ -434,8 +434,13 @@ where upstream's `const boundPromise` is one variable both read.
 **Pending in rust-js from Batch 58** (none changes a result): rd637, the
 import header's blank lines, which aren't the Rust's.
 
-**Pending in rust-js from Batch 57** (none changes a result for React's
-own values): rd632, five strict null tests loose again. rd621 is fixed
+**Fixed in rust-js from Batch 57**: rd632 (rust-js 542398380, 31a532910,
+Batch 60), the five nullable parameters are strict `T | null` again, their
+tests `!== null` and no `?? null` (cachePool, `return next`,
+diffHydratedProperties/diffHydratedText, thenableState, modelRoot,
+promiseRef). rd641 (406943eee, Batch 60): encodeReply's `/* We don't use
+URLSearchParams yet but maybe */` prints after its parameters, as
+upstream's. rd621 is fixed
 (rust-js 51d56e765, Batch 59): the DEV `then`'s callbacks write
 `wrapperPromise._debugInfo` as upstream's do.
 
@@ -1745,8 +1750,7 @@ The port is split between sessions by package:
   resolves with `ReplyBody`, an untagged `Text(String) | Form(&FormData)`,
   upstream's `string | FormData`, because a third variant no code builds
   prints an unreachable branch, `else if (body instanceof FormData) ..
-  else throw ..`, in encodeFormData; rd641, encodeReply's `/* We don't use
-  URLSearchParams yet but maybe */` after its return type is lost; rd642,
+  else throw ..`, in encodeFormData; rd642,
   the `.d.ts`'s optional `nullable` fields and its missing `export type
   {TemporaryReferenceSet}`.
   **Accepted by the user** (2026-11-02, by name): rd543, a tuple's

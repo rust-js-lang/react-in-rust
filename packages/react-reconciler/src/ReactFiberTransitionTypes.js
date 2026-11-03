@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {enableViewTransition} from 'shared/ReactFeatureFlags';
+
 import {includesTransitionLane} from './ReactFiberLane.js';
 
 export function queueTransitionTypes(root, transitionTypes) {

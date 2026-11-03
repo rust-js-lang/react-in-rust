@@ -15,6 +15,7 @@ import {
   enableProfilerTimer,
   enableYieldingBeforePassive,
 } from 'shared/ReactFeatureFlags';
+
 import {
   DefaultLane,
   NoLane,
@@ -54,6 +55,7 @@ import {
   now,
   scheduleCallback as Scheduler_scheduleCallback,
 } from './Scheduler.js';
+
 import {
   ContinuousEventPriority,
   DefaultEventPriority,
@@ -61,6 +63,7 @@ import {
   IdleEventPriority,
   lanesToEventPriority,
 } from './ReactEventPriorities.js';
+
 import {
   noTimeout,
   scheduleMicrotask,
@@ -68,11 +71,14 @@ import {
   supportsMicrotasks,
   trackSchedulerEvent,
 } from './ReactFiberConfig.js';
+
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import {
   resetNestedUpdateFlag,
   syncNestedUpdateFlag,
 } from './ReactProfilerTimer.js';
+
 import {
   hasOngoingIsomorphicIndicator,
   markIsomorphicIndicatorHandled,

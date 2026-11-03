@@ -311,7 +311,7 @@ pub fn hydrate_root(
     // For now we reuse the whole bag of options since they contain
     // the hydration callbacks.
     let hydration_callbacks = match options {
-        Some(options) => unsafe { js::cast(Some(js::unknown(options))) },
+        Some(options) => Some(unsafe { js::cast(Some(js::unknown(options))) }),
         None => js::null(),
     };
 

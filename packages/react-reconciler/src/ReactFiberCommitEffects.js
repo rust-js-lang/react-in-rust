@@ -13,6 +13,7 @@ import {
   enableSchedulingProfiler,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
+
 import {
   ClassComponent,
   Fragment,
@@ -21,7 +22,9 @@ import {
   HostSingleton,
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
+
 import {NoFlags} from './ReactFiberFlags.js';
+
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {resolveClassComponentProps} from './ReactFiberClassComponent.js';
 import {
@@ -30,15 +33,18 @@ import {
   startEffectTimer,
 } from './ReactProfilerTimer.js';
 import {NoMode, ProfileMode} from './ReactTypeOfMode.js';
+
 import {
   commitCallbacks,
   commitHiddenCallbacks,
 } from './ReactFiberClassUpdateQueue.js';
+
 import {
   createFragmentInstance,
   createViewTransitionInstance,
   getPublicInstance,
 } from './ReactFiberConfig.js';
+
 import {
   captureCommitPhaseError,
   setIsRunningInsertionEffect,
@@ -49,6 +55,7 @@ import {
   NoFlags as NoHookEffect,
   Passive as HookPassive,
 } from './ReactHookEffectTags.js';
+
 import {didWarnAboutReassigningProps} from './ReactFiberBeginWork.js';
 import {
   markComponentLayoutEffectMountStarted,
@@ -60,6 +67,7 @@ import {
   markComponentPassiveEffectUnmountStarted,
   markComponentPassiveEffectUnmountStopped,
 } from './ReactFiberDevToolsHook.js';
+
 import {
   callComponentDidMountInDEV,
   callComponentDidUpdateInDEV,
@@ -67,6 +75,7 @@ import {
   callCreateInDEV,
   callDestroyInDEV,
 } from './ReactFiberCallUserSpace.js';
+
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {$unwrap} from '@rust-js/runtime';
 
@@ -546,10 +555,6 @@ export function commitClassCallbacks(finishedWork) {
         );
       }
     }
-
-    // We could update instance props and state here,
-    // but instead we rely on them being set during last render.
-    // TODO: revisit this when we implement resuming.
     try {
       if (__DEV__) {
         runWithFiberInDEV(finishedWork, commitCallbacks, updateQueue, instance);
@@ -557,6 +562,9 @@ export function commitClassCallbacks(finishedWork) {
         commitCallbacks(updateQueue, instance);
       }
     } catch (error) {
+      // We could update instance props and state here,
+      // but instead we rely on them being set during last render.
+      // TODO: revisit this when we implement resuming.
       const returnFiber = finishedWork.return;
       captureCommitPhaseError(finishedWork, returnFiber, error);
     }

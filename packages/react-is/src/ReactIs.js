@@ -23,6 +23,7 @@ import {
   REACT_TRACING_MARKER_TYPE,
   REACT_VIEW_TRANSITION_TYPE,
 } from 'shared/ReactSymbols';
+
 import {
   enableLegacyHidden,
   enableScopeAPI,

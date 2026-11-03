@@ -7,8 +7,10 @@
 
 // TODO: direct imports like some-package/src/* are bad. Fix me.
 import {getCurrentFiberOwnerNameInDevOrNull} from 'react-reconciler/src/ReactCurrentFiber';
+
 import {getToStringValue, toString} from './ToStringValue.js';
 import isArray from 'shared/isArray';
+
 import {queueChangeEvent} from '../events/ReactDOMEventReplaying.js';
 
 let didWarnValueDefaultValue = false;

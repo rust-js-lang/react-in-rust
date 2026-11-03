@@ -16,18 +16,21 @@ export {
 
 export {Component, PureComponent} from './ReactBaseClasses.js';
 export {createRef} from './ReactCreateRef.js';
+
 import {count, forEach, map, only, toArray} from './ReactChildren.js';
 export {
   cloneElement,
   createElement,
   isValidElement,
 } from './jsx/ReactJSXElement.js';
+
 export {createContext} from './ReactContext.js';
 export {lazy} from './ReactLazy.js';
+
 export {forwardRef} from './ReactForwardRef.js';
 export {memo} from './ReactMemo.js';
-export {cache, cacheSignal} from './ReactCacheClient.js';
 
+export {cache, cacheSignal} from './ReactCacheClient.js';
 export {
   useActionState,
   useCallback,
@@ -45,10 +48,9 @@ export {
   useState,
   useSyncExternalStore,
 } from './ReactHooks.js';
-
 export {default as __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE} from './ReactSharedInternalsClient.js';
-export * as __COMPILER_RUNTIME from './ReactCompilerRuntime.js';
 
+export * as __COMPILER_RUNTIME from './ReactCompilerRuntime.js';
 // Concurrent Mode
 export {
   getCacheForType as unstable_getCacheForType,
@@ -57,15 +59,12 @@ export {
   useDeferredValue,
   useTransition,
 } from './ReactHooks.js';
-
 export {startTransition} from './ReactStartTransition.js';
-
 export {
   REACT_ACTIVITY_TYPE as Activity,
   REACT_LEGACY_HIDDEN_TYPE as unstable_LegacyHidden,
   REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList,
 } from 'shared/ReactSymbols';
-
 // enableScopeAPI
 export {REACT_SCOPE_TYPE as unstable_Scope} from 'shared/ReactSymbols';
 // enableTransitionTracing

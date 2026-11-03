@@ -7,14 +7,18 @@
 
 import {registerTwoPhaseEvent} from '../EventRegistry.js';
 import {SyntheticEvent} from '../SyntheticEvent.js';
+
 import isTextInputElement from '../isTextInputElement.js';
 import {canUseDOM} from 'shared/ExecutionEnvironment';
+
 import getEventTarget from '../getEventTarget.js';
 import isEventSupported from '../isEventSupported.js';
 import {getNodeFromInstance} from '../../client/ReactDOMComponentTree.js';
+
 import {updateValueIfChanged} from '../../client/inputValueTracking.js';
 import {enqueueStateRestore} from '../ReactDOMControlledComponent.js';
 import {batchedUpdates} from '../ReactDOMUpdateBatching.js';
+
 import {
   accumulateTwoPhaseListeners,
   processDispatchQueue,

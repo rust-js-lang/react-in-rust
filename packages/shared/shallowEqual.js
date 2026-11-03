@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import is from './objectIs.js';
+
 import hasOwnProperty from './hasOwnProperty.js';
 
 /**

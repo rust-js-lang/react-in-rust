@@ -6,7 +6,9 @@
 // LICENSE file in the root directory of this source tree.
 
 import {enableSuspenseAvoidThisFallback} from 'shared/ReactFeatureFlags';
+
 import {createCursor, pop, push} from './ReactFiberStack.js';
+
 import {isCurrentTreeHidden} from './ReactFiberHiddenContext.js';
 import {OffscreenComponent} from './ReactWorkTags.js';
 

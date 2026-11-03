@@ -6,11 +6,13 @@
 // LICENSE file in the root directory of this source tree.
 
 import {LegacyRoot} from './ReactRootTags.js';
+
 import {
   findCurrentHostFiber,
   findCurrentHostFiberWithNoPortals,
 } from './ReactFiberTreeReflection.js';
 import {get as getInstance} from 'shared/ReactInstanceMap';
+
 import {
   ActivityComponent,
   ClassComponent,
@@ -19,18 +21,21 @@ import {
   HostSingleton,
   SuspenseComponent,
 } from './ReactWorkTags.js';
+
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {
   disableLegacyMode,
   enableSchedulingProfiler,
 } from 'shared/ReactFeatureFlags';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import {
   extraDevToolsConfig,
   getPublicInstance,
   rendererPackageName,
   rendererVersion,
 } from './ReactFiberConfig.js';
+
 import {
   emptyContextObject,
   findCurrentUnmaskedContext,
@@ -39,6 +44,7 @@ import {
 } from './ReactFiberLegacyContext.js';
 import {createFiberRoot} from './ReactFiberRoot.js';
 import {isRootDehydrated} from './ReactFiberShellHydration.js';
+
 import {
   injectInternals,
   injectProfilingHooks,
@@ -46,6 +52,7 @@ import {
   onScheduleRoot,
 } from './ReactFiberDevToolsHook.js';
 import {startUpdateTimerByLane} from './ReactProfilerTimer.js';
+
 import {
   flushPendingEffects,
   flushRoot,
@@ -63,18 +70,22 @@ export {
   flushSyncWork,
   isAlreadyRendering,
 } from './ReactFiberWorkLoop.js';
+
 import {enqueueConcurrentRenderForLane} from './ReactFiberConcurrentUpdates.js';
+
 import {
   createUpdate,
   enqueueUpdate,
   entangleTransitions,
 } from './ReactFiberClassUpdateQueue.js';
+
 import {
   current as ReactCurrentFiberCurrent,
   isRendering as ReactCurrentFiberIsRendering,
   runWithFiberInDEV,
 } from './ReactCurrentFiber.js';
 import {StrictLegacyMode} from './ReactTypeOfMode.js';
+
 import {
   SelectiveHydrationLane,
   SyncLane,
@@ -85,14 +96,15 @@ import {
   getLabelForLane,
   higherPriorityLane,
 } from './ReactFiberLane.js';
+
 import {
   scheduleRefresh,
   scheduleRoot,
   setRefreshHandler,
 } from './ReactFiberHotReloading.js';
 import ReactVersion from 'shared/ReactVersion';
-export {createPortal} from './ReactPortal.js';
 
+export {createPortal} from './ReactPortal.js';
 export {
   createComponentSelector,
   createHasPseudoClassSelector,
@@ -113,6 +125,7 @@ export {
   defaultOnRecoverableError,
   defaultOnUncaughtError,
 } from './ReactFiberErrorLogger.js';
+
 import {registerDefaultIndicator} from './ReactFiberAsyncAction.js';
 import {$index, $unwrap} from '@rust-js/runtime';
 

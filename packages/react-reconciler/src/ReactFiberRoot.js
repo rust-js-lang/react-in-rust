@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {noTimeout} from './ReactFiberConfig.js';
+
 import {createHostRootFiber} from './ReactFiber.js';
 import {
   NoLane,
@@ -25,8 +26,10 @@ import {
   enableUpdaterTracking,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
+
 import {initializeUpdateQueue} from './ReactFiberClassUpdateQueue.js';
 import {ConcurrentRoot, LegacyRoot} from './ReactRootTags.js';
+
 import {createCache, retainCache} from './ReactFiberCacheComponent.js';
 
 export function createFiberRoot(

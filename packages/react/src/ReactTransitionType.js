@@ -6,10 +6,12 @@
 // LICENSE file in the root directory of this source tree.
 
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+
 import {
   enableGestureTransition,
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
+
 import {startTransition} from './ReactStartTransition.js';
 
 export function addTransitionType(type) {

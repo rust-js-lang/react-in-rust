@@ -6,19 +6,23 @@
 // LICENSE file in the root directory of this source tree.
 
 import {registerDirectEvent} from '../EventRegistry.js';
+
 import {isReplayingEvent} from '../CurrentReplayingEvent.js';
 import {SyntheticMouseEvent, SyntheticPointerEvent} from '../SyntheticEvent.js';
+
 import {
   getClosestInstanceFromNode,
   getNodeFromInstance,
   isContainerMarkedAsRoot,
 } from '../../client/ReactDOMComponentTree.js';
+
 import {accumulateEnterLeaveTwoPhaseListeners} from '../DOMPluginEventSystem.js';
 import {
   HostComponent,
   HostSingleton,
   HostText,
 } from 'react-reconciler/src/ReactWorkTags';
+
 import {getNearestMountedFiber} from 'react-reconciler/src/ReactFiberTreeReflection';
 
 export function registerEvents() {

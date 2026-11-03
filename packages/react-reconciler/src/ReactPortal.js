@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {REACT_OPTIMISTIC_KEY, REACT_PORTAL_TYPE} from 'shared/ReactSymbols';
+
 import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
 
 export function createPortal(

@@ -11,6 +11,7 @@ import {
   enableFlightWeakThenables,
   enableProfilerTimer,
 } from 'shared/ReactFeatureFlags';
+
 import {
   bindToConsole,
   checkEvalAvailabilityOnceDev,
@@ -27,12 +28,14 @@ import {
   resolveClientReference,
   resolveServerReference,
 } from './ReactFlightClientConfig.js';
+
 import {
   createBoundServerReference,
   createServerObjectReference,
   registerBoundServerReference,
 } from './ReactFlightReplyClient.js';
 import {readTemporaryReference} from './ReactFlightTemporaryReferences.js';
+
 import {
   logComponentAborted,
   logComponentAwait,
@@ -51,14 +54,20 @@ import {
   REACT_FRAGMENT_TYPE,
   REACT_LAZY_TYPE,
 } from 'shared/ReactSymbols';
+
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import {getOwnerStackByComponentInfoInDev} from 'shared/ReactComponentInfoStack';
+
 import hasOwnProperty from 'shared/hasOwnProperty';
+
 import getPrototypeOf from 'shared/getPrototypeOf';
+
 import {injectInternals} from './ReactFlightClientDevToolsHook.js';
 import {OMITTED_PROP_ERROR} from 'shared/ReactFlightPropertyAccess';
 import ReactVersion from 'shared/ReactVersion';
+
 import isArray from 'shared/isArray';
+
 import * as React from 'react';
 import {
   $at,

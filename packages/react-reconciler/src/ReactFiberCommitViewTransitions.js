@@ -10,6 +10,7 @@ import {
   OffscreenComponent,
   ViewTransitionComponent,
 } from './ReactWorkTags.js';
+
 import {
   AffectedParentLayout,
   NoFlags,
@@ -18,6 +19,7 @@ import {
   ViewTransitionStatic,
   ViewTransitionStaticParent,
 } from './ReactFiberFlags.js';
+
 import {
   applyViewTransitionName,
   hasInstanceAffectedParent,
@@ -28,10 +30,12 @@ import {
   supportsMutation,
   wasInstanceInViewport,
 } from './ReactFiberConfig.js';
+
 import {
   scheduleGestureTransitionEvent,
   scheduleViewTransitionEvent,
 } from './ReactFiberWorkLoop.js';
+
 import {
   getViewTransitionClassName,
   getViewTransitionName,
@@ -1007,9 +1011,11 @@ export function measureUpdateViewTransition(current, finishedWork, gesture) {
   // and the measurements end up unchanged, we should restore it to not animate.
   let previousMeasurements;
   if (gesture) {
-    previousMeasurements = state.clones?.map(instance =>
-      measureClonedInstance(instance),
-    );
+    const clones = state.clones;
+    previousMeasurements =
+      clones == null
+        ? undefined
+        : clones.map(instance => measureClonedInstance(instance));
   } else {
     previousMeasurements = oldFiber.memoizedState;
     oldFiber.memoizedState = null; // Clear it. We won't need it anymore.
@@ -1044,9 +1050,11 @@ export function measureNestedViewTransitions(changedParent, gesture) {
       const className = getViewTransitionClassName(props.default, props.update);
       let previousMeasurements;
       if (gesture) {
-        previousMeasurements = state.clones?.map(instance =>
-          measureClonedInstance(instance),
-        );
+        const clones = state.clones;
+        previousMeasurements =
+          clones == null
+            ? undefined
+            : clones.map(instance => measureClonedInstance(instance));
       } else {
         previousMeasurements = child.memoizedState;
         child.memoizedState = null; // Clear it. We won't need it anymore.

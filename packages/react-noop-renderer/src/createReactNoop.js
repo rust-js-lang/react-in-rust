@@ -17,11 +17,17 @@ import {
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
+
 import * as Scheduler from 'scheduler/unstable_mock';
+
 import {REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE} from 'shared/ReactSymbols';
+
 import isArray from 'shared/isArray';
+
 import {checkPropStringCoercion} from 'shared/CheckStringCoercion';
+
 import * as DefaultConfig from './ReactFiberConfigNoop.js';
+
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 import ReactVersion from 'shared/ReactVersion';
@@ -163,10 +169,9 @@ function createReactNoop(reconciler, useMutation) {
       type,
       parent: instance.parent,
       children: keepChildren ? instance.children : (children ?? []),
-      text:
-        (shouldSetTextContent(type, newProps)
-          ? computeText('' + newProps.children, instance.context)
-          : null) ?? null,
+      text: shouldSetTextContent(type, newProps)
+        ? computeText('' + newProps.children, instance.context)
+        : null,
       prop: newProps.prop,
       hidden: !!newProps.hidden,
       context: instance.context,
@@ -320,10 +325,9 @@ function createReactNoop(reconciler, useMutation) {
         type,
         children: [],
         parent: -1,
-        text:
-          (shouldSetTextContent(type, props)
-            ? computeText('' + props.children, hostContext)
-            : null) ?? null,
+        text: shouldSetTextContent(type, props)
+          ? computeText('' + props.children, hostContext)
+          : null,
         prop: props.prop,
         hidden: !!props.hidden,
         context: hostContext,
