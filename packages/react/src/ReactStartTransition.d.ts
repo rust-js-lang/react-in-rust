@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {GestureProvider, StartTransitionOptions} from 'shared/ReactTypes';
+import type {TransitionTypes} from './ReactTransitionType.js';
 
 /** `shared/ReactTypes`' `GestureOptions & StartTransitionOptions`. */
 export interface GestureTransitionOptions {
@@ -16,7 +17,7 @@ export interface GestureTransitionOptions {
 
 export interface Transition {
   // enableViewTransition
-  types?: string[] | null | undefined;
+  types?: TransitionTypes | null | undefined;
   // enableGestureTransition
   gesture?: GestureProvider | null | undefined;
   // enableTransitionTracing only

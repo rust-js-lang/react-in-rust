@@ -96,7 +96,7 @@ export type Callbacks = unknown[];
 export interface Update {
   lane: Lane;
   tag: UpdateTag;
-  payload: unknown | null | undefined;
+  payload?: unknown | null | undefined;
   callback: unknown | null;
   next: Update | null;
 }
@@ -104,15 +104,15 @@ export interface Update {
 export interface SharedQueue {
   pending: Update | null;
   lanes: Lanes;
-  hiddenCallbacks: unknown[] | null;
+  hiddenCallbacks: Callbacks | null;
 }
 
 export interface UpdateQueue {
-  baseState: unknown | null | undefined;
+  baseState?: unknown;
   firstBaseUpdate: Update | null;
   lastBaseUpdate: Update | null;
   shared: SharedQueue;
-  callbacks: unknown[] | null;
+  callbacks: Callbacks | null;
 }
 
 export const UpdateState: UpdateTag;

@@ -6,7 +6,8 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {
-  GestureTransitionOptions,
+  OnStartGestureTransitionFinish,
+  OnStartTransitionFinish,
   Transition,
 } from './ReactStartTransition.js';
 
@@ -17,21 +18,12 @@ export interface SharedStateClient {
   A: unknown | null;
   // ReactCurrentBatchConfig for Transitions
   T: Transition | null;
-  S:
-    | ((transition: Transition, value?: unknown | null | undefined) => void)
-    | null;
-  G?:
-    | ((
-        transition: Transition,
-        value: unknown,
-        value2?: GestureTransitionOptions | null | undefined,
-      ) => () => void)
-    | null
-    | undefined;
+  S: OnStartTransitionFinish | null;
+  G?: OnStartGestureTransitionFinish | null | undefined;
   // DEV-only
 
   // ReactCurrentActQueue
-  actQueue?: RendererTask[] | null | undefined;
+  actQueue?: ActQueue | null | undefined;
   // When zero this means we're outside an async startTransition.
   asyncTransitions?: number | null | undefined;
   // Used to reproduce behavior of `batchedUpdates` in legacy mode.

@@ -8,6 +8,7 @@
 import type {
   ReactComponentInfo,
   ReactDebugInfo,
+  ReactDebugInfoEntry,
   ReactIOInfo,
 } from 'shared/ReactTypes';
 import type {
@@ -112,13 +113,13 @@ declare class ReactPromise {
   value: any;
   reason: any;
   // Profiling-only
-  _children: Children | null | undefined;
+  _children?: Children | undefined;
   // DEV-only
   _debugChunk?: ReactPromise | null | undefined;
   // DEV-only. A live array: a lazy node forwards it.
-  _debugInfo: ReactDebugInfo | null | undefined;
+  _debugInfo?: ReactDebugInfo | undefined;
   // DEV-only
-  _receivedDebugInfo?: Set<unknown> | null | undefined;
+  _receivedDebugInfo?: Set<ReactDebugInfoEntry> | null | undefined;
   // TODO: This doesn't return a new Promise chain unlike the real .then
   // The shadowing `then` must be defined with `Object.defineProperty` instead of
   // assignment. Assignment would throw when `Promise.prototype` is frozen (e.g.
@@ -145,27 +146,27 @@ export interface DebugChannel {
 }
 
 export interface ResponseInstance {
-  _bundlerConfig: unknown | null | undefined;
+  _bundlerConfig?: unknown;
   _serverReferenceConfig: unknown | null;
   _moduleLoading: unknown | null;
-  _callServer: CallServerCallback | null | undefined;
-  _encodeFormAction: EncodeFormActionCallback | null | undefined;
-  _nonce: string | null | undefined;
-  _chunks: Map<number, ReactPromise> | null | undefined;
-  _stringDecoder: unknown | null | undefined;
+  _callServer?: CallServerCallback | undefined;
+  _encodeFormAction?: EncodeFormActionCallback | undefined;
+  _nonce?: string | undefined;
+  _chunks?: Map<number, ReactPromise> | undefined;
+  _stringDecoder?: unknown;
   _closed: boolean;
   _closedReason: unknown | null;
   _allowPartialStream: boolean;
   // the set temporary references can be resolved from
-  _tempRefs: TemporaryReferenceSet | null | undefined;
+  _tempRefs?: TemporaryReferenceSet | undefined;
   // Profiling-only
-  _timeOrigin: number | null | undefined;
+  _timeOrigin?: number | undefined;
   // Profiling-only,
   _pendingInitialRender?: (number | object) | null | undefined;
   // DEV-only
-  _pendingChunks: number | null | undefined;
+  _pendingChunks?: number | undefined;
   // DEV-only
-  _weakResponse: WeakResponse | null | undefined;
+  _weakResponse?: WeakResponse | undefined;
   // DEV-only
   _debugRootOwner?: ReactComponentInfo | null | undefined;
   // DEV-only
@@ -178,21 +179,21 @@ export interface ResponseInstance {
     | null
     | undefined;
   // DEV-only
-  _debugStartTime: number | null | undefined;
+  _debugStartTime?: number | undefined;
   // DEV-only
   _debugEndTime?: number | null | undefined;
   // DEV-only
-  _debugIOStarted: boolean | null | undefined;
+  _debugIOStarted?: boolean | undefined;
   // DEV-only
-  _debugFindSourceMapURL: FindSourceMapURLCallback | null | undefined;
+  _debugFindSourceMapURL?: FindSourceMapURLCallback | undefined;
   // DEV-only
-  _debugChannel: DebugChannel | null | undefined;
+  _debugChannel?: DebugChannel | undefined;
   // DEV-only
   _blockedConsole?: ReactPromise | null | undefined;
   // DEV-only
-  _replayConsole: boolean | null | undefined;
+  _replayConsole?: boolean | undefined;
   // DEV-only, the requested environment name.
-  _rootEnvironmentName: string | null | undefined;
+  _rootEnvironmentName?: string | undefined;
 }
 
 // This indirection exists only to clean up DebugChannel when all Lazy References are GC:ed.
@@ -228,7 +229,7 @@ export interface InitializationReference {
   ) => unknown | null | undefined;
   path: string[];
   // DEV-only
-  isDebug: boolean | null | undefined;
+  isDebug?: boolean | undefined;
 }
 
 /**
@@ -238,10 +239,10 @@ export interface InitializationReference {
 export interface InitializationHandler {
   parent: InitializationHandler | null;
   chunk: ReactPromise | null;
-  value: unknown | null | undefined;
+  value?: unknown | null | undefined;
   // The controller of a stream whose chunk is blocked on its debug info. Null
   // for every other model. The error the handler was rejected with.
-  reason: unknown | null | undefined;
+  reason?: unknown | null | undefined;
   deps: number;
   errored: boolean;
 }
@@ -302,9 +303,9 @@ export interface StreamState {
   // chunks received so far as part of this row
   _buffer: Uint8Array<ArrayBuffer>[];
   // DEV-only
-  _debugInfo: ReactIOInfo | null | undefined;
+  _debugInfo?: ReactIOInfo | undefined;
   // DEV-only
-  _debugTargetChunkSize: number | null | undefined;
+  _debugTargetChunkSize?: number | undefined;
 }
 
 export function createStreamState(

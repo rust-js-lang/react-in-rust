@@ -105,14 +105,14 @@ export interface Fiber {
   // Tag identifying the type of fiber.
   tag: WorkTag;
   // Unique identifier of this child.
-  key: ReactKey | null | undefined;
+  key?: ReactKey | undefined;
   // The value of element.type which is used to preserve the identity during
   // reconciliation of this child.
-  elementType: unknown | null | undefined;
+  elementType?: unknown | null | undefined;
   // The resolved function/class/ associated with this fiber.
-  type: unknown | null | undefined;
+  type?: unknown | null | undefined;
   // The local state associated with this fiber.
-  stateNode: unknown | null | undefined;
+  stateNode?: unknown | null | undefined;
   // Conceptual aliases
   // parent : Instance -> return The parent happens to be the same as the
   // return fiber since we've merged the fiber and instance.
@@ -131,14 +131,14 @@ export interface Fiber {
   // The ref last used to attach this node.
   // I'll avoid adding an owner field for prod and model that as functions.
   ref: Ref | null;
-  refCleanup: unknown | null | undefined;
+  refCleanup?: unknown | null | undefined;
   // Input is the data coming into process this fiber. Arguments. Props.
-  pendingProps: unknown | null | undefined;
-  memoizedProps: unknown | null | undefined;
+  pendingProps?: unknown | null | undefined;
+  memoizedProps?: unknown | null | undefined;
   // A queue of state updates and callbacks.
-  updateQueue: unknown | null | undefined;
+  updateQueue?: unknown | null | undefined;
   // The state used to create the output
-  memoizedState: unknown | null | undefined;
+  memoizedState?: unknown | null | undefined;
   // Dependencies (contexts, events) for this fiber, if it has any
   dependencies: Dependencies | null;
   // Bitfield that describes properties about the fiber and its subtree. E.g.
@@ -151,7 +151,7 @@ export interface Fiber {
   // Effect
   flags: Flags;
   subtreeFlags: Flags;
-  deletions: Fiber[] | null;
+  deletions: Deletions | null;
   lanes: Lanes;
   childLanes: Lanes;
   // This is a pooled version of a Fiber. Every fiber that gets updated will
@@ -305,7 +305,7 @@ export interface FiberRoot {
   // The currently active root fiber. This is the mutable root of the tree.
   current: Fiber;
   // A `WeakMap` where the host has one, a `Map` where it hasn't.
-  pingCache: WeakMap<any, Set<number>> | null;
+  pingCache: WeakMap<any, Set<Lanes>> | null;
   // Timeout handle returned by setTimeout. Used to cancel a pending timeout, if
   // it's superseded by a new one.
   // ReactFiberConfig's `TimeoutHandle | NoTimeout`.
@@ -349,7 +349,7 @@ export interface FiberRoot {
   onRecoverableError: OnError;
   // enableDefaultTransitionIndicator only
   onDefaultTransitionIndicator?:
-    | (() => (() => void) | null | undefined)
+    | OnDefaultTransitionIndicator
     | null
     | undefined;
   pendingIndicator?: (() => void) | null | undefined;

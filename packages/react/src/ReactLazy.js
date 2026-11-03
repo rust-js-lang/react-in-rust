@@ -173,7 +173,7 @@ export function lazy(ctor) {
     // can only contain ReactComponentInfo and not a Fiber. It's unusual to
     // create a lazy inside an owner though since they should be in module scope.
     const owner = null;
-    const value = new Error('react-stack-top-frame');
+    const error = new Error('react-stack-top-frame');
     const createTask = console.createTask;
     const ioInfo = {
       name: 'lazy',
@@ -181,7 +181,7 @@ export function lazy(ctor) {
       end: -1,
       value: null,
       owner,
-      debugStack: value,
+      debugStack: error,
       // eslint-disable-next-line react-internal/no-production-logging
       debugTask: createTask != null ? createTask('lazy()') : null,
     };

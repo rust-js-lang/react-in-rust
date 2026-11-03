@@ -149,7 +149,7 @@ export interface TextInstance {
   id: number;
   // A number; `undefined` once it's appended to a container, which has no
   // `id` (appendChildToContainerOrInstance).
-  parent: number | null | undefined;
+  parent?: number | undefined;
   hidden: boolean;
   context: HostContext;
 }
@@ -157,10 +157,10 @@ export interface TextInstance {
 export interface Instance {
   type: string;
   id: number;
-  parent: number | null | undefined;
+  parent?: number | undefined;
   children: Child[];
   text: string | null;
-  prop: unknown | null | undefined;
+  prop?: unknown;
   hidden: boolean;
   context: HostContext;
   // A suspensey thing's, set where its props give one.

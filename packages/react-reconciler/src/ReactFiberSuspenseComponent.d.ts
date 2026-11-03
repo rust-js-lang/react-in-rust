@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {SuspenseListTailMode} from 'shared/ReactTypes';
-import type {CapturedValue} from './ReactCapturedValue.js';
+import type {HydrationErrors} from './ReactFiberHydrationContext.js';
 import type {Lane} from './ReactFiberLane.js';
 import type {TreeContext} from './ReactFiberTreeContext.js';
 import type {Fiber} from './ReactInternalTypes.js';
@@ -30,7 +30,7 @@ export interface SuspenseState {
   // NoLane is the default for normal boundaries, which turns into "normal" pri.
   retryLane: Lane;
   // Stashed Errors that happened while attempting to hydrate this boundary.
-  hydrationErrors: CapturedValue<unknown | null | undefined>[] | null;
+  hydrationErrors: HydrationErrors | null;
 }
 
 export interface SuspenseListRenderState {
@@ -44,7 +44,7 @@ export interface SuspenseListRenderState {
   // Remaining rows on the tail of the list.
   tail: Fiber | null;
   // Tail insertions setting.
-  tailMode: SuspenseListTailMode | null | undefined;
+  tailMode?: SuspenseListTailMode | undefined;
   // Keep track of total number of forks during multiple passes
   treeForkCount: number;
 }

@@ -84,7 +84,7 @@ function UnknownOwner() {
   }
   return reactStackTopFrame();
 }
-const createFakeCallStack = {
+const {react_stack_bottom_frame} = {
   react_stack_bottom_frame: callStackForError => callStackForError(),
 };
 
@@ -96,8 +96,7 @@ let unknownOwnerDebugTask;
 
 if (__DEV__) {
   // We use this technique to trick minifiers to preserve the function name.
-  unknownOwnerDebugStack =
-    createFakeCallStack.react_stack_bottom_frame(UnknownOwner);
+  unknownOwnerDebugStack = react_stack_bottom_frame(UnknownOwner);
   unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
 }
 

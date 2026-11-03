@@ -41,9 +41,9 @@ export interface PendingTransitionCallbacks {
 export interface TracingMarkerInstance {
   tag?: TracingMarkerTag | undefined;
   transitions: Set<Transition> | null;
-  pendingBoundaries: Map<OffscreenInstance, SuspenseInfo> | null;
-  aborts: TransitionAbort[] | null;
-  name: string | null | undefined;
+  pendingBoundaries: PendingBoundaries | null;
+  aborts: TransitionAborts | null;
+  name?: string | null | undefined;
 }
 
 export type TransitionAbortReason = 'error' | 'unknown' | 'marker' | 'suspense';

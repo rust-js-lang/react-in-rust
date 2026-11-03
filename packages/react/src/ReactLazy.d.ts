@@ -16,7 +16,7 @@ type Status = -1 | 0 | 1 | 2;
  */
 export interface Payload {
   _status: Status;
-  _result: unknown | null | undefined;
+  _result?: unknown;
   // DEV-only
   _ioInfo?: ReactIOInfo | undefined;
 }

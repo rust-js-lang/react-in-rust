@@ -494,7 +494,7 @@ export type EventListeners = StoredEventListener[];
  */
 declare class FragmentInstance {
   _fragmentFiber: Fiber;
-  _eventListeners: StoredEventListener[] | null;
+  _eventListeners: EventListeners | null;
   _observers: Set<Observer> | null;
   addEventListener(
     type: string,
@@ -845,7 +845,7 @@ export interface StylesheetState {
  */
 export interface Resource {
   type: string;
-  instance: Element | null;
+  instance: Instance | null;
   count: number;
   state: StylesheetState | null;
 }
@@ -948,7 +948,7 @@ export function preloadResource(resource: Resource): boolean;
  * running view transition, and what to call once none is left.
  */
 export interface SuspendedState {
-  stylesheets: Map<Resource, Document | ShadowRoot> | null;
+  stylesheets: Map<Resource, HoistableRoot> | null;
   count: number;
   imgCount: number;
   imgBytes: number;

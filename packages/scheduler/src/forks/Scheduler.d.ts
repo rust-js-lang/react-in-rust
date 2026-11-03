@@ -28,7 +28,7 @@ export interface Task {
   startTime: number;
   expirationTime: number;
   sortIndex: number;
-  isQueued: boolean | null | undefined;
+  isQueued?: boolean | undefined;
 }
 
 /** What `unstable_scheduleCallback` is given: how long to wait first. */

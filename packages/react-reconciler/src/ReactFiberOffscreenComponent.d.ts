@@ -8,6 +8,7 @@
 import type {Transition} from 'react/src/ReactStartTransition';
 import type {ReactNodeList} from 'shared/ReactTypes';
 import type {Lanes} from './ReactFiberLane.js';
+import type {RetryQueue} from './ReactFiberSuspenseComponent.js';
 import type {TracingMarkerInstance} from './ReactFiberTracingMarkerComponent.js';
 
 export type OffscreenMode =
@@ -45,7 +46,7 @@ export interface OffscreenState {
 export interface OffscreenQueue {
   transitions: Transition[] | null;
   markerInstances: TracingMarkerInstance[] | null;
-  retryQueue: Set<unknown> | null;
+  retryQueue: RetryQueue | null;
 }
 
 export type OffscreenVisibility = number;

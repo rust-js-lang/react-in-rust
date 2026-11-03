@@ -534,6 +534,12 @@ the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
   props); }`, where it printed `node => node.props != null &&
   propsMatch(node.props, props)` (upstream: `node => node.props &&
   propsMatch(node.props, props)`).
+- rd721 (since rust-js 5d3053552, #561's): ReactJSXElement's
+  `createFakeCallStack` is taken apart, `const {react_stack_bottom_frame} =
+  {..}` and `react_stack_bottom_frame(UnknownOwner)`, where upstream keeps
+  the object and calls its method. (ReactLazy's DEV `const error = new
+  Error('react-stack-top-frame');`, was `value`, is rd413's name, names
+  run 50, 6a4d64fc9.)
 
 **Held until rust-js prints an untagged string-or-integer `{}` in place**
 (the user's condition, 2026-11-03; the coordinator's rust-js P3): webpack's
@@ -909,6 +915,14 @@ These differences from upstream's output are accepted:
   coordinator's decision on the user's behalf, 2026-11-04), so each prints
   upstream's ES class, `class LinearGradient { constructor(stops, x1, y1,
   x2, y2) { .. } applyFill(node) { .. } }`, exported where it's declared.
+- **ReactART's imports and exports** (rd331j items 1 and 2, accepted on
+  the user's behalf by the coordinator, names run 50, 2026-11-04): the
+  react crate's bindings are named imports, `import {Component} from
+  'react'` and `extends Component`, where upstream writes `import * as
+  React from 'react'` and `extends React.Component`; and each class is
+  exported where it's declared, `export class Surface ..`, with no
+  trailing `export {LinearGradient, Pattern, RadialGradient, Surface,
+  Text, Transform};`.
 - **ReactART's JS is `ReactART.jsx`** (the user, 2026-11-01; 8839806):
   rust-js names a module with JSX `.jsx`, so upstream's ReactART.js is
   removed and jest resolves the `jsx` extension

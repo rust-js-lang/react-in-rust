@@ -20,7 +20,7 @@ export type FindDOMNode = (value: unknown) => unknown | null | undefined;
 export interface ReactDOMInternals {
   d: HostDispatcher;
   p: number;
-  findDOMNode: ((value: unknown) => unknown | null | undefined) | null;
+  findDOMNode: FindDOMNode | null;
 }
 
 declare const Internals: ReactDOMInternals;

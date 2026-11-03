@@ -35,9 +35,9 @@ export interface ReactSyntheticEvent {
   // `null`, a function, or an array of functions.
   _dispatchListeners?: unknown;
   _targetInst: Fiber | null;
-  nativeEvent: Event | null | undefined;
-  target: unknown | null | undefined;
-  relatedTarget: unknown | null | undefined;
+  nativeEvent?: Event | undefined;
+  target?: unknown;
+  relatedTarget?: unknown;
   type: string;
   currentTarget: EventTarget | null;
   _reactName: string | null;

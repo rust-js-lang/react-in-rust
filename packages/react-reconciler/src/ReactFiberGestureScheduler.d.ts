@@ -18,7 +18,7 @@ export interface ScheduledGesture {
   count: number;
   rangeStart: number;
   rangeEnd: number;
-  types: string[] | null;
+  types: TransitionTypes | null;
   // ReactFiberConfig's `RunningViewTransition`.
   running: unknown | null;
   commit: (() => void) | null;

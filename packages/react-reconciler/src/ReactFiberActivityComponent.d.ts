@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {CapturedValue} from './ReactCapturedValue.js';
+import type {HydrationErrors} from './ReactFiberHydrationContext.js';
 import type {Lane} from './ReactFiberLane.js';
 import type {TreeContext} from './ReactFiberTreeContext.js';
 
@@ -19,5 +19,5 @@ export interface ActivityState {
   // NoLane is the default for normal boundaries, which turns into "normal" pri.
   retryLane: Lane;
   // Stashed Errors that happened while attempting to hydrate this boundary.
-  hydrationErrors: CapturedValue<unknown | null | undefined>[] | null;
+  hydrationErrors: HydrationErrors | null;
 }

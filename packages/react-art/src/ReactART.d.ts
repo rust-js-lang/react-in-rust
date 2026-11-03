@@ -72,9 +72,9 @@ export interface SurfaceProps {
 /* React Components */
 
 export declare class Surface extends Component<SurfaceProps, undefined> {
-  _surface: any | null | undefined;
+  _surface?: any;
   _mountNode?: FiberRoot | undefined;
-  _tagRef: Element | null | undefined;
+  _tagRef?: Element | undefined;
   componentDidMount(): void;
   componentDidUpdate(prevProps: SurfaceProps, prevState: undefined): void;
   componentWillUnmount(): void;
@@ -91,7 +91,7 @@ export interface TextProps {
 
 export declare class Text extends Component<TextProps, undefined> {
   constructor(props: TextProps);
-  _text: any | null | undefined;
+  _text?: any;
   render(): JSX.Element;
 }
 

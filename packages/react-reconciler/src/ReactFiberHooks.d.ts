@@ -6,14 +6,14 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {StartTransitionOptions} from 'shared/ReactTypes';
-import type {Component, Destroy} from './ReactFiberCallUserSpace.js';
+import type {Component} from './ReactFiberCallUserSpace.js';
 import type {ScheduledGesture} from './ReactFiberGestureScheduler.js';
 import type {Lane, Lanes} from './ReactFiberLane.js';
 import type {HookFlags} from './ReactHookEffectTags.js';
 import type {Dispatcher, Fiber, MemoCache} from './ReactInternalTypes.js';
 
 interface EffectInstance {
-  destroy: Destroy;
+  destroy?: unknown;
 }
 
 export interface Update {
@@ -21,9 +21,9 @@ export interface Update {
   revertLane: Lane;
   action?: unknown;
   hasEagerState: boolean;
-  eagerState: unknown | null | undefined;
-  next: Update | null | undefined;
-  gesture: ScheduledGesture | null | undefined;
+  eagerState?: unknown | null | undefined;
+  next?: Update | null | undefined;
+  gesture?: ScheduledGesture | null | undefined;
 }
 
 /**
@@ -66,21 +66,16 @@ export type ActionStateAndDispatch = [
 export interface UpdateQueue {
   pending: Update | null;
   lanes: Lanes;
-  dispatch: ((value?: unknown | null | undefined) => void) | null;
-  lastRenderedReducer:
-    | ((
-        value?: unknown | null | undefined,
-        value2?: unknown | null | undefined,
-      ) => unknown | null | undefined)
-    | null;
-  lastRenderedState: unknown | null | undefined;
+  dispatch: Dispatch | null;
+  lastRenderedReducer: Reducer | null;
+  lastRenderedState?: unknown | null | undefined;
 }
 
 export interface Hook {
-  memoizedState: unknown | null | undefined;
-  baseState: unknown | null | undefined;
+  memoizedState?: unknown | null | undefined;
+  baseState?: unknown | null | undefined;
   baseQueue: Update | null;
-  queue: unknown | null | undefined;
+  queue?: unknown | null | undefined;
   next: Hook | null;
 }
 
@@ -92,7 +87,7 @@ export interface Effect {
   inst: EffectInstance;
   create: Create;
   deps: Deps | null;
-  next: Effect | null | undefined;
+  next?: Effect | null | undefined;
 }
 
 export interface StoreConsistencyCheck {
@@ -176,7 +171,7 @@ export interface ActionStateQueueNode {
   // This is the action implementation at the time it was dispatched.
   action: Action;
   // This is never null because it's part of a circular linked list.
-  next: ActionStateQueueNode | null | undefined;
+  next?: ActionStateQueueNode | null | undefined;
   // Whether or not the action was dispatched as part of a transition. We use
   // this to restore the transition context when the queued action is run. Once
   // we're able to track parallel async actions, this should be updated to
@@ -185,8 +180,8 @@ export interface ActionStateQueueNode {
   // Implements the Thenable interface. We use it to suspend until the action
   // finishes.
   status: string;
-  value: unknown | null | undefined;
-  reason: unknown | null | undefined;
+  value?: unknown | null | undefined;
+  reason?: unknown | null | undefined;
   listeners: (() => void)[];
   then(listener: () => void): void;
 }
