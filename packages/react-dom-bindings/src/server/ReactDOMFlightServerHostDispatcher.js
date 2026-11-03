@@ -20,9 +20,7 @@ ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */ = {
   r: /* requestFormReset */ previousDispatcher.r /* requestFormReset */,
   D: prefetchDNS,
   C: preconnect,
-  L(href, as, options) {
-    preload(href, as, options);
-  },
+  L: preload,
   m: preloadModule,
   X: preinitScript,
   S: preinitStyle,
