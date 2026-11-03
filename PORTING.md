@@ -1286,31 +1286,39 @@ These differences from upstream's output are accepted:
     between items;
   - each `.d.ts` declares the functions `(): unknown | null | undefined`
     (upstream's JS has no types).
-- **FizzTestUtils is held** (2026-11-03, the second session's): its Rust is
-  written (insertNodesAndExecuteScripts and executeScript `async fn`s, as
+- **FizzTestUtils** (2026-11-04, the second session's): React DOM's test
+  helper, which the Fizz, Float and Flight form suites import, is Rust,
+  `src/test-utils/FizzTestUtils.rs`, declared in `react_dom.rs`:
+  insertNodesAndExecuteScripts and executeScript `async fn`s, as
   upstream's, `badNonceScriptNodes` a `js::Map`, `Document | Element` an
-  untagged enum, `HTMLElement[] | HTMLCollection` one of a `Vec` and an
-  `HTMLCollection`, printed `Array.isArray(nodes) ? nodes :
-  Array.from(nodes)`), and with rd687's arms collapsed by hand its JS passes
-  the 9 suites that import it as upstream's does (444 / 0 / 1), but it's
-  held for a behavior difference and a binding:
-  - rd687: an untagged enum's `match` whose arms are alike in JS, in an
-    expression (`source.firstChild`, `source.querySelectorAll('script')`),
-    still tests `source instanceof Document`, which throws `ReferenceError:
-    Document is not defined` in the Fizz suites' environment, Jest's node
-    one with a JSDOM window and no `Document` global;
-  - rd686: no binding of a window's own constructor, `new
-    window.ErrorEvent('error', {error: x})`: the Fizz suites replace
-    `window` with a JSDOM of their own, and that environment has no global
-    `ErrorEvent`;
-  - and, holding nothing: rd684, getVisibleChildren's `require('react')
-    .createElement(..)` where it's called (the React a test loaded last,
-    after `jest.resetModules()`) is a hand-typed `#[rust_js::require]`
-    binding of react's `createElement`, as a `use` of react-isomorphic's
-    imports it where the module loads; rd685, executeScript's
-    `require(scriptSrc)` of a path it's given is `node::module.require(..)`,
-    `module.require(scriptSrc)`, Jest's same function, as the node crate
-    binds no CommonJS `require` itself.
+  untagged enum whose `match`es of arms alike are the read itself,
+  `source.firstChild` (rust-js b9ac9eca3, rd687, P0: the test was
+  `instanceof Document`, which threw in Jest's node environment), and
+  `HTMLElement[] | HTMLCollection` one of a `Vec` and an `HTMLCollection`,
+  `Array.isArray(nodes) ? nodes : Array.from(nodes)`. The error event is
+  the window's own class, `window.new_error_event("error", ..)`, `new
+  window.ErrorEvent('error', {error: x})` (rust-js ADR 0891; rd686 needed
+  no binding). The 9 suites that import it pass as upstream's (444 / 0 /
+  1). Differences from upstream, none changing a result:
+  - rd684: getVisibleChildren's `require('react').createElement(..)`
+    where it's called (the React a test loaded last, after
+    `jest.resetModules()`) is a hand-typed `#[rust_js::require]` binding
+    of react's `createElement`, as a `use` of react-isomorphic's imports
+    it where the module loads;
+  - rd685: executeScript's `require(scriptSrc)` of a path it's given is
+    `node::module.require(..)`, `module.require(scriptSrc)`, Jest's same
+    function, as the node crate binds no CommonJS `require` itself;
+  - the Rust's own forms: `export function` each, not one `export {..}`;
+    `target.ownerDocument ?? target`; `let node; while ((node =
+    source.firstChild) !== null)`; a dataset read once into `dataset`;
+    `$unwrap(ownerDocument.body)` of the `Option` `body()` gives;
+    `script.parentNode` read once, before its test; the attributes stepped
+    by `for (const attribute of script.attributes)` in executeScript and
+    by index in getVisibleChildren; `const current = node` where the node
+    is cast to an `Element`; and the children's count a `switch`, as a
+    `match` of it is, where upstream nests two ternaries;
+  - the `.d.ts` types insertNodesAndExecuteScripts' result `any`, where
+    an `async function`'s is a `Promise<void>`.
 - **The Flight clients' names and arms** (the user, 2026-11-01; its
   acronym rule extended to the servers, the user, 2026-11-02, ESM's
   resolveClientReferenceMetadata's `baseUrl` and `fullUrl`):

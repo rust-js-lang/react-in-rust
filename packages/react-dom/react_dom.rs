@@ -2,6 +2,8 @@
 
 #[path = "src/shared/ensureCorrectIsomorphicReactVersion.rs"]
 pub mod ensure_correct_isomorphic_react_version;
+#[path = "src/test-utils/FizzTestUtils.rs"]
+pub mod fizz_test_utils;
 #[path = "src/shared/ReactDOM.rs"]
 pub mod react_dom;
 #[path = "src/shared/ReactDOMBrowser.rs"]
