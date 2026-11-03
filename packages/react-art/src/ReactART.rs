@@ -37,7 +37,7 @@ js::on_load! {
 
 /* Declarative fill-type objects; API design not finalized */
 
-#[cfg_attr(rust_js, rust_js::class)]
+#[cfg_attr(rust_js, rust_js::class(es))]
 pub struct LinearGradient {
     _args: Option<&'static Unknown>,
 }
@@ -65,7 +65,7 @@ impl LinearGradient {
     }
 }
 
-#[cfg_attr(rust_js, rust_js::class)]
+#[cfg_attr(rust_js, rust_js::class(es))]
 pub struct RadialGradient {
     _args: Option<&'static Unknown>,
 }
@@ -95,7 +95,7 @@ impl RadialGradient {
     }
 }
 
-#[cfg_attr(rust_js, rust_js::class)]
+#[cfg_attr(rust_js, rust_js::class(es))]
 pub struct Pattern {
     _args: Option<&'static Unknown>,
 }

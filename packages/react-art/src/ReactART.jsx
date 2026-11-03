@@ -38,29 +38,35 @@ Mode.setCurrent(
 
 /* Declarative fill-type objects; API design not finalized */
 
-export function LinearGradient(stops, x1, y1, x2, y2) {
-  this._args = slice.call(arguments);
+export class LinearGradient {
+  constructor(stops, x1, y1, x2, y2) {
+    this._args = slice.call(arguments);
+  }
+
+  applyFill(node) {
+    node.fillLinear.apply(node, this._args);
+  }
 }
 
-LinearGradient.prototype.applyFill = function (node) {
-  node.fillLinear.apply(node, this._args);
-};
+export class RadialGradient {
+  constructor(stops, fx, fy, rx, ry, cx, cy) {
+    this._args = slice.call(arguments);
+  }
 
-export function RadialGradient(stops, fx, fy, rx, ry, cx, cy) {
-  this._args = slice.call(arguments);
+  applyFill(node) {
+    node.fillRadial.apply(node, this._args);
+  }
 }
 
-RadialGradient.prototype.applyFill = function (node) {
-  node.fillRadial.apply(node, this._args);
-};
+export class Pattern {
+  constructor(url, width, height, left, top) {
+    this._args = slice.call(arguments);
+  }
 
-export function Pattern(url, width, height, left, top) {
-  this._args = slice.call(arguments);
+  applyFill(node) {
+    node.fillImage.apply(node, this._args);
+  }
 }
-
-Pattern.prototype.applyFill = function (node) {
-  node.fillImage.apply(node, this._args);
-};
 
 /* React Components */
 

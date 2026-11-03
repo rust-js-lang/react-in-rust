@@ -899,7 +899,11 @@ These differences from upstream's output are accepted:
   after the imports, where upstream declares it above LinearGradient,
   after `Mode.setCurrent(..)`; both read the global as the module loads,
   and nothing between replaces it. ReactART.d.ts declares the private
-  `slice` with the binding's Rust signature (rd517, P3, rust-js's).
+  `slice` with the binding's Rust signature (rd517, P3, rust-js's). Their
+  structs are `#[rust_js::class(es)]` (rust-js 3cf5b3a4a, rd682; the
+  coordinator's decision on the user's behalf, 2026-11-04), so each prints
+  upstream's ES class, `class LinearGradient { constructor(stops, x1, y1,
+  x2, y2) { .. } applyFill(node) { .. } }`, exported where it's declared.
 - **ReactART's JS is `ReactART.jsx`** (the user, 2026-11-01; 8839806):
   rust-js names a module with JSX `.jsx`, so upstream's ReactART.js is
   removed and jest resolves the `jsx` extension
