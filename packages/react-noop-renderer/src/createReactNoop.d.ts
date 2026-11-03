@@ -13,9 +13,10 @@
 import type * as ReactFiberReconciler from 'react-reconciler/src/ReactFiberReconciler';
 import type {EventPriority} from 'react-reconciler/src/ReactEventPriorities';
 import type {
-  CaughtErrorInfo,
-  ErrorInfo,
   FiberRoot,
+  OnCaughtError,
+  OnDefaultTransitionIndicator,
+  OnError,
   TransitionTracingCallbacks,
 } from 'react-reconciler/src/ReactInternalTypes';
 import type {ReactPortal} from 'shared/ReactTypes';
@@ -37,20 +38,14 @@ export interface Props {
 /** What `createRoot` is given. */
 export interface CreateRootOptions {
   unstable_transitionCallbacks?: TransitionTracingCallbacks | undefined;
-  onUncaughtError?:
-    | ((value: unknown | null | undefined, info: ErrorInfo) => void)
-    | undefined;
-  onCaughtError?:
-    | ((value: unknown | null | undefined, info: CaughtErrorInfo) => void)
-    | undefined;
-  onDefaultTransitionIndicator?:
-    | (() => (() => void) | null | undefined)
-    | undefined;
+  onUncaughtError?: OnError | undefined;
+  onCaughtError?: OnCaughtError | undefined;
+  onDefaultTransitionIndicator?: OnDefaultTransitionIndicator | undefined;
 }
 
 export interface SuspenseyCommitSubscription {
   pendingCount: number;
-  commit?: (() => void) | null | undefined;
+  commit: (() => void) | null;
 }
 
 export type SuspendedState = SuspenseyCommitSubscription;

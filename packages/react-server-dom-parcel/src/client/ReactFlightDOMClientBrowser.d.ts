@@ -6,22 +6,27 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {ReactPromise} from 'react-client/src/ReactFlightClient';
-import type {ReactServerValue} from 'react-client/src/ReactFlightReplyClient';
+import type {
+  CallServerCallback,
+  ReactServerValue,
+  ServerFunction,
+} from 'react-client/src/ReactFlightReplyClient';
+import type {TemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
 
 export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
 
 export {createTemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
 
-type ReplyBody = string | FormData;
+export type {TemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
 
-export function setServerCallback(
-  fn: (value: unknown, value2: unknown) => Promise<unknown | null | undefined>,
-): void;
+type ReplyBody = string | URLSearchParams | FormData;
+
+export function setServerCallback(fn: CallServerCallback): void;
 
 export function createServerReference(
   id: string,
   exportName: string,
-): () => unknown | null | undefined;
+): ServerFunction;
 
 export interface DebugChannelOptions {
   writable?: WritableStream | undefined;
@@ -30,7 +35,7 @@ export interface DebugChannelOptions {
 
 export interface Options {
   debugChannel?: DebugChannelOptions | undefined;
-  temporaryReferences?: Map<string, unknown> | undefined;
+  temporaryReferences?: TemporaryReferenceSet | undefined;
   unstable_allowPartialStream?: boolean | undefined;
   replayConsoleLogs?: boolean | undefined;
   environmentName?: string | undefined;
@@ -50,7 +55,7 @@ export function createFromFetch(
 
 /** encodeReply's options. */
 export interface EncodeReplyOptions {
-  temporaryReferences?: Map<string, unknown> | undefined;
+  temporaryReferences?: TemporaryReferenceSet | undefined;
   signal?: AbortSignal | undefined;
 }
 

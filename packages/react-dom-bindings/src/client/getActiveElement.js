@@ -11,8 +11,7 @@ export default function getActiveElement(doc) {
     return null;
   }
   try {
-    const activeElement = doc.activeElement ?? doc.body;
-    return activeElement ?? null;
+    return doc.activeElement ?? doc.body;
   } catch {
     return doc.body;
   }

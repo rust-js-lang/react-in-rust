@@ -6,28 +6,22 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {
-  CaughtErrorInfo,
-  ErrorInfo,
   FiberRoot,
+  OnCaughtError,
+  OnDefaultTransitionIndicator,
+  OnError,
   TransitionTracingCallbacks,
 } from 'react-reconciler/src/ReactInternalTypes';
+import type {ReactNodeList} from 'shared/ReactTypes';
 
 export interface CreateRootOptions {
   unstable_strictMode?: boolean | undefined;
   unstable_transitionCallbacks?: TransitionTracingCallbacks | undefined;
   identifierPrefix?: string | undefined;
-  onUncaughtError?:
-    | ((value: unknown | null | undefined, info: ErrorInfo) => void)
-    | undefined;
-  onCaughtError?:
-    | ((value: unknown | null | undefined, info: CaughtErrorInfo) => void)
-    | undefined;
-  onRecoverableError?:
-    | ((value: unknown | null | undefined, info: ErrorInfo) => void)
-    | undefined;
-  onDefaultTransitionIndicator?:
-    | (() => (() => void) | null | undefined)
-    | undefined;
+  onUncaughtError?: OnError | undefined;
+  onCaughtError?: OnCaughtError | undefined;
+  onRecoverableError?: OnError | undefined;
+  onDefaultTransitionIndicator?: OnDefaultTransitionIndicator | undefined;
 }
 
 export interface HydrateRootOptions {
@@ -38,26 +32,18 @@ export interface HydrateRootOptions {
   unstable_strictMode?: boolean | undefined;
   unstable_transitionCallbacks?: TransitionTracingCallbacks | undefined;
   identifierPrefix?: string | undefined;
-  onUncaughtError?:
-    | ((value: unknown | null | undefined, info: ErrorInfo) => void)
-    | undefined;
-  onCaughtError?:
-    | ((value: unknown | null | undefined, info: CaughtErrorInfo) => void)
-    | undefined;
-  onRecoverableError?:
-    | ((value: unknown | null | undefined, info: ErrorInfo) => void)
-    | undefined;
-  onDefaultTransitionIndicator?:
-    | (() => (() => void) | null | undefined)
-    | undefined;
+  onUncaughtError?: OnError | undefined;
+  onCaughtError?: OnCaughtError | undefined;
+  onRecoverableError?: OnError | undefined;
+  onDefaultTransitionIndicator?: OnDefaultTransitionIndicator | undefined;
   // shared/ReactTypes' `ReactFormState<any, any>`.
-  formState?: unknown | null | undefined;
+  formState: unknown | null;
 }
 
 declare class ReactDOMRoot {
-  _internalRoot?: FiberRoot | null | undefined;
+  _internalRoot: FiberRoot | null;
   render(
-    children?: unknown | null | undefined,
+    children?: ReactNodeList | null | undefined,
     ...args: (unknown | null | undefined)[]
   ): void;
   unmount(...args: (unknown | null | undefined)[]): void;
@@ -71,10 +57,10 @@ export function createRoot(
 ): ReactDOMRoot;
 
 declare class ReactDOMHydrationRoot {
-  _internalRoot?: FiberRoot | null | undefined;
+  _internalRoot: FiberRoot | null;
   unstable_scheduleHydration(target?: Node | null | undefined): void;
   render(
-    children?: unknown | null | undefined,
+    children?: ReactNodeList | null | undefined,
     ...args: (unknown | null | undefined)[]
   ): void;
   unmount(...args: (unknown | null | undefined)[]): void;
@@ -84,6 +70,6 @@ export type {ReactDOMHydrationRoot};
 
 export function hydrateRoot(
   container: unknown,
-  initialChildren?: unknown | null | undefined,
+  initialChildren?: ReactNodeList | null | undefined,
   options?: HydrateRootOptions | null | undefined,
 ): ReactDOMHydrationRoot;

@@ -6,36 +6,38 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {GestureTransitionOptions} from 'react/src/ReactStartTransition';
+import type {TransitionTypes} from 'react/src/ReactTransitionType';
+import type {GestureProvider} from 'shared/ReactTypes';
 import type {Lane} from './ReactFiberLane.js';
 import type {FiberRoot} from './ReactInternalTypes.js';
 
 // This type keeps track of any scheduled or active gestures.
 export interface ScheduledGesture {
   // ReactFiberConfig's `GestureTimeline`.
-  provider: unknown;
+  provider: GestureProvider;
   count: number;
   rangeStart: number;
   rangeEnd: number;
-  types?: string[] | null | undefined;
+  types: string[] | null;
   // ReactFiberConfig's `RunningViewTransition`.
-  running?: unknown | null | undefined;
-  commit?: (() => void) | null | undefined;
+  running: unknown | null;
+  commit: (() => void) | null;
   committing: boolean;
   revertLane: Lane;
-  prev?: ScheduledGesture | null | undefined;
-  next?: ScheduledGesture | null | undefined;
+  prev: ScheduledGesture | null;
+  next: ScheduledGesture | null;
 }
 
 export function scheduleGesture(
   root: FiberRoot,
-  provider: unknown,
+  provider: GestureProvider,
 ): ScheduledGesture;
 
 export function startScheduledGesture(
   root: FiberRoot,
-  gestureTimeline: unknown,
+  gestureTimeline: GestureProvider,
   gestureOptions: GestureTransitionOptions | null | undefined,
-  transitionTypes: string[] | null,
+  transitionTypes: TransitionTypes | null,
 ): ScheduledGesture | null;
 
 export function cancelScheduledGesture(

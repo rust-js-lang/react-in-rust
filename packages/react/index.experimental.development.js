@@ -23,9 +23,9 @@ export {
   Children,
   Component,
   PureComponent,
-  act,
+  act, // DEV-only
   addTransitionType,
-  captureOwnerStack,
+  captureOwnerStack, // DEV-only
   cloneElement,
   createContext,
   createElement,

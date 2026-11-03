@@ -89,11 +89,9 @@ import {StrictLegacyMode} from './ReactTypeOfMode.js';
 import {
   SelectiveHydrationLane,
   SyncLane,
-  TotalLanes,
   claimNextRetryLane,
   getBumpedLaneForHydrationByLane,
   getHighestPriorityPendingLanes,
-  getLabelForLane,
   higherPriorityLane,
 } from './ReactFiberLane.js';
 
@@ -125,6 +123,7 @@ export {
   defaultOnRecoverableError,
   defaultOnUncaughtError,
 } from './ReactFiberErrorLogger.js';
+import {TotalLanes, getLabelForLane} from './ReactFiberLane.js';
 
 import {registerDefaultIndicator} from './ReactFiberAsyncAction.js';
 import {$index, $unwrap} from '@rust-js/runtime';

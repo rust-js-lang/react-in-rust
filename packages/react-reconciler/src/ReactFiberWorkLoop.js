@@ -1578,9 +1578,6 @@ function completeRootWhenReady(
       // us that it's ready. This will be canceled if we start work on the
       // root again.
       pendingEffectsLanes = lanes;
-      const value = enableProfilerTimer
-        ? getSuspendedCommitReason(newSuspendedState, root.containerInfo)
-        : null;
       root.cancelPendingCommit = schedulePendingCommit(
         completeRoot.bind(
           null,
@@ -1596,7 +1593,9 @@ function completeRootWhenReady(
           didSkipSuspendedSiblings,
           exitStatus,
           suspendedState,
-          value,
+          enableProfilerTimer
+            ? getSuspendedCommitReason(newSuspendedState, root.containerInfo)
+            : null,
           completedRenderStartTime,
           completedRenderEndTime,
         ),

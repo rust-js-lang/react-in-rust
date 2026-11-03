@@ -201,11 +201,11 @@ pub fn track_used_thenable(
             byte_size: Cell::new(None),
             value: Cell::new(Some(unsafe { js::cast(Some(js::unknown(thenable))) })),
             env: None,
+            // We don't know the requesting owner nor stack.
             owner: None,
             stack: None,
             debug_stack: Cell::new(None),
             debug_task: Cell::new(None),
-            // We don't know the requesting owner nor stack.
         });
         // We can infer the await owner/stack lazily from where this promise ends up
         // used. It can be used in more than one place so we can't assign it here.

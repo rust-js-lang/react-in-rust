@@ -51,6 +51,6 @@ export function clearEntangledAsyncTransitionTypes() {
 export function claimQueuedTransitionTypes(root) {
   const old = root.transitionTypes;
   root.transitionTypes = null;
-  return old;
+  return old ?? null;
 }
 //# sourceMappingURL=ReactFiberTransitionTypes.js.map

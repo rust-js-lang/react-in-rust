@@ -49,12 +49,11 @@ pub type HostContext = JsObject;
 /// a type's props, which createInstance sets.
 ///
 /// The expandos react-art keeps on art's nodes are read as upstream reads
-/// them, by key. Each one called is cast to the function it is:
-/// `_applyProps` an `ApplyProps`, a subscription the function `subscribe`
-/// gave that unsubscribes, and a fill's `applyFill` and a listener's
-/// `handleEvent`, called only where they're truthy, as their methods,
-/// which throws JS's `TypeError` where one isn't a function, as upstream's
-/// call does.
+/// them, by key. Each one called is called as its value's method,
+/// `js::method((value, key))`: `_applyProps`, a subscription the function
+/// `subscribe` gave that unsubscribes, and a fill's `applyFill` and a
+/// listener's `handleEvent`, called only where they're truthy. Each throws
+/// JS's `TypeError` where it isn't a function, as upstream's call does.
 type ApplyProps = fn(&'static Instance, &Props, Option<&Props>);
 
 /// `Instance | TextInstance`, a host child: a node, or the text a text
@@ -90,7 +89,12 @@ fn add_event_listeners(
             );
         }
     } else if js::truthy(js::get(js::get(instance, "_subscriptions"), &r#type)) {
-        unsafe { js::cast::<&dyn Fn()>(js::get(js::get(instance, "_subscriptions"), &r#type))() };
+        let subscriptions = js::get(instance, "_subscriptions");
+        js::function::call(
+            js::method((subscriptions, &r#type)),
+            Some(&subscriptions),
+            (),
+        );
         js::delete(js::get(instance, "_subscriptions"), &r#type);
     }
 }
@@ -105,7 +109,7 @@ fn create_event_handler(instance: &'static Instance) -> &'static dyn Fn(&'static
             js::function::call(listener, Some(instance), (event,));
         } else if js::truthy(js::get(listener, "handleEvent")) {
             js::function::call(
-                unsafe { js::cast::<&dyn Fn(&Unknown)>(js::get(listener, "handleEvent")) },
+                js::method((listener, "handleEvent")),
                 Some(&listener),
                 (event,),
             );
@@ -116,9 +120,12 @@ fn create_event_handler(instance: &'static Instance) -> &'static dyn Fn(&'static
 fn destroy_event_listeners(instance: &Instance) {
     if js::truthy(js::get(instance, "_subscriptions")) {
         for r#type in js::keys_in(js::get(instance, "_subscriptions")) {
-            unsafe {
-                js::cast::<&dyn Fn()>(js::get(js::get(instance, "_subscriptions"), &r#type))()
-            };
+            let subscriptions = js::get(instance, "_subscriptions");
+            js::function::call(
+                js::method((subscriptions, &r#type)),
+                Some(&subscriptions),
+                (),
+            );
         }
     }
 
@@ -273,13 +280,8 @@ fn apply_renderable_node_props(
         if js::truthy(js::get(props, "fill"))
             && js::truthy(js::get(js::get(props, "fill"), "applyFill"))
         {
-            js::function::call(
-                unsafe {
-                    js::cast::<&dyn Fn(&Instance)>(js::get(js::get(props, "fill"), "applyFill"))
-                },
-                Some(&js::get(props, "fill")),
-                (instance,),
-            );
+            let fill = js::get(props, "fill");
+            js::function::call(js::method((fill, "applyFill")), Some(&fill), (instance,));
         } else {
             instance.fill(js::get(props, "fill"));
         }
@@ -416,7 +418,11 @@ pub fn create_instance(
         panic!("ReactART does not support the type \"{type}\"");
     };
 
-    unsafe { js::cast::<ApplyProps>(js::get(instance, "_applyProps"))(instance, props, None) };
+    js::function::call(
+        js::method((instance, "_applyProps")),
+        Some(instance),
+        (instance, props),
+    );
 
     instance
 }
@@ -610,13 +616,11 @@ pub fn commit_update(
     old_props: &Props,
     new_props: &Props,
 ) {
-    unsafe {
-        js::cast::<ApplyProps>(js::get(instance, "_applyProps"))(
-            instance,
-            new_props,
-            Some(old_props),
-        )
-    };
+    js::function::call(
+        js::method((instance, "_applyProps")),
+        Some(instance),
+        (instance, new_props, old_props),
+    );
 }
 
 pub fn hide_instance(instance: &Instance) {

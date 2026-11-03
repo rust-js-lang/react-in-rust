@@ -64,16 +64,15 @@ export type ActionStateAndDispatch = [
 ];
 
 export interface UpdateQueue {
-  pending?: Update | null | undefined;
+  pending: Update | null;
   lanes: Lanes;
-  dispatch?: ((value: unknown | null | undefined) => void) | null | undefined;
-  lastRenderedReducer?:
+  dispatch: ((value: unknown | null | undefined) => void) | null;
+  lastRenderedReducer:
     | ((
         value: unknown | null | undefined,
         value2: unknown | null | undefined,
       ) => unknown | null | undefined)
-    | null
-    | undefined;
+    | null;
   lastRenderedState: unknown | null | undefined;
 }
 

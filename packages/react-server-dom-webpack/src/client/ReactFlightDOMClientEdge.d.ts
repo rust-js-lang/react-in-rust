@@ -5,9 +5,16 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ReactPromise} from 'react-client/src/ReactFlightClient';
-import type {ReactServerValue} from 'react-client/src/ReactFlightReplyClient';
-import type {ReactCustomFormAction} from 'shared/ReactTypes';
+import type {
+  FindSourceMapURLCallback,
+  ReactPromise,
+} from 'react-client/src/ReactFlightClient';
+import type {
+  EncodeFormActionCallback,
+  ReactServerValue,
+  ServerFunction,
+} from 'react-client/src/ReactFlightReplyClient';
+import type {TemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
 import type {ServerManifest} from './ReactFlightClientConfigBundlerWebpack.js';
 import type {ImportManifestEntry} from '../shared/ReactFlightImportMetadata.js';
 
@@ -15,25 +22,24 @@ export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
 
 export {createTemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
 
-type ReplyBody = string | FormData;
+export type {TemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
+
+type ReplyBody = string | URLSearchParams | FormData;
 
 export interface ServerConsumerManifest {
-  moduleMap?:
-    | {
-        [key: string]: {
-          [key: string]: ImportManifestEntry;
-        };
-      }
-    | null
-    | undefined;
-  moduleLoading?: unknown | null | undefined;
-  serverModuleMap?: ServerManifest | null | undefined;
+  moduleMap: {
+    [key: string]: {
+      [key: string]: ImportManifestEntry;
+    };
+  } | null;
+  moduleLoading: unknown | null;
+  serverModuleMap: ServerManifest | null;
 }
 
 export function createServerReference(
   id: unknown,
   callServer?: unknown | null | undefined,
-): () => unknown | null | undefined;
+): ServerFunction;
 
 export interface DebugChannelOptions {
   readable?: ReadableStream | undefined;
@@ -42,14 +48,10 @@ export interface DebugChannelOptions {
 export interface Options {
   serverConsumerManifest: ServerConsumerManifest;
   nonce?: unknown;
-  encodeFormAction?:
-    | ((value: unknown, value2: any) => ReactCustomFormAction)
-    | undefined;
-  temporaryReferences?: Map<string, unknown> | undefined;
+  encodeFormAction?: EncodeFormActionCallback | undefined;
+  temporaryReferences?: TemporaryReferenceSet | undefined;
   unstable_allowPartialStream?: boolean | undefined;
-  findSourceMapURL?:
-    | ((value: string, value2: string) => string | null | undefined)
-    | undefined;
+  findSourceMapURL?: FindSourceMapURLCallback | undefined;
   replayConsoleLogs?: boolean | undefined;
   environmentName?: string | undefined;
   startTime?: number | undefined;
@@ -70,7 +72,7 @@ export function createFromFetch(
 
 /** encodeReply's options. */
 export interface EncodeReplyOptions {
-  temporaryReferences?: Map<string, unknown> | undefined;
+  temporaryReferences?: TemporaryReferenceSet | undefined;
   signal?: AbortSignal | undefined;
 }
 

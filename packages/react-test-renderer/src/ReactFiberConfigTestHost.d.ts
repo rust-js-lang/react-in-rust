@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {EventPriority} from 'react-reconciler/src/ReactEventPriorities';
+import type {TransitionTypes} from 'react/src/ReactTransitionType';
 import type {ReactContext} from 'shared/ReactTypes';
 
 export {default as rendererVersion} from 'shared/ReactVersion';
@@ -142,7 +143,7 @@ export interface Instance {
   props: Props;
   isHidden: boolean;
   children: Child[];
-  internalInstanceHandle?: unknown | null | undefined;
+  internalInstanceHandle: unknown | null;
   rootContainerInstance: Container;
   tag: InstanceTag;
 }
@@ -383,7 +384,7 @@ export function hasInstanceAffectedParent(
 export function startViewTransition(
   suspendedState: SuspendedState | null | undefined,
   rootContainer: Container,
-  transitionTypes: string[] | null | undefined,
+  transitionTypes: TransitionTypes | null | undefined,
   mutationCallback: () => void,
   layoutCallback: () => void,
   afterMutationCallback: () => void,
@@ -402,7 +403,7 @@ export function startGestureTransition(
   timeline: GestureTimeline | null | undefined,
   rangeStart: number,
   rangeEnd: number,
-  transitionTypes: string[] | null | undefined,
+  transitionTypes: TransitionTypes | null | undefined,
   mutationCallback: () => void,
   animateCallback: () => void,
   errorCallback: (value: unknown | null | undefined) => void,

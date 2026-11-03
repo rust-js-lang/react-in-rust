@@ -14,7 +14,7 @@ import type {
 } from './ReactSyntheticEventType.js';
 
 export interface DispatchListener {
-  instance?: Fiber | null | undefined;
+  instance: Fiber | null;
   listener: unknown;
   currentTarget: EventTarget;
 }

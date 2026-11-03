@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ReactPortal} from 'shared/ReactTypes';
+import type {ReactNodeList, ReactPortal} from 'shared/ReactTypes';
 
 export {default as version} from 'shared/ReactVersion';
 
@@ -31,7 +31,7 @@ export {browser} from './ReactDOMBrowser.js';
 export function unstable_batchedUpdates<A, R>(fn: (a: A) => R, a: A): R;
 
 export function createPortal(
-  children?: unknown | null | undefined,
+  children?: ReactNodeList | null | undefined,
   container?: unknown | null | undefined,
   key?: unknown | null | undefined,
 ): ReactPortal;

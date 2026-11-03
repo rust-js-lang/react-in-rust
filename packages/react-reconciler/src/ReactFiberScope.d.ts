@@ -5,25 +5,15 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ReactScopeQuery} from 'shared/ReactTypes';
+
 /**
  * shared/ReactTypes' `ReactScopeInstance`: a Scope's instance, which
  * queries the host instances and context values inside it.
  */
 export interface ReactScopeInstance {
-  DO_NOT_USE_queryAllNodes(
-    fn: (
-      value: unknown | null | undefined,
-      value2: unknown | null | undefined,
-      value3: unknown,
-    ) => unknown | null | undefined,
-  ): unknown[] | null;
-  DO_NOT_USE_queryFirstNode(
-    fn: (
-      value: unknown | null | undefined,
-      value2: unknown | null | undefined,
-      value3: unknown,
-    ) => unknown | null | undefined,
-  ): unknown | null;
+  DO_NOT_USE_queryAllNodes(fn: ReactScopeQuery): unknown[] | null;
+  DO_NOT_USE_queryFirstNode(fn: ReactScopeQuery): unknown | null;
   containsNode(node: unknown): boolean;
   getChildContextValues(context: unknown): (unknown | null | undefined)[];
 }

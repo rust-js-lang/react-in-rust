@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ReactNodeList} from 'shared/ReactTypes';
 import type {Cache} from './ReactFiberCacheComponent.js';
 import type {
   FiberRoot,
@@ -17,7 +18,7 @@ import type {
 import type {RootTag} from './ReactRootTags.js';
 
 export interface RootState {
-  element?: unknown;
+  element?: ReactNodeList | undefined;
   isDehydrated: boolean;
   cache: Cache;
 }
@@ -26,7 +27,7 @@ export function createFiberRoot(
   containerInfo: unknown,
   tag: RootTag,
   hydrate: boolean,
-  initialChildren: unknown | null | undefined,
+  initialChildren: ReactNodeList | null | undefined,
   hydrationCallbacks: SuspenseHydrationCallbacks | null | undefined,
   isStrictMode: boolean,
   identifierPrefix: string,

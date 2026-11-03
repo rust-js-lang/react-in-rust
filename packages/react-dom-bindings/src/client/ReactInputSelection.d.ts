@@ -25,8 +25,8 @@ export function hasSelectionCapabilities(
 
 /** What was focused, and its selection, before a commit. */
 export interface SelectionInformation {
-  focusedElem?: Element | null | undefined;
-  selectionRange?: Offsets | null | undefined;
+  focusedElem: Element | null;
+  selectionRange: Offsets | null;
 }
 
 export function getSelectionInformation(

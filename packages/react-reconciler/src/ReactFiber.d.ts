@@ -35,15 +35,15 @@ export interface PortalStateNode {
 /** ReactFiberViewTransitionComponent's `ViewTransitionState`. */
 export interface ViewTransitionState {
   // the view-transition-name to use when an explicit one is not specified
-  autoName?: string | null | undefined;
+  autoName: string | null;
   // a temporary state during the commit phase if we have paired this with another instance
-  paired?: ViewTransitionState | null | undefined;
+  paired: ViewTransitionState | null;
   // a temporary state during the apply gesture phase if we cloned this boundary
   // ReactFiberConfig's `Instance`s, an array the apply phase adds to and reads.
-  clones?: unknown[] | null | undefined;
+  clones: unknown[] | null;
   // the current ref instance. This can change through the lifetime of the instance.
   // ReactFiberConfig's `ViewTransitionInstance`.
-  ref?: unknown | null | undefined;
+  ref: unknown | null;
 }
 
 export function isSimpleFunctionComponent(

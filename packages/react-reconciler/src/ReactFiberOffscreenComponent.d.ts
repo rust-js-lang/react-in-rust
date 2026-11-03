@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {Transition} from 'react/src/ReactStartTransition';
+import type {ReactNodeList} from 'shared/ReactTypes';
 import type {Lanes} from './ReactFiberLane.js';
 import type {TracingMarkerInstance} from './ReactFiberTracingMarkerComponent.js';
 
@@ -16,7 +17,7 @@ export type OffscreenMode =
 
 export interface LegacyHiddenProps {
   mode?: OffscreenMode | null | undefined;
-  children?: unknown;
+  children?: ReactNodeList | undefined;
 }
 
 export interface OffscreenProps {
@@ -27,7 +28,7 @@ export interface OffscreenProps {
   // Default mode is visible. Kind of a weird default for a component
   // called "Offscreen." Possible alt: <Visibility />?
   mode?: OffscreenMode | null | undefined;
-  children?: unknown;
+  children?: ReactNodeList | undefined;
 }
 
 // We use the existence of the state object as an indicator that the component
@@ -55,9 +56,9 @@ export const OffscreenPassiveEffectsConnected: OffscreenVisibility;
 
 export interface OffscreenInstance {
   _visibility: OffscreenVisibility;
-  _pendingMarkers?: Set<TracingMarkerInstance> | null | undefined;
-  _transitions?: Set<Transition> | null | undefined;
+  _pendingMarkers: Set<TracingMarkerInstance> | null;
+  _transitions: Set<Transition> | null;
   // shared/ReactTypes' `Wakeable`s: a `WeakSet` where the host has one, a
   // `Set` where it hasn't.
-  _retryCache?: WeakSet<object> | null | undefined;
+  _retryCache: WeakSet<object> | null;
 }

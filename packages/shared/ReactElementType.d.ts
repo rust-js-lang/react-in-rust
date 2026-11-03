@@ -10,8 +10,8 @@ import type {ReactDebugInfo, ReactKey} from './ReactTypes.js';
 export interface ReactElement {
   $$typeof: symbol;
   type?: unknown;
-  key?: ReactKey | null | undefined;
-  ref?: unknown | null | undefined;
+  key: ReactKey | null;
+  ref: unknown | null;
   props: unknown;
   // __DEV__ or for string refs
   _owner?: unknown | null | undefined;

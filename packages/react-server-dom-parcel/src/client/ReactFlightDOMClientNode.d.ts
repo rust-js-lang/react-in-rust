@@ -7,7 +7,7 @@
 
 import type {Readable} from 'stream';
 import type {ReactPromise} from 'react-client/src/ReactFlightClient';
-import type {ReactCustomFormAction} from 'shared/ReactTypes';
+import type {EncodeFormActionCallback} from 'react-client/src/ReactFlightReplyClient';
 
 export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
 
@@ -22,9 +22,7 @@ export {
 
 export interface Options {
   nonce?: unknown;
-  encodeFormAction?:
-    | ((value: unknown, value2: any) => ReactCustomFormAction)
-    | undefined;
+  encodeFormAction?: EncodeFormActionCallback | undefined;
   unstable_allowPartialStream?: boolean | undefined;
   replayConsoleLogs?: boolean | undefined;
   environmentName?: string | undefined;

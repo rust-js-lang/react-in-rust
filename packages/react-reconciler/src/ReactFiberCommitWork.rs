@@ -22,8 +22,8 @@ use crate::react_fiber_suspense_component::{RetryQueue, SuspenseState};
 use crate::react_internal_types::{Fiber, FiberRoot};
 
 use crate::react_fiber_lane::{
-    Lanes, clear_transitions_for_lanes, includes_loading_indicator_lanes,
-    includes_only_suspensey_commit_eligible_lanes, includes_only_view_transition_eligible_lanes,
+    Lanes, includes_loading_indicator_lanes, includes_only_suspensey_commit_eligible_lanes,
+    includes_only_view_transition_eligible_lanes,
 };
 
 use shared::react_feature_flags::{
@@ -360,6 +360,7 @@ use crate::react_fiber_dev_tools_hook::{IS_DEV_TOOLS_PRESENT, on_commit_unmount}
 use crate::react_fiber_cache_component::{
     Cache, CacheComponentState, SpawnedCachePool, release_cache, retain_cache,
 };
+use crate::react_fiber_lane::clear_transitions_for_lanes;
 use crate::react_fiber_offscreen_component::{
     OFFSCREEN_PASSIVE_EFFECTS_CONNECTED, OFFSCREEN_VISIBLE, OffscreenInstance, OffscreenQueue,
     OffscreenState,

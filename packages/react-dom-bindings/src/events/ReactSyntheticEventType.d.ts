@@ -12,8 +12,8 @@ import type {DOMEventName} from './DOMEventNames.js';
 
 /** A `DispatchConfig`'s two phases' registration names. */
 export interface PhasedRegistrationNames {
-  bubbled?: string | null | undefined;
-  captured?: string | null | undefined;
+  bubbled: string | null;
+  captured: string | null;
 }
 
 export interface DispatchConfig {
@@ -34,13 +34,13 @@ export interface ReactSyntheticEvent {
   _dispatchInstances?: unknown;
   // `null`, a function, or an array of functions.
   _dispatchListeners?: unknown;
-  _targetInst?: Fiber | null | undefined;
+  _targetInst: Fiber | null;
   nativeEvent: Event | null | undefined;
   target: unknown | null | undefined;
   relatedTarget: unknown | null | undefined;
   type: string;
   currentTarget: EventTarget | null;
-  _reactName?: string | null | undefined;
+  _reactName: string | null;
   preventDefault(): void;
   stopPropagation(): void;
   persist(): void;

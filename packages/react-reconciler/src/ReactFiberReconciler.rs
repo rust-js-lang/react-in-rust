@@ -83,8 +83,8 @@ use crate::react_current_fiber::run_with_fiber_in_dev;
 use crate::react_type_of_mode::STRICT_LEGACY_MODE;
 
 use crate::react_fiber_lane::{
-    Lane, SELECTIVE_HYDRATION_LANE, SYNC_LANE, TOTAL_LANES, claim_next_retry_lane,
-    get_bumped_lane_for_hydration_by_lane, get_highest_priority_pending_lanes, get_label_for_lane,
+    Lane, SELECTIVE_HYDRATION_LANE, SYNC_LANE, claim_next_retry_lane,
+    get_bumped_lane_for_hydration_by_lane, get_highest_priority_pending_lanes,
     higher_priority_lane,
 };
 
@@ -103,7 +103,10 @@ use crate::react_test_selectors::{
 
 use crate::react_fiber_hooks::{self, FormAction, Hook};
 
-use crate::react_fiber_error_logger;
+pub use crate::react_fiber_error_logger::{
+    default_on_caught_error, default_on_recoverable_error, default_on_uncaught_error,
+};
+use crate::react_fiber_lane::{TOTAL_LANES, get_label_for_lane};
 
 use crate::react_fiber_async_action::register_default_indicator;
 
@@ -202,7 +205,7 @@ impl ReactFiberReconciler {
         error: Option<&'static Unknown>,
         error_info: &CaughtErrorInfo,
     ) {
-        react_fiber_error_logger::default_on_caught_error(error, error_info)
+        default_on_caught_error(error, error_info)
     }
 
     pub fn default_on_recoverable_error(
@@ -210,7 +213,7 @@ impl ReactFiberReconciler {
         error: Option<&'static Unknown>,
         error_info: &ErrorInfo,
     ) {
-        react_fiber_error_logger::default_on_recoverable_error(error, error_info)
+        default_on_recoverable_error(error, error_info)
     }
 
     pub fn default_on_uncaught_error(
@@ -218,7 +221,7 @@ impl ReactFiberReconciler {
         error: Option<&'static Unknown>,
         error_info: &ErrorInfo,
     ) {
-        react_fiber_error_logger::default_on_uncaught_error(error, error_info)
+        default_on_uncaught_error(error, error_info)
     }
 }
 

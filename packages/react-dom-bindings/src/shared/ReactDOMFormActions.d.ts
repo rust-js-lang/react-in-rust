@@ -5,6 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {
+  Action,
+  ActionStateAndDispatch,
+} from 'react-reconciler/src/ReactFiberHooks';
+
 /**
  * A form's status: whether it's pending, and if so the data, method and
  * action it's submitted with.
@@ -22,16 +27,9 @@ export const NotPending: FormStatus;
 export function useFormStatus(): unknown | null | undefined;
 
 export function useFormState(
-  action: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
-  ) => unknown | null | undefined,
+  action: Action,
   initialState?: unknown | null | undefined,
   permalink?: string | null | undefined,
-): [
-  unknown | null | undefined,
-  (value: unknown | null | undefined) => void,
-  boolean,
-];
+): ActionStateAndDispatch;
 
 export function requestFormReset(form: HTMLFormElement): void;

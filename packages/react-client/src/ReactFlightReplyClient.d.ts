@@ -5,7 +5,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ReactCustomFormAction} from 'shared/ReactTypes';
+import type {
+  ReactCustomFormAction,
+  ReactFunctionLocation,
+} from 'shared/ReactTypes';
 import type {TemporaryReferenceSet} from './ReactFlightTemporaryReferences.js';
 
 /** TypeScript's `Function`, what a server reference is. */
@@ -26,7 +29,7 @@ export type EncodeFormActionCallback = (
 export type ServerReferenceId = unknown;
 
 /** What a reply resolves to: its JSON, or a FormData of its parts. */
-export type ReplyBody = string | FormData;
+export type ReplyBody = string | URLSearchParams | FormData;
 
 // Serializable values
 export type ReactServerValue =
@@ -83,10 +86,10 @@ export type FindSourceMapURLCallback = (
 /** createBoundServerReference's `metaData`. */
 export interface BoundServerReferenceMetaData {
   id: ServerReferenceId;
-  bound?: any | null | undefined;
+  bound: any | null;
   name?: string | undefined;
   env?: string | undefined;
-  location?: [string, string, number, number] | undefined;
+  location?: ReactFunctionLocation | undefined;
 }
 
 export function createBoundServerReference(

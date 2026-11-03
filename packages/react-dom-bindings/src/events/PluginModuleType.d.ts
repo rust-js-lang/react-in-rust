@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+export type {EventSystemFlags} from './EventSystemFlags.js';
+
 /**
  * A native event a plugin is given: an `Event`, a `KeyboardEvent`, a
  * `MouseEvent` or a `TouchEvent`.

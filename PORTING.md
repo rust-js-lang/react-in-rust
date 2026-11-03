@@ -455,22 +455,73 @@ writes upstream's text above the arm fallen to: `// Fallthrough`,
 (ReactFiberCommitWork). SelectEventPlugin's is rust-js's own, upstream's
 `// falls through`.
 
-**Pending in rust-js from Batch 59** (none changes a result): rd640,
-ReplyClient's isSignatureEqual reads `let Some(bound_promise) =
-reference_closure.bound else ..` in place, `referenceClosure.bound` at each
-use, and each of its two `then` callbacks copies it, `const boundPromise =
-referenceClosure.bound; const boundPromise$1 = referenceClosure.bound;`,
-where upstream's `const boundPromise` is one variable both read.
+**Pending in rust-js from Batch 59** (none changes a result): rd640's
+remainder. ReplyClient's isSignatureEqual has upstream's one `const
+boundPromise = referenceClosure.bound;` (Batch 61), which both `then`
+callbacks read, but it still tests `referenceClosure.bound === null` before
+the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
 
-**Pending in rust-js from Batch 61** (no result changes; control-flow run
-44 is fixing it): rd701, a regression of rust-js 87ea19263. A comment above
-`_ => {}` takes the `switch`'s `break`s away. ReactFiberBeginWork's
-attemptEarlyBailoutIfNoScheduledUpdate (`// Fallthrough` above its last
-arm, `_ => {}`) ends each of its 12 cases with its own `return
-bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);`, and
-prints the `// Fallthrough` at the end of HostRoot's case. Upstream has
-`break;` in each case, one return after the switch, and the comment at the
-end of the LegacyHidden case.
+**Pending in rust-js from Batch 61** (no result changes):
+- rd702 (control-flow run 47): rd701's fix (rust-js 516869ec9) doesn't
+  cover ReactFiberBeginWork's attemptEarlyBailoutIfNoScheduledUpdate, whose
+  guarded TracingMarker arm falls through to the guarded
+  TracingMarker/LegacyHidden arm. Each of its 12 cases still ends with its
+  own `return bailoutOnAlreadyFinishedWork(current, workInProgress,
+  renderLanes);`, where upstream has `break;` and one return after the
+  switch. **Accepted by the user** (rd701's remainder, 2026-11-03, by name;
+  oxc_codegen's): once the switch is upstream's, its `// Fallthrough`
+  prints above the `return` after the `switch`, not inside the last case.
+- rd703 (control-flow): in a loop's `match`, an arm ending `if c { a }
+  else { b } continue;` prints guard-first, `if (c) { a; continue; } b;
+  continue;`, and an `if`/`else if`/`else` chain has its tests inverted.
+  This affects ReactFlightClient's processBinaryChunk and
+  processStringChunk, cases ROW_ID, ROW_TAG and ROW_LENGTH.
+- rd704 (modules): a `use` that names an item through another module's
+  `pub use` imports it from the module that defines it. ReactART,
+  ReactDOMRoot and ReactTestRenderer take ReactFiberReconciler's
+  re-exported `defaultOnUncaughtError`, `defaultOnCaughtError` and
+  `defaultOnRecoverableError` as values, as upstream does (rd420, rd424),
+  but import them from 'react-reconciler/src/ReactFiberErrorLogger'.
+  Upstream imports them from 'react-reconciler/src/ReactFiberReconciler'.
+- rd705 (modules, since rd649): ReactFiberConfigDOM's `pub use
+  crate::react_dom_component_tree::detach_deleted_instance;`, which the
+  module also calls, prints its own `import {detachDeletedInstance}` above
+  `export {detachDeletedInstance} from ..`. Upstream imports it in its one
+  ReactDOMComponentTree import and writes `export {detachDeletedInstance};`.
+  Rust can't name it in both a `use` and a `pub use` (E0252).
+- rd706 (places): CompleteWork's completeDehydratedActivityBoundary and
+  completeDehydratedSuspenseBoundary write `current.memoizedState.hydrationErrors
+  = hydrationErrors;`. Upstream (and the port before rust-js 8fec690ea) writes
+  `const prevState = current.memoizedState; prevState.hydrationErrors =
+  hydrationErrors;`, the `if let`'s `prev_state`.
+
+**Fixed in rust-js from Batch 61**:
+- rd643 (7db76060d): `ReplyBody` has upstream's third type,
+  `UrlSearchParams(..) => unsafe { std::hint::unreachable_unchecked() }`
+  (the user's chosen form). encodeReply is `Promise<string |
+  URLSearchParams | FormData>`, as the `.d.ts`'s `ReplyBody` alias, and
+  encodeFormData tests `typeof body === 'string'` alone.
+- rd642 (67b13d7ef, 39aa20293, c0bbd1e17): the `.d.ts` files declare a
+  nullable field `field: T | null`, re-export types with `export type
+  {..} from`, and name library aliases.
+- rd418 (1a167522f): a discarded `replace` prints the assignment alone, as
+  in m6-wife's ReactFizzHooks `metadata.action = '' + permalink;`.
+- #502: the Flight clients' `close.bind(null, response)` and
+  SchedulerPostTask's `runTask.bind(..)` are upstream's.
+- rd321 (3daa3e126) and rd338 (f1720176f): comments are in upstream's
+  places (ReactFiberThenable, `act, // DEV-only`).
+- rd334 (0c8cc23f4, f8d1ca317): react-art calls its expandos as their
+  values' methods, `instance._applyProps(instance, props)`,
+  `listener.handleEvent(event)`, `props.fill.applyFill(instance)` and
+  `instance._subscriptions[type]()`, with no `unsafe`.
+- rd649 (29b2d5b69, the user's rule (A)): each `use` of a module is its own
+  import where it's written, and a run of `use`s of one module with only
+  attributes between them is one. The port's second imports are upstream's
+  (ReactFiberCommitWork's clearTransitionsForLanes, ReactFiberRootScheduler's
+  peekEntangledActionLane, ReactFiberReconciler's getLabelForLane and
+  TotalLanes). **Accepted by the user** (2026-11-03, by name):
+  ReactDOMComponent's two adjacent `shared/CheckStringCoercion` imports
+  stay one import.
 
 **The imports' blank lines are the Rust's** (rd637, rd652, rust-js
 4c84d5bb9..0f95f0962, Batch 60): each `use` is its import's statement, and
@@ -633,6 +684,23 @@ These differences from upstream's output are accepted:
   the array and compares it, or watches it change, tells them apart; the
   browser copies `types` into the ViewTransition's set.
 
+- **rd329** (the user, 2026-11-03, by name): ReactFiberConfigTestHost's
+  insertBefore finds `beforeChild` with `$position(children, c => c ===
+  beforeChild) ?? Math.max(children.length - 1, 0)` and inserts with
+  `$insertAt(children, beforeIndex, child)`, upstream's `splice(-1, 0,
+  child)` for a `beforeChild` it doesn't hold, and clearContainer's
+  `children.borrow_mut().clear()` prints `container.children.length = 0;`
+  where upstream writes `container.children.splice(0)`.
+
+- **ReactFiberConfigTestHost's one `const children`** (the user,
+  2026-11-03, by name; rd317): appendChild, insertBefore and removeChild
+  hold one `let mut children = parent_instance.children().borrow_mut();`,
+  printed `const children = parentInstance.children;`, where upstream reads
+  `parentInstance.children` at each use. With a borrow per use, the index
+  `indexOf` found comes from another borrow, so `Vec::remove` keeps its
+  bounds panic, `$removeAt(parentInstance.children, index)`, where one
+  borrow prints upstream's `splice(index, 1)`.
+
 - **Upstream's destructurings are a run of `const`s** (the user,
   2026-11-03, by name; rust-js ADR 0598, #534 closed): where upstream
   destructures and the Rust is a run of `let`s, each is its own `const`.
@@ -674,11 +742,6 @@ These differences from upstream's output are accepted:
   three `updateContainerSync(children, mountNode, this)`, and createReactNoop's
   three `NoopRenderer.updateContainer(element, root, undefined, callback)`.
   updateContainer reads both as none.
-
-- **The Flight Node client's `() => close(response)`** (the user,
-  2026-11-02, by name; rust-js ADR 0605): its stream's `end` handler is
-  the zero-parameter closure `Rc::new(move || close(&closing))`, printed as
-  an arrow, where upstream passes `close.bind(null, response)`.
 
 - **rd627** (the user, 2026-11-02, by name): BundlerESM's requireModule
   is guard-first, `if (promise.status !== 'fulfilled') { throw
@@ -1912,8 +1975,7 @@ The port is split between sessions by package:
   `__DEV__ ? options.startTime : undefined` (and endTime) where upstream
   writes `startTime != null ? startTime : undefined`; the stream counter's
   `streamDoneCount++; if (streamDoneCount === 2)` for `if
-  (++streamDoneCount === 2)`; `() => { close(response); }` for
-  `close.bind(null, response)`, and createFromFetch's callbacks as arrows
+  (++streamDoneCount === 2)`; and createFromFetch's callbacks as arrows
   where upstream writes `function (r)` and `function (e)`; the let-chain's
   `const readable = options.debugChannel.readable;` after the test, where
   upstream reads it in the call; progress reading `entry.done` and
@@ -1933,15 +1995,7 @@ The port is split between sessions by package:
   as rustfmt splits the `DebugChannel` struct literal, where upstream
   writes it on one (rd627 B's kind: the printer breaks an object literal
   where the Rust breaks it).
-  **Pending in rust-js, not accepted**: rd643, encodeReply's promise is
-  `Promise<ReplyBody>`, `string | FormData` in the `.d.ts`, where upstream
-  declares `Promise<string | URLSearchParams | FormData>`: processReply
-  resolves with `ReplyBody`, an untagged `Text(String) | Form(&FormData)`,
-  upstream's `string | FormData`, because a third variant no code builds
-  prints an unreachable branch, `else if (body instanceof FormData) ..
-  else throw ..`, in encodeFormData; rd642,
-  the `.d.ts`'s optional `nullable` fields and its missing `export type
-  {TemporaryReferenceSet}`.
+  rd643 and rd642 are fixed (Batch 61, see "Fixed in rust-js from Batch 61").
   **Accepted by the user** (2026-11-02, by name): rd543, a tuple's
   element is read by destructuring, `const chunks = metadata[1];`, where
   upstream reads `metadata[CHUNKS]` in place; rd544, the async marker,

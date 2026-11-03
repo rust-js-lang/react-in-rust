@@ -24,10 +24,10 @@ unsafe extern "Rust" {
     safe static IS_REACT_NATIVE_TEST_ENVIRONMENT: Option<&'static Unknown>;
 }
 
-use react_reconciler::react_fiber_error_logger::{
-    default_on_caught_error, default_on_recoverable_error, default_on_uncaught_error,
+use react_reconciler::react_fiber_reconciler::{
+    ReactFiberReconciler, default_on_caught_error, default_on_recoverable_error,
+    default_on_uncaught_error,
 };
-use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
 use react_reconciler::react_fiber_tree_reflection::find_current_fiber_using_slow_path;
 use react_reconciler::react_work_tags::{
     CLASS_COMPONENT, CONTEXT_CONSUMER, CONTEXT_PROVIDER, FORWARD_REF, FRAGMENT, FUNCTION_COMPONENT,

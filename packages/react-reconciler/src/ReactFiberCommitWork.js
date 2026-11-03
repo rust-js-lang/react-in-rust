@@ -6,7 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  clearTransitionsForLanes,
   includesLoadingIndicatorLanes,
   includesOnlySuspenseyCommitEligibleLanes,
   includesOnlyViewTransitionEligibleLanes,
@@ -181,6 +180,7 @@ import {doesFiberContain} from './ReactFiberTreeReflection.js';
 import {isDevToolsPresent, onCommitUnmount} from './ReactFiberDevToolsHook.js';
 
 import {releaseCache, retainCache} from './ReactFiberCacheComponent.js';
+import {clearTransitionsForLanes} from './ReactFiberLane.js';
 import {
   OffscreenPassiveEffectsConnected,
   OffscreenVisible,

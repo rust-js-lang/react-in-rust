@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {FormAction} from 'react-reconciler/src/ReactFiberHooks';
 import type {Fiber} from 'react-reconciler/src/ReactInternalTypes';
 import type {DispatchQueue} from '../DOMPluginEventSystem.js';
 import type {EventSystemFlags} from '../EventSystemFlags.js';
@@ -27,6 +28,6 @@ export function extractEvents(
 export function dispatchReplayedFormAction(
   formInst: Fiber,
   form: HTMLFormElement,
-  action: (value: unknown | null | undefined) => unknown | null | undefined,
+  action: FormAction,
   formData: FormData,
 ): void;

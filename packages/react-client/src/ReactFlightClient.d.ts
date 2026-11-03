@@ -5,12 +5,21 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ReactComponentInfo, ReactIOInfo} from 'shared/ReactTypes';
+import type {
+  ReactComponentInfo,
+  ReactDebugInfo,
+  ReactIOInfo,
+} from 'shared/ReactTypes';
 import type {
   CallServerCallback,
   EncodeFormActionCallback,
 } from './ReactFlightReplyClient.js';
 import type {TemporaryReferenceSet} from './ReactFlightTemporaryReferences.js';
+
+export type {
+  CallServerCallback,
+  EncodeFormActionCallback,
+} from './ReactFlightReplyClient.js';
 
 declare const RESPONSE_SYMBOL: unique symbol;
 
@@ -107,7 +116,7 @@ declare class ReactPromise {
   // DEV-only
   _debugChunk?: ReactPromise | null | undefined;
   // DEV-only. A live array: a lazy node forwards it.
-  _debugInfo: (unknown | null | undefined)[] | null | undefined;
+  _debugInfo: ReactDebugInfo | null | undefined;
   // DEV-only
   _receivedDebugInfo?: Set<unknown> | null | undefined;
   // TODO: This doesn't return a new Promise chain unlike the real .then
@@ -132,7 +141,7 @@ export type DebugChannelCallback = (value: string) => void;
 
 export interface DebugChannel {
   hasReadable: boolean;
-  callback?: DebugChannelCallback | null | undefined;
+  callback: DebugChannelCallback | null;
 }
 
 export interface ResponseInstance {
@@ -191,7 +200,7 @@ export interface ResponseInstance {
 export interface WeakResponse {
   weak: WeakRef<ResponseInstance>;
   // This is null when there are no pending chunks.
-  response?: ResponseInstance | null | undefined;
+  response: ResponseInstance | null;
 }
 
 export function getRoot(weakResponse: WeakResponse): ReactPromise;
@@ -227,8 +236,8 @@ export interface InitializationReference {
  * | ErroredInitializationHandler`, told apart by `errored`).
  */
 export interface InitializationHandler {
-  parent?: InitializationHandler | null | undefined;
-  chunk?: ReactPromise | null | undefined;
+  parent: InitializationHandler | null;
+  chunk: ReactPromise | null;
   value: unknown | null | undefined;
   // The controller of a stream whose chunk is blocked on its debug info. Null
   // for every other model. The error the handler was rejected with.

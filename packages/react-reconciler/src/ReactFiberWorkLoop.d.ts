@@ -6,7 +6,11 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {Transition} from 'react/src/ReactStartTransition';
-import type {GestureOptionsRequired} from 'shared/ReactTypes';
+import type {TransitionTypes} from 'react/src/ReactTransitionType';
+import type {
+  ViewTransitionCallback,
+  ViewTransitionGestureCallback,
+} from 'shared/ReactTypes';
 import type {CapturedValue} from './ReactCapturedValue.js';
 import type {Lane, Lanes} from './ReactFiberLane.js';
 import type {
@@ -72,7 +76,7 @@ export function getRootWithPendingPassiveEffects(): FiberRoot | null;
 
 export function getPendingPassiveEffectsLanes(): Lanes;
 
-export function getPendingTransitionTypes(): string[] | null;
+export function getPendingTransitionTypes(): TransitionTypes | null;
 
 export function isWorkLoopSuspendedOnData(): boolean;
 
@@ -84,21 +88,12 @@ export function requestDeferredLane(): Lane;
 
 export function scheduleViewTransitionEvent(
   fiber: Fiber,
-  callback:
-    | ((value: unknown, value2: string[]) => (() => void) | null | undefined)
-    | null,
+  callback: ViewTransitionCallback | null,
 ): void;
 
 export function scheduleGestureTransitionEvent(
   fiber: Fiber,
-  callback:
-    | ((
-        value: unknown,
-        required: GestureOptionsRequired,
-        value2: unknown,
-        value3: string[],
-      ) => (() => void) | null | undefined)
-    | null,
+  callback: ViewTransitionGestureCallback | null,
 ): void;
 
 export function peekDeferredLane(): Lane;

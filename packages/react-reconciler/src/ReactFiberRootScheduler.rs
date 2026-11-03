@@ -46,7 +46,6 @@ use crate::scheduler::NORMAL_PRIORITY as NORMAL_SCHEDULER_PRIORITY;
 use crate::scheduler::SCHEDULE_CALLBACK as SCHEDULER_SCHEDULE_CALLBACK;
 #[cfg_attr(rust_js, rust_js::name = "UserBlockingSchedulerPriority")]
 use crate::scheduler::USER_BLOCKING_PRIORITY as USER_BLOCKING_SCHEDULER_PRIORITY;
-
 use crate::scheduler::{NOW as now, PriorityLevel, SchedulerCallback};
 
 use crate::react_event_priorities::{
@@ -90,14 +89,15 @@ use shared::react_shared_internals::REACT_SHARED_INTERNALS;
 
 use crate::react_profiler_timer::{reset_nested_update_flag, sync_nested_update_flag};
 
-use crate::react_fiber_async_action::{
-    has_ongoing_isomorphic_indicator, mark_isomorphic_indicator_handled,
-    peek_entangled_action_lane, retain_isomorphic_indicator,
-    start_isomorphic_default_indicator_if_needed,
-};
+use crate::react_fiber_async_action::peek_entangled_action_lane;
 
 use shared::noop::noop;
 use shared::report_global_error::REPORT_GLOBAL_ERROR;
+
+use crate::react_fiber_async_action::{
+    has_ongoing_isomorphic_indicator, mark_isomorphic_indicator_handled,
+    retain_isomorphic_indicator, start_isomorphic_default_indicator_if_needed,
+};
 
 thread_local! {
     // A linked list of all the roots with pending work. In an idiomatic app,

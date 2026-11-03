@@ -5,6 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ReactNodeList} from 'shared/ReactTypes';
 import type {Lane} from './ReactFiberLane.js';
 import type {
   Fiber,
@@ -16,6 +17,12 @@ import type {
   TransitionTracingCallbacks,
 } from './ReactInternalTypes.js';
 import type {RootTag} from './ReactRootTags.js';
+
+export {
+  defaultOnCaughtError,
+  defaultOnRecoverableError,
+  defaultOnUncaughtError,
+} from './ReactFiberErrorLogger.js';
 
 export {createPortal} from './ReactPortal.js';
 
@@ -33,12 +40,6 @@ export {
 } from './ReactTestSelectors.js';
 
 export {startHostTransition} from './ReactFiberHooks.js';
-
-export {
-  defaultOnCaughtError,
-  defaultOnRecoverableError,
-  defaultOnUncaughtError,
-} from './ReactFiberErrorLogger.js';
 
 export {
   batchedUpdates,
@@ -72,7 +73,7 @@ export function createContainer(
 ): FiberRoot;
 
 export function createHydrationContainer(
-  initialChildren: unknown | null | undefined,
+  initialChildren: ReactNodeList | null | undefined,
   callback: unknown | null | undefined,
   containerInfo: unknown,
   tag: RootTag,
@@ -89,14 +90,14 @@ export function createHydrationContainer(
 ): FiberRoot;
 
 export function updateContainer(
-  element: unknown | null | undefined,
+  element: ReactNodeList | null | undefined,
   container: FiberRoot,
   parentComponent?: unknown | null | undefined,
   callback?: unknown | null | undefined,
 ): Lane;
 
 export function updateContainerSync(
-  element: unknown | null | undefined,
+  element: ReactNodeList | null | undefined,
   container: FiberRoot,
   parentComponent?: unknown | null | undefined,
   callback?: unknown | null | undefined,

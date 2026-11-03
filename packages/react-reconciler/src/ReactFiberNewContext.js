@@ -204,8 +204,8 @@ function propagateContextChanges(
         // Assigning these to constants to help Flow
         const consumer = fiber;
         for (let i = 0; i < contexts.length; i++) {
-          // Check if the context matches.
           const context = contexts[i];
+          // Check if the context matches.
           if (dep.context === context) {
             // Match! Schedule an update on this fiber.
 

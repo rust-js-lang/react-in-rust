@@ -163,9 +163,7 @@ export function createFromReadableStream(stream, options) {
     startReadingFromStream(
       response,
       stream,
-      () => {
-        close(response);
-      },
+      close.bind(null, response),
       stream,
     );
   }
@@ -190,14 +188,7 @@ export function createFromFetch(promiseForResponse, options) {
         startReadingFromUniversalStream(response, readable, handleDone);
         startReadingFromStream(response, body, handleDone, r);
       } else {
-        startReadingFromStream(
-          response,
-          body,
-          () => {
-            close(response);
-          },
-          r,
-        );
+        startReadingFromStream(response, body, close.bind(null, response), r);
       }
     },
     e => {

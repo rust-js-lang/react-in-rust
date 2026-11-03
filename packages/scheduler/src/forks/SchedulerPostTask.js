@@ -96,8 +96,13 @@ function runTask(priorityLevel, postTaskPriority, node, callback) {
       // Assume this is a continuation
       const continuationOptions = {signal: node._controller.signal};
 
-      const nextTask = () =>
-        runTask(priorityLevel, postTaskPriority, node, result);
+      const nextTask = runTask.bind(
+        null,
+        priorityLevel,
+        postTaskPriority,
+        node,
+        result,
+      );
 
       if (typeof scheduler.yield !== 'undefined') {
         scheduler

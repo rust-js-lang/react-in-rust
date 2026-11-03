@@ -26,7 +26,6 @@ export {
 
 import {
   clearPendingLoadOnNode,
-  detachDeletedInstance,
   getClosestInstanceFromNode,
   getFiberCurrentPropsFromNode,
   getFiberFromScopeInstance,
@@ -41,7 +40,6 @@ import {
   precacheFiberNode,
   updateFiberProps,
 } from './ReactDOMComponentTree.js';
-
 import {
   fiberIsPortaledIntoHost,
   getFragmentInstanceOrTextInstanceSiblings,
@@ -59,6 +57,7 @@ import {
 
 import {compareDocumentPositionForEmptyFragment} from 'shared/ReactDOMFragmentRefShared';
 
+import {detachDeletedInstance} from './ReactDOMComponentTree.js';
 export {detachDeletedInstance} from './ReactDOMComponentTree.js';
 
 import {hasRole} from './DOMAccessibilityRoles.js';
@@ -2278,8 +2277,8 @@ function animateGesture(
   let height;
   let unchangedDimensions = true;
   for (let i = 0; i < keyframes.length; i++) {
-    // Delete any easing since we always apply linear easing to gestures.
     const keyframe = keyframes[i];
+    // Delete any easing since we always apply linear easing to gestures.
     delete keyframe.easing;
     delete keyframe.computedOffset;
     const w = keyframe.width;
@@ -3294,10 +3293,8 @@ function isOnceOption(opts) {
 function getAttachOptions(opts) {
   // Strip once and signal when attaching to host children; Fragment owns once and signal semantics.
   if (opts != null && typeof opts !== 'boolean') {
-    if (!opts.once) {
-      if (!(opts.signal instanceof AbortSignal)) {
-        return opts;
-      }
+    if (!opts.once && !(opts.signal instanceof AbortSignal)) {
+      return opts;
     }
     return {
       capture: opts.capture,

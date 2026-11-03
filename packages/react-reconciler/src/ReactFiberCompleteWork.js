@@ -967,8 +967,7 @@ function completeDehydratedActivityBoundary(
     // from the Suspense Boundary.
     const hydrationErrors = upgradeHydrationErrorsToRecoverable();
     if (current != null && current.memoizedState != null) {
-      const prevState = current.memoizedState;
-      prevState.hydrationErrors = hydrationErrors;
+      current.memoizedState.hydrationErrors = hydrationErrors;
     }
     // Fall through to normal Offscreen path
     return true;
@@ -1054,8 +1053,7 @@ function completeDehydratedSuspenseBoundary(
     // from the Suspense Boundary.
     const hydrationErrors = upgradeHydrationErrorsToRecoverable();
     if (current != null && current.memoizedState != null) {
-      const prevState = current.memoizedState;
-      prevState.hydrationErrors = hydrationErrors;
+      current.memoizedState.hydrationErrors = hydrationErrors;
     }
     // Fall through to normal Suspense path
     return true;

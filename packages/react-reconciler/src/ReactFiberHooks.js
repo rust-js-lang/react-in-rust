@@ -2530,17 +2530,18 @@ function imperativeHandleEffect(create, ref) {
       }
     };
   } else if (ref != null) {
-    if (__DEV__ && !ref.hasOwnProperty('current')) {
+    const refObject = ref;
+    if (__DEV__ && !refObject.hasOwnProperty('current')) {
       console.error(
         'Expected useImperativeHandle() first argument to either be a ' +
           'ref callback or React.createRef() object. Instead received: %s.',
-        'an object with keys {' + Object.keys(ref).join(', ') + '}',
+        'an object with keys {' + Object.keys(refObject).join(', ') + '}',
       );
     }
     const inst = create();
-    ref.current = inst;
+    refObject.current = inst;
     return () => {
-      ref.current = null;
+      refObject.current = null;
     };
   }
 }
@@ -3047,15 +3048,13 @@ export function requestFormReset(formFiber) {
           'fix, move to an action, or wrap with startTransition.',
       );
     }
-  } else if (enableGestureTransition) {
-    if (transition.gesture != null) {
-      throw new Error(
-        'Cannot requestFormReset() inside a startGestureTransition. ' +
-          'There should be no side-effects associated with starting a ' +
-          'Gesture until its Action is invoked. Move side-effects to the ' +
-          'Action instead.',
-      );
-    }
+  } else if (enableGestureTransition && transition.gesture != null) {
+    throw new Error(
+      'Cannot requestFormReset() inside a startGestureTransition. ' +
+        'There should be no side-effects associated with starting a ' +
+        'Gesture until its Action is invoked. Move side-effects to the ' +
+        'Action instead.',
+    );
   }
 
   let stateHook = ensureFormComponentIsStateful(formFiber);

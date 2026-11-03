@@ -1082,27 +1082,26 @@ function isSignatureEqual(referenceId, numberOfBoundArgs) {
     // No bound arguments.
     return numberOfBoundArgs === 0;
   }
+  const boundPromise = referenceClosure.bound;
   // Unwrap the bound arguments array by suspending, if necessary. As with
   // encodeFormData, this means isSignatureEqual can only be called while React
   // is rendering.
-  const status = referenceClosure.bound.status;
+  const status = boundPromise.status;
   switch (status) {
     case 'fulfilled': {
-      const boundArgs = referenceClosure.bound.value;
+      const boundArgs = boundPromise.value;
       return boundArgs.length === numberOfBoundArgs;
     }
     case 'pending':
-      throw referenceClosure.bound;
+      throw boundPromise;
     case 'rejected':
-      throw referenceClosure.bound.reason;
+      throw boundPromise.reason;
     default:
       if (status != null) {
         // Only instrument the thenable if the status if not defined.
       } else {
-        const pendingThenable = referenceClosure.bound;
+        const pendingThenable = boundPromise;
         pendingThenable.status = 'pending';
-        const boundPromise = referenceClosure.bound;
-        const boundPromise$1 = referenceClosure.bound;
         pendingThenable.then(
           boundArgs => {
             const fulfilledThenable = boundPromise;
@@ -1110,13 +1109,13 @@ function isSignatureEqual(referenceId, numberOfBoundArgs) {
             fulfilledThenable.value = boundArgs;
           },
           error => {
-            const rejectedThenable = boundPromise$1;
+            const rejectedThenable = boundPromise;
             rejectedThenable.status = 'rejected';
             rejectedThenable.reason = error;
           },
         );
       }
-      throw referenceClosure.bound;
+      throw boundPromise;
   }
 }
 

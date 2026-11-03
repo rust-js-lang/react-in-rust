@@ -15,6 +15,9 @@
 // no Parcel tests; these hold the clients' behavior as the port writes them.
 
 const {PassThrough} = require('stream');
+const {
+  patchMessageChannel,
+} = require('../../../../scripts/jest/patchMessageChannel');
 
 let serverAct;
 let ReactServerDOMServer;
@@ -29,6 +32,7 @@ const model = {
 function setup(server, client) {
   jest.resetModules();
   global.parcelRequire = {meta: {publicUrl: '/', devServer: null}};
+  patchMessageChannel();
   serverAct = require('internal-test-utils').serverAct;
   jest.mock('react', () => require('react/react.react-server'));
   require('react');

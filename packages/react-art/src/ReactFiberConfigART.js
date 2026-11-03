@@ -62,7 +62,7 @@ function createEventHandler(instance) {
     } else if (typeof listener === 'function') {
       listener.call(instance, event);
     } else if (listener.handleEvent) {
-      listener.handleEvent.call(listener, event);
+      listener.handleEvent(event);
     }
   };
 }
@@ -183,7 +183,7 @@ function applyRenderableNodeProps(instance, props, prevProps) {
 
   if (prevProps.fill !== props.fill) {
     if (props.fill && props.fill.applyFill) {
-      props.fill.applyFill.call(props.fill, instance);
+      props.fill.applyFill(instance);
     } else {
       instance.fill(props.fill);
     }

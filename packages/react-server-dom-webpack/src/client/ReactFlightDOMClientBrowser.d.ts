@@ -5,8 +5,15 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import type {ReactPromise} from 'react-client/src/ReactFlightClient';
-import type {ReactServerValue} from 'react-client/src/ReactFlightReplyClient';
+import type {
+  FindSourceMapURLCallback,
+  ReactPromise,
+} from 'react-client/src/ReactFlightClient';
+import type {
+  CallServerCallback,
+  ReactServerValue,
+} from 'react-client/src/ReactFlightReplyClient';
+import type {TemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
 
 export {
   createServerReference,
@@ -15,7 +22,9 @@ export {
 
 export {createTemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
 
-type ReplyBody = string | FormData;
+export type {TemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
+
+type ReplyBody = string | URLSearchParams | FormData;
 
 export interface DebugChannelOptions {
   writable?: WritableStream | undefined;
@@ -23,15 +32,11 @@ export interface DebugChannelOptions {
 }
 
 export interface Options {
-  callServer?:
-    | ((value: unknown, value2: unknown) => Promise<unknown | null | undefined>)
-    | undefined;
+  callServer?: CallServerCallback | undefined;
   debugChannel?: DebugChannelOptions | undefined;
-  temporaryReferences?: Map<string, unknown> | undefined;
+  temporaryReferences?: TemporaryReferenceSet | undefined;
   unstable_allowPartialStream?: boolean | undefined;
-  findSourceMapURL?:
-    | ((value: string, value2: string) => string | null | undefined)
-    | undefined;
+  findSourceMapURL?: FindSourceMapURLCallback | undefined;
   replayConsoleLogs?: boolean | undefined;
   environmentName?: string | undefined;
   startTime?: number | undefined;
@@ -50,7 +55,7 @@ export function createFromFetch(
 
 /** encodeReply's options. */
 export interface EncodeReplyOptions {
-  temporaryReferences?: Map<string, unknown> | undefined;
+  temporaryReferences?: TemporaryReferenceSet | undefined;
   signal?: AbortSignal | undefined;
 }
 

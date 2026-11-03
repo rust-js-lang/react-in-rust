@@ -27,8 +27,8 @@ export type ReactText = unknown;
 export interface ReactProvider<T> {
   $$typeof: symbol;
   type: ReactContext<T>;
-  key?: ReactKey | null | undefined;
-  ref?: unknown | null | undefined;
+  key: ReactKey | null;
+  ref: unknown | null;
   props: ReactProviderProps<T>;
 }
 
@@ -48,8 +48,8 @@ export interface ReactConsumerType<T> {
 export interface ReactConsumer<T> {
   $$typeof: symbol;
   type: ReactConsumerType<T>;
-  key?: ReactKey | null | undefined;
-  ref?: unknown | null | undefined;
+  key: ReactKey | null;
+  ref: unknown | null;
   props: ReactConsumerProps<T>;
 }
 
@@ -68,7 +68,7 @@ export interface ReactContext<T> {
   _currentValue2: T;
   _threadCount: number;
   Provider: ReactContext<T> | null;
-  Consumer?: ReactConsumerType<T> | null | undefined;
+  Consumer: ReactConsumerType<T> | null;
   // DEV only
   _currentRenderer?: unknown | null | undefined;
   _currentRenderer2?: unknown | null | undefined;
@@ -78,7 +78,7 @@ export interface ReactContext<T> {
 export interface ReactPortal {
   // This tag allow us to uniquely identify this as a React Portal
   $$typeof: symbol;
-  key?: ReactKey | null | undefined;
+  key: ReactKey | null;
   children?: ReactNodeList | undefined;
   containerInfo?: unknown;
   // TODO: figure out the API for cross-renderer implementation.
@@ -145,7 +145,7 @@ export interface ReactCustomFormAction {
   encType?: string | undefined;
   method?: string | undefined;
   target?: string | undefined;
-  data?: FormData | null | undefined;
+  data: FormData | null;
 }
 
 // This is an opaque type returned by decodeFormState on the server, but it's
@@ -236,7 +236,7 @@ export interface ReactErrorInfoDev {
   message: string;
   stack: ReactStackTrace;
   env: string;
-  owner?: string | null | undefined;
+  owner: string | null;
   cause?: JSONValue | undefined;
   errors?: JSONValue | undefined;
 }
@@ -254,7 +254,7 @@ export interface ReactIOInfo {
   // the byte size of this resource across the network. (should only be included if affecting the client.)
   byteSize: number | null | undefined;
   // the Promise that was awaited if any, may be rejected
-  value?: Promise<unknown | null | undefined> | null | undefined;
+  value: Promise<unknown | null | undefined> | null;
   // the environment where this I/O was spawned.
   env?: string | undefined;
   owner?: ReactComponentInfo | null | undefined;

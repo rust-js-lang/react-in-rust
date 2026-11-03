@@ -10,7 +10,7 @@ import type {OffscreenInstance} from './ReactFiberOffscreenComponent.js';
 import type {Fiber, TransitionTracingCallbacks} from './ReactInternalTypes.js';
 
 export interface SuspenseInfo {
-  name?: string | null | undefined;
+  name: string | null;
 }
 
 /**
@@ -18,8 +18,8 @@ export interface SuspenseInfo {
  * transitions.
  */
 export interface MarkerProgress {
-  pendingBoundaries?: PendingBoundaries | null | undefined;
-  transitions?: Set<Transition> | null | undefined;
+  pendingBoundaries: PendingBoundaries | null;
+  transitions: Set<Transition> | null;
 }
 
 /** Why a tracing marker didn't complete, and its transitions. */
@@ -29,20 +29,20 @@ export interface MarkerIncomplete {
 }
 
 export interface PendingTransitionCallbacks {
-  transitionStart?: Transition[] | null | undefined;
-  transitionProgress?: Map<Transition, PendingBoundaries> | null | undefined;
-  transitionComplete?: Transition[] | null | undefined;
-  markerProgress?: Map<string, MarkerProgress> | null | undefined;
-  markerIncomplete?: Map<string, MarkerIncomplete> | null | undefined;
-  markerComplete?: Map<string, Set<Transition>> | null | undefined;
+  transitionStart: Transition[] | null;
+  transitionProgress: Map<Transition, PendingBoundaries> | null;
+  transitionComplete: Transition[] | null;
+  markerProgress: Map<string, MarkerProgress> | null;
+  markerIncomplete: Map<string, MarkerIncomplete> | null;
+  markerComplete: Map<string, Set<Transition>> | null;
 }
 
 // TODO: Is there a way to not include the tag or name here?
 export interface TracingMarkerInstance {
   tag?: TracingMarkerTag | undefined;
-  transitions?: Set<Transition> | null | undefined;
-  pendingBoundaries?: Map<OffscreenInstance, SuspenseInfo> | null | undefined;
-  aborts?: TransitionAbort[] | null | undefined;
+  transitions: Set<Transition> | null;
+  pendingBoundaries: Map<OffscreenInstance, SuspenseInfo> | null;
+  aborts: TransitionAbort[] | null;
   name: string | null | undefined;
 }
 

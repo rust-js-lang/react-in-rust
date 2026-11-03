@@ -97,22 +97,22 @@ export interface Update {
   lane: Lane;
   tag: UpdateTag;
   payload: unknown | null | undefined;
-  callback?: unknown | null | undefined;
-  next?: Update | null | undefined;
+  callback: unknown | null;
+  next: Update | null;
 }
 
 export interface SharedQueue {
-  pending?: Update | null | undefined;
+  pending: Update | null;
   lanes: Lanes;
-  hiddenCallbacks?: unknown[] | null | undefined;
+  hiddenCallbacks: unknown[] | null;
 }
 
 export interface UpdateQueue {
   baseState: unknown | null | undefined;
-  firstBaseUpdate?: Update | null | undefined;
-  lastBaseUpdate?: Update | null | undefined;
+  firstBaseUpdate: Update | null;
+  lastBaseUpdate: Update | null;
   shared: SharedQueue;
-  callbacks?: unknown[] | null | undefined;
+  callbacks: unknown[] | null;
 }
 
 export const UpdateState: UpdateTag;

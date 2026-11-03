@@ -54,15 +54,14 @@ pub use crate::react_dom_update_priority::{
     get_current_update_priority, resolve_update_priority, set_current_update_priority,
 };
 
-use crate::react_dom_component_tree::is_owned_instance;
-
 #[cfg_attr(rust_js, rust_js::name = "getInstanceFromNodeDOMTree")]
 use crate::react_dom_component_tree::get_instance_from_node as get_instance_from_node_dom_tree;
-
+use crate::react_dom_component_tree::is_owned_instance;
 use crate::react_dom_component_tree::{
-    get_closest_instance_from_node, get_fiber_current_props_from_node,
-    get_fiber_from_scope_instance, is_container_marked_as_root, is_marked_hoistable,
-    mark_node_as_hoistable, precache_fiber_node, update_fiber_props,
+    clear_pending_load_on_node, get_closest_instance_from_node, get_fiber_current_props_from_node,
+    get_fiber_from_scope_instance, get_resources_from_root, is_container_marked_as_root,
+    is_marked_hoistable, is_node_pending_load, mark_node_as_hoistable, mark_node_as_pending_load,
+    precache_fiber_node, update_fiber_props,
 };
 use react_reconciler::react_fiber_tree_reflection::{
     fiber_is_portaled_into_host, get_fragment_instance_or_text_instance_siblings,
@@ -109,7 +108,7 @@ use crate::html_node_type::{
 use crate::react_dom_event_replaying::{flush_event_replaying, retry_if_blocked_on};
 
 use shared::react_feature_flags::{
-    DISABLE_COMMENTS_AS_DOM_CONTAINERS, ENABLE_CREATE_EVENT_HANDLE_API,
+    DISABLE_COMMENTS_AS_DOM_CONTAINERS, DISABLE_LEGACY_MODE, ENABLE_CREATE_EVENT_HANDLE_API,
     ENABLE_HYDRATION_CHANGE_EVENT, ENABLE_MOVE_BEFORE, ENABLE_PROFILER_TIMER, ENABLE_SCOPE_API,
     ENABLE_SRC_OBJECT,
 };
@@ -5583,13 +5582,7 @@ fn clear_singleton_preamble_contribution(instance: &Instance) {
     detach_deleted_instance(instance);
 }
 use js::Map;
-use shared::react_feature_flags::DISABLE_LEGACY_MODE;
 use webapi::{DocumentOrShadowRoot, HTMLFormElement, HTMLLinkElement, document_or_shadow_root};
-
-use crate::react_dom_component_tree::{
-    clear_pending_load_on_node, get_resources_from_root, is_node_pending_load,
-    mark_node_as_pending_load,
-};
 
 // -------------------
 //     Resources

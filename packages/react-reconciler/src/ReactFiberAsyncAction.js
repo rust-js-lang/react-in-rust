@@ -206,8 +206,8 @@ export function startIsomorphicDefaultIndicatorIfNeeded() {
     pendingIsomorphicIndicator == null
   ) {
     try {
-      const cleanup = isomorphicDefaultTransitionIndicator();
-      pendingIsomorphicIndicator = cleanup ?? noop;
+      pendingIsomorphicIndicator =
+        isomorphicDefaultTransitionIndicator() ?? noop;
     } catch (x) {
       pendingIsomorphicIndicator = noop;
       reportGlobalError(x);

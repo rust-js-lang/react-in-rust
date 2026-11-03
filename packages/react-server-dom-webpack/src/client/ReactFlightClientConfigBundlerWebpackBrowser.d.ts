@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ReactDebugInfo} from 'shared/ReactTypes';
+
 export function loadChunk(
   chunkId: string,
   filename: string,
@@ -17,7 +19,7 @@ export interface ChunkValue {
 }
 
 export function addChunkDebugInfo(
-  target: (unknown | null | undefined)[],
+  target: ReactDebugInfo,
   chunkId: string,
   filename: string,
 ): void;

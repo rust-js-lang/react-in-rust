@@ -9,8 +9,8 @@ import type {Fiber} from './ReactInternalTypes.js';
 
 export interface CapturedValue<T> {
   value: T;
-  source?: Fiber | null | undefined;
-  stack?: string | null | undefined;
+  source: Fiber | null;
+  stack: string | null;
 }
 
 export function createCapturedValueAtFiber(

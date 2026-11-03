@@ -54,7 +54,6 @@ use crate::scheduler::IDLE_PRIORITY as IDLE_SCHEDULER_PRIORITY;
 use crate::scheduler::NORMAL_PRIORITY as NORMAL_SCHEDULER_PRIORITY;
 #[cfg_attr(rust_js, rust_js::name = "Scheduler_scheduleCallback")]
 use crate::scheduler::SCHEDULE_CALLBACK as SCHEDULER_SCHEDULE_CALLBACK;
-
 use crate::scheduler::{NOW as now, PriorityLevel, REQUEST_PAINT, SHOULD_YIELD, SchedulerCallback};
 
 use crate::react_fiber_performance_track::{
@@ -314,7 +313,6 @@ use crate::react_fiber_lane::mark_root_pinged as _mark_root_pinged;
 use crate::react_fiber_lane::mark_root_suspended as _mark_root_suspended;
 #[cfg_attr(rust_js, rust_js::name = "_markRootUpdated")]
 use crate::react_fiber_lane::mark_root_updated as _mark_root_updated;
-
 use crate::react_fiber_lane::{
     GESTURE_LANE, IDLE_LANE, Lane, Lanes, NO_LANE, NO_LANES, OFFSCREEN_LANE, SOME_RETRY_LANE,
     SOME_TRANSITION_LANE, SYNC_LANE, SYNC_UPDATE_LANES, UPDATE_LANES, add_fiber_to_lanes_map,

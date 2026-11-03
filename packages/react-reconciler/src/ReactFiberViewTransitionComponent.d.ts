@@ -8,6 +8,8 @@
 import type {ViewTransitionProps} from 'shared/ReactTypes';
 import type {ViewTransitionState} from './ReactFiber.js';
 
+export type {ViewTransitionState} from './ReactFiber.js';
+
 type ViewTransitionClass =
   | string
   | {

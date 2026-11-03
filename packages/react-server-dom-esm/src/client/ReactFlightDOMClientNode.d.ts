@@ -6,25 +6,27 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {Readable} from 'stream';
-import type {ReactPromise} from 'react-client/src/ReactFlightClient';
-import type {ReactCustomFormAction} from 'shared/ReactTypes';
+import type {
+  FindSourceMapURLCallback,
+  ReactPromise,
+} from 'react-client/src/ReactFlightClient';
+import type {
+  EncodeFormActionCallback,
+  ServerFunction,
+} from 'react-client/src/ReactFlightReplyClient';
 
 export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
 
 export function createServerReference(
   id: unknown,
   callServer?: unknown | null | undefined,
-): () => unknown | null | undefined;
+): ServerFunction;
 
 export interface Options {
   nonce?: unknown;
-  encodeFormAction?:
-    | ((value: unknown, value2: any) => ReactCustomFormAction)
-    | undefined;
+  encodeFormAction?: EncodeFormActionCallback | undefined;
   unstable_allowPartialStream?: boolean | undefined;
-  findSourceMapURL?:
-    | ((value: string, value2: string) => string | null | undefined)
-    | undefined;
+  findSourceMapURL?: FindSourceMapURLCallback | undefined;
   replayConsoleLogs?: boolean | undefined;
   environmentName?: string | undefined;
   startTime?: number | undefined;

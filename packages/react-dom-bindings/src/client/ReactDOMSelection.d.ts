@@ -11,7 +11,7 @@
  * selection, and an `end` left out is the `start`.
  */
 export interface Offsets {
-  start?: number | null | undefined;
+  start: number | null;
   end?: number | null | undefined | undefined;
 }
 

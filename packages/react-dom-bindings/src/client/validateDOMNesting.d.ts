@@ -10,16 +10,16 @@ export interface Info {
 }
 
 export interface AncestorInfoDev {
-  current?: Info | null | undefined;
-  formTag?: Info | null | undefined;
-  aTagInScope?: Info | null | undefined;
-  buttonTagInScope?: Info | null | undefined;
-  nobrTagInScope?: Info | null | undefined;
-  pTagInButtonScope?: Info | null | undefined;
-  listItemTagAutoclosing?: Info | null | undefined;
-  dlItemTagAutoclosing?: Info | null | undefined;
+  current: Info | null;
+  formTag: Info | null;
+  aTagInScope: Info | null;
+  buttonTagInScope: Info | null;
+  nobrTagInScope: Info | null;
+  pTagInButtonScope: Info | null;
+  listItemTagAutoclosing: Info | null;
+  dlItemTagAutoclosing: Info | null;
   // <head> or <body>
-  containerTagInScope?: Info | null | undefined;
+  containerTagInScope: Info | null;
   implicitRootScope: boolean;
 }
 

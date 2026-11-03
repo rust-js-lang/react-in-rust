@@ -99,9 +99,7 @@ export function createFromNodeStream(stream, options) {
     startReadingFromStream(response, options.debugChannel, handleEnd);
     startReadingFromStream(response, stream, handleEnd);
   } else {
-    startReadingFromStream(response, stream, () => {
-      close(response);
-    });
+    startReadingFromStream(response, stream, close.bind(null, response));
   }
 
   return getRoot(response);

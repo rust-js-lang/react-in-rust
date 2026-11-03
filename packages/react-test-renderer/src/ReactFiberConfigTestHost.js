@@ -115,12 +115,6 @@ export {
 } from 'react-reconciler/src/ReactFiberConfigWithNoSingletons';
 import {$insertAt, $position} from '@rust-js/runtime';
 
-const ContainerOrInstance = {
-  children(containerOrInstance) {
-    return containerOrInstance.children;
-  },
-};
-
 const NO_CONTEXT = {};
 const nodeToInstanceMap = new WeakMap();
 
@@ -145,7 +139,7 @@ export function getPublicInstance(inst) {
 }
 
 export function appendChild(parentInstance, child) {
-  if (__DEV__ && !isArray(ContainerOrInstance.children(parentInstance))) {
+  if (__DEV__ && !isArray(parentInstance.children)) {
     console.error(
       'An invalid container has been provided. ' +
         'This may indicate that another renderer is being used in addition to the test renderer. ' +
@@ -153,7 +147,7 @@ export function appendChild(parentInstance, child) {
         'This is not supported.',
     );
   }
-  const children = ContainerOrInstance.children(parentInstance);
+  const children = parentInstance.children;
   const index = children.indexOf(child);
   if (index !== -1) {
     children.splice(index, 1);
@@ -162,7 +156,7 @@ export function appendChild(parentInstance, child) {
 }
 
 export function insertBefore(parentInstance, child, beforeChild) {
-  const children = ContainerOrInstance.children(parentInstance);
+  const children = parentInstance.children;
   const index = children.indexOf(child);
   if (index !== -1) {
     children.splice(index, 1);
@@ -175,7 +169,7 @@ export function insertBefore(parentInstance, child, beforeChild) {
 }
 
 export function removeChild(parentInstance, child) {
-  const children = ContainerOrInstance.children(parentInstance);
+  const children = parentInstance.children;
   const index = children.indexOf(child);
   if (index !== -1) {
     children.splice(index, 1);

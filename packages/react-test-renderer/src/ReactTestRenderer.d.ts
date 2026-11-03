@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {Fiber} from 'react-reconciler/src/ReactInternalTypes';
+import type {ReactNodeList} from 'shared/ReactTypes';
 
 export {default as version} from 'shared/ReactVersion';
 
@@ -79,7 +80,7 @@ export interface TestRenderer {
 }
 
 export function create(
-  element?: unknown | null | undefined,
+  element?: ReactNodeList | null | undefined,
   options?: TestRendererOptions | null | undefined,
 ): TestRenderer;
 

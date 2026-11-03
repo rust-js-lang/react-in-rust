@@ -5,11 +5,12 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {ReactDebugInfo} from 'shared/ReactTypes';
 import type {Chunk} from '../shared/ReactFlightImportMetadata.js';
 
 export function loadChunk(filename: Chunk): Promise<unknown | null | undefined>;
 
 export function addChunkDebugInfo(
-  target: (unknown | null | undefined)[],
+  target: ReactDebugInfo,
   filename: string,
 ): void;

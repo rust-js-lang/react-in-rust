@@ -4987,9 +4987,9 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
         if (byte === 58 /* ":" */) {
           // Finished the rowID, next we'll parse the tag.
           rowState = ROW_TAG;
-        } else {
-          rowId = (rowId << 4) | (byte > 96 ? byte - 87 : (byte - 48) | 0);
+          continue;
         }
+        rowId = (rowId << 4) | (byte > 96 ? byte - 87 : (byte - 48) | 0);
         continue;
       }
       case ROW_TAG: {
@@ -4999,39 +4999,41 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
           2147483647,
         );
         if (
-          resolvedRowTag === 84 /* "T" */ ||
-          resolvedRowTag === 65 /* "A" */ ||
-          resolvedRowTag === 79 /* "O" */ ||
-          resolvedRowTag === 111 /* "o" */ ||
-          resolvedRowTag === 98 /* "b" */ ||
-          resolvedRowTag === 85 /* "U" */ ||
-          resolvedRowTag === 83 /* "S" */ ||
-          resolvedRowTag === 115 /* "s" */ ||
-          resolvedRowTag === 76 /* "L" */ ||
-          resolvedRowTag === 108 /* "l" */ ||
-          resolvedRowTag === 71 /* "G" */ ||
-          resolvedRowTag === 103 /* "g" */ ||
-          resolvedRowTag === 77 /* "M" */ ||
-          resolvedRowTag === 109 /* "m" */ ||
-          resolvedRowTag === 86 /* "V" */
+          resolvedRowTag !== 84 /* "T" */ &&
+          resolvedRowTag !== 65 /* "A" */ &&
+          resolvedRowTag !== 79 /* "O" */ &&
+          resolvedRowTag !== 111 /* "o" */ &&
+          resolvedRowTag !== 98 /* "b" */ &&
+          resolvedRowTag !== 85 /* "U" */ &&
+          resolvedRowTag !== 83 /* "S" */ &&
+          resolvedRowTag !== 115 /* "s" */ &&
+          resolvedRowTag !== 76 /* "L" */ &&
+          resolvedRowTag !== 108 /* "l" */ &&
+          resolvedRowTag !== 71 /* "G" */ &&
+          resolvedRowTag !== 103 /* "g" */ &&
+          resolvedRowTag !== 77 /* "M" */ &&
+          resolvedRowTag !== 109 /* "m" */ &&
+          resolvedRowTag !== 86 /* "V" */
         ) {
-          rowTag = resolvedRowTag;
-          rowState = ROW_LENGTH;
-          i++;
-        } else if (
-          (resolvedRowTag > 64 && resolvedRowTag < 91) /* "A"-"Z" */ ||
-          resolvedRowTag === 35 /* "#" */ ||
-          resolvedRowTag === 114 /* "r" */ ||
-          resolvedRowTag === 120 /* "x" */
-        ) {
+          if (
+            (resolvedRowTag <= 64 || resolvedRowTag >= 91) /* "A"-"Z" */ &&
+            resolvedRowTag !== 35 /* "#" */ &&
+            resolvedRowTag !== 114 /* "r" */ &&
+            resolvedRowTag !== 120 /* "x" */
+          ) {
+            rowTag = 0;
+            rowState = ROW_CHUNK_BY_NEWLINE;
+            // This was an unknown tag so it was probably part of the data.
+            continue;
+          }
           rowTag = resolvedRowTag;
           rowState = ROW_CHUNK_BY_NEWLINE;
           i++;
-        } else {
-          rowTag = 0;
-          rowState = ROW_CHUNK_BY_NEWLINE;
-          // This was an unknown tag so it was probably part of the data.
+          continue;
         }
+        rowTag = resolvedRowTag;
+        rowState = ROW_LENGTH;
+        i++;
         continue;
       }
       case ROW_LENGTH: {
@@ -5040,10 +5042,10 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
         if (byte === 44 /* "," */) {
           // Finished the rowLength, next we'll buffer up to that length.
           rowState = ROW_CHUNK_BY_LENGTH;
-        } else {
-          rowLength =
-            (rowLength << 4) | (byte > 96 ? byte - 87 : (byte - 48) | 0);
+          continue;
         }
+        rowLength =
+          (rowLength << 4) | (byte > 96 ? byte - 87 : (byte - 48) | 0);
         continue;
       }
       case ROW_CHUNK_BY_NEWLINE:
@@ -5167,9 +5169,9 @@ export function processStringChunk(weakResponse, streamState, chunk) {
         if (byte === 58 /* ":" */) {
           // Finished the rowID, next we'll parse the tag.
           rowState = ROW_TAG;
-        } else {
-          rowId = (rowId << 4) | (byte > 96 ? byte - 87 : (byte - 48) | 0);
+          continue;
         }
+        rowId = (rowId << 4) | (byte > 96 ? byte - 87 : (byte - 48) | 0);
         continue;
       }
       case ROW_TAG: {
@@ -5179,37 +5181,39 @@ export function processStringChunk(weakResponse, streamState, chunk) {
           2147483647,
         );
         if (
-          resolvedRowTag === 84 /* "T" */ ||
-          resolvedRowTag === 65 /* "A" */ ||
-          resolvedRowTag === 79 /* "O" */ ||
-          resolvedRowTag === 111 /* "o" */ ||
-          resolvedRowTag === 85 /* "U" */ ||
-          resolvedRowTag === 83 /* "S" */ ||
-          resolvedRowTag === 115 /* "s" */ ||
-          resolvedRowTag === 76 /* "L" */ ||
-          resolvedRowTag === 108 /* "l" */ ||
-          resolvedRowTag === 71 /* "G" */ ||
-          resolvedRowTag === 103 /* "g" */ ||
-          resolvedRowTag === 77 /* "M" */ ||
-          resolvedRowTag === 109 /* "m" */ ||
-          resolvedRowTag === 86 /* "V" */
+          resolvedRowTag !== 84 /* "T" */ &&
+          resolvedRowTag !== 65 /* "A" */ &&
+          resolvedRowTag !== 79 /* "O" */ &&
+          resolvedRowTag !== 111 /* "o" */ &&
+          resolvedRowTag !== 85 /* "U" */ &&
+          resolvedRowTag !== 83 /* "S" */ &&
+          resolvedRowTag !== 115 /* "s" */ &&
+          resolvedRowTag !== 76 /* "L" */ &&
+          resolvedRowTag !== 108 /* "l" */ &&
+          resolvedRowTag !== 71 /* "G" */ &&
+          resolvedRowTag !== 103 /* "g" */ &&
+          resolvedRowTag !== 77 /* "M" */ &&
+          resolvedRowTag !== 109 /* "m" */ &&
+          resolvedRowTag !== 86 /* "V" */
         ) {
-          rowTag = resolvedRowTag;
-          rowState = ROW_LENGTH;
-          i++;
-        } else if (
-          (resolvedRowTag > 64 && resolvedRowTag < 91) /* "A"-"Z" */ ||
-          resolvedRowTag === 114 /* "r" */ ||
-          resolvedRowTag === 120 /* "x" */
-        ) {
+          if (
+            (resolvedRowTag <= 64 || resolvedRowTag >= 91) /* "A"-"Z" */ &&
+            resolvedRowTag !== 114 /* "r" */ &&
+            resolvedRowTag !== 120 /* "x" */
+          ) {
+            rowTag = 0;
+            rowState = ROW_CHUNK_BY_NEWLINE;
+            // This was an unknown tag so it was probably part of the data.
+            continue;
+          }
           rowTag = resolvedRowTag;
           rowState = ROW_CHUNK_BY_NEWLINE;
           i++;
-        } else {
-          rowTag = 0;
-          rowState = ROW_CHUNK_BY_NEWLINE;
-          // This was an unknown tag so it was probably part of the data.
+          continue;
         }
+        rowTag = resolvedRowTag;
+        rowState = ROW_LENGTH;
+        i++;
         continue;
       }
       case ROW_LENGTH: {
@@ -5218,10 +5222,10 @@ export function processStringChunk(weakResponse, streamState, chunk) {
         if (byte === 44 /* "," */) {
           // Finished the rowLength, next we'll buffer up to that length.
           rowState = ROW_CHUNK_BY_LENGTH;
-        } else {
-          rowLength =
-            (rowLength << 4) | (byte > 96 ? byte - 87 : (byte - 48) | 0);
+          continue;
         }
+        rowLength =
+          (rowLength << 4) | (byte > 96 ? byte - 87 : (byte - 48) | 0);
         continue;
       }
       case ROW_CHUNK_BY_NEWLINE:

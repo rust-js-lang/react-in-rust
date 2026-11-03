@@ -8,8 +8,9 @@
 import type {Fiber} from 'react-reconciler/src/ReactInternalTypes';
 import type {
   BoundingRect,
-  Intersection,
+  ObserveVisibleRectsCallback,
 } from 'react-reconciler/src/ReactTestSelectors';
+import type {TransitionTypes} from 'react/src/ReactTransitionType';
 import type {ReactContext} from 'shared/ReactTypes';
 import type {FormStatus} from '../shared/ReactDOMFormActions.js';
 import type {AncestorInfoDev} from './validateDOMNesting.js';
@@ -388,7 +389,7 @@ export function hasInstanceAffectedParent(
 export function startViewTransition(
   suspendedState: SuspendedState | null | undefined,
   rootContainer: Container,
-  transitionTypes: string[] | null | undefined,
+  transitionTypes: TransitionTypes | null | undefined,
   mutationCallback: () => void,
   layoutCallback: () => void,
   afterMutationCallback: () => void,
@@ -408,7 +409,7 @@ export function startGestureTransition(
   timeline: GestureTimeline,
   rangeStart: number,
   rangeEnd: number,
-  transitionTypes: string[] | null | undefined,
+  transitionTypes: TransitionTypes | null | undefined,
   mutationCallback: () => void,
   animateCallback: () => void,
   errorCallback: (value: unknown | null | undefined) => void,
@@ -478,7 +479,7 @@ export interface StoredEventListener {
   // When once:true, a wrapper that removes the fragment listener after the
   // first fire. Otherwise the same as listener.
   attachedListener: EventListenerOrEventListenerObject;
-  cleanup?: (() => void) | null | undefined;
+  cleanup: (() => void) | null;
 }
 
 /**
@@ -493,8 +494,8 @@ export type EventListeners = StoredEventListener[];
  */
 declare class FragmentInstance {
   _fragmentFiber: Fiber;
-  _eventListeners?: StoredEventListener[] | null | undefined;
-  _observers?: Set<Observer> | null | undefined;
+  _eventListeners: StoredEventListener[] | null;
+  _observers: Set<Observer> | null;
   addEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
@@ -786,7 +787,7 @@ export interface IntersectionObserverHandle {
 
 export function setupIntersectionObserver(
   targets: Instance[],
-  callback: (value: Intersection[]) => void,
+  callback: ObserveVisibleRectsCallback,
   options?: any | null | undefined,
 ): IntersectionObserverHandle;
 
@@ -835,7 +836,7 @@ export const supportsResources: boolean;
  */
 export interface StylesheetState {
   loading: number;
-  preload?: HTMLLinkElement | null | undefined;
+  preload: HTMLLinkElement | null;
 }
 
 /**
@@ -844,9 +845,9 @@ export interface StylesheetState {
  */
 export interface Resource {
   type: string;
-  instance?: Element | null | undefined;
+  instance: Element | null;
   count: number;
-  state?: StylesheetState | null | undefined;
+  state: StylesheetState | null;
 }
 
 /** A root's hoistable styles and scripts, each by its key. */
@@ -947,14 +948,14 @@ export function preloadResource(resource: Resource): boolean;
  * running view transition, and what to call once none is left.
  */
 export interface SuspendedState {
-  stylesheets?: Map<Resource, Document | ShadowRoot> | null | undefined;
+  stylesheets: Map<Resource, Document | ShadowRoot> | null;
   count: number;
   imgCount: number;
   imgBytes: number;
   suspenseyImages: HTMLImageElement[];
   waitingForImages: boolean;
   waitingForViewTransition: boolean;
-  unsuspend?: (() => void) | null | undefined;
+  unsuspend: (() => void) | null;
 }
 
 export function startSuspendingCommit(): SuspendedState;

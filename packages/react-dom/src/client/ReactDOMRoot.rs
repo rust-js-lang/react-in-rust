@@ -7,9 +7,6 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use js::{Kind, SymbolFor, Unknown};
-use react_reconciler::react_fiber_error_logger::{
-    default_on_caught_error, default_on_recoverable_error, default_on_uncaught_error,
-};
 use react_reconciler::react_internal_types::{
     FiberRoot, OnCaughtError, OnDefaultTransitionIndicator, OnError, TransitionTracingCallbacks,
 };
@@ -31,7 +28,10 @@ use react_dom_bindings::react_dom_component_tree::{
 
 use react_dom_bindings::dom_plugin_event_system::listen_to_all_supported_events;
 use react_dom_bindings::html_node_type::COMMENT_NODE;
-use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
+use react_reconciler::react_fiber_reconciler::{
+    ReactFiberReconciler, default_on_caught_error, default_on_recoverable_error,
+    default_on_uncaught_error,
+};
 
 use crate::react_dom_default_transition_indicator::default_on_default_transition_indicator;
 use react_reconciler::react_root_tags::CONCURRENT_ROOT;

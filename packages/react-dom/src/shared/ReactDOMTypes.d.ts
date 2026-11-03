@@ -5,6 +5,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {CrossOriginString} from 'react-dom-bindings/src/shared/crossOriginStrings';
+
+export type {HostDispatcher} from 'shared/ReactDOMSharedInternals';
+
 export interface PrefetchDNSOptions {}
 
 export interface PreconnectOptions {
@@ -50,7 +54,7 @@ export interface PreinitModuleOptions {
 }
 
 /** `'' | 'use-credentials' | CrossOriginString`. */
-export type CrossOriginEnum = string;
+export type CrossOriginEnum = CrossOriginString;
 
 export type FetchPriorityEnum = 'high' | 'low' | 'auto';
 

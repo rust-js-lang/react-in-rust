@@ -5,12 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {
-  defaultOnCaughtError,
-  defaultOnRecoverableError,
-  defaultOnUncaughtError,
-} from 'react-reconciler/src/ReactFiberErrorLogger';
-
 import {isValidContainer} from 'react-dom-bindings/src/client/ReactDOMContainer';
 import {queueExplicitHydrationTarget} from 'react-dom-bindings/src/events/ReactDOMEventReplaying';
 import {REACT_ELEMENT_TYPE} from 'shared/ReactSymbols';
@@ -28,6 +22,11 @@ import {
 
 import {listenToAllSupportedEvents} from 'react-dom-bindings/src/events/DOMPluginEventSystem';
 import {COMMENT_NODE} from 'react-dom-bindings/src/client/HTMLNodeType';
+import {
+  defaultOnCaughtError,
+  defaultOnRecoverableError,
+  defaultOnUncaughtError,
+} from 'react-reconciler/src/ReactFiberErrorLogger';
 import {
   createContainer,
   createHydrationContainer,

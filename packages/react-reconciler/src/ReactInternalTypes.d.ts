@@ -52,7 +52,7 @@ export type HookType =
 /** A context a fiber read, and the value it read of it. */
 export interface ContextDependency<T> {
   context: ReactContext<T>;
-  next?: ContextDependency<unknown | null | undefined> | null | undefined;
+  next: ContextDependency<unknown | null | undefined> | null;
   memoizedValue: T;
 }
 
@@ -62,10 +62,7 @@ export interface ContextDependency<T> {
  */
 export interface Dependencies {
   lanes: Lanes;
-  firstContext?:
-    | ContextDependency<unknown | null | undefined>
-    | null
-    | undefined;
+  firstContext: ContextDependency<unknown | null | undefined> | null;
   // DEV-only: ReactFiberThenable's `ThenableState`.
   _debugThenableState?: unknown | null | undefined;
 }
@@ -126,14 +123,14 @@ export interface Fiber {
   // This is effectively the parent, but there can be multiple parents (two)
   // so this is only the parent of the thing we're currently processing.
   // It is conceptually the same as the return address of a stack frame.
-  return?: Fiber | null | undefined;
+  return: Fiber | null;
   // Singly Linked List Tree Structure.
-  child?: Fiber | null | undefined;
-  sibling?: Fiber | null | undefined;
+  child: Fiber | null;
+  sibling: Fiber | null;
   index: number;
   // The ref last used to attach this node.
   // I'll avoid adding an owner field for prod and model that as functions.
-  ref?: Ref | null | undefined;
+  ref: Ref | null;
   refCleanup: unknown | null | undefined;
   // Input is the data coming into process this fiber. Arguments. Props.
   pendingProps: unknown | null | undefined;
@@ -143,7 +140,7 @@ export interface Fiber {
   // The state used to create the output
   memoizedState: unknown | null | undefined;
   // Dependencies (contexts, events) for this fiber, if it has any
-  dependencies?: Dependencies | null | undefined;
+  dependencies: Dependencies | null;
   // Bitfield that describes properties about the fiber and its subtree. E.g.
   // the ConcurrentMode flag indicates whether the subtree should be async-by-
   // default. When a fiber is created, it inherits the mode of its
@@ -154,13 +151,13 @@ export interface Fiber {
   // Effect
   flags: Flags;
   subtreeFlags: Flags;
-  deletions?: Fiber[] | null | undefined;
+  deletions: Fiber[] | null;
   lanes: Lanes;
   childLanes: Lanes;
   // This is a pooled version of a Fiber. Every fiber that gets updated will
   // eventually have a pair. There are cases when we can clean up pairs to save
   // memory if we need to.
-  alternate?: Fiber | null | undefined;
+  alternate: Fiber | null;
   // Time spent rendering this Fiber and its descendants for the current update.
   // This tells us how well the tree makes use of sCU for memoization.
   // It is reset to 0 each time we render and only updated when we don't bailout.
@@ -304,11 +301,11 @@ export interface FiberRoot {
   // ReactFiberConfig's `Container`.
   containerInfo: unknown;
   // Used only by persistent updates.
-  pendingChildren?: unknown | null | undefined;
+  pendingChildren: unknown | null;
   // The currently active root fiber. This is the mutable root of the tree.
   current: Fiber;
   // A `WeakMap` where the host has one, a `Map` where it hasn't.
-  pingCache?: WeakMap<any, Set<number>> | null | undefined;
+  pingCache: WeakMap<any, Set<number>> | null;
   // Timeout handle returned by setTimeout. Used to cancel a pending timeout, if
   // it's superseded by a new one.
   // ReactFiberConfig's `TimeoutHandle | NoTimeout`.
@@ -316,16 +313,16 @@ export interface FiberRoot {
   // When a root has a pending commit scheduled, calling this function will
   // cancel it.
   // TODO: Can this be consolidated with timeoutHandle?
-  cancelPendingCommit?: (() => void) | null | undefined;
+  cancelPendingCommit: (() => void) | null;
   // Top context object, used by renderSubtreeIntoContainer
-  context?: object | null | undefined;
-  pendingContext?: object | null | undefined;
+  context: object | null;
+  pendingContext: object | null;
   // Used to create a linked list that represent all the roots that have
   // pending work scheduled on them.
-  next?: FiberRoot | null | undefined;
+  next: FiberRoot | null;
   // Node returned by Scheduler.scheduleCallback. Represents the next rendering
   // task that the root will work on.
-  callbackNode?: unknown | null | undefined;
+  callbackNode: unknown | null;
   callbackPriority: Lane;
   expirationTimes: LaneMap<number>;
   hiddenUpdates: LaneMap<ConcurrentUpdate[] | null | undefined>;
@@ -339,7 +336,7 @@ export interface FiberRoot {
   shellSuspendCounter: number;
   entangledLanes: Lanes;
   entanglements: LaneMap<Lanes>;
-  pooledCache?: Cache | null | undefined;
+  pooledCache: Cache | null;
   pooledCacheLanes: Lanes;
   // TODO: In Fizz, id generation is specific to each server config. Maybe we
   // should do this in Fiber, too? Deferring this decision for now because
@@ -357,7 +354,7 @@ export interface FiberRoot {
     | undefined;
   pendingIndicator?: (() => void) | null | undefined;
   // shared/ReactTypes' `ReactFormState<any, any>`.
-  formState?: unknown | null | undefined;
+  formState: unknown | null;
   // enableViewTransition only
   // react/src/ReactTransitionType's `TransitionTypes`.
   transitionTypes?: string[] | null | undefined;

@@ -16,7 +16,7 @@ export interface ConcurrentUpdate {
 }
 
 export interface ConcurrentQueue {
-  pending?: ConcurrentUpdate | null | undefined;
+  pending: ConcurrentUpdate | null;
 }
 
 export function finishQueueingConcurrentUpdates(): void;

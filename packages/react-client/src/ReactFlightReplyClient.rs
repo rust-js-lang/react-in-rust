@@ -14,7 +14,7 @@ use shared::environment::__DEV__;
 use shared::react_types::{ReactCustomFormAction, Thenable, Wakeable};
 use webapi::{
     AbortController, AbortSignal, Blob, BlobPart, Byob, EventTargetExt, FormData, ReadableStream,
-    ReadableStreamGetByobReaderOptions, ReadableStreamReadResult, console,
+    ReadableStreamGetByobReaderOptions, ReadableStreamReadResult, URLSearchParams, console,
 };
 
 use shared::react_symbols::{
@@ -74,6 +74,7 @@ pub type ServerReferenceId = &'static Unknown;
 #[cfg_attr(rust_js, rust_js::untagged)]
 pub enum ReplyBody {
     Text(String),
+    UrlSearchParams(&'static URLSearchParams),
     Form(&'static FormData),
 }
 
@@ -1349,6 +1350,7 @@ fn encode_form_data(reference: Option<&'static Unknown>) -> &'static Thenable {
                     data
                 }
                 ReplyBody::Form(data) => data,
+                ReplyBody::UrlSearchParams(_) => unsafe { std::hint::unreachable_unchecked() },
             };
             let fulfilled: &Thenable = thenable;
             fulfilled.set_status("fulfilled");

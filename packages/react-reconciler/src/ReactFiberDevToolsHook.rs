@@ -29,7 +29,6 @@ use crate::scheduler::IMMEDIATE_PRIORITY as IMMEDIATE_SCHEDULER_PRIORITY;
 use crate::scheduler::NORMAL_PRIORITY as NORMAL_SCHEDULER_PRIORITY;
 #[cfg_attr(rust_js, rust_js::name = "UserBlockingSchedulerPriority")]
 use crate::scheduler::USER_BLOCKING_PRIORITY as USER_BLOCKING_SCHEDULER_PRIORITY;
-
 use crate::scheduler::{LOG, PriorityLevel, UNSTABLE_SET_DISABLE_YIELD_VALUE};
 
 /// React DevTools' global hook, as the reconciler reads it: what DevTools,

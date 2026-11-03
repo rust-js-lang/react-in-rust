@@ -79,16 +79,17 @@ import {
   syncNestedUpdateFlag,
 } from './ReactProfilerTimer.js';
 
-import {
-  hasOngoingIsomorphicIndicator,
-  markIsomorphicIndicatorHandled,
-  peekEntangledActionLane,
-  retainIsomorphicIndicator,
-  startIsomorphicDefaultIndicatorIfNeeded,
-} from './ReactFiberAsyncAction.js';
+import {peekEntangledActionLane} from './ReactFiberAsyncAction.js';
 
 import noop from 'shared/noop';
 import reportGlobalError from 'shared/reportGlobalError';
+
+import {
+  hasOngoingIsomorphicIndicator,
+  markIsomorphicIndicatorHandled,
+  retainIsomorphicIndicator,
+  startIsomorphicDefaultIndicatorIfNeeded,
+} from './ReactFiberAsyncAction.js';
 import {$unwrap} from '@rust-js/runtime';
 
 // A linked list of all the roots with pending work. In an idiomatic app,

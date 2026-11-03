@@ -59,8 +59,7 @@ export function injectInternals(internals) {
     return true;
   }
   try {
-    const rendererId = hook.inject(internals);
-    rendererID = rendererId ?? null;
+    rendererID = hook.inject(internals) ?? null;
 
     // We have successfully injected, so now it is safe to set up hooks.
     injectedHook = hook;
