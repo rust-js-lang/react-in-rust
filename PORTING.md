@@ -2145,8 +2145,8 @@ The port is split between sessions by package:
   'react-reconciler/src/ReactTestSelectors'` in rustfmt's order, where
   upstream re-exports them from 'react-reconciler/src/ReactFiberReconciler':
   the port's ReactFiberReconciler is the reconciler's namespace, whose
-  selector methods a `pub use` can't name (rd729, pending the
-  coordinator's decision).
+  selector methods a `pub use` can't name: **accepted by the user**
+  (rd729, 2026-11-04; the same functions, no result changes).
   react-dom-bindings' events/forks/EventListener-www, www's listeners, is
   Rust (Batch 64), declared beside EventListener as `#[path =
   "src/events/forks/EventListener-www.rs"] pub mod event_listener_www;`;
