@@ -2075,12 +2075,13 @@ The port is split between sessions by package:
   Rust (Batch 64), declared in noop.rs as `#[path = "flight-modules.rs"]
   pub mod flight_modules;`. Its counter is a private thread-local
   `Cell<f64>`, whole (rust-js 7f53c97ba, rd707), and its modules a
-  `RefCell<HashMap<String, &Unknown>>`, `new Map()`. Differences, pending
-  the coordinator's decision: saveModule prints `const idx =
-  String(moduleIdx); moduleIdx++;` where upstream writes `const idx = '' +
-  moduleIdx++;`; and the `.d.ts` types a module `unknown` (`render:
-  unknown`, readModule's `unknown | null | undefined`), where upstream's
-  Flow type is `Function`.
+  `RefCell<HashMap<String, &Unknown>>`, `new Map()`. saveModule prints
+  `const idx = String(moduleIdx); moduleIdx++;` where upstream writes
+  `const idx = '' + moduleIdx++;` (accepted on the user's behalf while
+  away, the coordinator, 2026-11-04; the same text). Pending in rust-js,
+  rd724: the `.d.ts` types a module `unknown` (`render: unknown`,
+  readModule's `unknown | null | undefined`), looser than upstream's Flow
+  `Function`, as js has no value type of a function of any signature.
   react-test-renderer's ReactFiberConfigTestHost and ReactTestRenderer are
   Rust; react-art's ReactARTInternals, ReactFiberConfigART and ReactART
   are Rust. ReactART's Surface and Text are class components (rust-js ADR
