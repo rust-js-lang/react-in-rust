@@ -13,8 +13,6 @@ import {
   enableTaint,
 } from 'shared/ReactFeatureFlags';
 
-import {SuspenseException} from './ReactFlightThenable.js';
-
 import {DefaultAsyncDispatcher} from './flight/ReactFlightAsyncDispatcher.js';
 
 import {getOwnerStackByComponentInfoInDev} from 'shared/ReactComponentInfoStack';
@@ -79,7 +77,10 @@ import {
   isOpaqueTemporaryReference,
   resolveTemporaryReference,
 } from './ReactFlightServerTemporaryReferences.js';
-import {getSuspendedThenable} from './ReactFlightThenable.js';
+import {
+  SuspenseException,
+  getSuspendedThenable,
+} from './ReactFlightThenable.js';
 
 import {
   beginWriting,
@@ -384,11 +385,11 @@ function patchConsole(consoleInst, methodName) {
     (descriptor.configurable || descriptor.writable) &&
     typeof descriptor.value === 'function'
   ) {
+    const originalMethod = descriptor.value;
     const originalName = Object.getOwnPropertyDescriptor(
-      descriptor.value,
+      originalMethod,
       'name',
     );
-    const originalMethod = descriptor.value;
     // Otherwise add the current environment.
     function wrapperMethod() {
       const request = resolveRequest();
@@ -2523,20 +2524,19 @@ function visitAsyncNodeImpl(
             // party to perform some I/O.
             match = ioNode;
           }
-        } else if (request.status === ABORTING) {
-          if (node.start < request.abortTime) {
-            if (node.end > request.abortTime) {
-              // We aborted this render. If this Promise spanned the abort time it was probably the
-              // Promise that was aborted. This won't necessarily have I/O associated with it but
-              // it's a point of interest.
-              if (
-                (node.stack != null &&
-                  hasUnfilteredFrame(request, node.stack)) ||
-                (promise != null && hasDisplayName(promise))
-              ) {
-                match = node;
-              }
-            }
+        } else if (
+          request.status === ABORTING &&
+          node.start < request.abortTime &&
+          node.end > request.abortTime
+        ) {
+          // We aborted this render. If this Promise spanned the abort time it was probably the
+          // Promise that was aborted. This won't necessarily have I/O associated with it but
+          // it's a point of interest.
+          if (
+            (node.stack != null && hasUnfilteredFrame(request, node.stack)) ||
+            (promise != null && hasDisplayName(promise))
+          ) {
+            match = node;
           }
         }
       }
@@ -2703,8 +2703,10 @@ function emitAsyncSequence(
         }
         if (stack != null) {
           // $FlowFixMe[cannot-write]
-          debugInfo.stack =
-            filterStackTrace(request, parseStackTrace(stack, 1)) ?? null;
+          debugInfo.stack = filterStackTrace(
+            request,
+            parseStackTrace(stack, 1),
+          );
         }
       }
     }
@@ -3630,7 +3632,7 @@ function renderModel(request, task, parent, key, value) {
       const [resolve, reject] = pingOf(request, newTask);
       const thenable = x;
       thenable.then(resolve, reject);
-      newTask.thenableState = getThenableStateAfterSuspending() ?? null;
+      newTask.thenableState = getThenableStateAfterSuspending();
 
       // Restore the context. We assume that this will be restored by the inner
       // functions in case nothing throws so we don't use "finally" here.

@@ -1129,7 +1129,8 @@ These differences from upstream's output are accepted:
     highWaterMark: 2048, }`, as rustfmt lays out its struct, where upstream
     writes `{highWaterMark: 2048}`; Edge's, Static's and the Flight
     entries' `{highWaterMark: 0}` alike).
-- **React DOM's FB server, react-server-dom-fb** (2026-11-03): its one
+- **React DOM's FB server, react-server-dom-fb** (2026-11-03; the user accepts its
+  forms below, 2026-11-03): its one
   module, ReactDOMServerFB, is Rust, a crate of its own whose root is
   Cargo's default `src/lib.rs`, as the other react-server-dom-* crates'
   are, `#[path = "ReactDOMServerFB.rs"] pub mod react_dom_server_fb;`.

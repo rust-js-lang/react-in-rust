@@ -673,7 +673,6 @@ function createSuspenseBoundary(
     tracked: null,
     // DEV-only fields for hidden class
     // GAP rd493: set in production too, `null`.
-    errorMessage: undefined,
   };
   if (row != null) {
     // This boundary will block this row from completing.
@@ -865,13 +864,13 @@ function pushHaltedAwaitOnComponentStack(task, debugInfo) {
         const bestStack =
           asyncInfo.debugStack == null ? asyncInfo.awaited : asyncInfo;
         if (bestStack.debugStack !== undefined) {
-          const parent = task.componentStack;
+          const old = task.componentStack;
           task.componentStack = null;
-          const unknown = bestStack.owner ?? null;
+          const parent = old;
           task.componentStack = {
             parent,
             type: asyncInfo,
-            owner: unknown,
+            owner: bestStack.owner ?? null,
             stack: bestStack.debugStack ?? null,
           };
           task.debugTask = bestStack.debugTask ?? null;
@@ -985,13 +984,13 @@ function pushServerComponentStack(task, debugInfo) {
       if (componentInfo.debugStack === undefined) {
         continue;
       }
-      const parent = task.componentStack;
+      const old = task.componentStack;
       task.componentStack = null;
-      const unknown = componentInfo.owner ?? null;
+      const parent = old;
       task.componentStack = {
         parent,
         type: componentInfo,
-        owner: unknown,
+        owner: componentInfo.owner ?? null,
         stack: componentInfo.debugStack ?? null,
       };
       task.debugTask = componentInfo.debugTask ?? null;
@@ -2111,8 +2110,9 @@ function renderSuspenseList(request, task, keyPath, props) {
         // so needs some refactoring to deal with the warning.
 
         // Restore the thenable state before resuming.
-        const prevThenableState = task.thenableState;
+        const old = task.thenableState;
         task.thenableState = null;
+        const prevThenableState = old;
         prepareToUseThenableState(prevThenableState);
 
         // We need to know how many total rows are in this set, so that we
@@ -2294,8 +2294,9 @@ function renderWithHooks(request, task, keyPath, component, props, secondArg) {
   // Reset the task's thenable state before continuing, so that if a later
   // component suspends we can reuse the same task object. If the same
   // component suspends again, the thenable state will be restored.
-  const prevThenableState = task.thenableState;
+  const old = task.thenableState;
   task.thenableState = null;
+  const prevThenableState = old;
   const componentIdentity = {};
   prepareToUseHooks(
     request,
@@ -3470,8 +3471,9 @@ function retryNode(request, task) {
         // so needs some refactoring to deal with the warning.
 
         // Restore the thenable state before resuming.
-        const prevThenableState = task.thenableState;
+        const old = task.thenableState;
         task.thenableState = null;
+        const prevThenableState = old;
         prepareToUseThenableState(prevThenableState);
 
         // We need to know how many total children are in this set, so that we
@@ -5461,10 +5463,10 @@ function retryRenderTask(request, task, segment) {
         if (typeof x.then === 'function') {
           // Something suspended again, let's pick it back up later.
           segment.status = PENDING;
-          const value = isSuspenseException$1
-            ? getThenableStateAfterSuspending()
-            : undefined;
-          task.thenableState = value ?? null;
+          task.thenableState =
+            (isSuspenseException$1
+              ? getThenableStateAfterSuspending()
+              : undefined) ?? null;
           // We've asserted that x is a thenable above
           const thenable = x;
           const [resolve, reject] = pingOf(request, task);
@@ -5600,10 +5602,10 @@ function retryReplayTask(request, task) {
           const thenable = x;
           const [resolve, reject] = pingOf(request, task);
           thenable.then(resolve, reject);
-          const value = isSuspenseException$1
-            ? getThenableStateAfterSuspending()
-            : undefined;
-          task.thenableState = value ?? null;
+          task.thenableState =
+            (isSuspenseException$1
+              ? getThenableStateAfterSuspending()
+              : undefined) ?? null;
           return;
         }
         if (

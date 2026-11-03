@@ -34,7 +34,7 @@ use crate::react_flight_async_sequence::{AsyncSequence, PromiseWithDebugInfo};
 
 use crate::react_flight_server_temporary_references::TemporaryReferenceSet;
 
-use crate::react_flight_thenable::{SUSPENSE_EXCEPTION, ThenableState};
+use crate::react_flight_thenable::ThenableState;
 
 use crate::react_flight_async_dispatcher::DEFAULT_ASYNC_DISPATCHER;
 
@@ -95,7 +95,7 @@ use crate::react_flight_hooks::{
 use crate::react_flight_server_temporary_references::{
     is_opaque_temporary_reference, resolve_temporary_reference,
 };
-use crate::react_flight_thenable::get_suspended_thenable;
+use crate::react_flight_thenable::{SUSPENSE_EXCEPTION, get_suspended_thenable};
 
 // ReactServerStreamConfig's types, of its fork for the host.
 
