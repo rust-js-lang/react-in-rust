@@ -415,6 +415,14 @@ revisit it when they are Rust.
 resolveModule reads `response._moduleLoading` as upstream does (rd628,
 rust-js e2669d625).
 
+**A `let` read once by the next statement's `||` or `??` is read in
+place** (rd664, rust-js 143ecdeb4, Batch 60; **decided by the user**,
+m6-wife's): `ioInfo.name || 'unknown'`, `unblocked.ownerDocument ||
+unblocked`, `nativeEvent.relatedTarget || nativeEvent.fromElement` and the
+bundlers' `resourceEntry.transferSize || 0`, as upstream writes them,
+where a written `let` named after the property printed `const name =
+ioInfo.name;` first.
+
 **Fall-through comments are upstream's** (rd635, rd638; rust-js c62897ba7,
 4510511c8): rust-js writes `// falls through` before a case another falls
 through to, and keeps the program's own comment there instead. So the port

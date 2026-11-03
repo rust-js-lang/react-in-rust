@@ -59,8 +59,7 @@ export function extractEvents(
     // the event in the out event of the other target. If this is replayed,
     // then it's because we couldn't dispatch against this target previously
     // so we have to do it now instead.
-    const relatedTarget = nativeEvent.relatedTarget;
-    const related = relatedTarget || nativeEvent.fromElement;
+    const related = nativeEvent.relatedTarget || nativeEvent.fromElement;
     if (
       related &&
       // If the related node is managed by React, we can assume that we have

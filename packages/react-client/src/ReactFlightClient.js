@@ -1150,8 +1150,7 @@ function nullRefGetter() {
 }
 
 function getIOInfoTaskName(ioInfo) {
-  const name = ioInfo.name;
-  return name || 'unknown';
+  return ioInfo.name || 'unknown';
 }
 
 function getAsyncInfoTaskName(asyncInfo) {

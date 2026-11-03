@@ -1580,23 +1580,22 @@ function updateClassComponent(
     constructClassInstance(workInProgress, component, nextProps);
     mountClassInstance(workInProgress, component, nextProps, renderLanes);
     shouldUpdate = true;
+  } else if (current == null) {
+    // In a resume, we'll already have an instance we can reuse.
+    shouldUpdate = resumeMountClassInstance(
+      workInProgress,
+      component,
+      nextProps,
+      renderLanes,
+    );
   } else {
-    shouldUpdate =
-      current == null
-        ? // In a resume, we'll already have an instance we can reuse.
-          resumeMountClassInstance(
-            workInProgress,
-            component,
-            nextProps,
-            renderLanes,
-          )
-        : updateClassInstance(
-            current,
-            workInProgress,
-            component,
-            nextProps,
-            renderLanes,
-          );
+    shouldUpdate = updateClassInstance(
+      current,
+      workInProgress,
+      component,
+      nextProps,
+      renderLanes,
+    );
   }
   const nextUnitOfWork = finishClassComponent(
     current,

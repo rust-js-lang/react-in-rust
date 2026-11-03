@@ -61,8 +61,7 @@ export function addChunkDebugInfo(target, chunkId, filename) {
           start = resourceEntry.startTime;
           end = start + resourceEntry.duration;
           // $FlowFixMe[prop-missing]
-          const transferSize = resourceEntry.transferSize;
-          byteSize = transferSize || 0;
+          byteSize = resourceEntry.transferSize || 0;
         }
       }
     }

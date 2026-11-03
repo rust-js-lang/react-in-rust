@@ -1012,10 +1012,13 @@ export function measureUpdateViewTransition(current, finishedWork, gesture) {
   let previousMeasurements;
   if (gesture) {
     const clones = state.clones;
-    previousMeasurements =
-      clones == null
-        ? undefined
-        : clones.map(instance => measureClonedInstance(instance));
+    if (clones == null) {
+      previousMeasurements = undefined;
+    } else {
+      previousMeasurements = clones.map(instance =>
+        measureClonedInstance(instance),
+      );
+    }
   } else {
     previousMeasurements = oldFiber.memoizedState;
     oldFiber.memoizedState = null; // Clear it. We won't need it anymore.
@@ -1051,10 +1054,13 @@ export function measureNestedViewTransitions(changedParent, gesture) {
       let previousMeasurements;
       if (gesture) {
         const clones = state.clones;
-        previousMeasurements =
-          clones == null
-            ? undefined
-            : clones.map(instance => measureClonedInstance(instance));
+        if (clones == null) {
+          previousMeasurements = undefined;
+        } else {
+          previousMeasurements = clones.map(instance =>
+            measureClonedInstance(instance),
+          );
+        }
       } else {
         previousMeasurements = child.memoizedState;
         child.memoizedState = null; // Clear it. We won't need it anymore.
