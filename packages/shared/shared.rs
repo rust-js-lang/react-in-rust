@@ -43,6 +43,10 @@ pub mod react_dom_shared_internals;
 pub mod react_element_type;
 #[path = "ReactFeatureFlags.rs"]
 pub mod react_feature_flags;
+#[path = "forks/ReactFeatureFlags.native-oss.rs"]
+pub mod react_feature_flags_native_oss;
+#[path = "forks/ReactFeatureFlags.test-renderer.rs"]
+pub mod react_feature_flags_test_renderer;
 #[path = "ReactFlightPropertyAccess.rs"]
 pub mod react_flight_property_access;
 #[path = "ReactInstanceMap.rs"]

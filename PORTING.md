@@ -1886,6 +1886,9 @@ The port is split between sessions by package:
   undefined` and `fetchPriority: undefined` keys (rd391's kind: the
   dispatchers `Object.assign` them into a script's props, where an
   `undefined` prop writes nothing); and rd710's comments.
+  shared/forks/ReactFeatureFlags.native-oss and .test-renderer are Rust
+  (Batch 62), as ReactFeatureFlags is, and print upstream's flags line for
+  line; rollup alone reads them.
   react-noop-renderer's createReactNoop and ReactFiberConfigNoop are Rust.
   react-test-renderer's ReactFiberConfigTestHost and ReactTestRenderer are
   Rust; react-art's ReactARTInternals, ReactFiberConfigART and ReactART
