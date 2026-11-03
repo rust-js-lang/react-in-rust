@@ -1009,6 +1009,24 @@ These differences from upstream's output are accepted:
   `ReactSharedInternalsClient` alias, fixed in rust-js a6797eac5 and
   d72ed8bb3); and `getCurrentStack = .. ?? null`, the Fizz server's
   form of a nullable field set from an `Option` (no id).
+- **The server side's import groups: rustfmt's blank lines** (the user,
+  2026-11-03, keeping rustfmt's defaults, with `reorder_imports = false`
+  offered): since rust-js rd637/rd652 an import's blank lines are its
+  `use`'s, and a server file's `use`s keep upstream's import order, which
+  rustfmt would sort within a group; so where upstream writes two imports
+  in one group that rustfmt would reorder, the port keeps a blank line
+  between their `use`s and the JS between its imports. Accepted by name:
+  ReactFizzServer's 8 (NewContext/Hooks/AsyncDispatcher,
+  TreeContext/CurrentTask/CallUserSpace,
+  ReactSymbols/SharedInternals/FeatureFlags, noop/getComponentNameFromType,
+  ReactRecoverable/ReactFizzThenable), ReactFizzHooks' 4,
+  ReactFizzClassComponent's 2, one each in ReactFizzLegacyContext,
+  ReactFizzThenable, ReactFlightHooks and ReactFlightReplyServer,
+  ReactServerStreamConfigNode's util/crypto and ReactFizzConfigDOM's 3. The
+  imports of a config fork (ReactFizzConfig, ReactFlightServerConfig,
+  ReactServerStreamConfig, react-client's ReactFlightClientConfig) come from
+  bindings no `use` places, so no blank line moves them. A comment above a
+  `js::import!` is dropped (rust-js rd666).
 - **React DOM's Bun server (the user, 2026-11-03: port Bun now)**:
   react-server's ReactServerStreamConfigBun and react-dom's
   ReactDOMFizzServerBun are Rust; the `react-dom-server.bun.js` and
