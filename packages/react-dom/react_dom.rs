@@ -12,6 +12,8 @@ pub mod react_dom_client;
 pub mod react_dom_default_transition_indicator;
 #[path = "src/server/ReactDOMFizzServerBrowser.rs"]
 pub mod react_dom_fizz_server_browser;
+#[path = "src/server/ReactDOMFizzServerBun.rs"]
+pub mod react_dom_fizz_server_bun;
 #[path = "src/server/ReactDOMFizzServerEdge.rs"]
 pub mod react_dom_fizz_server_edge;
 #[path = "src/server/ReactDOMFizzServerNode.rs"]

@@ -76,7 +76,9 @@ as rust-js-lang/bindings' `bindings/<library>/` (ADRs 0118, 0119):
 true`), `package.json`, `src/lib.rs` and `README.md`, written by hand from
 the library's JS, so it can move to that repository unchanged. It names
 `js` by version; the workspace's `[patch.crates-io]` says where it is. A
-crate using it takes `art.workspace = true`. The generated `.js` and `.d.ts` files are
+crate using it takes `art.workspace = true`. `bindings/busboy` (busboy,
+for the Flight servers' Node reply) and `bindings/bun` (Bun's own APIs,
+for its Fizz server) are laid out alike. The generated `.js` and `.d.ts` files are
 committed, as upstream's JS was. Source maps are not committed (see
 `.gitignore`).
 
@@ -148,11 +150,11 @@ react-server, react-client, the Fizz suites and react-server-dom-fb,
 
 | Gate | Command | Expected |
 |---|---|---|
-| fizz | `yarn test react-dom/src/__tests__/ReactDOMFizz` (13 suites, the Static ones included) | 374 / 0 / 0 |
+| fizz | `yarn test react-dom/src/__tests__/ReactDOMFizz` (14 suites, the Static ones included) | 381 / 0 / 0⁶ |
 | ssr | `yarn test react-dom/src/__tests__/ReactDOMServerIntegration` (21 suites) | 1602 / 0 / 0 |
 | float | `yarn test react-dom/src/__tests__/ReactDOMFloat react-dom/src/__tests__/ReactDOMLegacyFloat` (2 suites) | 143 / 0 / 1 |
 | ssrmisc | `yarn test react-dom/src/__tests__/ReactServerRendering react-dom/src/__tests__/ReactDOMServerLifecycles react-dom/src/__tests__/ReactDOMInReactServer react-dom/src/__tests__/ReactClassComponentPropResolutionFizz packages/react-markup packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShimServer` (9 suites) | 104 / 0 / 0 |
-| server | `yarn test packages/react-server/src/__tests__` (7 suites) | 31 / 0 / 0²⁵ |
+| server | `yarn test packages/react-server/src/__tests__` (8 suites) | 41 / 0 / 0²⁵⁶ |
 | client | `yarn test packages/react-client/src/__tests__` (4 suites) | 98 / 0 / 0⁴ |
 | webpack | `yarn test packages/react-server-dom-webpack/src/__tests__` (9 suites) | 278 / 0 / 0 |
 | turbopack | `yarn test packages/react-server-dom-turbopack/src/__tests__` (7 suites) | 43 / 0 / 0 |
@@ -179,6 +181,10 @@ description is sent as `"$Sundefined"`) and
 `_owner` throws where upstream reads its owner; a forwarded I/O info's
 `null` value is sent and an `undefined` one left out), the last added with
 ReactFlightServer's migration; upstream's suites alone are 26 in 4.
+
+⁶ With the port's own `ReactDOMFizzServerBun-test.js` (7 tests) and
+`ReactServerStreamConfigBun-test.js` (10 tests), added with the Bun server
+entry, as no upstream test runs it.
 
 ² One run in five of `-r=www-modern packages/react-server/src/__tests__`
 failed one test (25 / 1 / 0) while the machine was loaded. The default
@@ -993,6 +999,46 @@ These differences from upstream's output are accepted:
   where upstream names it `ReactSharedInternalsClient`); rd652 and rd654
   above; and `getCurrentStack = .. ?? null`, the Fizz server's
   form of a nullable field set from an `Option` (no id).
+- **React DOM's Bun server (the user, 2026-11-03: port Bun now)**:
+  react-server's ReactServerStreamConfigBun and react-dom's
+  ReactDOMFizzServerBun are Rust; the `react-dom-server.bun.js` and
+  `.bun.stable.js` re-exports stay JS (rd55). Bun's own APIs are
+  `bindings/bun`, `@rust-js-bindings/bun`, bun-types 1.4's `Bun.hash` and
+  its direct stream (`DirectUnderlyingSource`, which implements webapi's
+  `IntoUnderlyingSource`, as bun-types overloads `new ReadableStream`, and
+  `ReadableStreamDirectController`), laid out as `bindings/busboy` is. The
+  stream config's `Destination` is upstream's union,
+  `BunReadableStreamController | (Writable & MightBeFlushable)`, a type of
+  the module's own read by what the two have alike (`write`, `end`, and
+  `flush`, `error`, `destroy` and `close` asked by `js::is_function`), as
+  webapi's `ReadableStreamController` is; its `.d.ts` writes upstream's
+  union. writeChunk tests `chunk.length === 0` by `js::get`, as
+  TypeScript's `string | ArrayBufferView` has no `length` (a DataView's is
+  `undefined`, so even an empty one is written, as upstream's);
+  writeChunkAndReturn is `js::truthy(destination.write(chunk))`, `!!`;
+  createFastHash gives `Bun.hash`'s `bigint`, a `u64`. No upstream test
+  runs either module: the port's `ReactServerStreamConfigBun-test.js` (10
+  tests, each function on fake destinations and a fake `Bun.hash`) and
+  `ReactDOMFizzServerBun-test.js` (7 tests, renderToReadableStream on a
+  fake direct `ReadableStream`: the source and strategy it makes, the
+  shell, a boundary and `allReady`, a shell error, a cancel's and a
+  signal's abort, `onHeaders`, and a form state's key hashed by
+  `Bun.hash`) hold them, and pass on upstream's JS too. Differences from
+  upstream, none changing a result:
+  - the entry's forms are ReactDOMFizzServerEdge's: `options?.x` and `!=
+    null`, `const signal = options?.signal; if (signal != null)`, the
+    request read `$unwrap(request)` of a `let` set after createRequest
+    (rd456), `pull(controller) {..}` and `cancel(reason) {..}` methods
+    where upstream writes arrows (rd458), `onAllReady = () => { res(); }`
+    (rd599), `export function` (rd350), the imports' names in rustfmt's
+    order, and `export {default as version} from 'shared/ReactVersion'`;
+  - readability gaps (rust-js), not holding: rd664 (readAsDataURL names
+    `const type = blob.type;` before `type || 'application/octet-stream'`,
+    where upstream reads `blob.type ||` in place; ReactServerStreamConfigNode's
+    alike) and rd665 (the strategy prints across three lines, `{
+    highWaterMark: 2048, }`, as rustfmt lays out its struct, where upstream
+    writes `{highWaterMark: 2048}`; Edge's, Static's and the Flight
+    entries' `{highWaterMark: 0}` alike).
 - **The Flight clients' names and arms** (the user, 2026-11-01; its
   acronym rule extended to the servers, the user, 2026-11-02, ESM's
   resolveClientReferenceMetadata's `baseUrl` and `fullUrl`):
