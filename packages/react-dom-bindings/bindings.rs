@@ -127,6 +127,8 @@ pub mod react_dom_update_batching;
 pub mod react_dom_update_priority;
 #[path = "src/client/ReactFiberConfigDOM.rs"]
 pub mod react_fiber_config_dom;
+#[path = "src/shared/ReactFlightClientConfigDOM.rs"]
+pub mod react_flight_client_config_dom;
 #[path = "src/client/ReactInputSelection.rs"]
 pub mod react_input_selection;
 #[path = "src/events/ReactSyntheticEventType.rs"]

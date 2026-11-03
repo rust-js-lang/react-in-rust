@@ -1869,6 +1869,23 @@ The port is split between sessions by package:
   react_dom_fragment_ref_shared;` (it reads the reconciler, which `shared`
   can't), its JS beside its `.rs` where React Native's Fabric config imports
   it.
+  react-dom-bindings' shared/ReactFlightClientConfigDOM is Rust (Batch 62):
+  refineModel casts a hint's model once, `unsafe { js::cast(model) }`, to
+  the untagged enum of its code's shapes (upstream's TypeMap: `'C'`'s `href
+  | [href, crossOrigin]`, `'L'`'s `[href, as] | [href, as, options]`, `'m'`,
+  `'X'` and `'M'`'s `href | [href, options]`, `'S'`'s `href | [href,
+  precedence, options?]`), and each `match` tests as upstream does,
+  `typeof refined === 'string'`, `refined.length === 3`. Readability
+  differences, pending the coordinator's decision: the arrays are
+  destructured (`const [href, crossOrigin] = refined;`, rd712's kind); a
+  string model is passed as `refined` where upstream copies it to `const
+  href = refined;`; `'L'` reads href and as in each branch; `'S'`'s
+  precedence is reassigned, `precedence = precedence === 0 ? undefined :
+  precedence;`; the cases end `break;` where upstream returns (clippy's
+  needless_return); the SSR preinits leave out upstream's `integrity:
+  undefined` and `fetchPriority: undefined` keys (rd391's kind: the
+  dispatchers `Object.assign` them into a script's props, where an
+  `undefined` prop writes nothing); and rd710's comments.
   react-noop-renderer's createReactNoop and ReactFiberConfigNoop are Rust.
   react-test-renderer's ReactFiberConfigTestHost and ReactTestRenderer are
   Rust; react-art's ReactARTInternals, ReactFiberConfigART and ReactART
