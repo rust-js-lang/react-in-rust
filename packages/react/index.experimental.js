@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {useOptimistic} from './src/ReactHooks.js';
+import {useOptimistic} from './src/ReactClient.js';
 export {
   Activity,
   Activity as unstable_Activity,
