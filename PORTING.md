@@ -1729,7 +1729,13 @@ The port is split between sessions by package:
   clients: ReactFlightParcelDOMClients-test.js (10) and
   ReactFlightESMDOMClients-test.js (6) hold them, and pass on upstream's
   JS too. Parcel's Browser tests and calls the module's `callServer` in
-  place, as upstream (rd646, rust-js e5818acfc). The Node client's `pub use
+  place, as upstream (rd646, rust-js e5818acfc). Unbundled's Edge and Node
+  (Batch 60, after rd645) are webpack's, as upstream's are: their
+  manifest's `moduleMap` is a `&Dict` (upstream's non-null
+  `ServerConsumerModuleMap`), and its `serverModuleMap`, upstream's `null |
+  void`, is given as `js::any_of(..)`. **Pending in rust-js** (rd700, not
+  accepted): that prints `serverConsumerManifest.serverModuleMap ?? null`
+  where upstream passes it as it is. The Node client's `pub use
   crate::client::react_flight_dom_client_edge::*;` prints rd153's export
   list for upstream's `export * from './ReactFlightDOMClientEdge'`. Their `startReadingFromStream`'s `progress` is rd425's
   cell, and their createResponse arguments are the forms accepted above
