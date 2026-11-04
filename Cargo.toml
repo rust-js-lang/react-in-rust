@@ -15,6 +15,7 @@ publish = false
 js = { package = "rust-js-builtins", path = "../rust-js/builtins" }
 webapi = { package = "rust-js-webapi", path = "../rust-js/webapi" }
 node = { package = "rust-js-node", path = "../rust-js/node" }
+react_native = { package = "rust-js-react-native", path = "../rust-js/react-native" }
 shared = { path = "packages/shared" }
 acorn-loose = { package = "rust-js-bindings-acorn-loose", path = "bindings/acorn-loose" }
 art = { package = "rust-js-bindings-art", path = "bindings/art" }

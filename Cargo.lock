@@ -302,6 +302,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rust-js-react-native"
+version = "0.0.1"
+dependencies = [
+ "rust-js-builtins",
+]
+
+[[package]]
 name = "rust-js-webapi"
 version = "0.0.3"
 dependencies = [
@@ -313,6 +320,7 @@ name = "scheduler"
 version = "0.0.0"
 dependencies = [
  "rust-js-builtins",
+ "rust-js-react-native",
  "rust-js-webapi",
  "shared",
 ]

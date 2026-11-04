@@ -21,6 +21,8 @@ pub mod scheduler_feature_flags_www_dynamic;
 pub mod scheduler_min_heap;
 #[path = "SchedulerMock.rs"]
 pub mod scheduler_mock;
+#[path = "SchedulerNative.rs"]
+pub mod scheduler_native;
 #[path = "SchedulerPostTask.rs"]
 pub mod scheduler_post_task;
 #[path = "../SchedulerPriorities.rs"]

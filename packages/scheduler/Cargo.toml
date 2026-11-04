@@ -11,6 +11,7 @@ path = "src/forks/Scheduler.rs"
 [dependencies]
 shared.workspace = true
 js.workspace = true
+react_native.workspace = true
 webapi.workspace = true
 
 
