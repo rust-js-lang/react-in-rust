@@ -550,7 +550,7 @@ export {
   LowPriority as unstable_LowPriority,
   NormalPriority as unstable_NormalPriority,
   UserBlockingPriority as unstable_UserBlockingPriority,
-} from '../SchedulerPriorities.js';
+};
 
 export const unstable_Profiling = enableProfiling
   ? {

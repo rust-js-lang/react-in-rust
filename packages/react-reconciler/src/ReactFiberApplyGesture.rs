@@ -21,8 +21,6 @@ unsafe extern "Rust" {
     safe static SUPPORTS_SINGLETONS: bool;
 }
 
-// ReactFiberConfig's host operations, on its `Instance`, `TextInstance`,
-// `Container` and `Props`.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#cloneMutableInstance"

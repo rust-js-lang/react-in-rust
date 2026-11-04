@@ -12,9 +12,11 @@ use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::rc::Rc;
 
-use js::{JsObject, SymbolFor, Uint8Array, Unknown};
+use js::{Function, JsObject, SymbolFor, Uint8Array, Unknown};
 use shared::environment::__DEV__;
 use webapi::{AbortSignal, TextEncoder, text_encoder};
+
+use crate::flight_modules::save_module;
 
 /// A chunk Flight writes, its text.
 pub struct Chunk(PhantomData<JsObject>);
@@ -23,15 +25,6 @@ unsafe impl js::Defined for Chunk {}
 
 /// What a render writes to: each chunk, in order.
 pub type Destination = RefCell<Vec<&'static Chunk>>;
-
-#[cfg_attr(
-    rust_js,
-    rust_js::link_name = "react-noop-renderer/flight-modules#saveModule"
-)]
-fn save_module(render: Option<&'static Unknown>) -> String {
-    let _ = render;
-    unreachable!()
-}
 
 thread_local! {
     static TEXT_ENCODER: &'static TextEncoder = text_encoder::new();
@@ -44,7 +37,7 @@ unsafe impl js::Defined for ClientReference {}
 
 impl ClientReference {
     #[cfg_attr(rust_js, rust_js::link_name = "get value")]
-    fn value(&self) -> Option<&'static Unknown> {
+    fn value(&self) -> &'static Function {
         unreachable!()
     }
 }

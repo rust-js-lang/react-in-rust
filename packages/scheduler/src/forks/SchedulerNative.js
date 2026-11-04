@@ -6,40 +6,33 @@
 // LICENSE file in the root directory of this source tree.
 
 import * as Scheduler from './Scheduler.js';
-import {
-  IdlePriority,
-  ImmediatePriority,
-  LowPriority,
-  NormalPriority,
-  UserBlockingPriority,
-} from '../SchedulerPriorities.js';
 
 // This type is supposed to reflect the actual methods and arguments currently supported by the C++ implementation:
 // https://github.com/react/react-native/blob/main/packages/react-native/ReactCommon/react/renderer/runtimescheduler/RuntimeSchedulerBinding.cpp
 export const unstable_UserBlockingPriority =
   typeof nativeRuntimeScheduler !== 'undefined'
     ? nativeRuntimeScheduler.unstable_UserBlockingPriority
-    : UserBlockingPriority;
+    : Scheduler.unstable_UserBlockingPriority;
 
 export const unstable_NormalPriority =
   typeof nativeRuntimeScheduler !== 'undefined'
     ? nativeRuntimeScheduler.unstable_NormalPriority
-    : NormalPriority;
+    : Scheduler.unstable_NormalPriority;
 
 export const unstable_IdlePriority =
   typeof nativeRuntimeScheduler !== 'undefined'
     ? nativeRuntimeScheduler.unstable_IdlePriority
-    : IdlePriority;
+    : Scheduler.unstable_IdlePriority;
 
 export const unstable_LowPriority =
   typeof nativeRuntimeScheduler !== 'undefined'
     ? nativeRuntimeScheduler.unstable_LowPriority
-    : LowPriority;
+    : Scheduler.unstable_LowPriority;
 
 export const unstable_ImmediatePriority =
   typeof nativeRuntimeScheduler !== 'undefined'
     ? nativeRuntimeScheduler.unstable_ImmediatePriority
-    : ImmediatePriority;
+    : Scheduler.unstable_ImmediatePriority;
 
 export const unstable_scheduleCallback =
   typeof nativeRuntimeScheduler !== 'undefined'

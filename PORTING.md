@@ -480,12 +480,10 @@ the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
   `defaultOnRecoverableError` as values, as upstream does (rd420, rd424),
   but import them from 'react-reconciler/src/ReactFiberErrorLogger'.
   Upstream imports them from 'react-reconciler/src/ReactFiberReconciler'.
-- rd705 (modules, since rd649): ReactFiberConfigDOM's `pub use
-  crate::react_dom_component_tree::detach_deleted_instance;`, which the
-  module also calls, prints its own `import {detachDeletedInstance}` above
-  `export {detachDeletedInstance} from ..`. Upstream imports it in its one
-  ReactDOMComponentTree import and writes `export {detachDeletedInstance};`.
-  Rust can't name it in both a `use` and a `pub use` (E0252).
+- rd705 is fixed (rust-js 935d9cdbf, Batch 67): ReactFiberConfigDOM
+  imports `detachDeletedInstance` in its one ReactDOMComponentTree import
+  and writes `export {detachDeletedInstance};` and `export
+  {getClosestInstanceFromNode as getInstanceFromNode};`, as upstream.
 
 **Pending in rust-js from Batch 63** (no result changes):
 - rd720 (since 440015731): ReactTestRenderer's findAllByProps prints `node =>
@@ -509,21 +507,47 @@ binding keeps the program's name (rd226, rust-js aa7639e81), which can't be
 the field's own, `transitions`, as the body assigns the outer
 `transitions`.
 
+**Fixed in rust-js, Batch 67**: rd800 (762921fca, #628): SchedulerNative's
+fallbacks read `Scheduler.unstable_UserBlockingPriority` and the other
+four off the namespace, as upstream. rd801 (55af5aa47, #629): the markup
+Flight client config writes `export * from` each of react-client's console
+and debug configs, as upstream; so do ReactFiberConfigART, TestHost and DOM
+of the reconciler's `ReactFiberConfigWithNo*` modules.
+
 **Pending in rust-js from Batch 66** (no result changes):
-- rd800: SchedulerNative's fallbacks of the five priorities, read through
-  `use crate as scheduler;` (`import * as Scheduler from './Scheduler.js'`),
-  print `UserBlockingPriority` of an `import {..} from
-  '../SchedulerPriorities.js'`, where upstream reads
-  `Scheduler.unstable_UserBlockingPriority` (Scheduler's functions are read
-  off the namespace, as upstream).
-- rd801: the markup Flight client config's globs of react-client's console
-  and debug configs print `export {bindToConsole} from ..` and `export
-  {checkEvalAvailabilityOnceDev} from ..`, where upstream writes `export *
-  from ..` (its own crate's glob prints `export *`).
 - rd802: SchedulerNative's .d.ts types `unstable_scheduleCallback` as
   `(value: number, callback: Callback, value2?: Options | null |
   undefined) => Task`, where upstream's Flow names `priorityLevel:
   PriorityLevel`.
+
+**Pending in rust-js from Batch 67** (no result changes; m6-wife's, from
+her rd751/rd752):
+- #633 (rd803): react-reconciler's Scheduler.js prints `export const {log,
+  unstable_setDisableYieldValue} = Scheduler;`, two namespace bindings
+  destructured as www's flags are, where upstream writes `export const log
+  = Scheduler.log;` and `export const unstable_setDisableYieldValue =
+  Scheduler.unstable_setDisableYieldValue;`.
+- #634 (rd804): ReactDOMRootFB prints upstream's `// Provided by www`, then
+  a blank line (the one between the `require` binding and the
+  thread-local), then `const ReactFiberErrorDialogWWW =
+  require('ReactFiberErrorDialog');`, where upstream has none.
+
+**Accepted by the user, Batch 67** (2026-11-04, rust-js 762921fca; no
+result changes): a binding's comment prints above its import (rd752), so
+two of upstream's comments are where the port's bindings are, each tied
+to a standing difference: ReactFiberCacheComponent reads
+`Scheduler.unstable_scheduleCallback` and `Scheduler.unstable_NormalPriority`
+where it uses them, not destructuring them once as upstream does, so
+upstream's "Intentionally not named imports because Rollup would / use
+dynamic dispatch for CommonJS interop named imports." (upstream :56-57,
+above `const {..} = Scheduler;`) is above `import * as Scheduler from
+'scheduler';`; and ReactTestRenderer reads `React.act` through its binding,
+not a `const act = React.act;`, so upstream's `// $FlowFixMe[prop-missing]:
+This is only in the development export.` (upstream :69) is `// This is
+only in the development export.` above `import * as React from 'react';`.
+The port's own notes on bindings (what a ReactFiberConfig binding's
+`Unknown` stands for, 16 in react-reconciler and react-dom) were dropped
+from the Rust (the user, rd805): a comment in the Rust is one in the JS.
 
 **Accepted by the user, Batch 66** (2026-11-04, rust-js d900cc46e, rd732; no
 result changes): a String's `is_empty()` prints `s === ''` and
@@ -2227,7 +2251,14 @@ The port is split between sessions by package:
   `const idx = '' + moduleIdx++;` (accepted on the user's behalf while
   away, the coordinator, 2026-11-04; the same text). A module is a
   `js::Function` (rust-js #589, Batch 65; rd724), so the `.d.ts` says
-  upstream's `Function`.
+  upstream's `Function`. ReactNoopFlightServer (m6-wife's) uses it, `use
+  crate::flight_modules::save_module;`, its ClientReference's `value` a
+  `&'static Function`, as upstream's `saveModule(render: Function)`.
+  **Accepted by the user** (2026-11-04, #603 closed won't-fix; rd733): a
+  crate's own modules are imported by relative path, so the client's
+  `import {readModule} from '../flight-modules.js'` and the server's
+  `import {saveModule} from '../flight-modules.js'`, where upstream names
+  'react-noop-renderer/flight-modules'.
   react-noop-renderer's ReactNoopFlightClient, the Flight tests' client, is
   Rust (Batch 65), our last core file. Its factory, `react-client/flight`'s
   default (JS; jest makes it a factory of ReactFlightClient), is a binding
@@ -2244,9 +2275,9 @@ The port is split between sessions by package:
   source` prints `const chunk = source[i];`; `options?.findSourceMapURL`
   and `options != null && options.close === true` of an `Option` of the
   options; createStringDecoder's `preserveByteOrderMark ?? false` for
-  upstream's default parameter (the `?? false` kind). Pending in rust-js:
-  `import {readModule} from '../flight-modules.js'` where upstream names
-  'react-noop-renderer/flight-modules' (rd733, #603); the factory's
+  upstream's default parameter (the `?? false` kind). Its
+  `import {readModule} from '../flight-modules.js'` is accepted (#603,
+  above). Pending in rust-js: the factory's
   `const {createResponse, createStreamState, processBinaryChunk, close,
   getRoot} = ReactFlightClient({..});` prints after `read` and `let
   hasConfirmedEval = false;`, its names in call order (rd734, #604); the

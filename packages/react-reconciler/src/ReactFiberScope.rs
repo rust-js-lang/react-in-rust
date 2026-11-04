@@ -10,7 +10,6 @@ use shared::react_types::ReactScopeQuery;
 
 use crate::react_internal_types::Fiber;
 
-// ReactFiberConfig's `Instance`'s public instance.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#getPublicInstance",

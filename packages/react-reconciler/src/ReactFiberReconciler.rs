@@ -34,7 +34,6 @@ use crate::get_component_name_from_fiber::get_component_name_from_fiber;
 use shared::react_feature_flags::{DISABLE_LEGACY_MODE, ENABLE_SCHEDULING_PROFILER};
 use shared::react_shared_internals::{REACT_SHARED_INTERNALS, SharedStateClient};
 
-// ReactFiberConfig's `Instance`'s public instance.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#getPublicInstance",

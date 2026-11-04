@@ -39,7 +39,6 @@ use crate::react_fiber_class_update_queue::{
     UpdateQueue, commit_callbacks, commit_hidden_callbacks,
 };
 
-// ReactFiberConfig's `FragmentInstanceType`.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#createFragmentInstance"
@@ -48,7 +47,6 @@ fn create_fragment_instance(fragment_fiber: &Fiber) -> &'static Unknown {
     unreachable!()
 }
 
-// ReactFiberConfig's `Instance`'s public instance.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#getPublicInstance",
@@ -58,7 +56,6 @@ fn get_public_instance(instance: Option<&'static Unknown>) -> Option<&'static Un
     unreachable!()
 }
 
-// ReactFiberConfig's `ViewTransitionInstance`.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#createViewTransitionInstance"

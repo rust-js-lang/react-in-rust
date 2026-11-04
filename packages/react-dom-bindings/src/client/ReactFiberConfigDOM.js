@@ -26,6 +26,7 @@ export {
 
 import {
   clearPendingLoadOnNode,
+  detachDeletedInstance,
   getClosestInstanceFromNode,
   getFiberCurrentPropsFromNode,
   getFiberFromScopeInstance,
@@ -57,8 +58,7 @@ import {
 
 import {compareDocumentPositionForEmptyFragment} from 'shared/ReactDOMFragmentRefShared';
 
-import {detachDeletedInstance} from './ReactDOMComponentTree.js';
-export {detachDeletedInstance} from './ReactDOMComponentTree.js';
+export {detachDeletedInstance};
 
 import {hasRole} from './DOMAccessibilityRoles.js';
 import {
@@ -184,16 +184,7 @@ export const HostContextNamespaceNone = 0;
 const HostContextNamespaceSvg = 1;
 const HostContextNamespaceMath = 2;
 
-export {
-  supportsPersistence,
-  cloneInstance,
-  createContainerChildSet,
-  appendChildToContainerChildSet,
-  finalizeContainerChildren,
-  replaceContainerChildren,
-  cloneHiddenInstance,
-  cloneHiddenTextInstance,
-} from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
+export * from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
 
 let eventsEnabled = null;
 let selectionInformation = null;
@@ -740,7 +731,7 @@ const localRequestAnimationFrame =
         }
       : undefined;
 
-export {getClosestInstanceFromNode as getInstanceFromNode} from './ReactDOMComponentTree.js';
+export {getClosestInstanceFromNode as getInstanceFromNode};
 
 export function preparePortalMount(portalInstance) {
   listenToAllSupportedEvents(portalInstance);

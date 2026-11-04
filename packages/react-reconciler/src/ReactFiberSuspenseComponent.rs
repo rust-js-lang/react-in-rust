@@ -18,7 +18,6 @@ use crate::react_work_tags::{SUSPENSE_COMPONENT, SUSPENSE_LIST_COMPONENT};
 
 use crate::react_fiber_flags::{DID_CAPTURE, NO_FLAGS};
 
-// ReactFiberConfig's, of its `SuspenseInstance`.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#isSuspenseInstancePending"

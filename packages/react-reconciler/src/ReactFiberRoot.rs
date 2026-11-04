@@ -17,7 +17,6 @@ use crate::react_internal_types::{
 };
 
 unsafe extern "Rust" {
-    // ReactFiberConfig's `TimeoutHandle | NoTimeout`.
     #[link_name = "./src/ReactFiberConfig.js#noTimeout"]
     safe static NO_TIMEOUT: &'static Unknown;
 }

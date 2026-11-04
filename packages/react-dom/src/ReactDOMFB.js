@@ -12,7 +12,7 @@ import Internals from './ReactDOMSharedInternalsFB.js';
 // For classic WWW builds, include a few internals that are already in use.
 Object.assign(Internals, {ReactBrowserEventEmitter: {isEnabled}});
 
-export {default as __DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE} from './ReactDOMSharedInternalsFB.js';
+export {Internals as __DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE};
 
 export {
   flushSync,

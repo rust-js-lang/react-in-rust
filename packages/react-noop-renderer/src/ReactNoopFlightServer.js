@@ -12,7 +12,7 @@
  * environment.
  */
 
-import {saveModule} from 'react-noop-renderer/flight-modules';
+import {saveModule} from '../flight-modules.js';
 
 const textEncoder = new TextEncoder();
 

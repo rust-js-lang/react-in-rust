@@ -26,6 +26,8 @@ import {
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {isAlreadyRendering} from './ReactFiberWorkLoop.js';
 
+// Intentionally not named imports because Rollup would use dynamic dispatch for
+// CommonJS interop named imports.
 import * as Scheduler from 'scheduler';
 
 function noTask(name) {

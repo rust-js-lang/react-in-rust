@@ -246,104 +246,15 @@ function applyTextProps(instance, props, prevProps) {
   }
 }
 
-export {
-  supportsPersistence,
-  cloneInstance,
-  createContainerChildSet,
-  appendChildToContainerChildSet,
-  finalizeContainerChildren,
-  replaceContainerChildren,
-  cloneHiddenInstance,
-  cloneHiddenTextInstance,
-} from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
+export * from 'react-reconciler/src/ReactFiberConfigWithNoPersistence';
 
-export {
-  supportsHydration,
-  isSuspenseInstancePending,
-  isSuspenseInstanceFallback,
-  getSuspenseInstanceFallbackErrorDetails,
-  registerSuspenseInstanceRetry,
-  canHydrateFormStateMarker,
-  isFormStateMarkerMatching,
-  getNextHydratableSibling,
-  getNextHydratableSiblingAfterSingleton,
-  getFirstHydratableChild,
-  getFirstHydratableChildWithinContainer,
-  getFirstHydratableChildWithinActivityInstance,
-  getFirstHydratableChildWithinSuspenseInstance,
-  getFirstHydratableChildWithinSingleton,
-  canHydrateInstance,
-  canHydrateTextInstance,
-  canHydrateActivityInstance,
-  canHydrateSuspenseInstance,
-  hydrateInstance,
-  hydrateTextInstance,
-  hydrateActivityInstance,
-  hydrateSuspenseInstance,
-  getNextHydratableInstanceAfterActivityInstance,
-  getNextHydratableInstanceAfterSuspenseInstance,
-  finalizeHydratedChildren,
-  commitHydratedInstance,
-  commitHydratedContainer,
-  commitHydratedActivityInstance,
-  commitHydratedSuspenseInstance,
-  flushHydrationEvents,
-  clearActivityBoundary,
-  clearSuspenseBoundary,
-  clearActivityBoundaryFromContainer,
-  clearSuspenseBoundaryFromContainer,
-  hideDehydratedBoundary,
-  unhideDehydratedBoundary,
-  shouldDeleteUnhydratedTailInstances,
-  diffHydratedPropsForDevWarnings,
-  diffHydratedTextForDevWarnings,
-  describeHydratableInstanceForDevWarnings,
-  validateHydratableInstance,
-  validateHydratableTextInstance,
-} from 'react-reconciler/src/ReactFiberConfigWithNoHydration';
-export {
-  prepareScopeUpdate,
-  getInstanceFromScope,
-} from 'react-reconciler/src/ReactFiberConfigWithNoScopes';
-export {
-  supportsTestSelectors,
-  findFiberRoot,
-  getBoundingRect,
-  getTextContent,
-  isHiddenSubtree,
-  matchAccessibilityRole,
-  setFocusIfFocusable,
-  setupIntersectionObserver,
-} from 'react-reconciler/src/ReactFiberConfigWithNoTestSelectors';
+export * from 'react-reconciler/src/ReactFiberConfigWithNoHydration';
+export * from 'react-reconciler/src/ReactFiberConfigWithNoScopes';
+export * from 'react-reconciler/src/ReactFiberConfigWithNoTestSelectors';
 
-export {
-  supportsMicrotasks,
-  scheduleMicrotask,
-} from 'react-reconciler/src/ReactFiberConfigWithNoMicrotasks';
-export {
-  supportsResources,
-  isHostHoistableType,
-  getHoistableRoot,
-  getResource,
-  acquireResource,
-  releaseResource,
-  hydrateHoistable,
-  mountHoistable,
-  unmountHoistable,
-  createHoistableInstance,
-  prepareToCommitHoistables,
-  mayResourceSuspendCommit,
-  preloadResource,
-  suspendResource,
-} from 'react-reconciler/src/ReactFiberConfigWithNoResources';
-export {
-  supportsSingletons,
-  resolveSingletonInstance,
-  acquireSingletonInstance,
-  releaseSingletonInstance,
-  isHostSingletonType,
-  isSingletonScope,
-} from 'react-reconciler/src/ReactFiberConfigWithNoSingletons';
+export * from 'react-reconciler/src/ReactFiberConfigWithNoMicrotasks';
+export * from 'react-reconciler/src/ReactFiberConfigWithNoResources';
+export * from 'react-reconciler/src/ReactFiberConfigWithNoSingletons';
 
 export function appendInitialChild(parentInstance, child) {
   if (typeof child === 'string') {

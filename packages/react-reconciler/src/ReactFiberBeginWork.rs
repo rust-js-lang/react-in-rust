@@ -84,8 +84,6 @@ unsafe extern "Rust" {
     safe static HOST_TRANSITION_CONTEXT: ReactContext<Option<&'static Unknown>>;
 }
 
-// ReactFiberConfig's host operations, on its `Type`, `Props`, `Container`,
-// `Instance`, `HoistableRoot`'s resources and `SuspenseInstance`.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#shouldSetTextContent"

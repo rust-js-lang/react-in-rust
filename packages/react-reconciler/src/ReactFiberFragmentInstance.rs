@@ -13,7 +13,6 @@ unsafe extern "Rust" {
     safe static SUPPORTS_SINGLETONS: bool;
 }
 
-// ReactFiberConfig's `Instance` and `FragmentInstanceType`.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#commitNewChildToFragmentInstance"

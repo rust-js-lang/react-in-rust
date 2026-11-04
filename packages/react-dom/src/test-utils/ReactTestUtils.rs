@@ -8,7 +8,6 @@ use std::cell::Cell;
 use js::Unknown;
 use webapi::console;
 
-// The `react` package's `act`, which may be another copy's.
 #[cfg_attr(rust_js, rust_js::link_name = "react#* as IsomorphicReactPackage.act")]
 fn react_act(callback: &dyn Fn() -> Option<&'static Unknown>) -> &'static Unknown {
     unreachable!()

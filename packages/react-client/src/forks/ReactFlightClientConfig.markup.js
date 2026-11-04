@@ -9,8 +9,8 @@ export {default as rendererVersion} from 'shared/ReactVersion';
 export const rendererPackageName = 'react-markup';
 
 export * from 'react-markup/src/ReactMarkupLegacyClientStreamConfig.js';
-export {bindToConsole} from 'react-client/src/ReactClientConsoleConfigPlain';
-export {checkEvalAvailabilityOnceDev} from 'react-client/src/ReactClientDebugConfigPlain';
+export * from 'react-client/src/ReactClientConsoleConfigPlain';
+export * from 'react-client/src/ReactClientDebugConfigPlain';
 
 export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
   throw new Error(

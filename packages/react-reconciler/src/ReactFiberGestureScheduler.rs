@@ -18,7 +18,6 @@ use crate::react_fiber_lane::{
 };
 use crate::react_fiber_root_scheduler::{ensure_root_is_scheduled, request_transition_lane};
 
-// ReactFiberConfig's `GestureTimeline`.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#getCurrentGestureOffset"
@@ -27,7 +26,6 @@ fn get_current_gesture_offset(provider: &GestureProvider) -> f64 {
     unreachable!()
 }
 
-// ReactFiberConfig's `RunningViewTransition`.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#stopViewTransition"

@@ -55,6 +55,8 @@ import assign from 'shared/assign';
 import noop from 'shared/noop';
 import {$unwrap} from '@rust-js/runtime';
 
+// Provided by www
+
 const ReactFiberErrorDialogWWW = require('ReactFiberErrorDialog');
 
 if (typeof ReactFiberErrorDialogWWW.showErrorDialog !== 'function') {

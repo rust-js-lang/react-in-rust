@@ -7,7 +7,6 @@
 use shared::react_version::REACT_VERSION as REACT_DOM_PACKAGE_VERSION;
 
 unsafe extern "Rust" {
-    // The `react` package's own version, which may be another copy's.
     #[link_name = "react#* as IsomorphicReactPackage.version"]
     safe static ISOMORPHIC_REACT_PACKAGE_VERSION: &'static str;
 }

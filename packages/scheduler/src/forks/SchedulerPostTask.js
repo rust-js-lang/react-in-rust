@@ -19,7 +19,7 @@ export {
   LowPriority as unstable_LowPriority,
   NormalPriority as unstable_NormalPriority,
   UserBlockingPriority as unstable_UserBlockingPriority,
-} from '../SchedulerPriorities.js';
+};
 
 // Capture local references to native APIs, in case a polyfill overrides them.
 const {performance: perf, setTimeout} = window;

@@ -28,7 +28,5 @@ export const IdlePriority = Scheduler.unstable_IdlePriority;
 
 // this doesn't actually exist on the scheduler, but it *does*
 // on scheduler/unstable_mock, which we'll need for internal testing
-export const log = Scheduler.log;
-export const unstable_setDisableYieldValue =
-  Scheduler.unstable_setDisableYieldValue;
+export const {log, unstable_setDisableYieldValue} = Scheduler;
 //# sourceMappingURL=Scheduler.js.map

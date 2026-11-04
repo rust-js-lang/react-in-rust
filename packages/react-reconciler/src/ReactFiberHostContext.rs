@@ -23,7 +23,6 @@ unsafe extern "Rust" {
     safe static NOT_PENDING_TRANSITION: Option<&'static Unknown>;
 }
 
-// ReactFiberConfig's `HostContext`s.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#getChildHostContext"
@@ -35,7 +34,6 @@ fn get_child_host_context(
     unreachable!()
 }
 
-// ReactFiberConfig's `HostContext` of a `Container`.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#getRootHostContext"
