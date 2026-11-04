@@ -2188,6 +2188,34 @@ The port is split between sessions by package:
   rd724: the `.d.ts` types a module `unknown` (`render: unknown`,
   readModule's `unknown | null | undefined`), looser than upstream's Flow
   `Function`, as js has no value type of a function of any signature.
+  react-noop-renderer's ReactNoopFlightClient, the Flight tests' client, is
+  Rust (Batch 65), our last core file. Its factory, `react-client/flight`'s
+  default (JS; jest makes it a factory of ReactFlightClient), is a binding
+  giving ReactFlightClient's namespace (`#[rust_js::namespace] pub struct
+  ReactFlightClient;`), whose five methods only pass their parameters on
+  to the module's functions, so they print nothing and the clients' calls
+  keep `close as closeFlight` (rust-js #566, 9705a3711); createResponse's
+  says the function's `#[rust_js::nullable(..)]` (#596, c024eda46). read's
+  createResponse passes `undefined` for debugStartTime and leaves out the
+  debug channel, and processBinaryChunk has no fifth `0`, where upstream
+  passes the channel's `onMessage` as the 12th argument, which is
+  debugStartTime's place, and a `0` its `$FlowFixMe[extra-arg]` admits
+  (rd708 C1 and C2, the coordinator's, Batch 62). Its forms: `for chunk in
+  source` prints `const chunk = source[i];`; `options?.findSourceMapURL`
+  and `options != null && options.close === true` of an `Option` of the
+  options; createStringDecoder's `preserveByteOrderMark ?? false` for
+  upstream's default parameter (the `?? false` kind). Pending in rust-js:
+  `import {readModule} from '../flight-modules.js'` where upstream names
+  'react-noop-renderer/flight-modules' (rd733, #603); the factory's
+  `const {createResponse, createStreamState, processBinaryChunk, close,
+  getRoot} = ReactFlightClient({..});` prints after `read` and `let
+  hasConfirmedEval = false;`, its names in call order (rd734, #604); the
+  `// eslint-disable-next-line no-eval` prints in the `catch`, not before
+  `(0, eval)('null')` (rd736, #605). **A result difference pending #589**
+  (rd735): bindToConsole tests `typeof method !== 'function'` and throws
+  an Error where upstream's `Function.prototype.bind.apply(console[methodName],
+  ..)` throws a TypeError; with `js::Function` it becomes upstream's bind
+  of the method, with no check.
   react-test-renderer's ReactFiberConfigTestHost and ReactTestRenderer are
   Rust; react-art's ReactARTInternals, ReactFiberConfigART and ReactART
   are Rust. ReactART's Surface and Text are class components (rust-js ADR

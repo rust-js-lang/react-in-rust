@@ -13,6 +13,7 @@ path = "noop.rs"
 [dependencies]
 js.workspace = true
 node.workspace = true
+react-client = { path = "../react-client" }
 react-isomorphic = { path = "../react" }
 react-reconciler = { path = "../react-reconciler" }
 shared.workspace = true

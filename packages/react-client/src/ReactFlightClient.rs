@@ -6940,3 +6940,78 @@ pub fn inject_into_dev_tools() -> bool {
     };
     inject_internals(js::unknown_of(internals))
 }
+
+/// This module, as JS hands it around: the Flight client a renderer's
+/// `ReactFlightClient(config)` makes of its config.
+#[cfg_attr(rust_js, rust_js::namespace)]
+pub struct ReactFlightClient;
+
+unsafe impl js::Defined for ReactFlightClient {}
+
+#[cfg_attr(rust_js, rust_js::namespace)]
+impl ReactFlightClient {
+    #[allow(clippy::too_many_arguments)] // upstream's 14 positional parameters.
+    #[cfg_attr(
+        rust_js,
+        rust_js::nullable(bundler_config, server_reference_config, module_loading)
+    )]
+    pub fn create_response(
+        &self,
+        bundler_config: Option<&'static Unknown>,
+        server_reference_config: Option<&'static Unknown>,
+        module_loading: Option<&'static Unknown>,
+        call_server: Option<&'static CallServerCallback>,
+        encode_form_action: Option<&'static EncodeFormActionCallback>,
+        nonce: Option<String>,
+        temporary_references: Option<&'static TemporaryReferenceSet>,
+        allow_partial_stream: bool,
+        find_source_map_url: Option<&'static FindSourceMapURLCallback>,
+        replay_console: bool,
+        environment_name: Option<String>,
+        debug_start_time: Option<f64>,
+        debug_end_time: Option<f64>,
+        debug_channel: Option<Rc<DebugChannel>>,
+    ) -> Rc<WeakResponse> {
+        create_response(
+            bundler_config,
+            server_reference_config,
+            module_loading,
+            call_server,
+            encode_form_action,
+            nonce,
+            temporary_references,
+            allow_partial_stream,
+            find_source_map_url,
+            replay_console,
+            environment_name,
+            debug_start_time,
+            debug_end_time,
+            debug_channel,
+        )
+    }
+
+    pub fn create_stream_state(
+        &self,
+        weak_response: &WeakResponse,
+        stream_debug_value: Option<&'static Unknown>,
+    ) -> StreamState {
+        create_stream_state(weak_response, stream_debug_value)
+    }
+
+    pub fn process_binary_chunk(
+        &self,
+        weak_response: &WeakResponse,
+        stream_state: &StreamState,
+        chunk: &'static js::Uint8Array,
+    ) {
+        process_binary_chunk(weak_response, stream_state, chunk)
+    }
+
+    pub fn get_root(&self, weak_response: &WeakResponse) -> Chunk {
+        get_root(weak_response)
+    }
+
+    pub fn close(&self, weak_response: &WeakResponse) {
+        close(weak_response)
+    }
+}
