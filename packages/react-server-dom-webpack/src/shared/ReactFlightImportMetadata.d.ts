@@ -5,8 +5,14 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+/**
+ * A webpack module's id: its name, or its number, as webpack's production
+ * builds give it.
+ */
+export type ModuleId = string | number;
+
 export interface ImportManifestEntry {
-  id: string;
+  id: ModuleId;
   // chunks is a double indexed array of chunkId / chunkFilename pairs
   chunks: string[];
   name: string;
@@ -21,8 +27,8 @@ export const Async: 1;
 // This is the parsed shape of the wire format which is why it is
 // condensed to only the essentialy information
 export type ImportMetadata =
-  | [string, string[], string, Async]
-  | [string, string[], string];
+  | [ModuleId, string[], string, Async]
+  | [ModuleId, string[], string];
 
 export const ID: number;
 

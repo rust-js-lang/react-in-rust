@@ -45,9 +45,10 @@ pub fn webpack_get_script_filename(id: &str) -> String {
     unreachable!()
 }
 
-/// Webpack's `__webpack_require__(id)`.
+/// Webpack's `__webpack_require__(id)`, of a module's id, its name or its
+/// number.
 #[cfg_attr(rust_js, rust_js::link_name = "__webpack_require__")]
-pub fn webpack_require(id: &str) -> &'static Unknown {
+pub fn webpack_require<Id: ?Sized>(id: &Id) -> &'static Unknown {
     unreachable!()
 }
 

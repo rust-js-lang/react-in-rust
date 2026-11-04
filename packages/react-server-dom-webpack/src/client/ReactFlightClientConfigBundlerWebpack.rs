@@ -12,7 +12,7 @@ use shared::environment::{__DEV__, webpack_require};
 use shared::react_types::{FulfilledThenable, ReactDebugInfo, Thenable};
 
 use crate::shared::react_flight_import_metadata::{
-    Async, ImportManifestEntry, ImportMetadata, is_async_import,
+    Async, ImportManifestEntry, ImportMetadata, ModuleId, is_async_import,
 };
 
 #[cfg_attr(
@@ -190,7 +190,7 @@ thread_local! {
 }
 
 #[cfg_attr(rust_js, rust_js::nullable)]
-fn require_async_module(id: &str) -> Option<&'static Thenable> {
+fn require_async_module(id: &ModuleId) -> Option<&'static Thenable> {
     // We've already loaded all the chunks. We can require the module.
     // SAFETY: an async module's exports are a promise, or tested as one below.
     let promise: &'static Thenable = unsafe { js::cast(Some(webpack_require(id))) };
