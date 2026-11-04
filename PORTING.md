@@ -499,12 +499,6 @@ the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
   props); }`, where it printed `node => node.props != null &&
   propsMatch(node.props, props)` (upstream: `node => node.props &&
   propsMatch(node.props, props)`).
-- rd721 (since rust-js 5d3053552, #561's): ReactJSXElement's
-  `createFakeCallStack` is taken apart, `const {react_stack_bottom_frame} =
-  {..}` and `react_stack_bottom_frame(UnknownOwner)`, where upstream keeps
-  the object and calls its method. (ReactLazy's DEV `const error = new
-  Error('react-stack-top-frame');`, was `value`, is rd413's name, names
-  run 50, 6a4d64fc9.)
 - rd751 (the FB flag forks): a module's flags read off another module's
   object are each their own `export const x = flags.x;`, where upstream
   destructures them in one `export const {x, y} = flags;`
@@ -527,6 +521,30 @@ where upstream reads `Array.from(instance._transitions)`: the let chain's
 binding keeps the program's name (rd226, rust-js aa7639e81), which can't be
 the field's own, `transitions`, as the body assigns the outer
 `transitions`.
+
+**Pending in rust-js from Batch 65** (no result changes):
+- rd732 (since 8e63f82ae, #578's `!!`): ReactDOMComponent's setProp prints
+  `const canSetTextContent = tag !== 'body' && (tag !== 'textarea' ||
+  !!value);` of `!value.is_empty()`, where upstream writes `value !== ''`.
+
+**Accepted by the user, Batch 65** (2026-11-04; no result changes):
+- ReactFiberConfigDOM's isHostHoistableType prints `const isAsync =
+  !!props.async && ..` of `js::truthy(..)`, where upstream writes
+  `props.async && ..` (#578's rule: a `const` of a value's truth keeps its
+  `!!`).
+- rd721's remainder: ReactJSXElement's `const createFakeCallStack = {
+  react_stack_bottom_frame: callStackForError => callStackForError() };`
+  and `createFakeCallStack.react_stack_bottom_frame(UnknownOwner)` (the
+  object kept by 298ab7e8b, #584), where upstream writes the field
+  `function (callStackForError) { return callStackForError(); }` and calls
+  it as `createFakeCallStack.react_stack_bottom_frame.bind(createFakeCallStack,
+  UnknownOwner)()`. (ReactLazy's DEV `const error = new
+  Error('react-stack-top-frame');` is rd413's name.)
+- ReactDOMRootFB's `export {batchedUpdates as unstable_batchedUpdates} from
+  'react-reconciler/src/ReactFiberWorkLoop'` (rd704's kind, after
+  11350d15d): the port's ReactFiberReconciler has batchedUpdates as a
+  namespace method, not a `pub use`, so the natural Rust names the work
+  loop.
 
 **Held until rust-js prints an untagged string-or-integer `{}` in place**
 (the user's condition, 2026-11-03; the coordinator's rust-js P3): webpack's
@@ -2111,12 +2129,11 @@ The port is split between sessions by package:
   - `!= null` tests of an Option (owner, stateNode, rootEl);
   - parameter comments say what Flow typed, `// ReactFiberConfigDOM's
     Container`.
-  Pending in rust-js: `export {batchedUpdates as unstable_batchedUpdates}
-  from 'react-reconciler/src/ReactFiberWorkLoop'`, where upstream imports
-  it from ReactFiberReconciler (rd704, names run 51); #578's lost `!!`s
-  and `$FlowFixMe` comments (rd719); `import {$unwrap} from
-  '@rust-js/runtime';` prints as the module's last line, after that
-  re-export (rd725, rust-js #590).
+  `export {batchedUpdates as unstable_batchedUpdates} from
+  'react-reconciler/src/ReactFiberWorkLoop'`, where upstream imports it
+  from ReactFiberReconciler, is accepted (Batch 65, above). Pending in
+  rust-js: `import {$unwrap} from '@rust-js/runtime';` prints as the
+  module's last line, after that re-export (rd725, rust-js #590).
   react-dom's ReactDOMFB and ReactDOMFB.modern, www's classic and modern
   entries, are Rust (Batch 64): `pub use`s of ReactDOMSharedInternalsFB's
   `INTERNALS as __DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE`,
@@ -2135,10 +2152,8 @@ The port is split between sessions by package:
   writes `export {Internals as ..};`. ReactDOMTestingFB and
   ReactDOMTestingFB.modern, www's testing entries, are Rust (Batch 65,
   after rust-js #592, rd726): `pub use crate::react_dom_fb::*;` (`_modern`
-  for .modern) prints `export {createPortal, .., unstable_batchedUpdates}
-  from './ReactDOMFB.js';`, each name as ReactDOMFB exports it, where
-  upstream writes `export * from './ReactDOMFB';` (pending in rust-js,
-  #593). The test selectors are a `pub use` of
+  for .modern) prints upstream's `export * from './ReactDOMFB.js';`
+  (rust-js df8617406, #593). The test selectors are a `pub use` of
   react_reconciler::react_test_selectors's functions, `export {..} from
   'react-reconciler/src/ReactTestSelectors'` in rustfmt's order, where
   upstream re-exports them from 'react-reconciler/src/ReactFiberReconciler':
@@ -2302,14 +2317,14 @@ The port is split between sessions by package:
   manifest's `moduleMap` is a `&Dict` (upstream's non-null
   `ServerConsumerModuleMap`), and its `serverModuleMap`, upstream's `null |
   void`, is given as `js::any_of(..)`, printed as upstream passes it,
-  `serverConsumerManifest.serverModuleMap` (Batch 65; it printed `?? null`
-  until then, rd700): ResponseInstance stores `serverReferenceConfig ??
-  null`, the one place a missing key becomes `null`, as for
-  `moduleLoading`. The Node client's `pub use
-  crate::client::react_flight_dom_client_edge::*;` prints one export
-  list from './ReactFlightDOMClientEdge.js', each name as the Edge client
-  exports it (rust-js #592, Batch 65), for upstream's `export * from
-  './ReactFlightDOMClientEdge'` (#593, pending). Their `startReadingFromStream`'s `progress` is rd425's
+  `serverConsumerManifest.serverModuleMap`, at rust-js df8617406 (Batch
+  65). Some rust-js commits print `?? null` after it (3c71ee8f9 did;
+  filed for rust-js): that form is **accepted by the user** (rd700,
+  2026-11-03, by name), and either gives the same result, since
+  ResponseInstance stores `serverReferenceConfig ?? null`. The Node client's `pub use
+  crate::client::react_flight_dom_client_edge::*;` prints upstream's
+  `export * from './ReactFlightDOMClientEdge.js'` (rust-js df8617406,
+  #593, Batch 65). Their `startReadingFromStream`'s `progress` is rd425's
   cell, and their createResponse arguments are the forms accepted above
   (`?.`, `?? false`). The DOM clients' DebugChannel is an `Rc`, shared by
   the response and the FinalizationRegistry that closes it.

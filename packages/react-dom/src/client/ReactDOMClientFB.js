@@ -6,9 +6,11 @@
 // LICENSE file in the root directory of this source tree.
 
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
+
 import {isValidContainer} from 'react-dom-bindings/src/client/ReactDOMContainer';
 export {createEventHandle as unstable_createEventHandle} from 'react-dom-bindings/src/client/ReactDOMEventHandle';
 export {runWithPriority as unstable_runWithPriority} from 'react-dom-bindings/src/client/ReactDOMUpdatePriority';
+
 import {flushSync as flushSyncIsomorphic} from '../shared/ReactDOMFlushSync.js';
 
 import {
@@ -35,6 +37,7 @@ import {
   enqueueStateRestore,
   restoreStateIfNeeded,
 } from 'react-dom-bindings/src/events/ReactDOMControlledComponent';
+
 import Internals from '../ReactDOMSharedInternalsFB.js';
 
 export {

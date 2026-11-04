@@ -5909,7 +5909,7 @@ export function isHostHoistableType(type, props, hostContext) {
       }
     case 'script': {
       const isAsync =
-        props.async &&
+        !!props.async &&
         typeof props.async !== 'function' &&
         typeof props.async !== 'symbol';
       if (

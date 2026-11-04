@@ -5,27 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export {
-  createPortal,
-  createRoot,
-  hydrateRoot,
-  browser,
-  preconnect,
-  preinit,
-  preinitModule,
-  preload,
-  preloadModule,
-  requestFormReset,
-  useFormState,
-  useFormStatus,
-  __DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
-  flushSync,
-  unstable_batchedUpdates,
-  version,
-  prefetchDNS,
-  unstable_createEventHandle,
-  unstable_runWithPriority,
-} from './ReactDOMFB.modern.js';
+export * from './ReactDOMFB.modern.js';
 
 export {
   createComponentSelector,

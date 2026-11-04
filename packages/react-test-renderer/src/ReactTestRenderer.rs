@@ -324,7 +324,7 @@ fn get_children(parent: &Rc<Fiber>) -> Vec<TestChild> {
     children
 }
 
-#[cfg_attr(rust_js, rust_js::class)]
+#[cfg_attr(rust_js, rust_js::class(es, fields))]
 pub struct ReactTestInstance {
     #[cfg_attr(rust_js, rust_js::name = "_fiber")]
     fiber: Rc<Fiber>,

@@ -156,7 +156,7 @@ function topLevelUpdateWarnings(
     }
   }
 
-  const isRootRenderedBySomeReact = container._reactRootContainer;
+  const isRootRenderedBySomeReact = !!container._reactRootContainer;
   const rootEl = getReactRootElementInContainer(container);
   const hasNonRootReactChild =
     rootEl != null && getInstanceFromNode(rootEl) != null;
@@ -471,7 +471,9 @@ export function unmountComponentAtNode(
       const isContainerReactRoot =
         container.nodeType === ELEMENT_NODE &&
         isValidContainer(container.parentNode) &&
-        container.parentNode._reactRootContainer;
+        // $FlowFixMe[prop-missing]
+        // $FlowFixMe[incompatible-use]
+        !!container.parentNode._reactRootContainer;
 
       if (hasNonRootReactChild) {
         console.error(

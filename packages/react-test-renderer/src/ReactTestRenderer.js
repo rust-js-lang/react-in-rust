@@ -10,13 +10,11 @@ import * as React from 'react';
 import * as Scheduler from 'scheduler/unstable_mock';
 
 import {
+  batchedUpdates,
+  createContainer,
   defaultOnCaughtError,
   defaultOnRecoverableError,
   defaultOnUncaughtError,
-} from 'react-reconciler/src/ReactFiberErrorLogger';
-import {
-  batchedUpdates,
-  createContainer,
   flushSyncFromReconciler,
   getPublicRootInstance,
   injectIntoDevTools,
@@ -250,53 +248,49 @@ function getChildren(parent) {
   return children;
 }
 
-function ReactTestInstance(fiber) {
-  if (!validWrapperTypes.has(fiber.tag)) {
-    throw new Error(
-      `Unexpected object passed to ReactTestInstance constructor (tag: ${fiber.tag}). This is probably a bug in React.`,
-    );
+class ReactTestInstance {
+  _fiber;
+
+  _currentFiber() {
+    // Throws if this component has been unmounted.
+    const fiber = findCurrentFiberUsingSlowPath(this._fiber);
+
+    if (fiber == null) {
+      throw new Error(
+        "Can't read from currently-mounting component. This error is likely caused by a bug in React. Please file an issue.",
+      );
+    }
+    return fiber;
   }
 
-  this._fiber = fiber;
-}
+  constructor(fiber) {
+    if (!validWrapperTypes.has(fiber.tag)) {
+      throw new Error(
+        `Unexpected object passed to ReactTestInstance constructor (tag: ${fiber.tag}). This is probably a bug in React.`,
+      );
+    }
 
-ReactTestInstance.prototype._currentFiber = function () {
-  // Throws if this component has been unmounted.
-  const fiber = findCurrentFiberUsingSlowPath(this._fiber);
-
-  if (fiber == null) {
-    throw new Error(
-      "Can't read from currently-mounting component. This error is likely caused by a bug in React. Please file an issue.",
-    );
+    this._fiber = fiber;
   }
-  return fiber;
-};
 
-Object.defineProperty(ReactTestInstance.prototype, 'instance', {
-  get() {
+  get instance() {
     const tag = this._fiber.tag;
     return tag === HostComponent ||
       tag === HostHoistable ||
       tag === HostSingleton
       ? getPublicInstance(this._fiber.stateNode)
       : this._fiber.stateNode;
-  },
-});
+  }
 
-Object.defineProperty(ReactTestInstance.prototype, 'type', {
-  get() {
+  get type() {
     return this._fiber.type;
-  },
-});
+  }
 
-Object.defineProperty(ReactTestInstance.prototype, 'props', {
-  get() {
+  get props() {
     return this._currentFiber().memoizedProps;
-  },
-});
+  }
 
-Object.defineProperty(ReactTestInstance.prototype, 'parent', {
-  get() {
+  get parent() {
     let parent = this._fiber.return;
     while (parent != null) {
       if (validWrapperTypes.has(parent.tag)) {
@@ -313,55 +307,53 @@ Object.defineProperty(ReactTestInstance.prototype, 'parent', {
       parent = parent.return;
     }
     return null;
-  },
-});
+  }
 
-Object.defineProperty(ReactTestInstance.prototype, 'children', {
-  get() {
+  get children() {
     return getChildren(this._currentFiber());
-  },
-});
+  }
 
-// Custom search functions
-ReactTestInstance.prototype.find = function (predicate) {
-  return expectOne(
-    this.findAll(predicate, {deep: false}),
-    `matching custom predicate: ${predicate}`,
-  );
-};
+  // Custom search functions
+  find(predicate) {
+    return expectOne(
+      this.findAll(predicate, {deep: false}),
+      `matching custom predicate: ${predicate}`,
+    );
+  }
 
-ReactTestInstance.prototype.findByType = function (type) {
-  return expectOne(
-    this.findAllByType(type, {deep: false}),
-    `with node type: "${(getComponentNameFromType(type) ?? '') || 'Unknown'}"`,
-  );
-};
+  findByType(type) {
+    return expectOne(
+      this.findAllByType(type, {deep: false}),
+      `with node type: "${(getComponentNameFromType(type) ?? '') || 'Unknown'}"`,
+    );
+  }
 
-ReactTestInstance.prototype.findByProps = function (props) {
-  return expectOne(
-    this.findAllByProps(props, {deep: false}),
-    `with props: ${JSON.stringify(props)}`,
-  );
-};
+  findByProps(props) {
+    return expectOne(
+      this.findAllByProps(props, {deep: false}),
+      `with props: ${JSON.stringify(props)}`,
+    );
+  }
 
-ReactTestInstance.prototype.findAll = function (predicate, options) {
-  return findAll(this, predicate, options);
-};
+  findAll(predicate, options) {
+    return findAll(this, predicate, options);
+  }
 
-ReactTestInstance.prototype.findAllByType = function (type, options) {
-  return findAll(this, node => node.type === type, options);
-};
+  findAllByType(type, options) {
+    return findAll(this, node => node.type === type, options);
+  }
 
-ReactTestInstance.prototype.findAllByProps = function (props, options) {
-  return findAll(
-    this,
-    node => {
-      const option = node.props;
-      return option != null && propsMatch(option, props);
-    },
-    options,
-  );
-};
+  findAllByProps(props, options) {
+    return findAll(
+      this,
+      node => {
+        const option = node.props;
+        return option != null && propsMatch(option, props);
+      },
+      options,
+    );
+  }
+}
 
 function findAll(root, predicate, options) {
   const deep = options != null ? options.deep : true;

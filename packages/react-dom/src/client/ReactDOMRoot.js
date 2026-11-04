@@ -23,13 +23,11 @@ import {
 import {listenToAllSupportedEvents} from 'react-dom-bindings/src/events/DOMPluginEventSystem';
 import {COMMENT_NODE} from 'react-dom-bindings/src/client/HTMLNodeType';
 import {
+  createContainer,
+  createHydrationContainer,
   defaultOnCaughtError,
   defaultOnRecoverableError,
   defaultOnUncaughtError,
-} from 'react-reconciler/src/ReactFiberErrorLogger';
-import {
-  createContainer,
-  createHydrationContainer,
   flushSyncWork,
   isAlreadyRendering,
   updateContainer,

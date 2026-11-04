@@ -15,14 +15,7 @@ import {
   reportGlobalError,
 } from 'react-client/src/ReactFlightClient';
 
-export {
-  registerServerReference,
-  createTemporaryReferenceSet,
-  createServerReference,
-  createFromReadableStream,
-  createFromFetch,
-  encodeReply,
-} from './ReactFlightDOMClientEdge.js';
+export * from './ReactFlightDOMClientEdge.js';
 
 function findSourceMapURL(filename, environmentName) {
   const devServer = parcelRequire.meta.devServer;

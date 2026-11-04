@@ -9,11 +9,13 @@ use shared::react_types::{ReactNodeList, ReactPortal};
 use webapi::{console, window};
 
 use shared::react_feature_flags::DISABLE_LEGACY_MODE;
+
 use react_dom_bindings::react_dom_container::is_valid_container;
 #[cfg_attr(rust_js, rust_js::name = "unstable_createEventHandle")]
 pub use react_dom_bindings::react_dom_event_handle::create_event_handle as unstable_create_event_handle;
 #[cfg_attr(rust_js, rust_js::name = "unstable_runWithPriority")]
 pub use react_dom_bindings::react_dom_update_priority::run_with_priority as unstable_run_with_priority;
+
 use crate::react_dom_flush_sync::{FLUSH_SYNC as FLUSH_SYNC_ISOMORPHIC, FlushSync};
 
 use react_reconciler::react_fiber_reconciler::ReactFiberReconciler;
@@ -35,6 +37,7 @@ use react_dom_bindings::react_dom_component_tree::{
 use react_dom_bindings::react_dom_controlled_component::{
     enqueue_state_restore, restore_state_if_needed,
 };
+
 use crate::react_dom_shared_internals_fb::INTERNALS;
 
 pub use crate::react_dom_float::{
@@ -96,7 +99,9 @@ fn flush_sync_from_reconciler(
         ),));
     }
     // $FlowFixMe[incompatible-type]
-    ReactFiberReconciler.flush_sync_from_reconciler(r#fn).flatten()
+    ReactFiberReconciler
+        .flush_sync_from_reconciler(r#fn)
+        .flatten()
 }
 
 #[cfg_attr(rust_js, rust_js::name = "flushSync")]

@@ -11,12 +11,13 @@
 // environment.
 
 import {
+  ConcurrentRoot,
   DefaultEventPriority,
   DiscreteEventPriority,
   IdleEventPriority,
+  LegacyRoot,
   NoEventPriority,
-} from 'react-reconciler/src/ReactEventPriorities';
-import {ConcurrentRoot, LegacyRoot} from 'react-reconciler/src/ReactRootTags';
+} from 'react-reconciler/src/ReactReconcilerConstants';
 
 import * as Scheduler from 'scheduler/unstable_mock';
 

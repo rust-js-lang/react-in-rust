@@ -15,14 +15,7 @@ import {
   reportGlobalError,
 } from 'react-client/src/ReactFlightClient';
 
-export {
-  registerServerReference,
-  createTemporaryReferenceSet,
-  createServerReference,
-  createFromReadableStream,
-  createFromFetch,
-  encodeReply,
-} from './ReactFlightDOMClientEdge.js';
+export * from './ReactFlightDOMClientEdge.js';
 
 function noServerCall(id, args) {
   throw new Error(
