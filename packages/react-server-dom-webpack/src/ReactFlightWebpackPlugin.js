@@ -388,7 +388,7 @@ export default class ReactFlightWebpackPlugin {
         if (
           node.type !== 'ExpressionStatement' ||
           node.directive == null ||
-          !node.directive
+          node.directive === ''
         ) {
           break;
         }

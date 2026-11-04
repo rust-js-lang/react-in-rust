@@ -10,8 +10,8 @@
  * given its previous state.
  */
 export type GetDerivedStateFromProps = (
-  value: unknown | null | undefined,
-  value2: unknown | null | undefined,
+  value?: unknown | null | undefined,
+  value2?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 export interface InternalInstance {
@@ -21,18 +21,18 @@ export interface InternalInstance {
 
 export interface ClassComponentUpdater {
   enqueueSetState: (
-    value: unknown,
-    value2: unknown | null | undefined,
-    value3: unknown | null | undefined,
+    inst: unknown,
+    payload?: unknown | null | undefined,
+    callback?: unknown | null | undefined,
   ) => void;
   enqueueReplaceState: (
-    value: unknown,
-    value2: unknown | null | undefined,
-    value3: unknown | null | undefined,
+    inst: unknown,
+    payload?: unknown | null | undefined,
+    callback?: unknown | null | undefined,
   ) => void;
   enqueueForceUpdate: (
-    value: unknown,
-    value2: unknown | null | undefined,
+    inst: unknown,
+    callback?: unknown | null | undefined,
   ) => void;
 }
 

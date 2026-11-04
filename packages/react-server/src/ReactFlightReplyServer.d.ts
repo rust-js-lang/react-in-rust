@@ -31,14 +31,14 @@ declare const RESPONSE_SYMBOL: unique symbol;
 export interface FlightStreamController {
   enqueueModel: (value: string) => void;
   close: (value: string) => void;
-  error: (value: unknown | null | undefined) => void;
+  error: (error?: unknown | null | undefined) => void;
 }
 
 export type JSONValue = unknown;
 
 /** A chunk's listener: a function, or a reference waiting on its value. */
 export type Listener =
-  | ((value: unknown | null | undefined) => void)
+  | ((value?: unknown | null | undefined) => void)
   | InitializationReference;
 
 /** A resolved model's chunk's `reason`: its id and its response. */
@@ -85,8 +85,8 @@ declare class ReactPromise {
   reason: unknown;
   // TODO: This doesn't return a new Promise chain unlike the real .then
   then(
-    resolve?: ((value: unknown | null | undefined) => void) | null | undefined,
-    reject?: ((value: unknown | null | undefined) => void) | null | undefined,
+    resolve?: ((value?: unknown | null | undefined) => void) | null | undefined,
+    reject?: ((value?: unknown | null | undefined) => void) | null | undefined,
   ): void;
 }
 
@@ -133,10 +133,10 @@ export interface InitializationReference {
 
 export interface InitializationHandler {
   chunk: ReactPromise | null;
-  value: unknown | null | undefined;
+  value?: unknown | null | undefined;
   // TODO: Split type to make it impossible to treat a thrown value as NestedArrayContext.
   // thrown value if errored, otherwise array context
-  reason: unknown | null | undefined;
+  reason?: unknown | null | undefined;
   // GAP rd488: upstream's one `reason` is a thrown value or, where it's
   // not errored, an array context; an untagged enum can't tell a struct
   // from any thrown value, so the array context is a field of its own.
@@ -150,7 +150,7 @@ export interface InitializationHandler {
 export function reportGlobalError(response: Response, error: Error): void;
 
 declare class FlightIterator {
-  next: (value: unknown | null | undefined) => ReactPromise;
+  next: (value?: unknown | null | undefined) => ReactPromise;
 }
 
 export type {FlightIterator};

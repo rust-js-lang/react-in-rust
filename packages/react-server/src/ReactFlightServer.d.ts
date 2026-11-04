@@ -73,7 +73,7 @@ export type ReactJsonValue = unknown;
  * A host's count of a chunk's bytes, `null` where the host doesn't count
  * them.
  */
-export type ByteLengthOfChunk = (value: unknown) => number;
+export type ByteLengthOfChunk = (chunk: Chunk) => number;
 
 /**
  * Where a host keeps the component a server component renders in, its

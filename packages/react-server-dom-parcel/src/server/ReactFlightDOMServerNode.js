@@ -57,8 +57,6 @@ import {
 } from 'react-client/src/ReactFlightClientStreamConfigNode';
 
 import {textEncoder} from 'react-server/src/ReactServerStreamConfigNode';
-
-export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 import {
   $borrow,
   $borrowMut,
@@ -67,6 +65,8 @@ import {
   $unborrow,
   $unwrap,
 } from '@rust-js/runtime';
+
+export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
 // GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
 

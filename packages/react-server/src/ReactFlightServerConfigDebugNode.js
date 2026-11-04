@@ -250,6 +250,7 @@ export function initAsyncDebugInfo() {
             }
             default:
               lastRanAwait = null;
+              break;
           }
         }
       },

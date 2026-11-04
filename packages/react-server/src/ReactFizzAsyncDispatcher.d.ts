@@ -10,7 +10,7 @@ import type {ComponentStackNode} from './ReactFizzComponentStack.js';
 /** Fizz's `AsyncDispatcher`: what `ReactSharedInternals.A` is while it renders. */
 export interface DefaultAsyncDispatcher {
   getCacheForType: (
-    value: () => unknown | null | undefined,
+    resourceType: () => unknown | null | undefined,
   ) => unknown | null | undefined;
   cacheSignal: () => AbortSignal | null | undefined;
   // DEV only: the component rendering now.

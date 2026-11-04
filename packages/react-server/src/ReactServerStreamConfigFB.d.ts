@@ -11,7 +11,7 @@ export interface Destination {
   buffer: string;
   done: boolean;
   fatal: boolean;
-  error: unknown | null | undefined;
+  error?: unknown;
 }
 
 export function scheduleMicrotask(callback: () => void): void;

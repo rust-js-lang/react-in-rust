@@ -13,10 +13,10 @@ import {
 } from 'react-server/src/ReactFizzServer';
 
 import {
+  createRenderState,
   createResumableState,
   createRootFormatContext,
-} from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
-import {createRenderState} from 'react-dom-bindings/src/server/ReactFizzConfigDOMLegacy';
+} from 'react-dom-bindings/src/server/ReactFizzConfigDOMLegacy';
 
 export {default as version} from 'shared/ReactVersion';
 

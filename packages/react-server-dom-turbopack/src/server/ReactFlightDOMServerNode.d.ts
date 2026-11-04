@@ -66,8 +66,8 @@ export interface Options {
 }
 
 export interface PipeableStream {
-  abort: (value: unknown | null | undefined) => void;
-  pipe: (writable: Writable) => Writable;
+  abort: (reason?: unknown | null | undefined) => void;
+  pipe: (destination: Writable) => Writable;
 }
 
 export function renderToPipeableStream(

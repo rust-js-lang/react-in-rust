@@ -15,7 +15,7 @@ export type Chunk = Uint8Array<ArrayBuffer>;
 
 export type BinaryChunk = Uint8Array<ArrayBuffer>;
 
-export const scheduleMicrotask: (value: () => void) => void;
+export const scheduleMicrotask: (callback: () => void) => void;
 
 export function scheduleWork(callback: () => void): void;
 

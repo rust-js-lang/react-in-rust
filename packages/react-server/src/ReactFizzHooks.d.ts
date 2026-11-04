@@ -40,8 +40,8 @@ export function prepareToUseThenableState(
  * legacy context, what it renders.
  */
 export type Component = (
-  value: unknown | null | undefined,
-  value2: unknown | null | undefined,
+  value?: unknown | null | undefined,
+  value2?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 export function finishHooks(

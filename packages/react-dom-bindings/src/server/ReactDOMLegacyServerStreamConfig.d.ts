@@ -13,8 +13,8 @@ export {createFastHashJS as createFastHash} from 'react-server/src/createFastHas
  * while it flows.
  */
 export interface Destination {
-  push: (value: string | null | undefined) => boolean;
-  destroy: (value: unknown | null | undefined) => void;
+  push: (value?: string | null | undefined) => boolean;
+  destroy: (value?: unknown | null | undefined) => void;
 }
 
 export type PrecomputedChunk = string;

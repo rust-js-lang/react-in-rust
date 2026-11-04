@@ -33,7 +33,7 @@ export function prepareToUseHooksForComponent(
   componentDebugInfo,
 ) {
   thenableIndexCounter = 0;
-  thenableState = prevThenableState;
+  thenableState = prevThenableState ?? null;
   if (__DEV__) {
     currentComponentDebugInfo = componentDebugInfo;
   }

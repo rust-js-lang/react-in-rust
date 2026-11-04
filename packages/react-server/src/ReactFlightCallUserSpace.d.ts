@@ -10,8 +10,8 @@ import type {ReactComponentInfo} from 'shared/ReactTypes';
 
 export type CallComponent = (
   value: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
+    value?: unknown | null | undefined,
+    value2?: unknown | null | undefined,
   ) => unknown | null | undefined,
   value2: unknown | null | undefined,
   info: ReactComponentInfo,

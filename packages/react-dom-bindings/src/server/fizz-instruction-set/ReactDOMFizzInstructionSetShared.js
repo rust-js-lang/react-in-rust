@@ -278,7 +278,8 @@ export function revealCompletedBoundariesWithViewTransitions(
           // TODO: Bail out if we can
           const updateClassName = current.getAttribute('vt-update');
           if (
-            updateClassName &&
+            updateClassName != null &&
+            updateClassName !== '' &&
             updateClassName !== 'none' &&
             !restoreQueue.some(([element]) => element === current)
           ) {
@@ -678,7 +679,7 @@ export function completeBoundaryWithStyles(
     const media = resourceEl.getAttribute('media');
     if (
       loadingState &&
-      (media == null || !media || window.matchMedia(media).matches)
+      (media == null || media === '' || window.matchMedia(media).matches)
     ) {
       dependencies.push(loadingState);
     }

@@ -43,7 +43,7 @@ export default function register() {
       if (
         node.type !== 'ExpressionStatement' ||
         node.directive == null ||
-        !node.directive
+        node.directive === ''
       ) {
         break;
       }

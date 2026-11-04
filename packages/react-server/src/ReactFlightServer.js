@@ -4588,7 +4588,7 @@ function stringifyImportMetadataWithReplacer(
   debug,
 ) {
   const prevRequest = importStringRequest;
-  importStringRequest = (__DEV__ && debug ? undefined : request) ?? null;
+  importStringRequest = __DEV__ && debug ? null : request;
   const result = $catchUnwind(() =>
     // $FlowFixMe[incompatible-type] stringify can return null
     $unwrap(JSON.stringify(clientReferenceMetadata, importMetadataReplacer, 0)),

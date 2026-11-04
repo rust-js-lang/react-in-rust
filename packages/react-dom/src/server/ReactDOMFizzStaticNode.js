@@ -28,9 +28,9 @@ import {
 import {textEncoder} from 'react-server/src/ReactServerStreamConfigNode';
 
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
+import {$unwrap} from '@rust-js/runtime';
 
 export {default as version} from 'shared/ReactVersion';
-import {$unwrap} from '@rust-js/runtime';
 
 ensureCorrectIsomorphicReactVersion();
 

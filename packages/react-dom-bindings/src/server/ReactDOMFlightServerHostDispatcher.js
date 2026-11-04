@@ -29,7 +29,7 @@ ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */ = {
 };
 
 function prefetchDNS(href) {
-  if (href) {
+  if (href !== '') {
     const request = resolveRequest();
     if (request != null) {
       const hints = getHints(request);
@@ -41,10 +41,7 @@ function prefetchDNS(href) {
       hints.add(key);
       emitHint(request, 'D', href);
     } else {
-      previousDispatcher.D(
-        /* prefetchDNS */
-        href,
-      );
+      previousDispatcher.D(/* prefetchDNS */ href);
     }
   }
 }
@@ -66,11 +63,7 @@ function preconnect(href, crossOrigin) {
       emitHint(request, 'C', href);
     }
   } else {
-    previousDispatcher.C(
-      /* preconnect */
-      href,
-      crossOrigin,
-    );
+    previousDispatcher.C(/* preconnect */ href, crossOrigin);
   }
 }
 
@@ -164,12 +157,7 @@ function preinitStyle(href, precedence, options) {
       emitHint(request, 'S', href);
     }
   } else {
-    previousDispatcher.S(
-      /* preinitStyle */
-      href,
-      precedence,
-      options,
-    );
+    previousDispatcher.S(/* preinitStyle */ href, precedence, options);
   }
 }
 
@@ -191,11 +179,7 @@ function preinitScript(src, options) {
       emitHint(request, 'X', src);
     }
   } else {
-    previousDispatcher.X(
-      /* preinitScript */
-      src,
-      options,
-    );
+    previousDispatcher.X(/* preinitScript */ src, options);
   }
 }
 
@@ -217,11 +201,7 @@ function preinitModuleScript(src, options) {
       emitHint(request, 'M', src);
     }
   } else {
-    previousDispatcher.M(
-      /* preinitModuleScript */
-      src,
-      options,
-    );
+    previousDispatcher.M(/* preinitModuleScript */ src, options);
   }
 }
 
@@ -248,7 +228,7 @@ function trimOptions(options) {
 
 function getImagePreloadKey(href, imageSrcSet, imageSizes) {
   let uniquePart = '';
-  if (typeof imageSrcSet === 'string' && imageSrcSet) {
+  if (typeof imageSrcSet === 'string' && imageSrcSet !== '') {
     uniquePart += '[' + imageSrcSet + ']';
     if (typeof imageSizes === 'string') {
       uniquePart += '[' + imageSizes + ']';

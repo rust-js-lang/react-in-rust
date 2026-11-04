@@ -16,7 +16,7 @@ export type OnMessage = (value: string) => void;
 
 /** What a debug channel is told: its `onMessage`, which a render sets. */
 export interface DebugChannel {
-  onMessage: OnMessage | null | undefined;
+  onMessage?: OnMessage | undefined;
 }
 
 export interface Options {
@@ -25,7 +25,7 @@ export interface Options {
   identifierPrefix?: string | undefined;
   signal?: AbortSignal | undefined;
   debugChannel?: DebugChannel | undefined;
-  onError?: ((value: unknown | null | undefined) => void) | undefined;
+  onError?: ((value?: unknown | null | undefined) => void) | undefined;
   startTime?: number | undefined;
 }
 

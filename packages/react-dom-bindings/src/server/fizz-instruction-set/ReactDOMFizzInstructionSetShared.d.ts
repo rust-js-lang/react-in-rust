@@ -15,10 +15,10 @@ export type CompleteBoundary = (value: string, value2: string) => void;
 /** What a boundary rendered on the client is given, its first node's id and its error's. */
 export type ClientRenderBoundary = (
   value: string,
-  value2: string | null | undefined,
-  value3: string | null | undefined,
-  value4: string | null | undefined,
-  value5: string | null | undefined,
+  value2?: string | null | undefined,
+  value3?: string | null | undefined,
+  value4?: string | null | undefined,
+  value5?: string | null | undefined,
 ) => void;
 
 /** What a boundary waiting on its stylesheets is given, and their descriptors. */
@@ -29,7 +29,7 @@ export type CompleteBoundaryWithStyles = (
 ) => void;
 
 /** What reveals a batch of completed boundaries. */
-export type RevealBoundaries = (value: Element[]) => void;
+export type RevealBoundaries = (batch: Batch) => void;
 
 export function revealCompletedBoundaries(batch: Batch): void;
 

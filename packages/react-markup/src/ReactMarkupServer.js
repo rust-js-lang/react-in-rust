@@ -41,6 +41,9 @@ import {
   createRootFormatContext,
 } from './ReactFizzConfigMarkup.js';
 
+// This is the intersection of ReactNodeList and ReactClientValue minus
+// Client/ServerReferences.
+
 function noServerCallOrFormAction(id, args) {
   throw new Error(
     'renderToHTML should not have emitted Server References. This is a bug in React.',

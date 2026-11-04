@@ -56,9 +56,9 @@ export interface Options {
   onShellReady?: (() => void) | undefined;
   onAllReady?: (() => void) | undefined;
   onError?:
-    | ((value: unknown | null | undefined) => string | null | undefined)
+    | ((value?: unknown | null | undefined) => string | null | undefined)
     | undefined;
-  onBrowserBailout?: ((value: unknown | null | undefined) => void) | undefined;
+  onBrowserBailout?: ((value?: unknown | null | undefined) => void) | undefined;
 }
 
 export function render(

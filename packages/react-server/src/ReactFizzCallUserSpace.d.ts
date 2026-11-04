@@ -12,17 +12,17 @@ import type {LazyComponent} from 'react/src/ReactLazy';
  * ref of a `forwardRef`'s render, or the legacy context.
  */
 export type Component = (
-  value: unknown | null | undefined,
-  value2: unknown | null | undefined,
+  value?: unknown | null | undefined,
+  value2?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 export type CallComponent = (
   value: (
-    value: unknown | null | undefined,
-    value2: unknown | null | undefined,
+    value?: unknown | null | undefined,
+    value2?: unknown | null | undefined,
   ) => unknown | null | undefined,
-  value2: unknown | null | undefined,
-  value3: unknown | null | undefined,
+  value2?: unknown | null | undefined,
+  value3?: unknown | null | undefined,
 ) => unknown | null | undefined;
 
 export const callComponentInDEV: CallComponent | null;

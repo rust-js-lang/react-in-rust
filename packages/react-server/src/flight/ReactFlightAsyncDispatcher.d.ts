@@ -13,7 +13,7 @@ import type {ReactComponentInfo} from 'shared/ReactTypes';
  */
 export interface DefaultAsyncDispatcher {
   getCacheForType: (
-    value: () => unknown | null | undefined,
+    resourceType: () => unknown | null | undefined,
   ) => unknown | null | undefined;
   cacheSignal: () => AbortSignal | null | undefined;
   // DEV only: the component rendering now.

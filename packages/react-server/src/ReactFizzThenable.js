@@ -258,7 +258,7 @@ export function ensureSuspendableThenableStateDEV(thenableState) {
           lastThenable.value = previousThenableValue;
           lastThenable.status = 'fulfilled';
         };
-        return tmp;
+        break;
       }
       case 'rejected': {
         const previousThenableReason = lastThenable.reason;
@@ -276,10 +276,11 @@ export function ensureSuspendableThenableStateDEV(thenableState) {
           lastThenable.reason = previousThenableReason;
           lastThenable.status = 'rejected';
         };
-        return tmp;
+        break;
       }
       default:
         tmp = noop;
+        break;
     }
     return tmp;
   } else {

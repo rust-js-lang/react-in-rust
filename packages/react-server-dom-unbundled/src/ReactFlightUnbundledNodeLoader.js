@@ -306,7 +306,7 @@ function transformServerModule(source, program, url, sourceMap, loader) {
     // GAP rd689: consecutive `+=`s of text are merged into one.
     newSrc +=
       '\n\n;import {registerServerReference} from "react-server-dom-webpack/server";\n';
-    if (mappings) {
+    if (mappings !== '') {
       mappings += ';;';
     }
 
@@ -577,7 +577,7 @@ async function transformModuleIfNeeded(source, url, loader) {
     if (
       node.type !== 'ExpressionStatement' ||
       node.directive == null ||
-      !node.directive
+      node.directive === ''
     ) {
       break;
     }

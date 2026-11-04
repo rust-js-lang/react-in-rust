@@ -185,7 +185,7 @@ function wakeChunkIfInitialized(
       }
       return;
     }
-    chunk.reason = rejectListeners;
+    chunk.reason = rejectListeners ?? null;
     return;
   }
   if (chunk.status !== 'rejected') {
@@ -619,7 +619,6 @@ function initializeModelChunk(chunk) {
     chunk.status = 'blocked';
     chunk.value = null;
     chunk.reason = null;
-
     // Invoke any listeners added while resolving this model. I.e. cyclic
     // references. This may or may not fully resolve the model depending on
     // if they were blocked.
@@ -792,6 +791,7 @@ function fulfillReference(response, reference, value, arrayRoot) {
               } else {
                 localLength = 0;
               }
+              break;
           }
         }
         continue;
@@ -830,7 +830,7 @@ function resolveReference(response, handler, parentObject, key, resolvedValue) {
 
   // If this is the root object for a model reference, where `handler.value`
   // is a stale `null`, the resolved value can be used directly.
-  if (!key && handler.value === null) {
+  if (key === '' && handler.value === null) {
     handler.value = resolvedValue;
   }
 
@@ -1008,6 +1008,7 @@ function getOutlinedModel(
               } else {
                 localLength = 0;
               }
+              break;
           }
         }
         continue;
@@ -1227,7 +1228,7 @@ function parseTypedArray(
 
       // If this is the root object for a model reference, where `handler.value`
       // is a stale `null`, the resolved value can be used directly.
-      if (!parentKey && handler.value === null) {
+      if (parentKey === '' && handler.value === null) {
         handler.value = resolvedValue;
       }
     } catch (x) {

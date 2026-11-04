@@ -35,6 +35,7 @@ export function unbadgeConsole(methodName, args) {
     case 'assert':
       // assert takes formatting options as the second argument.
       offset = 1;
+      break;
   }
   const format = args[offset];
   const style = args[offset + 1];

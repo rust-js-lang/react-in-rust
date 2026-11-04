@@ -126,6 +126,7 @@ function processLink(props, formatContext) {
         referrerPolicy: props.referrerPolicy,
         media: props.media,
       });
+      break;
   }
 }
 
