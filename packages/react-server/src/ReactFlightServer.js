@@ -82,6 +82,13 @@ import {
   getSuspendedThenable,
 } from './ReactFlightThenable.js';
 
+// ReactServerStreamConfig's types, of its fork for the host.
+
+// ReactFlightServerConfig's types, of each bundler's and host's config.
+
+// Serializable values
+
+// ReactServerStreamConfig's functions, of its fork for the host.
 import {
   beginWriting,
   byteLengthOfBinaryChunk,
@@ -97,6 +104,8 @@ import {
   writeChunk,
   writeChunkAndReturn,
 } from './ReactServerStreamConfig.js';
+// ReactFlightServerConfig's functions and values, of the bundler's and the
+// host's config.
 import {
   componentStorage,
   createHints,
@@ -151,7 +160,8 @@ function defaultFilterStackFrame(
   columnNumber,
 ) {
   return (
-    !!(filename && !filename.startsWith('node:')) &&
+    filename !== '' &&
+    !filename.startsWith('node:') &&
     !filename.includes('node_modules')
   );
 }
@@ -182,7 +192,7 @@ function isPromiseCreationInternal(url, functionName) {
     // Ignore the stack frames from the async hooks themselves.
     return true;
   }
-  if (url) {
+  if (url !== '') {
     return false;
   }
   // V8 used to name the frames of static methods on the Promise constructor
@@ -233,15 +243,18 @@ function findCalledFunctionNameFromStackTrace(request, stack) {
   // Gets the name of the first function called from first party code.
   let bestMatch = '';
   const filterStackFrame = request.filterStackFrame;
-  // Don't consider anonymous code first party even if the filter wants to include them in the stack.
   for (let i = 0; i < stack.length; i++) {
     const callsite = stack[i];
     const functionName = callsite[0];
     const url = devirtualizeURL(callsite[1]);
     const lineNumber = callsite[2];
     const columnNumber = callsite[3];
-    if (filterStackFrame(url, functionName, lineNumber, columnNumber) && url) {
-      if (!bestMatch) {
+    if (
+      filterStackFrame(url, functionName, lineNumber, columnNumber) &&
+      // Don't consider anonymous code first party even if the filter wants to include them in the stack.
+      url !== ''
+    ) {
+      if (bestMatch === '') {
         // If we had no good stack frames for internal calls, just use the last
         // first party function name.
         return functionName;
@@ -288,8 +301,6 @@ function filterStackTrace(request, stack) {
 
 function hasUnfilteredFrame(request, stack) {
   const filterStackFrame = request.filterStackFrame;
-  // Ignore anonymous stack frames like internals. They are also not in first party
-  // code even though it might be useful to include them in the final stack.
   for (let i = 0; i < stack.length; i++) {
     const callsite = stack[i];
     const functionName = callsite[0];
@@ -304,7 +315,9 @@ function hasUnfilteredFrame(request, stack) {
     if (
       !isAsync &&
       filterStackFrame(url, functionName, lineNumber, columnNumber) &&
-      url
+      // Ignore anonymous stack frames like internals. They are also not in first party
+      // code even though it might be useful to include them in the final stack.
+      url !== ''
     ) {
       return true;
     }
@@ -321,7 +334,7 @@ function isPromiseAwaitInternal(url, functionName) {
     // Ignore the stack frames from the async hooks themselves.
     return true;
   }
-  if (url) {
+  if (url !== '') {
     return false;
   }
   // V8 used to name the frames of static methods on the Promise constructor
@@ -370,7 +383,8 @@ export function isAwaitInUserspace(request, stack) {
     const lineNumber = callsite[2];
     const columnNumber = callsite[3];
     return (
-      filterStackFrame(url, functionName, lineNumber, columnNumber) && !!url
+      filterStackFrame(url, functionName, lineNumber, columnNumber) &&
+      url !== ''
     );
   }
   return false;
@@ -1511,10 +1525,11 @@ function createLazyWrapperAroundWakeable(request, task, wakeable) {
           },
         );
       }
+      // Only instrument the thenable if the status if not defined. If
+      // it's defined, but an unknown value, assume it's been instrumented by
+      // some custom userspace implementation. We treat it as "pending".
+      break;
   }
-  // Only instrument the thenable if the status if not defined. If
-  // it's defined, but an unknown value, assume it's been instrumented by
-  // some custom userspace implementation. We treat it as "pending".
   const lazyType = {
     $$typeof: REACT_LAZY_TYPE,
     _payload: thenable,
@@ -2349,6 +2364,7 @@ function renderElement(
             const element = type;
             $unwrap(element._store).validated = 1;
           }
+          break;
       }
     } else if (typeof type === 'string') {
       const parentFormatContext = task.formatContext;
@@ -2609,8 +2625,7 @@ function visitAsyncNodeImpl(
 
             // Ensure the owner is already outlined.
             if (node.owner != null) {
-              const owner = node.owner;
-              outlineComponentInfo(request, owner);
+              outlineComponentInfo(request, node.owner);
             }
 
             // We log the environment at the time when the last promise pigned ping which may
@@ -4005,6 +4020,7 @@ function renderModelDestructive(
               break;
             case '4':
               propertyName = '_owner';
+              break;
           }
         }
         writtenObjects.set(value, parentReference + ':' + propertyName);
@@ -4217,10 +4233,8 @@ function renderModelDestructive(
       return serializeServerReference(request, functionValue);
     }
     if (request.temporaryReferences != null) {
-      const tempRef = resolveTemporaryReference(
-        request.temporaryReferences,
-        value,
-      );
+      const temporaryReferences = request.temporaryReferences;
+      const tempRef = resolveTemporaryReference(temporaryReferences, value);
       if (tempRef != null) {
         return serializeTemporaryReference(request, tempRef);
       }
@@ -4920,10 +4934,11 @@ function outlineIOInfo(request, ioInfo) {
   }
   let debugStack;
   if (ioInfo.stack == null && ioInfo.debugStack != null) {
+    const ioInfoDebugStack = ioInfo.debugStack;
     // If we have a debugStack but no parsed stack we should parse it.
     debugStack = filterStackTrace(
       request,
-      parseStackTrace(ioInfo.debugStack, 1),
+      parseStackTrace(ioInfoDebugStack, 1),
     );
   } else {
     debugStack =
@@ -4969,11 +4984,10 @@ function serializeIONode(request, ioNode, promiseRef) {
   let stack;
   let name = '';
   if (ioNode.promise != null) {
-    let promise = ioNode.promise;
     // Pick an explicit name from the Promise itself if it exists.
     // Note that we don't use the promiseRef passed in since that's sometimes the awaiting Promise
     // which is the value observed but it's likely not the one with the name on it.
-    promise = promise.deref();
+    const promise = ioNode.promise.deref();
     if (promise != null) {
       // $FlowFixMe[prop-missing]
       const displayName = promise.displayName;
@@ -4986,7 +5000,7 @@ function serializeIONode(request, ioNode, promiseRef) {
     // The stack can contain some leading internal frames for the construction of the promise that we skip.
     const fullStack = stripLeadingPromiseCreationFrames(ioNode.stack);
     stack = filterStackTrace(request, fullStack);
-    if (!name) {
+    if (name === '') {
       // If we didn't have an explicit name, try finding one from the stack.
       name = findCalledFunctionNameFromStackTrace(request, fullStack);
       // The name can include the object that this was called on but sometimes that's
@@ -5198,7 +5212,7 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
     const writtenDebugObjects = request.writtenDebugObjects;
     const existingDebugReference = writtenDebugObjects.get(value);
     if (existingDebugReference != null) {
-      if (debugModelRoot !== value) {
+      if (!(debugModelRoot === value)) {
         // We've already emitted this as a debug object. We favor that version if available.
         return existingDebugReference;
       }
@@ -5236,10 +5250,11 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
               break;
             case '4':
               propertyName = '_owner';
+              break;
           }
         }
         writtenDebugObjects.set(value, parentReference + ':' + propertyName);
-      } else if (debugNoOutline !== value) {
+      } else if (!(debugNoOutline === value)) {
         // If this isn't the root object (like meta data) and we don't have an id for it, outline
         // it so that we can dedupe it by reference later.
         // $FlowFixMe[method-unbinding]
@@ -5405,6 +5420,7 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
                   return serializeLazyID(id);
                 }
               }
+              break;
             }
           }
         }
@@ -5878,10 +5894,11 @@ function forwardDebugInfo(request, task, debugInfo) {
         // We can't serialize the ConsoleTask/Error objects so we need to omit them before serializing.
         let debugStack;
         if (info.stack == null && info.debugStack != null) {
+          const infoDebugStack = info.debugStack;
           // If we have a debugStack but no parsed stack we should parse it.
           debugStack = filterStackTrace(
             request,
-            parseStackTrace(info.debugStack, 1),
+            parseStackTrace(infoDebugStack, 1),
           );
         } else {
           debugStack =
@@ -6964,7 +6981,7 @@ export function resolveDebugMessage(request, message) {
       "resolveDebugMessage/closeDebugChannel should not be called for a Request that wasn't kept alive. This is a bug in React.",
     );
   }
-  if (!message) {
+  if (message === '') {
     closeDebugChannel(request);
     return;
   }

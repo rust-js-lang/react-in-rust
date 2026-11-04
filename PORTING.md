@@ -1700,6 +1700,13 @@ These differences from upstream's output are accepted:
     `ReactSharedInternals.A` twice: an `if let` of a variable's `Cell`
     field holds it, as a binding's static's didn't (a rust-js gap, filed
     with rd661).
+    ReactFlightServer's four `TaintRegistry*` thread-locals each read one
+    `Cell` of it, `with(|internals| internals.taint_registry_objects.get())`,
+    which nothing writes after the load (Flight's functions set only `H`, `A`
+    and `getCurrentStack`), so they're made as the module loads, upstream's
+    `const { TaintRegistryObjects, .. } = ReactSharedInternals;`: rust-js
+    tells a `with`'s fields apart (#616, ADR 1006 amended), where from its
+    cf1e69bce until then they were `$local(() => ..)`.
   - createBackingFormData's callback is an arrow, `formData.forEach((value,
     key) => { appendBackingEntry(backingStore, value, key); })`, where
     upstream writes `formData.forEach(appendBackingEntry.bind(null,

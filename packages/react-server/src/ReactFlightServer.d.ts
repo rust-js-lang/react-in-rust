@@ -9,6 +9,7 @@ import type {AsyncLocalStorage} from 'async_hooks';
 import type {RequestCleanupQueue} from 'react/src/ReactTaintRegistry';
 import type {ReactComponentInfo, ReactStackTrace} from 'shared/ReactTypes';
 import type {TemporaryReferenceSet} from './ReactFlightServerTemporaryReferences.js';
+import type {ThenableState} from './ReactFlightThenable.js';
 
 type ReactKey = string | symbol;
 
@@ -103,14 +104,14 @@ export type AbortSet = Set<Task>;
 export interface Task {
   id: number;
   status: number;
-  model: ReactClientValue | null | undefined;
+  model?: ReactClientValue | undefined;
   // parent server component keys
   keyPath: ReactKey | null;
   // true if the root server component of this sequence had a null key
   implicitSlot: boolean;
   // an approximate parent context from host components
   formatContext: FormatContext;
-  thenableState: any[] | null;
+  thenableState: ThenableState | null;
   // GAP rd493: upstream sets the Profiling-only and DEV-only fields only
   // under their flags; a struct's fields are always set.
   // Profiling-only. Whether we need to track the completion time of this task.
@@ -122,11 +123,11 @@ export interface Task {
   // DEV-only. Each of the three is what it was given, `null` or the
   // element's, `undefined` of a production element's clone, which upstream's
   // `!== null` tests let through.
-  debugOwner: unknown | null | undefined;
+  debugOwner?: unknown;
   // DEV-only
-  debugStack: unknown | null | undefined;
+  debugStack?: unknown | null | undefined;
   // DEV-only
-  debugTask: unknown | null | undefined;
+  debugTask?: unknown | null | undefined;
 }
 
 /**
@@ -157,14 +158,14 @@ export type Cache = Map<ResourceType, unknown | null | undefined>;
  * sent of it, if any.
  */
 export type OnError = (
-  value: unknown | null | undefined,
+  value?: unknown | null | undefined,
 ) => string | null | undefined;
 
 /** A request's `onAllReady`. */
 export type OnAllReady = () => void;
 
 /** A request's `onFatalError`, of what was thrown. */
-export type OnFatalError = (value: unknown | null | undefined) => void;
+export type OnFatalError = (value?: unknown | null | undefined) => void;
 
 /** A request's `environmentName`: the name itself, or what gives it. */
 export type EnvironmentName = string | (() => string);
@@ -174,8 +175,8 @@ declare class RequestInstance {
   type: number;
   flushScheduled: boolean;
   // What was thrown, `undefined` too: `null` until then.
-  fatalError: unknown | null | undefined;
-  destination: unknown | null;
+  fatalError?: unknown | null | undefined;
+  destination: Destination | null;
   bundlerConfig: ClientManifest | null;
   cache: Cache;
   cacheController: AbortController;
@@ -216,7 +217,7 @@ declare class RequestInstance {
   // See completedRegularChunks for why some entries are preceded by the
   // NEXT_TWO_CHUNKS_ARE_ATOMIC sentinel.
   completedDebugChunks: Chunk[];
-  debugDestination: unknown | null;
+  debugDestination: Destination | null;
   environmentName: () => string;
   filterStackFrame: FilterStackFrame;
   didWarnForKey: WeakSet<object> | null;
