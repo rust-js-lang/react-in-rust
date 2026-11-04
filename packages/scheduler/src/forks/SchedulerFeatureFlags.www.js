@@ -7,8 +7,6 @@
 
 const dynamicFeatureFlags = require('SchedulerFeatureFlags');
 
-// GAP rd751: upstream destructures it, `export const {enableRequestPaint} =
-// dynamicFeatureFlags;`.
 export const enableRequestPaint = dynamicFeatureFlags.enableRequestPaint;
 
 export const enableProfiling = __DEV__;

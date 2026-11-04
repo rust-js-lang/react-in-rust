@@ -8,38 +8,26 @@
 // Re-export dynamic flags from the www version.
 const dynamicFeatureFlags = require('ReactFeatureFlags');
 
-// GAP rd751: upstream destructures them in one statement, `export const {..}
-// = dynamicFeatureFlags;`; each is its own `export const` here.
-export const alwaysThrottleRetries = dynamicFeatureFlags.alwaysThrottleRetries;
-export const disableLegacyContextForFunctionComponents =
-  dynamicFeatureFlags.disableLegacyContextForFunctionComponents;
-export const disableSchedulerTimeoutInWorkLoop =
-  dynamicFeatureFlags.disableSchedulerTimeoutInWorkLoop;
-export const enableInfiniteRenderLoopDetection =
-  dynamicFeatureFlags.enableInfiniteRenderLoopDetection;
-export const enableInfiniteRenderLoopDetectionForceThrow =
-  dynamicFeatureFlags.enableInfiniteRenderLoopDetectionForceThrow;
-export const enableConditionalUseWarning =
-  dynamicFeatureFlags.enableConditionalUseWarning;
-export const enableNoCloningMemoCache =
-  dynamicFeatureFlags.enableNoCloningMemoCache;
-export const enableObjectFiber = dynamicFeatureFlags.enableObjectFiber;
-export const enableRetryLaneExpiration =
-  dynamicFeatureFlags.enableRetryLaneExpiration;
-export const enableTransitionTracing =
-  dynamicFeatureFlags.enableTransitionTracing;
-export const retryLaneExpirationMs = dynamicFeatureFlags.retryLaneExpirationMs;
-export const syncLaneExpirationMs = dynamicFeatureFlags.syncLaneExpirationMs;
-export const transitionLaneExpirationMs =
-  dynamicFeatureFlags.transitionLaneExpirationMs;
-export const enableSuspenseyImages = dynamicFeatureFlags.enableSuspenseyImages;
-export const enableViewTransition = dynamicFeatureFlags.enableViewTransition;
-export const enableScrollEndPolyfill =
-  dynamicFeatureFlags.enableScrollEndPolyfill;
-export const enableInternalInstanceMap =
-  dynamicFeatureFlags.enableInternalInstanceMap;
-export const enableViewTransitionParentEnterExit =
-  dynamicFeatureFlags.enableViewTransitionParentEnterExit;
+export const {
+  alwaysThrottleRetries,
+  disableLegacyContextForFunctionComponents,
+  disableSchedulerTimeoutInWorkLoop,
+  enableInfiniteRenderLoopDetection,
+  enableInfiniteRenderLoopDetectionForceThrow,
+  enableConditionalUseWarning,
+  enableNoCloningMemoCache,
+  enableObjectFiber,
+  enableRetryLaneExpiration,
+  enableTransitionTracing,
+  retryLaneExpirationMs,
+  syncLaneExpirationMs,
+  transitionLaneExpirationMs,
+  enableSuspenseyImages,
+  enableViewTransition,
+  enableScrollEndPolyfill,
+  enableInternalInstanceMap,
+  enableViewTransitionParentEnterExit,
+} = dynamicFeatureFlags;
 
 // On WWW, __EXPERIMENTAL__ is used for a new modern build.
 // It's not used anywhere in production yet.

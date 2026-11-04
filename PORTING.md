@@ -493,13 +493,6 @@ the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
   props); }`, where it printed `node => node.props != null &&
   propsMatch(node.props, props)` (upstream: `node => node.props &&
   propsMatch(node.props, props)`).
-- rd751 (the FB flag forks): a module's flags read off another module's
-  object are each their own `export const x = flags.x;`, where upstream
-  destructures them in one `export const {x, y} = flags;`
-  (ReactFeatureFlags.www and .native-fb, SchedulerFeatureFlags.www).
-- rd752 (the FB flag forks): the comments above a binding whose import
-  prints at the top, ReactFeatureFlags.native-fb's two above `import * as
-  dynamicFlagsUntyped from 'ReactNativeInternalFeatureFlags'`, are dropped.
 
 **Accepted on the user's behalf while away** (the coordinator, 2026-11-04;
 no result changes): #570, ReactFlightClient writes `chunk.reason =
@@ -2090,12 +2083,17 @@ The port is split between sessions by package:
   static flags setupTests.www.js and setupTests.xplat.js set per variant
   stay writable `export const`s (checked under jest, both variants, www
   and xplat). Their differences, beside the license header and the Flow
-  check: each dynamic flag is its own `export const alwaysThrottleRetries
-  = dynamicFeatureFlags.alwaysThrottleRetries;`, where upstream
-  destructures them in one `export const {..} = dynamicFeatureFlags;`
-  (rd751, the compiler's: a `pub` thread-local is one export); and
-  native-fb's two comments above its import are dropped where the
-  binding's import prints (rd752).
+  check: none in ReactFeatureFlags.www and .native-fb, whose dynamic
+  flags are one `export const {..} = dynamicFeatureFlags;` (rd751, fixed
+  in rust-js: exported constants side by side of one object's properties
+  are one destructuring, ADR 0031, amended) and native-fb's two comments
+  above its import (rd752, fixed in rust-js: a binding's comments are its
+  import's, ADR 1069, amended). **Accepted by the user** (2026-11-04):
+  SchedulerFeatureFlags.www's one dynamic flag is `export const
+  enableRequestPaint = dynamicFeatureFlags.enableRequestPaint;`, where
+  upstream writes `export const {enableRequestPaint} =
+  dynamicFeatureFlags;`: a lone exported read stays its own `export
+  const`, as a lone unexported one does (ADR 0031, amended).
   react's index.fb.js, www's entry, is Rust, `index.fb.rs`: it holds code,
   `captureOwnerStack` in DEV alone. **Accepted by the user** (2026-11-04,
   by name): its export list is in rustfmt's order (one `pub use` of

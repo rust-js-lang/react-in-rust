@@ -21,8 +21,6 @@ thread_local! {
     static DYNAMIC_FEATURE_FLAGS: &'static DynamicFeatureFlags = scheduler_feature_flags();
 }
 
-// GAP rd751: upstream destructures it, `export const {enableRequestPaint} =
-// dynamicFeatureFlags;`.
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "enableRequestPaint")]
     pub static ENABLE_REQUEST_PAINT: bool = DYNAMIC_FEATURE_FLAGS.with(|flags| flags.enable_request_paint);

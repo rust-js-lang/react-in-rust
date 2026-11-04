@@ -5,22 +5,20 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+// Re-export dynamic flags from the internal module.
+// Intentionally using * because this import is compiled to a `require` call.
 import * as dynamicFlagsUntyped from 'ReactNativeInternalFeatureFlags';
-
 const dynamicFlags = dynamicFlagsUntyped;
 
 // We destructure each value before re-exporting to avoid a dynamic look-up on
 // the exports object every time a flag is read.
-// GAP rd751: upstream destructures them in one statement, `export const {..}
-// = dynamicFlags;`; each is its own `export const` here.
-export const alwaysThrottleRetries = dynamicFlags.alwaysThrottleRetries;
-export const enableObjectFiber = dynamicFlags.enableObjectFiber;
-export const passChildrenWhenCloningPersistedNodes =
-  dynamicFlags.passChildrenWhenCloningPersistedNodes;
-export const enableViewTransitionForPersistenceMode =
-  dynamicFlags.enableViewTransitionForPersistenceMode;
-export const enableConditionalUseWarning =
-  dynamicFlags.enableConditionalUseWarning;
+export const {
+  alwaysThrottleRetries,
+  enableObjectFiber,
+  passChildrenWhenCloningPersistedNodes,
+  enableViewTransitionForPersistenceMode,
+  enableConditionalUseWarning,
+} = dynamicFlags;
 
 // The rest of the flags are static for better dead code elimination.
 export const disableClientCache = true;

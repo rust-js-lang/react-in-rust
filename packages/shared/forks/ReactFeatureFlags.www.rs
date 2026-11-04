@@ -41,8 +41,6 @@ thread_local! {
     static DYNAMIC_FEATURE_FLAGS: &'static DynamicFeatureFlags = react_feature_flags();
 }
 
-// GAP rd751: upstream destructures them in one statement, `export const {..}
-// = dynamicFeatureFlags;`; each is its own `export const` here.
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "alwaysThrottleRetries")]
     pub static ALWAYS_THROTTLE_RETRIES: bool = DYNAMIC_FEATURE_FLAGS.with(|flags| flags.always_throttle_retries);

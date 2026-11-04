@@ -18,8 +18,6 @@ struct DynamicExportsType {
 
 // Re-export dynamic flags from the internal module.
 // Intentionally using * because this import is compiled to a `require` call.
-// GAP rd752: these two comments are dropped where the binding's import is
-// printed, `import * as dynamicFlagsUntyped from ..`.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "get ReactNativeInternalFeatureFlags#* as dynamicFlagsUntyped"
@@ -33,8 +31,6 @@ thread_local! {
 
 // We destructure each value before re-exporting to avoid a dynamic look-up on
 // the exports object every time a flag is read.
-// GAP rd751: upstream destructures them in one statement, `export const {..}
-// = dynamicFlags;`; each is its own `export const` here.
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "alwaysThrottleRetries")]
     pub static ALWAYS_THROTTLE_RETRIES: bool = DYNAMIC_FLAGS.with(|flags| flags.always_throttle_retries);
