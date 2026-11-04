@@ -1125,7 +1125,7 @@ function createFakeServerFunction(
   const comment =
     '/* This module is a proxy to a Server Action. Turn on Source Maps to see the server source. */';
 
-  if (!name) {
+  if (name === '') {
     // An eval:ed function with no name gets the name "eval". We give it something more descriptive.
     name = '<anonymous>';
   }
@@ -1186,7 +1186,7 @@ function createFakeServerFunction(
       '?s' + // We add an extra s here to distinguish from the fake stack frames
       idx;
     code += '\n//# sourceMappingURL=' + sourceMap;
-  } else if (filename) {
+  } else if (filename !== '') {
     code += '\n//# sourceURL=' + filename;
   }
 

@@ -87,7 +87,7 @@ export function hasSelectionCapabilities(elem) {
     return false;
   }
   const nodeName = elem.nodeName.toLowerCase();
-  if (!nodeName) {
+  if (nodeName === '') {
     return false;
   }
   if (nodeName === 'input') {

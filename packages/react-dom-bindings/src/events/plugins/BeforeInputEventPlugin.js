@@ -218,7 +218,7 @@ function extractCompositionEvent(
       nativeEventTarget,
     );
     dispatchQueue.push({event, listeners});
-    if (fallbackData) {
+    if (fallbackData != null && fallbackData !== '') {
       // Inject data generated from fallback path into the synthetic event.
       // This matches the property of native CompositionEventInterface.
       event.data = fallbackData;

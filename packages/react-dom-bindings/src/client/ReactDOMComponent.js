@@ -391,7 +391,7 @@ function setProp(domElement, tag, key, value, props, prevValue) {
         // show within the <textarea> until it has been focused and blurred again.
         // https://github.com/react/react/issues/6731#issuecomment-254874553
         const canSetTextContent =
-          tag !== 'body' && (tag !== 'textarea' || !!value);
+          tag !== 'body' && (tag !== 'textarea' || value !== '');
         if (canSetTextContent) {
           setTextContent(domElement, value);
         }

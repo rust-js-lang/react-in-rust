@@ -8,11 +8,7 @@
 export {default as rendererVersion} from 'shared/ReactVersion';
 export const rendererPackageName = 'react-markup';
 
-export {
-  createStringDecoder,
-  readPartialStringChunk,
-  readFinalStringChunk,
-} from '../../../react-markup/src/ReactMarkupLegacyClientStreamConfig.js';
+export * from 'react-markup/src/ReactMarkupLegacyClientStreamConfig.js';
 export {bindToConsole} from 'react-client/src/ReactClientConsoleConfigPlain';
 export {checkEvalAvailabilityOnceDev} from 'react-client/src/ReactClientDebugConfigPlain';
 

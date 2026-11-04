@@ -43,7 +43,7 @@ export default function normalizeConsoleFormat(formatString, args, firstArg) {
   normalizedString += formatString.slice(last, formatString.length);
   // Pad with extra format specifiers for the rest.
   while (j < args.length) {
-    if (normalizedString) {
+    if (normalizedString !== '') {
       normalizedString += ' ';
     }
     // Not every environment has the same default.

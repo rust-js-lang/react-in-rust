@@ -390,16 +390,14 @@ pub fn describe_native_component_frame(r#fn: &js::Function, construct: bool) -> 
         }
     }
     // Fallback to just using the name if we couldn't make it throw.
-    let name: Option<&str> = unsafe {
-        js::cast(
-            js::get(js::unknown(r#fn), "displayName")
-                .filter(|name| js::truthy(Some(*name)))
-                .or_else(|| js::get(js::unknown(r#fn), "name")),
-        )
-    };
-    let synthetic_frame = match name {
-        Some(name) if !name.is_empty() => describe_built_in_component_frame(name),
-        _ => String::new(),
+    let name = js::get(js::unknown(r#fn), "displayName")
+        .filter(|name| js::truthy(Some(*name)))
+        .or_else(|| js::get(js::unknown(r#fn), "name"));
+    let synthetic_frame = if js::truthy(name) {
+        // SAFETY: a function's name is text, as `+` makes it of any other value.
+        describe_built_in_component_frame(unsafe { js::cast(name) })
+    } else {
+        String::new()
     };
     if __DEV__ && let Some(cache) = COMPONENT_FRAME_CACHE.with(|cache| *cache) {
         cache.set(r#fn, synthetic_frame.clone());

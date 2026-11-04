@@ -2868,7 +2868,7 @@ function updateDehydratedSuspenseComponent(
       // This is unreachable in renderers that do not support hydration.
       if (digest !== '') {
         let error;
-        if (__DEV__ && message) {
+        if (__DEV__ && message != null && message !== '') {
           // eslint-disable-next-line react-internal/prod-error-codes
           error = new Error(message);
         } else {

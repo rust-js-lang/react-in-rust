@@ -279,7 +279,7 @@ export function addValueToProperties(
       break;
     case 'function': {
       const functionName = value?.name;
-      if (typeof functionName === 'string' && functionName) {
+      if (typeof functionName === 'string' && functionName !== '') {
         desc = functionName + '() {}';
       } else {
         // e.g. proxied functions or classes with a static property "name" that's not a string
@@ -431,9 +431,8 @@ export function addObjectDiffToProperties(prev, next, properties, indent) {
           const nextSrc = Function.prototype.toString.call(nextValue);
           if (prevSrc === nextSrc) {
             // This looks like it might be the same function but different closures.
-            const desc = !nextValue.name
-              ? '() => {}'
-              : nextValue.name + '() {}';
+            const desc =
+              nextValue.name === '' ? '() => {}' : nextValue.name + '() {}';
             properties.push([
               UNCHANGED + '\xa0\xa0'.repeat(indent) + key,
               desc +

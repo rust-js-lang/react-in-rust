@@ -51,7 +51,7 @@ function getTaskName(type) {
   }
   try {
     const name = getComponentNameFromType(type);
-    return name ? '<' + name + '>' : '<...>';
+    return name != null && name !== '' ? '<' + name + '>' : '<...>';
   } catch {
     return '<...>';
   }

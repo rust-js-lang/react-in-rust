@@ -123,7 +123,11 @@ export function initTextarea(element, value, defaultValue, children) {
   // initial value. In IE10/IE11 there is a bug where the placeholder attribute
   // will populate textContent as well.
   // https://developer.microsoft.com/microsoft-edge/platform/issues/101525/
-  if (textContent === stringValue && textContent) {
+  if (
+    textContent === stringValue &&
+    textContent !== null &&
+    textContent !== ''
+  ) {
     node.value = textContent;
   }
 

@@ -296,7 +296,7 @@ function getIOColor(functionName) {
 
 function getIOLongName(ioInfo, description, env, rootEnv) {
   const name = ioInfo.name;
-  const longName = !description ? name : name + ' (' + description + ')';
+  const longName = description === '' ? name : name + ' (' + description + ')';
   const isPrimaryEnv = env === rootEnv;
   return env != null && !isPrimaryEnv ? longName + ' [' + env + ']' : longName;
 }

@@ -182,7 +182,7 @@ export function requireModule(metadata) {
     // as a CommonJS module as is.
     return moduleExports;
   }
-  if (!name) {
+  if (name === '') {
     // This is a placeholder value that represents that the caller accessed the
     // default property of this if it was an ESM interop module.
     return moduleExports.__esModule ? moduleExports.default : moduleExports;

@@ -34,7 +34,7 @@ function getWrappedName(outerType, innerType, wrapperName) {
     return displayName;
   }
   const functionName = innerType.displayName || innerType.name || '';
-  return functionName ? `${wrapperName}(${functionName})` : wrapperName;
+  return functionName !== '' ? `${wrapperName}(${functionName})` : wrapperName;
 }
 
 // Keep in sync with react-reconciler/getComponentNameFromFiber

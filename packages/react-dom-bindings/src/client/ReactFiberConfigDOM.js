@@ -143,6 +143,20 @@ export {default as rendererVersion} from 'shared/ReactVersion';
 import noop from 'shared/noop';
 
 import estimateBandwidth from './estimateBandwidth.js';
+import {
+  $borrow,
+  $borrowMut,
+  $extend,
+  $index,
+  $lazyRange,
+  $position,
+  $removeAt,
+  $retain,
+  $truncate,
+  $unborrow,
+  $unwrap,
+  $withBorrowMut,
+} from '@rust-js/runtime';
 
 export const rendererPackageName = 'react-dom';
 export const extraDevToolsConfig = null;
@@ -201,9 +215,10 @@ export function getRootHostContext(rootContainerInstance) {
       const root = rootContainerInstance.documentElement;
       if (root != null) {
         const namespaceUri = root.namespaceURI;
-        context = namespaceUri
-          ? getOwnHostContext(namespaceUri)
-          : HostContextNamespaceNone;
+        context =
+          namespaceUri !== null && namespaceUri !== ''
+            ? getOwnHostContext(namespaceUri)
+            : HostContextNamespaceNone;
       } else {
         context = HostContextNamespaceNone;
       }
@@ -216,7 +231,7 @@ export function getRootHostContext(rootContainerInstance) {
           : rootContainerInstance;
       type = container.tagName;
       const namespaceUri = container.namespaceURI;
-      if (namespaceUri) {
+      if (namespaceUri !== null && namespaceUri !== '') {
         const ownContext = getOwnHostContext(namespaceUri);
         context = getChildHostContextProd(ownContext, type);
       } else {
@@ -367,7 +382,7 @@ function isScriptDataBlock(props) {
   if (typeof scriptType !== 'string') {
     return false;
   }
-  if (!scriptType) {
+  if (scriptType === '') {
     return false;
   }
   const lower = scriptType.toLowerCase();
@@ -726,20 +741,6 @@ const localRequestAnimationFrame =
       : undefined;
 
 export {getClosestInstanceFromNode as getInstanceFromNode} from './ReactDOMComponentTree.js';
-import {
-  $borrow,
-  $borrowMut,
-  $extend,
-  $index,
-  $lazyRange,
-  $position,
-  $removeAt,
-  $retain,
-  $truncate,
-  $unborrow,
-  $unwrap,
-  $withBorrowMut,
-} from '@rust-js/runtime';
 
 export function preparePortalMount(portalInstance) {
   listenToAllSupportedEvents(portalInstance);
@@ -1580,7 +1581,7 @@ function getComputedTransform(style) {
     transform = '';
   }
   const scale = style.scale;
-  if (scale !== 'none' && scale) {
+  if (scale !== 'none' && scale !== '') {
     const parts = scale.split(' ');
     transform =
       (parts.length === 3 ? 'scale3d' : 'scale') +
@@ -1590,7 +1591,7 @@ function getComputedTransform(style) {
       transform;
   }
   const rotate = style.rotate;
-  if (rotate !== 'none' && rotate) {
+  if (rotate !== 'none' && rotate !== '') {
     const parts = rotate.split(' ');
     if (parts.length === 1) {
       transform = 'rotate(' + parts[0] + ') ' + transform;
@@ -1602,7 +1603,7 @@ function getComputedTransform(style) {
     }
   }
   const translate = style.translate;
-  if (translate !== 'none' && translate) {
+  if (translate !== 'none' && translate !== '') {
     const parts = translate.split(' ');
     transform =
       (parts.length === 3 ? 'translate3d' : 'translate') +
@@ -2239,10 +2240,10 @@ export function startViewTransition(
 }
 
 function mergeTranslate(translateA, translateB) {
-  if (translateA == null || !translateA || translateA === 'none') {
+  if (translateA == null || translateA === '' || translateA === 'none') {
     return translateB ?? '';
   }
-  if (translateB == null || !translateB || translateB === 'none') {
+  if (translateB == null || translateB === '' || translateB === 'none') {
     // $FlowFixMe[constant-condition]
     return translateA;
   }
@@ -2321,7 +2322,7 @@ function animateGesture(
       // element itself and no longer the auto generated one, then we shouldn't
       // adjust it. I'm not sure how to detect this.
       const translate = keyframe.translate;
-      if (translate) {
+      if (translate != null && translate !== '') {
         keyframe.translate = mergeTranslate(translate, '20000px 20000px');
       } else {
         // TODO: If there's a CSS rule targeting translate on the pseudo element
@@ -3884,7 +3885,7 @@ export function canHydrateInstance(instance, type, props, inRootOrSingleton) {
 
 export function canHydrateTextInstance(instance, text, inRootOrSingleton) {
   // Empty strings are not parsed by HTML so there won't be a correct match here.
-  if (!text) {
+  if (text === '') {
     return null;
   }
 
@@ -4789,7 +4790,7 @@ function getGlobalDocument() {
 
 function preconnectAs(rel, href, crossOrigin) {
   const ownerDocument = getGlobalDocument();
-  if (ownerDocument != null && href) {
+  if (ownerDocument != null && href !== '') {
     const limitedEscapedHref =
       escapeSelectorAttributeValueInsideDoubleQuotes(href);
     let key = `link[rel="${rel}"][href="${limitedEscapedHref}"]`;
@@ -4827,7 +4828,7 @@ function preconnect(href, crossOrigin) {
 function preload(href, as, options) {
   previousDispatcher.L(/* preload */ href, as, options);
   const ownerDocument = getGlobalDocument();
-  if (ownerDocument != null && href && as) {
+  if (ownerDocument != null && href !== '' && as !== '') {
     let preloadSelector = `link[rel="preload"][as="${escapeSelectorAttributeValueInsideDoubleQuotes(as)}"]`;
     if (as === 'image') {
       if (options && options.imageSrcSet) {
@@ -4902,7 +4903,7 @@ function preload(href, as, options) {
 function preloadModule(href, options) {
   previousDispatcher.m(/* preloadModule */ href, options);
   const ownerDocument = getGlobalDocument();
-  if (ownerDocument != null && href) {
+  if (ownerDocument != null && href !== '') {
     const as$1 = options ? options.as : undefined;
     const as = typeof as$1 === 'string' ? as$1 : 'script';
     const preloadSelector = `link[rel="modulepreload"][as="${escapeSelectorAttributeValueInsideDoubleQuotes(as)}"][href="${escapeSelectorAttributeValueInsideDoubleQuotes(href)}"]`;
@@ -4956,7 +4957,7 @@ function preinitStyle(href, precedence, options) {
   previousDispatcher.S(/* preinitStyle */ href, precedence, options);
 
   const ownerDocument = getGlobalDocument();
-  if (ownerDocument != null && href) {
+  if (ownerDocument != null && href !== '') {
     const styles = getResourcesFromRoot(ownerDocument).hoistableStyles;
 
     const key = getStyleKey(href);
@@ -5032,7 +5033,7 @@ function preinitScript(src, options) {
   previousDispatcher.X(/* preinitScript */ src, options);
 
   const ownerDocument = getGlobalDocument();
-  if (ownerDocument != null && src) {
+  if (ownerDocument != null && src !== '') {
     const scripts = getResourcesFromRoot(ownerDocument).hoistableScripts;
 
     const key = getScriptKey(src);
@@ -5083,7 +5084,7 @@ function preinitModuleScript(src, options) {
   previousDispatcher.M(/* preinitModuleScript */ src, options);
 
   const ownerDocument = getGlobalDocument();
-  if (ownerDocument != null && src) {
+  if (ownerDocument != null && src !== '') {
     const scripts = getResourcesFromRoot(ownerDocument).hoistableScripts;
 
     const key = getScriptKey(src);

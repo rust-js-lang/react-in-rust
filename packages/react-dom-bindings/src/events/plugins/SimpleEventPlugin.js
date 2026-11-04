@@ -42,9 +42,9 @@ import {
 import getEventCharCode from '../getEventCharCode.js';
 
 import {enableCreateEventHandleAPI} from 'shared/ReactFeatureFlags';
+import {$someGet, $someValue, $withBorrow} from '@rust-js/runtime';
 
 export {registerSimpleEvents as registerEvents} from '../DOMEventProperties.js';
-import {$someGet, $someValue, $withBorrow} from '@rust-js/runtime';
 
 export function extractEvents(
   dispatchQueue,

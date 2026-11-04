@@ -11,7 +11,7 @@ export {
   createStringDecoder,
   readPartialStringChunk,
   readFinalStringChunk,
-} from '../../../react-markup/src/ReactMarkupLegacyClientStreamConfig.js';
+} from 'react-markup/src/ReactMarkupLegacyClientStreamConfig.js';
 
 export {bindToConsole} from 'react-client/src/ReactClientConsoleConfigPlain';
 

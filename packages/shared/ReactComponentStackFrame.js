@@ -54,7 +54,9 @@ export function describeDebugInfoFrame(name, env, location) {
     }
   }
 
-  return describeBuiltInComponentFrame(env ? `${name} [${env}]` : name);
+  return describeBuiltInComponentFrame(
+    env != null && env !== '' ? `${name} [${env}]` : name,
+  );
 }
 
 let reentry = false;

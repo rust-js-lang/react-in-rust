@@ -19,7 +19,7 @@ import {$unwrap} from '@rust-js/runtime';
 
 export function prefetchDNS(href, ...args) {
   if (__DEV__) {
-    if (!(typeof href === 'string' && href)) {
+    if (typeof href !== 'string' || href === '') {
       console.error(
         'ReactDOM.prefetchDNS(): Expected the `href` argument (first) to be a non-empty string but encountered %s instead.',
         getValueDescriptorExpectingObjectForWarning(href),
@@ -55,7 +55,7 @@ export function prefetchDNS(href, ...args) {
 
 export function preconnect(href, options) {
   if (__DEV__) {
-    if (!(typeof href === 'string' && href)) {
+    if (typeof href !== 'string' || href === '') {
       console.error(
         'ReactDOM.preconnect(): Expected the `href` argument (first) to be a non-empty string but encountered %s instead.',
         getValueDescriptorExpectingObjectForWarning(href),
@@ -92,18 +92,18 @@ export function preconnect(href, options) {
 export function preload(href, options) {
   if (__DEV__) {
     let encountered = '';
-    if (!(typeof href === 'string' && href)) {
+    if (typeof href !== 'string' || href === '') {
       encountered += ` The \`href\` argument encountered was ${getValueDescriptorExpectingObjectForWarning(href)}.`;
     }
     if (typeof options !== 'object' || options === null) {
       encountered += ` The \`options\` argument encountered was ${getValueDescriptorExpectingObjectForWarning(options)}.`;
     } else {
       const as = options.as;
-      if (typeof as !== 'string' || !as) {
+      if (typeof as !== 'string' || as === '') {
         encountered += ` The \`as\` option encountered was ${getValueDescriptorExpectingObjectForWarning(options.as)}.`;
       }
     }
-    if (encountered) {
+    if (encountered !== '') {
       console.error(
         'ReactDOM.preload(): Expected two arguments, a non-empty `href` string and an `options` object with an `as` property valid for a `<link rel="preload" as="..." />` tag.%s',
         encountered,
@@ -158,7 +158,7 @@ export function preload(href, options) {
 export function preloadModule(href, options) {
   if (__DEV__) {
     let encountered = '';
-    if (!(typeof href === 'string' && href)) {
+    if (typeof href !== 'string' || href === '') {
       encountered += ` The \`href\` argument encountered was ${getValueDescriptorExpectingObjectForWarning(href)}.`;
     }
     if (options !== undefined && typeof options !== 'object') {
@@ -166,7 +166,7 @@ export function preloadModule(href, options) {
     } else if (options && 'as' in options && typeof options.as !== 'string') {
       encountered += ` The \`as\` option encountered was ${getValueDescriptorExpectingObjectForWarning(options.as)}.`;
     }
-    if (encountered) {
+    if (encountered !== '') {
       console.error(
         'ReactDOM.preloadModule(): Expected two arguments, a non-empty `href` string and, optionally, an `options` object with an `as` property valid for a `<link rel="modulepreload" as="..." />` tag.%s',
         encountered,
@@ -212,7 +212,7 @@ export function preloadModule(href, options) {
 
 export function preinit(href, options) {
   if (__DEV__) {
-    if (!(typeof href === 'string' && href)) {
+    if (typeof href !== 'string' || href === '') {
       console.error(
         'ReactDOM.preinit(): Expected the `href` argument (first) to be a non-empty string but encountered %s instead.',
         getValueDescriptorExpectingObjectForWarning(href),
@@ -277,7 +277,7 @@ export function preinit(href, options) {
 export function preinitModule(href, options) {
   if (__DEV__) {
     let encountered = '';
-    if (!(typeof href === 'string' && href)) {
+    if (typeof href !== 'string' || href === '') {
       encountered += ` The \`href\` argument encountered was ${getValueDescriptorExpectingObjectForWarning(href)}.`;
     }
     if (options !== undefined && typeof options !== 'object') {
@@ -285,7 +285,7 @@ export function preinitModule(href, options) {
     } else if (options && 'as' in options && options.as !== 'script') {
       encountered += ` The \`as\` option encountered was ${getValueDescriptorExpectingEnumForWarning(options.as)}.`;
     }
-    if (encountered) {
+    if (encountered !== '') {
       console.error(
         'ReactDOM.preinitModule(): Expected up to two arguments, a non-empty `href` string and, optionally, an `options` object with a valid `as` property.%s',
         encountered,

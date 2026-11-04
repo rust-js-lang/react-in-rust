@@ -52,6 +52,7 @@ import {
   disableLegacyMode,
   enableReactTestRendererWarning,
 } from 'shared/ReactFeatureFlags';
+import {$index, $unwrap} from '@rust-js/runtime';
 
 function defaultOnDefaultTransitionIndicator() {}
 
@@ -572,8 +573,6 @@ function wrapFiber(fiber) {
 injectIntoDevTools();
 
 export * as _Scheduler from 'scheduler/unstable_mock';
-import {$index, $unwrap} from '@rust-js/runtime';
-
 export function unstable_batchedUpdates(fn, a) {
   return batchedUpdates(fn, a);
 }

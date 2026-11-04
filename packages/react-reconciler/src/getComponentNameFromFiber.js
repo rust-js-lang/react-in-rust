@@ -51,7 +51,7 @@ function getWrappedName(outerType, innerType, wrapperName) {
   const functionName = innerType.displayName || innerType.name || '';
   return (
     outerType.displayName ||
-    (functionName ? `${wrapperName}(${functionName})` : wrapperName)
+    (functionName !== '' ? `${wrapperName}(${functionName})` : wrapperName)
   );
 }
 

@@ -17,10 +17,10 @@ import {
   createServerReference as createServerReferenceImpl,
   processReply,
 } from 'react-client/src/ReactFlightReplyClient';
+import {$unwrap} from '@rust-js/runtime';
 
 export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
 export {createTemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
-import {$unwrap} from '@rust-js/runtime';
 
 function noServerCall(id, args) {
   throw new Error(

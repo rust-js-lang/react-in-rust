@@ -238,7 +238,11 @@ function validateShorthandPropertyCollisionInDev(prevStyles, nextStyles) {
     for (const key in expandedUpdates) {
       const originalKey = expandedUpdates[key] ?? '';
       const correctOriginalKey = expandedStyles[key];
-      if (correctOriginalKey && originalKey !== correctOriginalKey) {
+      if (
+        correctOriginalKey != null &&
+        correctOriginalKey !== '' &&
+        originalKey !== correctOriginalKey
+      ) {
         const warningKey = originalKey + ',' + correctOriginalKey;
         if (warnedAbout[warningKey]) {
           continue;

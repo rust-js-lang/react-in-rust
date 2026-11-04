@@ -123,7 +123,7 @@ export function updateInput(
     if (type === 'number') {
       if (
         // "" == 0, so a cleared field wouldn't otherwise be restored to 0.
-        (value === 0 && !node.value) ||
+        (value === 0 && node.value === '') ||
         // We explicitly want to coerce to number here if possible, so that
         // other spellings of the same number (e.g. "0.0" mid-edit) aren't
         // clobbered while the user types.

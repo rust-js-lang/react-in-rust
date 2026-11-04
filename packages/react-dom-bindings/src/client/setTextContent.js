@@ -17,7 +17,7 @@ import {TEXT_NODE} from './HTMLNodeType.js';
  * @internal
  */
 function setTextContent(node, text) {
-  if (text) {
+  if (text !== '') {
     const firstChild = node.firstChild;
 
     if (

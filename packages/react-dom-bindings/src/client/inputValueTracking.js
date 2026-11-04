@@ -11,7 +11,7 @@ function isCheckable(elem) {
   const type = elem.type;
   const nodeName = elem.nodeName;
   return (
-    !!nodeName &&
+    nodeName !== '' &&
     nodeName.toLowerCase() === 'input' &&
     (type === 'checkbox' || type === 'radio')
   );

@@ -152,7 +152,7 @@ export function getOwnerStackByFiberInDev(workInProgress) {
       case FunctionComponent:
       case SimpleMemoComponent:
       case ClassComponent:
-        if (workInProgress._debugOwner == null && !info) {
+        if (workInProgress._debugOwner == null && info === '') {
           // Only if we have no other data about the callsite do we add
           // the component name as the single stack frame.
           info += describeFunctionComponentFrameWithoutLineNumber(
@@ -161,7 +161,7 @@ export function getOwnerStackByFiberInDev(workInProgress) {
         }
         break;
       case ForwardRef:
-        if (workInProgress._debugOwner == null && !info) {
+        if (workInProgress._debugOwner == null && info === '') {
           info += describeFunctionComponentFrameWithoutLineNumber(
             workInProgress.type.render,
           );
@@ -184,7 +184,7 @@ export function getOwnerStackByFiberInDev(workInProgress) {
         // stack frame for context for example but it doesn't say much if that's a wrapper.
         if (owner != null && debugStack != null) {
           const formattedStack = formatOwnerStack(debugStack);
-          if (formattedStack) {
+          if (formattedStack !== '') {
             info += '\n' + formattedStack;
           }
         }

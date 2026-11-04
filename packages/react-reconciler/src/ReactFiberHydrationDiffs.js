@@ -175,7 +175,7 @@ function describeValue(value, maxLength) {
       }
       if (value.$$typeof === REACT_ELEMENT_TYPE) {
         const type = getComponentNameFromType(value.type);
-        return type ? '<' + type + '>' : '<...>';
+        return type != null && type !== '' ? '<' + type + '>' : '<...>';
       }
       const name = objectName(value);
       if (name === 'Object') {
@@ -196,10 +196,11 @@ function describeValue(value, maxLength) {
           );
           maxLength -= propValue.length;
           if (maxLength < 0) {
-            properties += !properties ? '...' : ', ...';
+            properties += properties === '' ? '...' : ', ...';
             break;
           }
-          properties += (!properties ? '' : ',') + propName + ':' + propValue;
+          properties +=
+            (properties === '' ? '' : ',') + propName + ':' + propValue;
         }
         return '{' + properties + '}';
       } else {
@@ -433,7 +434,7 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
         '\n';
     });
 
-    if (!content) {
+    if (content === '') {
       // No properties
       content = indentation(indent) + '<' + type + '>\n';
     } else {

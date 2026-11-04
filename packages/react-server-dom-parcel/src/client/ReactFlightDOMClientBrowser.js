@@ -20,11 +20,11 @@ import {
   createServerReference as createServerReferenceImpl,
   processReply,
 } from 'react-client/src/ReactFlightReplyClient';
+import {$unwrap} from '@rust-js/runtime';
 
 export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
 
 export {createTemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
-import {$unwrap} from '@rust-js/runtime';
 
 function findSourceMapURL(filename, environmentName) {
   const devServer = parcelRequire.meta.devServer;
@@ -65,7 +65,7 @@ function createDebugCallbackFromWritableStream(debugWritable) {
   const textEncoder = new TextEncoder();
   const writer = debugWritable.getWriter();
   return message => {
-    if (!message) {
+    if (message === '') {
       writer.close();
     } else {
       // Note: It's important that this function doesn't close over the Response object or it can't be GC:ed.

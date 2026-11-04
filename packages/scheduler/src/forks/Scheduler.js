@@ -38,6 +38,7 @@ import {
   startLoggingProfilingEvents,
   stopLoggingProfilingEvents,
 } from '../SchedulerProfiling.js';
+import {$withBorrow, $withBorrowMut} from '@rust-js/runtime';
 
 let getCurrentTime;
 if (typeof performance === 'object' && typeof performance.now === 'function') {
@@ -550,7 +551,6 @@ export {
   NormalPriority as unstable_NormalPriority,
   UserBlockingPriority as unstable_UserBlockingPriority,
 } from '../SchedulerPriorities.js';
-import {$withBorrow, $withBorrowMut} from '@rust-js/runtime';
 
 export const unstable_Profiling = enableProfiling
   ? {

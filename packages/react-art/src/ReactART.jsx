@@ -24,6 +24,7 @@ import FastNoSideEffects from 'art/modes/fast-noSideEffects';
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 
 import {TYPES, childrenAsString} from './ReactARTInternals.js';
+import {$unwrap} from '@rust-js/runtime';
 
 function defaultOnDefaultTransitionIndicator() {
   // Noop
@@ -182,5 +183,4 @@ export const Path = Mode.Path;
 export {default as Transform} from 'art/core/transform';
 
 export {default as version} from 'shared/ReactVersion';
-import {$unwrap} from '@rust-js/runtime';
 //# sourceMappingURL=ReactART.jsx.map

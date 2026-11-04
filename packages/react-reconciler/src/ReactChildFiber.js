@@ -174,7 +174,7 @@ if (__DEV__) {
           '\n\nCheck the render method of `' + name + '`.';
       }
     }
-    if (!currentComponentErrorInfo && componentName) {
+    if (currentComponentErrorInfo === '' && componentName) {
       currentComponentErrorInfo = `\n\nCheck the top-level render call using <${componentName}>.`;
     }
 

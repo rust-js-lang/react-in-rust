@@ -487,12 +487,6 @@ the `const`, ADR 0866's let-else form, where upstream tests `boundPromise`.
   ReactDOMComponentTree import and writes `export {detachDeletedInstance};`.
   Rust can't name it in both a `use` and a `pub use` (E0252).
 
-**Pending in rust-js from Batch 62** (no result changes):
-- rd713 (names run 50): the markup Flight client config, react-markup's
-  module at `../react-client/src/forks/`, imports react-markup's stream
-  config as `'../../../react-markup/src/ReactMarkupLegacyClientStreamConfig.js'`
-  where upstream writes `'react-markup/src/ReactMarkupLegacyClientStreamConfig.js'`.
-
 **Pending in rust-js from Batch 63** (no result changes):
 - rd720 (since 440015731): ReactTestRenderer's findAllByProps prints `node =>
   { const option = node.props; return option != null && propsMatch(option,
@@ -522,10 +516,33 @@ binding keeps the program's name (rd226, rust-js aa7639e81), which can't be
 the field's own, `transitions`, as the body assigns the outer
 `transitions`.
 
-**Pending in rust-js from Batch 65** (no result changes):
-- rd732 (since 8e63f82ae, #578's `!!`): ReactDOMComponent's setProp prints
-  `const canSetTextContent = tag !== 'body' && (tag !== 'textarea' ||
-  !!value);` of `!value.is_empty()`, where upstream writes `value !== ''`.
+**Pending in rust-js from Batch 66** (no result changes):
+- rd800: SchedulerNative's fallbacks of the five priorities, read through
+  `use crate as scheduler;` (`import * as Scheduler from './Scheduler.js'`),
+  print `UserBlockingPriority` of an `import {..} from
+  '../SchedulerPriorities.js'`, where upstream reads
+  `Scheduler.unstable_UserBlockingPriority` (Scheduler's functions are read
+  off the namespace, as upstream).
+- rd801: the markup Flight client config's globs of react-client's console
+  and debug configs print `export {bindToConsole} from ..` and `export
+  {checkEvalAvailabilityOnceDev} from ..`, where upstream writes `export *
+  from ..` (its own crate's glob prints `export *`).
+- rd802: SchedulerNative's .d.ts types `unstable_scheduleCallback` as
+  `(value: number, callback: Callback, value2?: Options | null |
+  undefined) => Task`, where upstream's Flow names `priorityLevel:
+  PriorityLevel`.
+
+**Accepted by the user, Batch 66** (2026-11-04, rust-js d900cc46e, rd732; no
+result changes): a String's `is_empty()` prints `s === ''` and
+`!s.is_empty()` `s !== ''`, an `Option<String>`'s guard `x != null && x !==
+''`, where upstream tests the value's truth (`name ? ..`, `if (text)`,
+`href && as`, `!x || x === 'none'`; about 30 sites in react-client,
+react-dom-bindings, react-reconciler, react and shared), and where upstream
+writes `=== ''` the port now matches it (ReactDOMComponent's
+canSetTextContent `value !== ''` among them). ReactComponentStackFrame's
+describeNativeComponentFrame tests the name's truth, `name ?
+describeBuiltInComponentFrame(name) : ''`, as upstream: `fn.name` is any
+value, so a falsy non-string name gives no frame (Batch 66).
 
 **Accepted by the user, Batch 65** (2026-11-04; no result changes):
 - ReactFiberConfigDOM's isHostHoistableType prints `const isAsync =
@@ -546,13 +563,15 @@ the field's own, `transitions`, as the body assigns the outer
   namespace method, not a `pub use`, so the natural Rust names the work
   loop.
 
-**Held until rust-js prints an untagged string-or-integer `{}` in place**
-(the user's condition, 2026-11-03; the coordinator's rust-js P3): webpack's
-ImportManifestEntry `id` stays `String`, as upstream's Flow type `string`
-is, though webpack's plugin writes numeric ids (upstream's `$FlowFixMe`).
-As a `ModuleId { Name(String), Number(..) }`, resolveClientReference's panic
-message would print `${moduleIdDisplay_fmt(id)}` where upstream writes
-`${metadata[ID]}`, and the client's JS must stay unchanged.
+**Webpack's module id** (item 21, Batch 66): ImportManifestEntry's and
+ImportMetadata's `id` is an untagged `ModuleId { Name(String), Number(u32)
+}`, `string | number`, as webpack's plugin writes it (upstream's Flow says
+`string`, with a `$FlowFixMe`), whose `Display` writes its value: the
+client's JS is upstream's, `bundlerConfig[id]` (`impl js::PropertyKey for
+ModuleId {}`, rust-js 8adf4fc8c), `__webpack_require__(id)`
+(`webpack_require<Id: ?Sized>`, as `turbopack_load_by_url<C>`) and the
+panic's `${id}` (rust-js f1f2171d7, ea389fe6a). The .d.ts exports `type
+ModuleId = string | number;`.
 
 **Fixed in rust-js from Batch 61**:
 - rd643 (7db76060d): `ReplyBody` has upstream's third type,
@@ -1814,6 +1833,18 @@ same day:
   window;` for two consts; postTask given block arrows, `() => {
   runTask(..); }`; `_postTaskPriority` named back with `rust_js::name`; and
   `typeof scheduler.yield !== 'undefined'` for `!== undefined` (opt1's kind).
+- **SchedulerNative's forms** (Batch 66, rust-js #562's react_native
+  crate): each export is a thread-local of `js::is_defined(native_runtime_scheduler)`,
+  `typeof nativeRuntimeScheduler !== 'undefined' ? nativeRuntimeScheduler.x
+  : Scheduler.x`, of `use crate as scheduler;` (`import * as Scheduler from
+  './Scheduler.js'`); the host's unstable_scheduleCallback and
+  unstable_cancelCallback are cast to Scheduler's types (`unsafe {
+  js::cast(..) }`, where upstream's Flow casts them), typed with
+  Scheduler's three parameters; unstable_next, unstable_runWithPriority,
+  unstable_wrapCallback and unstable_forceFrameRate are `fn() -> !` consts
+  of throwNotImplemented, which prints `throw new Error('Not
+  implemented.')` for upstream's `throw Error(..)`; unstable_Profiling is a
+  `nullable` `None`. RN only: no jest suite runs it.
 - **react-dom shared's four**: `unstable_batchedUpdates` declared under its
   exported name where upstream exports `batchedUpdates as`; createPortal's
   `key` without `= null` (createPortalImpl treats undefined and null alike);
@@ -2080,7 +2111,10 @@ The port is split between sessions by package:
   uses react-client), declared in markup.rs as `#[path =
   "../react-client/src/forks/ReactFlightClientConfig.markup.rs"]` (agreed
   with m6-wife, 2026-11-04); its `null` types are an untagged enum's one
-  `#[rust_js::null]` variant, and its imports rd713's.
+  `#[rust_js::null]` variant, and it imports react-markup's stream config
+  as upstream, `export * from
+  'react-markup/src/ReactMarkupLegacyClientStreamConfig.js'` (rust-js
+  d55c394be, 44b3e851f; rd713, rd737).
   react-dom's ReactDOMSharedInternalsFB and client/ReactDOMClientFB, www's
   internals and client, are Rust (Batch 63); www's tests reach them
   (`-r=www-modern`, `-r=www-classic`). The internals' `Events`, the six
@@ -2133,9 +2167,9 @@ The port is split between sessions by package:
     Container`.
   `export {batchedUpdates as unstable_batchedUpdates} from
   'react-reconciler/src/ReactFiberWorkLoop'`, where upstream imports it
-  from ReactFiberReconciler, is accepted (Batch 65, above). Pending in
-  rust-js: `import {$unwrap} from '@rust-js/runtime';` prints as the
-  module's last line, after that re-export (rd725, rust-js #590).
+  from ReactFiberReconciler, is accepted (Batch 65, above). `import
+  {$unwrap} from '@rust-js/runtime';` prints with the imports (rd725,
+  rust-js 7631c9e0b).
   react-dom's ReactDOMFB and ReactDOMFB.modern, www's classic and modern
   entries, are Rust (Batch 64): `pub use`s of ReactDOMSharedInternalsFB's
   `INTERNALS as __DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE`,

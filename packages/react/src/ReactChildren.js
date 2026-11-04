@@ -217,7 +217,7 @@ function mapIntoArray(children, array, escapedPrefix, nameSoFar, callback) {
         // $FlowFixMe[incompatible-type] Flow incorrectly thinks React.Portal doesn't have a key
         if (
           __DEV__ &&
-          nameSoFar &&
+          nameSoFar !== '' &&
           child != null &&
           isValidElement(child) &&
           child.key == null
@@ -239,7 +239,8 @@ function mapIntoArray(children, array, escapedPrefix, nameSoFar, callback) {
   }
 
   let subtreeCount = 0; // Count of children found in the current subtree.
-  const nextNamePrefix = !nameSoFar ? SEPARATOR : nameSoFar + SUBSEPARATOR;
+  const nextNamePrefix =
+    nameSoFar === '' ? SEPARATOR : nameSoFar + SUBSEPARATOR;
 
   if (isArray(children)) {
     for (const [i, child] of children.entries()) {

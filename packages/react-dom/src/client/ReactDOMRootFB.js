@@ -53,6 +53,7 @@ import {
 import assign from 'shared/assign';
 
 import noop from 'shared/noop';
+import {$unwrap} from '@rust-js/runtime';
 
 const ReactFiberErrorDialogWWW = require('ReactFiberErrorDialog');
 
@@ -493,5 +494,4 @@ export function unmountComponentAtNode(
 }
 
 export {batchedUpdates as unstable_batchedUpdates} from 'react-reconciler/src/ReactFiberWorkLoop';
-import {$unwrap} from '@rust-js/runtime';
 //# sourceMappingURL=ReactDOMRootFB.js.map

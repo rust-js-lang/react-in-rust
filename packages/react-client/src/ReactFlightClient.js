@@ -1189,7 +1189,7 @@ function getTaskName(type) {
   }
   try {
     const name = getComponentNameFromType(type);
-    return name ? '<' + name + '>' : '<...>';
+    return name != null && name !== '' ? '<' + name + '>' : '<...>';
   } catch {
     return '<...>';
   }
@@ -1689,7 +1689,7 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
 
     // If this is the root object for a model reference, where `handler.value`
     // is a stale `null`, the resolved value can be used directly.
-    if (!key && handler.value === null) {
+    if (key === '' && handler.value === null) {
       handler.value = mappedValue;
     }
 
@@ -1970,7 +1970,7 @@ function loadServerReference(response, metaData, parentObject, key) {
 
     // If this is the root object for a model reference, where `handler.value`
     // is a stale `null`, the resolved value can be used directly.
-    if (!key && handler.value === null) {
+    if (key === '' && handler.value === null) {
       handler.value = resolvedValue;
     }
 
@@ -3703,7 +3703,7 @@ function createFakeFunction(
   const comment =
     '/* This module was rendered by a Server Component. Turn on Source Maps to see the server source. */';
 
-  if (!name) {
+  if (name === '') {
     // An eval:ed function with no name gets the name "eval". We give it something more descriptive.
     name = '<anonymous>';
   }
@@ -3835,7 +3835,7 @@ function createFakeFunction(
       '?' +
       idx;
     code += '\n//# sourceMappingURL=' + sourceMap;
-  } else if (filename) {
+  } else if (filename !== '') {
     code += '\n//# sourceURL=' + encodeURI(filename);
   } else {
     code += '\n//# sourceURL=<anonymous>';
@@ -4957,7 +4957,7 @@ function processFullStringRow(response, streamState, id, tag, row) {
       break;
     // Fallthrough
     default: /* """ "{" "[" "t" "f" "n" "0" - "9" */
-      if (__DEV__ && !row) {
+      if (__DEV__ && row === '') {
         resolveDebugHalt(response, id);
         return;
       }
