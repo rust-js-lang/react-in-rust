@@ -1334,7 +1334,7 @@ function commitDeletionEffects(root, returnFiber, deletedFiber) {
         case HostSingleton:
           if (supportsSingletons) {
             if (isSingletonScope(current.type)) {
-              hostParent = current.stateNode ?? null;
+              hostParent = current.stateNode;
               hostParentIsContainer = false;
               break findParent;
             }
@@ -1342,12 +1342,12 @@ function commitDeletionEffects(root, returnFiber, deletedFiber) {
           }
         // Expected fallthrough when supportsSingletons is false
         case HostComponent:
-          hostParent = current.stateNode ?? null;
+          hostParent = current.stateNode;
           hostParentIsContainer = false;
           break findParent;
         case HostRoot:
         case HostPortal:
-          hostParent = current.stateNode.containerInfo ?? null;
+          hostParent = current.stateNode.containerInfo;
           hostParentIsContainer = true;
           break findParent;
       }
@@ -1452,7 +1452,7 @@ function commitDeletionEffectsOnFiber(
         const prevHostParent = hostParent;
         const prevHostParentIsContainer = hostParentIsContainer;
         if (isSingletonScope(deletedFiber.type)) {
-          hostParent = deletedFiber.stateNode ?? null;
+          hostParent = deletedFiber.stateNode;
           hostParentIsContainer = false;
         }
         recursivelyTraverseDeletionEffects(
@@ -1568,7 +1568,7 @@ function commitDeletionEffectsOnFiber(
         // When we go into a portal, it becomes the parent to remove from.
         const prevHostParent = hostParent;
         const prevHostParentIsContainer = hostParentIsContainer;
-        hostParent = deletedFiber.stateNode.containerInfo ?? null;
+        hostParent = deletedFiber.stateNode.containerInfo;
         hostParentIsContainer = true;
         recursivelyTraverseDeletionEffects(
           finishedRoot,

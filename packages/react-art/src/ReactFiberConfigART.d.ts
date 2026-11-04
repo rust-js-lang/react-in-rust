@@ -201,13 +201,11 @@ export function getRootHostContext(): HostContext;
 export function getChildHostContext(): HostContext;
 
 export const scheduleTimeout: (
-  value: () => void,
-  value2?: number | null | undefined,
+  handler: () => void,
+  ms?: number | null | undefined,
 ) => number | object;
 
-export const cancelTimeout: (
-  value?: (number | object) | null | undefined,
-) => void;
+export const cancelTimeout: (id?: (number | object) | null | undefined) => void;
 
 export const noTimeout: number;
 

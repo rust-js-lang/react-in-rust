@@ -54,6 +54,9 @@ import {
 import {enableHydrationChangeEvent} from 'shared/ReactFeatureFlags';
 import {$insertAt, $removeAt} from '@rust-js/runtime';
 
+// TODO: Upgrade this definition once we're on a newer version of Flow that
+// has this definition built-in.
+
 let hasScheduledReplayAttempt = false;
 
 // The last of each continuous event type. We only need to replay the last one
@@ -112,7 +115,7 @@ function createQueuedReplayableEvent(
   nativeEvent,
 ) {
   return {
-    blockedOn,
+    blockedOn: blockedOn ?? null,
     domEventName,
     eventSystemFlags,
     nativeEvent,

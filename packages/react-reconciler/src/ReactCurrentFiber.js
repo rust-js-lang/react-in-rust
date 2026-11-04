@@ -84,7 +84,7 @@ export function setCurrentFiber(fiber) {
       fiber == null ? null : getCurrentFiberStackInDev;
     isRendering = false;
   }
-  current = fiber;
+  current = fiber ?? null;
 }
 
 export function setIsRendering(rendering) {

@@ -37,7 +37,7 @@ export type Log = (value?: unknown | null | undefined) => void;
 
 export const scheduleCallback: ScheduleCallback;
 
-export const cancelCallback: (value: any) => void;
+export const cancelCallback: (task: any) => void;
 
 export const shouldYield: () => boolean;
 

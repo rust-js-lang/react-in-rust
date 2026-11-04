@@ -71,7 +71,7 @@ export interface TestRenderer {
   root?: unknown;
   toJSON: () => unknown | null | undefined;
   toTree: () => unknown | null | undefined;
-  update: (newElement?: unknown | null | undefined) => void;
+  update: (newElement?: ReactNodeList | null | undefined) => void;
   unmount: () => void;
   getInstance: () => unknown | null | undefined;
   unstable_flushSync: (

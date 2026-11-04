@@ -22,8 +22,8 @@ export type CallServerCallback = (
 ) => Promise<unknown | null | undefined>;
 
 export type EncodeFormActionCallback = (
-  value: unknown,
-  value2: any,
+  id: ServerReferenceId,
+  value: any,
 ) => ReactCustomFormAction;
 
 export type ServerReferenceId = unknown;

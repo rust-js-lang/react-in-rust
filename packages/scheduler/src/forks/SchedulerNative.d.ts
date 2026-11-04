@@ -21,14 +21,14 @@ export const unstable_LowPriority: PriorityLevel;
 export const unstable_ImmediatePriority: PriorityLevel;
 
 export const unstable_scheduleCallback: (
-  value: number,
+  priorityLevel: PriorityLevel,
   callback: Callback,
-  value2?: Options | null | undefined,
+  options?: Options | null | undefined,
 ) => Task;
 
 export const unstable_cancelCallback: (task: Task) => void;
 
-export const unstable_getCurrentPriorityLevel: () => number;
+export const unstable_getCurrentPriorityLevel: () => PriorityLevel;
 
 export const unstable_shouldYield: () => boolean;
 

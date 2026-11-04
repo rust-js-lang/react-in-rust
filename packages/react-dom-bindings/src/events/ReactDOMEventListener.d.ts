@@ -20,13 +20,13 @@ export function createEventListenerWrapper(
   targetContainer: EventTarget,
   domEventName: string,
   eventSystemFlags: EventSystemFlags,
-): (event: Event) => void;
+): (event: AnyNativeEvent) => void;
 
 export function createEventListenerWrapperWithPriority(
   targetContainer: EventTarget,
   domEventName: string,
   eventSystemFlags: EventSystemFlags,
-): (event: Event) => void;
+): (event: AnyNativeEvent) => void;
 
 export function dispatchEvent(
   domEventName: string,

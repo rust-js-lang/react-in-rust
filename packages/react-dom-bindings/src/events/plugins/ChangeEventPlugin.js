@@ -129,7 +129,7 @@ const isInputEventSupported =
  */
 function startWatchingForValueChange(target, targetInst) {
   activeElement = target;
-  activeElementInst = targetInst;
+  activeElementInst = targetInst ?? null;
   target.attachEvent('onpropertychange', handlePropertyChange);
 }
 

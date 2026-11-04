@@ -514,23 +514,62 @@ Flight client config writes `export * from` each of react-client's console
 and debug configs, as upstream; so do ReactFiberConfigART, TestHost and DOM
 of the reconciler's `ReactFiberConfigWithNo*` modules.
 
-**Pending in rust-js from Batch 66** (no result changes):
-- rd802: SchedulerNative's .d.ts types `unstable_scheduleCallback` as
-  `(value: number, callback: Callback, value2?: Options | null |
-  undefined) => Task`, where upstream's Flow names `priorityLevel:
-  PriorityLevel`.
+**Fixed in rust-js, Batch 68** (rust-js e766fe363):
+- rd802 (#630, 85384f079, 011ffd7a9): SchedulerNative's .d.ts names
+  `priorityLevel: PriorityLevel` and `options?: Options`, and 23 more .d.ts
+  files name their parameters and aliases (`handler`, `ms`, `tag: RootTag`,
+  `lanes: Lanes`, `parentInstance`, `beforeChild`, `Destroy`, ..).
+- rd803 (#633, 01e010099): react-reconciler's Scheduler.js writes `export
+  const log = Scheduler.log;` and `export const unstable_setDisableYieldValue
+  = Scheduler.unstable_setDisableYieldValue;`, clz32 `const log =
+  Math.log; const LN2 = Math.LN2;` and SchedulerPostTask `const perf =
+  window.performance; const setTimeout = window.setTimeout;`, as upstream.
+- rd804 (#634, b2f3293df): ReactDOMRootFB's `// Provided by www` is right
+  above `const ReactFiberErrorDialogWWW = require('ReactFiberErrorDialog');`,
+  and ReactTestRenderer's two namespace imports have no blank line between
+  them, as upstream.
+- #643 (176f79dbd): upstream's comments above a type after a binding print
+  again where upstream has them: ReactDOMEventReplaying's `// TODO: Upgrade
+  this definition ..`, ReactFiberGestureScheduler's `// This type keeps
+  track of any scheduled or active gestures.`, ReactFiberHiddenContext's `//
+  TODO: Remove \`renderLanes\` context in favor of hidden context`, and the
+  four ReactFlightImportMetadata's `// This is the parsed shape of the wire
+  format ..`. Two port-only notes that came back with them were dropped
+  from the Rust (rd805's rule): ReactFiberCallUserSpace's on `CallCreate` and
+  ReactTestSelectors' on its ReactFiberConfig bindings.
+- #601/#665 (f37a6ffcf.., 54a72037e): FallbackCompositionState's `root =
+  nativeEventTarget;`, ReactFiberCommitWork's five `hostParent = ..` and
+  ReactFiberWorkLoop's `pendingRecoverableErrors = recoverableErrors;` have
+  no `?? null`, as upstream. Unbundled's Edge and Node clients print
+  `serverConsumerManifest.serverModuleMap ?? null` again, rd700's accepted
+  form (its `ServerManifest` is upstream's `void`, an untagged enum, so
+  webpack's `.map(js::unknown)` doesn't apply and the Rust keeps
+  `js::any_of(..)`).
+- #605 (31a2f53a8): ReactSerializationErrors' `// Lazy may contain any
+  component type ..` is first in the `try`, as upstream.
 
-**Pending in rust-js from Batch 67** (no result changes; m6-wife's, from
-her rd751/rd752):
-- #633 (rd803): react-reconciler's Scheduler.js prints `export const {log,
-  unstable_setDisableYieldValue} = Scheduler;`, two namespace bindings
-  destructured as www's flags are, where upstream writes `export const log
-  = Scheduler.log;` and `export const unstable_setDisableYieldValue =
-  Scheduler.unstable_setDisableYieldValue;`.
-- #634 (rd804): ReactDOMRootFB prints upstream's `// Provided by www`, then
-  a blank line (the one between the `require` binding and the
-  thread-local), then `const ReactFiberErrorDialogWWW =
-  require('ReactFiberErrorDialog');`, where upstream has none.
+**Pending in rust-js from Batch 68** (rust-js e766fe363; no result changes):
+- #688 (rd806, from #605's 31a2f53a8): a comment above `if catch_unwind(|| ..)
+  .is_err()` (or `if let Err(e) = ..`) prints first in the `try`, where
+  upstream has it above the `try`: ReactDOMSelection's getOffsets (`// In
+  Firefox, anchorNode ..`), checkPassiveEvents (`// Check if browser
+  support events with passive listeners`, upstream above `if (canUseDOM)`),
+  ReactFiberCommitEffects' commitClassCallbacks, ReactFiberHooks'
+  runActionStateAction, ReactAct's act (`// We're exiting the outermost
+  \`act\` scope. ..`) and ReactComponentStackFrame's DetermineComponentFrameRoot.
+  Before 31a2f53a8 they printed in the `catch`.
+- #689 (rd807): createCapturedValueFromError writes `stack: stack ?? null` where
+  upstream writes `stack: stack`. Its one call gives
+  `component_stack.or(js::null())`, printed `componentStack ?? null`,
+  which rust-js doesn't count as `null` or a value.
+- #665's remaining `?? null` (their callers' values aren't provably `null`
+  or a value without restructuring the Rust): ReactCurrentFiber's
+  setCurrentFiber `current = fiber ?? null` (runWithFiberInDEV's generic
+  `fiber`, tested `!= null`), ChangeEventPlugin's startWatchingForValueChange
+  `activeElementInst = targetInst ?? null` (handleEventsForInputEventPolyfill
+  is kept as `handleEventFunc`, as upstream), SelectEventPlugin's
+  `activeElementInst = targetInst ?? null` and ReactDOMEventReplaying's
+  createQueuedReplayableEvent `blockedOn: blockedOn ?? null`.
 
 **Accepted by the user, Batch 67** (2026-11-04, rust-js 762921fca; no
 result changes): a binding's comment prints above its import (rd752), so
@@ -2277,12 +2316,16 @@ The port is split between sessions by package:
   options; createStringDecoder's `preserveByteOrderMark ?? false` for
   upstream's default parameter (the `?? false` kind). Its
   `import {readModule} from '../flight-modules.js'` is accepted (#603,
-  above). Pending in rust-js: the factory's
-  `const {createResponse, createStreamState, processBinaryChunk, close,
-  getRoot} = ReactFlightClient({..});` prints after `read` and `let
-  hasConfirmedEval = false;`, its names in call order (rd734, #604); the
-  `// eslint-disable-next-line no-eval` prints in the `catch`, not before
-  `(0, eval)('null')` (rd736, #605). bindToConsole casts the method to a
+  above). Fixed in rust-js (Batch 68): the factory's `const {..} =
+  ReactFlightClient({..});` prints right after `decoderOptions`, as
+  upstream, its binding `#[rust_js::runs_nothing]` (rd734, #604,
+  d1fc7f2b2), and `let hasConfirmedEval = false;` is right above
+  checkEvalAvailabilityOnceDev, no blank line between, as upstream; the
+  `// eslint-disable-next-line no-eval` is first in the `try`, before
+  `(0, eval)('null')` (rd736, #605, 31a2f53a8). **Accepted by the user**
+  (2026-11-04, rust-js ADR 0306): the destructuring lists `close, getRoot`
+  in the order the module first calls them, where upstream lists `getRoot,
+  close`. bindToConsole casts the method to a
   `js::Function` (rust-js #589; rd735) and prints `const method =
   console[methodName]; return method.bind(console, ...args);` for
   upstream's `Function.prototype.bind.apply(console[methodName],
@@ -2417,10 +2460,11 @@ The port is split between sessions by package:
   `ServerConsumerModuleMap`), and its `serverModuleMap`, upstream's `null |
   void`, is given as `js::any_of(..)`, printed as upstream passes it,
   `serverConsumerManifest.serverModuleMap`, at rust-js df8617406 (Batch
-  65). Some rust-js commits print `?? null` after it (3c71ee8f9 did;
-  filed for rust-js): that form is **accepted by the user** (rd700,
-  2026-11-03, by name), and either gives the same result, since
-  ResponseInstance stores `serverReferenceConfig ?? null`. The Node client's `pub use
+  65). Some rust-js commits print `?? null` after it (3c71ee8f9 did, and
+  #601's f37a6ffcf does again, Batch 68): that form is **accepted by the
+  user** (rd700, 2026-11-03, by name), and either gives the same result,
+  since ResponseInstance stores `serverReferenceConfig ?? null`. The Node
+  client's `pub use
   crate::client::react_flight_dom_client_edge::*;` prints upstream's
   `export * from './ReactFlightDOMClientEdge.js'` (rust-js df8617406,
   #593, Batch 65). Their `startReadingFromStream`'s `progress` is rd425's

@@ -2038,10 +2038,10 @@ function runActionStateAction(actionQueue, node) {
     }
   } else {
     try {
+      // The original dispatch was not part of a transition.
       const returnValue = action(prevState, payload);
       handleActionReturnValue(actionQueue, node, returnValue);
     } catch (error) {
-      // The original dispatch was not part of a transition.
       onActionError(actionQueue, node, error);
     }
   }

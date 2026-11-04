@@ -7,7 +7,6 @@
 
 // This is only in the development export.
 import * as React from 'react';
-
 import * as Scheduler from 'scheduler/unstable_mock';
 
 import {

@@ -163,8 +163,8 @@ function describeElementType(type) {
         const lazyComponent = type;
         const payload = lazyComponent._payload;
         const init = lazyComponent._init;
-        // Lazy may contain any component type so we recursively resolve it.
         try {
+          // Lazy may contain any component type so we recursively resolve it.
           return describeElementType(init(payload));
         } catch {
           return '';

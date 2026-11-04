@@ -557,15 +557,15 @@ export function commitClassCallbacks(finishedWork) {
       }
     }
     try {
+      // We could update instance props and state here,
+      // but instead we rely on them being set during last render.
+      // TODO: revisit this when we implement resuming.
       if (__DEV__) {
         runWithFiberInDEV(finishedWork, commitCallbacks, updateQueue, instance);
       } else {
         commitCallbacks(updateQueue, instance);
       }
     } catch (error) {
-      // We could update instance props and state here,
-      // but instead we rely on them being set during last render.
-      // TODO: revisit this when we implement resuming.
       const returnFiber = finishedWork.return;
       captureCommitPhaseError(finishedWork, returnFiber, error);
     }

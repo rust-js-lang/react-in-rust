@@ -19,8 +19,6 @@ unsafe extern "Rust" {
     safe static SUPPORTS_TEST_SELECTORS: bool;
 }
 
-// ReactFiberConfig's test selector operations, on its `Instance`. The root
-// findFiberRoot finds is a HostRoot fiber, as getInstanceFromNode gives it.
 #[cfg_attr(
     rust_js,
     rust_js::link_name = "./src/ReactFiberConfig.js#findFiberRoot",

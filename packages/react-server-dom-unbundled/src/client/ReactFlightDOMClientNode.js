@@ -53,7 +53,7 @@ export function createFromNodeStream(stream, serverConsumerManifest, options) {
 
   const response = createResponse(
     serverConsumerManifest.moduleMap,
-    serverConsumerManifest.serverModuleMap,
+    serverConsumerManifest.serverModuleMap ?? null,
     serverConsumerManifest.moduleLoading,
     noServerCall,
     options?.encodeFormAction,

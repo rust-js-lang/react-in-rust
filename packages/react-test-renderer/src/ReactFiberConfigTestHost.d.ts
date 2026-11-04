@@ -265,13 +265,11 @@ export const isPrimaryRenderer: boolean;
 export const warnsIfNotActing: boolean;
 
 export const scheduleTimeout: (
-  value: () => void,
-  value2?: number | null | undefined,
+  handler: () => void,
+  ms?: number | null | undefined,
 ) => number | object;
 
-export const cancelTimeout: (
-  value?: (number | object) | null | undefined,
-) => void;
+export const cancelTimeout: (id?: (number | object) | null | undefined) => void;
 
 export const noTimeout: number;
 
@@ -305,18 +303,18 @@ export function commitTextUpdate(
 export function resetTextContent(testElement: Instance): void;
 
 export const appendChildToContainer: (
-  instance: ContainerOrInstance,
+  parentInstance: ContainerOrInstance,
   child: Child,
 ) => void;
 
 export const insertInContainerBefore: (
-  instance: ContainerOrInstance,
+  parentInstance: ContainerOrInstance,
   child: Child,
-  child2: Child,
+  beforeChild: Child,
 ) => void;
 
 export const removeChildFromContainer: (
-  instance: ContainerOrInstance,
+  parentInstance: ContainerOrInstance,
   child: Child,
 ) => void;
 

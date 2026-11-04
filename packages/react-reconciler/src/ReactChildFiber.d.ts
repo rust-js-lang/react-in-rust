@@ -16,7 +16,7 @@ export type ChildReconciler = (
   fiber: Fiber,
   value: Fiber | null | undefined,
   value2: unknown | null | undefined,
-  value3: number,
+  lanes: Lanes,
 ) => Fiber | null | undefined;
 
 export const reconcileChildFibers: ChildReconciler;

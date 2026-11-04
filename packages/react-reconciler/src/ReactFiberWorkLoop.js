@@ -3530,7 +3530,7 @@ function completeRoot(
   pendingEffectsRoot = root;
   pendingEffectsLanes = lanes;
   pendingPassiveTransitions = transitions ?? null;
-  pendingRecoverableErrors = recoverableErrors ?? null;
+  pendingRecoverableErrors = recoverableErrors;
   pendingDidIncludeRenderPhaseUpdate = didIncludeRenderPhaseUpdate;
   if (enableProfilerTimer) {
     pendingEffectsRenderEndTime = completedRenderEndTime;

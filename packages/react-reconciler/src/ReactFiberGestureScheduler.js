@@ -24,6 +24,8 @@ import {
 
 import {pingGestureRoot, restartGestureRoot} from './ReactFiberWorkLoop.js';
 
+// This type keeps track of any scheduled or active gestures.
+
 export function scheduleGesture(root, provider) {
   let prev = root.pendingGestures;
   while (prev != null) {

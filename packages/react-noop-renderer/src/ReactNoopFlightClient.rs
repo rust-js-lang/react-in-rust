@@ -22,6 +22,7 @@ use webapi::{TextDecodeOptions, TextDecoder, TextDecoderOptions, console, text_d
 
 #[cfg_attr(rust_js, rust_js::link_name = "react-client/flight#default")]
 #[cfg_attr(rust_js, rust_js::name = "ReactFlightClient")]
+#[cfg_attr(rust_js, rust_js::runs_nothing)]
 fn react_flight_client(config: &FlightClientConfig) -> &'static ReactFlightClient {
     let _ = config;
     unreachable!()
@@ -113,7 +114,6 @@ pub fn read(source: &'static Source, options: Option<&ReadOptions>) -> Rc<ReactP
 thread_local! {
     static HAS_CONFIRMED_EVAL: Cell<bool> = const { Cell::new(false) };
 }
-
 fn check_eval_availability_once_dev() {
     if __DEV__ {
         if !HAS_CONFIRMED_EVAL.get() {

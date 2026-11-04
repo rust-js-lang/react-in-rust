@@ -334,8 +334,6 @@ thread_local! {
 /// What an effect's `create` gives: its destroy function, or nothing.
 pub type Destroy = Option<&'static Unknown>;
 
-// ReactFiberHooks' `Effect`, which isn't ported: its `create`, and its
-// `inst`, whose `destroy` is what `create` gave.
 pub type CallCreate = fn(&'static Unknown) -> Destroy;
 
 struct CallCreateFrame {

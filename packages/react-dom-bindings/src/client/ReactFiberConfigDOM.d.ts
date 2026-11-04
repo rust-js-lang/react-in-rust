@@ -227,7 +227,7 @@ export function getInstanceFromScope(scopeInstance: unknown): Fiber | null;
 // -------------------
 export const supportsMicrotasks: boolean;
 
-export const scheduleMicrotask: (value: () => void) => void;
+export const scheduleMicrotask: (callback: () => void) => void;
 
 // -------------------
 //     Mutation
@@ -781,8 +781,8 @@ export function setFocusIfFocusable(
  */
 export interface IntersectionObserverHandle {
   disconnect: () => void;
-  observe: (target: Element) => void;
-  unobserve: (target: Element) => void;
+  observe: (target: Instance) => void;
+  unobserve: (target: Instance) => void;
 }
 
 export function setupIntersectionObserver(

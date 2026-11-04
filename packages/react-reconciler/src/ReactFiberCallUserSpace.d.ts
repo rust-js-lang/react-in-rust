@@ -70,8 +70,6 @@ export const callComponentWillUnmountInDEV: CallComponentWillUnmount | null;
 /** What an effect's `create` gives: its destroy function, or nothing. */
 export type Destroy = unknown | null | undefined;
 
-// ReactFiberHooks' `Effect`, which isn't ported: its `create`, and its
-// `inst`, whose `destroy` is what `create` gave.
 export type CallCreate = (value: unknown) => unknown | null | undefined;
 
 export const callCreateInDEV: CallCreate | null;

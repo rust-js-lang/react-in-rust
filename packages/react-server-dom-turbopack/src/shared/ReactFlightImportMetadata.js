@@ -7,6 +7,9 @@
 
 export const Async = 1;
 
+// This is the parsed shape of the wire format which is why it is
+// condensed to only the essentialy information
+
 export const ID = 0;
 export const CHUNKS = 1;
 export const NAME = 2;

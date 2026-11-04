@@ -12,6 +12,7 @@
 
 import type {EventPriority} from 'react-reconciler/src/ReactEventPriorities';
 import type {FiberRoot} from 'react-reconciler/src/ReactInternalTypes';
+import type {RootTag} from 'react-reconciler/src/ReactRootTags';
 import type {ReactPortal} from 'shared/ReactTypes';
 import type {
   CreateRootOptions,
@@ -33,7 +34,7 @@ export interface ReactNoopPersistentExports {
   ) => Child[] | null | undefined;
   getOrCreateRootContainer: (
     value: string | null | undefined,
-    value2: number,
+    tag: RootTag,
   ) => Container;
   createRoot: (value?: CreateRootOptions | null | undefined) => Root;
   createLegacyRoot: () => LegacyRoot;

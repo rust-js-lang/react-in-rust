@@ -14,6 +14,8 @@ import {
 
 import {NoLanes, mergeLanes} from './ReactFiberLane.js';
 
+// TODO: Remove `renderLanes` context in favor of hidden context
+
 // TODO: This isn't being used yet, but it's intended to replace the
 // InvisibleParentContext that is currently managed by SuspenseContext.
 export const currentTreeHiddenStackCursor = createCursor(null);

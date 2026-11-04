@@ -40,8 +40,8 @@ export type OnStartTransitionFinish = (
  */
 export type OnStartGestureTransitionFinish = (
   transition: Transition,
-  value: unknown,
-  value2?: GestureTransitionOptions | null | undefined,
+  provider: GestureProvider,
+  value?: GestureTransitionOptions | null | undefined,
 ) => () => void;
 
 export function startTransition(

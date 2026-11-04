@@ -158,7 +158,7 @@ export function extractEvents(
         targetNode.contentEditable === 'true'
       ) {
         activeElement = targetNode;
-        activeElementInst = targetInst;
+        activeElementInst = targetInst ?? null;
         lastSelection = null;
       }
       break;

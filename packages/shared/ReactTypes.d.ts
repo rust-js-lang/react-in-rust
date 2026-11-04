@@ -55,7 +55,7 @@ export interface ReactConsumer<T> {
 
 /** A consumer element's props: what renders the context's value. */
 export interface ReactConsumerProps<T> {
-  children: (t: T) => unknown | null | undefined;
+  children: (t: T) => ReactNodeList | null | undefined;
 }
 
 /**
@@ -331,8 +331,8 @@ export interface GestureOptionsRequired {
  * what cleans up after it, if anything.
  */
 export type ViewTransitionCallback = (
-  value: unknown,
-  value2: string[],
+  instance: ViewTransitionInstance,
+  value: string[],
 ) => (() => void) | null | undefined;
 
 /**
@@ -340,10 +340,10 @@ export type ViewTransitionCallback = (
  * ReactFiberConfig's `GestureTimeline` first.
  */
 export type ViewTransitionGestureCallback = (
-  value: unknown,
+  instance: ViewTransitionInstance,
   required: GestureOptionsRequired,
-  value2: unknown,
-  value3: string[],
+  instance2: ViewTransitionInstance,
+  value: string[],
 ) => (() => void) | null | undefined;
 
 export interface ViewTransitionProps {

@@ -19,6 +19,7 @@ import type {
   OnError,
   TransitionTracingCallbacks,
 } from 'react-reconciler/src/ReactInternalTypes';
+import type {RootTag} from 'react-reconciler/src/ReactRootTags';
 import type {ReactPortal} from 'shared/ReactTypes';
 import type {Child, Container, Instance} from './ReactFiberConfigNoop.js';
 
@@ -97,7 +98,7 @@ export interface ReactNoop {
   ) => Child[] | null | undefined;
   getOrCreateRootContainer: (
     rootId: string | null | undefined,
-    tag: number,
+    tag: RootTag,
   ) => Container;
   // TODO: Replace ReactNoop.render with createRoot + root.render
   createRoot: (options?: CreateRootOptions | null | undefined) => Root;

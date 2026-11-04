@@ -22,7 +22,8 @@ export {
 };
 
 // Capture local references to native APIs, in case a polyfill overrides them.
-const {performance: perf, setTimeout} = window;
+const perf = window.performance;
+const setTimeout = window.setTimeout;
 
 // Use experimental Chrome Scheduler postTask API.
 const scheduler = globalThis.scheduler;

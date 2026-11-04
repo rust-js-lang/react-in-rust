@@ -20,7 +20,7 @@ let startText = null;
 let fallbackText = null;
 
 export function initialize(nativeEventTarget) {
-  root = nativeEventTarget ?? null;
+  root = nativeEventTarget;
   startText = getText();
   return true;
 }

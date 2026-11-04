@@ -16,32 +16,6 @@ import ReactFlightClient from 'react-client/flight';
 
 const decoderOptions = {stream: true};
 
-export function read(source, options) {
-  const response = createResponse(
-    source,
-    null,
-    null,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    false,
-    options?.findSourceMapURL,
-    true,
-  );
-  const streamState = createStreamState(response, source);
-  for (let i = 0; i < source.length; i++) {
-    const chunk = source[i];
-    processBinaryChunk(response, streamState, chunk);
-  }
-  if (options != null && options.close === true) {
-    close(response);
-  }
-  return getRoot(response);
-}
-
-let hasConfirmedEval = false;
-
 const {createResponse, createStreamState, processBinaryChunk, close, getRoot} =
   ReactFlightClient({
     createStringDecoder(preserveByteOrderMark) {
@@ -70,14 +44,39 @@ const {createResponse, createStreamState, processBinaryChunk, close, getRoot} =
     checkEvalAvailabilityOnceDev,
   });
 
+export function read(source, options) {
+  const response = createResponse(
+    source,
+    null,
+    null,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    false,
+    options?.findSourceMapURL,
+    true,
+  );
+  const streamState = createStreamState(response, source);
+  for (let i = 0; i < source.length; i++) {
+    const chunk = source[i];
+    processBinaryChunk(response, streamState, chunk);
+  }
+  if (options != null && options.close === true) {
+    close(response);
+  }
+  return getRoot(response);
+}
+
+let hasConfirmedEval = false;
 function checkEvalAvailabilityOnceDev() {
   if (__DEV__) {
     if (!hasConfirmedEval) {
       hasConfirmedEval = true;
       try {
+        // eslint-disable-next-line no-eval
         (0, eval)('null');
       } catch {
-        // eslint-disable-next-line no-eval
         console.error(
           'eval() is not supported in this environment. ' +
             'React requires eval() in development mode for various debugging features ' +

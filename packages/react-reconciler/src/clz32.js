@@ -15,7 +15,8 @@ export const clz32 =
 // Count leading zeros.
 // Based on:
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/clz32
-const {log, LN2} = Math;
+const log = Math.log;
+const LN2 = Math.LN2;
 function clz32Fallback(x) {
   const asUint = x;
   if (asUint === 0) {

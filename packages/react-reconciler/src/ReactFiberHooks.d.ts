@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import type {StartTransitionOptions} from 'shared/ReactTypes';
-import type {Component} from './ReactFiberCallUserSpace.js';
+import type {Component, Destroy} from './ReactFiberCallUserSpace.js';
 import type {ScheduledGesture} from './ReactFiberGestureScheduler.js';
 import type {Lane, Lanes} from './ReactFiberLane.js';
 import type {HookFlags} from './ReactHookEffectTags.js';
@@ -80,7 +80,7 @@ export interface Hook {
 }
 
 /** What an effect runs: what it gives is its destroy function, or nothing. */
-export type Create = () => unknown | null | undefined;
+export type Create = () => Destroy;
 
 export interface Effect {
   tag: HookFlags;
@@ -102,7 +102,7 @@ export type GetSnapshot = () => unknown | null | undefined;
  * What `useSyncExternalStore` subscribes with: of what's called when the
  * store changes, it gives what unsubscribes.
  */
-export type Subscribe = (value: () => void) => unknown | null | undefined;
+export type Subscribe = (value: () => void) => Destroy;
 
 /** What a `useEffectEvent` function calls: what the component last gave. */
 export interface EventFunctionRef {
