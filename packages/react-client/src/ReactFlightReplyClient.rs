@@ -58,7 +58,7 @@ thread_local! {
 const REPLY_ENDED: &str = "The reply ended.";
 
 /// TypeScript's `Function`, what a server reference is.
-pub type ServerFunction = dyn Fn() -> Option<&'static Unknown>;
+pub type ServerFunction = js::Function;
 
 pub type ServerReference<T> = T;
 
@@ -1849,8 +1849,8 @@ pub fn create_bound_server_reference(
 ) -> &'static ServerFunction {
     let id = meta_data.id;
     let bound = meta_data.bound;
-    let mut action: &'static ServerFunction =
-        function::with_this(move |_, ()| -> Option<&'static Unknown> {
+    let mut action: &'static ServerFunction = js::Function::of(function::with_this(
+        move |_, ()| -> Option<&'static Unknown> {
             // SAFETY: `slice` makes an array.
             let args: Vec<Option<&'static Unknown>> =
                 unsafe { js::cast(function::call(js::array::SLICE, Some(js::arguments()), ())) };
@@ -1878,7 +1878,8 @@ pub fn create_bound_server_reference(
                     call_server(id, js::unknown_of([bound_args, args].concat()))
                 },
             )))
-        });
+        },
+    ));
     if __DEV__ && let Some(location) = &meta_data.location {
         let function_name = meta_data
             .name
@@ -1990,13 +1991,14 @@ pub fn create_server_reference(
     find_source_map_url: Option<&FindSourceMapURLCallback>, // DEV-only
     function_name: Option<String>,
 ) -> &'static ServerFunction {
-    let mut action: &'static ServerFunction =
-        function::with_this(move |_, ()| -> Option<&'static Unknown> {
+    let mut action: &'static ServerFunction = js::Function::of(function::with_this(
+        move |_, ()| -> Option<&'static Unknown> {
             // SAFETY: `slice` makes an array.
             let args: Vec<Option<&'static Unknown>> =
                 unsafe { js::cast(function::call(js::array::SLICE, Some(js::arguments()), ())) };
             Some(js::unknown_of(call_server(id, js::unknown_of(args))))
-        });
+        },
+    ));
     if __DEV__ {
         // Let's see if we can find a source map for the file which contained the
         // server action. We extract it from the runtime so that it's resilient to

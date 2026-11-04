@@ -9,4 +9,4 @@ export function bindToConsole(
   methodName: string,
   args: (unknown | null | undefined)[],
   badgeName: string,
-): () => unknown | null | undefined;
+): Function;

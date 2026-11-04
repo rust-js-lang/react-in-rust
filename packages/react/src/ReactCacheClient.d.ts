@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 export const cache: (
-  value: () => unknown | null | undefined,
+  function$: Function,
 ) => (...args: (unknown | null | undefined)[]) => unknown | null | undefined;
 
 export const cacheSignal: () => AbortSignal | null | undefined;

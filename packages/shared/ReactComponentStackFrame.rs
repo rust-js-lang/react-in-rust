@@ -81,7 +81,7 @@ pub fn describe_debug_info_frame(
 }
 
 /// A component function, the frame cache's key.
-type FrameKey = dyn Fn() -> Option<&'static Unknown>;
+type FrameKey = js::Function;
 
 thread_local! {
     static REENTRY: Cell<bool> = const { Cell::new(false) };
@@ -146,7 +146,7 @@ impl Drop for RestoreProps {
 /// it for both control and sample stacks.
 #[cfg_attr(rust_js, rust_js::name = "DetermineComponentFrameRoot")]
 fn determine_component_frame_root(
-    r#fn: &dyn Fn() -> Option<&'static Unknown>,
+    r#fn: &js::Function,
     construct: bool,
 ) -> (Option<String>, Option<String>) {
     let mut control: Option<&'static JsError> = None;
@@ -174,10 +174,10 @@ fn determine_component_frame_root(
             if js::is_defined(reflect::construct) {
                 // We construct a different control for this case to include any extra
                 // frames added by the construct call.
-                if let Err(x) = catch_unwind(|| reflect::construct(&fake, &[], None)) {
+                if let Err(x) = catch_unwind(|| reflect::construct(js::Function::of(&fake), &[], None)) {
                     control = x.downcast_ref::<&'static JsError>().copied();
                 }
-                reflect::construct(r#fn, &[], Some(&fake));
+                reflect::construct(r#fn, &[], Some(js::Function::of(&fake)));
             } else {
                 if let Err(x) = catch_unwind(fake) {
                     control = x.downcast_ref::<&'static JsError>().copied();
@@ -240,10 +240,7 @@ fn determine_component_frame_root(
 ///       catch - this will be our sample error.
 ///   (3) diffing the control and sample error stacks to find the stack frame
 ///       which represents our component.
-pub fn describe_native_component_frame(
-    r#fn: &dyn Fn() -> Option<&'static Unknown>,
-    construct: bool,
-) -> String {
+pub fn describe_native_component_frame(r#fn: &js::Function, construct: bool) -> String {
     // If something asked for a stack inside a fake render, it should get ignored.
     if REENTRY.get() {
         return String::new();
@@ -410,10 +407,10 @@ pub fn describe_native_component_frame(
     synthetic_frame
 }
 
-pub fn describe_class_component_frame(ctor: &dyn Fn() -> Option<&'static Unknown>) -> String {
+pub fn describe_class_component_frame(ctor: &js::Function) -> String {
     describe_native_component_frame(ctor, true)
 }
 
-pub fn describe_function_component_frame(r#fn: &dyn Fn() -> Option<&'static Unknown>) -> String {
+pub fn describe_function_component_frame(r#fn: &js::Function) -> String {
     describe_native_component_frame(r#fn, false)
 }

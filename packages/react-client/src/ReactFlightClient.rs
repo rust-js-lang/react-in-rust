@@ -2751,8 +2751,7 @@ fn load_server_reference(
                     Vec::new()
                 };
                 // SAFETY: a server reference's module is a function.
-                let function: &'static dyn Fn() -> Option<&'static Unknown> =
-                    unsafe { js::cast(resolved_value) };
+                let function: &'static js::Function = unsafe { js::cast(resolved_value) };
                 resolved_value = Some(js::unknown(function::bind(
                     function,
                     Some(&Kind::Null),

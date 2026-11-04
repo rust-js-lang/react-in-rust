@@ -10,7 +10,7 @@
  * function that throws if it's called, behind a proxy that throws if
  * it's read.
  */
-export type TemporaryReference = () => unknown | null | undefined;
+export type TemporaryReference = Function;
 
 export type TemporaryReferenceSet = WeakMap<TemporaryReference, string>;
 

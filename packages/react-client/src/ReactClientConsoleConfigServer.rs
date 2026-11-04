@@ -30,7 +30,7 @@ pub fn bind_to_console(
     method_name: &str,
     args: &[Option<&'static Unknown>],
     badge_name: &str,
-) -> &'static dyn Fn() -> Option<&'static Unknown> {
+) -> &'static js::Function {
     let Kind::Function(method) = js::classify(js::get(console, method_name)) else {
         panic!("console.{method_name} is no function");
     };

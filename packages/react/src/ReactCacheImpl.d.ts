@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 /** A JS function of any arguments, TypeScript's `Function`. */
-export type AnyFunction = () => unknown | null | undefined;
+export type AnyFunction = Function;
 
 /**
  * What `cache` gives of a function: one JS calls with the same arguments,

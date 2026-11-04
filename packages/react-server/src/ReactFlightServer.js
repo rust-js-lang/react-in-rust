@@ -3910,8 +3910,10 @@ function renderModelDestructive(
     }
 
     if (request.temporaryReferences != null) {
-      const temporaryReferences = request.temporaryReferences;
-      const tempRef = resolveTemporaryReference(temporaryReferences, value);
+      const tempRef = resolveTemporaryReference(
+        request.temporaryReferences,
+        value,
+      );
       if (tempRef != null) {
         return serializeTemporaryReference(request, tempRef);
       }
@@ -4215,8 +4217,10 @@ function renderModelDestructive(
       return serializeServerReference(request, functionValue);
     }
     if (request.temporaryReferences != null) {
-      const temporaryReferences = request.temporaryReferences;
-      const tempRef = resolveTemporaryReference(temporaryReferences, value);
+      const tempRef = resolveTemporaryReference(
+        request.temporaryReferences,
+        value,
+      );
       if (tempRef != null) {
         return serializeTemporaryReference(request, tempRef);
       }
@@ -5181,8 +5185,10 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
     }
 
     if (request.temporaryReferences != null) {
-      const temporaryReferences = request.temporaryReferences;
-      const tempRef = resolveTemporaryReference(temporaryReferences, value);
+      const tempRef = resolveTemporaryReference(
+        request.temporaryReferences,
+        value,
+      );
       // Safety: a temporary reference set is keyed by any object.
       if (tempRef != null) {
         return serializeTemporaryReference(request, tempRef);

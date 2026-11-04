@@ -10,7 +10,7 @@ const TEMPORARY_REFERENCE_TAG: SymbolFor = SymbolFor("react.temporary.reference"
 /// A value the client gave the server and only the client can read: a
 /// function that throws if it's called, behind a proxy that throws if
 /// it's read.
-pub type TemporaryReference = dyn Fn() -> Option<&'static Unknown>;
+pub type TemporaryReference = js::Function;
 
 pub type TemporaryReferenceSet = WeakMap<TemporaryReference, String>;
 
@@ -99,7 +99,7 @@ pub fn create_temporary_reference(
     id: &str,
 ) -> &'static TemporaryReference {
     let reference: &'static TemporaryReference = js::object::define_properties(
-        function::with_this(|_, ()| -> Option<&'static Unknown> {
+        js::Function::of(function::with_this(|_, ()| -> Option<&'static Unknown> {
             panic!(
                 "{}",
                 concat!(
@@ -108,7 +108,7 @@ pub fn create_temporary_reference(
                     "only be rendered as a Component or passed to props of a Client Component."
                 )
             );
-        }),
+        })),
         &TagDescriptors {
             r#typeof: PropertyDescriptor {
                 value: Some(&TEMPORARY_REFERENCE_TAG),

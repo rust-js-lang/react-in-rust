@@ -2184,10 +2184,9 @@ The port is split between sessions by package:
   `RefCell<HashMap<String, &Unknown>>`, `new Map()`. saveModule prints
   `const idx = String(moduleIdx); moduleIdx++;` where upstream writes
   `const idx = '' + moduleIdx++;` (accepted on the user's behalf while
-  away, the coordinator, 2026-11-04; the same text). Pending in rust-js,
-  rd724: the `.d.ts` types a module `unknown` (`render: unknown`,
-  readModule's `unknown | null | undefined`), looser than upstream's Flow
-  `Function`, as js has no value type of a function of any signature.
+  away, the coordinator, 2026-11-04; the same text). A module is a
+  `js::Function` (rust-js #589, Batch 65; rd724), so the `.d.ts` says
+  upstream's `Function`.
   react-noop-renderer's ReactNoopFlightClient, the Flight tests' client, is
   Rust (Batch 65), our last core file. Its factory, `react-client/flight`'s
   default (JS; jest makes it a factory of ReactFlightClient), is a binding
@@ -2211,11 +2210,11 @@ The port is split between sessions by package:
   getRoot} = ReactFlightClient({..});` prints after `read` and `let
   hasConfirmedEval = false;`, its names in call order (rd734, #604); the
   `// eslint-disable-next-line no-eval` prints in the `catch`, not before
-  `(0, eval)('null')` (rd736, #605). **A result difference pending #589**
-  (rd735): bindToConsole tests `typeof method !== 'function'` and throws
-  an Error where upstream's `Function.prototype.bind.apply(console[methodName],
-  ..)` throws a TypeError; with `js::Function` it becomes upstream's bind
-  of the method, with no check.
+  `(0, eval)('null')` (rd736, #605). bindToConsole casts the method to a
+  `js::Function` (rust-js #589; rd735) and prints `const method =
+  console[methodName]; return method.bind(console, ...args);` for
+  upstream's `Function.prototype.bind.apply(console[methodName],
+  [console].concat(args))`, with no check of its own.
   react-test-renderer's ReactFiberConfigTestHost and ReactTestRenderer are
   Rust; react-art's ReactARTInternals, ReactFiberConfigART and ReactART
   are Rust. ReactART's Surface and Text are class components (rust-js ADR

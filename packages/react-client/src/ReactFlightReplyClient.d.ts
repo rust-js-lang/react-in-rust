@@ -12,7 +12,7 @@ import type {
 import type {TemporaryReferenceSet} from './ReactFlightTemporaryReferences.js';
 
 /** TypeScript's `Function`, what a server reference is. */
-export type ServerFunction = () => unknown | null | undefined;
+export type ServerFunction = Function;
 
 export type ServerReference<T> = T;
 

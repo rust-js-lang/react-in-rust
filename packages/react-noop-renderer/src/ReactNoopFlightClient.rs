@@ -11,7 +11,7 @@
 use std::cell::Cell;
 use std::rc::Rc;
 
-use js::{Kind, Uint8Array, Unknown, function};
+use js::{Function, Uint8Array, Unknown, function};
 use react_client::react_flight_client::{
     FindSourceMapURLCallback, ReactFlightClient, ReactPromise,
 };
@@ -39,8 +39,8 @@ struct FlightClientConfig {
     resolve_client_reference: fn(Option<&Unknown>, &'static str) -> &'static str,
     prepare_destination_for_module: fn(Option<&Unknown>, &str),
     preload_module: fn(&str),
-    require_module: fn(&str) -> Option<&'static Unknown>,
-    bind_to_console: fn(&str, &[Option<&'static Unknown>], &str) -> &'static Unknown,
+    require_module: fn(&str) -> Option<&'static Function>,
+    bind_to_console: fn(&str, &[Option<&'static Unknown>], &str) -> &'static Function,
     check_eval_availability_once_dev: fn(),
 }
 
@@ -62,10 +62,9 @@ thread_local! {
         preload_module: |_idx| {},
         require_module: |idx| read_module(idx),
         bind_to_console: |method_name, args, _badge_name| {
-            let Kind::Function(method) = js::classify(js::get(console, method_name)) else {
-                panic!("console.{method_name} is no function");
-            };
-            js::unknown_of(function::bind(method, Some(&console), args))
+            // SAFETY: Flight replays only console's own methods, each a function.
+            let method: &'static Function = unsafe { js::cast(js::get(console, method_name)) };
+            function::bind(method, Some(&console), args)
         },
         check_eval_availability_once_dev,
     });

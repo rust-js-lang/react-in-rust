@@ -25,14 +25,10 @@ export function describeDebugInfoFrame(
  *       which represents our component.
  */
 export function describeNativeComponentFrame(
-  fn: () => unknown | null | undefined,
+  fn: Function,
   construct: boolean,
 ): string;
 
-export function describeClassComponentFrame(
-  ctor: () => unknown | null | undefined,
-): string;
+export function describeClassComponentFrame(ctor: Function): string;
 
-export function describeFunctionComponentFrame(
-  fn: () => unknown | null | undefined,
-): string;
+export function describeFunctionComponentFrame(fn: Function): string;

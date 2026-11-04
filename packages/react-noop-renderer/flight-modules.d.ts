@@ -6,6 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 // This simulates what the compiler will do when it replaces render functions with server blocks.
-export function saveModule(render: unknown): string;
+export function saveModule(render: Function): string;
 
-export function readModule(idx: string): unknown | null | undefined;
+export function readModule(idx: string): Function | null | undefined;

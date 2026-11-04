@@ -65,9 +65,6 @@ const {createResponse, createStreamState, processBinaryChunk, close, getRoot} =
     },
     bindToConsole(methodName, args, badgeName) {
       const method = console[methodName];
-      if (typeof method !== 'function') {
-        throw new Error(`console.${methodName} is no function`);
-      }
       return method.bind(console, ...args);
     },
     checkEvalAvailabilityOnceDev,

@@ -98,6 +98,4 @@ export function decodeFormState(
   | undefined
 >;
 
-export function loadServerAction(
-  id: string,
-): Promise<() => unknown | null | undefined>;
+export function loadServerAction(id: string): Promise<Function>;

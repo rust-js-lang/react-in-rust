@@ -1067,7 +1067,7 @@ pub fn decode_form_state(
     decode_form_state_impl(action_result, body, SERVER_MANIFEST.get())
 }
 
-pub fn load_server_action(id: &str) -> Promise<&'static dyn Fn() -> Option<&'static Unknown>> {
+pub fn load_server_action(id: &str) -> Promise<&'static js::Function> {
     let reference = Rc::new(resolve_server_reference(SERVER_MANIFEST.get(), id));
     js::promise::resolve(Rc::clone(&reference))
         // GAP rd596: what a thenable that isn't a `Promise` fulfils isn't

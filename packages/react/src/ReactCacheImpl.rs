@@ -37,7 +37,7 @@ struct CacheNode {
 unsafe impl js::Defined for CacheNode {}
 
 /// A JS function of any arguments, TypeScript's `Function`.
-pub type AnyFunction = dyn Fn() -> Option<&'static Unknown>;
+pub type AnyFunction = js::Function;
 
 /// What `cache` gives of a function: one JS calls with the same arguments,
 /// cached.
