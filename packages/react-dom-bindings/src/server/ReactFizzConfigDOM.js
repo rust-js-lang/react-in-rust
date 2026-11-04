@@ -666,6 +666,7 @@ export function getChildFormatContext(parentContext, type, props) {
       if (parentContext.insertionMode === ROOT_HTML_MODE) {
         return createFormatContext(HTML_HTML_MODE, undefined, subtreeScope);
       }
+      break;
   }
   if (parentContext.insertionMode >= HTML_TABLE_MODE) {
     // Whatever tag this was, it wasn't a table parent or other special parent, so we must have
@@ -912,7 +913,7 @@ function encodeHTMLTextNode(text) {
 const textSeparator = stringToPrecomputedChunk('<!-- -->');
 
 export function pushTextInstance(target, text, renderState, textEmbedded) {
-  if (!text) {
+  if (text === '') {
     // Empty text doesn't have a DOM node representation and the hydration is aware of this.
     return textEmbedded;
   }
@@ -1508,6 +1509,7 @@ function pushAttribute(
           if (!callable) {
             pushTextAttribute(target, name, value);
           }
+          break;
       }
       break;
     case 'cols':
@@ -1576,10 +1578,12 @@ function pushAttribute(
             if (prefix !== 'data-' && prefix !== 'aria-') {
               return;
             }
+            break;
           }
         }
         pushTextAttribute(target, attributeName, value);
       }
+      break;
     }
   }
 }
@@ -1675,6 +1679,7 @@ function pushStartAnchor(target, props, formatContext) {
           break;
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -1738,6 +1743,7 @@ function pushStartObject(target, props, formatContext) {
         }
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -1803,6 +1809,7 @@ function pushStartSelect(target, props, formatContext) {
           break;
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -1883,6 +1890,7 @@ function pushStartOption(target, props, formatContext) {
           }
           // We intentionally fallthrough to also set the attribute on the node.
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -2035,6 +2043,7 @@ function pushStartForm(
           break;
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -2185,6 +2194,7 @@ function pushInput(target, props, resumableState, renderState, formatContext) {
           break;
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -2320,6 +2330,7 @@ function pushStartButton(
           break;
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -2414,6 +2425,7 @@ function pushStartTextArea(target, props, formatContext) {
           );
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -2563,7 +2575,7 @@ function pushLink(
     formatContext.insertionMode === SVG_MODE ||
     noscriptTagInScope ||
     props.itemProp != null ||
-    !href
+    href === ''
   ) {
     return pushLinkNotHoisted(target, props, href);
   }
@@ -2728,6 +2740,7 @@ function pushLinkImpl(target, props) {
           );
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -2779,6 +2792,7 @@ function pushStyle(
           break;
         default:
           childType = 'an Array';
+          break;
       }
       console.error(
         'React expect children of <style> tags to be a string, number, or object with a `toString` method but found %s instead. ' +
@@ -2799,7 +2813,7 @@ function pushStyle(
     formatContext.insertionMode === SVG_MODE ||
     noscriptTagInScope ||
     props.itemProp != null ||
-    !href
+    href === ''
   ) {
     // This style tag is not able to be turned into a Style Resource
     return pushStyleImpl(target, props);
@@ -2932,6 +2946,7 @@ function pushStyleImpl(target, props) {
           break;
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -2960,6 +2975,7 @@ function pushStyleContents(target, props) {
           break;
         case 'dangerouslySetInnerHTML':
           innerHTML = propValue;
+          break;
       }
     }
   }
@@ -3096,7 +3112,7 @@ function pushImg(
         // If we postpone in the shell we will still emit this preload so we track
         // it to make sure we don't reset it.
         renderState.resets.image[key] = preloadNoCreds;
-        if (headers.highImagePreloads) {
+        if (headers.highImagePreloads !== '') {
           headers.highImagePreloads += ', ';
         }
         headers.highImagePreloads += header$1;
@@ -3148,6 +3164,7 @@ function pushSelfClosing(target, props, tag, formatContext) {
           );
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -3175,6 +3192,7 @@ function pushStartMenuItem(target, props, formatContext) {
           );
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -3268,6 +3286,7 @@ function pushTitleImpl(target, props) {
           break;
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -3396,7 +3415,7 @@ function pushScript(
   const src = props.src;
   if (
     typeof src !== 'string' ||
-    !src ||
+    src === '' ||
     !(
       asyncProp &&
       typeof asyncProp !== 'function' &&
@@ -3483,6 +3502,7 @@ function pushScriptImpl(target, props) {
           break;
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -3531,6 +3551,7 @@ function pushStartSingletonElement(target, props, tag, formatContext) {
           break;
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -3562,6 +3583,7 @@ function pushStartGenericElement(target, props, tag, formatContext) {
           break;
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -3628,6 +3650,7 @@ function pushStartCustomElement(target, props, tag, formatContext) {
                 continue;
               }
             }
+            break;
         }
       }
     }
@@ -3663,6 +3686,7 @@ function pushStartPreformattedElement(target, props, tag, formatContext) {
           break;
         default:
           pushAttribute(target, propKey, propValue);
+          break;
       }
     }
   }
@@ -3931,6 +3955,7 @@ export function pushStartInstance(
         // Custom element
         return pushStartCustomElement(target, props, type, formatContext);
       }
+      break;
   }
   // Generic element
   return pushStartGenericElement(target, props, type, formatContext);
@@ -4003,6 +4028,7 @@ export function pushEndInstance(
       if (formatContext.insertionMode <= HTML_HTML_MODE) {
         return;
       }
+      break;
   }
   target.push(endChunkForTag(type));
 }
@@ -5356,6 +5382,7 @@ function writeStyleResourceDependency(
           );
         default:
           writeStyleResourceAttribute(destination, propKey, propValue, encode);
+          break;
       }
     }
   }
@@ -5392,38 +5419,34 @@ function writeStyleResourceAttribute(
       checkAttributeStringCoercion(value, attributeName);
     }
     attributeValue = '' + value;
-  } else {
+  } else if (name === 'hidden') {
     // Booleans
-    if (name === 'hidden') {
-      if (value === false) {
-        return;
-      }
-      attributeValue = '';
-    } else {
-      // Santized URLs
-      if (name === 'src' || name === 'href') {
-        const value$1 = sanitizeURL(value);
-        if (__DEV__) {
-          checkAttributeStringCoercion(value$1, attributeName);
-        }
-        attributeValue = '' + value$1;
-      } else if (
-        // unrecognized event handlers are not SSR'd and we (apparently)
-        // use on* as hueristic for these handler props
-        name.length > 2 &&
-        (name[0] === 'o' || name[0] === 'O') &&
-        (name[1] === 'n' || name[1] === 'N')
-      ) {
-        return;
-      } else if (!isAttributeNameSafe(name)) {
-        return;
-      } else {
-        if (__DEV__) {
-          checkAttributeStringCoercion(value, attributeName);
-        }
-        attributeValue = '' + value;
-      }
+    if (value === false) {
+      return;
     }
+    attributeValue = '';
+  } else if (name === 'src' || name === 'href') {
+    // Santized URLs
+    const value$1 = sanitizeURL(value);
+    if (__DEV__) {
+      checkAttributeStringCoercion(value$1, attributeName);
+    }
+    attributeValue = '' + value$1;
+  } else if (
+    // unrecognized event handlers are not SSR'd and we (apparently)
+    // use on* as hueristic for these handler props
+    name.length > 2 &&
+    (name[0] === 'o' || name[0] === 'O') &&
+    (name[1] === 'n' || name[1] === 'N')
+  ) {
+    return;
+  } else if (!isAttributeNameSafe(name)) {
+    return;
+  } else {
+    if (__DEV__) {
+      checkAttributeStringCoercion(value, attributeName);
+    }
+    attributeValue = '' + value;
   }
   writeChunk(destination, arrayInterstitial);
   writeChunk(destination, stringToChunk(encode(attributeName)));
@@ -5490,7 +5513,7 @@ function prefetchDNS(href) {
   const resumableState = getResumableState(request);
   const renderState = getRenderState(request);
 
-  if (href) {
+  if (href !== '') {
     const key = getResourceKey(href);
     const dnsResources = resumableState.dnsResources;
     if (!dnsResources.hasOwnProperty(key)) {
@@ -5504,7 +5527,7 @@ function prefetchDNS(href) {
         const header = value[1];
         // Store this as resettable in case we are prerendering and postpone in the Shell
         renderState.resets.dns[key] = EXISTS;
-        if (headers.preconnects) {
+        if (headers.preconnects !== '') {
           headers.preconnects += ', ';
         }
         headers.preconnects += header;
@@ -5536,7 +5559,7 @@ function preconnect(href, crossOrigin) {
   const resumableState = getResumableState(request);
   const renderState = getRenderState(request);
 
-  if (href) {
+  if (href !== '') {
     const bucket =
       crossOrigin === 'use-credentials'
         ? 'credentials'
@@ -5568,7 +5591,7 @@ function preconnect(href, crossOrigin) {
         const header = value[1];
         // Store this in resettableState in case we are prerending and postpone in the Shell
         bucketOf(renderState.resets.connect)[key] = EXISTS;
-        if (headers.preconnects) {
+        if (headers.preconnects !== '') {
           headers.preconnects += ', ';
         }
         headers.preconnects += header;
@@ -5611,7 +5634,7 @@ function preload(href, as, options) {
   }
   const resumableState = getResumableState(request);
   const renderState = getRenderState(request);
-  if (as && href) {
+  if (as !== '' && href !== '') {
     switch (as) {
       case 'image': {
         let imageSrcSet;
@@ -5654,7 +5677,7 @@ function preload(href, as, options) {
           // If we postpone in the shell we will still emit a preload as a header so we
           // track this to make sure we don't reset it.
           renderState.resets.image[key] = preloadNoCreds;
-          if (headers.highImagePreloads) {
+          if (headers.highImagePreloads !== '') {
             headers.highImagePreloads += ', ';
           }
           headers.highImagePreloads += header;
@@ -5753,7 +5776,7 @@ function preload(href, as, options) {
           // If we postpone in the shell we will still emit this preload so we
           // track it here to prevent it from being reset.
           renderState.resets.font[key] = preloadNoCreds;
-          if (headers.fontPreloads) {
+          if (headers.fontPreloads !== '') {
             headers.fontPreloads += ', ';
           }
           headers.fontPreloads += header;
@@ -5775,6 +5798,7 @@ function preload(href, as, options) {
             renderState.bulkPreloads.add(resource);
           }
         }
+        break;
       }
     }
     // If we got this far we created a new resource
@@ -5795,7 +5819,7 @@ function preloadModule(href, options) {
   }
   const resumableState = getResumableState(request);
   const renderState = getRenderState(request);
-  if (href) {
+  if (href !== '') {
     const key = getResourceKey(href);
     const as =
       options && typeof options.as === 'string' ? '' + options.as : 'script';
@@ -5867,7 +5891,7 @@ function preinitStyle(href, precedence, options) {
   }
   const resumableState = getResumableState(request);
   const renderState = getRenderState(request);
-  if (href) {
+  if (href !== '') {
     const precedence$1 = precedence ? '' + precedence : 'default';
     const key = getResourceKey(href);
 
@@ -5949,7 +5973,7 @@ function preinitScript(src, options) {
   }
   const resumableState = getResumableState(request);
   const renderState = getRenderState(request);
-  if (src) {
+  if (src !== '') {
     const key = getResourceKey(src);
 
     const scriptResources = resumableState.scriptResources;
@@ -6005,7 +6029,7 @@ function preinitModuleScript(src, options) {
   }
   const resumableState = getResumableState(request);
   const renderState = getRenderState(request);
-  if (src) {
+  if (src !== '') {
     const key = getResourceKey(src);
     const moduleScriptResources = resumableState.moduleScriptResources;
     const hasKey = moduleScriptResources.hasOwnProperty(key);
@@ -6292,14 +6316,14 @@ export function emitEarlyPreloads(renderState, resumableState, shellComplete) {
       renderState.headers = null;
 
       let linkHeader = headers.preconnects;
-      if (headers.fontPreloads) {
-        if (linkHeader) {
+      if (headers.fontPreloads !== '') {
+        if (linkHeader !== '') {
           linkHeader += ', ';
         }
         linkHeader += headers.fontPreloads;
       }
-      if (headers.highImagePreloads) {
-        if (linkHeader) {
+      if (headers.highImagePreloads !== '') {
+        if (linkHeader !== '') {
           linkHeader += ', ';
         }
         linkHeader += headers.highImagePreloads;
@@ -6332,7 +6356,7 @@ export function emitEarlyPreloads(renderState, resumableState, shellComplete) {
             headers.remainingCapacity = remaining;
             if (remaining >= 0) {
               renderState.resets.style[key] = preloadNoCreds;
-              if (linkHeader) {
+              if (linkHeader !== '') {
                 linkHeader += ', ';
               }
               linkHeader += header;
@@ -6349,7 +6373,7 @@ export function emitEarlyPreloads(renderState, resumableState, shellComplete) {
           }
         }
       }
-      if (linkHeader) {
+      if (linkHeader !== '') {
         onHeaders({Link: linkHeader});
       } else {
         // We still call this with no headers because a user may be using it as a signal that

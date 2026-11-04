@@ -45,8 +45,6 @@ pub struct BackingFormData {
 }
 
 /// A `FormDataEntryValue` the store keeps: its text, or its file.
-// ReplyServer's resolveField gives the store text it's only lent, `&str`,
-// which an owned `String` keeps.
 #[cfg_attr(rust_js, rust_js::untagged)]
 #[derive(Clone)]
 pub enum BackingEntryValue {

@@ -6,7 +6,6 @@
 use std::panic::catch_unwind;
 
 use js::{JsError, JsObject, Unknown, object};
-// `require('react')` where it's called, the React a test loaded last.
 #[cfg_attr(rust_js, rust_js::require)]
 use react_isomorphic::create_element;
 use shared::react_types::{ReactNode, ReactNodeList};

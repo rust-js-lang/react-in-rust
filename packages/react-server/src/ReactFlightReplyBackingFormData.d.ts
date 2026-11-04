@@ -39,8 +39,6 @@ export interface BackingFormData {
   blobs: Map<string, Blob> | null;
 }
 
-// ReplyServer's resolveField gives the store text it's only lent, `&str`,
-// which an owned `String` keeps.
 /** A `FormDataEntryValue` the store keeps: its text, or its file. */
 export type BackingEntryValue = string | File;
 

@@ -1039,6 +1039,7 @@ function pushComponentStack(task) {
             pushServerComponentStack(task, thenable._debugInfo);
           }
         }
+        break;
     }
   }
 }
@@ -3156,9 +3157,7 @@ function replayElement(
         fallbackNodes = [];
         fallbackSlots = null;
       } else {
-        const borrow = $borrow(fallback);
-        const nodes = borrow[2];
-        const slots = borrow[3];
+        const [, , nodes, slots] = $borrow(fallback);
         fallbackNodes = nodes;
         fallbackSlots = slots;
       }
@@ -3285,8 +3284,9 @@ function warnOnSymbolType(invalidChild) {
 function renderNodeDestructive(request, task, node, childIndex) {
   const replay = task.replay;
   if (replay != null && typeof replay.slots === 'number') {
+    const resumeSegmentId = replay.slots;
     // TODO: Figure out a cheaper place than this hot path to do this check.
-    resumeNode(request, task, replay.slots, node, childIndex);
+    resumeNode(request, task, resumeSegmentId, node, childIndex);
     return;
   }
   // Stash the node we're working on. We'll pick up from this task in case
@@ -3615,9 +3615,7 @@ function replayFragment(request, task, children, childIndex) {
   while (true) {
     if (j < $borrow(replayNodes).length) {
       const node = cloneReplayNode($borrow($borrow(replayNodes)[j]));
-      const nodeKey = node[1];
-      const childNodes = node[2];
-      const childSlots = node[3];
+      const [, nodeKey, childNodes, childSlots] = node;
       if (nodeKey !== childIndex) {
         j++;
         continue;
@@ -3740,7 +3738,7 @@ function warnForMissingKey(request, task, child) {
           '\n\nCheck the render method of `' + name + '`.';
       }
     }
-    if (!currentComponentErrorInfo && componentName) {
+    if (currentComponentErrorInfo === '' && componentName) {
       currentComponentErrorInfo = `\n\nCheck the top-level render call using <${componentName}>.`;
     }
 
@@ -3913,10 +3911,7 @@ function trackPostponedBoundary(request, trackedPostpones, boundary) {
   } else {
     // Upgrade to ReplaySuspenseBoundary.
     const node = $borrowMut(boundaryNode, true);
-    const name = node[0];
-    const key = node[1];
-    const children = node[2];
-    const slots = node[3];
+    const [name, key, children, slots] = node;
     $assign(node, [
       name,
       key,
@@ -3977,24 +3972,14 @@ function trackPostpone(request, trackedPostpones, task, segment) {
         }
         const borrowMut = $borrowMut(boundaryNode, true);
         // We postponed directly inside the Suspense boundary so we mark this for resuming.
-        const slots =
-          borrowMut.length === 4
-            ? {
-                get value() {
-                  return borrowMut[3];
-                },
-                set value(value) {
-                  borrowMut[3] = value;
-                },
-              }
-            : {
-                get value() {
-                  return borrowMut[3];
-                },
-                set value(value) {
-                  borrowMut[3] = value;
-                },
-              };
+        const slots = {
+          get value() {
+            return borrowMut[3];
+          },
+          set value(value) {
+            borrowMut[3] = value;
+          },
+        };
         slots.value = segment.id;
         $unborrow(borrowMut);
         return;
@@ -4028,24 +4013,14 @@ function trackPostpone(request, trackedPostpones, task, segment) {
         addToReplayParent(resumableNode, keyPath[0], trackedPostpones);
       } else {
         const value = $borrowMut(resumableNode, true);
-        const slots =
-          value.length === 4
-            ? {
-                get value() {
-                  return value[3];
-                },
-                set value(newValue) {
-                  value[3] = newValue;
-                },
-              }
-            : {
-                get value() {
-                  return value[3];
-                },
-                set value(newValue) {
-                  value[3] = newValue;
-                },
-              };
+        const slots = {
+          get value() {
+            return value[3];
+          },
+          set value(newValue) {
+            value[3] = newValue;
+          },
+        };
         slots.value = segment.id;
         $unborrow(value);
       }
@@ -4057,13 +4032,13 @@ function trackPostpone(request, trackedPostpones, task, segment) {
       if (slots$1 === null) {
         slots = {};
         trackedPostpones.rootSlots = slots;
-      } else if (typeof slots$1 !== 'number') {
-        slots = slots$1;
-      } else {
+      } else if (typeof slots$1 === 'number') {
         throw new Error(
           'It should not be possible to postpone both at the root of an element ' +
             'as well as a slot below. This is a bug in React.',
         );
+      } else {
+        slots = slots$1;
       }
     } else {
       const workingMap = trackedPostpones.workingMap;
@@ -4075,24 +4050,14 @@ function trackPostpone(request, trackedPostpones, task, segment) {
         addToReplayParent(resumableNode, keyPath[0], trackedPostpones);
       } else {
         const resumableNode$1 = $borrowMut(resumableNode, true);
-        const resumableSlots =
-          resumableNode$1.length === 4
-            ? {
-                get value() {
-                  return resumableNode$1[3];
-                },
-                set value(value) {
-                  resumableNode$1[3] = value;
-                },
-              }
-            : {
-                get value() {
-                  return resumableNode$1[3];
-                },
-                set value(value) {
-                  resumableNode$1[3] = value;
-                },
-              };
+        const resumableSlots = {
+          get value() {
+            return resumableNode$1[3];
+          },
+          set value(value) {
+            resumableNode$1[3] = value;
+          },
+        };
         const slots$1 = resumableSlots.value;
         let dict;
         try {
@@ -4142,8 +4107,7 @@ function untrackBoundary(request, boundary) {
   // Downgrade to plain ReplayNode since we won't replay through it.
   // $FlowFixMe[cannot-write]: We intentionally downgrade this to the other tuple.
   const node = $borrowMut(boundaryNode, true);
-  const name = node[0];
-  const key = node[1];
+  const [name, key] = node;
   // Remove any resumable slots.
   $assign(node, [name, key, [], null]);
 

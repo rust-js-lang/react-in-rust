@@ -81,7 +81,6 @@ pub type PrecomputedChunk = Chunk;
     rust_js,
     rust_js::link_name = "react-server/src/ReactServerStreamConfig#writeChunk"
 )]
-// The destination's write runs none of this crate's code, the user's decision (ADR 0262).
 #[cfg_attr(rust_js, rust_js::runs_nothing)]
 pub fn write_chunk(destination: &Destination, chunk: &Chunk) {
     let _ = (destination, chunk);
@@ -92,7 +91,6 @@ pub fn write_chunk(destination: &Destination, chunk: &Chunk) {
     rust_js,
     rust_js::link_name = "react-server/src/ReactServerStreamConfig#writeChunkAndReturn"
 )]
-// The destination's write runs none of this crate's code, the user's decision (ADR 0262).
 #[cfg_attr(rust_js, rust_js::runs_nothing)]
 pub fn write_chunk_and_return(destination: &Destination, chunk: &Chunk) -> bool {
     let _ = (destination, chunk);
@@ -131,7 +129,6 @@ fn read_as_data_url(blob: &Blob) -> &'static Thenable {
 }
 
 unsafe extern "Rust" {
-    /// The renderer's doctype, which a renderer's config may override.
     #[link_name = "react-server/src/ReactFizzConfig#doctypeChunk"]
     safe static DOCTYPE: &'static PrecomputedChunk;
 }

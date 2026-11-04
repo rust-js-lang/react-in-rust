@@ -8,7 +8,8 @@
 import type {ReactFormState, ReactNodeList} from 'shared/ReactTypes';
 import type {ComponentStackNode} from './ReactFizzComponentStack.js';
 import type {Context} from './ReactFizzLegacyContext.js';
-import type {ContextSnapshot} from './ReactFizzNewContext.js';
+import type {ContextNode} from './ReactFizzNewContext.js';
+import type {ThenableState} from './ReactFizzThenable.js';
 import type {TreeContext} from './ReactFizzTreeContext.js';
 
 interface PostponedHoles {
@@ -70,7 +71,7 @@ interface SuspenseListRow {
   pendingTasks: number;
   boundaries: SuspenseBoundary[] | null;
   hoistables: HoistableState;
-  inheritedHoistables: unknown | null;
+  inheritedHoistables: HoistableState | null;
   together: boolean;
   next: SuspenseListRow | null;
 }
@@ -88,8 +89,6 @@ export type Destination = unknown;
 
 /** A chunk encoded once, as a module loads. */
 export type PrecomputedChunk = any;
-
-// ReactFizzConfig's types, which a renderer's config defines.
 
 export type RenderState = unknown;
 
@@ -142,20 +141,20 @@ export type AbortSet = Set<Task>;
  */
 export interface Task {
   replay: ReplaySet | null;
-  node: ReactNodeList | null | undefined;
+  node?: ReactNodeList | undefined;
   childIndex: number;
   blockedBoundary: SuspenseBoundary | null;
   blockedSegment: Segment | null;
-  blockedPreamble: unknown | null;
-  hoistableState: unknown | null;
+  blockedPreamble: PreambleState | null;
+  hoistableState: HoistableState | null;
   abortSet: AbortSet;
   keyPath: any | null;
   formatContext: FormatContext;
-  context: ContextSnapshot;
+  context?: ContextNode | undefined;
   treeContext: TreeContext;
   row: SuspenseListRow | null;
   componentStack: ComponentStackNode | null;
-  thenableState: any[] | null;
+  thenableState: ThenableState | null;
   // GAP rd493: upstream sets `legacyContext` only `if
   // (!disableLegacyContext)` and `debugTask` only in DEV, to keep the
   // object at 16 fields in production; a struct's fields are always set.
@@ -173,7 +172,7 @@ export type ErrorInfo = any;
  */
 export type OnError = (
   value: unknown | null | undefined,
-  value2: any,
+  info: ErrorInfo,
 ) => string | null | undefined;
 
 /**
@@ -182,14 +181,14 @@ export type OnError = (
  */
 export type OnBrowserBailout = (
   value: unknown | null | undefined,
-  value2: any,
+  info: ErrorInfo,
 ) => void;
 
 /** A request's `onShellError` and `onFatalError`, of what was thrown. */
-export type OnFatal = (value: unknown | null | undefined) => void;
+export type OnFatal = (value?: unknown | null | undefined) => void;
 
 declare class RequestInstance {
-  destination: unknown | null;
+  destination: Destination | null;
   flushScheduled: boolean;
   resumableState: ResumableState;
   renderState: RenderState;
@@ -197,7 +196,7 @@ declare class RequestInstance {
   progressiveChunkSize: number;
   status: number;
   // What was thrown, `undefined` too: `null` until then.
-  fatalError: unknown | null | undefined;
+  fatalError?: unknown | null | undefined;
   aborted: boolean;
   nextSegmentId: number;
   allPendingTasks: number;

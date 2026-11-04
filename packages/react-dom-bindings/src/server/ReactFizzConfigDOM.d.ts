@@ -145,9 +145,9 @@ export interface ResumableState {
   // We carry the bootstrap intializers in resumable state in case we postpone in the shell
   // of a prerender. On resume we will reinitialize the bootstrap scripts if necessary.
   // If we end up flushing the bootstrap scripts we void these on the resumable state
-  bootstrapScriptContent: string | null | undefined;
-  bootstrapScripts: BootstrapScript[] | null | undefined;
-  bootstrapModules: BootstrapScript[] | null | undefined;
+  bootstrapScriptContent?: string | undefined;
+  bootstrapScripts?: BootstrapScript[] | undefined;
+  bootstrapModules?: BootstrapScript[] | undefined;
   // state for script streaming format, unused if using external runtime / data
   instructions: InstructionState;
   // postamble state
@@ -186,9 +186,9 @@ export interface ExternalRuntimeScript {
 export type Nonce = string | NonceOption;
 
 export interface PreambleState {
-  htmlChunks: any[] | null;
-  headChunks: any[] | null;
-  bodyChunks: any[] | null;
+  htmlChunks: Chunks | null;
+  headChunks: Chunks | null;
+  bodyChunks: Chunks | null;
 }
 
 /** A resource's chunks, which a queue holds by identity. */

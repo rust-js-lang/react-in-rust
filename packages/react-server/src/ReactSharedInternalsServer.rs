@@ -6,8 +6,6 @@
 use react_isomorphic::react_shared_internals_server::SharedStateServer;
 
 unsafe extern "Rust" {
-    /// The `react` package's server internals: `None` where `react` resolved
-    /// to its client entry, which has none.
     #[link_name = "react#*.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE"]
     safe static SERVER_INTERNALS: Option<&'static SharedStateServer>;
 }

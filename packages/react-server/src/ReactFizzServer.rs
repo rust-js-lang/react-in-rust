@@ -102,15 +102,11 @@ unsafe impl js::Defined for Chunk {}
 /// A chunk encoded once, as a module loads.
 pub type PrecomputedChunk = Chunk;
 
-// ReactFizzConfig's types, which a renderer's config defines.
-
 pub type RenderState = Unknown;
 pub type ResumableState = Unknown;
 pub type PreambleState = Unknown;
 pub type FormatContext = Unknown;
 pub type HoistableState = Unknown;
-
-// ReactServerStreamConfig's functions, of its fork for the host.
 
 #[cfg_attr(
     rust_js,
