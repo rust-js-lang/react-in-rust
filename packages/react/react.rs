@@ -72,4 +72,4 @@ pub mod react_transition_type;
 
 // What the package's entry, index.js, re-exports of `./src/ReactClient`, as
 // the port's other crates use it.
-pub use react_client::CHILDREN;
+pub use react_client::{CHILDREN, create_element};

@@ -6,6 +6,9 @@
 use std::panic::catch_unwind;
 
 use js::{JsError, JsObject, Unknown, object};
+// `require('react')` where it's called, the React a test loaded last.
+#[cfg_attr(rust_js, rust_js::require)]
+use react_isomorphic::create_element;
 use shared::react_types::{ReactNode, ReactNodeList};
 use webapi::{
     Document, Element, ErrorEventInit, HTMLCollection, Node, character_data, document, element,
@@ -24,20 +27,6 @@ pub enum DocumentOrElement<'a> {
 pub enum Nodes<'a> {
     Array(Vec<&'a Element>),
     Collection(&'a HTMLCollection),
-}
-
-// `require('react')` where it's called, the React a test loaded last.
-mod react {
-    use js::Unknown;
-    use shared::react_types::ReactNode;
-
-    // GAP rd684: React's `createElement` is Rust's, but a `use` of it is
-    // imported where the module loads, never read through `require`.
-    #[cfg_attr(rust_js, rust_js::link_name = "react#createElement")]
-    #[cfg_attr(rust_js, rust_js::require)]
-    pub fn create_element(r#type: &str, props: &Unknown) -> &'static ReactNode {
-        unreachable!()
-    }
 }
 
 pub async fn insert_nodes_and_execute_scripts(
@@ -213,10 +202,11 @@ pub fn get_visible_children(element: &Element) -> Option<&'static ReactNodeList>
                 if let Some(nested_children) = nested_children {
                     js::set(props, "children", nested_children);
                 }
-                children.push(react::create_element(
-                    &current.tag_name().to_lowercase(),
-                    js::unknown(props),
-                ));
+                children.push(js::unknown_of(create_element(
+                    Some(js::unknown_of(current.tag_name().to_lowercase())),
+                    Some(js::unknown(props)),
+                    &[],
+                )));
             }
         } else if current.node_type() == 3.0 {
             children.push(js::unknown_of(

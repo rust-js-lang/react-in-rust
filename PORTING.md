@@ -1477,11 +1477,13 @@ These differences from upstream's output are accepted:
   window.ErrorEvent('error', {error: x})` (rust-js ADR 0891; rd686 needed
   no binding). The 9 suites that import it pass as upstream's (444 / 0 /
   1). Differences from upstream, none changing a result:
-  - rd684: getVisibleChildren's `require('react').createElement(..)`
-    where it's called (the React a test loaded last, after
-    `jest.resetModules()`) is a hand-typed `#[rust_js::require]` binding
-    of react's `createElement`, as a `use` of react-isomorphic's imports
-    it where the module loads;
+  - rd684 (closed 2026-11-04, rust-js rd755): getVisibleChildren's
+    `require('react').createElement(..)` where it's called (the React a
+    test loaded last, after `jest.resetModules()`) is react-isomorphic's
+    own, `#[rust_js::require] use react_isomorphic::create_element;`
+    through react.rs's `pub use react_client::{CHILDREN, create_element};`,
+    upstream's line as it is; its tag and props are `js::unknown_of(..)`
+    and `js::unknown(..)`, `createElement`'s `mixed` parameters;
   - rd685: executeScript's `require(scriptSrc)` of a path it's given is
     `node::module.require(..)`, `module.require(scriptSrc)`, Jest's same
     function, as the node crate binds no CommonJS `require` itself;
