@@ -44,6 +44,7 @@ export default class ReactFlightWebpackPlugin {
   chunkName;
   clientManifestFilename;
   serverConsumerManifestFilename;
+
   constructor(options) {
     if (options == null) {
       throw new Error(
