@@ -2070,8 +2070,7 @@ function mountLazyComponent(current, workInProgress, elementType, renderLanes) {
     hint = ' Did you wrap a component in React.lazy() more than once?';
   }
 
-  const option = getComponentNameFromType(component) || undefined;
-  const loggedComponent = option != null ? option : component;
+  const loggedComponent = getComponentNameFromType(component) || component;
 
   // This message intentionally doesn't mention ForwardRef or MemoComponent
   // because the fact that it's a separate type of work is an
