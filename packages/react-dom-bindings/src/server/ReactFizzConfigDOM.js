@@ -2595,6 +2595,9 @@ function pushLink(
       if (!exists(styleResources, key)) {
         // We are going to create this resource now so it is marked as Exists
         styleResources[key] = EXISTS;
+
+        // If this is the first time we've encountered this precedence we need
+        // to create a StyleQueue
         let queue;
         if (styleQueue != null) {
           queue = styleQueue;
@@ -5902,6 +5905,9 @@ function preinitStyle(href, precedence, options) {
     if (!exists(styleResources, key)) {
       // We are going to create this resource now so it is marked as Exists
       styleResources[key] = EXISTS;
+
+      // If this is the first time we've encountered this precedence we need
+      // to create a StyleQueue
       let styleQueue$1;
       if (styleQueue != null) {
         styleQueue$1 = styleQueue;

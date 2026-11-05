@@ -772,6 +772,7 @@ export function commitHostHydratedSuspense(suspenseInstance, finishedWork) {
 export function commitHostSingletonAcquisition(finishedWork) {
   const singleton = finishedWork.stateNode;
   const props = finishedWork.memoizedProps;
+
   try {
     // This was a new mount, acquire the DOM instance and set initial properties
     if (__DEV__) {

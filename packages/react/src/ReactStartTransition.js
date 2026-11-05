@@ -45,6 +45,7 @@ export function startTransition(scope, options) {
     currentTransition._updatedFibers = new Set();
   }
   ReactSharedInternals.T = currentTransition;
+
   try {
     const returnValue = scope();
     const onStartTransitionFinish = ReactSharedInternals.S;

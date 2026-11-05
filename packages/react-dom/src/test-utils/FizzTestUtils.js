@@ -88,6 +88,7 @@ async function executeScript(script) {
         'You must set the current document to the global document to use script src in tests',
       );
     }
+
     try {
       // $FlowFixMe[unsupported-syntax]
       // GAP rd685: no binding of CommonJS's own `require(id)`; Node's

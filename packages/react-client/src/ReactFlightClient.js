@@ -188,6 +188,7 @@ Object.defineProperty(ReactPromise.prototype, 'then', {
         wrapperPromise.then(onFulfilled);
       }
     }
+    // The status might have changed after initialization.
     let reason;
     if (chunk.status === 'fulfilled') {
       const value = chunk.value;
@@ -1096,9 +1097,10 @@ function initializeModuleChunk(chunk) {
     initializedChunk.reason = null;
   } catch (thrown$1) {
     const erroredChunk = chunk;
-    erroredChunk.status = 'rejected';
     const error = $unwound(thrown$1);
-    erroredChunk.reason = thrown(error);
+    const reason = thrown(error);
+    erroredChunk.status = 'rejected';
+    erroredChunk.reason = reason;
   }
 }
 

@@ -897,8 +897,6 @@ pub struct NestedArrayContext {
 fn bump_array_count(array_context: &NestedArrayContext, slots: f64, response: &Response) {
     let new_count = array_context.count.get() + slots;
     array_context.count.set(new_count);
-    // The limit is what the caller gave, compared as JS compares it: of
-    // `null`, `newCount > null`, which is `newCount > 0`.
     let exceeded = match response._array_size_limit {
         Some(array_size_limit) => js::unknown(&new_count) > array_size_limit,
         None => new_count > 0.0,
@@ -1343,8 +1341,6 @@ fn get_outlined_model(
     };
     if let Some((value, array_root_or_controller)) = initialized {
         let mut value = value;
-        // GAP rd484: upstream tests `'error' in arrayRootOrController`; the
-        // controller is told by its `error`'s kind.
         let mut array_root = match array_root_or_controller {
             Some(InitializedReason::Controller(_)) => {
                 panic!(

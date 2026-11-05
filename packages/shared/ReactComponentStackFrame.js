@@ -98,9 +98,9 @@ function DetermineComponentFrameRoot(fn, construct) {
         typeof Reflect !== 'undefined' &&
         typeof Reflect.construct !== 'undefined'
       ) {
+        // We construct a different control for this case to include any extra
+        // frames added by the construct call.
         try {
-          // We construct a different control for this case to include any extra
-          // frames added by the construct call.
           Reflect.construct(Fake, []);
         } catch (x) {
           control = x;

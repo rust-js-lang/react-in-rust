@@ -619,9 +619,7 @@ function initializeModelChunk(chunk) {
     chunk.status = 'blocked';
     chunk.value = null;
     chunk.reason = null;
-    // Invoke any listeners added while resolving this model. I.e. cyclic
-    // references. This may or may not fully resolve the model depending on
-    // if they were blocked.
+
     try {
       const rawModel = JSON.parse(resolvedModel);
 
@@ -639,6 +637,10 @@ function initializeModelChunk(chunk) {
         rootReference,
         arrayRoot,
       );
+
+      // Invoke any listeners added while resolving this model. I.e. cyclic
+      // references. This may or may not fully resolve the model depending on
+      // if they were blocked.
       let resolveListeners;
       if (chunk.status === 'blocked') {
         const old = chunk.value;

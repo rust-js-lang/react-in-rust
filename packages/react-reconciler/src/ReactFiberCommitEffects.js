@@ -556,10 +556,11 @@ export function commitClassCallbacks(finishedWork) {
         );
       }
     }
+
+    // We could update instance props and state here,
+    // but instead we rely on them being set during last render.
+    // TODO: revisit this when we implement resuming.
     try {
-      // We could update instance props and state here,
-      // but instead we rely on them being set during last render.
-      // TODO: revisit this when we implement resuming.
       if (__DEV__) {
         runWithFiberInDEV(finishedWork, commitCallbacks, updateQueue, instance);
       } else {

@@ -3061,7 +3061,6 @@ function replayElement(
   // We're replaying. Find the path to follow.
   const replayNodes = replay.nodes;
   let i = 0;
-  // Matched a replayable path.
   while (i < $borrow(replayNodes).length) {
     // Flow doesn't support refinement on tuples so we do it manually here.
     const node = cloneReplayNode($borrow($borrow(replayNodes)[i]));
@@ -3151,6 +3150,7 @@ function replayElement(
           }>. The tree doesn't match so React will fallback to client rendering.`,
         );
       }
+      // Matched a replayable path.
       let fallbackNodes;
       let fallbackSlots;
       if (fallback == null) {
@@ -6524,6 +6524,7 @@ export function startFlowing(request, destination) {
     return;
   }
   request.destination = destination;
+
   try {
     flushCompletedQueues(request, destination);
   } catch (thrown) {

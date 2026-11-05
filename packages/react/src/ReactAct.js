@@ -137,8 +137,8 @@ export function act(callback) {
             returnValue => {
               popActScope(prevActQueue, prevActScopeDepth);
               if (prevActScopeDepth === 0) {
+                // We're exiting the outermost `act` scope. Flush the queue.
                 try {
-                  // We're exiting the outermost `act` scope. Flush the queue.
                   flushActQueue(queue);
                   queueMacrotask(() =>
                     // Recursively flush tasks scheduled by a microtask.

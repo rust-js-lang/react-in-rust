@@ -2037,8 +2037,8 @@ function runActionStateAction(actionQueue, node) {
       }
     }
   } else {
+    // The original dispatch was not part of a transition.
     try {
-      // The original dispatch was not part of a transition.
       const returnValue = action(prevState, payload);
       handleActionReturnValue(actionQueue, node, returnValue);
     } catch (error) {
@@ -2825,6 +2825,7 @@ function startTransition(
   // share the same lane.
   ReactSharedInternals.T = currentTransition;
   dispatchOptimisticSetState(fiber, false, queue, pendingState);
+
   try {
     const returnValue = callback();
     const onStartTransitionFinish = ReactSharedInternals.S;
