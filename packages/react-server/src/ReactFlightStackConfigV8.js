@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$cleanup} from '@rust-js/runtime';
+
 let framesToSkip = 0;
 let collectedStackTrace = null;
 
@@ -146,13 +148,21 @@ export function parseStackTracePrivate(error, skipFrames) {
   framesToSkip = skipFrames;
   const previousPrepare = Error.prepareStackTrace;
   Error.prepareStackTrace = collectStackTracePrivate;
+  let tmp;
   try {
-    if (error.stack !== '') {
-      return null;
-    }
-  } finally {
-    Error.prepareStackTrace = previousPrepare;
+    tmp = error.stack !== '';
+  } catch (error) {
+    $cleanup(() => {
+      Error.prepareStackTrace = previousPrepare;
+    });
+    throw error;
   }
+  if (tmp) {
+    const result = null;
+    Error.prepareStackTrace = previousPrepare;
+    return result;
+  }
+  Error.prepareStackTrace = previousPrepare;
   return collectedStackTrace;
 }
 
@@ -175,9 +185,13 @@ export function parseStackTrace(error, skipFrames) {
   try {
     // eslint-disable-next-line react-internal/safe-string-coercion
     stack = String(error.stack);
-  } finally {
-    Error.prepareStackTrace = previousPrepare;
+  } catch (error) {
+    $cleanup(() => {
+      Error.prepareStackTrace = previousPrepare;
+    });
+    throw error;
   }
+  Error.prepareStackTrace = previousPrepare;
 
   const result = collectedStackTrace;
   if (result != null) {

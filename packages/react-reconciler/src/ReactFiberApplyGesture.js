@@ -92,7 +92,7 @@ import {
 import {trackAnimatingTask} from './ReactProfilerTimer.js';
 
 import {scheduleGestureTransitionEvent} from './ReactFiberWorkLoop.js';
-import {$index, $unwrap} from '@rust-js/runtime';
+import {$cleanup, $index, $unwrap} from '@rust-js/runtime';
 
 // Used during the apply phase to track whether a parent ViewTransition component
 // might have been affected by any mutations / relayouts below.
@@ -813,14 +813,20 @@ function insertDestinationClonesOfFiber(
             const instance = finishedWork.stateNode;
             const type = finishedWork.type;
             const prev = pushMutationContext();
-
             try {
               // Since we currently don't have a separate diffing algorithm for
               // individual properties, the Update flag can be a false positive.
               // We have to apply the new props first o detect any mutations and
               // then revert them.
               commitUpdate(instance, type, oldProps, newProps, finishedWork);
-              if (viewTransitionMutationContext) {
+            } catch (error) {
+              $cleanup(() => {
+                popMutationContext(prev);
+              });
+              throw error;
+            }
+            if (viewTransitionMutationContext) {
+              try {
                 console.error(
                   'startGestureTransition() caused something to mutate <%s>. ' +
                     'This is not possible in the current implementation. ' +
@@ -829,12 +835,23 @@ function insertDestinationClonesOfFiber(
                   finishedWork.type,
                   finishedWork.type,
                 );
+              } catch (error) {
+                $cleanup(() => {
+                  popMutationContext(prev);
+                });
+                throw error;
               }
+            }
+            try {
               // Revert
               commitUpdate(instance, type, newProps, oldProps, finishedWork);
-            } finally {
-              popMutationContext(prev);
+            } catch (error) {
+              $cleanup(() => {
+                popMutationContext(prev);
+              });
+              throw error;
             }
+            popMutationContext(prev);
           }
         }
         return;

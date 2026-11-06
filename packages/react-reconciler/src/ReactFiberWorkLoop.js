@@ -403,7 +403,7 @@ import {
   stopCommittedGesture,
 } from './ReactFiberGestureScheduler.js';
 import {claimQueuedTransitionTypes} from './ReactFiberTransitionTypes.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$cleanup, $unwrap} from '@rust-js/runtime';
 
 const PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map;
 
@@ -1768,12 +1768,35 @@ export function deferredUpdates(f) {
   const previousPriority = getCurrentUpdatePriority();
   try {
     setCurrentUpdatePriority(DefaultEventPriority);
-    ReactSharedInternals.T = null;
-    return f();
-  } finally {
-    setCurrentUpdatePriority(previousPriority);
-    ReactSharedInternals.T = prevTransition;
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+    });
+    throw error;
   }
+  try {
+    ReactSharedInternals.T = null;
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+    });
+    throw error;
+  }
+  let result;
+  try {
+    result = f();
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+    });
+    throw error;
+  }
+  setCurrentUpdatePriority(previousPriority);
+  ReactSharedInternals.T = prevTransition;
+  return result;
 }
 
 export function batchedUpdates(f, a) {
@@ -1787,18 +1810,29 @@ export function batchedUpdates(f, a) {
     executionContext |= BatchedContext;
     try {
       result = f(a);
-    } finally {
-      executionContext = prevExecutionContext;
-      // If there were legacy sync updates, flush them at the end of the outer
-      // most batchedUpdates-like method.
-      if (
-        executionContext === NoContext &&
-        // Treat `act` as if it's inside `batchedUpdates`, even in legacy mode.
-        !(__DEV__ && ReactSharedInternals.isBatchingLegacy)
-      ) {
-        resetRenderTimer();
-        flushSyncWorkOnLegacyRootsOnly();
-      }
+    } catch (error) {
+      $cleanup(() => {
+        executionContext = prevExecutionContext;
+        // If there were legacy sync updates, flush them at the end of the outer
+        // most batchedUpdates-like method.
+        if (
+          executionContext === NoContext &&
+          // Treat `act` as if it's inside `batchedUpdates`, even in legacy mode.
+          !(__DEV__ && ReactSharedInternals.isBatchingLegacy)
+        ) {
+          resetRenderTimer();
+          flushSyncWorkOnLegacyRootsOnly();
+        }
+      });
+      throw error;
+    }
+    executionContext = prevExecutionContext;
+    if (
+      executionContext === NoContext &&
+      !(__DEV__ && ReactSharedInternals.isBatchingLegacy)
+    ) {
+      resetRenderTimer();
+      flushSyncWorkOnLegacyRootsOnly();
     }
   }
   return result;
@@ -1809,15 +1843,47 @@ export function discreteUpdates(f, a, b, c, d) {
   const previousPriority = getCurrentUpdatePriority();
   try {
     setCurrentUpdatePriority(DiscreteEventPriority);
-    ReactSharedInternals.T = null;
-    return f(a, b, c, d);
-  } finally {
-    setCurrentUpdatePriority(previousPriority);
-    ReactSharedInternals.T = prevTransition;
-    if (executionContext === NoContext) {
-      resetRenderTimer();
-    }
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+      if (executionContext === NoContext) {
+        resetRenderTimer();
+      }
+    });
+    throw error;
   }
+  try {
+    ReactSharedInternals.T = null;
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+      if (executionContext === NoContext) {
+        resetRenderTimer();
+      }
+    });
+    throw error;
+  }
+  let result;
+  try {
+    result = f(a, b, c, d);
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+      if (executionContext === NoContext) {
+        resetRenderTimer();
+      }
+    });
+    throw error;
+  }
+  setCurrentUpdatePriority(previousPriority);
+  ReactSharedInternals.T = prevTransition;
+  if (executionContext === NoContext) {
+    resetRenderTimer();
+  }
+  return result;
 }
 
 export function flushSyncFromReconciler(f) {
@@ -1837,23 +1903,57 @@ export function flushSyncFromReconciler(f) {
 
   const prevTransition = ReactSharedInternals.T;
   const previousPriority = getCurrentUpdatePriority();
-
   try {
     setCurrentUpdatePriority(DiscreteEventPriority);
-    ReactSharedInternals.T = null;
-    return f != null ? f() : undefined;
-  } finally {
-    setCurrentUpdatePriority(previousPriority);
-    ReactSharedInternals.T = prevTransition;
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
 
-    executionContext = prevExecutionContext;
-    // Flush the immediate callbacks that were scheduled during this batch.
-    // Note that this will happen even if batchedUpdates is higher up
-    // the stack.
-    if ((executionContext & (RenderContext | CommitContext)) === NoContext) {
-      flushSyncWorkOnAllRoots();
-    }
+      executionContext = prevExecutionContext;
+      // Flush the immediate callbacks that were scheduled during this batch.
+      // Note that this will happen even if batchedUpdates is higher up
+      // the stack.
+      if ((executionContext & (RenderContext | CommitContext)) === NoContext) {
+        flushSyncWorkOnAllRoots();
+      }
+    });
+    throw error;
   }
+  try {
+    ReactSharedInternals.T = null;
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+      executionContext = prevExecutionContext;
+      if ((executionContext & (RenderContext | CommitContext)) === NoContext) {
+        flushSyncWorkOnAllRoots();
+      }
+    });
+    throw error;
+  }
+  let result;
+  try {
+    result = f != null ? f() : undefined;
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+      executionContext = prevExecutionContext;
+      if ((executionContext & (RenderContext | CommitContext)) === NoContext) {
+        flushSyncWorkOnAllRoots();
+      }
+    });
+    throw error;
+  }
+  setCurrentUpdatePriority(previousPriority);
+  ReactSharedInternals.T = prevTransition;
+  executionContext = prevExecutionContext;
+  if ((executionContext & (RenderContext | CommitContext)) === NoContext) {
+    flushSyncWorkOnAllRoots();
+  }
+  return result;
 }
 
 // If called outside of a render or commit will flush all sync work on all roots
@@ -3755,17 +3855,23 @@ function commitRoot(
     setCurrentUpdatePriority(DiscreteEventPriority);
     const prevExecutionContext = executionContext;
     executionContext |= CommitContext;
+    // Reset the priority to the previous non-sync value.
     try {
       // The first phase a "before mutation" phase. We use this phase to read the
       // state of the host tree right before we mutate it. This is where
       // getSnapshotBeforeUpdate is called.
       commitBeforeMutationEffects(root, finishedWork, lanes);
-    } finally {
-      // Reset the priority to the previous non-sync value.
-      executionContext = prevExecutionContext;
-      setCurrentUpdatePriority(previousPriority);
-      ReactSharedInternals.T = prevTransition;
+    } catch (error) {
+      $cleanup(() => {
+        executionContext = prevExecutionContext;
+        setCurrentUpdatePriority(previousPriority);
+        ReactSharedInternals.T = prevTransition;
+      });
+      throw error;
     }
+    executionContext = prevExecutionContext;
+    setCurrentUpdatePriority(previousPriority);
+    ReactSharedInternals.T = prevTransition;
   }
 
   // Stop any gestures that were committed.
@@ -3912,19 +4018,43 @@ function flushMutationEffects() {
     setCurrentUpdatePriority(DiscreteEventPriority);
     const prevExecutionContext = executionContext;
     executionContext |= CommitContext;
+
     try {
       // The next phase is the mutation phase, where we mutate the host tree.
       commitMutationEffects(root, finishedWork, lanes);
-
-      if (enableCreateEventHandleAPI && shouldFireAfterActiveInstanceBlur) {
-        afterActiveInstanceBlur();
-      }
-      resetAfterCommit(root.containerInfo);
-    } finally {
-      executionContext = prevExecutionContext;
-      setCurrentUpdatePriority(previousPriority);
-      ReactSharedInternals.T = prevTransition;
+    } catch (error) {
+      $cleanup(() => {
+        executionContext = prevExecutionContext;
+        setCurrentUpdatePriority(previousPriority);
+        ReactSharedInternals.T = prevTransition;
+      });
+      throw error;
     }
+    if (enableCreateEventHandleAPI && shouldFireAfterActiveInstanceBlur) {
+      try {
+        afterActiveInstanceBlur();
+      } catch (error) {
+        $cleanup(() => {
+          executionContext = prevExecutionContext;
+          setCurrentUpdatePriority(previousPriority);
+          ReactSharedInternals.T = prevTransition;
+        });
+        throw error;
+      }
+    }
+    try {
+      resetAfterCommit(root.containerInfo);
+    } catch (error) {
+      $cleanup(() => {
+        executionContext = prevExecutionContext;
+        setCurrentUpdatePriority(previousPriority);
+        ReactSharedInternals.T = prevTransition;
+      });
+      throw error;
+    }
+    executionContext = prevExecutionContext;
+    setCurrentUpdatePriority(previousPriority);
+    ReactSharedInternals.T = prevTransition;
   }
 
   // The work-in-progress tree is now the current tree. This must come after
@@ -3977,12 +4107,20 @@ function flushLayoutEffects() {
       try {
         cleanUpIndicator();
       } catch (x) {
-        reportGlobalError(x);
-      } finally {
-        executionContext = prevExecutionContext;
-        setCurrentUpdatePriority(previousPriority);
-        ReactSharedInternals.T = prevTransition;
+        try {
+          reportGlobalError(x);
+        } catch (error) {
+          $cleanup(() => {
+            executionContext = prevExecutionContext;
+            setCurrentUpdatePriority(previousPriority);
+            ReactSharedInternals.T = prevTransition;
+          });
+          throw error;
+        }
       }
+      executionContext = prevExecutionContext;
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
     }
   }
 
@@ -3997,22 +4135,46 @@ function flushLayoutEffects() {
     setCurrentUpdatePriority(DiscreteEventPriority);
     const prevExecutionContext = executionContext;
     executionContext |= CommitContext;
-    try {
-      // The next phase is the layout phase, where we call effects that read
-      // the host tree after it's been mutated. The idiomatic use case for this is
-      // layout, but class component lifecycles also fire here for legacy reasons.
-      if (enableSchedulingProfiler) {
+    // The next phase is the layout phase, where we call effects that read
+    // the host tree after it's been mutated. The idiomatic use case for this is
+    // layout, but class component lifecycles also fire here for legacy reasons.
+    if (enableSchedulingProfiler) {
+      try {
         markLayoutEffectsStarted(lanes);
+      } catch (error) {
+        $cleanup(() => {
+          executionContext = prevExecutionContext;
+          setCurrentUpdatePriority(previousPriority);
+          ReactSharedInternals.T = prevTransition;
+        });
+        throw error;
       }
-      commitLayoutEffects(finishedWork, root, lanes);
-      if (enableSchedulingProfiler) {
-        markLayoutEffectsStopped();
-      }
-    } finally {
-      executionContext = prevExecutionContext;
-      setCurrentUpdatePriority(previousPriority);
-      ReactSharedInternals.T = prevTransition;
     }
+    try {
+      commitLayoutEffects(finishedWork, root, lanes);
+    } catch (error) {
+      $cleanup(() => {
+        executionContext = prevExecutionContext;
+        setCurrentUpdatePriority(previousPriority);
+        ReactSharedInternals.T = prevTransition;
+      });
+      throw error;
+    }
+    if (enableSchedulingProfiler) {
+      try {
+        markLayoutEffectsStopped();
+      } catch (error) {
+        $cleanup(() => {
+          executionContext = prevExecutionContext;
+          setCurrentUpdatePriority(previousPriority);
+          ReactSharedInternals.T = prevTransition;
+        });
+        throw error;
+      }
+    }
+    executionContext = prevExecutionContext;
+    setCurrentUpdatePriority(previousPriority);
+    ReactSharedInternals.T = prevTransition;
   }
 
   const completedRenderEndTime = pendingEffectsRenderEndTime;
@@ -4142,12 +4304,20 @@ function flushSpawnedWork() {
     // There were errors during this render, but recovered from them without
     // needing to surface it to the UI. We log them here.
     const onRecoverableError = root.onRecoverableError;
-    let i = 0;
-    try {
-      while (i < recoverableErrors.length) {
-        const recoverableError = recoverableErrors[i];
-        const errorInfo = makeErrorInfo(recoverableError.stack);
-        if (__DEV__) {
+    for (let i = 0; i < recoverableErrors.length; i++) {
+      const recoverableError = recoverableErrors[i];
+      let errorInfo;
+      try {
+        errorInfo = makeErrorInfo(recoverableError.stack);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.T = prevTransition;
+          setCurrentUpdatePriority(previousUpdateLanePriority);
+        });
+        throw error;
+      }
+      if (__DEV__) {
+        try {
           runWithFiberInDEV(
             recoverableError.source,
             (value, errorInfo) => {
@@ -4156,15 +4326,27 @@ function flushSpawnedWork() {
             recoverableError.value,
             errorInfo,
           );
-        } else {
-          onRecoverableError(recoverableError.value, errorInfo);
+        } catch (error) {
+          $cleanup(() => {
+            ReactSharedInternals.T = prevTransition;
+            setCurrentUpdatePriority(previousUpdateLanePriority);
+          });
+          throw error;
         }
-        i++;
+      } else {
+        try {
+          onRecoverableError(recoverableError.value, errorInfo);
+        } catch (error) {
+          $cleanup(() => {
+            ReactSharedInternals.T = prevTransition;
+            setCurrentUpdatePriority(previousUpdateLanePriority);
+          });
+          throw error;
+        }
       }
-    } finally {
-      ReactSharedInternals.T = prevTransition;
-      setCurrentUpdatePriority(previousUpdateLanePriority);
     }
+    ReactSharedInternals.T = prevTransition;
+    setCurrentUpdatePriority(previousUpdateLanePriority);
   }
 
   if (enableViewTransition) {
@@ -4345,11 +4527,17 @@ function applyGestureOnRoot(
   executionContext |= CommitContext;
   try {
     insertDestinationClones(root, finishedWork);
-  } finally {
-    executionContext = prevExecutionContext;
-    setCurrentUpdatePriority(previousPriority);
-    ReactSharedInternals.T = prevTransition;
+  } catch (error) {
+    $cleanup(() => {
+      executionContext = prevExecutionContext;
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+    });
+    throw error;
   }
+  executionContext = prevExecutionContext;
+  setCurrentUpdatePriority(previousPriority);
+  ReactSharedInternals.T = prevTransition;
   pendingTransitionTypes = finishedGesture.types;
   pendingEffectsStatus = PENDING_GESTURE_MUTATION_PHASE;
 
@@ -4391,11 +4579,17 @@ function flushGestureMutations() {
   executionContext |= CommitContext;
   try {
     applyDepartureTransitions(root, finishedWork);
-  } finally {
-    executionContext = prevExecutionContext;
-    setCurrentUpdatePriority(previousPriority);
-    ReactSharedInternals.T = prevTransition;
+  } catch (error) {
+    $cleanup(() => {
+      executionContext = prevExecutionContext;
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+    });
+    throw error;
   }
+  executionContext = prevExecutionContext;
+  setCurrentUpdatePriority(previousPriority);
+  ReactSharedInternals.T = prevTransition;
 
   if (enableProfilerTimer && enableComponentPerformanceTrack) {
     recordCommitEndTime();
@@ -4456,11 +4650,17 @@ function flushGestureAnimations() {
   executionContext |= CommitContext;
   try {
     startGestureAnimations(root, finishedWork);
-  } finally {
-    executionContext = prevExecutionContext;
-    setCurrentUpdatePriority(previousPriority);
-    ReactSharedInternals.T = prevTransition;
+  } catch (error) {
+    $cleanup(() => {
+      executionContext = prevExecutionContext;
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+    });
+    throw error;
   }
+  executionContext = prevExecutionContext;
+  setCurrentUpdatePriority(previousPriority);
+  ReactSharedInternals.T = prevTransition;
 
   if (enableViewTransition) {
     // We should now be after the startGestureTransition's .ready call which is late enough
@@ -4579,20 +4779,45 @@ function flushPassiveEffects() {
   const priority = lowerEventPriority(DefaultEventPriority, renderPriority);
   const prevTransition = ReactSharedInternals.T;
   const previousPriority = getCurrentUpdatePriority();
-
   try {
     setCurrentUpdatePriority(priority);
-    ReactSharedInternals.T = null;
-    return flushPassiveEffectsImpl();
-  } finally {
-    setCurrentUpdatePriority(previousPriority);
-    ReactSharedInternals.T = prevTransition;
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
 
-    // Once passive effects have run for the tree - giving components a
-    // chance to retain cache instances they use - release the pooled
-    // cache at the root (if there is one)
-    releaseRootPooledCache(root, remainingLanes);
+      // Once passive effects have run for the tree - giving components a
+      // chance to retain cache instances they use - release the pooled
+      // cache at the root (if there is one)
+      releaseRootPooledCache(root, remainingLanes);
+    });
+    throw error;
   }
+  try {
+    ReactSharedInternals.T = null;
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+      releaseRootPooledCache(root, remainingLanes);
+    });
+    throw error;
+  }
+  let result;
+  try {
+    result = flushPassiveEffectsImpl();
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+      releaseRootPooledCache(root, remainingLanes);
+    });
+    throw error;
+  }
+  setCurrentUpdatePriority(previousPriority);
+  ReactSharedInternals.T = prevTransition;
+  releaseRootPooledCache(root, remainingLanes);
+  return result;
 }
 
 function flushPassiveEffectsImpl() {
@@ -5164,13 +5389,38 @@ function doubleInvokeEffectsOnFiber(root, fiber) {
   setIsStrictModeForDevtools(true);
   try {
     disappearLayoutEffectsForDEVValidation(fiber);
-    disconnectPassiveEffect(fiber);
-    const alternate = fiber.alternate;
-    reappearLayoutEffectsForDEVValidation(root, alternate, fiber);
-    reconnectPassiveEffects(root, fiber, NoLanes, null, false, 0);
-  } finally {
-    setIsStrictModeForDevtools(false);
+  } catch (error) {
+    $cleanup(() => {
+      setIsStrictModeForDevtools(false);
+    });
+    throw error;
   }
+  try {
+    disconnectPassiveEffect(fiber);
+  } catch (error) {
+    $cleanup(() => {
+      setIsStrictModeForDevtools(false);
+    });
+    throw error;
+  }
+  const alternate = fiber.alternate;
+  try {
+    reappearLayoutEffectsForDEVValidation(root, alternate, fiber);
+  } catch (error) {
+    $cleanup(() => {
+      setIsStrictModeForDevtools(false);
+    });
+    throw error;
+  }
+  try {
+    reconnectPassiveEffects(root, fiber, NoLanes, null, false, 0);
+  } catch (error) {
+    $cleanup(() => {
+      setIsStrictModeForDevtools(false);
+    });
+    throw error;
+  }
+  setIsStrictModeForDevtools(false);
 }
 
 function doubleInvokeEffectsInDEVIfNecessary(

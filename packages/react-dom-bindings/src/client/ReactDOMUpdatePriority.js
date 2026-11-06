@@ -12,6 +12,7 @@ import {
 } from 'react-reconciler/src/ReactEventPriorities';
 
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
+import {$cleanup} from '@rust-js/runtime';
 
 export function setCurrentUpdatePriority(
   newPriority,
@@ -44,9 +45,22 @@ export function runWithPriority(priority, fn) {
   const previousPriority = getCurrentUpdatePriority();
   try {
     setCurrentUpdatePriority(priority);
-    return fn();
-  } finally {
-    setCurrentUpdatePriority(previousPriority);
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+    });
+    throw error;
   }
+  let result;
+  try {
+    result = fn();
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+    });
+    throw error;
+  }
+  setCurrentUpdatePriority(previousPriority);
+  return result;
 }
 //# sourceMappingURL=ReactDOMUpdatePriority.js.map

@@ -67,7 +67,10 @@ import {
   $borrow,
   $borrowMut,
   $cellReplace,
+  $cleanup,
   $fieldCell,
+  $iter,
+  $next,
   $unborrow,
 } from '@rust-js/runtime';
 
@@ -2030,11 +2033,12 @@ function createChildReconciler(shouldTrackSideEffects) {
     const prevDebugInfo = currentDebugInfo;
     currentDebugInfo = null;
     const restore = prevDebugInfo;
+    let result;
     try {
       // This indirection only exists so we can reset `thenableState` at the end.
       // It should get inlined by Closure.
       thenableIndexCounter = 0;
-      const firstChildFiber = reconcileChildFibersImpl(
+      result = reconcileChildFibersImpl(
         shouldTrackSideEffects,
         returnFiber,
         currentFirstChild,
@@ -2044,30 +2048,74 @@ function createChildReconciler(shouldTrackSideEffects) {
       thenableState = null;
       // Don't bother to reset `thenableIndexCounter` to 0 because it always gets
       // set at the beginning.
-      return firstChildFiber;
+      currentDebugInfo = restore;
+      return result;
     } catch (x) {
       const thrown = x;
+      if (thrown === SuspenseException) {
+        try {
+          // Suspense exceptions need to read the current suspended state before
+          // yielding and replay it using the same sequence so this trick doesn't
+          // work here.
+          // Suspending in legacy mode actually mounts so if we let the child
+          // mount then we delete its state in an update.
+          throw x;
+        } catch (error) {
+          $cleanup(() => {
+            currentDebugInfo = restore;
+          });
+          throw error;
+        }
+      }
+      if (thrown === SuspenseActionException) {
+        try {
+          throw x;
+        } catch (error) {
+          $cleanup(() => {
+            currentDebugInfo = restore;
+          });
+          throw error;
+        }
+      }
       if (
-        thrown === SuspenseException ||
-        thrown === SuspenseActionException ||
-        (!disableLegacyMode &&
-          (returnFiber.mode & ConcurrentMode) === NoMode &&
-          typeof thrown === 'object' &&
-          thrown != null &&
-          typeof thrown.then === 'function')
+        !disableLegacyMode &&
+        (returnFiber.mode & ConcurrentMode) === NoMode &&
+        typeof thrown === 'object' &&
+        thrown != null
       ) {
-        // Suspense exceptions need to read the current suspended state before
-        // yielding and replay it using the same sequence so this trick doesn't
-        // work here.
-        // Suspending in legacy mode actually mounts so if we let the child
-        // mount then we delete its state in an update.
-        throw x;
+        let tmp;
+        try {
+          tmp = typeof thrown.then === 'function';
+        } catch (error) {
+          $cleanup(() => {
+            currentDebugInfo = restore;
+          });
+          throw error;
+        }
+        if (tmp) {
+          try {
+            throw x;
+          } catch (error) {
+            $cleanup(() => {
+              currentDebugInfo = restore;
+            });
+            throw error;
+          }
+        }
       }
       // Something errored during reconciliation but it's conceptually a child that
       // errored and not the current component itself so we create a virtual child
       // that throws in its begin phase. That way the current component can handle
       // the error or suspending if needed.
-      const throwFiber = createFiberFromThrow(thrown, returnFiber.mode, lanes);
+      let throwFiber;
+      try {
+        throwFiber = createFiberFromThrow(thrown, returnFiber.mode, lanes);
+      } catch (error) {
+        $cleanup(() => {
+          currentDebugInfo = restore;
+        });
+        throw error;
+      }
       throwFiber.return = returnFiber;
       if (__DEV__) {
         const debugInfo = currentDebugInfo;
@@ -2083,19 +2131,55 @@ function createChildReconciler(shouldTrackSideEffects) {
         throwFiber._debugOwner = returnFiber._debugOwner;
         throwFiber._debugTask = returnFiber._debugTask;
         if (debugInfo != null) {
-          for (let i = debugInfo.length - 1; i >= 0; i--) {
-            const info = debugInfo[i];
-            if (typeof info.stack === 'string') {
+          let iter;
+          try {
+            iter = $iter(debugInfo.toReversed());
+          } catch (error) {
+            $cleanup(() => {
+              currentDebugInfo = restore;
+            });
+            throw error;
+          }
+          while (true) {
+            let info;
+            try {
+              info = $next(iter);
+            } catch (error) {
+              $cleanup(() => {
+                currentDebugInfo = restore;
+              });
+              throw error;
+            }
+            if (info == null) {
+              break;
+            }
+            let tmp;
+            try {
+              tmp = typeof info.stack === 'string';
+            } catch (error) {
+              $cleanup(() => {
+                currentDebugInfo = restore;
+              });
+              throw error;
+            }
+            if (tmp) {
               throwFiber._debugOwner = info;
-              throwFiber._debugTask = info.debugTask ?? null;
+              try {
+                throwFiber._debugTask = info.debugTask ?? null;
+              } catch (error) {
+                $cleanup(() => {
+                  currentDebugInfo = restore;
+                });
+                throw error;
+              }
               break;
             }
           }
         }
       }
-      return throwFiber;
-    } finally {
+      result = throwFiber;
       currentDebugInfo = restore;
+      return result;
     }
   };
 }

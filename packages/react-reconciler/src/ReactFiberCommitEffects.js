@@ -78,7 +78,7 @@ import {
 } from './ReactFiberCallUserSpace.js';
 
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$cleanup, $unwrap} from '@rust-js/runtime';
 
 function shouldProfile(current) {
   return (
@@ -805,10 +805,21 @@ function commitAttachRef(finishedWork) {
       if (shouldProfile(finishedWork)) {
         try {
           startEffectTimer();
-          finishedWork.refCleanup = ref(instanceToUse);
-        } finally {
-          recordEffectDuration(finishedWork);
+        } catch (error) {
+          $cleanup(() => {
+            recordEffectDuration(finishedWork);
+          });
+          throw error;
         }
+        try {
+          finishedWork.refCleanup = ref(instanceToUse);
+        } catch (error) {
+          $cleanup(() => {
+            recordEffectDuration(finishedWork);
+          });
+          throw error;
+        }
+        recordEffectDuration(finishedWork);
       } else {
         finishedWork.refCleanup = ref(instanceToUse);
       }
@@ -856,14 +867,33 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
         if (shouldProfile(current)) {
           try {
             startEffectTimer();
-            if (__DEV__) {
+          } catch (error) {
+            $cleanup(() => {
+              recordEffectDuration(current);
+            });
+            throw error;
+          }
+          if (__DEV__) {
+            try {
               runWithFiberInDEV(current, () => {
                 refCleanup();
               });
-            } else {
-              refCleanup();
+            } catch (error) {
+              $cleanup(() => {
+                recordEffectDuration(current);
+              });
+              throw error;
             }
-          } finally {
+            recordEffectDuration(current);
+          } else {
+            try {
+              refCleanup();
+            } catch (error) {
+              $cleanup(() => {
+                recordEffectDuration(current);
+              });
+              throw error;
+            }
             recordEffectDuration(current);
           }
         } else if (__DEV__) {
@@ -874,26 +904,55 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
           refCleanup();
         }
       } catch (error) {
-        captureCommitPhaseError(current, nearestMountedAncestor, error);
-      } finally {
-        // `refCleanup` has been called. Nullify all references to it to prevent double invocation.
-        current.refCleanup = null;
-        const finishedWork = current.alternate;
-        if (finishedWork != null) {
-          finishedWork.refCleanup = null;
+        try {
+          captureCommitPhaseError(current, nearestMountedAncestor, error);
+        } catch (error) {
+          $cleanup(() => {
+            // `refCleanup` has been called. Nullify all references to it to prevent double invocation.
+            current.refCleanup = null;
+            const finishedWork = current.alternate;
+            if (finishedWork != null) {
+              finishedWork.refCleanup = null;
+            }
+          });
+          throw error;
         }
+      }
+      current.refCleanup = null;
+      const finishedWork = current.alternate;
+      if (finishedWork != null) {
+        finishedWork.refCleanup = null;
       }
     } else if (typeof ref === 'function') {
       try {
         if (shouldProfile(current)) {
           try {
             startEffectTimer();
-            if (__DEV__) {
+          } catch (error) {
+            $cleanup(() => {
+              recordEffectDuration(current);
+            });
+            throw error;
+          }
+          if (__DEV__) {
+            try {
               runWithFiberInDEV(current, instance => ref(instance), null);
-            } else {
-              ref(null);
+            } catch (error) {
+              $cleanup(() => {
+                recordEffectDuration(current);
+              });
+              throw error;
             }
-          } finally {
+            recordEffectDuration(current);
+          } else {
+            try {
+              ref(null);
+            } catch (error) {
+              $cleanup(() => {
+                recordEffectDuration(current);
+              });
+              throw error;
+            }
             recordEffectDuration(current);
           }
         } else if (__DEV__) {

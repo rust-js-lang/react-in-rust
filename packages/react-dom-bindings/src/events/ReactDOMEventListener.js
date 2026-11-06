@@ -55,6 +55,7 @@ import {
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
+import {$cleanup} from '@rust-js/runtime';
 
 // TODO: can we stop exporting these?
 let _enabled = true;
@@ -121,11 +122,24 @@ function dispatchDiscreteEvent(
   const previousPriority = getCurrentUpdatePriority();
   try {
     setCurrentUpdatePriority(DiscreteEventPriority);
-    dispatchEvent(domEventName, eventSystemFlags, container, nativeEvent);
-  } finally {
-    setCurrentUpdatePriority(previousPriority);
-    ReactSharedInternals.T = prevTransition;
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+    });
+    throw error;
   }
+  try {
+    dispatchEvent(domEventName, eventSystemFlags, container, nativeEvent);
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+    });
+    throw error;
+  }
+  setCurrentUpdatePriority(previousPriority);
+  ReactSharedInternals.T = prevTransition;
 }
 
 function dispatchContinuousEvent(
@@ -139,11 +153,24 @@ function dispatchContinuousEvent(
   const previousPriority = getCurrentUpdatePriority();
   try {
     setCurrentUpdatePriority(ContinuousEventPriority);
-    dispatchEvent(domEventName, eventSystemFlags, container, nativeEvent);
-  } finally {
-    setCurrentUpdatePriority(previousPriority);
-    ReactSharedInternals.T = prevTransition;
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+    });
+    throw error;
   }
+  try {
+    dispatchEvent(domEventName, eventSystemFlags, container, nativeEvent);
+  } catch (error) {
+    $cleanup(() => {
+      setCurrentUpdatePriority(previousPriority);
+      ReactSharedInternals.T = prevTransition;
+    });
+    throw error;
+  }
+  setCurrentUpdatePriority(previousPriority);
+  ReactSharedInternals.T = prevTransition;
 }
 
 export function dispatchEvent(

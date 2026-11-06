@@ -127,7 +127,7 @@ import {
   peekEntangledActionLane,
   peekEntangledActionThenable,
 } from './ReactFiberAsyncAction.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$cleanup, $unwrap} from '@rust-js/runtime';
 
 export const UpdateState = 0;
 export const ReplaceState = 1;
@@ -367,9 +367,13 @@ function getStateFromUpdate(
             setIsStrictModeForDevtools(true);
             try {
               payload.call(instance, prevState, nextProps);
-            } finally {
-              setIsStrictModeForDevtools(false);
+            } catch (error) {
+              $cleanup(() => {
+                setIsStrictModeForDevtools(false);
+              });
+              throw error;
             }
+            setIsStrictModeForDevtools(false);
           }
           exitDisallowedContextReadInDEV();
         }
@@ -397,9 +401,13 @@ function getStateFromUpdate(
             setIsStrictModeForDevtools(true);
             try {
               payload.call(instance, prevState, nextProps);
-            } finally {
-              setIsStrictModeForDevtools(false);
+            } catch (error) {
+              $cleanup(() => {
+                setIsStrictModeForDevtools(false);
+              });
+              throw error;
             }
+            setIsStrictModeForDevtools(false);
           }
           exitDisallowedContextReadInDEV();
         }

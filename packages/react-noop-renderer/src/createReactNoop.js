@@ -33,7 +33,7 @@ import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 import ReactVersion from 'shared/ReactVersion';
-import {$displayF64, $unwrap} from '@rust-js/runtime';
+import {$cleanup, $displayF64, $unwrap} from '@rust-js/runtime';
 
 const NO_CONTEXT = {};
 const UPPERCASE_CONTEXT = {};
@@ -939,15 +939,37 @@ function createReactNoop(reconciler, useMutation) {
       const preivousEventPriority = currentEventPriority.value;
       try {
         ReactSharedInternals.T = null;
-        currentEventPriority.value = DiscreteEventPriority;
-        if (fn != null) {
-          return fn();
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.T = previousTransition;
+          currentEventPriority.value = preivousEventPriority;
+          NoopRenderer.flushSyncWork();
+        });
+        throw error;
+      }
+      currentEventPriority.value = DiscreteEventPriority;
+      let result;
+      if (fn != null) {
+        try {
+          result = fn();
+        } catch (error) {
+          $cleanup(() => {
+            ReactSharedInternals.T = previousTransition;
+            currentEventPriority.value = preivousEventPriority;
+            NoopRenderer.flushSyncWork();
+          });
+          throw error;
         }
-      } finally {
         ReactSharedInternals.T = previousTransition;
         currentEventPriority.value = preivousEventPriority;
         NoopRenderer.flushSyncWork();
+        return result;
       }
+      result = undefined;
+      ReactSharedInternals.T = previousTransition;
+      currentEventPriority.value = preivousEventPriority;
+      NoopRenderer.flushSyncWork();
+      return result;
     } else {
       return NoopRenderer.flushSyncFromReconciler(fn);
     }
@@ -1241,10 +1263,23 @@ function createReactNoop(reconciler, useMutation) {
       const previousPriority = getCurrentUpdatePriority();
       try {
         setCurrentUpdatePriority(priority);
-        return fn();
-      } finally {
-        setCurrentUpdatePriority(previousPriority);
+      } catch (error) {
+        $cleanup(() => {
+          setCurrentUpdatePriority(previousPriority);
+        });
+        throw error;
       }
+      let result;
+      try {
+        result = fn();
+      } catch (error) {
+        $cleanup(() => {
+          setCurrentUpdatePriority(previousPriority);
+        });
+        throw error;
+      }
+      setCurrentUpdatePriority(previousPriority);
+      return result;
     },
 
     batchedUpdates: NoopRenderer.batchedUpdates,
@@ -1258,9 +1293,13 @@ function createReactNoop(reconciler, useMutation) {
       currentEventPriority.value = IdleEventPriority;
       try {
         fn();
-      } finally {
-        currentEventPriority.value = prevEventPriority;
+      } catch (error) {
+        $cleanup(() => {
+          currentEventPriority.value = prevEventPriority;
+        });
+        throw error;
       }
+      currentEventPriority.value = prevEventPriority;
     },
 
     flushSync,

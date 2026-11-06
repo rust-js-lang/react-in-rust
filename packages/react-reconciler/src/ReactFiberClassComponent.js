@@ -64,6 +64,7 @@ import {
   setIsStrictModeForDevtools,
 } from './ReactFiberDevToolsHook.js';
 import {startUpdateTimerByLane} from './ReactProfilerTimer.js';
+import {$cleanup} from '@rust-js/runtime';
 
 const fakeInternalInstance = {};
 
@@ -129,9 +130,13 @@ function applyDerivedStateFromProps(
       try {
         // Invoke the function an extra time to help detect side-effects.
         partialState = getDerivedStateFromProps(nextProps, prevState);
-      } finally {
-        setIsStrictModeForDevtools(false);
+      } catch (error) {
+        $cleanup(() => {
+          setIsStrictModeForDevtools(false);
+        });
+        throw error;
       }
+      setIsStrictModeForDevtools(false);
     }
     warnOnUndefinedDerivedState(ctor, partialState);
   }
@@ -253,9 +258,13 @@ function checkShouldComponentUpdate(
             newState,
             nextContext,
           );
-        } finally {
-          setIsStrictModeForDevtools(false);
+        } catch (error) {
+          $cleanup(() => {
+            setIsStrictModeForDevtools(false);
+          });
+          throw error;
         }
+        setIsStrictModeForDevtools(false);
       }
       if (shouldUpdate === undefined) {
         console.error(
@@ -569,9 +578,13 @@ export function constructClassInstance(workInProgress, ctor, props) {
     setIsStrictModeForDevtools(true);
     try {
       instance = new ctor(props, context);
-    } finally {
-      setIsStrictModeForDevtools(false);
+    } catch (error) {
+      $cleanup(() => {
+        setIsStrictModeForDevtools(false);
+      });
+      throw error;
     }
+    setIsStrictModeForDevtools(false);
   }
 
   const state = instance.state ?? null;

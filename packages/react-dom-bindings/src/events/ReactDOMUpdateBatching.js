@@ -15,6 +15,7 @@ import {
   needsStateRestore,
   restoreStateIfNeeded,
 } from './ReactDOMControlledComponent.js';
+import {$cleanup} from '@rust-js/runtime';
 
 // Used as a way to call batchedUpdates when we don't have a reference to
 // the renderer. Such as when we're dispatching events or if third party
@@ -50,12 +51,19 @@ export function batchedUpdates(fn, a, b) {
     return fn(a, b);
   }
   isInsideEventHandler = true;
+  let result;
   try {
-    return batchedUpdatesImpl(a => fn(a, b), a);
-  } finally {
-    isInsideEventHandler = false;
-    finishEventHandler();
+    result = batchedUpdatesImpl(a => fn(a, b), a);
+  } catch (error) {
+    $cleanup(() => {
+      isInsideEventHandler = false;
+      finishEventHandler();
+    });
+    throw error;
   }
+  isInsideEventHandler = false;
+  finishEventHandler();
+  return result;
 }
 
 // TODO: Replace with flushSync

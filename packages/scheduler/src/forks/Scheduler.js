@@ -38,7 +38,7 @@ import {
   startLoggingProfilingEvents,
   stopLoggingProfilingEvents,
 } from '../SchedulerProfiling.js';
-import {$withBorrow, $withBorrowMut} from '@rust-js/runtime';
+import {$cleanup, $withBorrow, $withBorrowMut} from '@rust-js/runtime';
 
 let getCurrentTime;
 if (typeof performance === 'object' && typeof performance.now === 'function') {
@@ -142,24 +142,74 @@ function flushWork(initialTime) {
   isPerformingWork = true;
   const previousPriorityLevel = currentPriorityLevel;
   let result;
-  try {
-    if (enableProfiling) {
-      try {
-        result = workLoop(initialTime);
-      } catch (error) {
-        const currentTask$1 = currentTask;
-        if (currentTask$1 != null) {
-          const currentTime = getCurrentTime();
-          markTaskErrored(currentTask$1, currentTime);
-          currentTask$1.isQueued = false;
+  if (enableProfiling) {
+    let hasMoreWork;
+    try {
+      hasMoreWork = workLoop(initialTime);
+    } catch (error) {
+      const currentTask$1 = currentTask;
+      if (currentTask$1 != null) {
+        let currentTime;
+        try {
+          currentTime = getCurrentTime();
+        } catch (error) {
+          $cleanup(() => {
+            currentTask = null;
+            currentPriorityLevel = previousPriorityLevel;
+            isPerformingWork = false;
+            if (enableProfiling) {
+              const currentTime = getCurrentTime();
+              markSchedulerSuspended(currentTime);
+            }
+          });
+          throw error;
         }
+        try {
+          markTaskErrored(currentTask$1, currentTime);
+        } catch (error) {
+          $cleanup(() => {
+            currentTask = null;
+            currentPriorityLevel = previousPriorityLevel;
+            isPerformingWork = false;
+            if (enableProfiling) {
+              const currentTime = getCurrentTime();
+              markSchedulerSuspended(currentTime);
+            }
+          });
+          throw error;
+        }
+        currentTask$1.isQueued = false;
+        try {
+          throw error;
+        } catch (error) {
+          $cleanup(() => {
+            currentTask = null;
+            currentPriorityLevel = previousPriorityLevel;
+            isPerformingWork = false;
+            if (enableProfiling) {
+              const currentTime = getCurrentTime();
+              markSchedulerSuspended(currentTime);
+            }
+          });
+          throw error;
+        }
+      }
+      try {
+        throw error;
+      } catch (error) {
+        $cleanup(() => {
+          currentTask = null;
+          currentPriorityLevel = previousPriorityLevel;
+          isPerformingWork = false;
+          if (enableProfiling) {
+            const currentTime = getCurrentTime();
+            markSchedulerSuspended(currentTime);
+          }
+        });
         throw error;
       }
-    } else {
-      // No catch in prod code path.
-      result = workLoop(initialTime);
     }
-  } finally {
+    result = hasMoreWork;
     currentTask = null;
     currentPriorityLevel = previousPriorityLevel;
     isPerformingWork = false;
@@ -167,8 +217,32 @@ function flushWork(initialTime) {
       const currentTime = getCurrentTime();
       markSchedulerSuspended(currentTime);
     }
+    return result;
+  } else {
+    try {
+      // No catch in prod code path.
+      result = workLoop(initialTime);
+    } catch (error) {
+      $cleanup(() => {
+        currentTask = null;
+        currentPriorityLevel = previousPriorityLevel;
+        isPerformingWork = false;
+        if (enableProfiling) {
+          const currentTime = getCurrentTime();
+          markSchedulerSuspended(currentTime);
+        }
+      });
+      throw error;
+    }
+    currentTask = null;
+    currentPriorityLevel = previousPriorityLevel;
+    isPerformingWork = false;
+    if (enableProfiling) {
+      const currentTime = getCurrentTime();
+      markSchedulerSuspended(currentTime);
+    }
+    return result;
   }
-  return result;
 }
 
 function workLoop(initialTime) {
@@ -468,14 +542,22 @@ function performWorkUntilDeadline() {
     let hasMoreWork = true;
     try {
       hasMoreWork = flushWork(currentTime);
-    } finally {
-      if (hasMoreWork) {
-        // If there's more work, schedule the next message event at the end
-        // of the preceding one.
-        schedulePerformWorkUntilDeadline();
-      } else {
-        isMessageLoopRunning = false;
-      }
+    } catch (error) {
+      $cleanup(() => {
+        if (hasMoreWork) {
+          // If there's more work, schedule the next message event at the end
+          // of the preceding one.
+          schedulePerformWorkUntilDeadline();
+        } else {
+          isMessageLoopRunning = false;
+        }
+      });
+      throw error;
+    }
+    if (hasMoreWork) {
+      schedulePerformWorkUntilDeadline();
+    } else {
+      isMessageLoopRunning = false;
     }
   }
 }

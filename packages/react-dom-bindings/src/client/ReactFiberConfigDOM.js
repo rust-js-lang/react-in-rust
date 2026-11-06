@@ -146,6 +146,7 @@ import estimateBandwidth from './estimateBandwidth.js';
 import {
   $borrow,
   $borrowMut,
+  $cleanup,
   $extend,
   $index,
   $lazyRange,
@@ -2172,19 +2173,48 @@ export function startViewTransition(
         // $FlowFixMe[prop-missing]
         ownerDocument.__reactViewTransition = null;
       }
+      let error$1;
       try {
-        const error$1 = customizeViewTransitionError(error, false);
-        if (error$1 != null) {
+        error$1 = customizeViewTransitionError(error, false);
+      } catch (error) {
+        $cleanup(() => {
+          // Continue the reset of the work.
+          // If the error happened in the snapshot phase before the update callback
+          // was invoked, then we need to first finish the mutation and layout phases.
+          // If they're already invoked it's still safe to call them due the status check.
+          mutationCallback();
+          layoutCallback();
+          // Skip afterMutationCallback() since we're not animating.
+          spawnedWorkCallback();
+          if (enableProfilerTimer) {
+            finishedAnimation();
+          }
+        });
+        throw error;
+      }
+      if (error$1 != null) {
+        try {
           errorCallback(error$1);
+        } catch (error) {
+          $cleanup(() => {
+            mutationCallback();
+            layoutCallback();
+            spawnedWorkCallback();
+            if (enableProfilerTimer) {
+              finishedAnimation();
+            }
+          });
+          throw error;
         }
-      } finally {
-        // Continue the reset of the work.
-        // If the error happened in the snapshot phase before the update callback
-        // was invoked, then we need to first finish the mutation and layout phases.
-        // If they're already invoked it's still safe to call them due the status check.
         mutationCallback();
         layoutCallback();
-        // Skip afterMutationCallback() since we're not animating.
+        spawnedWorkCallback();
+        if (enableProfilerTimer) {
+          finishedAnimation();
+        }
+      } else {
+        mutationCallback();
+        layoutCallback();
         spawnedWorkCallback();
         if (enableProfilerTimer) {
           finishedAnimation();
@@ -2615,19 +2645,45 @@ export function startGestureTransition(
         // $FlowFixMe[prop-missing]
         ownerDocument.__reactViewTransition = null;
       }
+      let error$1;
       try {
-        const error$1 = customizeViewTransitionError(error, true);
-        if (error$1 != null) {
+        error$1 = customizeViewTransitionError(error, true);
+      } catch (error) {
+        $cleanup(() => {
+          // Continue the reset of the work.
+          // If the error happened in the snapshot phase before the update callback
+          // was invoked, then we need to first finish the mutation and layout phases.
+          // If they're already invoked it's still safe to call them due the status check.
+          mutationCallback();
+          // Skip readyCallback() and go straight to animateCallbck() since we're not animating.
+          // animateCallback() is still required to restore states.
+          animateCallback();
+          if (enableProfilerTimer) {
+            finishedAnimation();
+          }
+        });
+        throw error;
+      }
+      if (error$1 != null) {
+        try {
           errorCallback(error$1);
+        } catch (error) {
+          $cleanup(() => {
+            mutationCallback();
+            animateCallback();
+            if (enableProfilerTimer) {
+              finishedAnimation();
+            }
+          });
+          throw error;
         }
-      } finally {
-        // Continue the reset of the work.
-        // If the error happened in the snapshot phase before the update callback
-        // was invoked, then we need to first finish the mutation and layout phases.
-        // If they're already invoked it's still safe to call them due the status check.
         mutationCallback();
-        // Skip readyCallback() and go straight to animateCallbck() since we're not animating.
-        // animateCallback() is still required to restore states.
+        animateCallback();
+        if (enableProfilerTimer) {
+          finishedAnimation();
+        }
+      } else {
+        mutationCallback();
         animateCallback();
         if (enableProfilerTimer) {
           finishedAnimation();
@@ -4452,14 +4508,19 @@ export function setFocusIfFocusable(node, focusOptions) {
   // and shadow hosts with delegatesFocus.
   element.ownerDocument.addEventListener('focus', handleFocus, true);
   const ownerDocument = element.ownerDocument;
+
   try {
     // $FlowFixMe[method-unbinding]
     (element.focus || HTMLElement.prototype.focus).call(element, focusOptions);
-
-    return didFocus;
-  } finally {
-    ownerDocument.removeEventListener('focus', handleFocus, true);
+  } catch (error) {
+    $cleanup(() => {
+      ownerDocument.removeEventListener('focus', handleFocus, true);
+    });
+    throw error;
   }
+  const result = didFocus;
+  ownerDocument.removeEventListener('focus', handleFocus, true);
+  return result;
 }
 
 export function setupIntersectionObserver(targets, callback, options) {

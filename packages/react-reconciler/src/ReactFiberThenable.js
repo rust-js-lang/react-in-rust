@@ -396,17 +396,11 @@ function areSameKeyPath(a, b) {
       throw error;
     }
     if ((value.value ?? null) !== (borrow.value ?? null)) {
-      try {
-        $unborrow(borrow);
-      } finally {
-        $unborrow(value);
-      }
+      $unborrow(borrow);
+      $unborrow(value);
     } else {
-      try {
-        $unborrow(borrow);
-      } finally {
-        $unborrow(value);
-      }
+      $unborrow(borrow);
+      $unborrow(value);
       if (a.index === b.index) {
         if (a.tag === HostRoot && a.stateNode !== b.stateNode) {
           // These are both roots but they're different roots so they're not in the same tree.

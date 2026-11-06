@@ -30,7 +30,7 @@ import {
   getBackingString,
   getStreamChunks,
 } from './ReactFlightReplyBackingFormData.js';
-import {$index, $unwrap} from '@rust-js/runtime';
+import {$cleanup, $index, $unwrap} from '@rust-js/runtime';
 
 const __PROTO__ = '__proto__';
 
@@ -609,18 +609,33 @@ function initializeModelChunk(chunk) {
   const {value: resolvedModel} = chunk;
   const old = initializingHandler;
   initializingHandler = null;
+  const _prevHandler = [old];
+
+  let rootReference;
+  if (id === -1) {
+    rootReference = undefined;
+  } else {
+    try {
+      rootReference = id.toString(16);
+    } catch (error) {
+      $cleanup(() => {
+        const old = _prevHandler[0];
+        _prevHandler[0] = undefined;
+        initializingHandler = old ?? null;
+      });
+      throw error;
+    }
+  }
+
+  // We go to the BLOCKED state until we've fully resolved this.
+  // We do this before parsing in case we try to initialize the same chunk
+  // while parsing the model. Such as in a cyclic reference.
+  chunk.status = 'blocked';
+  chunk.value = null;
+  chunk.reason = null;
 
   try {
-    const rootReference = id === -1 ? undefined : id.toString(16);
-
-    // We go to the BLOCKED state until we've fully resolved this.
-    // We do this before parsing in case we try to initialize the same chunk
-    // while parsing the model. Such as in a cyclic reference.
-    chunk.status = 'blocked';
-    chunk.value = null;
-    chunk.reason = null;
-
-    try {
+    (() => {
       const rawModel = JSON.parse(resolvedModel);
 
       // The root might not be an array but if it is we want to track the count of entries.
@@ -643,9 +658,9 @@ function initializeModelChunk(chunk) {
       // if they were blocked.
       let resolveListeners;
       if (chunk.status === 'blocked') {
-        const old = chunk.value;
+        const old$1 = chunk.value;
         chunk.value = null;
-        resolveListeners = old;
+        resolveListeners = old$1;
       } else {
         resolveListeners = undefined;
       }
@@ -678,13 +693,13 @@ function initializeModelChunk(chunk) {
       chunk.status = 'fulfilled';
       chunk.value = value;
       chunk.reason = arrayRoot;
-    } catch (error) {
-      chunk.status = 'rejected';
-      chunk.reason = error;
-    }
-  } finally {
-    initializingHandler = old;
+    })();
+  } catch (error) {
+    chunk.status = 'rejected';
+    chunk.reason = error;
   }
+  const old$1 = _prevHandler[0];
+  initializingHandler = old$1 ?? null;
 }
 
 // Report that any missing chunks in the model is now going to throw this

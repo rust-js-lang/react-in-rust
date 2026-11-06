@@ -40,6 +40,7 @@ import {
   createResumableState,
   createRootFormatContext,
 } from './ReactFizzConfigMarkup.js';
+import {$cleanup} from '@rust-js/runtime';
 
 // This is the intersection of ReactNodeList and ReactClientValue minus
 // Client/ServerReferences.
@@ -105,10 +106,15 @@ export function experimental_renderToHTML(children, options) {
             ReactSharedInternalsClient.getCurrentStack ?? null;
           try {
             onError(error, errorInfo);
-          } finally {
-            ReactSharedInternalsServer.getCurrentStack =
-              prevGetCurrentStackImpl ?? null;
+          } catch (error) {
+            $cleanup(() => {
+              ReactSharedInternalsServer.getCurrentStack =
+                prevGetCurrentStackImpl ?? null;
+            });
+            throw error;
           }
+          ReactSharedInternalsServer.getCurrentStack =
+            prevGetCurrentStackImpl ?? null;
         } else {
           onError(error, errorInfo);
         }

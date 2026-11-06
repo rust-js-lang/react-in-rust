@@ -12,26 +12,72 @@ import {DiscreteEventPriority} from 'react-reconciler/src/ReactEventPriorities';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
+import {$cleanup} from '@rust-js/runtime';
 
 function flushSyncImpl(fn) {
   const previousTransition = ReactSharedInternals.T;
   const previousUpdatePriority =
     ReactDOMSharedInternals.p; /* ReactDOMCurrentUpdatePriority */
-
   try {
     ReactSharedInternals.T = null;
+  } catch (error) {
+    $cleanup(() => {
+      ReactSharedInternals.T = previousTransition;
+      ReactDOMSharedInternals.p /* ReactDOMCurrentUpdatePriority */ =
+        previousUpdatePriority;
+      const wasInRender =
+        ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */
+          .f();
+      if (__DEV__ && wasInRender) {
+        console.error(
+          'flushSync was called from inside a lifecycle method. React cannot ' +
+            'flush when React is already rendering. Consider moving this call to ' +
+            'a scheduler task or micro task.',
+        );
+      }
+    });
+    throw error;
+  }
+  try {
     ReactDOMSharedInternals.p /* ReactDOMCurrentUpdatePriority */ =
       DiscreteEventPriority;
-    if (fn != null) {
-      return fn();
+  } catch (error) {
+    $cleanup(() => {
+      ReactSharedInternals.T = previousTransition;
+      ReactDOMSharedInternals.p = previousUpdatePriority;
+      const wasInRender = ReactDOMSharedInternals.d.f();
+      if (__DEV__ && wasInRender) {
+        console.error(
+          'flushSync was called from inside a lifecycle method. React cannot ' +
+            'flush when React is already rendering. Consider moving this call to ' +
+            'a scheduler task or micro task.',
+        );
+      }
+    });
+    throw error;
+  }
+  let result;
+  if (fn != null) {
+    try {
+      result = fn();
+    } catch (error) {
+      $cleanup(() => {
+        ReactSharedInternals.T = previousTransition;
+        ReactDOMSharedInternals.p = previousUpdatePriority;
+        const wasInRender = ReactDOMSharedInternals.d.f();
+        if (__DEV__ && wasInRender) {
+          console.error(
+            'flushSync was called from inside a lifecycle method. React cannot ' +
+              'flush when React is already rendering. Consider moving this call to ' +
+              'a scheduler task or micro task.',
+          );
+        }
+      });
+      throw error;
     }
-  } finally {
     ReactSharedInternals.T = previousTransition;
-    ReactDOMSharedInternals.p /* ReactDOMCurrentUpdatePriority */ =
-      previousUpdatePriority;
-    const wasInRender =
-      ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */
-        .f(); /* flushSyncWork */
+    ReactDOMSharedInternals.p = previousUpdatePriority;
+    const wasInRender = ReactDOMSharedInternals.d.f();
     if (__DEV__ && wasInRender) {
       console.error(
         'flushSync was called from inside a lifecycle method. React cannot ' +
@@ -39,7 +85,20 @@ function flushSyncImpl(fn) {
           'a scheduler task or micro task.',
       );
     }
+    return result;
   }
+  result = undefined;
+  ReactSharedInternals.T = previousTransition;
+  ReactDOMSharedInternals.p = previousUpdatePriority;
+  const wasInRender = ReactDOMSharedInternals.d.f(); /* flushSyncWork */
+  if (__DEV__ && wasInRender) {
+    console.error(
+      'flushSync was called from inside a lifecycle method. React cannot ' +
+        'flush when React is already rendering. Consider moving this call to ' +
+        'a scheduler task or micro task.',
+    );
+  }
+  return result;
 }
 
 function flushSyncErrorInBuildsThatSupportLegacyMode(fn) {

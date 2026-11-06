@@ -16,6 +16,7 @@ import {
 import reportGlobalError from 'shared/reportGlobalError';
 
 import noop from 'shared/noop';
+import {$catchUnwind, $cleanup} from '@rust-js/runtime';
 
 function releaseAsyncTransition() {
   if (__DEV__) {
@@ -66,26 +67,45 @@ export function startTransition(scope, options) {
       returnValue.then(noop, reportGlobalError);
     }
   } catch (error) {
-    reportGlobalError(error);
-  } finally {
-    warnAboutTransitionSubscriptions(prevTransition, currentTransition);
-    const currentTypes = currentTransition.types;
-    if (prevTransition != null && currentTypes != null) {
-      // If we created a new types set in the inner transition, we transfer it to the parent
-      // since they should share the same set. They're conceptually entangled.
-      const prevTypes = prevTransition.types;
-      if (__DEV__ && prevTypes != null && prevTypes !== currentTypes) {
-        // Just assert that assumption holds that we're not overriding anything.
-        console.error(
-          'We expected inner Transitions to have transferred the outer types set and ' +
-            'that you cannot add to the outer Transition while inside the inner.' +
-            'This is a bug in React.',
-        );
-      }
-      prevTransition.types = currentTypes;
+    try {
+      reportGlobalError(error);
+    } catch (error) {
+      $cleanup(() => {
+        warnAboutTransitionSubscriptions(prevTransition, currentTransition);
+        const currentTypes = currentTransition.types;
+        if (prevTransition != null && currentTypes != null) {
+          // If we created a new types set in the inner transition, we transfer it to the parent
+          // since they should share the same set. They're conceptually entangled.
+          const prevTypes = prevTransition.types;
+          if (__DEV__ && prevTypes != null && prevTypes !== currentTypes) {
+            // Just assert that assumption holds that we're not overriding anything.
+            console.error(
+              'We expected inner Transitions to have transferred the outer types set and ' +
+                'that you cannot add to the outer Transition while inside the inner.' +
+                'This is a bug in React.',
+            );
+          }
+          prevTransition.types = currentTypes;
+        }
+        ReactSharedInternals.T = prevTransition;
+      });
+      throw error;
     }
-    ReactSharedInternals.T = prevTransition;
   }
+  warnAboutTransitionSubscriptions(prevTransition, currentTransition);
+  const currentTypes = currentTransition.types;
+  if (prevTransition != null && currentTypes != null) {
+    const prevTypes = prevTransition.types;
+    if (__DEV__ && prevTypes != null && prevTypes !== currentTypes) {
+      console.error(
+        'We expected inner Transitions to have transferred the outer types set and ' +
+          'that you cannot add to the outer Transition while inside the inner.' +
+          'This is a bug in React.',
+      );
+    }
+    prevTransition.types = currentTypes;
+  }
+  ReactSharedInternals.T = prevTransition;
 }
 
 export function startGestureTransition(provider, scope, options) {
@@ -121,7 +141,7 @@ export function startGestureTransition(provider, scope, options) {
   }
   ReactSharedInternals.T = currentTransition;
 
-  try {
+  const value = $catchUnwind(() => {
     const returnValue = scope();
     if (
       __DEV__ &&
@@ -135,19 +155,32 @@ export function startGestureTransition(provider, scope, options) {
       );
     }
     const onStartGestureTransitionFinish = ReactSharedInternals.G;
-    const finish =
-      onStartGestureTransitionFinish != null
-        ? onStartGestureTransitionFinish(currentTransition, provider, options)
-        : undefined;
-    if (finish != null) {
-      return finish;
+    return onStartGestureTransitionFinish != null
+      ? onStartGestureTransitionFinish(currentTransition, provider, options)
+      : undefined;
+  });
+  let result;
+  if (value.TAG === 'Ok') {
+    if (value._0 != null) {
+      const finish = value._0;
+      result = finish;
+      ReactSharedInternals.T = prevTransition;
+      return result;
     }
-  } catch (error) {
-    reportGlobalError(error);
-  } finally {
-    ReactSharedInternals.T = prevTransition;
+  } else {
+    const error = value._0;
+    try {
+      reportGlobalError(error.error);
+    } catch (error) {
+      $cleanup(() => {
+        ReactSharedInternals.T = prevTransition;
+      });
+      throw error;
+    }
   }
-  return noop;
+  result = noop;
+  ReactSharedInternals.T = prevTransition;
+  return result;
 }
 
 function warnAboutTransitionSubscriptions(prevTransition, currentTransition) {

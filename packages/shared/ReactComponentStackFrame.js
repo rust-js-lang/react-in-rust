@@ -12,6 +12,7 @@ import ReactSharedInternals from './ReactSharedInternals.js';
 import DefaultPrepareStackTrace from './DefaultPrepareStackTrace.js';
 
 import {formatOwnerStack} from './ReactOwnerStackFrames.js';
+import {$cleanup} from '@rust-js/runtime';
 
 let prefix;
 let suffix = '';
@@ -123,12 +124,20 @@ function DetermineComponentFrameRoot(fn, construct) {
         });
         try {
           new fn();
-        } finally {
-          if (prevProps != null) {
-            Object.defineProperty(prototype, 'props', prevProps);
-          } else {
-            delete prototype.props;
-          }
+        } catch (error) {
+          $cleanup(() => {
+            if (prevProps != null) {
+              Object.defineProperty(prototype, 'props', prevProps);
+            } else {
+              delete prototype.props;
+            }
+          });
+          throw error;
+        }
+        if (prevProps != null) {
+          Object.defineProperty(prototype, 'props', prevProps);
+        } else {
+          delete prototype.props;
         }
       }
     } else {
@@ -200,13 +209,26 @@ export function describeNativeComponentFrame(fn, construct) {
 
   // $FlowFixMe[prop-missing]
   DetermineComponentFrameRoot.displayName = 'DetermineComponentFrameRoot';
+  let namePropDescriptor;
+  // Before ES6, the `name` property was not configurable.
   try {
-    const namePropDescriptor = Object.getOwnPropertyDescriptor(
+    namePropDescriptor = Object.getOwnPropertyDescriptor(
       DetermineComponentFrameRoot,
       'name',
     );
-    // Before ES6, the `name` property was not configurable.
-    if (namePropDescriptor != null && namePropDescriptor.configurable) {
+  } catch (error) {
+    $cleanup(() => {
+      reentry = false;
+      if (__DEV__) {
+        ReactSharedInternals.H = previousDispatcher ?? null;
+        reenableLogs();
+      }
+      Error.prepareStackTrace = previousPrepareStackTrace;
+    });
+    throw error;
+  }
+  if (namePropDescriptor != null && namePropDescriptor.configurable) {
+    try {
       // V8 utilizes a function's `name` property when generating a stack trace.
       Object.defineProperty(
         DetermineComponentFrameRoot,
@@ -216,95 +238,203 @@ export function describeNativeComponentFrame(fn, construct) {
         'name',
         {value: 'DetermineComponentFrameRoot'},
       );
+    } catch (error) {
+      $cleanup(() => {
+        reentry = false;
+        if (__DEV__) {
+          ReactSharedInternals.H = previousDispatcher ?? null;
+          reenableLogs();
+        }
+        Error.prepareStackTrace = previousPrepareStackTrace;
+      });
+      throw error;
     }
+  }
 
-    const [sampleStack, controlStack] = DetermineComponentFrameRoot(
-      fn,
-      construct,
-    );
-    if (sampleStack != null && controlStack != null) {
-      // This extracts the first frame from the sample that isn't also in the control.
-      // Skipping one frame that we assume is the frame that calls the two.
-      const sampleLines = sampleStack.split('\n');
-      const controlLines = controlStack.split('\n');
-      let s = 0;
-      let c = 0;
-      while (
-        s < sampleLines.length &&
-        !sampleLines[s].includes('DetermineComponentFrameRoot')
-      ) {
-        s++;
+  let determineComponentFrameRoot;
+  try {
+    determineComponentFrameRoot = DetermineComponentFrameRoot(fn, construct);
+  } catch (error) {
+    $cleanup(() => {
+      reentry = false;
+      if (__DEV__) {
+        ReactSharedInternals.H = previousDispatcher ?? null;
+        reenableLogs();
       }
-      while (
-        c < controlLines.length &&
-        !controlLines[c].includes('DetermineComponentFrameRoot')
-      ) {
-        c++;
-      }
-      // We couldn't find our intentionally injected common root frame, attempt
-      // to find another common root frame by search from the bottom of the
-      // control stack...
-      if (s === sampleLines.length || c === controlLines.length) {
-        s = sampleLines.length - 1;
-        c = controlLines.length - 1;
-        while (s >= 1 && c >= 0 && sampleLines[s] !== controlLines[c]) {
-          // We expect at least one stack frame to be shared.
-          // Typically this will be the root most one. However, stack frames may be
-          // cut off due to maximum stack limits. In this case, one maybe cut off
-          // earlier than the other. We assume that the sample is longer or the same
-          // and there for cut off earlier. So we should find the root most frame in
-          // the sample somewhere in the control.
-          c--;
+      Error.prepareStackTrace = previousPrepareStackTrace;
+    });
+    throw error;
+  }
+  const sampleStack = determineComponentFrameRoot[0];
+  const controlStack = determineComponentFrameRoot[1];
+  if (sampleStack != null && controlStack != null) {
+    // This extracts the first frame from the sample that isn't also in the control.
+    // Skipping one frame that we assume is the frame that calls the two.
+    let sampleLines;
+    try {
+      sampleLines = sampleStack.split('\n');
+    } catch (error) {
+      $cleanup(() => {
+        reentry = false;
+        if (__DEV__) {
+          ReactSharedInternals.H = previousDispatcher ?? null;
+          reenableLogs();
         }
-      }
-      while (s >= 1 && c >= 0) {
-        // Next we find the first one that isn't the same which should be the
-        // frame that called our sample function and the control.
-        if (sampleLines[s] !== controlLines[c]) {
-          // In V8, the first line is describing the message but other VMs don't.
-          // If we're about to return the first line, and the control is also on the same
-          // line, that's a pretty good indicator that our sample threw at same line as
-          // the control. I.e. before we entered the sample frame. So we ignore this result.
-          // This can happen if you passed a class to function component, or non-function.
-          if (s !== 1 || c !== 1) {
-            do {
-              s--;
-              c--;
-              // We may still have similar intermediate frames from the construct call.
-              // The next one that isn't the same should be our match though.
-              if (c < 0 || sampleLines[s] !== controlLines[c]) {
-                // V8 adds a "new" prefix for native classes. Let's remove it to make it prettier.
-                let frame = `\n${sampleLines[s].replace(' at new ', ' at ')}`;
-
-                // If our component frame is labeled "<anonymous>"
-                // but we have a user-provided "displayName"
-                // splice it in to make the stack more readable.
-                if (fn.displayName && frame.includes('<anonymous>')) {
-                  frame = frame.replace('<anonymous>', fn.displayName);
-                }
-
-                if (__DEV__ && componentFrameCache != null) {
-                  componentFrameCache.set(fn, frame);
-                }
-                // Return the line we found.
-                return frame;
-              }
-            } while (s >= 1 && c >= 0);
-          }
-          break;
+        Error.prepareStackTrace = previousPrepareStackTrace;
+      });
+      throw error;
+    }
+    let controlLines;
+    try {
+      controlLines = controlStack.split('\n');
+    } catch (error) {
+      $cleanup(() => {
+        reentry = false;
+        if (__DEV__) {
+          ReactSharedInternals.H = previousDispatcher ?? null;
+          reenableLogs();
         }
-        s--;
+        Error.prepareStackTrace = previousPrepareStackTrace;
+      });
+      throw error;
+    }
+    let s = 0;
+    let c = 0;
+    while (
+      s < sampleLines.length &&
+      !sampleLines[s].includes('DetermineComponentFrameRoot')
+    ) {
+      s++;
+    }
+    while (
+      c < controlLines.length &&
+      !controlLines[c].includes('DetermineComponentFrameRoot')
+    ) {
+      c++;
+    }
+    // We couldn't find our intentionally injected common root frame, attempt
+    // to find another common root frame by search from the bottom of the
+    // control stack...
+    if (s === sampleLines.length || c === controlLines.length) {
+      s = sampleLines.length - 1;
+      c = controlLines.length - 1;
+      while (s >= 1 && c >= 0 && sampleLines[s] !== controlLines[c]) {
+        // We expect at least one stack frame to be shared.
+        // Typically this will be the root most one. However, stack frames may be
+        // cut off due to maximum stack limits. In this case, one maybe cut off
+        // earlier than the other. We assume that the sample is longer or the same
+        // and there for cut off earlier. So we should find the root most frame in
+        // the sample somewhere in the control.
         c--;
       }
     }
-  } finally {
-    reentry = false;
-    if (__DEV__) {
-      ReactSharedInternals.H = previousDispatcher ?? null;
-      reenableLogs();
+    while (s >= 1 && c >= 0) {
+      // Next we find the first one that isn't the same which should be the
+      // frame that called our sample function and the control.
+      if (sampleLines[s] !== controlLines[c]) {
+        // In V8, the first line is describing the message but other VMs don't.
+        // If we're about to return the first line, and the control is also on the same
+        // line, that's a pretty good indicator that our sample threw at same line as
+        // the control. I.e. before we entered the sample frame. So we ignore this result.
+        // This can happen if you passed a class to function component, or non-function.
+        if (s !== 1 || c !== 1) {
+          do {
+            s--;
+            c--;
+            // We may still have similar intermediate frames from the construct call.
+            // The next one that isn't the same should be our match though.
+            if (c < 0 || sampleLines[s] !== controlLines[c]) {
+              // V8 adds a "new" prefix for native classes. Let's remove it to make it prettier.
+              let tmp;
+              try {
+                tmp = `\n${sampleLines[s].replace(' at new ', ' at ')}`;
+              } catch (error) {
+                $cleanup(() => {
+                  reentry = false;
+                  if (__DEV__) {
+                    ReactSharedInternals.H = previousDispatcher ?? null;
+                    reenableLogs();
+                  }
+                  Error.prepareStackTrace = previousPrepareStackTrace;
+                });
+                throw error;
+              }
+              let frame = tmp;
+
+              // If our component frame is labeled "<anonymous>"
+              // but we have a user-provided "displayName"
+              // splice it in to make the stack more readable.
+              let tmp$1;
+              try {
+                tmp$1 = !!fn.displayName;
+              } catch (error) {
+                $cleanup(() => {
+                  reentry = false;
+                  if (__DEV__) {
+                    ReactSharedInternals.H = previousDispatcher ?? null;
+                    reenableLogs();
+                  }
+                  Error.prepareStackTrace = previousPrepareStackTrace;
+                });
+                throw error;
+              }
+              if (tmp$1 && frame.includes('<anonymous>')) {
+                let tmp;
+                try {
+                  tmp = frame.replace('<anonymous>', fn.displayName);
+                } catch (error) {
+                  $cleanup(() => {
+                    reentry = false;
+                    if (__DEV__) {
+                      ReactSharedInternals.H = previousDispatcher ?? null;
+                      reenableLogs();
+                    }
+                    Error.prepareStackTrace = previousPrepareStackTrace;
+                  });
+                  throw error;
+                }
+                frame = tmp;
+              }
+
+              if (__DEV__ && componentFrameCache != null) {
+                try {
+                  componentFrameCache.set(fn, frame);
+                } catch (error) {
+                  $cleanup(() => {
+                    reentry = false;
+                    if (__DEV__) {
+                      ReactSharedInternals.H = previousDispatcher ?? null;
+                      reenableLogs();
+                    }
+                    Error.prepareStackTrace = previousPrepareStackTrace;
+                  });
+                  throw error;
+                }
+              }
+              // Return the line we found.
+              const result = frame;
+              reentry = false;
+              if (__DEV__) {
+                ReactSharedInternals.H = previousDispatcher ?? null;
+                reenableLogs();
+              }
+              Error.prepareStackTrace = previousPrepareStackTrace;
+              return result;
+            }
+          } while (s >= 1 && c >= 0);
+        }
+        break;
+      }
+      s--;
+      c--;
     }
-    Error.prepareStackTrace = previousPrepareStackTrace;
   }
+  reentry = false;
+  if (__DEV__) {
+    ReactSharedInternals.H = previousDispatcher ?? null;
+    reenableLogs();
+  }
+  Error.prepareStackTrace = previousPrepareStackTrace;
   // Fallback to just using the name if we couldn't make it throw.
   const name = fn.displayName || fn.name;
   const syntheticFrame = name ? describeBuiltInComponentFrame(name) : '';

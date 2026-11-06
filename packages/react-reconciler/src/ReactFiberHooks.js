@@ -151,7 +151,7 @@ import {requestCurrentTransition} from './ReactFiberTransition.js';
 import {callComponentInDEV} from './ReactFiberCallUserSpace.js';
 
 import {scheduleGesture} from './ReactFiberGestureScheduler.js';
-import {$roomFor, $unwrap} from '@rust-js/runtime';
+import {$catchUnwind, $cleanup, $roomFor, $unwrap} from '@rust-js/runtime';
 
 const didWarnAboutMismatchedHooksForComponent = new Set();
 let didWarnUncachedGetSnapshot = false;
@@ -517,9 +517,13 @@ export function renderWithHooks(
         props,
         secondArg,
       );
-    } finally {
-      setIsStrictModeForDevtools(false);
+    } catch (error) {
+      $cleanup(() => {
+        setIsStrictModeForDevtools(false);
+      });
+      throw error;
     }
+    setIsStrictModeForDevtools(false);
   }
 
   finishRenderingHooks(current, workInProgress, component);
@@ -1155,9 +1159,13 @@ function mountReducer(reducer, initialArg, init) {
       setIsStrictModeForDevtools(true);
       try {
         init(initialArg);
-      } finally {
-        setIsStrictModeForDevtools(false);
+      } catch (error) {
+        $cleanup(() => {
+          setIsStrictModeForDevtools(false);
+        });
+        throw error;
       }
+      setIsStrictModeForDevtools(false);
     }
   } else {
     initialState = initialArg;
@@ -1777,9 +1785,13 @@ function mountStateImpl(initialState) {
       try {
         // $FlowFixMe[incompatible-use]: Flow doesn't like mixed types
         initialStateInitializer();
-      } finally {
-        setIsStrictModeForDevtools(false);
+      } catch (error) {
+        $cleanup(() => {
+          setIsStrictModeForDevtools(false);
+        });
+        throw error;
       }
+      setIsStrictModeForDevtools(false);
     }
   }
   hook.memoizedState = initialState;
@@ -2000,40 +2012,74 @@ function runActionStateAction(actionQueue, node) {
       }
       handleActionReturnValue(actionQueue, node, returnValue);
     } catch (error) {
-      onActionError(actionQueue, node, error);
-    } finally {
-      const currentTypes = currentTransition.types;
-      if (prevTransition != null && currentTypes != null) {
-        // If we created a new types set in the inner transition, we transfer it to the parent
-        // since they should share the same set. They're conceptually entangled.
-        const prevTypes = prevTransition.types;
-        if (__DEV__ && prevTypes != null && prevTypes !== currentTypes) {
-          // Just assert that assumption holds that we're not overriding anything.
-          console.error(
-            'We expected inner Transitions to have transferred the outer types set and ' +
-              'that you cannot add to the outer Transition while inside the inner.' +
-              'This is a bug in React.',
-          );
-        }
-        prevTransition.types = currentTypes;
-      }
-      ReactSharedInternals.T = prevTransition;
+      try {
+        onActionError(actionQueue, node, error);
+      } catch (error) {
+        $cleanup(() => {
+          const currentTypes = currentTransition.types;
+          if (prevTransition != null && currentTypes != null) {
+            // If we created a new types set in the inner transition, we transfer it to the parent
+            // since they should share the same set. They're conceptually entangled.
+            const prevTypes = prevTransition.types;
+            if (__DEV__ && prevTypes != null && prevTypes !== currentTypes) {
+              // Just assert that assumption holds that we're not overriding anything.
+              console.error(
+                'We expected inner Transitions to have transferred the outer types set and ' +
+                  'that you cannot add to the outer Transition while inside the inner.' +
+                  'This is a bug in React.',
+              );
+            }
+            prevTransition.types = currentTypes;
+          }
+          ReactSharedInternals.T = prevTransition;
 
-      if (
-        __DEV__ &&
-        prevTransition == null &&
-        currentTransition._updatedFibers != null
-      ) {
-        const updatedFibers = currentTransition._updatedFibers;
-        const updatedFibersCount = updatedFibers.size;
-        updatedFibers.clear();
-        if (updatedFibersCount > 10) {
-          console.warn(
-            'Detected a large number of updates inside startTransition. ' +
-              'If this is due to a subscription please re-write it to use React provided hooks. ' +
-              'Otherwise concurrent mode guarantees are off the table.',
-          );
-        }
+          if (
+            __DEV__ &&
+            prevTransition == null &&
+            currentTransition._updatedFibers != null
+          ) {
+            const updatedFibers = currentTransition._updatedFibers;
+            const updatedFibersCount = updatedFibers.size;
+            updatedFibers.clear();
+            if (updatedFibersCount > 10) {
+              console.warn(
+                'Detected a large number of updates inside startTransition. ' +
+                  'If this is due to a subscription please re-write it to use React provided hooks. ' +
+                  'Otherwise concurrent mode guarantees are off the table.',
+              );
+            }
+          }
+        });
+        throw error;
+      }
+    }
+    const currentTypes = currentTransition.types;
+    if (prevTransition != null && currentTypes != null) {
+      const prevTypes = prevTransition.types;
+      if (__DEV__ && prevTypes != null && prevTypes !== currentTypes) {
+        console.error(
+          'We expected inner Transitions to have transferred the outer types set and ' +
+            'that you cannot add to the outer Transition while inside the inner.' +
+            'This is a bug in React.',
+        );
+      }
+      prevTransition.types = currentTypes;
+    }
+    ReactSharedInternals.T = prevTransition;
+    if (
+      __DEV__ &&
+      prevTransition == null &&
+      currentTransition._updatedFibers != null
+    ) {
+      const updatedFibers = currentTransition._updatedFibers;
+      const updatedFibersCount = updatedFibers.size;
+      updatedFibers.clear();
+      if (updatedFibersCount > 10) {
+        console.warn(
+          'Detected a large number of updates inside startTransition. ' +
+            'If this is due to a subscription please re-write it to use React provided hooks. ' +
+            'Otherwise concurrent mode guarantees are off the table.',
+        );
       }
     }
   } else {
@@ -2632,9 +2678,13 @@ function mountMemo(nextCreate, deps) {
     setIsStrictModeForDevtools(true);
     try {
       nextCreate();
-    } finally {
-      setIsStrictModeForDevtools(false);
+    } catch (error) {
+      $cleanup(() => {
+        setIsStrictModeForDevtools(false);
+      });
+      throw error;
     }
+    setIsStrictModeForDevtools(false);
   }
   const memoized = [nextValue, nextDeps];
   hook.memoizedState = memoized;
@@ -2657,9 +2707,13 @@ function updateMemo(nextCreate, deps) {
     setIsStrictModeForDevtools(true);
     try {
       nextCreate();
-    } finally {
-      setIsStrictModeForDevtools(false);
+    } catch (error) {
+      $cleanup(() => {
+        setIsStrictModeForDevtools(false);
+      });
+      throw error;
     }
+    setIsStrictModeForDevtools(false);
   }
   const memoized = [nextValue, nextDeps];
   hook.memoizedState = memoized;
@@ -2881,48 +2935,84 @@ function startTransition(
       status: 'rejected',
       reason: error,
     };
-    dispatchSetStateInternal(
-      fiber,
-      queue,
-      rejectedThenable,
-      requestUpdateLane(fiber),
-    );
-  } finally {
-    setCurrentUpdatePriority(previousPriority);
+    try {
+      dispatchSetStateInternal(
+        fiber,
+        queue,
+        rejectedThenable,
+        requestUpdateLane(fiber),
+      );
+    } catch (error) {
+      $cleanup(() => {
+        setCurrentUpdatePriority(previousPriority);
 
-    const currentTypes = currentTransition.types;
-    if (prevTransition != null && currentTypes != null) {
-      // If we created a new types set in the inner transition, we transfer it to the parent
-      // since they should share the same set. They're conceptually entangled.
-      const prevTypes = prevTransition.types;
-      if (__DEV__ && prevTypes != null && prevTypes !== currentTypes) {
-        // Just assert that assumption holds that we're not overriding anything.
-        console.error(
-          'We expected inner Transitions to have transferred the outer types set and ' +
-            'that you cannot add to the outer Transition while inside the inner.' +
-            'This is a bug in React.',
-        );
-      }
-      prevTransition.types = currentTypes;
+        const currentTypes = currentTransition.types;
+        if (prevTransition != null && currentTypes != null) {
+          // If we created a new types set in the inner transition, we transfer it to the parent
+          // since they should share the same set. They're conceptually entangled.
+          const prevTypes = prevTransition.types;
+          if (__DEV__ && prevTypes != null && prevTypes !== currentTypes) {
+            // Just assert that assumption holds that we're not overriding anything.
+            console.error(
+              'We expected inner Transitions to have transferred the outer types set and ' +
+                'that you cannot add to the outer Transition while inside the inner.' +
+                'This is a bug in React.',
+            );
+          }
+          prevTransition.types = currentTypes;
+        }
+        ReactSharedInternals.T = prevTransition;
+
+        if (__DEV__ && prevTransition == null) {
+          const updatedFibers = currentTransition._updatedFibers;
+          function map(updatedFibers) {
+            const updatedFibersCount = updatedFibers.size;
+            updatedFibers.clear();
+            return updatedFibersCount;
+          }
+          const updatedFibersCount =
+            updatedFibers != null ? map(updatedFibers) : undefined;
+          if (updatedFibersCount != null && updatedFibersCount > 10) {
+            console.warn(
+              'Detected a large number of updates inside startTransition. ' +
+                'If this is due to a subscription please re-write it to use React provided hooks. ' +
+                'Otherwise concurrent mode guarantees are off the table.',
+            );
+          }
+        }
+      });
+      throw error;
     }
-    ReactSharedInternals.T = prevTransition;
-
-    if (__DEV__ && prevTransition == null) {
-      const updatedFibers = currentTransition._updatedFibers;
-      function map(updatedFibers) {
-        const updatedFibersCount = updatedFibers.size;
-        updatedFibers.clear();
-        return updatedFibersCount;
-      }
-      const updatedFibersCount =
-        updatedFibers != null ? map(updatedFibers) : undefined;
-      if (updatedFibersCount != null && updatedFibersCount > 10) {
-        console.warn(
-          'Detected a large number of updates inside startTransition. ' +
-            'If this is due to a subscription please re-write it to use React provided hooks. ' +
-            'Otherwise concurrent mode guarantees are off the table.',
-        );
-      }
+  }
+  setCurrentUpdatePriority(previousPriority);
+  const currentTypes = currentTransition.types;
+  if (prevTransition != null && currentTypes != null) {
+    const prevTypes = prevTransition.types;
+    if (__DEV__ && prevTypes != null && prevTypes !== currentTypes) {
+      console.error(
+        'We expected inner Transitions to have transferred the outer types set and ' +
+          'that you cannot add to the outer Transition while inside the inner.' +
+          'This is a bug in React.',
+      );
+    }
+    prevTransition.types = currentTypes;
+  }
+  ReactSharedInternals.T = prevTransition;
+  if (__DEV__ && prevTransition == null) {
+    const updatedFibers = currentTransition._updatedFibers;
+    function map(updatedFibers) {
+      const updatedFibersCount = updatedFibers.size;
+      updatedFibers.clear();
+      return updatedFibersCount;
+    }
+    const updatedFibersCount =
+      updatedFibers != null ? map(updatedFibers) : undefined;
+    if (updatedFibersCount != null && updatedFibersCount > 10) {
+      console.warn(
+        'Detected a large number of updates inside startTransition. ' +
+          'If this is due to a subscription please re-write it to use React provided hooks. ' +
+          'Otherwise concurrent mode guarantees are off the table.',
+      );
     }
   }
 }
@@ -3300,7 +3390,6 @@ function dispatchSetStateInternal(fiber, queue, action, lane) {
     enqueueRenderPhaseUpdate(queue, update);
   } else {
     const alternate = fiber.alternate;
-    let result;
     if (
       fiber.lanes === NoLanes &&
       (alternate == null || alternate.lanes === NoLanes)
@@ -3316,7 +3405,7 @@ function dispatchSetStateInternal(fiber, queue, action, lane) {
           ReactSharedInternals.H =
             InvalidNestedHooksDispatcherOnUpdateInDEV ?? null;
         }
-        try {
+        const didBailOut = $catchUnwind(() => {
           const currentState = queue.lastRenderedState;
           const eagerState = lastRenderedReducer(currentState, action);
           // Stash the eagerly computed state, and the reducer used to compute
@@ -3332,14 +3421,20 @@ function dispatchSetStateInternal(fiber, queue, action, lane) {
             // time the reducer has changed.
             // TODO: Do we still need to entangle transitions in this case?
             enqueueConcurrentHookUpdateAndEagerlyBailout(fiber, queue, update);
-            return false;
+            return true;
           }
-        } catch {
-          // Suppress the error. It will throw again in the render phase.
-        } finally {
+          return false;
+        });
+        // Suppress the error. It will throw again in the render phase.
+        if (didBailOut.TAG === 'Ok' && didBailOut._0) {
+          const result = false;
           if (__DEV__) {
             ReactSharedInternals.H = prevDispatcher ?? null;
           }
+          return result;
+        }
+        if (__DEV__) {
+          ReactSharedInternals.H = prevDispatcher ?? null;
         }
       }
     }
@@ -3700,22 +3795,34 @@ if (__DEV__) {
       checkDepsAreArrayDev(deps);
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H = InvalidNestedHooksDispatcherOnMountInDEV ?? null;
+      let result;
       try {
-        return mountMemo(create, deps);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = mountMemo(create, deps);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useReducer(reducer, initialArg, init) {
       currentHookNameInDev = 'useReducer';
       mountHookTypesDev();
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H = InvalidNestedHooksDispatcherOnMountInDEV ?? null;
+      let result;
       try {
-        return mountReducer(reducer, initialArg, init);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = mountReducer(reducer, initialArg, init);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useRef(initialValue) {
       currentHookNameInDev = 'useRef';
@@ -3727,11 +3834,17 @@ if (__DEV__) {
       mountHookTypesDev();
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H = InvalidNestedHooksDispatcherOnMountInDEV ?? null;
+      let result;
       try {
-        return mountState(initialState);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = mountState(initialState);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useDebugValue(value, formatterFn) {
       currentHookNameInDev = 'useDebugValue';
@@ -3828,22 +3941,34 @@ if (__DEV__) {
       updateHookTypesDev();
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H = InvalidNestedHooksDispatcherOnMountInDEV ?? null;
+      let result;
       try {
-        return mountMemo(create, deps);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = mountMemo(create, deps);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useReducer(reducer, initialArg, init) {
       currentHookNameInDev = 'useReducer';
       updateHookTypesDev();
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H = InvalidNestedHooksDispatcherOnMountInDEV ?? null;
+      let result;
       try {
-        return mountReducer(reducer, initialArg, init);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = mountReducer(reducer, initialArg, init);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useRef(initialValue) {
       currentHookNameInDev = 'useRef';
@@ -3855,11 +3980,17 @@ if (__DEV__) {
       updateHookTypesDev();
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H = InvalidNestedHooksDispatcherOnMountInDEV ?? null;
+      let result;
       try {
-        return mountState(initialState);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = mountState(initialState);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useDebugValue(value, formatterFn) {
       currentHookNameInDev = 'useDebugValue';
@@ -3957,11 +4088,17 @@ if (__DEV__) {
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H =
         InvalidNestedHooksDispatcherOnUpdateInDEV ?? null;
+      let result;
       try {
-        return updateMemo(create, deps);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = updateMemo(create, deps);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useReducer(reducer, initialArg, init) {
       currentHookNameInDev = 'useReducer';
@@ -3969,11 +4106,17 @@ if (__DEV__) {
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H =
         InvalidNestedHooksDispatcherOnUpdateInDEV ?? null;
+      let result;
       try {
-        return updateReducer(reducer, initialArg, init);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = updateReducer(reducer, initialArg, init);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useRef(initialValue) {
       currentHookNameInDev = 'useRef';
@@ -3986,11 +4129,17 @@ if (__DEV__) {
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H =
         InvalidNestedHooksDispatcherOnUpdateInDEV ?? null;
+      let result;
       try {
-        return updateState(initialState);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = updateState(initialState);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useDebugValue(value, formatterFn) {
       currentHookNameInDev = 'useDebugValue';
@@ -4088,11 +4237,17 @@ if (__DEV__) {
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H =
         InvalidNestedHooksDispatcherOnRerenderInDEV ?? null;
+      let result;
       try {
-        return updateMemo(create, deps);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = updateMemo(create, deps);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useReducer(reducer, initialArg, init) {
       currentHookNameInDev = 'useReducer';
@@ -4100,11 +4255,17 @@ if (__DEV__) {
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H =
         InvalidNestedHooksDispatcherOnRerenderInDEV ?? null;
+      let result;
       try {
-        return rerenderReducer(reducer, initialArg, init);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = rerenderReducer(reducer, initialArg, init);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useRef(initialValue) {
       currentHookNameInDev = 'useRef';
@@ -4117,11 +4278,17 @@ if (__DEV__) {
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H =
         InvalidNestedHooksDispatcherOnRerenderInDEV ?? null;
+      let result;
       try {
-        return rerenderState(initialState);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = rerenderState(initialState);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useDebugValue(value, formatterFn) {
       currentHookNameInDev = 'useDebugValue';
@@ -4229,11 +4396,17 @@ if (__DEV__) {
       mountHookTypesDev();
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H = InvalidNestedHooksDispatcherOnMountInDEV ?? null;
+      let result;
       try {
-        return mountMemo(create, deps);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = mountMemo(create, deps);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useReducer(reducer, initialArg, init) {
       currentHookNameInDev = 'useReducer';
@@ -4241,11 +4414,17 @@ if (__DEV__) {
       mountHookTypesDev();
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H = InvalidNestedHooksDispatcherOnMountInDEV ?? null;
+      let result;
       try {
-        return mountReducer(reducer, initialArg, init);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = mountReducer(reducer, initialArg, init);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useRef(initialValue) {
       currentHookNameInDev = 'useRef';
@@ -4259,11 +4438,17 @@ if (__DEV__) {
       mountHookTypesDev();
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H = InvalidNestedHooksDispatcherOnMountInDEV ?? null;
+      let result;
       try {
-        return mountState(initialState);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = mountState(initialState);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useDebugValue(value, formatterFn) {
       currentHookNameInDev = 'useDebugValue';
@@ -4383,11 +4568,17 @@ if (__DEV__) {
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H =
         InvalidNestedHooksDispatcherOnUpdateInDEV ?? null;
+      let result;
       try {
-        return updateMemo(create, deps);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = updateMemo(create, deps);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useReducer(reducer, initialArg, init) {
       currentHookNameInDev = 'useReducer';
@@ -4396,11 +4587,17 @@ if (__DEV__) {
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H =
         InvalidNestedHooksDispatcherOnUpdateInDEV ?? null;
+      let result;
       try {
-        return updateReducer(reducer, initialArg, init);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = updateReducer(reducer, initialArg, init);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useRef(initialValue) {
       currentHookNameInDev = 'useRef';
@@ -4415,11 +4612,17 @@ if (__DEV__) {
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H =
         InvalidNestedHooksDispatcherOnUpdateInDEV ?? null;
+      let result;
       try {
-        return updateState(initialState);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = updateState(initialState);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useDebugValue(value, formatterFn) {
       currentHookNameInDev = 'useDebugValue';
@@ -4539,11 +4742,17 @@ if (__DEV__) {
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H =
         InvalidNestedHooksDispatcherOnUpdateInDEV ?? null;
+      let result;
       try {
-        return updateMemo(create, deps);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = updateMemo(create, deps);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useReducer(reducer, initialArg, init) {
       currentHookNameInDev = 'useReducer';
@@ -4552,11 +4761,17 @@ if (__DEV__) {
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H =
         InvalidNestedHooksDispatcherOnUpdateInDEV ?? null;
+      let result;
       try {
-        return rerenderReducer(reducer, initialArg, init);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = rerenderReducer(reducer, initialArg, init);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useRef(initialValue) {
       currentHookNameInDev = 'useRef';
@@ -4571,11 +4786,17 @@ if (__DEV__) {
       const prevDispatcher = ReactSharedInternals.H;
       ReactSharedInternals.H =
         InvalidNestedHooksDispatcherOnUpdateInDEV ?? null;
+      let result;
       try {
-        return rerenderState(initialState);
-      } finally {
-        ReactSharedInternals.H = prevDispatcher ?? null;
+        result = rerenderState(initialState);
+      } catch (error) {
+        $cleanup(() => {
+          ReactSharedInternals.H = prevDispatcher ?? null;
+        });
+        throw error;
       }
+      ReactSharedInternals.H = prevDispatcher ?? null;
+      return result;
     },
     useDebugValue(value, formatterFn) {
       currentHookNameInDev = 'useDebugValue';

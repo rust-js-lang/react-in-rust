@@ -28,7 +28,7 @@ import {
   startLoggingProfilingEvents,
   stopLoggingProfilingEvents,
 } from '../SchedulerProfiling.js';
-import {$withBorrow, $withBorrowMut} from '@rust-js/runtime';
+import {$cleanup, $withBorrow, $withBorrowMut} from '@rust-js/runtime';
 
 // Max 31 bit integer. The max integer size in V8 for 32-bit systems.
 // Math.pow(2, 30) - 1
@@ -146,24 +146,74 @@ function flushWork(hasTimeRemaining, initialTime) {
   isPerformingWork = true;
   const previousPriorityLevel = currentPriorityLevel;
   let result;
-  try {
-    if (enableProfiling) {
-      try {
-        result = workLoop(hasTimeRemaining, initialTime);
-      } catch (error) {
-        const currentTask$1 = currentTask;
-        if (currentTask$1 != null) {
-          const currentTime = getCurrentTime();
-          markTaskErrored(currentTask$1, currentTime);
-          currentTask$1.isQueued = false;
+  if (enableProfiling) {
+    let hasMoreWork;
+    try {
+      hasMoreWork = workLoop(hasTimeRemaining, initialTime);
+    } catch (error) {
+      const currentTask$1 = currentTask;
+      if (currentTask$1 != null) {
+        let currentTime;
+        try {
+          currentTime = getCurrentTime();
+        } catch (error) {
+          $cleanup(() => {
+            currentTask = null;
+            currentPriorityLevel = previousPriorityLevel;
+            isPerformingWork = false;
+            if (enableProfiling) {
+              const currentTime = getCurrentTime();
+              markSchedulerSuspended(currentTime);
+            }
+          });
+          throw error;
         }
+        try {
+          markTaskErrored(currentTask$1, currentTime);
+        } catch (error) {
+          $cleanup(() => {
+            currentTask = null;
+            currentPriorityLevel = previousPriorityLevel;
+            isPerformingWork = false;
+            if (enableProfiling) {
+              const currentTime = getCurrentTime();
+              markSchedulerSuspended(currentTime);
+            }
+          });
+          throw error;
+        }
+        currentTask$1.isQueued = false;
+        try {
+          throw error;
+        } catch (error) {
+          $cleanup(() => {
+            currentTask = null;
+            currentPriorityLevel = previousPriorityLevel;
+            isPerformingWork = false;
+            if (enableProfiling) {
+              const currentTime = getCurrentTime();
+              markSchedulerSuspended(currentTime);
+            }
+          });
+          throw error;
+        }
+      }
+      try {
+        throw error;
+      } catch (error) {
+        $cleanup(() => {
+          currentTask = null;
+          currentPriorityLevel = previousPriorityLevel;
+          isPerformingWork = false;
+          if (enableProfiling) {
+            const currentTime = getCurrentTime();
+            markSchedulerSuspended(currentTime);
+          }
+        });
         throw error;
       }
-    } else {
-      // No catch in prod code path.
-      result = workLoop(hasTimeRemaining, initialTime);
     }
-  } finally {
+    result = hasMoreWork;
     currentTask = null;
     currentPriorityLevel = previousPriorityLevel;
     isPerformingWork = false;
@@ -171,8 +221,32 @@ function flushWork(hasTimeRemaining, initialTime) {
       const currentTime = getCurrentTime();
       markSchedulerSuspended(currentTime);
     }
+    return result;
+  } else {
+    try {
+      // No catch in prod code path.
+      result = workLoop(hasTimeRemaining, initialTime);
+    } catch (error) {
+      $cleanup(() => {
+        currentTask = null;
+        currentPriorityLevel = previousPriorityLevel;
+        isPerformingWork = false;
+        if (enableProfiling) {
+          const currentTime = getCurrentTime();
+          markSchedulerSuspended(currentTime);
+        }
+      });
+      throw error;
+    }
+    currentTask = null;
+    currentPriorityLevel = previousPriorityLevel;
+    isPerformingWork = false;
+    if (enableProfiling) {
+      const currentTime = getCurrentTime();
+      markSchedulerSuspended(currentTime);
+    }
+    return result;
   }
-  return result;
 }
 
 function workLoop(hasTimeRemaining, initialTime) {

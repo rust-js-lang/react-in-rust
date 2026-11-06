@@ -4723,12 +4723,7 @@ function abortRemainingReplayNodes(
         throw error;
       }
     }
-    try {
-      $unborrow(boundaryNode);
-    } catch (error) {
-      $unborrow(borrow);
-      throw error;
-    }
+    $unborrow(boundaryNode);
   }
   // Empty the set, since we've cleared it now.
   $borrowMut(nodes).length = 0;

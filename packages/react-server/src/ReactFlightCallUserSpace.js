@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {setCurrentOwner} from './flight/ReactFlightCurrentOwner.js';
+import {$cleanup} from '@rust-js/runtime';
 
 // These indirections exists so we can exclude its stack frame in DEV (and anything below it).
 // TODO: Consider marking the whole bundle instead of these boundaries.
@@ -15,11 +16,17 @@ const callComponent = {
     const secondArg = undefined;
     setCurrentOwner(componentDebugInfo);
     const _clear = undefined;
+    let result;
     try {
-      return Component(props, secondArg);
-    } finally {
-      setCurrentOwner(null);
+      result = Component(props, secondArg);
+    } catch (error) {
+      $cleanup(() => {
+        setCurrentOwner(null);
+      });
+      throw error;
     }
+    setCurrentOwner(null);
+    return result;
   },
 };
 

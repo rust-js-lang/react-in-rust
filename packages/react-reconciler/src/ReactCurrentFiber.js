@@ -10,6 +10,7 @@ import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {getOwnerStackByFiberInDev} from './ReactFiberComponentStack.js';
 
 import {getComponentNameFromOwner} from './getComponentNameFromFiber.js';
+import {$cleanup} from '@rust-js/runtime';
 
 export let current = null;
 export let isRendering = false;
@@ -53,15 +54,38 @@ export function runWithFiberInDEV(
   if (__DEV__) {
     const previousFiber = current;
     setCurrentFiber(fiber);
-    try {
-      if (fiber != null && fiber._debugTask != null) {
-        const debugTask = fiber._debugTask;
-        return debugTask.run(() => callback(arg0, arg1, arg2, arg3, arg4));
+    const _restore = [previousFiber];
+    let result;
+    if (fiber != null && fiber._debugTask != null) {
+      const debugTask = fiber._debugTask;
+      try {
+        result = debugTask.run(() => callback(arg0, arg1, arg2, arg3, arg4));
+      } catch (error) {
+        $cleanup(() => {
+          const old = _restore[0];
+          _restore[0] = undefined;
+          setCurrentFiber(old);
+        });
+        throw error;
       }
-      return callback(arg0, arg1, arg2, arg3, arg4);
-    } finally {
-      setCurrentFiber(previousFiber);
+      const old = _restore[0];
+      _restore[0] = undefined;
+      setCurrentFiber(old);
+      return result;
     }
+    try {
+      result = callback(arg0, arg1, arg2, arg3, arg4);
+    } catch (error) {
+      $cleanup(() => {
+        const old = _restore[0];
+        _restore[0] = undefined;
+        setCurrentFiber(old);
+      });
+      throw error;
+    }
+    const old = _restore[0];
+    setCurrentFiber(old);
+    return result;
   }
   // These errors should never make it into a build so we don't need to encode them in codes.json
   // eslint-disable-next-line react-internal/prod-error-codes
