@@ -1293,13 +1293,9 @@ function createReactNoop(reconciler, useMutation) {
       currentEventPriority.value = IdleEventPriority;
       try {
         fn();
-      } catch (error) {
-        $cleanup(() => {
-          currentEventPriority.value = prevEventPriority;
-        });
-        throw error;
+      } finally {
+        currentEventPriority.value = prevEventPriority;
       }
-      currentEventPriority.value = prevEventPriority;
     },
 
     flushSync,
