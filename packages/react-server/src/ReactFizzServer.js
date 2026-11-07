@@ -6041,7 +6041,7 @@ function flushSegment(request, destination, segment, hoistableState) {
       );
     }
 
-    const contentSegment = $index($borrow(completedSegments), 0);
+    const contentSegment = $borrow(completedSegments)[0];
     flushSegment(request, destination, contentSegment, hoistableState);
 
     return writeEndCompletedSuspenseBoundary(destination, request.renderState);

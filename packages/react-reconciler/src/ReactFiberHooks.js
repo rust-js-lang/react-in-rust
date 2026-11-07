@@ -708,7 +708,7 @@ function renderWithHooksAgain(workInProgress, component, props, secondArg) {
       );
     }
 
-    numberOfReRenders = (numberOfReRenders + 1) >>> 0;
+    numberOfReRenders++;
     if (__DEV__) {
       // Even when hot reloading, allow dependencies to stabilize
       // after first render to prevent infinite render phase updates.
