@@ -31,7 +31,7 @@ import {
   checkEvalAvailabilityOnceDev,
   usedWithSSR,
 } from './ReactFlightClientConfig.js';
-import {$catchUnwind, $getOrInit, $unwound, $unwrap} from '@rust-js/runtime';
+import {$catchUnwind, $getOrInit, $unwound, $unwrap} from '@rust-js/std';
 
 const ObjectPrototype = Object.prototype;
 

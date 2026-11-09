@@ -3981,10 +3981,6 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.35.0.tgz#05f25dbc9981bee1ae6e713daab10397044a46ca"
   integrity sha512-PIQeY5XDkrOysbQblSW7v3l1MDZzkTEzAfTPkj5VAu3FW8fS4ynyLg2sINp0fp3SjZ8xkRYpLqoKcYqAkhU1dw==
 
-"@rust-js/runtime@link:../rust-js/runtime":
-  version "0.0.0"
-  uid ""
-
 "@rust-js/std@link:../rust-js/std":
   version "0.0.0"
   uid ""

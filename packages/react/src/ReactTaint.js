@@ -12,7 +12,7 @@ import getPrototypeOf from 'shared/getPrototypeOf';
 import binaryToComparableString from 'shared/binaryToComparableString';
 
 import ReactSharedInternals from './ReactSharedInternalsServer.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 let TaintRegistryObjects;
 let TaintRegistryValues;

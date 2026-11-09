@@ -157,7 +157,7 @@ import {
   $unborrow,
   $unwrap,
   $withBorrowMut,
-} from '@rust-js/runtime';
+} from '@rust-js/std';
 
 export const rendererPackageName = 'react-dom';
 export const extraDevToolsConfig = null;

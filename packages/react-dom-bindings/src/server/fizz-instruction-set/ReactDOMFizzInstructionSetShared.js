@@ -3,7 +3,7 @@
 // Shared implementation and constants between the inline script and external
 // runtime instruction sets.
 
-import {$index, $unwrap} from '@rust-js/runtime';
+import {$index, $unwrap} from '@rust-js/std';
 
 const ELEMENT_NODE = 1;
 const COMMENT_NODE = 8;

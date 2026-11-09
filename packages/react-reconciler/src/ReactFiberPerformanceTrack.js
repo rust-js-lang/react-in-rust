@@ -30,7 +30,7 @@ import {
   enablePerformanceIssueReporting,
   enableProfilerTimer,
 } from 'shared/ReactFeatureFlags';
-import {$borrow, $fieldCell, $unborrow, $unwrap} from '@rust-js/runtime';
+import {$borrow, $fieldCell, $unborrow, $unwrap} from '@rust-js/std';
 
 const supportsUserTiming =
   enableProfilerTimer &&

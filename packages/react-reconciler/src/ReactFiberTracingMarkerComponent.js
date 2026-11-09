@@ -9,7 +9,7 @@ import {enableTransitionTracing} from 'shared/ReactFeatureFlags';
 
 import {createCursor, pop, push} from './ReactFiberStack.js';
 import {getWorkInProgressTransitions} from './ReactFiberWorkLoop.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 export const TransitionRoot = 0;
 export const TransitionTracingMarker = 1;

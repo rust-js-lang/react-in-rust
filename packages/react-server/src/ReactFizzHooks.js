@@ -35,7 +35,7 @@ import {getFormState} from './ReactFizzServer.js';
 import noop from 'shared/noop';
 
 import {createFastHash} from './ReactServerStreamConfig.js';
-import {$roomFor, $unwrap} from '@rust-js/runtime';
+import {$roomFor, $unwrap} from '@rust-js/std';
 
 let currentlyRenderingComponent = null;
 let currentlyRenderingTask = null;

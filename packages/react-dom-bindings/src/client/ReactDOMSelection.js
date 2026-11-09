@@ -7,7 +7,7 @@
 
 import getNodeForCharacterOffset from './getNodeForCharacterOffset.js';
 import {TEXT_NODE} from './HTMLNodeType.js';
-import {$some, $someValue, $unwrap} from '@rust-js/runtime';
+import {$some, $someValue, $unwrap} from '@rust-js/std';
 
 /**
  * @param {DOMElement} outerNode

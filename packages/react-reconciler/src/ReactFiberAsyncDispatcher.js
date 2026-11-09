@@ -10,7 +10,7 @@ import {readContext} from './ReactFiberNewContext.js';
 import {CacheContext} from './ReactFiberCacheComponent.js';
 
 import {current as currentOwner} from './ReactCurrentFiber.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 function getCacheForType(resourceType) {
   const cache = $unwrap(readContext(CacheContext));

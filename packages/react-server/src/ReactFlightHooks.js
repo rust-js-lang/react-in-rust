@@ -13,7 +13,7 @@ import {
 import {createThenableState, trackUsedThenable} from './ReactFlightThenable.js';
 
 import {isClientReference} from './ReactFlightServerConfig.js';
-import {$roomFor} from '@rust-js/runtime';
+import {$roomFor} from '@rust-js/std';
 
 let currentRequest = null;
 let thenableIndexCounter = 0;

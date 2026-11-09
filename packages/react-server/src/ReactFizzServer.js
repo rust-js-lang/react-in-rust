@@ -196,7 +196,7 @@ import {
   $unwinding,
   $unwound,
   $unwrap,
-} from '@rust-js/runtime';
+} from '@rust-js/std';
 
 const CLIENT_RENDERED = 4; // if it errors or infinitely suspends
 

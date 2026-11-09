@@ -28,7 +28,7 @@ import assign from 'shared/assign';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 
 import isArray from 'shared/isArray';
-import {$borrow, $index, $unborrow} from '@rust-js/runtime';
+import {$borrow, $index, $unborrow} from '@rust-js/std';
 
 const maxRowLength = 120;
 const idealDepth = 15;

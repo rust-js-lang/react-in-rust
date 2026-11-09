@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$f64ToInt, $pad} from '@rust-js/runtime';
+import {$f64ToInt, $pad} from '@rust-js/std';
 
 // Ids are base 32 strings whose binary representation corresponds to the
 // position of a node in a tree.

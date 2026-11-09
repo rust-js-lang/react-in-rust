@@ -8,7 +8,7 @@
 import {REACT_LAZY_TYPE} from 'shared/ReactSymbols';
 
 import noop from 'shared/noop';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 const Uninitialized = -1;
 const Pending = 0;

@@ -24,7 +24,7 @@ import {
   setupIntersectionObserver,
   supportsTestSelectors,
 } from './ReactFiberConfig.js';
-import {$index, $withBorrow, $withBorrowMut} from '@rust-js/runtime';
+import {$index, $withBorrow, $withBorrowMut} from '@rust-js/std';
 
 let COMPONENT_TYPE = 0b000;
 let HAS_PSEUDO_CLASS_TYPE = 0b001;

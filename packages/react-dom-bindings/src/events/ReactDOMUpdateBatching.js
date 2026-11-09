@@ -15,7 +15,7 @@ import {
   needsStateRestore,
   restoreStateIfNeeded,
 } from './ReactDOMControlledComponent.js';
-import {$cleanup} from '@rust-js/runtime';
+import {$cleanup} from '@rust-js/std';
 
 // Used as a way to call batchedUpdates when we don't have a reference to
 // the renderer. Such as when we're dispatching events or if third party

@@ -22,7 +22,7 @@ import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
 
 import {clz32} from './clz32.js';
 import {LegacyRoot} from './ReactRootTags.js';
-import {$at, $index} from '@rust-js/runtime';
+import {$at, $index} from '@rust-js/std';
 
 // TODO: Ideally these types would be opaque but that doesn't work well with
 // our reconciler fork infra, since these leak into non-reconciler packages.

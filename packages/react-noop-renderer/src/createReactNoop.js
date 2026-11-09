@@ -33,7 +33,7 @@ import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 import ReactVersion from 'shared/ReactVersion';
-import {$cleanup, $displayF64, $unwrap} from '@rust-js/runtime';
+import {$cleanup, $displayF64, $unwrap} from '@rust-js/std';
 
 const NO_CONTEXT = {};
 const UPPERCASE_CONTEXT = {};

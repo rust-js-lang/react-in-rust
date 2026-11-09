@@ -20,7 +20,7 @@
 // ecosystem is MurmurHash3, and almost all implementations I could find used
 // some version of the implementation by Gary Court inlined below.
 
-import {$encodeUtf16, $index} from '@rust-js/runtime';
+import {$encodeUtf16, $index} from '@rust-js/std';
 
 export function createFastHashJS(key) {
   return murmurhash3_32_gc(key, 0);

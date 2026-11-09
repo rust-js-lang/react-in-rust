@@ -16,7 +16,7 @@ import {
 import reportGlobalError from 'shared/reportGlobalError';
 
 import noop from 'shared/noop';
-import {$catchUnwind, $cleanup} from '@rust-js/runtime';
+import {$catchUnwind, $cleanup} from '@rust-js/std';
 
 function releaseAsyncTransition() {
   if (__DEV__) {

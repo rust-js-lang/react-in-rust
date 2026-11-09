@@ -92,7 +92,7 @@ import {
 import {trackAnimatingTask} from './ReactProfilerTimer.js';
 
 import {scheduleGestureTransitionEvent} from './ReactFiberWorkLoop.js';
-import {$cleanup, $index, $unwrap} from '@rust-js/runtime';
+import {$cleanup, $index, $unwrap} from '@rust-js/std';
 
 // Used during the apply phase to track whether a parent ViewTransition component
 // might have been affected by any mutations / relayouts below.

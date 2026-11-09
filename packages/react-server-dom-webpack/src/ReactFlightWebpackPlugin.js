@@ -18,7 +18,7 @@ import Template from 'webpack/lib/Template';
 import ModuleDependency from 'webpack/lib/dependencies/ModuleDependency';
 import NullDependency from 'webpack/lib/dependencies/NullDependency';
 import neoAsync from 'neo-async';
-import {$next} from '@rust-js/runtime';
+import {$next} from '@rust-js/std';
 
 export class ClientReferenceDependency extends ModuleDependency {
   constructor(request) {

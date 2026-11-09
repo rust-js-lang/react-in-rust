@@ -69,7 +69,7 @@ import {
   $cellReplace,
   $fieldCell,
   $unborrow,
-} from '@rust-js/runtime';
+} from '@rust-js/std';
 
 // This tracks the thenables that are unwrapped during reconcilation.
 let thenableState = null;

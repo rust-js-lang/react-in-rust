@@ -32,7 +32,7 @@ function write(destination, buffer) {
 }
 
 import ReactFizzServer from 'react-server';
-import {$index, $splice} from '@rust-js/runtime';
+import {$index, $splice} from '@rust-js/std';
 
 // $FlowFixMe[prop-missing]
 // $FlowFixMe[incompatible-type]

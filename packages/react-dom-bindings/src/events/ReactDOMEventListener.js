@@ -55,7 +55,7 @@ import {
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
-import {$cleanup} from '@rust-js/runtime';
+import {$cleanup} from '@rust-js/std';
 
 // TODO: can we stop exporting these?
 let _enabled = true;

@@ -17,7 +17,7 @@ import {isAwaitInUserspace, resolveRequest} from './ReactFlightServer.js';
 import {AsyncResource, createHook, executionAsyncId} from 'async_hooks';
 
 import {parseStackTracePrivate} from './ReactFlightServerConfig.js';
-import {$fieldCell, $try, $withBorrow} from '@rust-js/runtime';
+import {$fieldCell, $try, $withBorrow} from '@rust-js/std';
 
 const pendingOperations = new Map();
 

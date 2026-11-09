@@ -24,7 +24,7 @@ import FastNoSideEffects from 'art/modes/fast-noSideEffects';
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 
 import {TYPES, childrenAsString} from './ReactARTInternals.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 function defaultOnDefaultTransitionIndicator() {
   // Noop

@@ -265,7 +265,7 @@ import {
   untrackNamedViewTransition,
 } from './ReactFiberDuplicateViewTransitions.js';
 import {markIndicatorHandled} from './ReactFiberRootScheduler.js';
-import {$index, $unwrap} from '@rust-js/runtime';
+import {$index, $unwrap} from '@rust-js/std';
 
 // shared/ReactTypes' `Wakeable`.
 

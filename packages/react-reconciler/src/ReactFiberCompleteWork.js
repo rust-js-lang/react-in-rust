@@ -178,7 +178,7 @@ import {
 } from './ReactFiberTracingMarkerComponent.js';
 
 import {suspendCommit} from './ReactFiberThenable.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 /**
  * Tag the fiber with an update effect. This turns a Placement into

@@ -40,7 +40,7 @@ import {
   readFinalStringChunk,
   readPartialStringChunk as readPartialStringChunk$1,
 } from 'react-client/src/ReactFlightClientStreamConfigWeb';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 

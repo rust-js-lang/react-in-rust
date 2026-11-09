@@ -282,13 +282,7 @@ import {
   callRenderInDEV,
 } from './ReactFiberCallUserSpace.js';
 import {resolveLazy} from './ReactFiberThenable.js';
-import {
-  $borrow,
-  $cleanup,
-  $fieldCell,
-  $unborrow,
-  $unwrap,
-} from '@rust-js/runtime';
+import {$borrow, $cleanup, $fieldCell, $unborrow, $unwrap} from '@rust-js/std';
 
 // A special exception that's used to unwind the stack when an update flows
 // into a dehydrated boundary.

@@ -52,7 +52,7 @@ import {
   disableLegacyMode,
   enableReactTestRendererWarning,
 } from 'shared/ReactFeatureFlags';
-import {$index, $unwrap} from '@rust-js/runtime';
+import {$index, $unwrap} from '@rust-js/std';
 
 function defaultOnDefaultTransitionIndicator() {}
 

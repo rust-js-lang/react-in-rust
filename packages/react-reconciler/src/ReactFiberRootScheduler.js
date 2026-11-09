@@ -90,7 +90,7 @@ import {
   retainIsomorphicIndicator,
   startIsomorphicDefaultIndicatorIfNeeded,
 } from './ReactFiberAsyncAction.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 // A linked list of all the roots with pending work. In an idiomatic app,
 // there's only a single root, but we do support multi root apps, hence this

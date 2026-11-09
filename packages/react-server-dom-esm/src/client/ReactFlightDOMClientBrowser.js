@@ -17,7 +17,7 @@ import {
 } from 'react-client/src/ReactFlightClient';
 
 import {processReply} from 'react-client/src/ReactFlightReplyClient';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 export {
   createServerReference,

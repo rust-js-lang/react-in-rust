@@ -30,7 +30,7 @@ import {
   getBackingString,
   getStreamChunks,
 } from './ReactFlightReplyBackingFormData.js';
-import {$cleanup, $index, $unwrap} from '@rust-js/runtime';
+import {$cleanup, $index, $unwrap} from '@rust-js/std';
 
 const __PROTO__ = '__proto__';
 

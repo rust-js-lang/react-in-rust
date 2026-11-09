@@ -25,7 +25,7 @@ import {
   processDispatchQueue,
 } from '../DOMPluginEventSystem.js';
 import isCustomElement from '../../shared/isCustomElement.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 export function registerEvents() {
   registerTwoPhaseEvent('onChange', [

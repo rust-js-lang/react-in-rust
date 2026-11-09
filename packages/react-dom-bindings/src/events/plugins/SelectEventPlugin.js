@@ -20,7 +20,7 @@ import {hasSelectionCapabilities} from '../../client/ReactInputSelection.js';
 import {DOCUMENT_NODE} from '../../client/HTMLNodeType.js';
 
 import {accumulateTwoPhaseListeners} from '../DOMPluginEventSystem.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 const skipSelectionChangeEvent =
   canUseDOM && 'documentMode' in document && document.documentMode <= 11;

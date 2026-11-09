@@ -64,7 +64,7 @@ import {
   setIsStrictModeForDevtools,
 } from './ReactFiberDevToolsHook.js';
 import {startUpdateTimerByLane} from './ReactProfilerTimer.js';
-import {$cleanup} from '@rust-js/runtime';
+import {$cleanup} from '@rust-js/std';
 
 const fakeInternalInstance = {};
 

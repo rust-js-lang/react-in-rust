@@ -13,7 +13,7 @@ import {
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import {enableProfilerTimer} from 'shared/ReactFeatureFlags';
-import {$insertAt, $position} from '@rust-js/runtime';
+import {$insertAt, $position} from '@rust-js/std';
 
 // TODO: Consider exporting the react-native version.
 export {default as rendererVersion} from 'shared/ReactVersion';

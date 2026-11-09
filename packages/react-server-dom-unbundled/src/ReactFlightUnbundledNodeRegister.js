@@ -8,7 +8,7 @@
 import Module from 'module';
 import {pathToFileURL} from 'url';
 import * as acorn from 'acorn-loose';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 export default function register() {
   const registerServerReference =

@@ -78,7 +78,7 @@ import {
 } from './ReactFiberCallUserSpace.js';
 
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
-import {$cleanup, $unwrap} from '@rust-js/runtime';
+import {$cleanup, $unwrap} from '@rust-js/std';
 
 function shouldProfile(current) {
   return (

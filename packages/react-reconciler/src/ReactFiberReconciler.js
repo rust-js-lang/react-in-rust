@@ -126,7 +126,7 @@ export {
 import {TotalLanes, getLabelForLane} from './ReactFiberLane.js';
 
 import {registerDefaultIndicator} from './ReactFiberAsyncAction.js';
-import {$index, $unwrap} from '@rust-js/runtime';
+import {$index, $unwrap} from '@rust-js/std';
 
 let didWarnAboutNestedUpdates;
 let didWarnAboutFindNodeInStrictMode;

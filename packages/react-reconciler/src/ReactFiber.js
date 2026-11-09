@@ -100,7 +100,7 @@ import {
   $cellReplace,
   $fieldCell,
   $unborrow,
-} from '@rust-js/runtime';
+} from '@rust-js/std';
 
 let hasBadMapPolyfill;
 

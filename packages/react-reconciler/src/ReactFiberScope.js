@@ -19,7 +19,7 @@ import {
   ScopeComponent,
 } from './ReactWorkTags.js';
 import {enableScopeAPI} from 'shared/ReactFeatureFlags';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 function getSuspenseFallbackChild(fiber) {
   return $unwrap($unwrap(fiber.child).sibling).child;

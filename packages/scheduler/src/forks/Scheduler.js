@@ -38,7 +38,7 @@ import {
   startLoggingProfilingEvents,
   stopLoggingProfilingEvents,
 } from '../SchedulerProfiling.js';
-import {$cleanup, $withBorrow, $withBorrowMut} from '@rust-js/runtime';
+import {$cleanup, $withBorrow, $withBorrowMut} from '@rust-js/std';
 
 let getCurrentTime;
 if (typeof performance === 'object' && typeof performance.now === 'function') {

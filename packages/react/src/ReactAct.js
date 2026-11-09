@@ -9,7 +9,7 @@ import ReactSharedInternals from './ReactSharedInternalsClient.js';
 import queueMacrotask from 'shared/enqueueTask';
 
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
-import {$at, $drain, $unwrap} from '@rust-js/runtime';
+import {$at, $drain, $unwrap} from '@rust-js/std';
 
 // `act` calls can be nested, so we track the depth. This represents the
 // number of `act` scopes on the stack.

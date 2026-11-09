@@ -21,7 +21,7 @@ import {
 import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
 import isArray from 'shared/isArray';
 import {enableOptimisticKey, ownerStackLimit} from 'shared/ReactFeatureFlags';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 function noTask(name) {
   return null;

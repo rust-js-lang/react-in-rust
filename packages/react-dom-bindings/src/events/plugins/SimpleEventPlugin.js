@@ -42,7 +42,7 @@ import {
 import getEventCharCode from '../getEventCharCode.js';
 
 import {enableCreateEventHandleAPI} from 'shared/ReactFeatureFlags';
-import {$someGet, $someValue, $withBorrow} from '@rust-js/runtime';
+import {$someGet, $someValue, $withBorrow} from '@rust-js/std';
 
 export {registerSimpleEvents as registerEvents} from '../DOMEventProperties.js';
 

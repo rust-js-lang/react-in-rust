@@ -10,7 +10,7 @@ import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {getOwnerStackByFiberInDev} from './ReactFiberComponentStack.js';
 
 import {getComponentNameFromOwner} from './getComponentNameFromFiber.js';
-import {$cleanup} from '@rust-js/runtime';
+import {$cleanup} from '@rust-js/std';
 
 export let current = null;
 export let isRendering = false;

@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import * as React from 'react';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 const ReactSharedInternalsServer = $unwrap(
   React.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,

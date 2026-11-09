@@ -9,7 +9,7 @@ import {ATTRIBUTE_NAME_CHAR} from './isAttributeNameSafe.js';
 import isCustomElement from './isCustomElement.js';
 import possibleStandardNames from './possibleStandardNames.js';
 import hasOwnProperty from 'shared/hasOwnProperty';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 const warnedProperties = {};
 const EVENT_NAME_REGEX = /^on./;

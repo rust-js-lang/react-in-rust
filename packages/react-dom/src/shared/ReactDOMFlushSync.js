@@ -12,7 +12,7 @@ import {DiscreteEventPriority} from 'react-reconciler/src/ReactEventPriorities';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
-import {$cleanup} from '@rust-js/runtime';
+import {$cleanup} from '@rust-js/std';
 
 function flushSyncImpl(fn) {
   const previousTransition = ReactSharedInternals.T;

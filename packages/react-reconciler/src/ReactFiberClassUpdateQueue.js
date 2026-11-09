@@ -127,7 +127,7 @@ import {
   peekEntangledActionLane,
   peekEntangledActionThenable,
 } from './ReactFiberAsyncAction.js';
-import {$cleanup, $unwrap} from '@rust-js/runtime';
+import {$cleanup, $unwrap} from '@rust-js/std';
 
 export const UpdateState = 0;
 export const ReplaceState = 1;

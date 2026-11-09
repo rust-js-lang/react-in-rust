@@ -148,7 +148,7 @@ import {
   $unwinding,
   $unwound,
   $unwrap,
-} from '@rust-js/runtime';
+} from '@rust-js/std';
 
 // DEV-only set containing internal objects that should not be limited and turned into getters.
 const doNotLimit$1 = __DEV__ ? new WeakSet() : undefined;

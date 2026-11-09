@@ -151,7 +151,7 @@ import {requestCurrentTransition} from './ReactFiberTransition.js';
 import {callComponentInDEV} from './ReactFiberCallUserSpace.js';
 
 import {scheduleGesture} from './ReactFiberGestureScheduler.js';
-import {$catchUnwind, $cleanup, $roomFor, $unwrap} from '@rust-js/runtime';
+import {$catchUnwind, $cleanup, $roomFor, $unwrap} from '@rust-js/std';
 
 const didWarnAboutMismatchedHooksForComponent = new Set();
 let didWarnUncachedGetSnapshot = false;

@@ -24,7 +24,7 @@ import {
 import {enableViewTransition} from 'shared/ReactFeatureFlags';
 
 import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 function shouldConstruct(component) {
   const prototype = component.prototype;

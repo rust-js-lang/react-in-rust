@@ -16,7 +16,7 @@ import {REACT_CONSUMER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
 
 import assign from 'shared/assign';
 import isArray from 'shared/isArray';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 const didWarnAboutNoopUpdateForComponent = {};
 const didWarnAboutDeprecatedWillMount = {};

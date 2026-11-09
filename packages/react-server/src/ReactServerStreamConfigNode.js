@@ -9,7 +9,7 @@ import {TextEncoder} from 'util';
 
 import {createHash} from 'crypto';
 import hasOwnProperty from 'shared/hasOwnProperty';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 const supportsArrayBufferDetached = hasOwnProperty.call(
   ArrayBuffer.prototype,

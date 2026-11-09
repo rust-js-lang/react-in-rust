@@ -7,7 +7,7 @@
 
 // TODO: This is pretty well supported by browsers. Maybe we can drop it.
 
-import {$f64ToInt} from '@rust-js/runtime';
+import {$f64ToInt} from '@rust-js/std';
 
 export const clz32 =
   typeof Math.clz32 !== 'undefined' ? Math.clz32 : clz32Fallback;

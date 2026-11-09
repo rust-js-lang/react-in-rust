@@ -403,7 +403,7 @@ import {
   stopCommittedGesture,
 } from './ReactFiberGestureScheduler.js';
 import {claimQueuedTransitionTypes} from './ReactFiberTransitionTypes.js';
-import {$cleanup, $unwrap} from '@rust-js/runtime';
+import {$cleanup, $unwrap} from '@rust-js/std';
 
 const PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map;
 

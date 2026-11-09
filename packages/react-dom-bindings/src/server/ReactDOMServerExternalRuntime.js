@@ -8,7 +8,7 @@
 // Imports are resolved statically by the closure compiler in release bundles
 // and by rollup in jest unit tests
 import './fizz-instruction-set/ReactDOMFizzInstructionSetExternalRuntime.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 const body = document.body;
 

@@ -12,7 +12,7 @@ import ReactSharedInternals from './ReactSharedInternals.js';
 import DefaultPrepareStackTrace from './DefaultPrepareStackTrace.js';
 
 import {formatOwnerStack} from './ReactOwnerStackFrames.js';
-import {$cleanup} from '@rust-js/runtime';
+import {$cleanup} from '@rust-js/std';
 
 let prefix;
 let suffix = '';

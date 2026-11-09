@@ -12,7 +12,7 @@ import {
 } from 'react-reconciler/src/ReactEventPriorities';
 
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
-import {$cleanup} from '@rust-js/runtime';
+import {$cleanup} from '@rust-js/std';
 
 export function setCurrentUpdatePriority(
   newPriority,

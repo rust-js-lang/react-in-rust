@@ -79,7 +79,7 @@ import {
   listenToNonDelegatedEvent,
   mediaEventTypes,
 } from '../events/DOMPluginEventSystem.js';
-import {$catchUnwind, $unwrap} from '@rust-js/runtime';
+import {$catchUnwind, $unwrap} from '@rust-js/std';
 
 let didWarnControlledToUncontrolled = false;
 let didWarnUncontrolledToControlled = false;

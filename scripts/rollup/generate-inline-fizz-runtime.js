@@ -61,9 +61,9 @@ async function main() {
   const exportStatements = await Promise.all(
     config.map(async ({entry, exportName}) => {
       const fullEntryPath = instructionDir + '/' + entry;
-      // The entry, its instruction set and the @rust-js/runtime helpers that
+      // The entry, its instruction set and the @rust-js/std helpers that
       // rust-js's JS of them imports, one module: the helpers they call,
-      // as the runtime is tree-shakable.
+      // as the package is tree-shakable.
       const bundle = await rollup({input: fullEntryPath, plugins: [resolve()]});
       const {output} = await bundle.generate({format: 'es'});
       const bundled = output[0].code;

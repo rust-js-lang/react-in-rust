@@ -9,12 +9,7 @@ import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {NoMode, StrictLegacyMode} from './ReactTypeOfMode.js';
-import {
-  $assign,
-  $borrowMut,
-  $withBorrow,
-  $withBorrowMut,
-} from '@rust-js/runtime';
+import {$assign, $borrowMut, $withBorrow, $withBorrowMut} from '@rust-js/std';
 
 const ReactStrictModeWarnings = {
   recordUnsafeLifecycleWarnings(fiber, instance) {},

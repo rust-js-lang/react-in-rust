@@ -84,7 +84,7 @@ import {noopSuspenseyCommitThenable} from './ReactFiberThenable.js';
 
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {callComponentDidCatchInDEV} from './ReactFiberCallUserSpace.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 export function createRootErrorUpdate(root, errorInfo, lane) {
   const update = createUpdate(lane);

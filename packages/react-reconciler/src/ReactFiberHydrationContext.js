@@ -60,7 +60,7 @@ import {getHostContext, getRootHostContainer} from './ReactFiberHostContext.js';
 import {describeDiff} from './ReactFiberHydrationDiffs.js';
 
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
-import {$borrowMut, $index} from '@rust-js/runtime';
+import {$borrowMut, $index} from '@rust-js/std';
 
 // The deepest Fiber on the stack involved in a hydration context.
 // This may have been an insertion or a hydration.

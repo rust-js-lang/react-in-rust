@@ -8,7 +8,7 @@
 import createMappingsSerializer from 'webpack-sources/lib/helpers/createMappingsSerializer.js';
 import readMappings from 'webpack-sources/lib/helpers/readMappings.js';
 import * as acorn from 'acorn-loose';
-import {$KeySet, $index, $try, $unwrap} from '@rust-js/runtime';
+import {$KeySet, $index, $try, $unwrap} from '@rust-js/std';
 
 let warnedAboutConditionsFlag = false;
 

@@ -16,7 +16,7 @@ import {enableConditionalUseWarning} from 'shared/ReactFeatureFlags';
 import noop from 'shared/noop';
 
 import {HostRoot} from './ReactWorkTags.js';
-import {$borrow, $fieldCell, $unborrow, $unwrap} from '@rust-js/runtime';
+import {$borrow, $fieldCell, $unborrow, $unwrap} from '@rust-js/std';
 
 // An error that is thrown (e.g. by `use`) to trigger Suspense. If we
 // detect this is caught by userspace, we'll log a warning in development.

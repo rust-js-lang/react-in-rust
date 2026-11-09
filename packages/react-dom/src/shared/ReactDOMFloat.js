@@ -11,7 +11,7 @@ import {
   getCrossOriginString,
   getCrossOriginStringAs,
 } from 'react-dom-bindings/src/shared/crossOriginStrings';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 // Each function is given what JS gives, a string or not, and tests it, as
 // a caller may give anything: `href` a string and `options` one of

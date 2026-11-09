@@ -62,7 +62,7 @@ import {getIsHydrating} from './ReactFiberHydrationContext.js';
 
 import {clz32} from './clz32.js';
 import {Forked, NoFlags} from './ReactFiberFlags.js';
-import {$pad, $unwrap} from '@rust-js/runtime';
+import {$pad, $unwrap} from '@rust-js/std';
 
 // A pushed id: its tree context's id, overflow and provider.
 

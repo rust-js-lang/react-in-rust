@@ -93,7 +93,7 @@ import {
   $unborrow,
   $unwound,
   $unwrap,
-} from '@rust-js/runtime';
+} from '@rust-js/std';
 
 // TODO: This is an unfortunate hack. We shouldn't feature detect the internals
 // like this. It's just that for now we support the same build of the Flight

@@ -33,9 +33,8 @@ react-in-rust reaches rust-js only through `../rust-js`:
 - **Cargo:** the workspace's `Cargo.toml` takes `js`, `webapi` and `node`
   as path dependencies: `../rust-js/builtins`, `../rust-js/webapi` and
   `../rust-js/node`.
-- **npm:** `package.json` links `@rust-js/runtime` and `@rust-js/std`, the
-  packages the generated JS imports, to `../rust-js/runtime` and
-  `../rust-js/std`. `yarn rust` runs `../rust-js/tooling/cli.js build`.
+- **npm:** `package.json` links `@rust-js/std`, the one package the
+  generated JS imports, to `../rust-js/std`. `yarn rust` runs `../rust-js/tooling/cli.js build`.
 
 After you pull rust-js, run `bun run build` there again before building here.
 

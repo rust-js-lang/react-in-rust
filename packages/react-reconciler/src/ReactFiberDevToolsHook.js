@@ -25,7 +25,7 @@ import {
   log,
   unstable_setDisableYieldValue,
 } from './Scheduler.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 let rendererID = null;
 let injectedHook = null;

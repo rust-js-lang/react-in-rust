@@ -71,7 +71,7 @@ import {
   writeChunkAndReturn,
 } from 'react-server/src/ReactServerStreamConfig';
 import {doctypeChunk as doctypeChunk$1} from 'react-server/src/ReactFizzConfig';
-import {$displayF64, $index, $splice, $trim, $unwrap} from '@rust-js/runtime';
+import {$displayF64, $index, $splice, $trim, $unwrap} from '@rust-js/std';
 
 // Used to distinguish these contexts from ones used in other renderers.
 // E.g. this can be used to distinguish legacy renderers from this modern one.

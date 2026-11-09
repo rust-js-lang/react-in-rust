@@ -52,7 +52,7 @@ import {
 } from 'react-reconciler/src/ReactFiberReconciler';
 
 import {enableHydrationChangeEvent} from 'shared/ReactFeatureFlags';
-import {$insertAt, $removeAt} from '@rust-js/runtime';
+import {$insertAt, $removeAt} from '@rust-js/std';
 
 // TODO: Upgrade this definition once we're on a newer version of Flow that
 // has this definition built-in.

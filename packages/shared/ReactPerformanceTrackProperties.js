@@ -11,7 +11,7 @@ import hasOwnProperty from './hasOwnProperty.js';
 import {REACT_ELEMENT_TYPE} from './ReactSymbols.js';
 
 import getComponentNameFromType from './getComponentNameFromType.js';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 // Showing wider objects in the devtools is not useful.
 const OBJECT_WIDTH_LIMIT = 100;

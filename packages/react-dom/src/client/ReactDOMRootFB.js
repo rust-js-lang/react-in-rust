@@ -53,7 +53,7 @@ import {
 import assign from 'shared/assign';
 
 import noop from 'shared/noop';
-import {$unwrap} from '@rust-js/runtime';
+import {$unwrap} from '@rust-js/std';
 
 // Provided by www
 const ReactFiberErrorDialogWWW = require('ReactFiberErrorDialog');

@@ -47,7 +47,7 @@ import {
   enableViewTransitionForPersistenceMode,
   enableViewTransitionParentEnterExit,
 } from 'shared/ReactFeatureFlags';
-import {$index, $unwrap} from '@rust-js/runtime';
+import {$index, $unwrap} from '@rust-js/std';
 
 export let shouldStartViewTransition = false;
 
