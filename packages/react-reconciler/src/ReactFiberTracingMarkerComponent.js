@@ -42,11 +42,10 @@ export function processTransitionCallbacks(
               : [];
           markerInstance.transitions.forEach(transition => {
             if (transition.name != null) {
-              const value = $unwrap(transition.startTime);
               onMarkerProgress(
                 transition.name,
                 markerName,
-                value,
+                $unwrap(transition.startTime),
                 endTime,
                 pending,
               );
@@ -115,10 +114,9 @@ export function processTransitionCallbacks(
     if (onTransitionProgress != null && transitionProgress != null) {
       transitionProgress.forEach((pending, transition) => {
         if (transition.name != null) {
-          const value = $unwrap(transition.startTime);
           onTransitionProgress(
             transition.name,
-            value,
+            $unwrap(transition.startTime),
             endTime,
             Array.from(pending.values()),
           );

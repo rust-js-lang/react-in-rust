@@ -3822,17 +3822,15 @@ function renderModelDestructive(
           // Attribution on the client is still correct since it has a pop.
         }
 
-        const type = element.type;
-        const value$1 = __DEV__ ? element._store.validated : 0;
         const newChild = renderElement(
           request,
           task,
-          type,
+          element.type,
           element.key,
           // $FlowFixMe[incompatible-call] the key of an element is null | string | ReactOptimisticKey
           ref,
           props,
-          value$1,
+          __DEV__ ? element._store.validated : 0,
         );
         if (
           typeof newChild === 'object' &&
