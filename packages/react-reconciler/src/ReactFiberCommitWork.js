@@ -265,7 +265,7 @@ import {
   untrackNamedViewTransition,
 } from './ReactFiberDuplicateViewTransitions.js';
 import {markIndicatorHandled} from './ReactFiberRootScheduler.js';
-import {$index, $unwrap} from '@rust-js/std';
+import {$catchable, $index, $unwrap} from '@rust-js/std';
 
 // shared/ReactTypes' `Wakeable`.
 
@@ -1538,6 +1538,7 @@ function commitDeletionEffectsOnFiber(
               onDeleted(deletedFiber.stateNode);
             }
           } catch (error) {
+            $catchable(error);
             captureCommitPhaseError(
               deletedFiber,
               nearestMountedAncestor,
@@ -1769,6 +1770,7 @@ function commitActivityHydrationCallbacks(finishedRoot, finishedWork) {
               }
             }
           } catch (error) {
+            $catchable(error);
             const returnFiber = finishedWork.return;
             captureCommitPhaseError(finishedWork, returnFiber, error);
           }
@@ -1802,6 +1804,7 @@ function commitSuspenseHydrationCallbacks(finishedRoot, finishedWork) {
                 }
               }
             } catch (error) {
+              $catchable(error);
               const returnFiber = finishedWork.return;
               captureCommitPhaseError(finishedWork, returnFiber, error);
             }
@@ -2365,6 +2368,7 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
         try {
           commitSuspenseCallback(finishedWork);
         } catch (error) {
+          $catchable(error);
           const returnFiber = finishedWork.return;
           captureCommitPhaseError(finishedWork, returnFiber, error);
         }

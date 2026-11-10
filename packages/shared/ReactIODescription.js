@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$catchable} from '@rust-js/std';
+
 export function getIODescription(value) {
   if (!__DEV__) {
     return '';
@@ -90,7 +92,8 @@ export function getIODescription(value) {
         // Not useful descriptors.
         return '';
     }
-  } catch {
+  } catch (error) {
+    $catchable(error);
     return '';
   }
 }

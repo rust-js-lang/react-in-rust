@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$catchable} from '@rust-js/std';
+
 export let hasBadMapPolyfill;
 
 if (__DEV__) {
@@ -16,6 +18,7 @@ if (__DEV__) {
     new Set([frozenObject]);
     /* eslint-enable no-new */
   } catch (_e) {
+    $catchable(_e);
     // TODO: Consider warning about bad polyfills
     hasBadMapPolyfill = true;
   }

@@ -29,7 +29,7 @@ import {
   describeFunctionComponentFrame,
 } from 'shared/ReactComponentStackFrame';
 import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
-import {$unwrap} from '@rust-js/std';
+import {$catchable, $unwrap} from '@rust-js/std';
 
 function describeFiber(fiber, childFiber) {
   switch (fiber.tag) {
@@ -96,6 +96,7 @@ export function getStackByFiberInDevAndProd(workInProgress) {
     }
     return info;
   } catch (x) {
+    $catchable(x);
     return `\nError generating stack: ${x.message}\n${x.stack}`;
   }
 }
@@ -202,6 +203,7 @@ export function getOwnerStackByFiberInDev(workInProgress) {
     }
     return info;
   } catch (x) {
+    $catchable(x);
     return `\nError generating stack: ${x.message}\n${x.stack}`;
   }
 }

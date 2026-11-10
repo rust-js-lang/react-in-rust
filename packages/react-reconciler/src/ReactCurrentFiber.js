@@ -65,7 +65,7 @@ export function runWithFiberInDEV(
           const old = _restore[0];
           _restore[0] = undefined;
           setCurrentFiber(old);
-        });
+        }, error);
         throw error;
       }
       const old = _restore[0];
@@ -80,7 +80,7 @@ export function runWithFiberInDEV(
         const old = _restore[0];
         _restore[0] = undefined;
         setCurrentFiber(old);
-      });
+      }, error);
       throw error;
     }
     const old = _restore[0];

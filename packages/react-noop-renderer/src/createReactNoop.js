@@ -33,7 +33,7 @@ import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 import ReactVersion from 'shared/ReactVersion';
-import {$cleanup, $displayF64, $unwrap} from '@rust-js/std';
+import {$cleanup, $displayF64, $live, $unwindsOn, $unwrap} from '@rust-js/std';
 
 const NO_CONTEXT = {};
 const UPPERCASE_CONTEXT = {};
@@ -944,7 +944,7 @@ function createReactNoop(reconciler, useMutation) {
           ReactSharedInternals.T = previousTransition;
           currentEventPriority.value = preivousEventPriority;
           NoopRenderer.flushSyncWork();
-        });
+        }, error);
         throw error;
       }
       currentEventPriority.value = DiscreteEventPriority;
@@ -957,7 +957,7 @@ function createReactNoop(reconciler, useMutation) {
             ReactSharedInternals.T = previousTransition;
             currentEventPriority.value = preivousEventPriority;
             NoopRenderer.flushSyncWork();
-          });
+          }, error);
           throw error;
         }
         ReactSharedInternals.T = previousTransition;
@@ -1266,7 +1266,7 @@ function createReactNoop(reconciler, useMutation) {
       } catch (error) {
         $cleanup(() => {
           setCurrentUpdatePriority(previousPriority);
-        });
+        }, error);
         throw error;
       }
       let result;
@@ -1275,7 +1275,7 @@ function createReactNoop(reconciler, useMutation) {
       } catch (error) {
         $cleanup(() => {
           setCurrentUpdatePriority(previousPriority);
-        });
+        }, error);
         throw error;
       }
       setCurrentUpdatePriority(previousPriority);
@@ -1293,8 +1293,12 @@ function createReactNoop(reconciler, useMutation) {
       currentEventPriority.value = IdleEventPriority;
       try {
         fn();
+      } catch (error) {
+        throw $unwindsOn(error);
       } finally {
-        currentEventPriority.value = prevEventPriority;
+        if ($live()) {
+          currentEventPriority.value = prevEventPriority;
+        }
       }
     },
 

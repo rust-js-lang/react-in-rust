@@ -21,7 +21,7 @@ import {
 import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
 import isArray from 'shared/isArray';
 import {enableOptimisticKey, ownerStackLimit} from 'shared/ReactFeatureFlags';
-import {$unwrap} from '@rust-js/std';
+import {$catchable, $unwrap} from '@rust-js/std';
 
 function noTask(name) {
   return null;
@@ -52,7 +52,8 @@ function getTaskName(type) {
   try {
     const name = getComponentNameFromType(type);
     return name != null && name !== '' ? '<' + name + '>' : '<...>';
-  } catch {
+  } catch (error) {
+    $catchable(error);
     return '<...>';
   }
 }

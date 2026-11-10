@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {setCurrentOwner} from './flight/ReactFlightCurrentOwner.js';
+import {$live, $unwindsOn} from '@rust-js/std';
 
 // These indirections exists so we can exclude its stack frame in DEV (and anything below it).
 // TODO: Consider marking the whole bundle instead of these boundaries.
@@ -17,8 +18,12 @@ const callComponent = {
     const _clear = undefined;
     try {
       return Component(props, secondArg);
+    } catch (error) {
+      throw $unwindsOn(error);
     } finally {
-      setCurrentOwner(null);
+      if ($live()) {
+        setCurrentOwner(null);
+      }
     }
   },
 };

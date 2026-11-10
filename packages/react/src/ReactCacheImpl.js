@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+import {$catchable} from '@rust-js/std';
 
 const UNTERMINATED = 0;
 const TERMINATED = 1;
@@ -91,6 +92,7 @@ export function cache(fn) {
       terminatedNode.v = result;
       return result;
     } catch (error) {
+      $catchable(error);
       // We store the first error that's thrown and rethrow it.
       const erroredNode = cacheNode;
       erroredNode.s = ERRORED;

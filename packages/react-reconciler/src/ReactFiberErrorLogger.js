@@ -14,6 +14,7 @@ import reportGlobalError from 'shared/reportGlobalError';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 import {bindToConsole} from './ReactFiberConfig.js';
+import {$catchable} from '@rust-js/std';
 
 // Side-channel since I'm not sure we want to make this part of the public API
 let componentName = null;
@@ -115,6 +116,7 @@ export function logUncaughtError(root, errorInfo) {
     const onUncaughtError = root.onUncaughtError;
     onUncaughtError(error, {componentStack: errorInfo.stack});
   } catch (e) {
+    $catchable(e);
     // This method must not throw, or React internal state will get messed up.
     // If console.error is overridden, or logCapturedError() shows a dialog that throws,
     // we want to report this error outside of the normal stack as a last resort.
@@ -144,6 +146,7 @@ export function logCaughtError(root, boundary, errorInfo) {
           : null,
     });
   } catch (e) {
+    $catchable(e);
     // This method must not throw, or React internal state will get messed up.
     // If console.error is overridden, or logCapturedError() shows a dialog that throws,
     // we want to report this error outside of the normal stack as a last resort.

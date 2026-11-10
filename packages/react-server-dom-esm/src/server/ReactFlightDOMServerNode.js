@@ -49,6 +49,7 @@ import {
 import {
   $borrow,
   $borrowMut,
+  $catchable,
   $fieldCell,
   $index,
   $unborrow,
@@ -330,6 +331,7 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
           }
         }
       } catch (error) {
+        $catchable(error);
         busboyStream.destroy(error);
         return;
       }
@@ -355,6 +357,7 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
       try {
         resolveField(response, name, value);
       } catch (error) {
+        $catchable(error);
         busboyStream.destroy(error);
       }
     }
@@ -394,6 +397,7 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
           $unborrow(borrowMut);
         }
       } catch (error) {
+        $catchable(error);
         busboyStream.destroy(error);
       }
     });

@@ -3,7 +3,7 @@
 // Shared implementation and constants between the inline script and external
 // runtime instruction sets.
 
-import {$index, $unwrap} from '@rust-js/std';
+import {$catchable, $index, $unwrap} from '@rust-js/std';
 
 const ELEMENT_NODE = 1;
 const COMMENT_NODE = 8;
@@ -392,8 +392,9 @@ export function revealCompletedBoundariesWithViewTransitions(
       return;
     }
     // Fall through to reveal.
-  } catch {
+  } catch (error) {
     // Fall through to reveal.
+    $catchable(error);
   }
   // ViewTransitions v2 not supported or no ViewTransitions found. Reveal immediately.
   revealBoundaries(batch);

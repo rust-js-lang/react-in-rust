@@ -31,7 +31,13 @@ import {
   checkEvalAvailabilityOnceDev,
   usedWithSSR,
 } from './ReactFlightClientConfig.js';
-import {$catchUnwind, $getOrInit, $unwound, $unwrap} from '@rust-js/std';
+import {
+  $catchUnwind,
+  $catchable,
+  $getOrInit,
+  $unwound,
+  $unwrap,
+} from '@rust-js/std';
 
 const ObjectPrototype = Object.prototype;
 
@@ -335,6 +341,7 @@ export function processReply(
           try {
             partJson = stringify(entry.value);
           } catch (thrown$1) {
+            $catchable(thrown$1);
             const x = $unwound(thrown$1);
             reject(thrown(x));
             return;
@@ -513,6 +520,7 @@ export function processReply(
                 try {
                   partJson = serializeModel(value, lazyId);
                 } catch (thrown$1) {
+                  $catchable(thrown$1);
                   const reason = $unwound(thrown$1);
                   reject(thrown(reason));
                   return;
@@ -573,6 +581,7 @@ export function processReply(
                   ? JSON.stringify(previousReference)
                   : serializeModel(partValue, promiseId);
             } catch (thrown$1) {
+              $catchable(thrown$1);
               const reason = $unwound(thrown$1);
               reject(thrown(reason));
               return;

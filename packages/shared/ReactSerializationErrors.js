@@ -20,6 +20,7 @@ import isArray from './isArray.js';
 import getPrototypeOf from './getPrototypeOf.js';
 
 import {enableViewTransition} from './ReactFeatureFlags.js';
+import {$catchable} from '@rust-js/std';
 
 // Used for DEV messages to keep track of which parent rendered some props,
 // in case they error.
@@ -166,7 +167,8 @@ function describeElementType(type) {
         // Lazy may contain any component type so we recursively resolve it.
         try {
           return describeElementType(init(payload));
-        } catch {
+        } catch (error) {
+          $catchable(error);
           return '';
         }
       }

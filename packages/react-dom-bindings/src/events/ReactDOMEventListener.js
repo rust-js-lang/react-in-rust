@@ -126,7 +126,7 @@ function dispatchDiscreteEvent(
     $cleanup(() => {
       setCurrentUpdatePriority(previousPriority);
       ReactSharedInternals.T = prevTransition;
-    });
+    }, error);
     throw error;
   }
   try {
@@ -135,7 +135,7 @@ function dispatchDiscreteEvent(
     $cleanup(() => {
       setCurrentUpdatePriority(previousPriority);
       ReactSharedInternals.T = prevTransition;
-    });
+    }, error);
     throw error;
   }
   setCurrentUpdatePriority(previousPriority);
@@ -157,7 +157,7 @@ function dispatchContinuousEvent(
     $cleanup(() => {
       setCurrentUpdatePriority(previousPriority);
       ReactSharedInternals.T = prevTransition;
-    });
+    }, error);
     throw error;
   }
   try {
@@ -166,7 +166,7 @@ function dispatchContinuousEvent(
     $cleanup(() => {
       setCurrentUpdatePriority(previousPriority);
       ReactSharedInternals.T = prevTransition;
-    });
+    }, error);
     throw error;
   }
   setCurrentUpdatePriority(previousPriority);

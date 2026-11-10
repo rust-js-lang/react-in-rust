@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$catchable} from '@rust-js/std';
+
 export default function getActiveElement(doc) {
   doc ??= typeof document !== 'undefined' ? document : undefined;
   if (doc == null) {
@@ -12,7 +14,8 @@ export default function getActiveElement(doc) {
   }
   try {
     return doc.activeElement ?? doc.body;
-  } catch {
+  } catch (error) {
+    $catchable(error);
     return doc.body;
   }
 }

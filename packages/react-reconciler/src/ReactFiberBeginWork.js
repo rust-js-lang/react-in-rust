@@ -1680,7 +1680,7 @@ function finishClassComponent(
         } catch (error) {
           $cleanup(() => {
             setIsStrictModeForDevtools(false);
-          });
+          }, error);
           throw error;
         }
         setIsStrictModeForDevtools(false);

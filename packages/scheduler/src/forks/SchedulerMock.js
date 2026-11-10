@@ -28,7 +28,14 @@ import {
   startLoggingProfilingEvents,
   stopLoggingProfilingEvents,
 } from '../SchedulerProfiling.js';
-import {$cleanup, $withBorrow, $withBorrowMut} from '@rust-js/std';
+import {
+  $catchable,
+  $cleanup,
+  $live,
+  $unwindsOn,
+  $withBorrow,
+  $withBorrowMut,
+} from '@rust-js/std';
 
 // Max 31 bit integer. The max integer size in V8 for 32-bit systems.
 // Math.pow(2, 30) - 1
@@ -151,6 +158,7 @@ function flushWork(hasTimeRemaining, initialTime) {
     try {
       hasMoreWork = workLoop(hasTimeRemaining, initialTime);
     } catch (error) {
+      $catchable(error);
       const currentTask$1 = currentTask;
       if (currentTask$1 != null) {
         let currentTime;
@@ -165,7 +173,7 @@ function flushWork(hasTimeRemaining, initialTime) {
               const currentTime = getCurrentTime();
               markSchedulerSuspended(currentTime);
             }
-          });
+          }, error);
           throw error;
         }
         try {
@@ -179,7 +187,7 @@ function flushWork(hasTimeRemaining, initialTime) {
               const currentTime = getCurrentTime();
               markSchedulerSuspended(currentTime);
             }
-          });
+          }, error);
           throw error;
         }
         currentTask$1.isQueued = false;
@@ -194,7 +202,7 @@ function flushWork(hasTimeRemaining, initialTime) {
               const currentTime = getCurrentTime();
               markSchedulerSuspended(currentTime);
             }
-          });
+          }, error);
           throw error;
         }
       }
@@ -209,7 +217,7 @@ function flushWork(hasTimeRemaining, initialTime) {
             const currentTime = getCurrentTime();
             markSchedulerSuspended(currentTime);
           }
-        });
+        }, error);
         throw error;
       }
     }
@@ -235,7 +243,7 @@ function flushWork(hasTimeRemaining, initialTime) {
           const currentTime = getCurrentTime();
           markSchedulerSuspended(currentTime);
         }
-      });
+      }, error);
       throw error;
     }
     currentTask = null;
@@ -341,8 +349,12 @@ export function unstable_runWithPriority(priorityLevel, eventHandler) {
 
   try {
     return eventHandler();
+  } catch (error) {
+    throw $unwindsOn(error);
   } finally {
-    currentPriorityLevel = restore;
+    if ($live()) {
+      currentPriorityLevel = restore;
+    }
   }
 }
 
@@ -367,8 +379,12 @@ export function unstable_next(eventHandler) {
 
   try {
     return eventHandler();
+  } catch (error) {
+    throw $unwindsOn(error);
   } finally {
-    currentPriorityLevel = restore;
+    if ($live()) {
+      currentPriorityLevel = restore;
+    }
   }
 }
 
@@ -381,8 +397,12 @@ export function unstable_wrapCallback(callback) {
 
     try {
       return callback.apply(this, args);
+    } catch (error) {
+      throw $unwindsOn(error);
     } finally {
-      currentPriorityLevel = restore;
+      if ($live()) {
+        currentPriorityLevel = restore;
+      }
     }
   };
 }
@@ -551,10 +571,14 @@ export function unstable_flushNumberOfYields(count) {
       if (!hasMoreWork) {
         scheduledCallback = null;
       }
+    } catch (error) {
+      throw $unwindsOn(error);
     } finally {
-      expectedNumberOfYields = -1;
-      didStop = false;
-      isFlushing = false;
+      if ($live()) {
+        expectedNumberOfYields = -1;
+        didStop = false;
+        isFlushing = false;
+      }
     }
   }
 }
@@ -576,10 +600,14 @@ export function unstable_flushUntilNextPaint() {
       if (!hasMoreWork) {
         scheduledCallback = null;
       }
+    } catch (error) {
+      throw $unwindsOn(error);
     } finally {
-      shouldYieldForPaint = false;
-      didStop = false;
-      isFlushing = false;
+      if ($live()) {
+        shouldYieldForPaint = false;
+        didStop = false;
+        isFlushing = false;
+      }
     }
   }
   return false;
@@ -600,8 +628,12 @@ export function unstable_flushExpired() {
       if (!hasMoreWork) {
         scheduledCallback = null;
       }
+    } catch (error) {
+      throw $unwindsOn(error);
     } finally {
-      isFlushing = false;
+      if ($live()) {
+        isFlushing = false;
+      }
     }
   }
 }
@@ -622,8 +654,12 @@ export function unstable_flushAllWithoutAsserting() {
       if (!hasMoreWork) {
         scheduledCallback = null;
       }
+    } catch (error) {
+      throw $unwindsOn(error);
     } finally {
-      isFlushing = false;
+      if ($live()) {
+        isFlushing = false;
+      }
     }
     return true;
   } else {

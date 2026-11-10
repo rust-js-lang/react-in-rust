@@ -133,7 +133,7 @@ function applyDerivedStateFromProps(
       } catch (error) {
         $cleanup(() => {
           setIsStrictModeForDevtools(false);
-        });
+        }, error);
         throw error;
       }
       setIsStrictModeForDevtools(false);
@@ -261,7 +261,7 @@ function checkShouldComponentUpdate(
         } catch (error) {
           $cleanup(() => {
             setIsStrictModeForDevtools(false);
-          });
+          }, error);
           throw error;
         }
         setIsStrictModeForDevtools(false);
@@ -581,7 +581,7 @@ export function constructClassInstance(workInProgress, ctor, props) {
     } catch (error) {
       $cleanup(() => {
         setIsStrictModeForDevtools(false);
-      });
+      }, error);
       throw error;
     }
     setIsStrictModeForDevtools(false);

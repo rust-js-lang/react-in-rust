@@ -16,7 +16,13 @@ import {enableConditionalUseWarning} from 'shared/ReactFeatureFlags';
 import noop from 'shared/noop';
 
 import {HostRoot} from './ReactWorkTags.js';
-import {$borrow, $fieldCell, $unborrow, $unwrap} from '@rust-js/std';
+import {
+  $borrow,
+  $catchable,
+  $fieldCell,
+  $unborrow,
+  $unwrap,
+} from '@rust-js/std';
 
 // An error that is thrown (e.g. by `use`) to trigger Suspense. If we
 // detect this is caught by userspace, we'll log a warning in development.
@@ -314,6 +320,7 @@ export function resolveLazy(lazyType) {
     const init = lazyType._init;
     return init(payload);
   } catch (x) {
+    $catchable(x);
     if (typeof x === 'object' && x !== null && typeof x.then === 'function') {
       // This lazy Suspended. Treat this as if we called use() to unwrap it.
       suspendedThenable = x;

@@ -822,7 +822,7 @@ function insertDestinationClonesOfFiber(
             } catch (error) {
               $cleanup(() => {
                 popMutationContext(prev);
-              });
+              }, error);
               throw error;
             }
             if (viewTransitionMutationContext) {
@@ -838,7 +838,7 @@ function insertDestinationClonesOfFiber(
               } catch (error) {
                 $cleanup(() => {
                   popMutationContext(prev);
-                });
+                }, error);
                 throw error;
               }
             }
@@ -848,7 +848,7 @@ function insertDestinationClonesOfFiber(
             } catch (error) {
               $cleanup(() => {
                 popMutationContext(prev);
-              });
+              }, error);
               throw error;
             }
             popMutationContext(prev);

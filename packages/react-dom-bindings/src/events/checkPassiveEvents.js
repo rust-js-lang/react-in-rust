@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {canUseDOM} from 'shared/ExecutionEnvironment';
+import {$catchable} from '@rust-js/std';
 
 export let passiveBrowserEventsSupported = false;
 
@@ -22,7 +23,8 @@ if (canUseDOM) {
     const listener = options;
     window.addEventListener('test', listener, options);
     window.removeEventListener('test', listener, options);
-  } catch {
+  } catch (error) {
+    $catchable(error);
     passiveBrowserEventsSupported = false;
   }
 }

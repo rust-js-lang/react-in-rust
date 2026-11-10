@@ -8,6 +8,7 @@
 import {describeBuiltInComponentFrame} from './ReactComponentStackFrame.js';
 
 import {formatOwnerStack} from './ReactOwnerStackFrames.js';
+import {$catchable} from '@rust-js/std';
 
 export function getOwnerStackByComponentInfoInDev(componentInfo) {
   if (!__DEV__) {
@@ -41,6 +42,7 @@ export function getOwnerStackByComponentInfoInDev(componentInfo) {
     }
     return info;
   } catch (x) {
+    $catchable(x);
     return `\nError generating stack: ${x.message}\n${x.stack ?? ''}`;
   }
 }

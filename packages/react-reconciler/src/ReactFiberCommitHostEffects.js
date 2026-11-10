@@ -56,6 +56,7 @@ import {
   commitNewChildToFragmentInstances,
   getParentFragmentInstances,
 } from './ReactFiberFragmentInstance.js';
+import {$catchable} from '@rust-js/std';
 
 export function commitHostMount(finishedWork) {
   const type = finishedWork.type;
@@ -78,6 +79,7 @@ export function commitHostMount(finishedWork) {
       commitMount(instance, type, props, finishedWork);
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -104,6 +106,7 @@ export function commitHostHydratedInstance(finishedWork) {
       commitHydratedInstance(instance, type, props, finishedWork);
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -134,6 +137,7 @@ export function commitHostUpdate(finishedWork, newProps, oldProps) {
     }
     // Mutations are tracked manually from within commitUpdate.
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -158,6 +162,7 @@ export function commitHostTextUpdate(finishedWork, newText, oldText) {
     }
     trackHostMutation();
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -180,6 +185,7 @@ export function commitHostResetTextContent(finishedWork) {
     }
     trackHostMutation();
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -212,6 +218,7 @@ export function commitShowHideSuspenseBoundary(node, isHidden) {
       unhideDehydratedBoundary(node.stateNode);
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = node.return;
     captureCommitPhaseError(node, returnFiber, error);
   }
@@ -245,6 +252,7 @@ export function commitShowHideHostInstance(node, isHidden) {
       unhideInstance(node.stateNode, node.memoizedProps);
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = node.return;
     captureCommitPhaseError(node, returnFiber, error);
   }
@@ -279,6 +287,7 @@ export function commitShowHideHostTextInstance(node, isHidden) {
     }
     trackHostMutation();
   } catch (error) {
+    $catchable(error);
     const returnFiber = node.return;
     captureCommitPhaseError(node, returnFiber, error);
   }
@@ -609,6 +618,7 @@ export function commitHostPlacement(finishedWork) {
       commitPlacement(finishedWork);
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -635,6 +645,7 @@ export function commitHostRemoveChildFromContainer(
     }
     trackHostMutation();
   } catch (error) {
+    $catchable(error);
     captureCommitPhaseError(deletedFiber, nearestMountedAncestor, error);
   }
 }
@@ -660,6 +671,7 @@ export function commitHostRemoveChild(
     }
     trackHostMutation();
   } catch (error) {
+    $catchable(error);
     captureCommitPhaseError(deletedFiber, nearestMountedAncestor, error);
   }
 }
@@ -682,6 +694,7 @@ export function commitHostRootContainerChildren(root, finishedWork) {
     }
     trackHostMutation();
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -707,6 +720,7 @@ export function commitHostPortalContainerChildren(
       replaceContainerChildren(containerInfo, pendingChildren);
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -726,6 +740,7 @@ export function commitHostHydratedContainer(root, finishedWork) {
       commitHydratedContainer(root.containerInfo);
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -745,6 +760,7 @@ export function commitHostHydratedActivity(activityInstance, finishedWork) {
       commitHydratedActivityInstance(activityInstance);
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -764,6 +780,7 @@ export function commitHostHydratedSuspense(suspenseInstance, finishedWork) {
       commitHydratedSuspenseInstance(suspenseInstance);
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -800,6 +817,7 @@ export function commitHostSingletonAcquisition(finishedWork) {
       );
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }

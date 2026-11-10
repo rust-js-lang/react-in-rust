@@ -35,7 +35,7 @@ import {getFormState} from './ReactFizzServer.js';
 import noop from 'shared/noop';
 
 import {createFastHash} from './ReactServerStreamConfig.js';
-import {$roomFor, $unwrap} from '@rust-js/std';
+import {$catchable, $roomFor, $unwrap} from '@rust-js/std';
 
 let currentlyRenderingComponent = null;
 let currentlyRenderingTask = null;
@@ -71,7 +71,8 @@ export function createRecoverableError(recoverable) {
     if (typeof reason === 'function') {
       try {
         initializedReason = reason();
-      } catch {
+      } catch (error) {
+        $catchable(error);
         // A reason is only diagnostic metadata. Its initializer must not affect
         // whether the renderer can defer this subtree to the browser.
         initializedReason = browserReasonInitializationFallback;

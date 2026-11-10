@@ -151,7 +151,13 @@ import {requestCurrentTransition} from './ReactFiberTransition.js';
 import {callComponentInDEV} from './ReactFiberCallUserSpace.js';
 
 import {scheduleGesture} from './ReactFiberGestureScheduler.js';
-import {$catchUnwind, $cleanup, $roomFor, $unwrap} from '@rust-js/std';
+import {
+  $catchUnwind,
+  $catchable,
+  $cleanup,
+  $roomFor,
+  $unwrap,
+} from '@rust-js/std';
 
 const didWarnAboutMismatchedHooksForComponent = new Set();
 let didWarnUncachedGetSnapshot = false;
@@ -520,7 +526,7 @@ export function renderWithHooks(
     } catch (error) {
       $cleanup(() => {
         setIsStrictModeForDevtools(false);
-      });
+      }, error);
       throw error;
     }
     setIsStrictModeForDevtools(false);
@@ -1162,7 +1168,7 @@ function mountReducer(reducer, initialArg, init) {
       } catch (error) {
         $cleanup(() => {
           setIsStrictModeForDevtools(false);
-        });
+        }, error);
         throw error;
       }
       setIsStrictModeForDevtools(false);
@@ -1761,7 +1767,8 @@ function checkIfSnapshotChanged(inst) {
   let nextValue;
   try {
     nextValue = latestGetSnapshot();
-  } catch {
+  } catch (error) {
+    $catchable(error);
     return true;
   }
   return !is(prevValue, nextValue);
@@ -1788,7 +1795,7 @@ function mountStateImpl(initialState) {
       } catch (error) {
         $cleanup(() => {
           setIsStrictModeForDevtools(false);
-        });
+        }, error);
         throw error;
       }
       setIsStrictModeForDevtools(false);
@@ -2012,6 +2019,7 @@ function runActionStateAction(actionQueue, node) {
       }
       handleActionReturnValue(actionQueue, node, returnValue);
     } catch (error) {
+      $catchable(error);
       try {
         onActionError(actionQueue, node, error);
       } catch (error) {
@@ -2049,7 +2057,7 @@ function runActionStateAction(actionQueue, node) {
               );
             }
           }
-        });
+        }, error);
         throw error;
       }
     }
@@ -2088,6 +2096,7 @@ function runActionStateAction(actionQueue, node) {
       const returnValue = action(prevState, payload);
       handleActionReturnValue(actionQueue, node, returnValue);
     } catch (error) {
+      $catchable(error);
       onActionError(actionQueue, node, error);
     }
   }
@@ -2305,6 +2314,7 @@ function updateActionStateImpl(
     try {
       state = useThenable(actionResult);
     } catch (x) {
+      $catchable(x);
       if (x === SuspenseException) {
         // If we Suspend here, mark this separately so that we can track this
         // as an Action in Profiling tools.
@@ -2681,7 +2691,7 @@ function mountMemo(nextCreate, deps) {
     } catch (error) {
       $cleanup(() => {
         setIsStrictModeForDevtools(false);
-      });
+      }, error);
       throw error;
     }
     setIsStrictModeForDevtools(false);
@@ -2710,7 +2720,7 @@ function updateMemo(nextCreate, deps) {
     } catch (error) {
       $cleanup(() => {
         setIsStrictModeForDevtools(false);
-      });
+      }, error);
       throw error;
     }
     setIsStrictModeForDevtools(false);
@@ -2927,6 +2937,7 @@ function startTransition(
       );
     }
   } catch (error) {
+    $catchable(error);
     // This is a trick to get the `useTransition` hook to rethrow the error.
     // When it unwraps the thenable with the `use` algorithm, the error
     // will be thrown.
@@ -2980,7 +2991,7 @@ function startTransition(
             );
           }
         }
-      });
+      }, error);
       throw error;
     }
   }
@@ -3801,7 +3812,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -3818,7 +3829,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -3840,7 +3851,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -3947,7 +3958,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -3964,7 +3975,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -3986,7 +3997,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4094,7 +4105,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4112,7 +4123,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4135,7 +4146,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4243,7 +4254,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4261,7 +4272,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4284,7 +4295,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4402,7 +4413,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4420,7 +4431,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4444,7 +4455,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4574,7 +4585,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4593,7 +4604,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4618,7 +4629,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4748,7 +4759,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4767,7 +4778,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;
@@ -4792,7 +4803,7 @@ if (__DEV__) {
       } catch (error) {
         $cleanup(() => {
           ReactSharedInternals.H = prevDispatcher ?? null;
-        });
+        }, error);
         throw error;
       }
       ReactSharedInternals.H = prevDispatcher ?? null;

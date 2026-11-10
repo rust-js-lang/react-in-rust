@@ -110,7 +110,7 @@ export function experimental_renderToHTML(children, options) {
             $cleanup(() => {
               ReactSharedInternalsServer.getCurrentStack =
                 prevGetCurrentStackImpl ?? null;
-            });
+            }, error);
             throw error;
           }
           ReactSharedInternalsServer.getCurrentStack =

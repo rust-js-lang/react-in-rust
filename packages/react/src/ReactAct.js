@@ -9,7 +9,7 @@ import ReactSharedInternals from './ReactSharedInternalsClient.js';
 import queueMacrotask from 'shared/enqueueTask';
 
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
-import {$at, $drain, $unwrap} from '@rust-js/std';
+import {$at, $catchable, $drain, $live, $unwrap} from '@rust-js/std';
 
 // `act` calls can be nested, so we track the depth. This represents the
 // number of `act` scopes on the stack.
@@ -82,6 +82,7 @@ export function act(callback) {
         ReactSharedInternals.isBatchingLegacy = prevIsBatchingLegacy;
       }
     } catch (error) {
+      $catchable(error);
       // `isBatchingLegacy` gets reset using the regular stack, not the async
       // one used to track `act` scopes. Why, you may be wondering? Because
       // that's how it worked before version 18. Yes, it's confusing! We should
@@ -145,6 +146,7 @@ export function act(callback) {
                     recursivelyFlushAsyncActWork(returnValue, resolve, reject),
                   );
                 } catch (error) {
+                  $catchable(error);
                   // `thenable` might not be a real promise, and `flushActQueue`
                   // might throw, so we need to wrap `flushActQueue` in a
                   // try/catch.
@@ -283,6 +285,7 @@ function recursivelyFlushAsyncActWork(returnValue, resolve, reject) {
           );
           return;
         } catch (error) {
+          $catchable(error);
           // Leave remaining tasks on the queue if something throws.
           $unwrap(ReactSharedInternals.thrownErrors).push(error);
         }
@@ -335,11 +338,14 @@ function flushActQueue(queue) {
       // We flushed the entire queue.
       queue.length = 0;
     } catch (error) {
+      $catchable(error);
       // If something throws, leave the remaining callbacks on the queue.
       $drain(queue, 0, (i + 1) >>> 0);
       $unwrap(ReactSharedInternals.thrownErrors).push(error);
     } finally {
-      isFlushing = false;
+      if ($live()) {
+        isFlushing = false;
+      }
     }
   }
 }

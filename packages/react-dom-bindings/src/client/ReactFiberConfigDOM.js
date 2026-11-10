@@ -146,6 +146,7 @@ import estimateBandwidth from './estimateBandwidth.js';
 import {
   $borrow,
   $borrowMut,
+  $catchable,
   $cleanup,
   $extend,
   $index,
@@ -823,7 +824,8 @@ export function commitMount(
           try {
             setSrcObject(domElement, type, src);
             return;
-          } catch {
+          } catch (error) {
+            $catchable(error);
             // If URL.createObjectURL() errors, it was probably some other object type
             // that should be toString:ed instead, so we just fall-through to the normal
             // path.
@@ -2189,7 +2191,7 @@ export function startViewTransition(
           if (enableProfilerTimer) {
             finishedAnimation();
           }
-        });
+        }, error);
         throw error;
       }
       if (error$1 != null) {
@@ -2203,7 +2205,7 @@ export function startViewTransition(
             if (enableProfilerTimer) {
               finishedAnimation();
             }
-          });
+          }, error);
           throw error;
         }
         mutationCallback();
@@ -2241,7 +2243,8 @@ export function startViewTransition(
       passiveCallback();
     });
     return transition;
-  } catch {
+  } catch (error) {
+    $catchable(error);
     // We use the error as feature detection.
     // The only thing that should throw is if startViewTransition is missing
     // or if it doesn't accept the object form. Other errors are async.
@@ -2661,7 +2664,7 @@ export function startGestureTransition(
           if (enableProfilerTimer) {
             finishedAnimation();
           }
-        });
+        }, error);
         throw error;
       }
       if (error$1 != null) {
@@ -2674,7 +2677,7 @@ export function startGestureTransition(
             if (enableProfilerTimer) {
               finishedAnimation();
             }
-          });
+          }, error);
           throw error;
         }
         mutationCallback();
@@ -2720,7 +2723,8 @@ export function startGestureTransition(
       }
     });
     return transition;
-  } catch {
+  } catch (error) {
+    $catchable(error);
     // We use the error as feature detection.
     // The only thing that should throw is if startViewTransition is missing
     // or if it doesn't accept the object form. Other errors are async.
@@ -4515,7 +4519,7 @@ export function setFocusIfFocusable(node, focusOptions) {
   } catch (error) {
     $cleanup(() => {
       ownerDocument.removeEventListener('focus', handleFocus, true);
-    });
+    }, error);
     throw error;
   }
   const result = didFocus;

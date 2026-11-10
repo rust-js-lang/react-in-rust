@@ -79,7 +79,7 @@ import {
   listenToNonDelegatedEvent,
   mediaEventTypes,
 } from '../events/DOMPluginEventSystem.js';
-import {$catchUnwind, $unwrap} from '@rust-js/std';
+import {$catchUnwind, $catchable, $unwrap} from '@rust-js/std';
 
 let didWarnControlledToUncontrolled = false;
 let didWarnUncontrolledToControlled = false;
@@ -469,7 +469,9 @@ function setProp(domElement, tag, key, value, props, prevValue) {
                 tag,
               );
             }
-          } catch {}
+          } catch (error) {
+            $catchable(error);
+          }
         }
       }
       if (
@@ -2572,7 +2574,8 @@ function diffHydratedGenericElement(
                 serverDifferences,
               );
               continue;
-            } catch {
+            } catch (error) {
+              $catchable(error);
               // If not, just fall through to the normal toString flow.
             }
           } else if (__DEV__) {
@@ -2590,7 +2593,9 @@ function diffHydratedGenericElement(
                   tag,
                 );
               }
-            } catch {}
+            } catch (error) {
+              $catchable(error);
+            }
           }
         }
         if (

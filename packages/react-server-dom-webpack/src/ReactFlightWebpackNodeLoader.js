@@ -8,7 +8,7 @@
 import createMappingsSerializer from 'webpack-sources/lib/helpers/createMappingsSerializer.js';
 import readMappings from 'webpack-sources/lib/helpers/readMappings.js';
 import * as acorn from 'acorn-loose';
-import {$KeySet, $index, $try, $unwrap} from '@rust-js/std';
+import {$KeySet, $chars, $index, $rev, $try, $unwrap} from '@rust-js/std';
 
 let warnedAboutConditionsFlag = false;
 
@@ -253,7 +253,7 @@ function transformServerModule(source, program, url, sourceMap, loader) {
         entry.nameIndex = lastNameIndex;
       }
 
-      for (const c of Array.from(mappings).toReversed()) {
+      for (const c of $rev($chars(mappings))) {
         if (c !== ';') {
           break;
         }

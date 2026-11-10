@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {prepareDestinationForModuleImpl} from 'react-client/src/ReactFlightClientConfig';
+import {$catchable} from '@rust-js/std';
 
 // The reason this function needs to defined here in this file instead of just
 // being exported directly from the WebpackDestination... file is because the
@@ -98,7 +99,8 @@ export function getModuleDebugInfo(metadata) {
     try {
       // $FlowFixMe[incompatible-type]
       href = new URL(filename, document.baseURI).href;
-    } catch {
+    } catch (error) {
+      $catchable(error);
       href = filename;
     }
     let start = -1;

@@ -370,7 +370,7 @@ function getStateFromUpdate(
             } catch (error) {
               $cleanup(() => {
                 setIsStrictModeForDevtools(false);
-              });
+              }, error);
               throw error;
             }
             setIsStrictModeForDevtools(false);
@@ -404,7 +404,7 @@ function getStateFromUpdate(
             } catch (error) {
               $cleanup(() => {
                 setIsStrictModeForDevtools(false);
-              });
+              }, error);
               throw error;
             }
             setIsStrictModeForDevtools(false);

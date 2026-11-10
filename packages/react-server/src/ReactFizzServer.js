@@ -179,6 +179,7 @@ import {
   $borrow,
   $borrowMut,
   $catchUnwind,
+  $catchable,
   $cellReplace,
   $displayF64,
   $drain,
@@ -910,7 +911,8 @@ function rerenderStalledTask(request, task) {
   setCurrentTaskInDEV(task);
   try {
     retryNode(request, task);
-  } catch {
+  } catch (error) {
+    $catchable(error);
     // Suspended again.
     resetHooksState();
   }
@@ -2010,6 +2012,7 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
           finishSuspenseListRow(request, row);
         }
       } catch (thrownValue) {
+        $catchable(thrownValue);
         if (request.aborted) {
           newSegment.status = ABORTED;
         } else {
@@ -3099,6 +3102,7 @@ function replayElement(
         }
         childReplay.pendingTasks--;
       } catch (thrown) {
+        $catchable(thrown);
         // Where this same element threw, the replay we just added is popped
         // before anything else runs here: a stack overflow leaves this
         // handler little stack, and one that overflows again must not skip
@@ -3640,6 +3644,7 @@ function replayFragment(request, task, children, childIndex) {
         }
         childReplay.pendingTasks--;
       } catch (thrown) {
+        $catchable(thrown);
         const x = $unwound(thrown);
         const thrownValue = thrownValueOf(x);
         if (
@@ -4236,6 +4241,7 @@ function renderNode(request, task, node, childIndex) {
       renderNodeDestructive(request, task, node, childIndex);
       return;
     } catch (thrown$1) {
+      $catchable(thrown$1);
       resetHooksState();
 
       const thrownValue = $unwound(thrown$1);
@@ -4337,6 +4343,7 @@ function renderNode(request, task, node, childIndex) {
       renderNodeDestructive(request, task, node, childIndex);
       return;
     } catch (thrown$1) {
+      $catchable(thrown$1);
       resetHooksState();
 
       // Reset the write pointers to where we started.
@@ -5051,6 +5058,7 @@ function safelyEmitEarlyPreloads(request, shellComplete) {
       shellComplete,
     );
   } catch (thrown) {
+    $catchable(thrown);
     // We assume preloads are optimistic and thus non-fatal if errored.
     const errorInfo = {};
     const error = $unwound(thrown);
@@ -6523,6 +6531,7 @@ export function startFlowing(request, destination) {
   try {
     flushCompletedQueues(request, destination);
   } catch (thrown) {
+    $catchable(thrown);
     const errorInfo = newThrownInfo();
     const error = $unwound(thrown);
     logRecoverableError(request, thrownValueOf(error), errorInfo);
@@ -6564,6 +6573,7 @@ function finishAbort(request, abortableTasks) {
       flushCompletedQueues(request, destination);
     }
   } catch (thrown) {
+    $catchable(thrown);
     const errorInfo = newThrownInfo();
     const error = $unwound(thrown);
     logRecoverableError(request, thrownValueOf(error), errorInfo);

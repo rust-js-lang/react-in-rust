@@ -7,7 +7,7 @@
 
 import getNodeForCharacterOffset from './getNodeForCharacterOffset.js';
 import {TEXT_NODE} from './HTMLNodeType.js';
-import {$some, $someValue, $unwrap} from '@rust-js/std';
+import {$catchable, $some, $someValue, $unwrap} from '@rust-js/std';
 
 /**
  * @param {DOMElement} outerNode
@@ -40,7 +40,8 @@ export function getOffsets(outerNode) {
     $unwrap(anchorNode).nodeType;
     $unwrap(focusNode).nodeType;
     /* eslint-enable ft-flow/no-unused-expressions */
-  } catch {
+  } catch (error) {
+    $catchable(error);
     return null;
   }
 

@@ -24,7 +24,7 @@ import {
 import {enableViewTransition} from 'shared/ReactFeatureFlags';
 
 import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
-import {$unwrap} from '@rust-js/std';
+import {$catchable, $unwrap} from '@rust-js/std';
 
 function shouldConstruct(component) {
   const prototype = component.prototype;
@@ -55,7 +55,8 @@ function describeComponentStackByType(type) {
         let resolved;
         try {
           resolved = init(payload);
-        } catch {
+        } catch (error) {
+          $catchable(error);
           // TODO: When we support Thenables as component types we should rename this.
           return describeBuiltInComponentFrame('Lazy');
         }
@@ -92,6 +93,7 @@ export function getStackByComponentStackNode(componentStack) {
     }
     return info;
   } catch (x) {
+    $catchable(x);
     return `\nError generating stack: ${x.message}\n${x.stack}`;
   }
 }
@@ -168,6 +170,7 @@ export function getOwnerStackByComponentStackNodeInDev(componentStack) {
     }
     return info;
   } catch (x) {
+    $catchable(x);
     return `\nError generating stack: ${x.message}\n${x.stack}`;
   }
 }

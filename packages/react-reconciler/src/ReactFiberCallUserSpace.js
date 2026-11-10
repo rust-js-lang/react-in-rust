@@ -7,6 +7,7 @@
 
 import {isRendering, setIsRendering} from './ReactCurrentFiber.js';
 import {captureCommitPhaseError} from './ReactFiberWorkLoop.js';
+import {$catchable, $live, $unwindsOn} from '@rust-js/std';
 
 const callComponent = {
   react_stack_bottom_frame(component, props, secondArg) {
@@ -14,8 +15,12 @@ const callComponent = {
     setIsRendering(true);
     try {
       return component(props, secondArg);
+    } catch (error) {
+      throw $unwindsOn(error);
     } finally {
-      setIsRendering(wasRendering);
+      if ($live()) {
+        setIsRendering(wasRendering);
+      }
     }
   },
 };
@@ -31,8 +36,12 @@ const callRender = {
     setIsRendering(true);
     try {
       return instance.render();
+    } catch (error) {
+      throw $unwindsOn(error);
     } finally {
-      setIsRendering(wasRendering);
+      if ($live()) {
+        setIsRendering(wasRendering);
+      }
     }
   },
 };
@@ -47,6 +56,7 @@ const callComponentDidMount = {
     try {
       instance.componentDidMount();
     } catch (error) {
+      $catchable(error);
       const returnFiber = finishedWork.return;
       captureCommitPhaseError(finishedWork, returnFiber, error);
     }
@@ -69,6 +79,7 @@ const callComponentDidUpdate = {
     try {
       instance.componentDidUpdate(prevProps, prevState, snapshot);
     } catch (error) {
+      $catchable(error);
       const returnFiber = finishedWork.return;
       captureCommitPhaseError(finishedWork, returnFiber, error);
     }
@@ -98,6 +109,7 @@ const callComponentWillUnmount = {
     try {
       instance.componentWillUnmount();
     } catch (error) {
+      $catchable(error);
       captureCommitPhaseError(current, nearestMountedAncestor, error);
     }
   },
@@ -130,6 +142,7 @@ const callDestroy = {
     try {
       destroy();
     } catch (error) {
+      $catchable(error);
       captureCommitPhaseError(current, nearestMountedAncestor, error);
     }
   },

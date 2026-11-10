@@ -38,7 +38,14 @@ import {
   startLoggingProfilingEvents,
   stopLoggingProfilingEvents,
 } from '../SchedulerProfiling.js';
-import {$cleanup, $withBorrow, $withBorrowMut} from '@rust-js/std';
+import {
+  $catchable,
+  $cleanup,
+  $live,
+  $unwindsOn,
+  $withBorrow,
+  $withBorrowMut,
+} from '@rust-js/std';
 
 let getCurrentTime;
 if (typeof performance === 'object' && typeof performance.now === 'function') {
@@ -147,6 +154,7 @@ function flushWork(initialTime) {
     try {
       hasMoreWork = workLoop(initialTime);
     } catch (error) {
+      $catchable(error);
       const currentTask$1 = currentTask;
       if (currentTask$1 != null) {
         let currentTime;
@@ -161,7 +169,7 @@ function flushWork(initialTime) {
               const currentTime = getCurrentTime();
               markSchedulerSuspended(currentTime);
             }
-          });
+          }, error);
           throw error;
         }
         try {
@@ -175,7 +183,7 @@ function flushWork(initialTime) {
               const currentTime = getCurrentTime();
               markSchedulerSuspended(currentTime);
             }
-          });
+          }, error);
           throw error;
         }
         currentTask$1.isQueued = false;
@@ -190,7 +198,7 @@ function flushWork(initialTime) {
               const currentTime = getCurrentTime();
               markSchedulerSuspended(currentTime);
             }
-          });
+          }, error);
           throw error;
         }
       }
@@ -205,7 +213,7 @@ function flushWork(initialTime) {
             const currentTime = getCurrentTime();
             markSchedulerSuspended(currentTime);
           }
-        });
+        }, error);
         throw error;
       }
     }
@@ -231,7 +239,7 @@ function flushWork(initialTime) {
           const currentTime = getCurrentTime();
           markSchedulerSuspended(currentTime);
         }
-      });
+      }, error);
       throw error;
     }
     currentTask = null;
@@ -337,8 +345,12 @@ export function unstable_runWithPriority(priorityLevel, eventHandler) {
 
   try {
     return eventHandler();
+  } catch (error) {
+    throw $unwindsOn(error);
   } finally {
-    currentPriorityLevel = restore;
+    if ($live()) {
+      currentPriorityLevel = restore;
+    }
   }
 }
 
@@ -363,8 +375,12 @@ export function unstable_next(eventHandler) {
 
   try {
     return eventHandler();
+  } catch (error) {
+    throw $unwindsOn(error);
   } finally {
-    currentPriorityLevel = restore;
+    if ($live()) {
+      currentPriorityLevel = restore;
+    }
   }
 }
 
@@ -377,8 +393,12 @@ export function unstable_wrapCallback(callback) {
 
     try {
       return callback.apply(this, args);
+    } catch (error) {
+      throw $unwindsOn(error);
     } finally {
-      currentPriorityLevel = restore;
+      if ($live()) {
+        currentPriorityLevel = restore;
+      }
     }
   };
 }
@@ -551,7 +571,7 @@ function performWorkUntilDeadline() {
         } else {
           isMessageLoopRunning = false;
         }
-      });
+      }, error);
       throw error;
     }
     if (hasMoreWork) {

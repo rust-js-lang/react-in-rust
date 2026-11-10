@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$catchable} from '@rust-js/std';
+
 export function loadChunk(filename) {
   return __turbopack_load_by_url__(filename);
 }
@@ -25,7 +27,8 @@ export function addChunkDebugInfo(target, filename) {
     try {
       // $FlowFixMe[incompatible-type]
       href = new URL(filename, document.baseURI).href;
-    } catch {
+    } catch (error) {
+      $catchable(error);
       href = filename;
     }
     let start = -1;

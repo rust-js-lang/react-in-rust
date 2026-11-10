@@ -58,7 +58,7 @@ export function batchedUpdates(fn, a, b) {
     $cleanup(() => {
       isInsideEventHandler = false;
       finishEventHandler();
-    });
+    }, error);
     throw error;
   }
   isInsideEventHandler = false;

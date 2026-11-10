@@ -48,7 +48,7 @@ export function runWithPriority(priority, fn) {
   } catch (error) {
     $cleanup(() => {
       setCurrentUpdatePriority(previousPriority);
-    });
+    }, error);
     throw error;
   }
   let result;
@@ -57,7 +57,7 @@ export function runWithPriority(priority, fn) {
   } catch (error) {
     $cleanup(() => {
       setCurrentUpdatePriority(previousPriority);
-    });
+    }, error);
     throw error;
   }
   setCurrentUpdatePriority(previousPriority);

@@ -73,6 +73,7 @@ import * as ScrollEndEventPlugin from './plugins/ScrollEndEventPlugin.js';
 import reportGlobalError from 'shared/reportGlobalError';
 
 import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
+import {$catchable} from '@rust-js/std';
 
 // TODO: remove top-level side effect.
 SimpleEventPlugin.registerEvents();
@@ -235,6 +236,7 @@ function executeDispatch(event, listener, currentTarget) {
   try {
     listener(event);
   } catch (error) {
+    $catchable(error);
     reportGlobalError(error);
   }
   event.currentTarget = null;

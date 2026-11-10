@@ -154,7 +154,7 @@ export function parseStackTracePrivate(error, skipFrames) {
   } catch (error) {
     $cleanup(() => {
       Error.prepareStackTrace = previousPrepare;
-    });
+    }, error);
     throw error;
   }
   if (tmp) {
@@ -188,7 +188,7 @@ export function parseStackTrace(error, skipFrames) {
   } catch (error) {
     $cleanup(() => {
       Error.prepareStackTrace = previousPrepare;
-    });
+    }, error);
     throw error;
   }
   Error.prepareStackTrace = previousPrepare;

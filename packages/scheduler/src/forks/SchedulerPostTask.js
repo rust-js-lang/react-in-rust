@@ -12,6 +12,7 @@ import {
   NormalPriority,
   UserBlockingPriority,
 } from '../SchedulerPriorities.js';
+import {$catchable, $live, $unwindsOn} from '@rust-js/std';
 
 export {
   IdlePriority as unstable_IdlePriority,
@@ -120,6 +121,7 @@ function runTask(priorityLevel, postTaskPriority, node, callback) {
       }
     }
   } catch (error) {
+    $catchable(error);
     // We're inside a `postTask` promise. If we don't handle this error, then it
     // will trigger an "Unhandled promise rejection" error. We don't want that,
     // but we do want the default error reporting behavior that normal
@@ -130,7 +132,9 @@ function runTask(priorityLevel, postTaskPriority, node, callback) {
       throw error;
     });
   } finally {
-    currentPriorityLevel_DEPRECATED = reset;
+    if ($live()) {
+      currentPriorityLevel_DEPRECATED = reset;
+    }
   }
 }
 
@@ -151,8 +155,12 @@ export function unstable_runWithPriority(priorityLevel, callback) {
   currentPriorityLevel_DEPRECATED = priorityLevel;
   try {
     return callback();
+  } catch (error) {
+    throw $unwindsOn(error);
   } finally {
-    currentPriorityLevel_DEPRECATED = restore;
+    if ($live()) {
+      currentPriorityLevel_DEPRECATED = restore;
+    }
   }
 }
 
@@ -180,8 +188,12 @@ export function unstable_next(callback) {
   currentPriorityLevel_DEPRECATED = priorityLevel;
   try {
     return callback();
+  } catch (error) {
+    throw $unwindsOn(error);
   } finally {
-    currentPriorityLevel_DEPRECATED = restore;
+    if ($live()) {
+      currentPriorityLevel_DEPRECATED = restore;
+    }
   }
 }
 
@@ -192,8 +204,12 @@ export function unstable_wrapCallback(callback) {
     currentPriorityLevel_DEPRECATED = parentPriorityLevel;
     try {
       return callback();
+    } catch (error) {
+      throw $unwindsOn(error);
     } finally {
-      currentPriorityLevel_DEPRECATED = restore;
+      if ($live()) {
+        currentPriorityLevel_DEPRECATED = restore;
+      }
     }
   };
 }

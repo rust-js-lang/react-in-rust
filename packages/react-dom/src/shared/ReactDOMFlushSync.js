@@ -35,7 +35,7 @@ function flushSyncImpl(fn) {
             'a scheduler task or micro task.',
         );
       }
-    });
+    }, error);
     throw error;
   }
   try {
@@ -53,7 +53,7 @@ function flushSyncImpl(fn) {
             'a scheduler task or micro task.',
         );
       }
-    });
+    }, error);
     throw error;
   }
   let result;
@@ -72,7 +72,7 @@ function flushSyncImpl(fn) {
               'a scheduler task or micro task.',
           );
         }
-      });
+      }, error);
       throw error;
     }
     ReactSharedInternals.T = previousTransition;

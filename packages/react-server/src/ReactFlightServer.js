@@ -133,6 +133,7 @@ import {
   $borrow,
   $borrowMut,
   $catchUnwind,
+  $catchable,
   $cellReplace,
   $drain,
   $f64ToInt,
@@ -1291,6 +1292,7 @@ function serializeReadableStream(request, task, stream) {
           },
         );
       } catch (thrown) {
+        $catchable(thrown);
         const x = $unwound(thrown);
         error$2(thrownValueOf(x));
       }
@@ -1430,6 +1432,7 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
         try {
           chunkId = outlineModel(request, entry.value);
         } catch (thrown) {
+          $catchable(thrown);
           const x = $unwound(thrown);
           error(thrownValueOf(x));
           return;
@@ -1456,6 +1459,7 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
         enqueueFlush(request);
         nextStep$1();
       } catch (thrown) {
+        $catchable(thrown);
         const x = $unwound(thrown);
         error(thrownValueOf(x));
       }
@@ -3093,6 +3097,7 @@ function serializeClientReference(
     }
     return serializeByValueID(importId);
   } catch (thrown$1) {
+    $catchable(thrown$1);
     const thrown = $unwound(thrown$1);
     const x = thrownValueOf(thrown);
     request.pendingChunks++;
@@ -3148,6 +3153,7 @@ function serializeDebugClientReference(
     }
     return serializeByValueID(importId);
   } catch (thrown$1) {
+    $catchable(thrown$1);
     const thrown = $unwound(thrown$1);
     const x = thrownValueOf(thrown);
     request.pendingDebugChunks++;
@@ -3574,6 +3580,7 @@ function renderModel(request, task, parent, key, value) {
   try {
     return renderModelDestructive(request, task, parent, key, value);
   } catch (thrown$1) {
+    $catchable(thrown$1);
     const thrown = $unwound(thrown$1);
     const thrownValue = thrownValueOf(thrown);
     // If the suspended/errored value was an element or lazy it can be reduced
@@ -4394,7 +4401,8 @@ function describeErrorValue(request, error, name, env) {
       env.value = errorEnv;
     }
     return [message, stack];
-  } catch {
+  } catch (error) {
+    $catchable(error);
     return ['An error occurred but serializing the error message failed.', []];
   }
 }
@@ -5689,6 +5697,7 @@ function serializeDebugModel(request, objectLimit, model) {
         originalValue,
       );
     } catch (thrown) {
+      $catchable(thrown);
       const x = $unwound(thrown);
       return unknownValueMessage(thrownValueOf(x).message);
     }
@@ -5739,6 +5748,7 @@ function emitOutlinedDebugModelChunk(request, id, counter, model) {
         originalValue,
       );
     } catch (thrown) {
+      $catchable(thrown);
       const x = $unwound(thrown);
       return unknownValueMessage(thrownValueOf(x).message);
     }
@@ -6796,6 +6806,7 @@ export function startFlowing(request, destination) {
   try {
     flushCompletedChunks(request);
   } catch (thrown) {
+    $catchable(thrown);
     let error = $unwound(thrown);
     error = thrownValueOf(error);
     logRecoverableError(request, error);
@@ -6820,6 +6831,7 @@ export function startFlowingDebug(request, debugDestination) {
   try {
     flushCompletedChunks(request);
   } catch (thrown) {
+    $catchable(thrown);
     let error = $unwound(thrown);
     error = thrownValueOf(error);
     logRecoverableError(request, error);
@@ -6844,6 +6856,7 @@ function finishHalt(request, abortedTasks) {
     onAllReady();
     flushCompletedChunks(request);
   } catch (thrown) {
+    $catchable(thrown);
     let error = $unwound(thrown);
     error = thrownValueOf(error);
     logRecoverableError(request, error);
@@ -6864,6 +6877,7 @@ function finishAbort(request, abortedTasks, errorId) {
     onAllReady();
     flushCompletedChunks(request);
   } catch (thrown) {
+    $catchable(thrown);
     let error = $unwound(thrown);
     error = thrownValueOf(error);
     logRecoverableError(request, error);
@@ -6955,6 +6969,7 @@ export function abort(request, reason) {
       flushCompletedChunks(request);
     }
   } catch (thrown) {
+    $catchable(thrown);
     let error = $unwound(thrown);
     error = thrownValueOf(error);
     logRecoverableError(request, error);

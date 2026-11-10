@@ -56,6 +56,7 @@ import {textEncoder} from 'react-server/src/ReactServerStreamConfigNode';
 import {
   $borrow,
   $borrowMut,
+  $catchable,
   $fieldCell,
   $index,
   $unborrow,
@@ -513,6 +514,7 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
           }
         }
       } catch (error) {
+        $catchable(error);
         busboyStream.destroy(error);
         return;
       }
@@ -538,6 +540,7 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
       try {
         resolveField(response, name, value);
       } catch (error) {
+        $catchable(error);
         busboyStream.destroy(error);
       }
     }
@@ -577,6 +580,7 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
           $unborrow(borrowMut);
         }
       } catch (error) {
+        $catchable(error);
         busboyStream.destroy(error);
       }
     });

@@ -403,7 +403,7 @@ import {
   stopCommittedGesture,
 } from './ReactFiberGestureScheduler.js';
 import {claimQueuedTransitionTypes} from './ReactFiberTransitionTypes.js';
-import {$cleanup, $unwrap} from '@rust-js/std';
+import {$catchable, $cleanup, $unwrap} from '@rust-js/std';
 
 const PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map;
 
@@ -1655,7 +1655,8 @@ function isRenderConsistentWithExternalStores(finishedWork) {
                 return false;
               }
               i++;
-            } catch {
+            } catch (error) {
+              $catchable(error);
               // If `getSnapshot` throws, return `false`. This will schedule
               // a re-render, and the error will be rethrown during render.
               return false;
@@ -1772,7 +1773,7 @@ export function deferredUpdates(f) {
     $cleanup(() => {
       setCurrentUpdatePriority(previousPriority);
       ReactSharedInternals.T = prevTransition;
-    });
+    }, error);
     throw error;
   }
   try {
@@ -1781,7 +1782,7 @@ export function deferredUpdates(f) {
     $cleanup(() => {
       setCurrentUpdatePriority(previousPriority);
       ReactSharedInternals.T = prevTransition;
-    });
+    }, error);
     throw error;
   }
   let result;
@@ -1791,7 +1792,7 @@ export function deferredUpdates(f) {
     $cleanup(() => {
       setCurrentUpdatePriority(previousPriority);
       ReactSharedInternals.T = prevTransition;
-    });
+    }, error);
     throw error;
   }
   setCurrentUpdatePriority(previousPriority);
@@ -1823,7 +1824,7 @@ export function batchedUpdates(f, a) {
           resetRenderTimer();
           flushSyncWorkOnLegacyRootsOnly();
         }
-      });
+      }, error);
       throw error;
     }
     executionContext = prevExecutionContext;
@@ -1850,7 +1851,7 @@ export function discreteUpdates(f, a, b, c, d) {
       if (executionContext === NoContext) {
         resetRenderTimer();
       }
-    });
+    }, error);
     throw error;
   }
   try {
@@ -1862,7 +1863,7 @@ export function discreteUpdates(f, a, b, c, d) {
       if (executionContext === NoContext) {
         resetRenderTimer();
       }
-    });
+    }, error);
     throw error;
   }
   let result;
@@ -1875,7 +1876,7 @@ export function discreteUpdates(f, a, b, c, d) {
       if (executionContext === NoContext) {
         resetRenderTimer();
       }
-    });
+    }, error);
     throw error;
   }
   setCurrentUpdatePriority(previousPriority);
@@ -1917,7 +1918,7 @@ export function flushSyncFromReconciler(f) {
       if ((executionContext & (RenderContext | CommitContext)) === NoContext) {
         flushSyncWorkOnAllRoots();
       }
-    });
+    }, error);
     throw error;
   }
   try {
@@ -1930,7 +1931,7 @@ export function flushSyncFromReconciler(f) {
       if ((executionContext & (RenderContext | CommitContext)) === NoContext) {
         flushSyncWorkOnAllRoots();
       }
-    });
+    }, error);
     throw error;
   }
   let result;
@@ -1944,7 +1945,7 @@ export function flushSyncFromReconciler(f) {
       if ((executionContext & (RenderContext | CommitContext)) === NoContext) {
         flushSyncWorkOnAllRoots();
       }
-    });
+    }, error);
     throw error;
   }
   setCurrentUpdatePriority(previousPriority);
@@ -2732,6 +2733,7 @@ function renderRootSync(root, lanes, shouldYieldForPrerendering) {
       // the shell.
       break;
     } catch (thrownValue) {
+      $catchable(thrownValue);
       handleThrow(root, thrownValue);
     }
   }
@@ -3018,6 +3020,7 @@ function renderRootConcurrent(root, lanes) {
       })();
       break;
     } catch (thrownValue) {
+      $catchable(thrownValue);
       handleThrow(root, thrownValue);
     }
   }
@@ -3255,6 +3258,7 @@ function throwAndUnwindWorkLoop(
       return;
     }
   } catch (error) {
+    $catchable(error);
     // We had trouble processing the error. An example of this happening is
     // when accessing the `componentDidCatch` property of an error boundary
     // throws an error. A weird edge case. There's a regression test for this.
@@ -3866,7 +3870,7 @@ function commitRoot(
         executionContext = prevExecutionContext;
         setCurrentUpdatePriority(previousPriority);
         ReactSharedInternals.T = prevTransition;
-      });
+      }, error);
       throw error;
     }
     executionContext = prevExecutionContext;
@@ -4027,7 +4031,7 @@ function flushMutationEffects() {
         executionContext = prevExecutionContext;
         setCurrentUpdatePriority(previousPriority);
         ReactSharedInternals.T = prevTransition;
-      });
+      }, error);
       throw error;
     }
     if (enableCreateEventHandleAPI && shouldFireAfterActiveInstanceBlur) {
@@ -4038,7 +4042,7 @@ function flushMutationEffects() {
           executionContext = prevExecutionContext;
           setCurrentUpdatePriority(previousPriority);
           ReactSharedInternals.T = prevTransition;
-        });
+        }, error);
         throw error;
       }
     }
@@ -4049,7 +4053,7 @@ function flushMutationEffects() {
         executionContext = prevExecutionContext;
         setCurrentUpdatePriority(previousPriority);
         ReactSharedInternals.T = prevTransition;
-      });
+      }, error);
       throw error;
     }
     executionContext = prevExecutionContext;
@@ -4107,6 +4111,7 @@ function flushLayoutEffects() {
       try {
         cleanUpIndicator();
       } catch (x) {
+        $catchable(x);
         try {
           reportGlobalError(x);
         } catch (error) {
@@ -4114,7 +4119,7 @@ function flushLayoutEffects() {
             executionContext = prevExecutionContext;
             setCurrentUpdatePriority(previousPriority);
             ReactSharedInternals.T = prevTransition;
-          });
+          }, error);
           throw error;
         }
       }
@@ -4146,7 +4151,7 @@ function flushLayoutEffects() {
           executionContext = prevExecutionContext;
           setCurrentUpdatePriority(previousPriority);
           ReactSharedInternals.T = prevTransition;
-        });
+        }, error);
         throw error;
       }
     }
@@ -4157,7 +4162,7 @@ function flushLayoutEffects() {
         executionContext = prevExecutionContext;
         setCurrentUpdatePriority(previousPriority);
         ReactSharedInternals.T = prevTransition;
-      });
+      }, error);
       throw error;
     }
     if (enableSchedulingProfiler) {
@@ -4168,7 +4173,7 @@ function flushLayoutEffects() {
           executionContext = prevExecutionContext;
           setCurrentUpdatePriority(previousPriority);
           ReactSharedInternals.T = prevTransition;
-        });
+        }, error);
         throw error;
       }
     }
@@ -4313,7 +4318,7 @@ function flushSpawnedWork() {
         $cleanup(() => {
           ReactSharedInternals.T = prevTransition;
           setCurrentUpdatePriority(previousUpdateLanePriority);
-        });
+        }, error);
         throw error;
       }
       if (__DEV__) {
@@ -4330,7 +4335,7 @@ function flushSpawnedWork() {
           $cleanup(() => {
             ReactSharedInternals.T = prevTransition;
             setCurrentUpdatePriority(previousUpdateLanePriority);
-          });
+          }, error);
           throw error;
         }
       } else {
@@ -4340,7 +4345,7 @@ function flushSpawnedWork() {
           $cleanup(() => {
             ReactSharedInternals.T = prevTransition;
             setCurrentUpdatePriority(previousUpdateLanePriority);
-          });
+          }, error);
           throw error;
         }
       }
@@ -4532,7 +4537,7 @@ function applyGestureOnRoot(
       executionContext = prevExecutionContext;
       setCurrentUpdatePriority(previousPriority);
       ReactSharedInternals.T = prevTransition;
-    });
+    }, error);
     throw error;
   }
   executionContext = prevExecutionContext;
@@ -4584,7 +4589,7 @@ function flushGestureMutations() {
       executionContext = prevExecutionContext;
       setCurrentUpdatePriority(previousPriority);
       ReactSharedInternals.T = prevTransition;
-    });
+    }, error);
     throw error;
   }
   executionContext = prevExecutionContext;
@@ -4655,7 +4660,7 @@ function flushGestureAnimations() {
       executionContext = prevExecutionContext;
       setCurrentUpdatePriority(previousPriority);
       ReactSharedInternals.T = prevTransition;
-    });
+    }, error);
     throw error;
   }
   executionContext = prevExecutionContext;
@@ -4790,7 +4795,7 @@ function flushPassiveEffects() {
       // chance to retain cache instances they use - release the pooled
       // cache at the root (if there is one)
       releaseRootPooledCache(root, remainingLanes);
-    });
+    }, error);
     throw error;
   }
   try {
@@ -4800,7 +4805,7 @@ function flushPassiveEffects() {
       setCurrentUpdatePriority(previousPriority);
       ReactSharedInternals.T = prevTransition;
       releaseRootPooledCache(root, remainingLanes);
-    });
+    }, error);
     throw error;
   }
   let result;
@@ -4811,7 +4816,7 @@ function flushPassiveEffects() {
       setCurrentUpdatePriority(previousPriority);
       ReactSharedInternals.T = prevTransition;
       releaseRootPooledCache(root, remainingLanes);
-    });
+    }, error);
     throw error;
   }
   setCurrentUpdatePriority(previousPriority);
@@ -5392,7 +5397,7 @@ function doubleInvokeEffectsOnFiber(root, fiber) {
   } catch (error) {
     $cleanup(() => {
       setIsStrictModeForDevtools(false);
-    });
+    }, error);
     throw error;
   }
   try {
@@ -5400,7 +5405,7 @@ function doubleInvokeEffectsOnFiber(root, fiber) {
   } catch (error) {
     $cleanup(() => {
       setIsStrictModeForDevtools(false);
-    });
+    }, error);
     throw error;
   }
   const alternate = fiber.alternate;
@@ -5409,7 +5414,7 @@ function doubleInvokeEffectsOnFiber(root, fiber) {
   } catch (error) {
     $cleanup(() => {
       setIsStrictModeForDevtools(false);
-    });
+    }, error);
     throw error;
   }
   try {
@@ -5417,7 +5422,7 @@ function doubleInvokeEffectsOnFiber(root, fiber) {
   } catch (error) {
     $cleanup(() => {
       setIsStrictModeForDevtools(false);
-    });
+    }, error);
     throw error;
   }
   setIsStrictModeForDevtools(false);

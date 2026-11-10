@@ -79,6 +79,7 @@ import {
   $borrow,
   $borrowMut,
   $catchUnwind,
+  $catchable,
   $cellReplace,
   $cleanup,
   $copyOf,
@@ -86,12 +87,14 @@ import {
   $f64ToInt,
   $fieldCell,
   $index,
+  $live,
   $resize,
   $slice,
   $splice,
   $truncate,
   $try,
   $unborrow,
+  $unwindsOn,
   $unwound,
   $unwrap,
 } from '@rust-js/std';
@@ -681,7 +684,7 @@ function triggerErrorOnChunk(response, chunk, error) {
           const old$1$1 = _restore.prevChunk;
           _restore.prevChunk = undefined;
           initializingChunk = old$1$1 ?? null;
-        });
+        }, error);
         throw error;
       }
       const initializingHandler$1 = initializingHandler;
@@ -936,10 +939,13 @@ function initializeDebugChunk(response, chunk) {
       throw erroredReason(debugChunk);
     }
   } catch (thrown$1) {
+    $catchable(thrown$1);
     const error = $unwound(thrown$1);
     triggerErrorOnChunk(response, chunk, thrown(error));
   } finally {
-    isInitializingDebugInfo = prevIsInitializingDebugInfo;
+    if ($live()) {
+      isInitializingDebugInfo = prevIsInitializingDebugInfo;
+    }
   }
 }
 
@@ -1097,6 +1103,7 @@ function initializeModelChunk(chunk) {
       initializeBlockedChunk(response, cyclicChunk, value);
     })();
   } catch (thrown$1) {
+    $catchable(thrown$1);
     const erroredChunk = chunk;
     let reason;
     let borrowMut;
@@ -1126,7 +1133,7 @@ function initializeModelChunk(chunk) {
           _restore.prevChunk = undefined;
           initializingChunk = old ?? null;
         }
-      });
+      }, error);
       throw error;
     }
     borrowMut.value = {
@@ -1156,6 +1163,7 @@ function initializeModuleChunk(chunk) {
     initializedChunk.value = value;
     initializedChunk.reason = null;
   } catch (thrown$1) {
+    $catchable(thrown$1);
     const erroredChunk = chunk;
     const error = $unwound(thrown$1);
     const reason = thrown(error);
@@ -1252,7 +1260,8 @@ function getTaskName(type) {
   try {
     const name = getComponentNameFromType(type);
     return name != null && name !== '' ? '<' + name + '>' : '<...>';
-  } catch {
+  } catch (error) {
+    $catchable(error);
     return '<...>';
   }
 }
@@ -1809,6 +1818,7 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
       }
     }
   } catch (thrown$1) {
+    $catchable(thrown$1);
     const error = $unwound(thrown$1);
     rejectReference(response, reference.handler, thrown(error));
     return;
@@ -3115,7 +3125,7 @@ function resolveModule(response, id, model, streamState) {
       const old = _restore.prevHandler;
       _restore.prevHandler = undefined;
       initializingHandler = old ?? null;
-    });
+    }, error);
     throw error;
   }
   if (initializingHandler != null) {
@@ -3131,7 +3141,7 @@ function resolveModule(response, id, model, streamState) {
         const old = _restore.prevHandler;
         _restore.prevHandler = undefined;
         initializingHandler = old ?? null;
-      });
+      }, error);
       throw error;
     }
   }
@@ -3259,7 +3269,7 @@ function resolveStream(response, id, stream, controller, streamState) {
           const old$1$2 = _restore.prevChunk;
           _restore.prevChunk = undefined;
           initializingChunk = old$1$2 ?? null;
-        });
+        }, error);
         throw error;
       }
       const initializingHandler$1 = initializingHandler;
@@ -3283,7 +3293,7 @@ function resolveStream(response, id, stream, controller, streamState) {
               const old$1$3 = _restore.prevChunk;
               _restore.prevChunk = undefined;
               initializingChunk = old$1$3 ?? null;
-            });
+            }, error);
             throw error;
           }
           const old = _restore.prevHandler;
@@ -4322,7 +4332,7 @@ const replayConsoleWithCallStack = {
       $cleanup(() => {
         currentOwnerInDEV = null;
         ReactSharedInternals.getCurrentStack = prevStack;
-      });
+      }, error);
       throw error;
     }
     if (owner != null) {
@@ -4333,7 +4343,7 @@ const replayConsoleWithCallStack = {
         $cleanup(() => {
           currentOwnerInDEV = null;
           ReactSharedInternals.getCurrentStack = prevStack;
-        });
+        }, error);
         throw error;
       }
       try {
@@ -4342,7 +4352,7 @@ const replayConsoleWithCallStack = {
         $cleanup(() => {
           currentOwnerInDEV = null;
           ReactSharedInternals.getCurrentStack = prevStack;
-        });
+        }, error);
         throw error;
       }
       if (task != null) {
@@ -4352,7 +4362,7 @@ const replayConsoleWithCallStack = {
           $cleanup(() => {
             currentOwnerInDEV = null;
             ReactSharedInternals.getCurrentStack = prevStack;
-          });
+          }, error);
           throw error;
         }
         currentOwnerInDEV = null;
@@ -4367,7 +4377,7 @@ const replayConsoleWithCallStack = {
       $cleanup(() => {
         currentOwnerInDEV = null;
         ReactSharedInternals.getCurrentStack = prevStack;
-      });
+      }, error);
       throw error;
     }
     if (rootTask == null) {
@@ -4377,7 +4387,7 @@ const replayConsoleWithCallStack = {
         $cleanup(() => {
           currentOwnerInDEV = null;
           ReactSharedInternals.getCurrentStack = prevStack;
-        });
+        }, error);
         throw error;
       }
       currentOwnerInDEV = null;
@@ -4389,7 +4399,7 @@ const replayConsoleWithCallStack = {
         $cleanup(() => {
           currentOwnerInDEV = null;
           ReactSharedInternals.getCurrentStack = prevStack;
-        });
+        }, error);
         throw error;
       }
       currentOwnerInDEV = null;
@@ -4522,8 +4532,12 @@ function resolveIOInfo(response, id, model) {
       }
       chunk = chunk$1;
     }
+  } catch (error) {
+    throw $unwindsOn(error);
   } finally {
-    isInitializingDebugInfo = prevIsInitializingDebugInfo;
+    if ($live()) {
+      isInitializingDebugInfo = prevIsInitializingDebugInfo;
+    }
   }
   if (chunk.status === 'fulfilled') {
     initializeIOInfo(response, initializedValue(chunk));

@@ -12,7 +12,7 @@ import ReactSharedInternals from './ReactSharedInternals.js';
 import DefaultPrepareStackTrace from './DefaultPrepareStackTrace.js';
 
 import {formatOwnerStack} from './ReactOwnerStackFrames.js';
-import {$cleanup} from '@rust-js/std';
+import {$catchable, $cleanup} from '@rust-js/std';
 
 let prefix;
 let suffix = '';
@@ -23,6 +23,7 @@ export function describeBuiltInComponentFrame(name) {
     try {
       throw new Error();
     } catch (x) {
+      $catchable(x);
       const stack = x.stack ?? '';
       const match = /\n( *(at )?)/.exec(stack.trim());
       prefix = match?.[1] ?? '';
@@ -104,6 +105,7 @@ function DetermineComponentFrameRoot(fn, construct) {
         try {
           Reflect.construct(Fake, []);
         } catch (x) {
+          $catchable(x);
           control = x;
         }
         Reflect.construct(fn, [], Fake);
@@ -111,6 +113,7 @@ function DetermineComponentFrameRoot(fn, construct) {
         try {
           Fake();
         } catch (x) {
+          $catchable(x);
           control = x;
         }
 
@@ -131,7 +134,7 @@ function DetermineComponentFrameRoot(fn, construct) {
             } else {
               delete prototype.props;
             }
-          });
+          }, error);
           throw error;
         }
         if (prevProps != null) {
@@ -144,6 +147,7 @@ function DetermineComponentFrameRoot(fn, construct) {
       try {
         throw new Error();
       } catch (x) {
+        $catchable(x);
         control = x;
       }
       // TODO(luna): This will currently only throw if the function component
@@ -160,6 +164,7 @@ function DetermineComponentFrameRoot(fn, construct) {
       }
     }
   } catch (sample) {
+    $catchable(sample);
     // This is inlined manually because closure doesn't do it for us.
     if (control != null) {
       const sampleStack = sample.stack;
@@ -224,7 +229,7 @@ export function describeNativeComponentFrame(fn, construct) {
         reenableLogs();
       }
       Error.prepareStackTrace = previousPrepareStackTrace;
-    });
+    }, error);
     throw error;
   }
   if (namePropDescriptor != null && namePropDescriptor.configurable) {
@@ -246,7 +251,7 @@ export function describeNativeComponentFrame(fn, construct) {
           reenableLogs();
         }
         Error.prepareStackTrace = previousPrepareStackTrace;
-      });
+      }, error);
       throw error;
     }
   }
@@ -262,7 +267,7 @@ export function describeNativeComponentFrame(fn, construct) {
         reenableLogs();
       }
       Error.prepareStackTrace = previousPrepareStackTrace;
-    });
+    }, error);
     throw error;
   }
   const sampleStack = determineComponentFrameRoot[0];
@@ -281,7 +286,7 @@ export function describeNativeComponentFrame(fn, construct) {
           reenableLogs();
         }
         Error.prepareStackTrace = previousPrepareStackTrace;
-      });
+      }, error);
       throw error;
     }
     let controlLines;
@@ -295,7 +300,7 @@ export function describeNativeComponentFrame(fn, construct) {
           reenableLogs();
         }
         Error.prepareStackTrace = previousPrepareStackTrace;
-      });
+      }, error);
       throw error;
     }
     let s = 0;
@@ -356,7 +361,7 @@ export function describeNativeComponentFrame(fn, construct) {
                     reenableLogs();
                   }
                   Error.prepareStackTrace = previousPrepareStackTrace;
-                });
+                }, error);
                 throw error;
               }
               let frame = tmp;
@@ -375,7 +380,7 @@ export function describeNativeComponentFrame(fn, construct) {
                     reenableLogs();
                   }
                   Error.prepareStackTrace = previousPrepareStackTrace;
-                });
+                }, error);
                 throw error;
               }
               if (tmp$1 && frame.includes('<anonymous>')) {
@@ -390,7 +395,7 @@ export function describeNativeComponentFrame(fn, construct) {
                       reenableLogs();
                     }
                     Error.prepareStackTrace = previousPrepareStackTrace;
-                  });
+                  }, error);
                   throw error;
                 }
                 frame = tmp;
@@ -407,7 +412,7 @@ export function describeNativeComponentFrame(fn, construct) {
                       reenableLogs();
                     }
                     Error.prepareStackTrace = previousPrepareStackTrace;
-                  });
+                  }, error);
                   throw error;
                 }
               }

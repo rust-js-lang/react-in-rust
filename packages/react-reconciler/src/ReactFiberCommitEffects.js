@@ -78,7 +78,7 @@ import {
 } from './ReactFiberCallUserSpace.js';
 
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
-import {$cleanup, $unwrap} from '@rust-js/std';
+import {$catchable, $cleanup, $unwrap} from '@rust-js/std';
 
 function shouldProfile(current) {
   return (
@@ -235,6 +235,7 @@ export function commitHookEffectListMount(flags, finishedWork) {
       }
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -288,6 +289,7 @@ export function commitHookEffectListUnmount(
       } while (effect !== firstEffect);
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -374,6 +376,7 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
         try {
           instance.componentDidMount();
         } catch (error) {
+          $catchable(error);
           const returnFiber = finishedWork.return;
           captureCommitPhaseError(finishedWork, returnFiber, error);
         }
@@ -392,6 +395,7 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
       try {
         instance.componentDidMount();
       } catch (error) {
+        $catchable(error);
         const returnFiber = finishedWork.return;
         captureCommitPhaseError(finishedWork, returnFiber, error);
       }
@@ -461,6 +465,7 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
             instance.__reactInternalSnapshotBeforeUpdate,
           );
         } catch (error) {
+          $catchable(error);
           const returnFiber = finishedWork.return;
           captureCommitPhaseError(finishedWork, returnFiber, error);
         }
@@ -492,6 +497,7 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
           instance.__reactInternalSnapshotBeforeUpdate,
         );
       } catch (error) {
+        $catchable(error);
         const returnFiber = finishedWork.return;
         captureCommitPhaseError(finishedWork, returnFiber, error);
       }
@@ -516,6 +522,7 @@ export function commitClassDidMount(finishedWork) {
       try {
         instance.componentDidMount();
       } catch (error) {
+        $catchable(error);
         const returnFiber = finishedWork.return;
         captureCommitPhaseError(finishedWork, returnFiber, error);
       }
@@ -567,6 +574,7 @@ export function commitClassCallbacks(finishedWork) {
         commitCallbacks(updateQueue, instance);
       }
     } catch (error) {
+      $catchable(error);
       const returnFiber = finishedWork.return;
       captureCommitPhaseError(finishedWork, returnFiber, error);
     }
@@ -591,6 +599,7 @@ export function commitClassHiddenCallbacks(finishedWork) {
         commitHiddenCallbacks(updateQueue, instance);
       }
     } catch (error) {
+      $catchable(error);
       const returnFiber = finishedWork.return;
       captureCommitPhaseError(finishedWork, returnFiber, error);
     }
@@ -622,6 +631,7 @@ export function commitRootCallbacks(finishedWork) {
         commitCallbacks(updateQueue, instance);
       }
     } catch (error) {
+      $catchable(error);
       const returnFiber = finishedWork.return;
       captureCommitPhaseError(finishedWork, returnFiber, error);
     }
@@ -702,6 +712,7 @@ export function commitClassSnapshot(finishedWork, current) {
     }
     instance.__reactInternalSnapshotBeforeUpdate = snapshot;
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
@@ -738,6 +749,7 @@ export function safelyCallComponentWillUnmount(
       try {
         instance.componentWillUnmount();
       } catch (error) {
+        $catchable(error);
         captureCommitPhaseError(current, nearestMountedAncestor, error);
       }
     }
@@ -760,6 +772,7 @@ export function safelyCallComponentWillUnmount(
     try {
       instance.componentWillUnmount();
     } catch (error) {
+      $catchable(error);
       captureCommitPhaseError(current, nearestMountedAncestor, error);
     }
   }
@@ -808,7 +821,7 @@ function commitAttachRef(finishedWork) {
         } catch (error) {
           $cleanup(() => {
             recordEffectDuration(finishedWork);
-          });
+          }, error);
           throw error;
         }
         try {
@@ -816,7 +829,7 @@ function commitAttachRef(finishedWork) {
         } catch (error) {
           $cleanup(() => {
             recordEffectDuration(finishedWork);
-          });
+          }, error);
           throw error;
         }
         recordEffectDuration(finishedWork);
@@ -853,6 +866,7 @@ export function safelyAttachRef(current, nearestMountedAncestor) {
       commitAttachRef(current);
     }
   } catch (error) {
+    $catchable(error);
     captureCommitPhaseError(current, nearestMountedAncestor, error);
   }
 }
@@ -870,7 +884,7 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
           } catch (error) {
             $cleanup(() => {
               recordEffectDuration(current);
-            });
+            }, error);
             throw error;
           }
           if (__DEV__) {
@@ -881,7 +895,7 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
             } catch (error) {
               $cleanup(() => {
                 recordEffectDuration(current);
-              });
+              }, error);
               throw error;
             }
             recordEffectDuration(current);
@@ -891,7 +905,7 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
             } catch (error) {
               $cleanup(() => {
                 recordEffectDuration(current);
-              });
+              }, error);
               throw error;
             }
             recordEffectDuration(current);
@@ -904,6 +918,7 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
           refCleanup();
         }
       } catch (error) {
+        $catchable(error);
         try {
           captureCommitPhaseError(current, nearestMountedAncestor, error);
         } catch (error) {
@@ -914,7 +929,7 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
             if (finishedWork != null) {
               finishedWork.refCleanup = null;
             }
-          });
+          }, error);
           throw error;
         }
       }
@@ -931,7 +946,7 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
           } catch (error) {
             $cleanup(() => {
               recordEffectDuration(current);
-            });
+            }, error);
             throw error;
           }
           if (__DEV__) {
@@ -940,7 +955,7 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
             } catch (error) {
               $cleanup(() => {
                 recordEffectDuration(current);
-              });
+              }, error);
               throw error;
             }
             recordEffectDuration(current);
@@ -950,7 +965,7 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
             } catch (error) {
               $cleanup(() => {
                 recordEffectDuration(current);
-              });
+              }, error);
               throw error;
             }
             recordEffectDuration(current);
@@ -961,6 +976,7 @@ export function safelyDetachRef(current, nearestMountedAncestor) {
           ref(null);
         }
       } catch (error) {
+        $catchable(error);
         captureCommitPhaseError(current, nearestMountedAncestor, error);
       }
     } else {
@@ -985,6 +1001,7 @@ function safelyCallDestroy(current, nearestMountedAncestor, destroy) {
     try {
       destroy();
     } catch (error) {
+      $catchable(error);
       captureCommitPhaseError(current, nearestMountedAncestor, error);
     }
   }
@@ -1045,6 +1062,7 @@ export function commitProfilerUpdate(
         commitProfiler(finishedWork, current, commitStartTime, effectDuration);
       }
     } catch (error) {
+      $catchable(error);
       const returnFiber = finishedWork.return;
       captureCommitPhaseError(finishedWork, returnFiber, error);
     }
@@ -1095,6 +1113,7 @@ export function commitProfilerPostCommit(
       );
     }
   } catch (error) {
+    $catchable(error);
     const returnFiber = finishedWork.return;
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }

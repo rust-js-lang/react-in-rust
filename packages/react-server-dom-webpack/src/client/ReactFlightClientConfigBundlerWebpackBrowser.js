@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$catchable} from '@rust-js/std';
+
 const chunkMap = new Map();
 
 /*
@@ -42,7 +44,8 @@ export function addChunkDebugInfo(target, chunkId, filename) {
     try {
       // $FlowFixMe[incompatible-type]
       href = new URL(scriptFilename, document.baseURI).href;
-    } catch {
+    } catch (error) {
+      $catchable(error);
       href = scriptFilename;
     }
     let start = -1;

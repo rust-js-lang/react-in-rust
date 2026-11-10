@@ -16,7 +16,7 @@ import {
 import reportGlobalError from 'shared/reportGlobalError';
 
 import noop from 'shared/noop';
-import {$catchUnwind, $cleanup} from '@rust-js/std';
+import {$catchUnwind, $catchable, $cleanup} from '@rust-js/std';
 
 function releaseAsyncTransition() {
   if (__DEV__) {
@@ -67,6 +67,7 @@ export function startTransition(scope, options) {
       returnValue.then(noop, reportGlobalError);
     }
   } catch (error) {
+    $catchable(error);
     try {
       reportGlobalError(error);
     } catch (error) {
@@ -88,7 +89,7 @@ export function startTransition(scope, options) {
           prevTransition.types = currentTypes;
         }
         ReactSharedInternals.T = prevTransition;
-      });
+      }, error);
       throw error;
     }
   }
@@ -174,7 +175,7 @@ export function startGestureTransition(provider, scope, options) {
     } catch (error) {
       $cleanup(() => {
         ReactSharedInternals.T = prevTransition;
-      });
+      }, error);
       throw error;
     }
   }

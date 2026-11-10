@@ -30,7 +30,7 @@ import {
   getBackingString,
   getStreamChunks,
 } from './ReactFlightReplyBackingFormData.js';
-import {$cleanup, $index, $unwrap} from '@rust-js/std';
+import {$catchable, $cleanup, $index, $unwrap} from '@rust-js/std';
 
 const __PROTO__ = '__proto__';
 
@@ -381,6 +381,7 @@ function loadServerReference(response, metaData, parentObject, key) {
       }
       value = value$1;
     } catch (error) {
+      $catchable(error);
       triggerErrorOnChunk(response, blockedPromise, error);
       return;
     }
@@ -477,6 +478,7 @@ function loadServerObjectReference(response, metaData, parentObject, key) {
         );
       }
     } catch (error) {
+      $catchable(error);
       triggerErrorOnChunk(response, blockedPromise, error);
       return;
     }
@@ -622,7 +624,7 @@ function initializeModelChunk(chunk) {
         const old = _prevHandler[0];
         _prevHandler[0] = undefined;
         initializingHandler = old ?? null;
-      });
+      }, error);
       throw error;
     }
   }
@@ -695,6 +697,7 @@ function initializeModelChunk(chunk) {
       chunk.reason = arrayRoot;
     })();
   } catch (error) {
+    $catchable(error);
     chunk.status = 'rejected';
     chunk.reason = error;
   }
@@ -831,6 +834,7 @@ function fulfillReference(response, reference, value, arrayRoot) {
       }
     }
   } catch (error) {
+    $catchable(error);
     rejectReference(response, handler, error);
     return;
   }
@@ -1249,6 +1253,7 @@ function parseTypedArray(
         handler.value = resolvedValue;
       }
     } catch (x) {
+      $catchable(x);
       reject(x);
       return;
     }

@@ -28,7 +28,7 @@ import assign from 'shared/assign';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 
 import isArray from 'shared/isArray';
-import {$borrow, $index, $unborrow} from '@rust-js/std';
+import {$borrow, $catchable, $index, $unborrow} from '@rust-js/std';
 
 const maxRowLength = 120;
 const idealDepth = 15;
@@ -620,7 +620,8 @@ function describeNode(node, indent) {
 export function describeDiff(rootNode) {
   try {
     return '\n\n' + describeNode(rootNode, 0);
-  } catch {
+  } catch (error) {
+    $catchable(error);
     return '';
   }
 }

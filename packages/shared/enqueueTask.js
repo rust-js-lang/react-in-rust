@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$unwrap} from '@rust-js/std';
+import {$catchable, $unwrap} from '@rust-js/std';
 
 let didWarnAboutMessageChannel = false;
 let enqueueTaskImpl;
@@ -23,6 +23,7 @@ export default function enqueueTask(task) {
       const timers = nodeRequire.call(module, 'timers');
       enqueueTaskImpl = timers.setImmediate;
     } catch (_err) {
+      $catchable(_err);
       // we're in a browser
       // we can't use regular timers because they may still be faked
       // so we try MessageChannel+postMessage instead

@@ -97,6 +97,7 @@ import getComponentNameFromType from 'shared/getComponentNameFromType';
 import {
   $borrow,
   $borrowMut,
+  $catchable,
   $cellReplace,
   $fieldCell,
   $unborrow,
@@ -113,6 +114,7 @@ if (__DEV__) {
     // eslint-disable-next-line no-new
     new Set([nonExtensibleObject]);
   } catch (_e) {
+    $catchable(_e);
     // TODO: Consider warning about bad polyfills
     hasBadMapPolyfill = true;
   }

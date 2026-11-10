@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$unwrap} from '@rust-js/std';
+import {$catchable, $unwrap} from '@rust-js/std';
 
 export async function insertNodesAndExecuteScripts(source, target, CSPnonce) {
   const ownerDocument = target.ownerDocument ?? target;
@@ -95,6 +95,7 @@ async function executeScript(script) {
       // `module.require` is the function Jest gives a module as both.
       module.require(scriptSrc);
     } catch (x) {
+      $catchable(x);
       const event = new window.ErrorEvent('error', {error: x});
       window.dispatchEvent(event);
     }

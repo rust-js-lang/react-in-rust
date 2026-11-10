@@ -66,8 +66,10 @@ import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {
   $borrow,
   $borrowMut,
+  $catchable,
   $cellReplace,
   $fieldCell,
+  $live,
   $unborrow,
 } from '@rust-js/std';
 
@@ -2046,6 +2048,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       // set at the beginning.
       return firstChildFiber;
     } catch (x) {
+      $catchable(x);
       const thrown = x;
       if (
         thrown === SuspenseException ||
@@ -2095,7 +2098,9 @@ function createChildReconciler(shouldTrackSideEffects) {
       }
       return throwFiber;
     } finally {
-      currentDebugInfo = restore;
+      if ($live()) {
+        currentDebugInfo = restore;
+      }
     }
   };
 }
