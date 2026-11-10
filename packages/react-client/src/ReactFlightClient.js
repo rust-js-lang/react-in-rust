@@ -81,6 +81,7 @@ import {
   $catchUnwind,
   $cellReplace,
   $cleanup,
+  $copyOf,
   $drain,
   $f64ToInt,
   $fieldCell,
@@ -2244,7 +2245,7 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
                 key,
                 response,
                 map,
-                $slice(borrow, i - 1),
+                $copyOf(borrow, i - 1),
                 isInitializingDebugInfo,
               );
             } finally {
@@ -4301,7 +4302,7 @@ const replayConsoleWithCallStack = {
     const owner = payload[2];
     const env = payload[3];
     const entry = payload;
-    const args = $slice(entry, 4);
+    const args = $copyOf(entry, 4);
 
     // There really shouldn't be anything else on the stack atm.
     const prevStack = ReactSharedInternals.getCurrentStack;
