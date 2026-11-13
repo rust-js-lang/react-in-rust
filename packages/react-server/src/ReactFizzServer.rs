@@ -6881,19 +6881,27 @@ pub fn perform_work(request: &Rc<Request>) {
     }
     let prev_resumable_state = CURRENT_RESUMABLE_STATE.get();
     set_current_resumable_state(Some(request.resumable_state));
-    let result = catch_unwind(AssertUnwindSafe(|| {
-        let pinged_tasks = &request.pinged_tasks;
-        let mut i = 0;
-        while i < pinged_tasks.borrow().len() {
-            let task = Rc::clone(&pinged_tasks.borrow()[i]);
-            retry_task(request, &task);
-            i += 1;
-        }
-        pinged_tasks.borrow_mut().drain(0..i);
-        if let Some(destination) = request.destination.get() {
-            flush_completed_queues(request, destination);
-        }
-    }));
+    // Inside it a stack overflow is a panic, which renderNode's catch takes
+    // to render a tree too deep for the stack again, as upstream's `catch`
+    // takes the engine's error (rust-js ADR 1140).
+    let result = match js::catch_stack_overflow(AssertUnwindSafe(|| {
+        catch_unwind(AssertUnwindSafe(|| {
+            let pinged_tasks = &request.pinged_tasks;
+            let mut i = 0;
+            while i < pinged_tasks.borrow().len() {
+                let task = Rc::clone(&pinged_tasks.borrow()[i]);
+                retry_task(request, &task);
+                i += 1;
+            }
+            pinged_tasks.borrow_mut().drain(0..i);
+            if let Some(destination) = request.destination.get() {
+                flush_completed_queues(request, destination);
+            }
+        }))
+    })) {
+        Ok(result) => result,
+        Err(overflow) => js::throw(overflow.as_unknown()),
+    };
     let result = match result {
         Ok(()) => Ok(()),
         Err(error) => catch_unwind(AssertUnwindSafe(|| {

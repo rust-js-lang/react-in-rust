@@ -110,6 +110,13 @@ node ../rust-js/tooling/cli.js clippy --package react-dom-bindings -- -D warning
 suite runs under `timeout 300`, and the script prints one line per gate.
 Logs go to `target/port/logs/<tag>-<gate>.log`.
 
+The gates run on Node 22 or later: rust-js's runtime extends the global
+`Iterator`, which Node 20, upstream's `.nvmrc`, lacks ("ReferenceError:
+Iterator is not defined"). On Node 24, ReactFlightDOMEdge's "should break
+up large sync components by outlining into streamable elements" times out
+in upstream's own JS as in the port's (rust-js #1693, closed as the
+environment's), so the webpack gate is 295 / 1 / 0 there.
+
 Before every commit, run the gates your change reaches. Their counts must
 match the numbers below, and any change in a count is a finding to explain,
 not noise. Lower `PORT_WORKERS` (default 4) when the machine is shared. If a
@@ -149,7 +156,7 @@ react-server, react-client, the Fizz suites and react-server-dom-fb,
 
 | Gate | Command | Expected |
 |---|---|---|
-| fizz | `yarn test react-dom/src/__tests__/ReactDOMFizz` (14 suites, the Static ones included) | 381 / 0 / 0⁶ |
+| fizz | `yarn test react-dom/src/__tests__/ReactDOMFizz` (14 suites, the Static ones included) | 381 / 0 / 0⁶¹⁰ |
 | ssr | `yarn test react-dom/src/__tests__/ReactDOMServerIntegration` (21 suites) | 1602 / 0 / 0 |
 | float | `yarn test react-dom/src/__tests__/ReactDOMFloat react-dom/src/__tests__/ReactDOMLegacyFloat` (2 suites) | 143 / 0 / 1 |
 | ssrmisc | `yarn test react-dom/src/__tests__/ReactServerRendering react-dom/src/__tests__/ReactDOMServerLifecycles react-dom/src/__tests__/ReactDOMInReactServer react-dom/src/__tests__/ReactClassComponentPropResolutionFizz packages/react-markup packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShimServer` (9 suites) | 104 / 0 / 0 |
@@ -184,6 +191,15 @@ ReactFlightServer's migration; upstream's suites alone are 26 in 4.
 ⁶ With the port's own `ReactDOMFizzServerBun-test.js` (7 tests) and
 `ReactServerStreamConfigBun-test.js` (10 tests), added with the Bun server
 entry, as no upstream test runs it.
+
+¹⁰ ReactDOMFizzServer's "can recover from very deep trees during resume
+to avoid stack overflow" depends on the stack's room (rust-js #1692, ADR
+1140): it passes at these settings, and fails run in-band or with five
+workers, where replayElement's `catch` has under one frame of stack left
+to consume its slot, `replay_nodes.borrow_mut().remove(i)`, whose JS
+makes two runtime calls there where upstream's `replayNodes.splice(i, 1)`
+makes one. rust-js's next change writes a borrow used as a temporary and
+`Vec::remove` as upstream does.
 
 ⁷ With the port's own `ReactDOMServerFBStream-test.internal.js` (2 tests:
 each chunk is only what was written since the last, and `debug`'s counts),

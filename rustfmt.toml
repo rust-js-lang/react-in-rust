@@ -1,0 +1,4 @@
+# The port's own rustfmt settings, rustfmt's defaults: without this file, a
+# checkout under another project, a rust-js worktree's, takes that project's.
+edition = "2024"
+max_width = 100

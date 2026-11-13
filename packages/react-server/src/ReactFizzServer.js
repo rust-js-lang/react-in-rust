@@ -178,6 +178,7 @@ import {
   $assign,
   $borrow,
   $borrowMut,
+  $catchStackOverflow,
   $catchUnwind,
   $catchable,
   $cellReplace,
@@ -5639,20 +5640,30 @@ export function performWork(request) {
   }
   const prevResumableState = currentResumableState;
   setCurrentResumableState(request.resumableState);
-  let result = $catchUnwind(() => {
-    const pingedTasks = request.pingedTasks;
-    let i = 0;
-    while (i < pingedTasks.length) {
-      const task = pingedTasks[i];
-      retryTask(request, task);
-      i++;
-    }
-    $drain(pingedTasks, 0, i);
-    const destination = request.destination;
-    if (destination != null) {
-      flushCompletedQueues(request, destination);
-    }
-  });
+  // Inside it a stack overflow is a panic, which renderNode's catch takes
+  // to render a tree too deep for the stack again, as upstream's `catch`
+  // takes the engine's error (rust-js ADR 1140).
+  const value = $catchStackOverflow(() =>
+    $catchUnwind(() => {
+      const pingedTasks = request.pingedTasks;
+      let i = 0;
+      while (i < pingedTasks.length) {
+        const task = pingedTasks[i];
+        retryTask(request, task);
+        i++;
+      }
+      $drain(pingedTasks, 0, i);
+      const destination = request.destination;
+      if (destination != null) {
+        flushCompletedQueues(request, destination);
+      }
+    }),
+  );
+  if (value.TAG !== 'Ok') {
+    const overflow = value._0;
+    throw overflow;
+  }
+  let result = value._0;
   if (result.TAG === 'Ok') {
     result = {TAG: 'Ok'};
   } else {
