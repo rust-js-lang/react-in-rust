@@ -144,6 +144,7 @@ import noop from 'shared/noop';
 
 import estimateBandwidth from './estimateBandwidth.js';
 import {
+  $alreadyBorrowed,
   $borrow,
   $borrowMut,
   $catchable,
@@ -152,7 +153,7 @@ import {
   $index,
   $lazyRange,
   $position,
-  $removeAt,
+  $removeOutOfBounds,
   $retain,
   $truncate,
   $unborrow,
@@ -2943,7 +2944,10 @@ FragmentInstance.prototype.removeEventListener = function (
     attachedListener,
     attachOptions,
   );
-  $removeAt(listeners, index);
+  if (index >= listeners.length) {
+    $removeOutOfBounds(listeners, index);
+  }
+  listeners.splice(index, 1);
   if (cleanup != null) {
     cleanup();
   }
@@ -3402,7 +3406,10 @@ function setFocusOnFiberIfFocusable(fiber, focusOptions) {
 }
 
 function collectChildren(child, collection) {
-  $borrowMut(collection).push(child);
+  if (collection.borrows) {
+    $alreadyBorrowed();
+  }
+  collection.push(child);
   return false;
 }
 
@@ -5831,7 +5838,10 @@ function getHydratableHoistableCache(type, keyAttribute, ownerDocument) {
       const key = type + nodeKey;
       const existing = cache.get(key);
       if (existing != null) {
-        $borrowMut(existing).push(node);
+        if (existing.borrows) {
+          $alreadyBorrowed();
+        }
+        existing.push(node);
       } else {
         cache.set(key, [node]);
       }

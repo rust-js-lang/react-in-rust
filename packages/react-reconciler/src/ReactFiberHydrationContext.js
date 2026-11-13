@@ -60,7 +60,7 @@ import {getHostContext, getRootHostContainer} from './ReactFiberHostContext.js';
 import {describeDiff} from './ReactFiberHydrationDiffs.js';
 
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
-import {$borrowMut, $index} from '@rust-js/std';
+import {$alreadyBorrowed, $index} from '@rust-js/std';
 
 // The deepest Fiber on the stack involved in a hydration context.
 // This may have been an insertion or a hydration.
@@ -224,7 +224,10 @@ function warnNonHydratedInstance(fiber, rejectedCandidate) {
     if (rejectedCandidate != null) {
       const description =
         describeHydratableInstanceForDevWarnings(rejectedCandidate);
-      $borrowMut(diffNode.serverTail).push(description);
+      if (diffNode.serverTail.borrows) {
+        $alreadyBorrowed();
+      }
+      diffNode.serverTail.push(description);
     }
   }
 }
@@ -772,7 +775,10 @@ function warnIfUnhydratedTailNodes(fiber) {
         describeHydratableInstanceForDevWarnings(nextInstance);
       const isSuspense =
         typeof description !== 'string' && description.type === 'Suspense';
-      $borrowMut(diffNode.serverTail).push(description);
+      if (diffNode.serverTail.borrows) {
+        $alreadyBorrowed();
+      }
+      diffNode.serverTail.push(description);
       if (isSuspense) {
         // ReactFiberConfig's `SuspenseInstance`.
         const suspenseInstance = nextInstance;

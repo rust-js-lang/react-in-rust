@@ -52,7 +52,7 @@ import {
 } from 'react-reconciler/src/ReactFiberReconciler';
 
 import {enableHydrationChangeEvent} from 'shared/ReactFeatureFlags';
-import {$insertAt, $removeAt} from '@rust-js/std';
+import {$insertAt, $removeOutOfBounds} from '@rust-js/std';
 
 // TODO: Upgrade this definition once we're on a newer version of Flow that
 // has this definition built-in.
@@ -380,7 +380,10 @@ function attemptReplayContinuousQueuedEvent(queuedEvent) {
       return false;
     }
     // This target container was successfully dispatched. Try the next.
-    $removeAt(targetContainers, 0);
+    if (0 >= targetContainers.length) {
+      $removeOutOfBounds(targetContainers, 0);
+    }
+    targetContainers.splice(0, 1);
   }
   return true;
 }
@@ -560,7 +563,10 @@ export function retryIfBlockedOn(unblocked) {
     attemptExplicitHydrationTarget(nextExplicitTarget);
     if (nextExplicitTarget.blockedOn === null) {
       // We're unblocked.
-      $removeAt(queuedExplicitHydrationTargets, 0);
+      if (0 >= queuedExplicitHydrationTargets.length) {
+        $removeOutOfBounds(queuedExplicitHydrationTargets, 0);
+      }
+      queuedExplicitHydrationTargets.splice(0, 1)[0];
     }
   }
 

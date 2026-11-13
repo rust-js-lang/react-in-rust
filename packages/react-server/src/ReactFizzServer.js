@@ -175,6 +175,8 @@ import {
   writeStartSegment,
 } from './ReactFizzConfig.js';
 import {
+  $alreadyBorrowed,
+  $alreadyMutablyBorrowed,
   $assign,
   $borrow,
   $borrowMut,
@@ -189,7 +191,7 @@ import {
   $insertAt,
   $iter,
   $next,
-  $removeAt,
+  $removeOutOfBounds,
   $some,
   $someValue,
   $symbolFor,
@@ -637,7 +639,10 @@ function pingRejectedTask(request, task, error) {
     return;
   }
   const abortSet = task.abortSet;
-  if (!$borrowMut(abortSet).delete(task)) {
+  if (abortSet.borrows) {
+    $alreadyBorrowed();
+  }
+  if (!abortSet.delete(task)) {
     // finishAbort already completed this task with the request's abort reason.
     return;
   }
@@ -754,7 +759,10 @@ function createRenderTask(
     legacyContext: !disableLegacyContext ? legacyContext : emptyContextObject,
     debugTask: (__DEV__ ? debugTask : undefined) ?? null,
   };
-  $borrowMut(abortSet).add(task);
+  if (abortSet.borrows) {
+    $alreadyBorrowed();
+  }
+  abortSet.add(task);
   return task;
 }
 
@@ -805,7 +813,10 @@ function createReplayTask(
     legacyContext: !disableLegacyContext ? legacyContext : emptyContextObject,
     debugTask: (__DEV__ ? debugTask : undefined) ?? null,
   };
-  $borrowMut(abortSet).add(task);
+  if (abortSet.borrows) {
+    $alreadyBorrowed();
+  }
+  abortSet.add(task);
   return task;
 }
 
@@ -1293,7 +1304,10 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
     defer,
   );
 
-  const {length: insertionIndex} = $borrow(parentSegment.chunks);
+  if (parentSegment.chunks.borrows < 0) {
+    $alreadyMutablyBorrowed();
+  }
+  const {length: insertionIndex} = parentSegment.chunks;
   // The children of the boundary segment is actually the fallback.
   const boundarySegment = createPendingSegment(
     request,
@@ -1304,7 +1318,10 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
     false,
     false,
   );
-  $borrowMut(parentSegment.children).push(boundarySegment);
+  if (parentSegment.children.borrows) {
+    $alreadyBorrowed();
+  }
+  parentSegment.children.push(boundarySegment);
   // The parentSegment has a child Segment at this index so we reset the lastPushedText marker on the parent
   parentSegment.lastPushedText = false;
 
@@ -1970,8 +1987,14 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
     // We give each row its own segment so that we can render the content in
     // reverse order but still emit it in the right order when we flush.
     const parentSegment = $unwrap(task.blockedSegment);
-    const {length: childIndex} = $borrow(parentSegment.children);
-    const {length: insertionIndex} = $borrow(parentSegment.chunks);
+    if (parentSegment.children.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    const {length: childIndex} = parentSegment.children;
+    if (parentSegment.chunks.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    const {length: insertionIndex} = parentSegment.chunks;
     for (let n = 0; n < totalChildren; n++) {
       const i =
         revealOrder === 'unstable_legacy-backwards'
@@ -1992,7 +2015,10 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
         true,
       );
       // Insert in the beginning of the sequence, which will insert before any previous rows.
-      $insertAt($borrowMut(parentSegment.children), childIndex, newSegment);
+      if (parentSegment.children.borrows) {
+        $alreadyBorrowed();
+      }
+      $insertAt(parentSegment.children, childIndex, newSegment);
       task.blockedSegment = newSegment;
       if (__DEV__) {
         warnForMissingKey(request, task, node);
@@ -2206,7 +2232,10 @@ function renderPreamble(request, task, blockedSegment, node) {
     false,
     false,
   );
-  $borrowMut(blockedSegment.preambleChildren).push(preambleSegment);
+  if (blockedSegment.preambleChildren.borrows) {
+    $alreadyBorrowed();
+  }
+  blockedSegment.preambleChildren.push(preambleSegment);
   task.blockedSegment = preambleSegment;
   const result = $catchUnwind(() => {
     renderNode(request, task, node, -1);
@@ -3067,7 +3096,13 @@ function replayElement(
   let i = 0;
   while (i < $borrow(replayNodes).length) {
     // Flow doesn't support refinement on tuples so we do it manually here.
-    const node = cloneReplayNode($borrow($borrow(replayNodes)[i]));
+    if (replayNodes.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    if (replayNodes[i].borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    const node = cloneReplayNode(replayNodes[i]);
     const nodeKey = node[1];
     if (keyOrIndex !== nodeKey) {
       i++;
@@ -3120,7 +3155,13 @@ function replayElement(
             // This same element suspended so we need to pop the replay we just added.
           } else {
             // We finished rendering this node, so now we can consume this slot.
-            $removeAt($borrowMut(replayNodes), i);
+            if (replayNodes.borrows) {
+              $alreadyBorrowed();
+            }
+            if (i >= replayNodes.length) {
+              $removeOutOfBounds(replayNodes, i);
+            }
+            replayNodes.splice(i, 1);
           }
           throw thrown;
         }
@@ -3162,7 +3203,10 @@ function replayElement(
         fallbackNodes = [];
         fallbackSlots = null;
       } else {
-        const [, , nodes, slots] = $borrow(fallback);
+        if (fallback.borrows < 0) {
+          $alreadyMutablyBorrowed();
+        }
+        const [, , nodes, slots] = fallback;
         fallbackNodes = nodes;
         fallbackSlots = slots;
       }
@@ -3180,7 +3224,13 @@ function replayElement(
     }
     // We finished rendering this node, so now we can consume this
     // slot. This must happen after in case we rerender this task.
-    $removeAt($borrowMut(replayNodes), i);
+    if (replayNodes.borrows) {
+      $alreadyBorrowed();
+    }
+    if (i >= replayNodes.length) {
+      $removeOutOfBounds(replayNodes, i);
+    }
+    replayNodes.splice(i, 1);
     return;
   }
 }
@@ -3618,8 +3668,17 @@ function replayFragment(request, task, children, childIndex) {
   const replayNodes = replay.nodes;
   let j = 0;
   while (true) {
-    if (j < $borrow(replayNodes).length) {
-      const node = cloneReplayNode($borrow($borrow(replayNodes)[j]));
+    if (replayNodes.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    if (j < replayNodes.length) {
+      if (replayNodes.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
+      if (replayNodes[j].borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
+      const node = cloneReplayNode(replayNodes[j]);
       const [, nodeKey, childNodes, childSlots] = node;
       if (nodeKey !== childIndex) {
         j++;
@@ -3680,7 +3739,13 @@ function replayFragment(request, task, children, childIndex) {
       task.replay = replay;
       // We finished rendering this node, so now we can consume this
       // slot. This must happen after in case we rerender this task.
-      $removeAt($borrowMut(replayNodes), j);
+      if (replayNodes.borrows) {
+        $alreadyBorrowed();
+      }
+      if (j >= replayNodes.length) {
+        $removeOutOfBounds(replayNodes, j);
+      }
+      replayNodes.splice(j, 1);
     }
     return;
   }
@@ -4150,7 +4215,10 @@ function spawnNewSuspendedReplayTask(request, task, thenableState) {
 function spawnNewSuspendedRenderTask(request, task, thenableState) {
   // Something suspended, we'll need to create a new segment and resolve it later.
   const segment = $unwrap(task.blockedSegment);
-  const {length: insertionIndex} = $borrow(segment.chunks);
+  if (segment.chunks.borrows < 0) {
+    $alreadyMutablyBorrowed();
+  }
+  const {length: insertionIndex} = segment.chunks;
   const newSegment = createPendingSegment(
     request,
     insertionIndex,
@@ -4161,7 +4229,10 @@ function spawnNewSuspendedRenderTask(request, task, thenableState) {
     // Assume we are text embedded at the trailing edge
     true,
   );
-  $borrowMut(segment.children).push(newSegment);
+  if (segment.children.borrows) {
+    $alreadyBorrowed();
+  }
+  segment.children.push(newSegment);
   // Reset lastPushedText for current Segment since the new Segment "consumed" it
   segment.lastPushedText = false;
   const blockedBoundary = task.blockedBoundary;
@@ -4206,7 +4277,10 @@ function postponeNewSuspendedRenderTask(request, task, thenableState) {
     abortTask(postponedTask, request);
   }
   const abortSet = postponedTask.abortSet;
-  $borrowMut(abortSet).delete(postponedTask);
+  if (abortSet.borrows) {
+    $alreadyBorrowed();
+  }
+  abortSet.delete(postponedTask);
   if (__DEV__) {
     finishAbortedTaskDEV(postponedTask, request, request.fatalError);
   } else {
@@ -4336,8 +4410,14 @@ function renderNode(request, task, node, childIndex) {
     // TODO: Abort any undiscovered Suspense boundaries in the ReplayNode.
   } else {
     // Render
-    const {length: childrenLength} = $borrow(segment.children);
-    const {length: chunkLength} = $borrow(segment.chunks);
+    if (segment.children.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    const {length: childrenLength} = segment.children;
+    if (segment.chunks.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    const {length: chunkLength} = segment.chunks;
     try {
       renderNodeDestructive(request, task, node, childIndex);
       return;
@@ -4346,8 +4426,14 @@ function renderNode(request, task, node, childIndex) {
       resetHooksState();
 
       // Reset the write pointers to where we started.
-      $truncate($borrowMut(segment.children), childrenLength);
-      $truncate($borrowMut(segment.chunks), chunkLength);
+      if (segment.children.borrows) {
+        $alreadyBorrowed();
+      }
+      $truncate(segment.children, childrenLength);
+      if (segment.chunks.borrows) {
+        $alreadyBorrowed();
+      }
+      $truncate(segment.chunks, chunkLength);
 
       const thrownValue = $unwound(thrown$1);
       const isSuspenseException$1 = isSuspenseException(
@@ -4920,7 +5006,10 @@ function finishAbortedTask(task, request, error) {
         } finally {
           $unborrow(borrow);
         }
-        $borrowMut(boundary.fallbackAbortableTasks).clear();
+        if (boundary.fallbackAbortableTasks.borrows) {
+          $alreadyBorrowed();
+        }
+        boundary.fallbackAbortableTasks.clear();
         const row = task.row;
         finishedTask(request, boundary, row, segment);
         return;
@@ -4964,7 +5053,10 @@ function finishAbortedTask(task, request, error) {
     } finally {
       $unborrow(value);
     }
-    $borrowMut(boundary.fallbackAbortableTasks).clear();
+    if (boundary.fallbackAbortableTasks.borrows) {
+      $alreadyBorrowed();
+    }
+    boundary.fallbackAbortableTasks.clear();
   }
 
   const row = task.row;
@@ -5041,7 +5133,10 @@ function abortUnwoundTask(task, request) {
     abortTask(task, request);
   }
   const abortSet = task.abortSet;
-  $borrowMut(abortSet).delete(task);
+  if (abortSet.borrows) {
+    $alreadyBorrowed();
+  }
+  abortSet.delete(task);
   if (__DEV__) {
     finishAbortedTaskDEV(task, request, request.fatalError);
   } else {
@@ -5117,8 +5212,11 @@ function queueCompletedSegment(boundary, segment) {
   const children = $borrow(segment.children, true);
   let onlyChild;
   try {
+    if (segment.chunks.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
     onlyChild =
-      $borrow(segment.chunks).length === 0 &&
+      segment.chunks.length === 0 &&
       children.length === 1 &&
       children[0].boundary == null &&
       children[0].id === -1
@@ -5141,7 +5239,10 @@ function queueCompletedSegment(boundary, segment) {
     }
   } else {
     const completedSegments = boundary.completedSegments;
-    $borrowMut(completedSegments).push(segment);
+    if (completedSegments.borrows) {
+      $alreadyBorrowed();
+    }
+    completedSegments.push(segment);
   }
 }
 
@@ -5249,7 +5350,10 @@ function finishedTask(request, boundary, row, segment) {
           } finally {
             $unborrow(borrow);
           }
-          $borrowMut(boundary.fallbackAbortableTasks).clear();
+          if (boundary.fallbackAbortableTasks.borrows) {
+            $alreadyBorrowed();
+          }
+          boundary.fallbackAbortableTasks.clear();
           if (boundaryRow != null) {
             // If we aren't eligible for outlining, we don't have to wait until we flush it.
             boundaryRow.pendingTasks--;
@@ -5303,7 +5407,10 @@ function finishedTask(request, boundary, row, segment) {
         if (segment.status === COMPLETED || segment.status === ABORTED) {
           queueCompletedSegment(boundary, segment);
           const completedSegments = boundary.completedSegments;
-          if ($borrow(completedSegments).length === 1) {
+          if (completedSegments.borrows < 0) {
+            $alreadyMutablyBorrowed();
+          }
+          if (completedSegments.length === 1) {
             // This is the first time since we last flushed that we completed anything.
             // We can schedule this boundary to emit its partially completed segments early
             // in case the parent has already been flushed.
@@ -5361,8 +5468,14 @@ function retryRenderTask(request, task, segment) {
     setCurrentTaskInDEV(task);
   }
 
-  const {length: childrenLength} = $borrow(segment.children);
-  const {length: chunkLength} = $borrow(segment.chunks);
+  if (segment.children.borrows < 0) {
+    $alreadyMutablyBorrowed();
+  }
+  const {length: childrenLength} = segment.children;
+  if (segment.chunks.borrows < 0) {
+    $alreadyMutablyBorrowed();
+  }
+  const {length: chunkLength} = segment.chunks;
   // Used to detect forward progress if we hit a stack overflow below.
   const startNode = task.node;
   let result = $catchUnwind(() => {
@@ -5377,7 +5490,10 @@ function retryRenderTask(request, task, segment) {
       segment.textEmbedded,
     );
 
-    $borrowMut(task.abortSet).delete(task);
+    if (task.abortSet.borrows) {
+      $alreadyBorrowed();
+    }
+    task.abortSet.delete(task);
     segment.status = COMPLETED;
     const blockedBoundary = task.blockedBoundary;
     finishedSegment(request, blockedBoundary, segment);
@@ -5392,8 +5508,14 @@ function retryRenderTask(request, task, segment) {
       resetHooksState();
 
       // Reset the write pointers to where we started.
-      $truncate($borrowMut(segment.children), childrenLength);
-      $truncate($borrowMut(segment.chunks), chunkLength);
+      if (segment.children.borrows) {
+        $alreadyBorrowed();
+      }
+      $truncate(segment.children, childrenLength);
+      if (segment.chunks.borrows) {
+        $alreadyBorrowed();
+      }
+      $truncate(segment.chunks, chunkLength);
 
       const isSuspenseException$1 = isSuspenseException(
         thrownValueOf(thrownValue),
@@ -5453,7 +5575,10 @@ function retryRenderTask(request, task, segment) {
 
       const componentStack = task.componentStack;
       const errorInfo = getThrownInfo(componentStack);
-      $borrowMut(task.abortSet).delete(task);
+      if (task.abortSet.borrows) {
+        $alreadyBorrowed();
+      }
+      task.abortSet.delete(task);
 
       segment.status = ERRORED;
       const blockedBoundary = task.blockedBoundary;
@@ -5519,7 +5644,10 @@ function retryReplayTask(request, task) {
     }
     replay.pendingTasks--;
 
-    $borrowMut(task.abortSet).delete(task);
+    if (task.abortSet.borrows) {
+      $alreadyBorrowed();
+    }
+    task.abortSet.delete(task);
     const blockedBoundary = task.blockedBoundary;
     const row = task.row;
     finishedTask(request, blockedBoundary, row);
@@ -5587,7 +5715,10 @@ function retryReplayTask(request, task) {
         }
       }
       replay.pendingTasks--;
-      $borrowMut(task.abortSet).delete(task);
+      if (task.abortSet.borrows) {
+        $alreadyBorrowed();
+      }
+      task.abortSet.delete(task);
       const componentStack = task.componentStack;
       const errorInfo = getThrownInfo(componentStack);
       const blockedBoundary = task.blockedBoundary;
@@ -5704,7 +5835,10 @@ function preparePreambleFromSubtree(
   segment,
   collectedPreambleSegments,
 ) {
-  if ($borrow(segment.preambleChildren).length !== 0) {
+  if (segment.preambleChildren.borrows < 0) {
+    $alreadyMutablyBorrowed();
+  }
+  if (segment.preambleChildren.length !== 0) {
     collectedPreambleSegments.push(segment.preambleChildren);
   }
   let pendingPreambles = false;
@@ -5754,7 +5888,10 @@ function preparePreambleFromSegment(
     // We track this boundary's byteSize on the request since it will always flush with
     // the request since it may contribute to the preamble
     request.byteSize += boundary.byteSize;
-    const [boundaryRootSegment] = $borrow(boundary.completedSegments);
+    if (boundary.completedSegments.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    const [boundaryRootSegment] = boundary.completedSegments;
     if (boundaryRootSegment == null) {
       // Using the same error from flushSegment to avoid making a new one since conceptually the problem is still the same
       throw new Error(
@@ -5833,7 +5970,10 @@ function flushPreamble(
   for (let i = 0; i < preambleSegments.length; i++) {
     const segments = preambleSegments[i];
     for (let j = 0; j < $borrow(segments).length; j++) {
-      const segment = $borrow(segments)[j];
+      if (segments.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
+      const segment = segments[j];
       flushSegment(request, destination, segment);
     }
   }
@@ -5975,7 +6115,10 @@ function flushSegment(request, destination, segment, hoistableState) {
       boundary.rootSegmentID = nextSegmentId(request);
     }
 
-    if ($borrow(boundary.completedSegments).length !== 0) {
+    if (boundary.completedSegments.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    if (boundary.completedSegments.length !== 0) {
       // If this is at least partially complete, we can queue it to be partially emitted early.
       request.partialBoundaries.push(boundary);
     }
@@ -6052,13 +6195,19 @@ function flushSegment(request, destination, segment, hoistableState) {
 
     const completedSegments = boundary.completedSegments;
 
-    if ($borrow(completedSegments).length !== 1) {
+    if (completedSegments.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    if (completedSegments.length !== 1) {
       throw new Error(
         'A previously unvisited boundary must have exactly one root segment. This is a bug in React.',
       );
     }
 
-    const contentSegment = $borrow(completedSegments)[0];
+    if (completedSegments.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    const contentSegment = completedSegments[0];
     flushSegment(request, destination, contentSegment, hoistableState);
 
     return writeEndCompletedSuspenseBoundary(destination, request.renderState);
@@ -6111,7 +6260,10 @@ function flushCompletedBoundary(request, destination, boundary) {
   flushedByteSize = boundary.byteSize; // Start counting bytes
   const completedSegments = boundary.completedSegments;
   for (let i = 0; i < $borrow(completedSegments).length; i++) {
-    const segment = $borrow(completedSegments)[i];
+    if (completedSegments.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    const segment = completedSegments[i];
     flushPartiallyCompletedSegment(request, destination, boundary, segment);
   }
   $borrowMut(completedSegments).length = 0;
@@ -6145,19 +6297,28 @@ function flushPartialBoundary(request, destination, boundary) {
   const completedSegments = boundary.completedSegments;
   let i = 0;
   while (i < $borrow(completedSegments).length) {
-    const segment = $borrow(completedSegments)[i];
+    if (completedSegments.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    const segment = completedSegments[i];
     if (
       !flushPartiallyCompletedSegment(request, destination, boundary, segment)
     ) {
       i++;
-      $drain($borrowMut(completedSegments), 0, i);
+      if (completedSegments.borrows) {
+        $alreadyBorrowed();
+      }
+      $drain(completedSegments, 0, i);
       // Only write as much as the buffer wants. Something higher priority
       // might want to write later.
       return false;
     }
     i++;
   }
-  $drain($borrowMut(completedSegments), 0, i);
+  if (completedSegments.borrows) {
+    $alreadyBorrowed();
+  }
+  $drain(completedSegments, 0, i);
 
   const row = boundary.row;
   if (row != null && row.together && boundary.pendingTasks === 1) {
@@ -6280,13 +6441,26 @@ function flushCompletedQueues(request, destination) {
       flushSegment(request, destination, completedRootSegment);
       flushingShell = false;
       request.completedRootSegment = null;
-      const isComplete =
+      let isComplete;
+      if (
         request.allPendingTasks === 0 &&
         request.clientRenderedBoundaries.length === 0 &&
-        request.completedBoundaries.length === 0 &&
-        (request.trackedPostpones == null ||
-          ($borrow(request.trackedPostpones.rootNodes).length === 0 &&
-            request.trackedPostpones.rootSlots === null));
+        request.completedBoundaries.length === 0
+      ) {
+        function holds(trackedPostpones) {
+          if (trackedPostpones.rootNodes.borrows < 0) {
+            $alreadyMutablyBorrowed();
+          }
+          return (
+            trackedPostpones.rootNodes.length === 0 &&
+            trackedPostpones.rootSlots === null
+          );
+        }
+        isComplete =
+          request.trackedPostpones == null || holds(request.trackedPostpones);
+      } else {
+        isComplete = false;
+      }
       writeCompletedRoot(
         destination,
         request.resumableState,
@@ -6554,7 +6728,10 @@ export function stopFlowing(request) {
 
 function finishAbort(request, abortableTasks) {
   try {
-    if ($borrow(abortableTasks).size !== 0) {
+    if (abortableTasks.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    if (abortableTasks.size !== 0) {
       const error = request.fatalError;
       if (__DEV__) {
         const borrow = $borrow(abortableTasks, true);
@@ -6575,7 +6752,10 @@ function finishAbort(request, abortableTasks) {
           $unborrow(value);
         }
       }
-      $borrowMut(abortableTasks).clear();
+      if (abortableTasks.borrows) {
+        $alreadyBorrowed();
+      }
+      abortableTasks.clear();
     }
     const destination = request.destination;
     if (destination != null) {
@@ -6705,7 +6885,10 @@ export function getRenderState(request) {
 
 function addToReplayParent(node, parentKeyPath, trackedPostpones) {
   if (parentKeyPath == null) {
-    $borrowMut(trackedPostpones.rootNodes).push(node);
+    if (trackedPostpones.rootNodes.borrows) {
+      $alreadyBorrowed();
+    }
+    trackedPostpones.rootNodes.push(node);
   } else {
     const workingMap = trackedPostpones.workingMap;
     let parentNode = workingMap.get(parentKeyPath);
@@ -6717,7 +6900,10 @@ function addToReplayParent(node, parentKeyPath, trackedPostpones) {
     const borrow = $borrow(parentNode, true);
     const children = borrow[2];
     try {
-      $borrowMut(children).push(node);
+      if (children.borrows) {
+        $alreadyBorrowed();
+      }
+      children.push(node);
     } finally {
       $unborrow(borrow);
     }
@@ -6727,11 +6913,16 @@ function addToReplayParent(node, parentKeyPath, trackedPostpones) {
 // Returns the state of a postponed request or null if nothing was postponed.
 export function getPostponedState(request) {
   const trackedPostpones = request.trackedPostpones;
-  if (
-    trackedPostpones == null ||
-    ($borrow(trackedPostpones.rootNodes).length === 0 &&
-      trackedPostpones.rootSlots === null)
-  ) {
+  function keep(trackedPostpones) {
+    if (trackedPostpones.rootNodes.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    return (
+      trackedPostpones.rootNodes.length !== 0 ||
+      trackedPostpones.rootSlots !== null
+    );
+  }
+  if (trackedPostpones == null || !keep(trackedPostpones)) {
     // Reset. Let the flushing behave as if we completed the whole document.
     request.trackedPostpones = null;
     return null;

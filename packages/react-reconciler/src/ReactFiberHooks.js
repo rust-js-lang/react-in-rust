@@ -155,6 +155,7 @@ import {
   $catchUnwind,
   $catchable,
   $cleanup,
+  $index,
   $roomFor,
   $unwrap,
 } from '@rust-js/std';
@@ -398,7 +399,7 @@ function areHookInputsEqual(
   // $FlowFixMe[incompatible-use] found when upgrading Flow
   for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
     // $FlowFixMe[incompatible-use] found when upgrading Flow
-    if (!is(nextDeps[i], prevDeps[i])) {
+    if (!is($index(nextDeps, i), $index(prevDeps, i))) {
       return false;
     }
   }

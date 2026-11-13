@@ -35,7 +35,7 @@ import {getFormState} from './ReactFizzServer.js';
 import noop from 'shared/noop';
 
 import {createFastHash} from './ReactServerStreamConfig.js';
-import {$catchable, $roomFor, $unwrap} from '@rust-js/std';
+import {$catchable, $index, $roomFor, $unwrap} from '@rust-js/std';
 
 let currentlyRenderingComponent = null;
 let currentlyRenderingTask = null;
@@ -198,7 +198,7 @@ function areHookInputsEqual(nextDeps, prevDeps) {
   // $FlowFixMe[incompatible-use] found when upgrading Flow
   for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
     // $FlowFixMe[incompatible-use] found when upgrading Flow
-    if (!objectIs(nextDeps[i], prevDeps[i])) {
+    if (!objectIs($index(nextDeps, i), $index(prevDeps, i))) {
       return false;
     }
   }

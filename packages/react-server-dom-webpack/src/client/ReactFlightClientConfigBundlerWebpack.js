@@ -14,6 +14,7 @@ import {
 } from 'react-client/src/ReactFlightClientConfig';
 
 import hasOwnProperty from 'shared/hasOwnProperty';
+import {$index} from '@rust-js/std';
 
 // The reason this function needs to defined here in this file instead of just
 // being exported directly from the WebpackDestination... file is because the
@@ -141,7 +142,7 @@ export function preloadModule(metadata) {
   const promises = [];
   let i = 0;
   while (i < chunks.length) {
-    const chunkId = chunks[i];
+    const chunkId = $index(chunks, i);
     i++;
     const chunkFilename = chunks[i];
     i++;
@@ -210,7 +211,7 @@ export function getModuleDebugInfo(metadata) {
   const debugInfo = [];
   let i = 0;
   while (i < chunks.length) {
-    const chunkId = chunks[i];
+    const chunkId = $index(chunks, i);
     i++;
     const chunkFilename = chunks[i];
     i++;

@@ -194,12 +194,12 @@ entry, as no upstream test runs it.
 
 ¹⁰ ReactDOMFizzServer's "can recover from very deep trees during resume
 to avoid stack overflow" depends on the stack's room (rust-js #1692, ADR
-1140): it passes at these settings, and fails run in-band or with five
-workers, where replayElement's `catch` has under one frame of stack left
-to consume its slot, `replay_nodes.borrow_mut().remove(i)`, whose JS
-makes two runtime calls there where upstream's `replayNodes.splice(i, 1)`
-makes one. rust-js's next change writes a borrow used as a temporary and
-`Vec::remove` as upstream does.
+1140): it passes at these settings and with five workers, and fails run
+in-band, where replayElement's `catch` has too little stack left to reach
+its slot's consume: before it, `thrown_value_of(&*x)` and
+`is_suspending(..)` are calls where upstream tests `x` in place. The
+consume itself, `replay_nodes.borrow_mut().remove(i)`, calls nothing
+since rust-js ADR 1141.
 
 ⁷ With the port's own `ReactDOMServerFBStream-test.internal.js` (2 tests:
 each chunk is only what was written since the last, and `debug`'s counts),

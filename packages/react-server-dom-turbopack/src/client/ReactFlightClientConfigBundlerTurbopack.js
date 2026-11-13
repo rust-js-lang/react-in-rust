@@ -14,6 +14,7 @@ import {
 } from 'react-client/src/ReactFlightClientConfig';
 
 import hasOwnProperty from 'shared/hasOwnProperty';
+import {$index} from '@rust-js/std';
 
 // The reason this function needs to defined here in this file instead of just
 // being exported directly from the TurbopackDestination... file is because the
@@ -200,7 +201,7 @@ export function getModuleDebugInfo(metadata) {
   const debugInfo = [];
   let i = 0;
   while (i < chunks.length) {
-    const chunk = chunks[i];
+    const chunk = $index(chunks, i);
     i++;
     // A merged chunk is `[mergedChunkFilename, ...]`; use its own filename.
     addChunkDebugInfo(debugInfo, typeof chunk === 'string' ? chunk : chunk[0]);

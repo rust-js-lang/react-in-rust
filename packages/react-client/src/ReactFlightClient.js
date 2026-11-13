@@ -75,6 +75,8 @@ import isArray from 'shared/isArray';
 
 import * as React from 'react';
 import {
+  $alreadyBorrowed,
+  $alreadyMutablyBorrowed,
   $at,
   $borrow,
   $borrowMut,
@@ -391,9 +393,11 @@ function filterDebugInfo(response, value) {
   const relativeEndTime = debugEndTime - performance.timeOrigin;
   const debugInfo = [];
   const valueDebugInfo = $unwrap(value._debugInfo);
-  const borrow = $borrow(valueDebugInfo);
-  for (let i = 0; i < borrow.length; i++) {
-    const info = borrow[i];
+  if (valueDebugInfo.borrows < 0) {
+    $alreadyMutablyBorrowed();
+  }
+  for (let i = 0; i < valueDebugInfo.length; i++) {
+    const info = valueDebugInfo[i];
     const time = timeOf(info);
     if (time != null && time > relativeEndTime) {
       break;
@@ -444,7 +448,10 @@ function moveDebugInfoFromChunkToInnerValue(chunk, value) {
     const debugInfo = $drain($borrowMut($unwrap(chunk._debugInfo)), 0);
     const valueDebugInfo = resolvedValue._debugInfo;
     if (isArray(valueDebugInfo)) {
-      $splice($borrowMut(valueDebugInfo), 0, 0, debugInfo);
+      if (valueDebugInfo.borrows) {
+        $alreadyBorrowed();
+      }
+      $splice(valueDebugInfo, 0, 0, debugInfo);
     } else if (!Object.isFrozen(resolvedValue)) {
       Object.defineProperty(resolvedValue, '_debugInfo', {
         configurable: false,
@@ -876,7 +883,10 @@ function initializeDebugChunk(response, chunk) {
   try {
     if (debugChunk.status === 'resolved_model') {
       // Find the index of this debug info by walking the linked list.
-      let {length: idx} = $borrow(debugInfo);
+      if (debugInfo.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
+      let {length: idx} = debugInfo;
       let c = debugChunk._debugChunk;
       while (c != null) {
         if (c.status !== 'fulfilled') {
@@ -1337,10 +1347,16 @@ function initializeElement(response, element, lazyNode) {
     const payload = lazyNode._payload;
     const lazyDebugInfo = lazyNode._debugInfo;
     if (payload.status === 'fulfilled' && lazyDebugInfo) {
-      const debugInfo = $drain($borrowMut(lazyDebugInfo), 0);
+      if (lazyDebugInfo.borrows) {
+        $alreadyBorrowed();
+      }
+      const debugInfo = $drain(lazyDebugInfo, 0);
       const elementDebugInfo = element._debugInfo;
       if (elementDebugInfo) {
-        $splice($borrowMut(elementDebugInfo), 0, 0, debugInfo);
+        if (elementDebugInfo.borrows) {
+          $alreadyBorrowed();
+        }
+        $splice(elementDebugInfo, 0, 0, debugInfo);
       } else {
         Object.defineProperty(element, '_debugInfo', {
           configurable: false,
@@ -1679,7 +1695,10 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
           }
           // If we're not yet initialized we need to skip what we've already drilled
           // through and then wait for the next value to become available.
-          $drain($borrowMut(path), 0, i - 1);
+          if (path.borrows) {
+            $alreadyBorrowed();
+          }
+          $drain(path, 0, i - 1);
           // Add "listener" to our new chunk dependency.
           if (
             referencedChunk.status === 'blocked' ||
@@ -1713,7 +1732,10 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
           return;
         }
       }
-      const name = $index($borrow(path), i);
+      if (path.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
+      const name = $index(path, i);
       if (
         typeof value$1 === 'object' &&
         value$1 != null &&
@@ -2181,13 +2203,19 @@ function transferReferencedDebugInfo(receivingChunk, referencedChunk) {
       receivedDebugInfo = set;
     }
     for (let i = 0; i < $borrow(referencedDebugInfo).length; i++) {
-      const debugInfoEntry = $borrow(referencedDebugInfo)[i];
+      if (referencedDebugInfo.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
+      const debugInfoEntry = referencedDebugInfo[i];
       if (debugInfoEntry.name != null) {
         // We're not transferring Component info since we use Component info
         // in Debug info to fill in gaps between Fibers for the parent stack.
       } else if (!receivedDebugInfo.has(debugInfoEntry)) {
         receivedDebugInfo.add(debugInfoEntry);
-        $borrowMut(receivingDebugInfo).push(debugInfoEntry);
+        if (receivingDebugInfo.borrows) {
+          $alreadyBorrowed();
+        }
+        receivingDebugInfo.push(debugInfoEntry);
       }
     }
   }
@@ -2224,7 +2252,10 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
   let result;
   if (value) {
     let value = initializedValue(chunk);
-    const {length: pathLen} = $borrow(path);
+    if (path.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    const {length: pathLen} = path;
     for (let i = 1; i < pathLen; i++) {
       while (
         typeof value === 'object' &&
@@ -2299,7 +2330,10 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
           return result;
         }
       }
-      const name = $index($borrow(path), i);
+      if (path.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
+      const name = $index(path, i);
       if (
         typeof value === 'object' &&
         value != null &&
@@ -2994,7 +3028,10 @@ function addAsyncInfo(chunk, asyncInfo) {
   ) {
     const valueDebugInfo = value._debugInfo;
     if (isArray(valueDebugInfo)) {
-      $borrowMut(valueDebugInfo).push(asyncInfo);
+      if (valueDebugInfo.borrows) {
+        $alreadyBorrowed();
+      }
+      valueDebugInfo.push(asyncInfo);
     } else if (!Object.isFrozen(value)) {
       // TODO: Debug info is dropped for frozen elements. See the TODO in
       // moveDebugInfoFromChunkToInnerValue.
@@ -3333,7 +3370,10 @@ function startReadableStream(response, id, type, streamState) {
   const previousBlockedChunk = {};
   const flightController = {
     enqueueValue(value) {
-      const {value: previous} = $borrow(previousBlockedChunk);
+      if (previousBlockedChunk.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
+      const {value: previous} = previousBlockedChunk;
       if (previous == null) {
         $unwrap(controller).enqueue(value);
         return;
@@ -3344,7 +3384,10 @@ function startReadableStream(response, id, type, streamState) {
       });
     },
     enqueueModel(json) {
-      const {value: previous} = $borrow(previousBlockedChunk);
+      if (previousBlockedChunk.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
+      const {value: previous} = previousBlockedChunk;
       if (previous == null) {
         // If we're not blocked on any other chunks, we can try to eagerly initialize
         // this as a fast-path to avoid awaiting them.
@@ -3369,7 +3412,10 @@ function startReadableStream(response, id, type, streamState) {
         );
         $borrowMut(previousBlockedChunk).value = chunk;
         previous.then(() => {
-          if ($borrow(previousBlockedChunk).value === chunk) {
+          if (previousBlockedChunk.borrows < 0) {
+            $alreadyMutablyBorrowed();
+          }
+          if (previousBlockedChunk.value === chunk) {
             // We were still the last chunk so we can now clear the queue and return
             // to synchronous emitting.
             $borrowMut(previousBlockedChunk).value = undefined;
@@ -3383,12 +3429,14 @@ function startReadableStream(response, id, type, streamState) {
         return;
       }
       closed = true;
-      const borrowMut = $borrowMut(previousBlockedChunk);
-      if (borrowMut.value == null) {
+      if (previousBlockedChunk.borrows) {
+        $alreadyBorrowed();
+      }
+      if (previousBlockedChunk.value == null) {
         $unwrap(controller).close();
       } else {
-        const previous = borrowMut.value;
-        borrowMut.value = undefined;
+        const previous = previousBlockedChunk.value;
+        previousBlockedChunk.value = undefined;
         // We shouldn't get any more enqueues after this so we can set it back to null.
         previous.then(() => $unwrap(controller).close());
       }
@@ -3398,12 +3446,14 @@ function startReadableStream(response, id, type, streamState) {
         return;
       }
       closed = true;
-      const borrowMut = $borrowMut(previousBlockedChunk);
-      if (borrowMut.value == null) {
+      if (previousBlockedChunk.borrows) {
+        $alreadyBorrowed();
+      }
+      if (previousBlockedChunk.value == null) {
         $unwrap(controller).error(error);
       } else {
-        const previous = borrowMut.value;
-        borrowMut.value = undefined;
+        const previous = previousBlockedChunk.value;
+        previousBlockedChunk.value = undefined;
         // We shouldn't get any more enqueues after this so we can set it back to null.
         previous.then(() => $unwrap(controller).error(error));
       }
@@ -4730,9 +4780,11 @@ function flushComponentPerformance(
   }
   if (debugInfo != null) {
     let startTime = 0;
-    const value = $borrow(debugInfo);
-    for (let k = 0; k < value.length; k++) {
-      const info = value[k];
+    if (debugInfo.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    for (let k = 0; k < debugInfo.length; k++) {
+      const info = debugInfo[k];
       const time = timeOf(info);
       if (time != null) {
         startTime = time;
@@ -4747,9 +4799,11 @@ function flushComponentPerformance(
         break;
       }
     }
-    const value$1 = $borrow(debugInfo);
-    for (let i = value$1.length - 1; i >= 0; i--) {
-      const info = value$1[i];
+    if (debugInfo.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    for (let i = debugInfo.length - 1; i >= 0; i--) {
+      const info = debugInfo[i];
       const time = timeOf(info);
       if (time != null && time > parentEndTime) {
         parentEndTime = time;
@@ -5504,12 +5558,20 @@ function reviveModel(response, value, parentObject, key) {
   value = $unwrap(value);
   if (isArray(value)) {
     const items = value;
-    const {length} = $borrow(items);
+    if (items.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    const {length} = items;
     for (let i = 0; i < length; i++) {
-      const item = $borrow(items)[i];
+      if (items.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
+      const item = items[i];
       const revived = reviveModel(response, item, value, '' + i);
-      const borrowMut = $borrowMut(items);
-      borrowMut[$at(borrowMut, i)] = revived;
+      if (items.borrows) {
+        $alreadyBorrowed();
+      }
+      items[$at(items, i)] = revived;
     }
     if (value[0] === REACT_ELEMENT_TYPE) {
       // React element tuple

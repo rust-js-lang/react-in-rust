@@ -130,6 +130,7 @@ import {
   unbadgeConsole,
 } from './ReactFlightServerConfig.js';
 import {
+  $alreadyMutablyBorrowed,
   $borrow,
   $borrowMut,
   $catchUnwind,
@@ -549,9 +550,11 @@ function cleanupTaintQueue(request) {
     TaintRegistryPendingRequests.delete(cleanupQueue);
   }
   const taintRegistryValues = $unwrap(TaintRegistryValues);
-  const borrow = $borrow(cleanupQueue);
-  for (let i = 0; i < borrow.length; i++) {
-    const entryValue = borrow[i];
+  if (cleanupQueue.borrows < 0) {
+    $alreadyMutablyBorrowed();
+  }
+  for (let i = 0; i < cleanupQueue.length; i++) {
+    const entryValue = cleanupQueue[i];
     const entry = taintRegistryValues.get(entryValue);
     if (entry != null) {
       if (entry.count === 1) {
