@@ -83,7 +83,7 @@ export type ChunkState =
   | {
       status: 'resolved_module';
       value: unknown;
-      reason: any | null | undefined;
+      reason: never | null | undefined;
     }
   | {
       status: 'fulfilled';
@@ -96,8 +96,8 @@ export type ChunkState =
     }
   | {
       status: 'halted';
-      value: any | null | undefined;
-      reason: any | null | undefined;
+      value: never | null | undefined;
+      reason: never | null | undefined;
     };
 
 declare class ReactPromise {
@@ -110,8 +110,8 @@ declare class ReactPromise {
     | 'fulfilled'
     | 'rejected'
     | 'halted';
-  value: any;
-  reason: any;
+  value: unknown;
+  reason: unknown;
   // Profiling-only
   _children?: Children | undefined;
   // DEV-only

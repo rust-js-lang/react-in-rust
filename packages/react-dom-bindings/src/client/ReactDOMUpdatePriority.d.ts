@@ -9,7 +9,7 @@ import type {EventPriority} from 'react-reconciler/src/ReactEventPriorities';
 
 export function setCurrentUpdatePriority(
   newPriority: EventPriority,
-  IntentionallyUnusedArgument?: any | null | undefined,
+  IntentionallyUnusedArgument?: never | null | undefined,
 ): void;
 
 export function getCurrentUpdatePriority(): EventPriority;
