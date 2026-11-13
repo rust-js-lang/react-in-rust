@@ -3557,9 +3557,8 @@ function startAsyncIterable(response, id, iterator, streamState) {
 
 function stopStream(response, id, row) {
   const chunks = $unwrap(response._chunks);
-  const option = chunks.get(id);
-  const chunk =
-    option != null && option.status === 'fulfilled' ? option : undefined;
+  const get = chunks.get(id);
+  const chunk = get != null && get.status === 'fulfilled' ? get : undefined;
   if (chunk == null) {
     // We didn't expect not to have an existing stream;
     return;

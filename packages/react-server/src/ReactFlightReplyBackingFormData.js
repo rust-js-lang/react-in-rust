@@ -99,8 +99,8 @@ export function getBackingString(backingStore, key) {
 export function getStreamChunks(backingStore, key) {
   const streamChunks = backingStore.streamChunks;
   if (streamChunks != null) {
-    const value = streamChunks.get(key);
-    return value == null ? value : value.slice();
+    const get = streamChunks.get(key);
+    return get == null ? get : get.slice();
   }
 }
 

@@ -35,8 +35,10 @@ function containsNode(outerNode, innerNode) {
 }
 
 function isInDocument(node) {
-  const option = node.ownerDocument;
-  return option != null && containsNode(option.documentElement, node);
+  const ownerDocument = node.ownerDocument;
+  return (
+    ownerDocument != null && containsNode(ownerDocument.documentElement, node)
+  );
 }
 
 function isSameOriginFrame(iframe) {
