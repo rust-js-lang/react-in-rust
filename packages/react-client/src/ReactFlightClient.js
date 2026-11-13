@@ -1840,9 +1840,8 @@ function rejectReference(response, handler, error) {
   erroredHandler.errored = true;
   erroredHandler.value = null;
   erroredHandler.reason = error;
-  let {value: chunk} = $borrow($fieldCell(handler, 'chunk', true));
-  chunk = chunk != null && chunk.status === 'blocked' ? chunk : undefined;
-  if (chunk == null) {
+  const {value: chunk} = $borrow($fieldCell(handler, 'chunk', true));
+  if (chunk == null || chunk.status !== 'blocked') {
     return;
   }
 
@@ -2084,9 +2083,8 @@ function loadServerReference(response, metaData, parentObject, key) {
     erroredHandler.errored = true;
     erroredHandler.value = null;
     erroredHandler.reason = error;
-    let {value: chunk} = $borrow($fieldCell(handler, 'chunk', true));
-    chunk = chunk != null && chunk.status === 'blocked' ? chunk : undefined;
-    if (chunk == null) {
+    const {value: chunk} = $borrow($fieldCell(handler, 'chunk', true));
+    if (chunk == null || chunk.status !== 'blocked') {
       return;
     }
 
@@ -3557,9 +3555,8 @@ function startAsyncIterable(response, id, iterator, streamState) {
 
 function stopStream(response, id, row) {
   const chunks = $unwrap(response._chunks);
-  const get = chunks.get(id);
-  const chunk = get != null && get.status === 'fulfilled' ? get : undefined;
-  if (chunk == null) {
+  const chunk = chunks.get(id);
+  if (chunk == null || chunk.status !== 'fulfilled') {
     // We didn't expect not to have an existing stream;
     return;
   }
@@ -4193,9 +4190,8 @@ function initializeFakeStack(response, debugInfo) {
     const env = envOf(debugInfo) ?? '';
     debugInfo.debugStack = createFakeJSXCallStackInDEV(response, stack, env);
   }
-  let owner = debugInfo.owner;
-  owner = owner != null && owner != null ? owner : undefined;
-  if (owner != null) {
+  const owner = debugInfo.owner;
+  if (owner != null && owner != null) {
     // Initialize any owners not yet initialized.
     initializeFakeStack(response, owner);
     if (owner.debugLocation === undefined && debugInfo.debugStack != null) {

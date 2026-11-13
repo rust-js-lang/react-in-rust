@@ -3687,20 +3687,18 @@ function replayFragment(request, task, children, childIndex) {
 
 function warnForMissingKey(request, task, child) {
   if (__DEV__) {
-    const child$1 =
-      child != null && typeof child === 'object' ? child : undefined;
-    if (child$1 == null) {
+    if (child == null || typeof child !== 'object') {
       return;
     }
-    const $$typeof = child$1.$$typeof;
+    const $$typeof = child.$$typeof;
     if ($$typeof !== REACT_ELEMENT_TYPE && $$typeof !== REACT_PORTAL_TYPE) {
       return;
     }
 
-    const store = child$1._store;
+    const store = child._store;
     if (
       !store ||
-      ((store.validated || child$1.key != null) && store.validated !== 2)
+      ((store.validated || child.key != null) && store.validated !== 2)
     ) {
       return;
     }
@@ -3731,8 +3729,8 @@ function warnForMissingKey(request, task, child) {
     }
     didWarnForKey.add(parentStackFrame);
 
-    const componentName = getComponentNameFromType(child$1.type);
-    const childOwner = child$1._owner;
+    const componentName = getComponentNameFromType(child.type);
+    const childOwner = child._owner;
     const parentOwner = parentStackFrame.owner;
 
     let currentComponentErrorInfo = '';
@@ -3772,9 +3770,9 @@ function warnForMissingKey(request, task, child) {
     const previousComponentStack = task.componentStack;
     const stackFrame = createComponentStackFromType(
       previousComponentStack,
-      child$1.type,
-      child$1._owner,
-      child$1._debugStack,
+      child.type,
+      child._owner,
+      child._debugStack,
     );
     task.componentStack = stackFrame;
     console.error(
@@ -6717,14 +6715,12 @@ function addToReplayParent(node, parentKeyPath, trackedPostpones) {
 
 // Returns the state of a postponed request or null if nothing was postponed.
 export function getPostponedState(request) {
-  let trackedPostpones = request.trackedPostpones;
-  trackedPostpones =
-    trackedPostpones != null &&
-    ($borrow(trackedPostpones.rootNodes).length !== 0 ||
-      trackedPostpones.rootSlots !== null)
-      ? trackedPostpones
-      : undefined;
-  if (trackedPostpones == null) {
+  const trackedPostpones = request.trackedPostpones;
+  if (
+    trackedPostpones == null ||
+    ($borrow(trackedPostpones.rootNodes).length === 0 &&
+      trackedPostpones.rootSlots === null)
+  ) {
     // Reset. Let the flushing behave as if we completed the whole document.
     request.trackedPostpones = null;
     return null;

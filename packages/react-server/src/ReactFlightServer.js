@@ -5997,12 +5997,8 @@ function forwardDebugInfoFromCurrentContext(request, task, thenable) {
 function forwardDebugInfoFromAbortedTask(request, task) {
   // If a task is aborted, we can still include as much debug info as we can from the
   // value that we have so far.
-  let model = task.model;
-  model =
-    model != null && typeof model === 'object' && model !== null
-      ? model
-      : undefined;
-  if (model == null) {
+  const model = task.model;
+  if (model == null || typeof model !== 'object' || model === null) {
     return;
   }
   let debugInfo;

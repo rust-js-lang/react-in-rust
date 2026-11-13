@@ -500,8 +500,7 @@ function createChildReconciler(shouldTrackSideEffects) {
   }
 
   function updateTextNode(returnFiber, current, textContent, lanes) {
-    current = current != null && current.tag === HostText ? current : undefined;
-    if (current == null) {
+    if (current == null || current.tag !== HostText) {
       // Insert
       const created = createFiberFromText(textContent, returnFiber.mode, lanes);
       created.return = returnFiber;
@@ -572,14 +571,12 @@ function createChildReconciler(shouldTrackSideEffects) {
   }
 
   function updatePortal(returnFiber, current, portal, lanes) {
-    current =
-      current != null &&
-      current.tag === HostPortal &&
-      current.stateNode.containerInfo === portal.containerInfo &&
-      current.stateNode.implementation === portal.implementation
-        ? current
-        : undefined;
-    if (current == null) {
+    if (
+      current == null ||
+      current.tag !== HostPortal ||
+      current.stateNode.containerInfo !== portal.containerInfo ||
+      current.stateNode.implementation !== portal.implementation
+    ) {
       // Insert
       const created = createFiberFromPortal(portal, returnFiber.mode, lanes);
       created.return = returnFiber;
@@ -602,8 +599,7 @@ function createChildReconciler(shouldTrackSideEffects) {
   }
 
   function updateFragment(returnFiber, current, fragment, lanes, key) {
-    current = current != null && current.tag === Fragment ? current : undefined;
-    if (current == null) {
+    if (current == null || current.tag !== Fragment) {
       // Insert
       const created = createFiberFromFragment(
         fragment,

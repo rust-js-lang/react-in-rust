@@ -555,18 +555,17 @@ function processUpdateQueue(
   // Taken whether it's empty or not: its `null` either way.
   const queue = internalInstance.queue;
   internalInstance.queue = null;
-  const oldQueue = queue != null && queue.length !== 0 ? queue : undefined;
-  if (oldQueue != null) {
+  if (queue != null && queue.length !== 0) {
     const oldReplace = internalInstance.replace;
     internalInstance.replace = false;
 
-    if (oldReplace && oldQueue.length === 1) {
-      inst.state = oldQueue[0];
+    if (oldReplace && queue.length === 1) {
+      inst.state = queue[0];
     } else {
-      let nextState = oldReplace ? oldQueue[0] : inst.state;
+      let nextState = oldReplace ? queue[0] : inst.state;
       let dontMutate = true;
-      for (let i = oldReplace ? 1 : 0; i < oldQueue.length; i++) {
-        const partial = oldQueue[i];
+      for (let i = oldReplace ? 1 : 0; i < queue.length; i++) {
+        const partial = queue[i];
         let partialState;
         if (typeof partial === 'function') {
           partialState = partial.call(

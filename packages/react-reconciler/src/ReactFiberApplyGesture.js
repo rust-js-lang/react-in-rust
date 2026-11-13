@@ -258,9 +258,8 @@ function applyAppearingPairViewTransition(child) {
     // the clones then.
     if (state.paired != null) {
       const props = child.memoizedProps;
-      const option = props.name;
-      const name = option != null && option !== 'auto' ? option : undefined;
-      if (name == null) {
+      const name = props.name;
+      if (name == null || name === 'auto') {
         throw new Error(
           'Found a pair with an auto name. This is a bug in React.',
         );
