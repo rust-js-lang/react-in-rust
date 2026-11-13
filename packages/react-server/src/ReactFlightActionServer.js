@@ -16,6 +16,7 @@ import {
   createResponse,
   getRoot,
 } from './ReactFlightReplyServer.js';
+import {$shown} from '@rust-js/std';
 
 function bindArgs(fn, args) {
   // GAP rd562: upstream's `args.length > MAX_BOUND_ARGS`, JS's `>` of any
@@ -23,7 +24,7 @@ function bindArgs(fn, args) {
   const length = args.length;
   if (length != null && length > MAX_BOUND_ARGS) {
     throw new Error(
-      `Server Function has too many bound arguments. Received ${length} but the limit is ${MAX_BOUND_ARGS}.`,
+      `Server Function has too many bound arguments. Received ${$shown(length)} but the limit is ${MAX_BOUND_ARGS}.`,
     );
   }
 

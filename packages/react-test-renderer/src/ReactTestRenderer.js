@@ -52,7 +52,7 @@ import {
   disableLegacyMode,
   enableReactTestRendererWarning,
 } from 'shared/ReactFeatureFlags';
-import {$index, $unwrap} from '@rust-js/std';
+import {$index, $shown, $unwrap} from '@rust-js/std';
 
 function defaultOnDefaultTransitionIndicator() {}
 
@@ -318,7 +318,7 @@ class ReactTestInstance {
   find(predicate) {
     return expectOne(
       this.findAll(predicate, {deep: false}),
-      `matching custom predicate: ${predicate}`,
+      `matching custom predicate: ${$shown(predicate)}`,
     );
   }
 
@@ -332,7 +332,7 @@ class ReactTestInstance {
   findByProps(props) {
     return expectOne(
       this.findAllByProps(props, {deep: false}),
-      `with props: ${JSON.stringify(props)}`,
+      `with props: ${$shown(JSON.stringify(props))}`,
     );
   }
 

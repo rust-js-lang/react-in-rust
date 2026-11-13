@@ -24,7 +24,7 @@ import {
 import {enableViewTransition} from 'shared/ReactFeatureFlags';
 
 import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
-import {$catchable, $unwrap} from '@rust-js/std';
+import {$catchable, $shown, $unwrap} from '@rust-js/std';
 
 function shouldConstruct(component) {
   const prototype = component.prototype;
@@ -94,7 +94,7 @@ export function getStackByComponentStackNode(componentStack) {
     return info;
   } catch (x) {
     $catchable(x);
-    return `\nError generating stack: ${x.message}\n${x.stack}`;
+    return `\nError generating stack: ${x.message}\n${$shown(x.stack)}`;
   }
 }
 
@@ -171,7 +171,7 @@ export function getOwnerStackByComponentStackNodeInDev(componentStack) {
     return info;
   } catch (x) {
     $catchable(x);
-    return `\nError generating stack: ${x.message}\n${x.stack}`;
+    return `\nError generating stack: ${x.message}\n${$shown(x.stack)}`;
   }
 }
 //# sourceMappingURL=ReactFizzComponentStack.js.map

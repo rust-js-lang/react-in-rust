@@ -140,6 +140,7 @@ import {
   $fieldCell,
   $index,
   $roomFor,
+  $shown,
   $slice,
   $some,
   $someGet,
@@ -4270,8 +4271,9 @@ function renderModelDestructive(
       const value = functionValue.displayName;
       const fallback = functionValue.name;
       const componentName = value || fallback || 'Component';
+      const value$1 = describeObjectForErrorMessage(parent, parentPropertyName);
       throw new Error(
-        `Functions are not valid as a child of Client Components. This may happen if you return ${componentName} instead of <${componentName} /> from render. Or maybe you meant to call this function rather than return it.${describeObjectForErrorMessage(parent, parentPropertyName)}`,
+        `Functions are not valid as a child of Client Components. This may happen if you return ${$shown(componentName)} instead of <${$shown(componentName)} /> from render. Or maybe you meant to call this function rather than return it.${value$1}`,
       );
     } else {
       throw new Error(

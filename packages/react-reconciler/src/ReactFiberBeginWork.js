@@ -282,7 +282,14 @@ import {
   callRenderInDEV,
 } from './ReactFiberCallUserSpace.js';
 import {resolveLazy} from './ReactFiberThenable.js';
-import {$borrow, $cleanup, $fieldCell, $unborrow, $unwrap} from '@rust-js/std';
+import {
+  $borrow,
+  $cleanup,
+  $fieldCell,
+  $shown,
+  $unborrow,
+  $unwrap,
+} from '@rust-js/std';
 
 // A special exception that's used to unwind the stack when an update flows
 // into a dehydrated boundary.
@@ -2080,7 +2087,7 @@ function mountLazyComponent(current, workInProgress, elementType, renderLanes) {
   // because the fact that it's a separate type of work is an
   // implementation detail.
   throw new Error(
-    `Element type is invalid. Received a promise that resolves to: ${loggedComponent}. Lazy element type must resolve to a class or function.${hint}`,
+    `Element type is invalid. Received a promise that resolves to: ${$shown(loggedComponent)}. Lazy element type must resolve to a class or function.${hint}`,
   );
 }
 

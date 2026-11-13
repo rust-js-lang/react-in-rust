@@ -12,6 +12,7 @@ import {
 } from 'react-server/src/ReactFlightServer';
 
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
+import {$shown} from '@rust-js/std';
 
 const previousDispatcher =
   ReactDOMSharedInternals.d; /* ReactDOMCurrentDispatcher */
@@ -51,7 +52,7 @@ function preconnect(href, crossOrigin) {
   if (request != null) {
     const hints = getHints(request);
 
-    const key = `C|${crossOrigin ?? 'null'}|${href}`;
+    const key = `C|${$shown(crossOrigin ?? 'null')}|${href}`;
     if (hints.has(key)) {
       // duplicate hint
       return;
@@ -80,7 +81,7 @@ export function preload(href, as, options) {
           options.imageSizes,
         );
       } else {
-        key += `[${as}]${href}`;
+        key += `[${$shown(as)}]${href}`;
       }
       if (hints.has(key)) {
         // duplicate hint
