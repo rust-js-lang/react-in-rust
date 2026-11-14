@@ -38,7 +38,7 @@ export {
 
 export {getClosestInstanceFromNode as getInstanceFromNode} from './ReactDOMComponentTree.js';
 
-type AddEventListenerOptionsOrBool = any | boolean;
+type AddEventListenerOptionsOrBool = AddEventListenerOptions | boolean;
 
 type EventListenerOrEventListenerObject =
   | ((event: Event) => void)
@@ -435,7 +435,7 @@ declare class ViewTransitionPseudoElement {
     keyframes?: unknown | null | undefined,
     options?: unknown | null | undefined,
   ): Animation;
-  getAnimations(options?: any | null | undefined): Animation[];
+  getAnimations(options?: GetAnimationsOptions | null | undefined): Animation[];
   getComputedStyle(): CSSStyleProperties;
 }
 
@@ -507,13 +507,15 @@ declare class FragmentInstance {
     optionsOrUseCapture?: EventListenerOptionsOrUseCapture | null | undefined,
   ): void;
   dispatchEvent(event: Event): boolean;
-  focus(focusOptions?: any | null | undefined): void;
-  focusLast(focusOptions?: any | null | undefined): void;
+  focus(focusOptions?: FocusOptions | null | undefined): void;
+  focusLast(focusOptions?: FocusOptions | null | undefined): void;
   blur(): void;
   observeUsing(observer: Observer): void;
   unobserveUsing(observer: Observer): void;
   getClientRects(): DOMRect[];
-  getRootNode(getRootNodeOptions?: any | null | undefined): unknown;
+  getRootNode(
+    getRootNodeOptions?: GetRootNodeOptions | null | undefined,
+  ): unknown;
   compareDocumentPosition(otherNode: Instance): number;
   scrollIntoView(alignToTop?: unknown | null | undefined): void;
 }
@@ -772,7 +774,7 @@ export function isHiddenSubtree(fiber: Fiber): boolean;
 
 export function setFocusIfFocusable(
   node: Instance,
-  focusOptions?: any | null | undefined,
+  focusOptions?: FocusOptions | null | undefined,
 ): boolean;
 
 /**
@@ -788,7 +790,7 @@ export interface IntersectionObserverHandle {
 export function setupIntersectionObserver(
   targets: Instance[],
   callback: ObserveVisibleRectsCallback,
-  options?: any | null | undefined,
+  options?: IntersectionObserverInit | null | undefined,
 ): IntersectionObserverHandle;
 
 export function requestPostPaintCallback(
