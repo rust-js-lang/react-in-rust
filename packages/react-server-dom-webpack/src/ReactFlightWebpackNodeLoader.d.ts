@@ -103,22 +103,22 @@ export function resolve(
   specifier: string,
   context: ResolveContext,
   defaultResolve: ResolveFunction,
-): any;
+): Promise<Resolved>;
 
 export function getSource(
   url: string,
   context: GetSourceContext,
   defaultGetSource: GetSourceFunction,
-): any;
+): Promise<Sourced>;
 
 export function transformSource(
   source: Source,
   context: TransformSourceContext,
   defaultTransformSource: TransformSourceFunction,
-): any;
+): Promise<Sourced>;
 
 export function load(
   url: string,
   context: LoadContext,
   defaultLoad: LoadFunction,
-): any;
+): Promise<Loaded>;

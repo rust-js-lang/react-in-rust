@@ -17,7 +17,7 @@ export function insertNodesAndExecuteScripts(
   source: DocumentOrElement,
   target: Node,
   CSPnonce?: string | null | undefined,
-): any;
+): Promise<void>;
 
 export function mergeOptions(
   options?: unknown | null | undefined,
