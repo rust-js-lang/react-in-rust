@@ -194,8 +194,10 @@ entry, as no upstream test runs it.
 
 ¹⁰ ReactDOMFizzServer's "can recover from very deep trees during resume
 to avoid stack overflow" depends on the stack's room (rust-js #1692, ADR
-1140): it passes at these settings and with five workers, and fails run
-in-band, where replayElement's `catch` has too little stack left to reach
+1140): it may fail at these settings too, under load or on Node 24.22.1,
+where it fails on the same JS and std as passed before, and passes run
+alone (rust-js #1716); it fails run in-band, where replayElement's `catch`
+has too little stack left to reach
 its slot's consume: before it, `thrown_value_of(&*x)` and
 `is_suspending(..)` are calls where upstream tests `x` in place. The
 consume itself, `replay_nodes.borrow_mut().remove(i)`, calls nothing
