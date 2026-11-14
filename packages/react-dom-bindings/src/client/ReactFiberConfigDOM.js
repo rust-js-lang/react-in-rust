@@ -4080,13 +4080,13 @@ export function registerSuspenseInstanceRetry(instance, callback) {
     // a listener to the document load even and expose the retry on the instance for
     // the Fizz runtime to trigger if it ends up resolving this boundary
     let listenerCell;
-    function listener() {
+    const listener = () => {
       callback();
       const listener = listenerCell;
       if (listener != null) {
         ownerDocument.removeEventListener('DOMContentLoaded', listener);
       }
-    }
+    };
     listenerCell = listener;
     ownerDocument.addEventListener('DOMContentLoaded', listener);
     instance._reactRetry = listener;

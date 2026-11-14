@@ -572,7 +572,7 @@ function describeNode(node, indent) {
     if (childNode.fiber === childFiber) {
       // This was a match in the diff.
       childContent += describeNode(childNode, indent);
-      diffIdx = (diffIdx + 1) >>> 0;
+      diffIdx++;
     } else {
       // This is an unrelated previous sibling.
       childContent += describeSiblingFiber(childFiber, indent);

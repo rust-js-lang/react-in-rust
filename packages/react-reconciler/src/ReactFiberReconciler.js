@@ -708,7 +708,7 @@ if (__DEV__) {
 function copyWithDeleteImpl(obj, path, index) {
   const key = $index(path, index);
   const updated = Array.isArray(obj) ? obj.slice() : {...obj};
-  if ((index + 1) >>> 0 === path.length) {
+  if (index + 1 === path.length) {
     if (Array.isArray(updated)) {
       updated.splice(key, 1);
     } else {
@@ -716,14 +716,14 @@ function copyWithDeleteImpl(obj, path, index) {
     }
     return updated;
   }
-  updated[key] = copyWithDeleteImpl(obj[key], path, (index + 1) >>> 0);
+  updated[key] = copyWithDeleteImpl(obj[key], path, index + 1);
   return updated;
 }
 
 function copyWithRenameImpl(obj, oldPath, newPath, index) {
   const oldKey = $index(oldPath, index);
   const updated = Array.isArray(obj) ? obj.slice() : {...obj};
-  if ((index + 1) >>> 0 === oldPath.length) {
+  if (index + 1 === oldPath.length) {
     const newKey = $index(newPath, index);
     updated[newKey] = updated[oldKey];
     if (Array.isArray(updated)) {
@@ -736,7 +736,7 @@ function copyWithRenameImpl(obj, oldPath, newPath, index) {
       obj[oldKey],
       oldPath,
       newPath,
-      (index + 1) >>> 0,
+      index + 1,
     );
   }
   return updated;

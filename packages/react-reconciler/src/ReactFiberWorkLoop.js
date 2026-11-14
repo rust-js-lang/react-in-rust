@@ -3557,7 +3557,7 @@ function completeRoot(
         workInProgressUpdateTask,
       );
     } else if (recoverableErrors != null) {
-      function holds(finishedWork) {
+      const holds = finishedWork => {
         function holds(alternate) {
           const rootState = alternate.memoizedState;
           return rootState.isDehydrated;
@@ -3567,7 +3567,7 @@ function completeRoot(
           holds(finishedWork.alternate) &&
           (finishedWork.flags & ForceClientRender) !== NoFlags
         );
-      }
+      };
       const hydrationFailed = finishedWork != null && holds(finishedWork);
       logRecoveredRenderPhase(
         completedRenderStartTime,

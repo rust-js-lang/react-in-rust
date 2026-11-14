@@ -11,7 +11,7 @@ export function setSrcObject(domElement, tag, value) {
   const url = URL.createObjectURL(value);
   const loadEvent = tag === 'img' ? 'load' : 'loadstart';
   let cleanUpListener;
-  function cleanUp() {
+  const cleanUp = () => {
     // Once the object has started loading, then it's already collected by the
     // browser and it won't refer to it by the URL anymore so we can now revoke it.
     URL.revokeObjectURL(url);
@@ -20,7 +20,7 @@ export function setSrcObject(domElement, tag, value) {
       domElement.removeEventListener(loadEvent, cleanUp);
       domElement.removeEventListener('error', cleanUp);
     }
-  }
+  };
   cleanUpListener = cleanUp;
   domElement.addEventListener(loadEvent, cleanUp);
   domElement.addEventListener('error', cleanUp);

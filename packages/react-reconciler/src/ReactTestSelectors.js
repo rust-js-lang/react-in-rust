@@ -321,7 +321,7 @@ export function getFindAllNodesFailureDescription(hostRoot, selectors) {
       continue;
     } else if (matchSelector(fiber, selector)) {
       matchedNames.push(selectorToString(selector));
-      selectorIndex = (selectorIndex + 1) >>> 0;
+      selectorIndex++;
 
       if (selectorIndex > maxSelectorIndex) {
         maxSelectorIndex = selectorIndex;
