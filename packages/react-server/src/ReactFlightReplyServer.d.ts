@@ -9,6 +9,7 @@ import type {BackingFormData} from './ReactFlightReplyBackingFormData.js';
 import type {TemporaryReferenceSet} from './ReactFlightServerTemporaryReferences.js';
 
 type BlobPart =
+  | ArrayBuffer
   | Int8Array<ArrayBuffer>
   | Int16Array<ArrayBuffer>
   | Int32Array<ArrayBuffer>
@@ -21,7 +22,6 @@ type BlobPart =
   | Float32Array<ArrayBuffer>
   | Float64Array<ArrayBuffer>
   | DataView<ArrayBuffer>
-  | ArrayBuffer
   | Blob
   | string;
 
