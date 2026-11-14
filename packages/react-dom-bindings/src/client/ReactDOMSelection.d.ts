@@ -12,7 +12,7 @@
  */
 export interface Offsets {
   start: number | null;
-  end?: number | null | undefined | undefined;
+  end?: number | null | undefined;
 }
 
 /**
