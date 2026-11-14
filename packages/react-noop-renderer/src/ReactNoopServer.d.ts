@@ -44,7 +44,7 @@ export interface Segment {
 }
 
 export interface Destination {
-  root: unknown | null;
+  root: unknown;
   placeholders: Map<number, Placeholder>;
   segments: Map<number, Segment>;
   stack: Parent[];
@@ -55,13 +55,11 @@ export interface Options {
   progressiveChunkSize?: number | undefined;
   onShellReady?: (() => void) | undefined;
   onAllReady?: (() => void) | undefined;
-  onError?:
-    | ((value?: unknown | null | undefined) => string | null | undefined)
-    | undefined;
-  onBrowserBailout?: ((value?: unknown | null | undefined) => void) | undefined;
+  onError?: ((value?: unknown) => string | null | undefined) | undefined;
+  onBrowserBailout?: ((value?: unknown) => void) | undefined;
 }
 
 export function render(
-  children?: unknown | null | undefined,
+  children?: unknown,
   options?: Options | null | undefined,
 ): Destination;

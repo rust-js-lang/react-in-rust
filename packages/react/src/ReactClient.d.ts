@@ -95,23 +95,18 @@ export {captureOwnerStack} from './ReactOwnerStack.js';
 /** `React.Children`: the functions that deal with `props.children`. */
 export interface Children {
   map: (
-    children: unknown | null | undefined,
-    func: (
-      value: unknown | null | undefined,
-      value2: number,
-    ) => unknown | null | undefined,
-    context?: unknown | null | undefined,
+    children: unknown,
+    func: (value: unknown, value2: number) => unknown,
+    context?: unknown,
   ) => MappedChildren;
   forEach: (
-    children: unknown | null | undefined,
-    forEachFunc: (value?: unknown | null | undefined) => void,
-    forEachContext?: unknown | null | undefined,
+    children: unknown,
+    forEachFunc: (value?: unknown) => void,
+    forEachContext?: unknown,
   ) => void;
-  count: (children?: unknown | null | undefined) => number;
-  toArray: (
-    children?: unknown | null | undefined,
-  ) => (unknown | null | undefined)[];
-  only: (children?: unknown | null | undefined) => unknown | null | undefined;
+  count: (children?: unknown) => number;
+  toArray: (children?: unknown) => unknown[];
+  only: (children?: unknown) => unknown;
 }
 
 export const Children: Children;

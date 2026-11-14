@@ -19,14 +19,14 @@ import type {ThenableState} from './ReactFizzThenable.js';
 
 export function createRecoverableError(recoverable: ReactRecoverable): Error;
 
-export function isRecoverableError(error?: unknown | null | undefined): boolean;
+export function isRecoverableError(error?: unknown): boolean;
 
 export function cloneRecoverableErrorAsFatal(recoverableError: Error): Error;
 
 export function prepareToUseHooks(
   request: RequestInstance,
   task: Task,
-  keyPath: any | null,
+  keyPath: any,
   componentIdentity: unknown,
   prevThenableState: ThenableState | null,
 ): void;
@@ -39,17 +39,14 @@ export function prepareToUseThenableState(
  * A component Fizz renders with hooks: of its props, and its ref or its
  * legacy context, what it renders.
  */
-export type Component = (
-  value?: unknown | null | undefined,
-  value2?: unknown | null | undefined,
-) => unknown | null | undefined;
+export type Component = (value?: unknown, value2?: unknown) => unknown;
 
 export function finishHooks(
   component: Component,
-  props?: unknown | null | undefined,
-  children?: unknown | null | undefined,
-  refOrContext?: unknown | null | undefined,
-): unknown | null | undefined;
+  props?: unknown,
+  children?: unknown,
+  refOrContext?: unknown,
+): unknown;
 
 export function getThenableStateAfterSuspending():
   | ThenableState
@@ -65,26 +62,24 @@ export function getActionStateMatchingIndex(): number;
 // Reset the internal hooks state if an error occurs while rendering a component
 export function resetHooksState(): void;
 
-export function useState(
-  initialState?: unknown | null | undefined,
-): StateAndDispatch;
+export function useState(initialState?: unknown): StateAndDispatch;
 
 export function useReducer(
   reducer: Reducer,
-  initialArg?: unknown | null | undefined,
-  init?: unknown | null | undefined,
+  initialArg?: unknown,
+  init?: unknown,
 ): StateAndDispatch;
 
 export function useCallback(
-  callback?: unknown | null | undefined,
+  callback?: unknown,
   deps?: Deps | null | undefined,
-): unknown | null | undefined;
+): unknown;
 
 export function useEffectEvent(callback: EventFunctionImpl): EventFunction;
 
-export function unwrapThenable(thenable: any): unknown | null | undefined;
+export function unwrapThenable(thenable: any): unknown;
 
-export function readPreviousThenableFromState(): unknown | null | undefined;
+export function readPreviousThenableFromState(): unknown;
 
 export const HooksDispatcher: Dispatcher;
 

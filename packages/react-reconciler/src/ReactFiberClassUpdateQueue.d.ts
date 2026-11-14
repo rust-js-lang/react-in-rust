@@ -96,8 +96,8 @@ export type Callbacks = unknown[];
 export interface Update {
   lane: Lane;
   tag: UpdateTag;
-  payload?: unknown | null | undefined;
-  callback: unknown | null;
+  payload?: unknown;
+  callback: unknown;
   next: Update | null;
 }
 
@@ -156,8 +156,8 @@ export function suspendIfUpdateReadFromEntangledAsyncAction(): void;
 
 export function processUpdateQueue(
   workInProgress: Fiber,
-  props: unknown | null | undefined,
-  instance: unknown | null | undefined,
+  props: unknown,
+  instance: unknown,
   renderLanes: Lanes,
 ): void;
 
@@ -169,10 +169,10 @@ export function deferHiddenCallbacks(updateQueue: UpdateQueue): void;
 
 export function commitHiddenCallbacks(
   updateQueue: UpdateQueue,
-  context?: unknown | null | undefined,
+  context?: unknown,
 ): void;
 
 export function commitCallbacks(
   updateQueue: UpdateQueue,
-  context?: unknown | null | undefined,
+  context?: unknown,
 ): void;

@@ -19,16 +19,16 @@ export interface FormStatus {
   data: FormData | null;
   method: string | null;
   // A URL, or a function of the form's data.
-  action: unknown | null;
+  action: unknown;
 }
 
 export const NotPending: FormStatus;
 
-export function useFormStatus(): unknown | null | undefined;
+export function useFormStatus(): unknown;
 
 export function useFormState(
   action: Action,
-  initialState?: unknown | null | undefined,
+  initialState?: unknown,
   permalink?: string | null | undefined,
 ): ActionStateAndDispatch;
 

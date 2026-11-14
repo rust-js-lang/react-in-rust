@@ -9,19 +9,14 @@ import type {LazyComponent} from 'react/src/ReactLazy';
 import type {ReactComponentInfo} from 'shared/ReactTypes';
 
 export type CallComponent = (
-  value: (
-    value?: unknown | null | undefined,
-    value2?: unknown | null | undefined,
-  ) => unknown | null | undefined,
-  value2: unknown | null | undefined,
+  value: (value?: unknown, value2?: unknown) => unknown,
+  value2: unknown,
   info: ReactComponentInfo,
-) => unknown | null | undefined;
+) => unknown;
 
 export const callComponentInDEV: CallComponent | null;
 
-export type CallLazyInit = (
-  component: LazyComponent,
-) => unknown | null | undefined;
+export type CallLazyInit = (component: LazyComponent) => unknown;
 
 export const callLazyInitInDEV: CallLazyInit | null;
 

@@ -171,9 +171,7 @@ export function renderDidSuspendDelayIfPossible(): void;
 
 export function renderDidError(): void;
 
-export function queueConcurrentError(
-  error: CapturedValue<unknown | null | undefined>,
-): void;
+export function queueConcurrentError(error: CapturedValue<unknown>): void;
 
 // Called during render to determine if anything has suspended.
 // Returns false if we're not sure.
@@ -192,7 +190,7 @@ export function markLegacyErrorBoundaryAsFailed(instance: unknown): void;
 export function captureCommitPhaseError(
   sourceFiber: Fiber,
   nearestMountedAncestor: Fiber | null,
-  error: unknown | null,
+  error: unknown,
 ): void;
 
 export function attachPingListener(

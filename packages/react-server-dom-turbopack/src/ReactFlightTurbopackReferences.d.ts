@@ -35,7 +35,7 @@ export function registerClientReference(
 export function registerServerReference(
   reference: unknown,
   id: string,
-  exportName?: unknown | null | undefined,
+  exportName?: unknown,
 ): ServerReference;
 
 /** A server object, its own properties set by [`register_server_object_reference`]. */
@@ -47,7 +47,7 @@ export interface ServerObjectReference {
 export function registerServerObjectReference(
   reference: unknown,
   id: string,
-  exportName?: unknown | null | undefined,
+  exportName?: unknown,
 ): ServerObjectReference;
 
 export function createClientModuleProxy(moduleId: string): ClientReference;

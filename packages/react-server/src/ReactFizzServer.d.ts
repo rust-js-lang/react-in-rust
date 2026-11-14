@@ -77,7 +77,7 @@ interface SuspenseListRow {
 }
 
 interface Tracked {
-  contentKeyPath: any | null;
+  contentKeyPath: any;
   fallbackNode: ReplayNode | null;
 }
 
@@ -127,7 +127,7 @@ export type ResumeSlots =
  * boundary's and untrackBoundary shrinks back: told apart by its length
  * (rust-js's ADR 1046).
  */
-export type ReplayNode = any | any;
+export type ReplayNode = any;
 
 /** A list of replay nodes, which a replay set shares with its node. */
 export type ReplayNodes = ReplayNode[];
@@ -148,7 +148,7 @@ export interface Task {
   blockedPreamble: PreambleState | null;
   hoistableState: HoistableState | null;
   abortSet: AbortSet;
-  keyPath: any | null;
+  keyPath: any;
   formatContext: FormatContext;
   context?: ContextNode | undefined;
   treeContext: TreeContext;
@@ -171,7 +171,7 @@ export type ErrorInfo = any;
  * sent to the client as, if any.
  */
 export type OnError = (
-  value: unknown | null | undefined,
+  value: unknown,
   info: ErrorInfo,
 ) => string | null | undefined;
 
@@ -179,13 +179,10 @@ export type OnError = (
  * A request's `onBrowserBailout`, of what made a boundary render on the
  * client instead, and where.
  */
-export type OnBrowserBailout = (
-  value: unknown | null | undefined,
-  info: ErrorInfo,
-) => void;
+export type OnBrowserBailout = (value: unknown, info: ErrorInfo) => void;
 
 /** A request's `onShellError` and `onFatalError`, of what was thrown. */
-export type OnFatal = (value?: unknown | null | undefined) => void;
+export type OnFatal = (value?: unknown) => void;
 
 declare class RequestInstance {
   destination: Destination | null;
@@ -196,7 +193,7 @@ declare class RequestInstance {
   progressiveChunkSize: number;
   status: number;
   // What was thrown, `undefined` too: `null` until then.
-  fatalError?: unknown | null | undefined;
+  fatalError?: unknown;
   aborted: boolean;
   nextSegmentId: number;
   allPendingTasks: number;
@@ -253,10 +250,7 @@ declare class RequestInstance {
 export type {RequestInstance};
 
 /** The result of an MPA submission. */
-export type FormState = ReactFormState<
-  unknown | null | undefined,
-  unknown | null | undefined
->;
+export type FormState = ReactFormState<unknown, unknown>;
 
 export function createRequest(
   children: ReactNodeList | null | undefined,
@@ -360,10 +354,7 @@ export function attachAbortSignal(
 ): void;
 
 // This is called to early terminate a request. It puts all pending boundaries in client rendered state.
-export function abort(
-  request: RequestInstance,
-  reason?: unknown | null | undefined,
-): void;
+export function abort(request: RequestInstance, reason?: unknown): void;
 
 export function flushResources(request: RequestInstance): void;
 

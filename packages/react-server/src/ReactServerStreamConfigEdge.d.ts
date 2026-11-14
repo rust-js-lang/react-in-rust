@@ -47,9 +47,6 @@ export function byteLengthOfChunk(chunk: Uint8Array<ArrayBuffer>): number;
 
 export function byteLengthOfBinaryChunk(chunk: BinaryChunk): number;
 
-export function closeWithError(
-  destination: Destination,
-  error?: unknown | null | undefined,
-): void;
+export function closeWithError(destination: Destination, error?: unknown): void;
 
 export function readAsDataURL(blob: Blob): Promise<string>;

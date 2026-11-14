@@ -20,7 +20,7 @@ export interface ScheduledGesture {
   rangeEnd: number;
   types: TransitionTypes | null;
   // ReactFiberConfig's `RunningViewTransition`.
-  running: unknown | null;
+  running: unknown;
   commit: (() => void) | null;
   committing: boolean;
   revertLane: Lane;

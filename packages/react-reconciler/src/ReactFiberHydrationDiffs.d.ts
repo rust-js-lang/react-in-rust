@@ -8,7 +8,7 @@
 import type {Fiber} from './ReactInternalTypes.js';
 
 /** What the server rendered where a fiber is. */
-export type ServerProps = undefined | null | string | unknown;
+export type ServerProps = unknown;
 
 /** An element the server rendered that the client didn't. */
 export interface ServerElement {

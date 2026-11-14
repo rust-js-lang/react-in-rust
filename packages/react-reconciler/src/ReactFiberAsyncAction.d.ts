@@ -14,7 +14,7 @@ export function chainThenableValue<T>(thenable: any, result: T): any;
 
 export function peekEntangledActionLane(): Lane;
 
-export function peekEntangledActionThenable(): any | null;
+export function peekEntangledActionThenable(): any;
 
 export function registerDefaultIndicator(
   onDefaultTransitionIndicator: () => (() => void) | null | undefined,

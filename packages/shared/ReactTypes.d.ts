@@ -28,7 +28,7 @@ export interface ReactProvider<T> {
   $$typeof: symbol;
   type: ReactContext<T>;
   key: ReactKey | null;
-  ref: unknown | null;
+  ref: unknown;
   props: ReactProviderProps<T>;
 }
 
@@ -49,7 +49,7 @@ export interface ReactConsumer<T> {
   $$typeof: symbol;
   type: ReactConsumerType<T>;
   key: ReactKey | null;
-  ref: unknown | null;
+  ref: unknown;
   props: ReactConsumerProps<T>;
 }
 
@@ -70,8 +70,8 @@ export interface ReactContext<T> {
   Provider: ReactContext<T> | null;
   Consumer: ReactConsumerType<T> | null;
   // DEV only
-  _currentRenderer?: unknown | null | undefined;
-  _currentRenderer2?: unknown | null | undefined;
+  _currentRenderer?: unknown;
+  _currentRenderer2?: unknown;
 }
 
 /** A portal: children rendered into another container. */
@@ -100,10 +100,10 @@ export interface ReactScope {
 
 /** Whether a host instance, of its type and props, is one the query wants. */
 export type ReactScopeQuery = (
-  value: unknown | null | undefined,
-  value2: unknown | null | undefined,
+  value: unknown,
+  value2: unknown,
   value3: unknown,
-) => unknown | null | undefined;
+) => unknown;
 
 /** A thenable whose `status` is `'pending'`. */
 export type PendingThenable = any;
@@ -122,9 +122,7 @@ export interface RejectedThenable {
 }
 
 /** A message, or what gives one. */
-export type ReactRecoverableReason =
-  | string
-  | (() => unknown | null | undefined);
+export type ReactRecoverableReason = string | (() => unknown);
 
 // A recoverable lets an intermediate renderer defer a subtree to a downstream
 // renderer. It does not produce a value: a renderer either continues through
@@ -201,19 +199,19 @@ export interface ReactComponentInfo {
   stack?: ReactStackTrace | null | undefined;
   props?:
     | {
-        [key: string]: unknown | null | undefined;
+        [key: string]: unknown;
       }
     | null
     | undefined;
   // Stashed Data for the Specific Execution Environment. Not part of the transport protocol
-  debugStack?: any | null | undefined;
+  debugStack?: any;
   debugTask?:
     | {
         run<T>(f: () => T): T;
       }
     | null
     | undefined;
-  debugLocation?: any | null | undefined;
+  debugLocation?: any;
 }
 
 export interface ReactEnvironmentInfo {
@@ -251,7 +249,7 @@ export interface ReactIOInfo {
   // the byte size of this resource across the network. (should only be included if affecting the client.)
   byteSize?: number | undefined;
   // the Promise that was awaited if any, may be rejected
-  value: Promise<unknown | null | undefined> | null;
+  value: Promise<unknown> | null;
   // the environment where this I/O was spawned.
   env?: string | undefined;
   owner?: ReactComponentInfo | null | undefined;
@@ -425,7 +423,7 @@ export type ProfilerPhase = 'mount' | 'update' | 'nested-update';
  * start time and commit time.
  */
 export type OnRender = (
-  value: unknown | null | undefined,
+  value: unknown,
   value2: string,
   value3: number | null | undefined,
   value4: number | null | undefined,
@@ -438,7 +436,7 @@ export type OnRender = (
  * duration and commit time.
  */
 export type OnCommit = (
-  value: unknown | null | undefined,
+  value: unknown,
   value2: string,
   value3: number,
   value4: number,

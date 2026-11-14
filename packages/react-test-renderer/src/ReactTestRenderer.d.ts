@@ -12,7 +12,7 @@ export {default as version} from 'shared/ReactVersion';
 
 export * as _Scheduler from 'scheduler/unstable_mock';
 
-export const act: unknown | null | undefined;
+export const act: unknown;
 
 // TODO: Remove from public bundle
 
@@ -40,21 +40,21 @@ export type TestChild = ReactTestInstance | string;
 
 declare class ReactTestInstance {
   _fiber: Fiber;
-  get instance(): unknown | null | undefined;
-  get type(): unknown | null | undefined;
-  get props(): unknown | null | undefined;
+  get instance(): unknown;
+  get type(): unknown;
+  get props(): unknown;
   get parent(): ReactTestInstance | null;
   get children(): TestChild[];
   // Custom search functions
   find(predicate: Predicate): ReactTestInstance;
-  findByType(type?: unknown | null | undefined): ReactTestInstance;
+  findByType(type?: unknown): ReactTestInstance;
   findByProps(props: unknown): ReactTestInstance;
   findAll(
     predicate: Predicate,
     options?: FindOptions | null | undefined,
   ): ReactTestInstance[];
   findAllByType(
-    type?: unknown | null | undefined,
+    type?: unknown,
     options?: FindOptions | null | undefined,
   ): ReactTestInstance[];
   findAllByProps(
@@ -69,14 +69,12 @@ export type {ReactTestInstance};
 export interface TestRenderer {
   _Scheduler: object;
   root?: unknown;
-  toJSON: () => unknown | null | undefined;
-  toTree: () => unknown | null | undefined;
+  toJSON: () => unknown;
+  toTree: () => unknown;
   update: (newElement?: ReactNodeList | null | undefined) => void;
   unmount: () => void;
-  getInstance: () => unknown | null | undefined;
-  unstable_flushSync: (
-    fn?: (() => unknown | null | undefined) | null | undefined,
-  ) => unknown | null | undefined;
+  getInstance: () => unknown;
+  unstable_flushSync: (fn?: (() => unknown) | null | undefined) => unknown;
 }
 
 export function create(

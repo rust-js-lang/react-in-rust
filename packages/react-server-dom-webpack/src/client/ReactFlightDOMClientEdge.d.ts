@@ -32,13 +32,13 @@ export interface ServerConsumerManifest {
       [key: string]: ImportManifestEntry;
     };
   } | null;
-  moduleLoading: unknown | null;
+  moduleLoading: unknown;
   serverModuleMap: ServerManifest | null;
 }
 
 export function createServerReference(
   id: unknown,
-  callServer?: unknown | null | undefined,
+  callServer?: unknown,
 ): ServerFunction;
 
 export interface DebugChannelOptions {

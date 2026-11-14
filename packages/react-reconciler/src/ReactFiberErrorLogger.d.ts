@@ -14,27 +14,27 @@ import type {
 } from './ReactInternalTypes.js';
 
 export function defaultOnUncaughtError(
-  error: unknown | null | undefined,
+  error: unknown,
   errorInfo: ErrorInfo,
 ): void;
 
 export function defaultOnCaughtError(
-  error: unknown | null | undefined,
+  error: unknown,
   errorInfo: CaughtErrorInfo,
 ): void;
 
 export function defaultOnRecoverableError(
-  error: unknown | null | undefined,
+  error: unknown,
   errorInfo: ErrorInfo,
 ): void;
 
 export function logUncaughtError(
   root: FiberRoot,
-  errorInfo: CapturedValue<unknown | null | undefined>,
+  errorInfo: CapturedValue<unknown>,
 ): void;
 
 export function logCaughtError(
   root: FiberRoot,
   boundary: Fiber,
-  errorInfo: CapturedValue<unknown | null | undefined>,
+  errorInfo: CapturedValue<unknown>,
 ): void;

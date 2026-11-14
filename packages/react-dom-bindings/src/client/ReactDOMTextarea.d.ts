@@ -24,21 +24,21 @@ export function validateTextareaProps(element: Element, props: unknown): void;
 
 export function updateTextarea(
   element: Element,
-  value?: unknown | null | undefined,
-  defaultValue?: unknown | null | undefined,
+  value?: unknown,
+  defaultValue?: unknown,
 ): void;
 
 export function initTextarea(
   element: Element,
-  value?: unknown | null | undefined,
-  defaultValue?: unknown | null | undefined,
-  children?: unknown | null | undefined,
+  value?: unknown,
+  defaultValue?: unknown,
+  children?: unknown,
 ): void;
 
 export function hydrateTextarea(
   element: Element,
-  value?: unknown | null | undefined,
-  defaultValue?: unknown | null | undefined,
+  value?: unknown,
+  defaultValue?: unknown,
 ): void;
 
 export function restoreControlledTextareaState(

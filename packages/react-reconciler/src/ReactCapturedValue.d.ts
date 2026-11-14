@@ -14,11 +14,11 @@ export interface CapturedValue<T> {
 }
 
 export function createCapturedValueAtFiber(
-  value: unknown | null | undefined,
+  value: unknown,
   source: Fiber,
-): CapturedValue<unknown | null | undefined>;
+): CapturedValue<unknown>;
 
 export function createCapturedValueFromError(
   value: Error,
   stack: string | null,
-): CapturedValue<unknown | null | undefined>;
+): CapturedValue<unknown>;

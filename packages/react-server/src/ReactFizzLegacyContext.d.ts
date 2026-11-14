@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 export type Context = {
-  [key: string]: unknown | null | undefined;
+  [key: string]: unknown;
 };
 
 export const emptyContextObject: Context;

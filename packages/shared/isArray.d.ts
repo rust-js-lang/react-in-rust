@@ -5,4 +5,4 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export default function isArray(a?: unknown | null | undefined): boolean;
+export default function isArray(a?: unknown): boolean;

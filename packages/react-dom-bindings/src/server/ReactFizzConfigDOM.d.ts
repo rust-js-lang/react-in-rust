@@ -55,7 +55,7 @@ export interface Headers {
  * `null` from a key it lacks, so its values are any value.
  */
 export type ResourceStates = {
-  [key: string]: unknown | null | undefined;
+  [key: string]: unknown;
 };
 
 /** Of each kind of connection, the ones that exist. */
@@ -219,9 +219,9 @@ export function createRenderState(
   resumableState: ResumableState,
   nonce?: Nonce | null | undefined,
   externalRuntimeConfig?: BootstrapScript | null | undefined,
-  importMap?: unknown | null | undefined,
+  importMap?: unknown,
   onHeaders?: OnHeaders | null | undefined,
-  maxHeadersLength?: unknown | null | undefined,
+  maxHeadersLength?: unknown,
 ): RenderState;
 
 export function resumeRenderState(
@@ -264,12 +264,12 @@ export interface ViewTransitionContext {
 }
 
 /** The selected value(s) inside a `<select>`, as its props gave them. */
-export type SelectedValue = unknown | null | undefined;
+export type SelectedValue = unknown;
 
 // Lets us keep track of contextual state and pick it back up after suspending.
 export interface FormatContext {
   insertionMode: number;
-  selectedValue: unknown | null;
+  selectedValue: unknown;
   tagScope: number;
   viewTransition: ViewTransitionContext | null;
 }
@@ -351,7 +351,7 @@ export function pushStartInstance(
   hoistableState: HoistableState | null | undefined,
   formatContext: FormatContext,
   textEmbedded: boolean,
-): unknown | null | undefined;
+): unknown;
 
 export function pushEndInstance(
   target: Chunks,

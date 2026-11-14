@@ -13,36 +13,36 @@
 export function getValueForAttribute(
   node: Element,
   name: string,
-  expected?: unknown | null | undefined,
-): unknown | null | undefined;
+  expected?: unknown,
+): unknown;
 
 export function getValueForAttributeOnCustomComponent(
   node: Element,
   name: string,
-  expected?: unknown | null | undefined,
-): unknown | null | undefined;
+  expected?: unknown,
+): unknown;
 
 export function setValueForAttribute(
   node: Element,
   name: string,
-  value?: unknown | null | undefined,
+  value?: unknown,
 ): void;
 
 export function setValueForKnownAttribute(
   node: Element,
   name: string,
-  value?: unknown | null | undefined,
+  value?: unknown,
 ): void;
 
 export function setValueForNamespacedAttribute(
   node: Element,
   namespace: string,
   name: string,
-  value?: unknown | null | undefined,
+  value?: unknown,
 ): void;
 
 export function setValueForPropertyOnCustomComponent(
   node: Element,
   name: string,
-  value?: unknown | null | undefined,
+  value?: unknown,
 ): void;

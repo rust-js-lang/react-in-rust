@@ -24,9 +24,7 @@ export type WithOptions = string | [string, unknown];
  * `'S'`'s model: `href`, or `[href, precedence]` or `[href, precedence | 0,
  * options]`, whose `options` is there when it's three long.
  */
-export type PreinitStyle =
-  | string
-  | [string, unknown, unknown | null | undefined];
+export type PreinitStyle = string | [string, unknown, unknown];
 
 export function dispatchHint(
   code: string,

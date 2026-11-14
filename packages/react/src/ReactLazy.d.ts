@@ -24,7 +24,7 @@ export interface Payload {
 export interface LazyComponent {
   $$typeof: symbol;
   _payload: Payload;
-  _init: (payload: Payload) => unknown | null | undefined;
+  _init: (payload: Payload) => unknown;
   // __DEV__
   _debugInfo?: ReactAsyncInfo[] | null | undefined;
 }

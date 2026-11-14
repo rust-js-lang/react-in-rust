@@ -12,9 +12,7 @@ import type {ReactComponentInfo} from 'shared/ReactTypes';
  * renders.
  */
 export interface DefaultAsyncDispatcher {
-  getCacheForType: (
-    resourceType: () => unknown | null | undefined,
-  ) => unknown | null | undefined;
+  getCacheForType: (resourceType: () => unknown) => unknown;
   cacheSignal: () => AbortSignal | null | undefined;
   // DEV only: the component rendering now.
   getOwner?: (() => ReactComponentInfo | null | undefined) | null | undefined;

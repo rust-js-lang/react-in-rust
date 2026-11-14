@@ -20,8 +20,8 @@ export function insertNodesAndExecuteScripts(
 ): Promise<void>;
 
 export function mergeOptions(
-  options?: unknown | null | undefined,
-  defaultOptions?: unknown | null | undefined,
+  options?: unknown,
+  defaultOptions?: unknown,
 ): object;
 
 export function stripExternalRuntimeInNodes(

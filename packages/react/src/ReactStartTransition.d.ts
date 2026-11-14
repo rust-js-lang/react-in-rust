@@ -31,7 +31,7 @@ export interface Transition {
 /** What the renderer does as a Transition's scope returns. */
 export type OnStartTransitionFinish = (
   transition: Transition,
-  value?: unknown | null | undefined,
+  value?: unknown,
 ) => void;
 
 /**
@@ -45,12 +45,12 @@ export type OnStartGestureTransitionFinish = (
 ) => () => void;
 
 export function startTransition(
-  scope: () => unknown | null | undefined,
+  scope: () => unknown,
   options?: StartTransitionOptions | null | undefined,
 ): void;
 
 export function startGestureTransition(
   provider: GestureProvider | null | undefined,
-  scope: () => unknown | null | undefined,
+  scope: () => unknown,
   options?: GestureTransitionOptions | null | undefined,
 ): () => void;

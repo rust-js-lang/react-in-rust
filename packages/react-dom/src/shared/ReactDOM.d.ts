@@ -32,6 +32,6 @@ export function unstable_batchedUpdates<A, R>(fn: (a: A) => R, a: A): R;
 
 export function createPortal(
   children?: ReactNodeList | null | undefined,
-  container?: unknown | null | undefined,
-  key?: unknown | null | undefined,
+  container?: unknown,
+  key?: unknown,
 ): ReactPortal;

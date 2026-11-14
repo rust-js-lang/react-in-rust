@@ -8,9 +8,9 @@
 /** The thenable `act` gives, awaited to finish its scope. */
 export interface ActThenable {
   then: (
-    resolve: (value?: unknown | null | undefined) => void,
-    reject: (value?: unknown | null | undefined) => void,
+    resolve: (value?: unknown) => void,
+    reject: (value?: unknown) => void,
   ) => void;
 }
 
-export function act(callback: () => unknown | null | undefined): ActThenable;
+export function act(callback: () => unknown): ActThenable;

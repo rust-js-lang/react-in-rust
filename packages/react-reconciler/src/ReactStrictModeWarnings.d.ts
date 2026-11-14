@@ -8,10 +8,7 @@
 import type {Fiber} from './ReactInternalTypes.js';
 
 /** What records a warning about a fiber's component, given its instance. */
-export type RecordWarning = (
-  fiber: Fiber,
-  value?: unknown | null | undefined,
-) => void;
+export type RecordWarning = (fiber: Fiber, value?: unknown) => void;
 
 export interface ReactStrictModeWarnings {
   recordUnsafeLifecycleWarnings: RecordWarning;

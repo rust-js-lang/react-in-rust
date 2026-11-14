@@ -38,65 +38,49 @@ export interface ReactNoopExports {
   ) => Container;
   createRoot: (value?: CreateRootOptions | null | undefined) => Root;
   createLegacyRoot: () => LegacyRoot;
-  getChildrenAsJSX: (
-    value?: string | null | undefined,
-  ) => unknown | null | undefined;
-  getPendingChildrenAsJSX: (
-    value?: string | null | undefined,
-  ) => unknown | null | undefined;
+  getChildrenAsJSX: (value?: string | null | undefined) => unknown;
+  getPendingChildrenAsJSX: (value?: string | null | undefined) => unknown;
   getSuspenseyThingStatus: (value: string) => string | null | undefined;
   resolveSuspenseyThing: (value: string) => void;
   resetSuspenseyThingCache: () => void;
   createPortal: (
-    value: unknown | null | undefined,
+    value: unknown,
     container: Container,
-    value2?: unknown | null | undefined,
+    value2?: unknown,
   ) => ReactPortal;
-  render: (
-    value?: unknown | null | undefined,
-    value2?: unknown | null | undefined,
-  ) => void;
-  renderLegacySyncRoot: (
-    value?: unknown | null | undefined,
-    value2?: unknown | null | undefined,
-  ) => void;
+  render: (value?: unknown, value2?: unknown) => void;
+  renderLegacySyncRoot: (value?: unknown, value2?: unknown) => void;
   renderToRootWithID: (
-    value: unknown | null | undefined,
+    value: unknown,
     value2: string,
-    value3?: unknown | null | undefined,
+    value3?: unknown,
   ) => void;
   unmountRootWithID: (value: string) => void;
-  findInstance: (
-    value?: unknown | null | undefined,
-  ) => unknown | null | undefined;
-  flushNextYield: () => (unknown | null | undefined)[];
+  findInstance: (value?: unknown) => unknown;
+  flushNextYield: () => unknown[];
   startTrackingHostCounters: () => void;
   stopTrackingHostCounters: () => HostCounters;
   expire: (value: number) => void;
-  flushExpired: () => (unknown | null | undefined)[];
+  flushExpired: () => unknown[];
   batchedUpdates: (
-    value: (value?: unknown | null | undefined) => unknown | null | undefined,
-    value2?: unknown | null | undefined,
-  ) => unknown | null | undefined;
-  deferredUpdates: (
-    value: () => unknown | null | undefined,
-  ) => unknown | null | undefined;
+    value: (value?: unknown) => unknown,
+    value2?: unknown,
+  ) => unknown;
+  deferredUpdates: (value: () => unknown) => unknown;
   discreteUpdates: (
     value: (
-      value?: unknown | null | undefined,
-      value2?: unknown | null | undefined,
-      value3?: unknown | null | undefined,
-      value4?: unknown | null | undefined,
-    ) => unknown | null | undefined,
-    value2?: unknown | null | undefined,
-    value3?: unknown | null | undefined,
-    value4?: unknown | null | undefined,
-    value5?: unknown | null | undefined,
-  ) => unknown | null | undefined;
-  idleUpdates: (value: () => unknown | null | undefined) => void;
-  flushSync: (
-    value?: (() => unknown | null | undefined) | null | undefined,
-  ) => unknown | null | undefined;
+      value?: unknown,
+      value2?: unknown,
+      value3?: unknown,
+      value4?: unknown,
+    ) => unknown,
+    value2?: unknown,
+    value3?: unknown,
+    value4?: unknown,
+    value5?: unknown,
+  ) => unknown;
+  idleUpdates: (value: () => unknown) => void;
+  flushSync: (value?: (() => unknown) | null | undefined) => unknown;
   flushPassiveEffects: () => boolean;
   act?: unknown;
   dumpTree: (value?: string | null | undefined) => void;
@@ -104,8 +88,8 @@ export interface ReactNoopExports {
   // TODO: Remove this after callers migrate to alternatives.
   unstable_runWithPriority: (
     priority: EventPriority,
-    value: () => unknown | null | undefined,
-  ) => unknown | null | undefined;
+    value: () => unknown,
+  ) => unknown;
 }
 
 export const _Scheduler: object;
@@ -131,13 +115,11 @@ export const createRoot: (value?: CreateRootOptions | null | undefined) => Root;
 
 export const createLegacyRoot: () => LegacyRoot;
 
-export const getChildrenAsJSX: (
-  value?: string | null | undefined,
-) => unknown | null | undefined;
+export const getChildrenAsJSX: (value?: string | null | undefined) => unknown;
 
 export const getPendingChildrenAsJSX: (
   value?: string | null | undefined,
-) => unknown | null | undefined;
+) => unknown;
 
 export const getSuspenseyThingStatus: (
   value: string,
@@ -148,34 +130,26 @@ export const resolveSuspenseyThing: (value: string) => void;
 export const resetSuspenseyThingCache: () => void;
 
 export const createPortal: (
-  value: unknown | null | undefined,
+  value: unknown,
   container: Container,
-  value2?: unknown | null | undefined,
+  value2?: unknown,
 ) => ReactPortal;
 
-export const render: (
-  value?: unknown | null | undefined,
-  value2?: unknown | null | undefined,
-) => void;
+export const render: (value?: unknown, value2?: unknown) => void;
 
-export const renderLegacySyncRoot: (
-  value?: unknown | null | undefined,
-  value2?: unknown | null | undefined,
-) => void;
+export const renderLegacySyncRoot: (value?: unknown, value2?: unknown) => void;
 
 export const renderToRootWithID: (
-  value: unknown | null | undefined,
+  value: unknown,
   value2: string,
-  value3?: unknown | null | undefined,
+  value3?: unknown,
 ) => void;
 
 export const unmountRootWithID: (value: string) => void;
 
-export const findInstance: (
-  value?: unknown | null | undefined,
-) => unknown | null | undefined;
+export const findInstance: (value?: unknown) => unknown;
 
-export const flushNextYield: () => (unknown | null | undefined)[];
+export const flushNextYield: () => unknown[];
 
 export const startTrackingHostCounters: () => void;
 
@@ -183,39 +157,35 @@ export const stopTrackingHostCounters: () => HostCounters;
 
 export const expire: (value: number) => void;
 
-export const flushExpired: () => (unknown | null | undefined)[];
+export const flushExpired: () => unknown[];
 
 export const batchedUpdates: (
-  value: (value?: unknown | null | undefined) => unknown | null | undefined,
-  value2?: unknown | null | undefined,
-) => unknown | null | undefined;
+  value: (value?: unknown) => unknown,
+  value2?: unknown,
+) => unknown;
 
-export const deferredUpdates: (
-  value: () => unknown | null | undefined,
-) => unknown | null | undefined;
+export const deferredUpdates: (value: () => unknown) => unknown;
 
 export const discreteUpdates: (
   value: (
-    value?: unknown | null | undefined,
-    value2?: unknown | null | undefined,
-    value3?: unknown | null | undefined,
-    value4?: unknown | null | undefined,
-  ) => unknown | null | undefined,
-  value2?: unknown | null | undefined,
-  value3?: unknown | null | undefined,
-  value4?: unknown | null | undefined,
-  value5?: unknown | null | undefined,
-) => unknown | null | undefined;
+    value?: unknown,
+    value2?: unknown,
+    value3?: unknown,
+    value4?: unknown,
+  ) => unknown,
+  value2?: unknown,
+  value3?: unknown,
+  value4?: unknown,
+  value5?: unknown,
+) => unknown;
 
-export const idleUpdates: (value: () => unknown | null | undefined) => void;
+export const idleUpdates: (value: () => unknown) => void;
 
-export const flushSync: (
-  value?: (() => unknown | null | undefined) | null | undefined,
-) => unknown | null | undefined;
+export const flushSync: (value?: (() => unknown) | null | undefined) => unknown;
 
 export const flushPassiveEffects: () => boolean;
 
-export const act: unknown | null | undefined;
+export const act: unknown;
 
 export const dumpTree: (value?: string | null | undefined) => void;
 
@@ -225,5 +195,5 @@ export const getRoot: (
 
 export const unstable_runWithPriority: (
   priority: EventPriority,
-  value: () => unknown | null | undefined,
-) => unknown | null | undefined;
+  value: () => unknown,
+) => unknown;

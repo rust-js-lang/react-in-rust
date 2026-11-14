@@ -16,11 +16,11 @@ export {default as version} from 'shared/ReactVersion';
 
 export declare class LinearGradient {
   constructor(
-    stops?: unknown | null | undefined,
-    x1?: unknown | null | undefined,
-    y1?: unknown | null | undefined,
-    x2?: unknown | null | undefined,
-    y2?: unknown | null | undefined,
+    stops?: unknown,
+    x1?: unknown,
+    y1?: unknown,
+    x2?: unknown,
+    y2?: unknown,
   );
   _args?: unknown;
   applyFill(node: any): void;
@@ -28,13 +28,13 @@ export declare class LinearGradient {
 
 export declare class RadialGradient {
   constructor(
-    stops?: unknown | null | undefined,
-    fx?: unknown | null | undefined,
-    fy?: unknown | null | undefined,
-    rx?: unknown | null | undefined,
-    ry?: unknown | null | undefined,
-    cx?: unknown | null | undefined,
-    cy?: unknown | null | undefined,
+    stops?: unknown,
+    fx?: unknown,
+    fy?: unknown,
+    rx?: unknown,
+    ry?: unknown,
+    cx?: unknown,
+    cy?: unknown,
   );
   _args?: unknown;
   applyFill(node: any): void;
@@ -42,11 +42,11 @@ export declare class RadialGradient {
 
 export declare class Pattern {
   constructor(
-    url?: unknown | null | undefined,
-    width?: unknown | null | undefined,
-    height?: unknown | null | undefined,
-    left?: unknown | null | undefined,
-    top?: unknown | null | undefined,
+    url?: unknown,
+    width?: unknown,
+    height?: unknown,
+    left?: unknown,
+    top?: unknown,
   );
   _args?: unknown;
   applyFill(node: any): void;

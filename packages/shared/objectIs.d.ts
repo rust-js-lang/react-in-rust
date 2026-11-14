@@ -5,9 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-declare const objectIs: (
-  value: unknown | null | undefined,
-  value2: unknown | null | undefined,
-) => boolean;
+declare const objectIs: (value: unknown, value2: unknown) => boolean;
 
 export default objectIs;

@@ -13,8 +13,8 @@ export function commitHostHydratedInstance(finishedWork: Fiber): void;
 
 export function commitHostUpdate(
   finishedWork: Fiber,
-  newProps?: unknown | null | undefined,
-  oldProps?: unknown | null | undefined,
+  newProps?: unknown,
+  oldProps?: unknown,
 ): void;
 
 export function commitHostTextUpdate(
@@ -64,7 +64,7 @@ export function commitHostRootContainerChildren(
 export function commitHostPortalContainerChildren(
   portal: unknown,
   finishedWork: Fiber,
-  pendingChildren?: unknown | null | undefined,
+  pendingChildren?: unknown,
 ): void;
 
 export function commitHostHydratedContainer(

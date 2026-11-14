@@ -35,17 +35,15 @@ export type StartTransition = (
  * A ref `useImperativeHandle` sets: an object's `current`, or a function
  * it calls.
  */
-export type Ref =
-  | ((value?: unknown | null | undefined) => unknown | null | undefined)
-  | RefObject;
+export type Ref = ((value?: unknown) => unknown) | RefObject;
 
 /**
  * What `useCacheRefresh` gives: what refreshes the cache, of what makes
  * its next value, and the value it seeds it with.
  */
 export type CacheRefresh = (
-  value?: (() => unknown | null | undefined) | null | undefined,
-  value2?: unknown | null | undefined,
+  value?: (() => unknown) | null | undefined,
+  value2?: unknown,
 ) => void;
 
 export function getCacheForType<T>(resourceType: () => T): T;
@@ -62,42 +60,42 @@ export function useReducer<S, I, A>(
   init?: ((i: I) => S) | null | undefined,
 ): [S, Dispatch<A>];
 
-export function useRef(initialValue?: unknown | null | undefined): RefObject;
+export function useRef(initialValue?: unknown): RefObject;
 
 export function useEffect(
   create?: Create | null | undefined,
-  deps?: (unknown | null | undefined)[] | null | undefined,
+  deps?: unknown[] | null | undefined,
 ): void;
 
 export function useInsertionEffect(
   create?: Create | null | undefined,
-  deps?: (unknown | null | undefined)[] | null | undefined,
+  deps?: unknown[] | null | undefined,
 ): void;
 
 export function useLayoutEffect(
   create?: Create | null | undefined,
-  deps?: (unknown | null | undefined)[] | null | undefined,
+  deps?: unknown[] | null | undefined,
 ): void;
 
 export function useCallback<T>(
   callback: T,
-  deps?: (unknown | null | undefined)[] | null | undefined,
+  deps?: unknown[] | null | undefined,
 ): T;
 
 export function useMemo<T>(
   create: () => T,
-  deps?: (unknown | null | undefined)[] | null | undefined,
+  deps?: unknown[] | null | undefined,
 ): T;
 
 export function useImperativeHandle(
   ref: Ref | null | undefined,
-  create: () => unknown | null | undefined,
-  deps?: (unknown | null | undefined)[] | null | undefined,
+  create: () => unknown,
+  deps?: unknown[] | null | undefined,
 ): void;
 
 export function useDebugValue<T>(
   value: T,
-  formatterFn?: ((t: T) => unknown | null | undefined) | null | undefined,
+  formatterFn?: ((t: T) => unknown) | null | undefined,
 ): void;
 
 export function useTransition(): [boolean, StartTransition];
@@ -119,7 +117,7 @@ export function useCacheRefresh(): CacheRefresh;
 
 export function use<T>(usable: unknown): T;
 
-export function useMemoCache(size: number): (unknown | null | undefined)[];
+export function useMemoCache(size: number): unknown[];
 
 export function useEffectEvent<F>(callback: F): F;
 

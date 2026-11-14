@@ -115,9 +115,9 @@ export {
 
 export const rendererPackageName: string;
 
-export const extraDevToolsConfig: unknown | null;
+export const extraDevToolsConfig: unknown;
 
-export type TransitionStatus = unknown | null | undefined;
+export type TransitionStatus = unknown;
 
 export type Instance = any;
 
@@ -133,7 +133,7 @@ export type HostContext = object;
  * `Instance | TextInstance`, a host child: a node, or the text a text
  * node's children were flattened to.
  */
-export type Child = string | any;
+export type Child = any;
 
 export function appendInitialChild(
   parentInstance: Instance,
@@ -319,11 +319,11 @@ export function removeRootViewTransitionClone(
   clone: Instance,
 ): void;
 
-export type InstanceMeasurement = unknown | null | undefined;
+export type InstanceMeasurement = unknown;
 
-export function measureInstance(instance: Instance): unknown | null;
+export function measureInstance(instance: Instance): unknown;
 
-export function measureClonedInstance(instance: Instance): unknown | null;
+export function measureClonedInstance(instance: Instance): unknown;
 
 export function wasInstanceInViewport(
   measurement?: InstanceMeasurement,
@@ -368,7 +368,7 @@ export function getCurrentGestureOffset(
 
 export function clearContainer(container: Container): void;
 
-export function getInstanceFromNode(node: unknown): unknown | null;
+export function getInstanceFromNode(node: unknown): unknown;
 
 export function beforeActiveInstanceBlur(internalInstanceHandle: unknown): void;
 
@@ -413,14 +413,14 @@ export function suspendOnActiveViewTransition(
   container: Container,
 ): void;
 
-export function waitForCommitToBeReady(timeoutOffset: number): unknown | null;
+export function waitForCommitToBeReady(timeoutOffset: number): unknown;
 
 export function getSuspendedCommitReason(
   state: SuspendedState | null | undefined,
   rootContainer: Container,
 ): string | null;
 
-export const NotPendingTransition: unknown | null;
+export const NotPendingTransition: unknown;
 
 export const HostTransitionContext: ReactContext<TransitionStatus>;
 

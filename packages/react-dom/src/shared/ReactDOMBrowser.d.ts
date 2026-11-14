@@ -7,7 +7,7 @@
 
 import type {ReactRecoverable} from 'shared/ReactTypes';
 
-type ReactRecoverableReason = string | (() => unknown | null | undefined);
+type ReactRecoverableReason = string | (() => unknown);
 
 export function browser(
   reason?: ReactRecoverableReason | null | undefined,

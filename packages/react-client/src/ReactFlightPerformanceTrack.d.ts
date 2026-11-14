@@ -57,7 +57,7 @@ export function logComponentErrored(
   endTime: number,
   childrenEndTime: number,
   rootEnv: string,
-  error?: unknown | null | undefined,
+  error?: unknown,
 ): void;
 
 export function logDedupedComponentRender(
@@ -82,7 +82,7 @@ export function logComponentAwaitErrored(
   startTime: number,
   endTime: number,
   rootEnv: string,
-  error?: unknown | null | undefined,
+  error?: unknown,
 ): void;
 
 export function logComponentAwait(
@@ -91,17 +91,17 @@ export function logComponentAwait(
   startTime: number,
   endTime: number,
   rootEnv: string,
-  value?: unknown | null | undefined,
+  value?: unknown,
 ): void;
 
 export function logIOInfoErrored(
   ioInfo: ReactIOInfo,
   rootEnv: string,
-  error?: unknown | null | undefined,
+  error?: unknown,
 ): void;
 
 export function logIOInfo(
   ioInfo: ReactIOInfo,
   rootEnv: string,
-  value?: unknown | null | undefined,
+  value?: unknown,
 ): void;

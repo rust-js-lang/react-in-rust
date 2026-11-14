@@ -13,8 +13,8 @@ export interface EmptyObject {}
 /** Base class helpers for the updating state of a component. */
 export declare class Component {
   constructor(
-    props?: unknown | null | undefined,
-    context?: unknown | null | undefined,
+    props?: unknown,
+    context?: unknown,
     updater?: Updater | null | undefined,
   );
   props?: unknown;
@@ -48,7 +48,7 @@ export declare class Component {
    * @protected
    */
   setState(
-    partialState?: unknown | null | undefined,
+    partialState?: unknown,
     callback?: (() => void) | null | undefined,
   ): void;
   /**
@@ -71,8 +71,8 @@ export declare class Component {
 /** Convenience component with default shallow equality check for sCU. */
 export declare class PureComponent {
   constructor(
-    props?: unknown | null | undefined,
-    context?: unknown | null | undefined,
+    props?: unknown,
+    context?: unknown,
     updater?: Updater | null | undefined,
   );
   props?: unknown;

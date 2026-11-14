@@ -35,14 +35,12 @@ export function dispatchEvent(
   nativeEvent: AnyNativeEvent,
 ): void;
 
-export function findInstanceBlockingEvent(
-  nativeEvent: AnyNativeEvent,
-): unknown | null;
+export function findInstanceBlockingEvent(nativeEvent: AnyNativeEvent): unknown;
 
 export let return_targetInst: Fiber | null;
 
 // Returns a SuspenseInstance, ActivityInstance or Container if it's blocked.
 // The return_targetInst field above is conceptually part of the return value.
-export function findInstanceBlockingTarget(targetNode: Node): unknown | null;
+export function findInstanceBlockingTarget(targetNode: Node): unknown;
 
 export function getEventPriority(domEventName: string): EventPriority;

@@ -10,42 +10,39 @@
  * given its previous state.
  */
 export type GetDerivedStateFromProps = (
-  value?: unknown | null | undefined,
-  value2?: unknown | null | undefined,
-) => unknown | null | undefined;
+  value?: unknown,
+  value2?: unknown,
+) => unknown;
 
 export interface InternalInstance {
-  queue: (unknown | null | undefined)[] | null;
+  queue: unknown[] | null;
   replace: boolean;
 }
 
 export interface ClassComponentUpdater {
   enqueueSetState: (
     inst: unknown,
-    payload?: unknown | null | undefined,
-    callback?: unknown | null | undefined,
+    payload?: unknown,
+    callback?: unknown,
   ) => void;
   enqueueReplaceState: (
     inst: unknown,
-    payload?: unknown | null | undefined,
-    callback?: unknown | null | undefined,
+    payload?: unknown,
+    callback?: unknown,
   ) => void;
-  enqueueForceUpdate: (
-    inst: unknown,
-    callback?: unknown | null | undefined,
-  ) => void;
+  enqueueForceUpdate: (inst: unknown, callback?: unknown) => void;
 }
 
 export function constructClassInstance(
   ctor: unknown,
-  props?: unknown | null | undefined,
-  maskedLegacyContext?: unknown | null | undefined,
+  props?: unknown,
+  maskedLegacyContext?: unknown,
 ): unknown;
 
 // Invokes the mount life-cycles on a previously never rendered instance.
 export function mountClassInstance(
   instance: unknown,
   ctor: unknown,
-  newProps?: unknown | null | undefined,
-  maskedLegacyContext?: unknown | null | undefined,
+  newProps?: unknown,
+  maskedLegacyContext?: unknown,
 ): void;

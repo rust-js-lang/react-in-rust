@@ -55,11 +55,9 @@ export function resolveServerReference(
 
 export function preloadModule(
   metadata: ClientReference,
-): Promise<unknown | null | undefined> | null;
+): Promise<unknown> | null;
 
-export function requireModule(
-  metadata: ClientReference,
-): unknown | null | undefined;
+export function requireModule(metadata: ClientReference): unknown;
 
 export function getModuleDebugInfo(metadata: ClientReference): void;
 

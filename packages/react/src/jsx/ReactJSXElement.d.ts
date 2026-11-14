@@ -16,9 +16,9 @@ type ReactKey = string | symbol;
  * @param {string} key
  */
 export function jsxProd(
-  type: unknown | null | undefined,
+  type: unknown,
   config: unknown,
-  maybeKey?: unknown | null | undefined,
+  maybeKey?: unknown,
 ): ReactElement;
 
 // While `jsxDEV` should never be called when running in production, we do
@@ -34,15 +34,15 @@ export function jsxProd(
 // use this pattern for the prod versions, though, because it will add an call
 // frame.)
 export function jsxProdSignatureRunningInDevWithDynamicChildren(
-  type: unknown | null | undefined,
+  type: unknown,
   config: unknown,
-  maybeKey?: unknown | null | undefined,
+  maybeKey?: unknown,
 ): ReactElement | null | undefined;
 
 export function jsxProdSignatureRunningInDevWithStaticChildren(
-  type: unknown | null | undefined,
+  type: unknown,
   config: unknown,
-  maybeKey?: unknown | null | undefined,
+  maybeKey?: unknown,
 ): ReactElement | null | undefined;
 
 /**
@@ -52,9 +52,9 @@ export function jsxProdSignatureRunningInDevWithStaticChildren(
  * @param {string} key
  */
 export function jsxDEV(
-  type: unknown | null | undefined,
+  type: unknown,
   config: unknown,
-  maybeKey: unknown | null | undefined,
+  maybeKey: unknown,
   isStaticChildren: boolean,
 ): ReactElement | null | undefined;
 
@@ -63,9 +63,9 @@ export function jsxDEV(
  * See https://reactjs.org/docs/react-api.html#createelement
  */
 export function createElement(
-  type?: unknown | null | undefined,
-  config?: unknown | null | undefined,
-  ...children: (unknown | null | undefined)[]
+  type?: unknown,
+  config?: unknown,
+  ...children: unknown[]
 ): ReactElement;
 
 export function cloneAndReplaceKey(
@@ -78,9 +78,9 @@ export function cloneAndReplaceKey(
  * See https://reactjs.org/docs/react-api.html#cloneelement
  */
 export function cloneElement(
-  element?: unknown | null | undefined,
-  config?: unknown | null | undefined,
-  ...children: (unknown | null | undefined)[]
+  element?: unknown,
+  config?: unknown,
+  ...children: unknown[]
 ): ReactElement;
 
 /**
@@ -90,6 +90,6 @@ export function cloneElement(
  * @return {boolean} True if `object` is a ReactElement.
  * @final
  */
-export function isValidElement(object?: unknown | null | undefined): boolean;
+export function isValidElement(object?: unknown): boolean;
 
-export function isLazyType(object?: unknown | null | undefined): boolean;
+export function isLazyType(object?: unknown): boolean;

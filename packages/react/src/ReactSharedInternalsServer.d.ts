@@ -13,9 +13,9 @@ import type {
 
 export interface SharedStateServer {
   // ReactCurrentDispatcher for Hooks
-  H: any | null;
+  H: any;
   // ReactCurrentCache for Cache
-  A: any | null;
+  A: any;
   // enableTaint
   TaintRegistryObjects?: WeakMap<object, string> | null | undefined;
   TaintRegistryValues?: Map<EntryValue, TaintEntry> | null | undefined;

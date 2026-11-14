@@ -7,11 +7,11 @@
 
 export function taintUniqueValue(
   message?: string | null | undefined,
-  lifetime?: unknown | null | undefined,
-  value?: unknown | null | undefined,
+  lifetime?: unknown,
+  value?: unknown,
 ): void;
 
 export function taintObjectReference(
   message?: string | null | undefined,
-  object?: unknown | null | undefined,
+  object?: unknown,
 ): void;

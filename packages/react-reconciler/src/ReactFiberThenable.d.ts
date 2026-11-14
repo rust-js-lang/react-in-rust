@@ -47,21 +47,17 @@ export function trackUsedThenable(
   thenable: any,
   index: number,
   fiber: Fiber | null,
-): unknown | null | undefined;
+): unknown;
 
 export function suspendCommit(): never;
 
-export function resolveLazy(
-  lazyType: LazyComponent,
-): unknown | null | undefined;
+export function resolveLazy(lazyType: LazyComponent): unknown;
 
 export function getSuspendedThenable(): any;
 
 export function checkIfUseWrappedInTryCatch(): boolean;
 
-export function checkIfUseWrappedInAsyncCatch(
-  rejectedReason?: unknown | null | undefined,
-): void;
+export function checkIfUseWrappedInAsyncCatch(rejectedReason?: unknown): void;
 
 export function checkIfUseWasUsedBefore(
   unsuspendedFiber: Fiber,

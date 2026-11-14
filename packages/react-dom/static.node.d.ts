@@ -10,10 +10,10 @@
 
 export {default as version} from 'shared/ReactVersion';
 
-export function prerenderToNodeStream(): unknown | null | undefined;
+export function prerenderToNodeStream(): unknown;
 
-export function prerender(): unknown | null | undefined;
+export function prerender(): unknown;
 
-export function resumeAndPrerenderToNodeStream(): unknown | null | undefined;
+export function resumeAndPrerenderToNodeStream(): unknown;
 
-export function resumeAndPrerender(): unknown | null | undefined;
+export function resumeAndPrerender(): unknown;

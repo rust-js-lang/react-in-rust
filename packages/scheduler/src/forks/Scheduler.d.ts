@@ -46,10 +46,8 @@ export function unstable_runWithPriority<T>(
 export function unstable_next<T>(eventHandler: () => T): T;
 
 export function unstable_wrapCallback(
-  callback: (
-    ...args: (unknown | null | undefined)[]
-  ) => unknown | null | undefined,
-): (...args: (unknown | null | undefined)[]) => unknown | null | undefined;
+  callback: (...args: unknown[]) => unknown,
+): (...args: unknown[]) => unknown;
 
 export function unstable_scheduleCallback(
   priorityLevel: PriorityLevel,

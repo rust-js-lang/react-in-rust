@@ -15,7 +15,7 @@ import type {Fiber} from './ReactInternalTypes.js';
 export type ChildReconciler = (
   fiber: Fiber,
   value: Fiber | null | undefined,
-  value2: unknown | null | undefined,
+  value2: unknown,
   lanes: Lanes,
 ) => Fiber | null | undefined;
 
@@ -35,6 +35,6 @@ export function resetChildFibers(workInProgress: Fiber, lanes: Lanes): void;
 
 // shared/ReactTypes' `SuspenseListRevealOrder`.
 export function validateSuspenseListChildren(
-  children?: unknown | null | undefined,
+  children?: unknown,
   revealOrder?: string | null | undefined,
 ): void;

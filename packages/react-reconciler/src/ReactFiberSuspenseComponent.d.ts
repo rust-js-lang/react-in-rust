@@ -23,7 +23,7 @@ export interface SuspenseState {
   // here to indicate that it is dehydrated (flag) and for quick access
   // to check things like isSuspenseInstancePending.
   // ReactFiberConfig's `SuspenseInstance`.
-  dehydrated: unknown | null;
+  dehydrated: unknown;
   treeContext: TreeContext | null;
   // Represents the lane we should attempt to hydrate a dehydrated boundary at.
   // OffscreenLane is the default for dehydrated boundaries.

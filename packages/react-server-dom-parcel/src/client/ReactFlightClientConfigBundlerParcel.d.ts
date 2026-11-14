@@ -40,11 +40,9 @@ export function resolveServerReference(
   ref: ServerReferenceId,
 ): ClientReference;
 
-export function preloadModule(metadata: ClientReference): any | null;
+export function preloadModule(metadata: ClientReference): any;
 
-export function requireModule(
-  metadata: ClientReference,
-): unknown | null | undefined;
+export function requireModule(metadata: ClientReference): unknown;
 
 export function getModuleDebugInfo(
   metadata: ClientReference,

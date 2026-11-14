@@ -8,9 +8,9 @@
 export function validateLinkPropsForStyleResource(props: unknown): boolean;
 
 export function getValueDescriptorExpectingObjectForWarning(
-  thing?: unknown | null | undefined,
+  thing?: unknown,
 ): string;
 
 export function getValueDescriptorExpectingEnumForWarning(
-  thing?: unknown | null | undefined,
+  thing?: unknown,
 ): string;

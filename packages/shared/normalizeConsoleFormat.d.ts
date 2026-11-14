@@ -7,6 +7,6 @@
 
 export default function normalizeConsoleFormat(
   formatString: string,
-  args: (unknown | null | undefined)[],
+  args: unknown[],
   firstArg: number,
 ): string;

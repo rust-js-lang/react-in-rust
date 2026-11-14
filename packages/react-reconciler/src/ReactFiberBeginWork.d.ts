@@ -15,16 +15,16 @@ export let didWarnAboutReassigningProps: boolean;
 export function reconcileChildren(
   current: Fiber | null | undefined,
   workInProgress: Fiber,
-  nextChildren: unknown | null | undefined,
+  nextChildren: unknown,
   renderLanes: Lanes,
 ): void;
 
 export function replayFunctionComponent(
   current: Fiber | null | undefined,
   workInProgress: Fiber,
-  nextProps: unknown | null | undefined,
-  component: unknown | null | undefined,
-  secondArg: unknown | null | undefined,
+  nextProps: unknown,
+  component: unknown,
+  secondArg: unknown,
   renderLanes: Lanes,
 ): Fiber | null;
 

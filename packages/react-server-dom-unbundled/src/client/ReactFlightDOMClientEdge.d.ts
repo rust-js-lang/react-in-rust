@@ -30,13 +30,13 @@ type ReplyBody = string | URLSearchParams | FormData;
 
 export interface ServerConsumerManifest {
   moduleMap: ServerConsumerModuleMap;
-  moduleLoading: unknown | null;
+  moduleLoading: unknown;
   serverModuleMap: ServerManifest | null;
 }
 
 export function createServerReference(
   id: unknown,
-  callServer?: unknown | null | undefined,
+  callServer?: unknown,
 ): ServerFunction;
 
 export interface DebugChannelOptions {

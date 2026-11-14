@@ -19,19 +19,16 @@
  * @return {object} Object containing the ordered map of results.
  */
 declare function mapChildren(
-  children: unknown | null | undefined,
-  func: (
-    value: unknown | null | undefined,
-    value2: number,
-  ) => unknown | null | undefined,
-  context?: unknown | null | undefined,
+  children: unknown,
+  func: (value: unknown, value2: number) => unknown,
+  context?: unknown,
 ): MappedChildren;
 
 /**
  * What mapChildren gives: the mapped array, or the `null` or `undefined`
  * children it was given, as it was given.
  */
-export type MappedChildren = (unknown | null | undefined)[] | unknown;
+export type MappedChildren = unknown;
 
 /**
  * Count the number of children that are typically specified as
@@ -42,7 +39,7 @@ export type MappedChildren = (unknown | null | undefined)[] | unknown;
  * @param {?*} children Children tree container.
  * @return {number} The number of children.
  */
-declare function countChildren(children?: unknown | null | undefined): number;
+declare function countChildren(children?: unknown): number;
 
 /**
  * Iterates through children that are typically specified as `props.children`.
@@ -57,9 +54,9 @@ declare function countChildren(children?: unknown | null | undefined): number;
  * @param {*} forEachContext Context for forEachContext.
  */
 declare function forEachChildren(
-  children: unknown | null | undefined,
-  forEachFunc: (value?: unknown | null | undefined) => void,
-  forEachContext?: unknown | null | undefined,
+  children: unknown,
+  forEachFunc: (value?: unknown) => void,
+  forEachContext?: unknown,
 ): void;
 
 /**
@@ -68,9 +65,7 @@ declare function forEachChildren(
  *
  * See https://reactjs.org/docs/react-api.html#reactchildrentoarray
  */
-export function toArray(
-  children?: unknown | null | undefined,
-): (unknown | null | undefined)[];
+export function toArray(children?: unknown): unknown[];
 
 /**
  * Returns the first child in a collection of children and verifies that there
@@ -86,9 +81,7 @@ export function toArray(
  * @return {ReactElement} The first and only `ReactElement` contained in the
  * structure.
  */
-declare function onlyChild(
-  children?: unknown | null | undefined,
-): unknown | null | undefined;
+declare function onlyChild(children?: unknown): unknown;
 
 export {
   countChildren as count,

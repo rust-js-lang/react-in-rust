@@ -10,7 +10,7 @@ import type {Fiber} from './ReactInternalTypes.js';
 
 export interface Cache {
   controller: AbortController;
-  data: Map<() => unknown | null | undefined, unknown | null | undefined>;
+  data: Map<() => unknown, unknown>;
   refCount: number;
 }
 

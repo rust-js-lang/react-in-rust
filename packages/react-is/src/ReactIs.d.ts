@@ -5,9 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export function typeOf(
-  object?: unknown | null | undefined,
-): unknown | null | undefined;
+export function typeOf(object?: unknown): unknown;
 
 export const ContextConsumer: symbol;
 
@@ -33,28 +31,28 @@ export const Suspense: symbol;
 
 export const SuspenseList: symbol;
 
-export function isValidElementType(type?: unknown | null | undefined): boolean;
+export function isValidElementType(type?: unknown): boolean;
 
-export function isContextConsumer(object?: unknown | null | undefined): boolean;
+export function isContextConsumer(object?: unknown): boolean;
 
-export function isContextProvider(object?: unknown | null | undefined): boolean;
+export function isContextProvider(object?: unknown): boolean;
 
-export function isElement(object?: unknown | null | undefined): boolean;
+export function isElement(object?: unknown): boolean;
 
-export function isForwardRef(object?: unknown | null | undefined): boolean;
+export function isForwardRef(object?: unknown): boolean;
 
-export function isFragment(object?: unknown | null | undefined): boolean;
+export function isFragment(object?: unknown): boolean;
 
-export function isLazy(object?: unknown | null | undefined): boolean;
+export function isLazy(object?: unknown): boolean;
 
-export function isMemo(object?: unknown | null | undefined): boolean;
+export function isMemo(object?: unknown): boolean;
 
-export function isPortal(object?: unknown | null | undefined): boolean;
+export function isPortal(object?: unknown): boolean;
 
-export function isProfiler(object?: unknown | null | undefined): boolean;
+export function isProfiler(object?: unknown): boolean;
 
-export function isStrictMode(object?: unknown | null | undefined): boolean;
+export function isStrictMode(object?: unknown): boolean;
 
-export function isSuspense(object?: unknown | null | undefined): boolean;
+export function isSuspense(object?: unknown): boolean;
 
-export function isSuspenseList(object?: unknown | null | undefined): boolean;
+export function isSuspenseList(object?: unknown): boolean;

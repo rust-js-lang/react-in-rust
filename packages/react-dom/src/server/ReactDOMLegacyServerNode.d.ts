@@ -10,11 +10,11 @@ import type {ServerOptions} from './ReactDOMLegacyServerImpl.js';
 export {version} from './ReactDOMLegacyServerImpl.js';
 
 export function renderToString(
-  children?: unknown | null | undefined,
+  children?: unknown,
   options?: ServerOptions | null | undefined,
 ): string;
 
 export function renderToStaticMarkup(
-  children?: unknown | null | undefined,
+  children?: unknown,
   options?: ServerOptions | null | undefined,
 ): string;

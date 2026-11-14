@@ -50,9 +50,7 @@ export const REACT_VIEW_TRANSITION_TYPE: symbol;
 
 export const REACT_RECOVERABLE_TYPE: symbol;
 
-export function getIteratorFn(
-  maybeIterable?: unknown | null | undefined,
-): unknown | null;
+export function getIteratorFn(maybeIterable?: unknown): unknown;
 
 export const ASYNC_ITERATOR: symbol;
 

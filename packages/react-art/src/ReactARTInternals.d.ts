@@ -27,4 +27,4 @@ export interface EventTypes {
 
 export const EVENT_TYPES: EventTypes;
 
-export function childrenAsString(children?: unknown | null | undefined): string;
+export function childrenAsString(children?: unknown): string;

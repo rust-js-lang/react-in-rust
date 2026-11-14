@@ -8,7 +8,7 @@
 import type {ReactDebugInfo} from 'shared/ReactTypes';
 import type {Chunk} from '../shared/ReactFlightImportMetadata.js';
 
-export function loadChunk(filename: Chunk): Promise<unknown | null | undefined>;
+export function loadChunk(filename: Chunk): Promise<unknown>;
 
 export function addChunkDebugInfo(
   target: ReactDebugInfo,

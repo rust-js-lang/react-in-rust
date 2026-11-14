@@ -16,7 +16,7 @@
  * comparison. It is only used in DEV for SSR validation.
  */
 export function createDangerousStringForStyles(
-  styles?: unknown | null | undefined,
+  styles?: unknown,
 ): string | null | undefined;
 
 /**
@@ -28,6 +28,6 @@ export function createDangerousStringForStyles(
  */
 export function setValueForStyles(
   node: Element,
-  styles?: unknown | null | undefined,
-  prevStyles?: unknown | null | undefined,
+  styles?: unknown,
+  prevStyles?: unknown,
 ): void;

@@ -11,4 +11,4 @@ export const jsx: unknown;
 
 export const jsxs: unknown;
 
-export const jsxDEV: unknown | null | undefined;
+export const jsxDEV: unknown;

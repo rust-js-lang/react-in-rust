@@ -46,7 +46,7 @@ type EventListenerOrEventListenerObject =
 
 export const rendererPackageName: string;
 
-export const extraDevToolsConfig: unknown | null;
+export const extraDevToolsConfig: unknown;
 
 /**
  * The props of a host component, as React DOM reads them. Each is what a
@@ -394,8 +394,8 @@ export function startViewTransition(
   layoutCallback: () => void,
   afterMutationCallback: () => void,
   spawnedWorkCallback: () => void,
-  passiveCallback: () => unknown | null | undefined,
-  errorCallback: (value?: unknown | null | undefined) => void,
+  passiveCallback: () => unknown,
+  errorCallback: (value?: unknown) => void,
   blockedCallback: (value: string) => void,
   finishedAnimation: () => void,
 ): RunningViewTransition | null | undefined;
@@ -412,7 +412,7 @@ export function startGestureTransition(
   transitionTypes: TransitionTypes | null | undefined,
   mutationCallback: () => void,
   animateCallback: () => void,
-  errorCallback: (value?: unknown | null | undefined) => void,
+  errorCallback: (value?: unknown) => void,
   finishedAnimation: () => void,
 ): RunningViewTransition | null | undefined;
 
@@ -431,10 +431,7 @@ export function addViewTransitionFinishedListener(
 declare class ViewTransitionPseudoElement {
   _scope: Element;
   _selector: string;
-  animate(
-    keyframes?: unknown | null | undefined,
-    options?: unknown | null | undefined,
-  ): Animation;
+  animate(keyframes?: unknown, options?: unknown): Animation;
   getAnimations(options?: GetAnimationsOptions | null | undefined): Animation[];
   getComputedStyle(): CSSStyleProperties;
 }
@@ -517,7 +514,7 @@ declare class FragmentInstance {
     getRootNodeOptions?: GetRootNodeOptions | null | undefined,
   ): unknown;
   compareDocumentPosition(otherNode: Instance): number;
-  scrollIntoView(alignToTop?: unknown | null | undefined): void;
+  scrollIntoView(alignToTop?: unknown): void;
 }
 
 export type {FragmentInstance};
@@ -670,7 +667,7 @@ export interface DescribedInstance {
 
 export function describeHydratableInstanceForDevWarnings(
   instance: HydratableInstance,
-): unknown | null;
+): unknown;
 
 export function validateHydratableInstance(
   type: string,
@@ -693,7 +690,7 @@ export function diffHydratedPropsForDevWarnings(
   props: Props,
   hostContext: HostContext,
 ): {
-  [key: string]: unknown | null | undefined;
+  [key: string]: unknown;
 } | null;
 
 export function validateHydratableTextInstance(
@@ -888,7 +885,7 @@ export interface ScriptProps {
 // This function is called in begin work and we should always have a currentDocument set
 export function getResource(
   type: string,
-  currentProps: unknown | null | undefined,
+  currentProps: unknown,
   pendingProps: unknown,
   currentResource?: Resource | null | undefined,
 ): Resource | null;

@@ -7,10 +7,7 @@
 
 import type {ReactDebugInfo} from 'shared/ReactTypes';
 
-export function loadChunk(
-  chunkId: string,
-  filename: string,
-): Promise<unknown | null | undefined>;
+export function loadChunk(chunkId: string, filename: string): Promise<unknown>;
 
 export function addChunkDebugInfo(
   target: ReactDebugInfo,

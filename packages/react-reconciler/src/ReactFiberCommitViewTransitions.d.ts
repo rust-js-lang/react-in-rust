@@ -33,7 +33,7 @@ export function trackEnterViewTransitions(placement: Fiber): void;
  * What a ViewTransition's children that may be canceled are, tupled: each
  * entry's ReactFiberConfig `Instance`, its old name, and its `Props`.
  */
-export type CancelableChildren = (unknown | null | undefined)[];
+export type CancelableChildren = unknown[];
 
 export let viewTransitionCancelableChildren: CancelableChildren | null;
 

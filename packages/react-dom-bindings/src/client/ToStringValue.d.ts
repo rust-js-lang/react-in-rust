@@ -9,13 +9,11 @@
  * A value that's safe to make text of: a boolean, a number, a bigint, an
  * object, text, `null` or `undefined`, only had of `getToStringValue`.
  */
-export type ToStringValue = unknown | null | undefined;
+export type ToStringValue = unknown;
 
 // Flow does not allow string concatenation of most non-string types. To work
 // around this limitation, we use an opaque type that can only be obtained by
 // passing the value through getToStringValue first.
 export function toString(value?: ToStringValue): string;
 
-export function getToStringValue(
-  value?: unknown | null | undefined,
-): ToStringValue;
+export function getToStringValue(value?: unknown): ToStringValue;

@@ -12,7 +12,7 @@ import type {Fiber} from './ReactInternalTypes.js';
  * their names.
  */
 export type Context = {
-  [key: string]: unknown | null | undefined;
+  [key: string]: unknown;
 };
 
 export const emptyContextObject: Context;
@@ -36,7 +36,7 @@ export function getMaskedContext(
 
 export function hasContextChanged(): boolean;
 
-export function isContextProvider(type?: unknown | null | undefined): boolean;
+export function isContextProvider(type?: unknown): boolean;
 
 export function popContext(fiber: Fiber): void;
 

@@ -15,5 +15,5 @@ export function markAsyncSequenceRootTask(): void;
 export function getCurrentAsyncSequence(): AsyncSequence | null;
 
 export function getAsyncSequenceFromPromise(
-  promise?: unknown | null | undefined,
+  promise?: unknown,
 ): AsyncSequence | null;

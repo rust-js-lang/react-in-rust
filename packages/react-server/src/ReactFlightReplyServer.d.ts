@@ -31,15 +31,13 @@ declare const RESPONSE_SYMBOL: unique symbol;
 export interface FlightStreamController {
   enqueueModel: (value: string) => void;
   close: (value: string) => void;
-  error: (error?: unknown | null | undefined) => void;
+  error: (error?: unknown) => void;
 }
 
 export type JSONValue = unknown;
 
 /** A chunk's listener: a function, or a reference waiting on its value. */
-export type Listener =
-  | ((value?: unknown | null | undefined) => void)
-  | InitializationReference;
+export type Listener = ((value?: unknown) => void) | InitializationReference;
 
 /** A resolved model's chunk's `reason`: its id and its response. */
 export interface ModelReason {
@@ -71,12 +69,12 @@ export type ChunkState =
     }
   | {
       status: 'fulfilled';
-      value: unknown | null | undefined;
+      value: unknown;
       reason: InitializedReason | null | undefined;
     }
   | {
       status: 'rejected';
-      reason: unknown | null | undefined;
+      reason: unknown;
     };
 
 declare class ReactPromise {
@@ -85,8 +83,8 @@ declare class ReactPromise {
   reason: unknown;
   // TODO: This doesn't return a new Promise chain unlike the real .then
   then(
-    resolve?: ((value?: unknown | null | undefined) => void) | null | undefined,
-    reject?: ((value?: unknown | null | undefined) => void) | null | undefined,
+    resolve?: ((value?: unknown) => void) | null | undefined,
+    reject?: ((value?: unknown) => void) | null | undefined,
   ): void;
 }
 
@@ -98,13 +96,13 @@ export interface Response {
   _formData: BackingFormData;
   _chunks: Map<number, ReactPromise>;
   _closed: boolean;
-  _closedReason: unknown | null;
+  _closedReason: unknown;
   _temporaryReferences?: TemporaryReferenceSet | undefined;
   _serverReferenceObjects: WeakSet<object> | null;
   _serverReferenceCache: WeakMap<object, ReactPromise>;
   _serverObjectReferenceCache: WeakMap<object, ReactPromise>;
   _rootArrayContexts: WeakMap<object, NestedArrayContext>;
-  _arraySizeLimit: unknown | null;
+  _arraySizeLimit: unknown;
 }
 
 export function getRoot(response: Response): ReactPromise;
@@ -123,20 +121,20 @@ export interface InitializationReference {
   key: string;
   map: (
     response: Response,
-    value: unknown | null | undefined,
+    value: unknown,
     value2: unknown,
     value3: string,
-  ) => unknown | null | undefined;
+  ) => unknown;
   path: string[];
   arrayRoot: NestedArrayContext | null;
 }
 
 export interface InitializationHandler {
   chunk: ReactPromise | null;
-  value?: unknown | null | undefined;
+  value?: unknown;
   // TODO: Split type to make it impossible to treat a thrown value as NestedArrayContext.
   // thrown value if errored, otherwise array context
-  reason?: unknown | null | undefined;
+  reason?: unknown;
   // GAP rd488: upstream's one `reason` is a thrown value or, where it's
   // not errored, an array context; an untagged enum can't tell a struct
   // from any thrown value, so the array context is a field of its own.
@@ -150,7 +148,7 @@ export interface InitializationHandler {
 export function reportGlobalError(response: Response, error: Error): void;
 
 declare class FlightIterator {
-  next: (value?: unknown | null | undefined) => ReactPromise;
+  next: (value?: unknown) => ReactPromise;
 }
 
 export type {FlightIterator};
@@ -161,8 +159,8 @@ export function createResponse<M>(
   bundlerConfig: M,
   formFieldPrefix: string,
   temporaryReferences?: TemporaryReferenceSet | null | undefined,
-  backingFormData?: unknown | null | undefined,
-  arraySizeLimit?: unknown | null | undefined,
+  backingFormData?: unknown,
+  arraySizeLimit?: unknown,
 ): Response;
 
 export function resolveField(

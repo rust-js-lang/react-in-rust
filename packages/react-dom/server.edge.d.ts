@@ -10,10 +10,10 @@
 
 export {default as version} from 'shared/ReactVersion';
 
-export function renderToReadableStream(): unknown | null | undefined;
+export function renderToReadableStream(): unknown;
 
-export function renderToString(): unknown | null | undefined;
+export function renderToString(): unknown;
 
-export function renderToStaticMarkup(): unknown | null | undefined;
+export function renderToStaticMarkup(): unknown;
 
-export function resume(): unknown | null | undefined;
+export function resume(): unknown;

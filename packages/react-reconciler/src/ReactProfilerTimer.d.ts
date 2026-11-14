@@ -13,7 +13,7 @@ import type {Fiber} from './ReactInternalTypes.js';
 export type SuspendedReason = number;
 
 /** The errors a phase captured: shared arrays, as upstream's live ones. */
-export type CaptureErrors = CapturedValue<unknown | null | undefined>[];
+export type CaptureErrors = CapturedValue<unknown>[];
 
 export type UpdateType = number;
 
@@ -220,9 +220,7 @@ export function stopProfilerTimerIfRunningAndRecordIncompleteDuration(
 
 export function recordEffectDuration(fiber: Fiber): void;
 
-export function recordEffectError(
-  errorInfo: CapturedValue<unknown | null | undefined>,
-): void;
+export function recordEffectError(errorInfo: CapturedValue<unknown>): void;
 
 export function resetCommitErrors(): void;
 

@@ -26,14 +26,12 @@ export function hydrateRoot(
   options?: HydrateRootOptions | null | undefined,
 ): ReactDOMHydrationRoot;
 
-export function findDOMNode(
-  componentOrElement?: unknown | null | undefined,
-): unknown | null;
+export function findDOMNode(componentOrElement?: unknown): unknown;
 
 export function render(
   element: ReactNodeList | null | undefined,
   container: unknown,
-  callback?: unknown | null | undefined,
-): unknown | null;
+  callback?: unknown,
+): unknown;
 
 export function unmountComponentAtNode(container: unknown): boolean;

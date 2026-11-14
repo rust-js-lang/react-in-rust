@@ -11,10 +11,10 @@ export interface ReactElement {
   $$typeof: symbol;
   type?: unknown;
   key: ReactKey | null;
-  ref: unknown | null;
+  ref: unknown;
   props: unknown;
   // __DEV__ or for string refs
-  _owner?: unknown | null | undefined;
+  _owner?: unknown;
   // __DEV__
   _store?:
     | {

@@ -27,7 +27,7 @@ export interface ClientReference {
 // though that risks it getting used in places it shouldn't be. This is unfortunate
 // but currently it seems to be the best option we have.
 export function prepareDestinationForModule(
-  moduleLoading: unknown | null,
+  moduleLoading: unknown,
   nonce: string | null | undefined,
   metadata: ClientReferenceMetadata,
 ): void;
@@ -42,11 +42,9 @@ export function resolveServerReference(
   id: ServerReferenceId,
 ): ClientReference;
 
-export function preloadModule(metadata: ClientReference): any | null;
+export function preloadModule(metadata: ClientReference): any;
 
-export function requireModule(
-  metadata: ClientReference,
-): unknown | null | undefined;
+export function requireModule(metadata: ClientReference): unknown;
 
 export function getModuleDebugInfo(
   metadata: ClientReference,

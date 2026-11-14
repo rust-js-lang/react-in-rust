@@ -31,7 +31,7 @@ export function createFiberRoot(
   hydrationCallbacks: SuspenseHydrationCallbacks | null | undefined,
   isStrictMode: boolean,
   identifierPrefix: string,
-  formState: unknown | null,
+  formState: unknown,
   onUncaughtError: OnError,
   onCaughtError: OnCaughtError,
   onRecoverableError: OnError,

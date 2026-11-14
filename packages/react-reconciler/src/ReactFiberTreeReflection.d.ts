@@ -21,13 +21,13 @@ export type GetParent = (
 export function getNearestMountedFiber(fiber: Fiber): Fiber | null;
 
 // ReactFiberConfig's `SuspenseInstance`.
-export function getSuspenseInstanceFromFiber(fiber: Fiber): unknown | null;
+export function getSuspenseInstanceFromFiber(fiber: Fiber): unknown;
 
 // ReactFiberConfig's `ActivityInstance`.
-export function getActivityInstanceFromFiber(fiber: Fiber): unknown | null;
+export function getActivityInstanceFromFiber(fiber: Fiber): unknown;
 
 // ReactFiberConfig's `Container`.
-export function getContainerFromFiber(fiber: Fiber): unknown | null;
+export function getContainerFromFiber(fiber: Fiber): unknown;
 
 export function findCurrentFiberUsingSlowPath(fiber: Fiber): Fiber | null;
 
@@ -63,12 +63,12 @@ export function getFragmentParentInstanceOrContainerFiber(
 ): Fiber | null;
 
 // ReactFiberConfig's `Container`.
-export function getFragmentRootContainerInfo(fiber: Fiber): unknown | null;
+export function getFragmentRootContainerInfo(fiber: Fiber): unknown;
 
 export function fiberIsPortaledIntoHost(fiber: Fiber): boolean;
 
 // ReactFiberConfig's `Container`: a portal's `containerInfo`.
-export function getFragmentPortalContainerInfo(fiber: Fiber): unknown | null;
+export function getFragmentPortalContainerInfo(fiber: Fiber): unknown;
 
 export function getFragmentInstanceOrTextInstanceSiblings(
   fiber: Fiber,

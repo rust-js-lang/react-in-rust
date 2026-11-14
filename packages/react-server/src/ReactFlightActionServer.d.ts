@@ -10,14 +10,10 @@ import type {ReactFormState} from 'shared/ReactTypes';
 export function decodeAction<M>(
   body: FormData,
   serverManifest: M,
-): Promise<() => unknown | null | undefined> | null;
+): Promise<() => unknown> | null;
 
 export function decodeFormState<M>(
-  actionResult: unknown | null | undefined,
+  actionResult: unknown,
   body: FormData,
   serverManifest: M,
-): Promise<
-  | ReactFormState<unknown | null | undefined, unknown | null | undefined>
-  | null
-  | undefined
->;
+): Promise<ReactFormState<unknown, unknown> | null | undefined>;

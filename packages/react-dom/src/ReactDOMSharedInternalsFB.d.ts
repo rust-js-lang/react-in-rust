@@ -11,7 +11,7 @@ import type {FindDOMNode} from './ReactDOMSharedInternals.js';
 
 export interface ReactDOMInternals {
   // The six functions ReactDOMClientFB sets as it loads, for www.
-  Events: unknown | null;
+  Events: unknown;
   d: HostDispatcher;
   p: EventPriority;
   findDOMNode: FindDOMNode | null;

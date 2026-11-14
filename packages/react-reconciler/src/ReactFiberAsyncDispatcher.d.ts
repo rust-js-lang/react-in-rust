@@ -12,9 +12,7 @@ import type {Fiber} from './ReactInternalTypes.js';
  * while it renders.
  */
 export interface DefaultAsyncDispatcher {
-  getCacheForType: (
-    resourceType: () => unknown | null | undefined,
-  ) => unknown | null | undefined;
+  getCacheForType: (resourceType: () => unknown) => unknown;
   cacheSignal: () => AbortSignal | null | undefined;
   // DEV only: the component rendering now, a Fiber.
   getOwner?: (() => Fiber | null | undefined) | null | undefined;

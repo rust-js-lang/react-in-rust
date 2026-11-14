@@ -11,28 +11,20 @@ import type {LazyComponent} from 'react/src/ReactLazy';
  * A function component: called with its props and a second argument, the
  * ref of a `forwardRef`'s render, or the legacy context.
  */
-export type Component = (
-  value?: unknown | null | undefined,
-  value2?: unknown | null | undefined,
-) => unknown | null | undefined;
+export type Component = (value?: unknown, value2?: unknown) => unknown;
 
 export type CallComponent = (
-  value: (
-    value?: unknown | null | undefined,
-    value2?: unknown | null | undefined,
-  ) => unknown | null | undefined,
-  value2?: unknown | null | undefined,
-  value3?: unknown | null | undefined,
-) => unknown | null | undefined;
+  value: (value?: unknown, value2?: unknown) => unknown,
+  value2?: unknown,
+  value3?: unknown,
+) => unknown;
 
 export const callComponentInDEV: CallComponent | null;
 
-export type CallRender = (value: any) => unknown | null | undefined;
+export type CallRender = (value: any) => unknown;
 
 export const callRenderInDEV: CallRender | null;
 
-export type CallLazyInit = (
-  component: LazyComponent,
-) => unknown | null | undefined;
+export type CallLazyInit = (component: LazyComponent) => unknown;
 
 export const callLazyInitInDEV: CallLazyInit | null;

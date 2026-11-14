@@ -14,7 +14,7 @@ export {createFastHashJS as createFastHash} from 'react-server/src/createFastHas
  */
 export interface Destination {
   push: (value?: string | null | undefined) => boolean;
-  destroy: (value?: unknown | null | undefined) => void;
+  destroy: (value?: unknown) => void;
 }
 
 export type PrecomputedChunk = string;
@@ -52,9 +52,6 @@ export const byteLengthOfChunk: ((value: string) => number) | null;
 
 export function byteLengthOfBinaryChunk(chunk: string): number;
 
-export function closeWithError(
-  destination: Destination,
-  error?: unknown | null | undefined,
-): void;
+export function closeWithError(destination: Destination, error?: unknown): void;
 
 export function readAsDataURL(blob: Blob): Promise<string>;

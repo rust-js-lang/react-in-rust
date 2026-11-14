@@ -15,6 +15,6 @@
  * If this becomes an actual Map, that will break.
  */
 
-export function get(key: unknown): unknown | null | undefined;
+export function get(key: unknown): unknown;
 
 export function set(key: unknown, value: unknown): void;

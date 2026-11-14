@@ -10,9 +10,9 @@ export interface ComponentStackNode {
   // What it renders, as the element gave it: `null` or `undefined` too.
   type?: unknown;
   // DEV only: a ReactComponentInfo or a ComponentStackNode.
-  owner?: unknown | null | undefined;
+  owner?: unknown;
   // DEV only: its text, or the Error it's made of.
-  stack?: unknown | null | undefined;
+  stack?: unknown;
 }
 
 export function getStackByComponentStackNode(

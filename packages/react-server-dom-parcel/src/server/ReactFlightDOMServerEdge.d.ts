@@ -87,15 +87,11 @@ export function decodeReplyFromAsyncIterable(
 
 export function decodeAction(
   body: FormData,
-): Promise<() => unknown | null | undefined> | null | undefined;
+): Promise<() => unknown> | null | undefined;
 
 export function decodeFormState(
-  actionResult: unknown | null | undefined,
+  actionResult: unknown,
   body: FormData,
-): Promise<
-  | ReactFormState<unknown | null | undefined, unknown | null | undefined>
-  | null
-  | undefined
->;
+): Promise<ReactFormState<unknown, unknown> | null | undefined>;
 
 export function loadServerAction(id: string): Promise<Function>;

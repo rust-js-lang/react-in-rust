@@ -26,10 +26,8 @@ export function unstable_runWithPriority<T>(
 export function unstable_next<T>(eventHandler: () => T): T;
 
 export function unstable_wrapCallback(
-  callback: (
-    ...args: (unknown | null | undefined)[]
-  ) => unknown | null | undefined,
-): (...args: (unknown | null | undefined)[]) => unknown | null | undefined;
+  callback: (...args: unknown[]) => unknown,
+): (...args: unknown[]) => unknown;
 
 export function unstable_scheduleCallback(
   priorityLevel: PriorityLevel,
@@ -60,11 +58,11 @@ export function unstable_flushExpired(): void;
 
 export function unstable_flushAllWithoutAsserting(): boolean;
 
-export function unstable_clearLog(): (unknown | null | undefined)[];
+export function unstable_clearLog(): unknown[];
 
 export function unstable_flushAll(): void;
 
-export function log(value?: unknown | null | undefined): void;
+export function log(value?: unknown): void;
 
 export function unstable_advanceTime(ms: number): void;
 

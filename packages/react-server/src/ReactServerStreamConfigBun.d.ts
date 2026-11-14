@@ -120,7 +120,7 @@ export function closeWithError(
     | (Writable & {
         flush?(): void;
       }),
-  error?: unknown | null | undefined,
+  error?: unknown,
 ): void;
 
 export function createFastHash(input: string): bigint;

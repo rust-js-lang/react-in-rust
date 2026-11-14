@@ -9,32 +9,14 @@
 // a caller may give anything: `href` a string and `options` one of
 // ReactDOMTypes' options objects, by Flow's types.
 
-export function prefetchDNS(
-  href?: unknown | null | undefined,
-  ...args: (unknown | null | undefined)[]
-): void;
+export function prefetchDNS(href?: unknown, ...args: unknown[]): void;
 
-export function preconnect(
-  href?: unknown | null | undefined,
-  options?: unknown | null | undefined,
-): void;
+export function preconnect(href?: unknown, options?: unknown): void;
 
-export function preload(
-  href?: unknown | null | undefined,
-  options?: unknown | null | undefined,
-): void;
+export function preload(href?: unknown, options?: unknown): void;
 
-export function preloadModule(
-  href?: unknown | null | undefined,
-  options?: unknown | null | undefined,
-): void;
+export function preloadModule(href?: unknown, options?: unknown): void;
 
-export function preinit(
-  href?: unknown | null | undefined,
-  options?: unknown | null | undefined,
-): void;
+export function preinit(href?: unknown, options?: unknown): void;
 
-export function preinitModule(
-  href?: unknown | null | undefined,
-  options?: unknown | null | undefined,
-): void;
+export function preinitModule(href?: unknown, options?: unknown): void;

@@ -51,12 +51,12 @@ export {
   isAlreadyRendering,
 } from './ReactFiberWorkLoop.js';
 
-export function findHostInstance(component: unknown): unknown | null;
+export function findHostInstance(component: unknown): unknown;
 
 export function findHostInstanceWithWarning(
   component: unknown,
   methodName: string,
-): unknown | null;
+): unknown;
 
 export function createContainer(
   containerInfo: unknown,
@@ -74,7 +74,7 @@ export function createContainer(
 
 export function createHydrationContainer(
   initialChildren: ReactNodeList | null | undefined,
-  callback: unknown | null | undefined,
+  callback: unknown,
   containerInfo: unknown,
   tag: RootTag,
   hydrationCallbacks: SuspenseHydrationCallbacks | null,
@@ -86,25 +86,25 @@ export function createHydrationContainer(
   onRecoverableError: OnError,
   onDefaultTransitionIndicator: OnDefaultTransitionIndicator,
   transitionCallbacks: TransitionTracingCallbacks | null,
-  formState: unknown | null,
+  formState: unknown,
 ): FiberRoot;
 
 export function updateContainer(
   element: ReactNodeList | null | undefined,
   container: FiberRoot,
-  parentComponent?: unknown | null | undefined,
-  callback?: unknown | null | undefined,
+  parentComponent?: unknown,
+  callback?: unknown,
 ): Lane;
 
 export function updateContainerSync(
   element: ReactNodeList | null | undefined,
   container: FiberRoot,
-  parentComponent?: unknown | null | undefined,
-  callback?: unknown | null | undefined,
+  parentComponent?: unknown,
+  callback?: unknown,
 ): Lane;
 
 // A class component's instance, or ReactFiberConfig's `PublicInstance`, if any.
-export function getPublicRootInstance(container: FiberRoot): unknown | null;
+export function getPublicRootInstance(container: FiberRoot): unknown;
 
 export function attemptSynchronousHydration(fiber: Fiber): void;
 
@@ -113,7 +113,7 @@ export function attemptContinuousHydration(fiber: Fiber): void;
 export function attemptHydrationAtCurrentPriority(fiber: Fiber): void;
 
 // ReactFiberConfig's `PublicInstance`, if any.
-export function findHostInstanceWithNoPortals(fiber: Fiber): unknown | null;
+export function findHostInstanceWithNoPortals(fiber: Fiber): unknown;
 
 export function shouldError(fiber: Fiber): boolean | null;
 

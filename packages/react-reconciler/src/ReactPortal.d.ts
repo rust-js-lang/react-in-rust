@@ -8,8 +8,8 @@
 import type {ReactPortal} from 'shared/ReactTypes';
 
 export function createPortal(
-  children?: unknown | null | undefined,
-  containerInfo?: unknown | null | undefined,
-  implementation?: unknown | null | undefined,
-  key?: unknown | null | undefined,
+  children?: unknown,
+  containerInfo?: unknown,
+  implementation?: unknown,
+  key?: unknown,
 ): ReactPortal;

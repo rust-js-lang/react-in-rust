@@ -15,7 +15,7 @@ export const NoEventPriority: number;
  * `findDOMNode(componentOrElement)`: the host instance of a class component,
  * an `Element` or a `Text`, if any.
  */
-export type FindDOMNode = (value: unknown) => unknown | null | undefined;
+export type FindDOMNode = (value: unknown) => unknown;
 
 export interface ReactDOMInternals {
   d: HostDispatcher;

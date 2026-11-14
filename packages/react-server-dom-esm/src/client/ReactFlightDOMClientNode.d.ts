@@ -19,7 +19,7 @@ export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
 
 export function createServerReference(
   id: unknown,
-  callServer?: unknown | null | undefined,
+  callServer?: unknown,
 ): ServerFunction;
 
 export interface Options {

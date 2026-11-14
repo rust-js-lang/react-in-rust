@@ -6,8 +6,6 @@
 // LICENSE file in the root directory of this source tree.
 
 /** `flushSync(fn)`: what `fn` gives, or nothing where it's given none. */
-export type FlushSync = (
-  value?: (() => unknown | null | undefined) | null | undefined,
-) => unknown | null | undefined;
+export type FlushSync = (value?: (() => unknown) | null | undefined) => unknown;
 
 export const flushSync: FlushSync;

@@ -25,32 +25,32 @@ export function validateInputProps(element: Element, props: unknown): void;
 
 export function updateInput(
   element: Element,
-  value?: unknown | null | undefined,
-  defaultValue?: unknown | null | undefined,
-  lastDefaultValue?: unknown | null | undefined,
-  checked?: unknown | null | undefined,
-  defaultChecked?: unknown | null | undefined,
-  type?: unknown | null | undefined,
-  name?: unknown | null | undefined,
+  value?: unknown,
+  defaultValue?: unknown,
+  lastDefaultValue?: unknown,
+  checked?: unknown,
+  defaultChecked?: unknown,
+  type?: unknown,
+  name?: unknown,
 ): void;
 
 export function initInput(
   element: Element,
-  value: unknown | null | undefined,
-  defaultValue: unknown | null | undefined,
-  checked: unknown | null | undefined,
-  defaultChecked: unknown | null | undefined,
-  type: unknown | null | undefined,
-  name: unknown | null | undefined,
+  value: unknown,
+  defaultValue: unknown,
+  checked: unknown,
+  defaultChecked: unknown,
+  type: unknown,
+  name: unknown,
   isHydrating: boolean,
 ): void;
 
 export function hydrateInput(
   element: Element,
-  value?: unknown | null | undefined,
-  defaultValue?: unknown | null | undefined,
-  checked?: unknown | null | undefined,
-  defaultChecked?: unknown | null | undefined,
+  value?: unknown,
+  defaultValue?: unknown,
+  checked?: unknown,
+  defaultChecked?: unknown,
 ): void;
 
 export function restoreControlledInputState(

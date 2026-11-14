@@ -14,33 +14,33 @@
 // of the `value` object).
 
 export function checkAttributeStringCoercion(
-  value: unknown | null | undefined,
+  value: unknown,
   attributeName: string,
 ): string | null | undefined;
 
 export function checkKeyStringCoercion(
-  value?: unknown | null | undefined,
+  value?: unknown,
 ): string | null | undefined;
 
 export function checkPropStringCoercion(
-  value: unknown | null | undefined,
+  value: unknown,
   propName: string,
 ): string | null | undefined;
 
 export function checkOptionStringCoercion(
-  value: unknown | null | undefined,
+  value: unknown,
   propName: string,
 ): string | null | undefined;
 
 export function checkCSSPropertyStringCoercion(
-  value: unknown | null | undefined,
+  value: unknown,
   propName: string,
 ): string | null | undefined;
 
 export function checkHtmlStringCoercion(
-  value?: unknown | null | undefined,
+  value?: unknown,
 ): string | null | undefined;
 
 export function checkFormFieldValueStringCoercion(
-  value?: unknown | null | undefined,
+  value?: unknown,
 ): string | null | undefined;

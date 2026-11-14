@@ -52,7 +52,7 @@ export type HookType =
 /** A context a fiber read, and the value it read of it. */
 export interface ContextDependency<T> {
   context: ReactContext<T>;
-  next: ContextDependency<unknown | null | undefined> | null;
+  next: ContextDependency<unknown> | null;
   memoizedValue: T;
 }
 
@@ -62,13 +62,13 @@ export interface ContextDependency<T> {
  */
 export interface Dependencies {
   lanes: Lanes;
-  firstContext: ContextDependency<unknown | null | undefined> | null;
+  firstContext: ContextDependency<unknown> | null;
   // DEV-only: ReactFiberThenable's `ThenableState`.
-  _debugThenableState?: unknown | null | undefined;
+  _debugThenableState?: unknown;
 }
 
 /** One of a memo cache's arrays, which a compiled component reads and writes. */
-export type MemoCacheArray = (unknown | null | undefined)[];
+export type MemoCacheArray = unknown[];
 
 export interface MemoCache {
   data: MemoCacheArray[];
@@ -79,9 +79,7 @@ export interface MemoCache {
  * What a fiber's `ref` is: a function called with the instance, or an
  * object whose `current` is set to it.
  */
-export type Ref =
-  | ((value?: unknown | null | undefined) => unknown | null | undefined)
-  | unknown;
+export type Ref = unknown;
 
 /**
  * A fiber's deletions: a shared array, as upstream's live one, which
@@ -108,11 +106,11 @@ export interface Fiber {
   key?: ReactKey | undefined;
   // The value of element.type which is used to preserve the identity during
   // reconciliation of this child.
-  elementType?: unknown | null | undefined;
+  elementType?: unknown;
   // The resolved function/class/ associated with this fiber.
-  type?: unknown | null | undefined;
+  type?: unknown;
   // The local state associated with this fiber.
-  stateNode?: unknown | null | undefined;
+  stateNode?: unknown;
   // Conceptual aliases
   // parent : Instance -> return The parent happens to be the same as the
   // return fiber since we've merged the fiber and instance.
@@ -131,14 +129,14 @@ export interface Fiber {
   // The ref last used to attach this node.
   // I'll avoid adding an owner field for prod and model that as functions.
   ref: Ref | null;
-  refCleanup?: unknown | null | undefined;
+  refCleanup?: unknown;
   // Input is the data coming into process this fiber. Arguments. Props.
-  pendingProps?: unknown | null | undefined;
-  memoizedProps?: unknown | null | undefined;
+  pendingProps?: unknown;
+  memoizedProps?: unknown;
   // A queue of state updates and callbacks.
-  updateQueue?: unknown | null | undefined;
+  updateQueue?: unknown;
   // The state used to create the output
-  memoizedState?: unknown | null | undefined;
+  memoizedState?: unknown;
   // Dependencies (contexts, events) for this fiber, if it has any
   dependencies: Dependencies | null;
   // Bitfield that describes properties about the fiber and its subtree. E.g.
@@ -179,9 +177,9 @@ export interface Fiber {
   // workInProgress : Fiber ->  alternate The alternate used for reuse happens
   // to be the same as work in progress.
   // __DEV__ only
-  _debugInfo?: unknown | null | undefined;
-  _debugOwner?: unknown | null | undefined;
-  _debugStack?: any | null | undefined;
+  _debugInfo?: unknown;
+  _debugOwner?: unknown;
+  _debugStack?: any;
   _debugTask?:
     | {
         run<T>(f: () => T): T;
@@ -218,16 +216,10 @@ export interface TransitionTracingDeletion {
 }
 
 /** What a root reports an uncaught or a recoverable error with. */
-export type OnError = (
-  value: unknown | null | undefined,
-  info: ErrorInfo,
-) => void;
+export type OnError = (value: unknown, info: ErrorInfo) => void;
 
 /** What a root reports an error an error boundary caught with. */
-export type OnCaughtError = (
-  value: unknown | null | undefined,
-  info: CaughtErrorInfo,
-) => void;
+export type OnCaughtError = (value: unknown, info: CaughtErrorInfo) => void;
 
 /**
  * What a root shows a default Transition's indicator with, which gives
@@ -301,7 +293,7 @@ export interface FiberRoot {
   // ReactFiberConfig's `Container`.
   containerInfo: unknown;
   // Used only by persistent updates.
-  pendingChildren: unknown | null;
+  pendingChildren: unknown;
   // The currently active root fiber. This is the mutable root of the tree.
   current: Fiber;
   // A `WeakMap` where the host has one, a `Map` where it hasn't.
@@ -322,7 +314,7 @@ export interface FiberRoot {
   next: FiberRoot | null;
   // Node returned by Scheduler.scheduleCallback. Represents the next rendering
   // task that the root will work on.
-  callbackNode: unknown | null;
+  callbackNode: unknown;
   callbackPriority: Lane;
   expirationTimes: LaneMap<number>;
   hiddenUpdates: LaneMap<ConcurrentUpdate[] | null | undefined>;
@@ -354,14 +346,14 @@ export interface FiberRoot {
     | undefined;
   pendingIndicator?: (() => void) | null | undefined;
   // shared/ReactTypes' `ReactFormState<any, any>`.
-  formState: unknown | null;
+  formState: unknown;
   // enableViewTransition only
   // react/src/ReactTransitionType's `TransitionTypes`.
   transitionTypes?: string[] | null | undefined;
   // enableGestureTransition only
   pendingGestures?: ScheduledGesture | null | undefined;
   // ReactFiberConfig's `Instance`.
-  gestureClone?: unknown | null | undefined;
+  gestureClone?: unknown;
   // The follow fields are only used by enableSuspenseCallback for hydration.
   hydrationCallbacks?: SuspenseHydrationCallbacks | null | undefined;
   // The following attributes are only used by DevTools and are only present in DEV builds.
@@ -386,122 +378,81 @@ export interface FiberRoot {
 }
 
 export interface Dispatcher {
-  use: (usable?: unknown | null | undefined) => unknown | null | undefined;
-  readContext: (
-    context: ReactContext<unknown | null | undefined>,
-  ) => unknown | null | undefined;
+  use: (usable?: unknown) => unknown;
+  readContext: (context: ReactContext<unknown>) => unknown;
   useState: (
-    value?: unknown | null | undefined,
-  ) => [
-    unknown | null | undefined,
-    ((value?: unknown | null | undefined) => void) | null | undefined,
-  ];
+    value?: unknown,
+  ) => [unknown, ((value?: unknown) => void) | null | undefined];
   useReducer: (
-    value: (
-      value?: unknown | null | undefined,
-      value2?: unknown | null | undefined,
-    ) => unknown | null | undefined,
-    value2?: unknown | null | undefined,
-    value3?: unknown | null | undefined,
-  ) => [
-    unknown | null | undefined,
-    ((value?: unknown | null | undefined) => void) | null | undefined,
-  ];
-  useContext: (
-    context: ReactContext<unknown | null | undefined>,
-  ) => unknown | null | undefined;
-  useRef: (value?: unknown | null | undefined) => RefObject;
+    value: (value?: unknown, value2?: unknown) => unknown,
+    value2?: unknown,
+    value3?: unknown,
+  ) => [unknown, ((value?: unknown) => void) | null | undefined];
+  useContext: (context: ReactContext<unknown>) => unknown;
+  useRef: (value?: unknown) => RefObject;
   useEffect: (
-    value: () => unknown | null | undefined,
-    value2?: (unknown | null | undefined)[] | null | undefined,
+    value: () => unknown,
+    value2?: unknown[] | null | undefined,
   ) => void;
-  useEffectEvent: (
-    value: () => unknown | null | undefined,
-  ) => (...args: (unknown | null | undefined)[]) => unknown | null | undefined;
+  useEffectEvent: (value: () => unknown) => (...args: unknown[]) => unknown;
   useInsertionEffect: (
-    value: () => unknown | null | undefined,
-    value2?: (unknown | null | undefined)[] | null | undefined,
+    value: () => unknown,
+    value2?: unknown[] | null | undefined,
   ) => void;
   useLayoutEffect: (
-    value: () => unknown | null | undefined,
-    value2?: (unknown | null | undefined)[] | null | undefined,
+    value: () => unknown,
+    value2?: unknown[] | null | undefined,
   ) => void;
   useCallback: (
-    value?: unknown | null | undefined,
-    value2?: (unknown | null | undefined)[] | null | undefined,
-  ) => unknown | null | undefined;
+    value?: unknown,
+    value2?: unknown[] | null | undefined,
+  ) => unknown;
   useMemo: (
-    value: () => unknown | null | undefined,
-    value2?: (unknown | null | undefined)[] | null | undefined,
-  ) => unknown | null | undefined;
+    value: () => unknown,
+    value2?: unknown[] | null | undefined,
+  ) => unknown;
   // The ref: an object whose `current` is set, a function called with the
   // handle, or nothing; and what creates the handle.
   useImperativeHandle: (
-    value?: unknown | null | undefined,
-    value2?: unknown | null | undefined,
-    value3?: (unknown | null | undefined)[] | null | undefined,
+    value?: unknown,
+    value2?: unknown,
+    value3?: unknown[] | null | undefined,
   ) => void;
   useDebugValue: (
-    value?: unknown | null | undefined,
-    value2?:
-      | ((value?: unknown | null | undefined) => unknown | null | undefined)
-      | null
-      | undefined,
+    value?: unknown,
+    value2?: ((value?: unknown) => unknown) | null | undefined,
   ) => void;
-  useDeferredValue: (
-    value?: unknown | null | undefined,
-    value2?: unknown | null | undefined,
-  ) => unknown | null | undefined;
+  useDeferredValue: (value?: unknown, value2?: unknown) => unknown;
   useTransition: () => [
     boolean,
     (
-      value: () => unknown | null | undefined,
+      value: () => unknown,
       value2?: StartTransitionOptions | null | undefined,
     ) => void,
   ];
   useSyncExternalStore: (
-    value: (value: () => void) => unknown | null | undefined,
-    value2: () => unknown | null | undefined,
-    value3?: unknown | null | undefined,
-  ) => unknown | null | undefined;
+    value: (value: () => void) => unknown,
+    value2: () => unknown,
+    value3?: unknown,
+  ) => unknown;
   useId: () => string;
-  useCacheRefresh: () => (
-    value?: unknown | null | undefined,
-    value2?: unknown | null | undefined,
-  ) => void;
-  useMemoCache: (value: number) => (unknown | null | undefined)[];
+  useCacheRefresh: () => (value?: unknown, value2?: unknown) => void;
+  useMemoCache: (value: number) => unknown[];
   // ReactFiberConfig's `TransitionStatus`.
-  useHostTransitionStatus: () => unknown | null | undefined;
+  useHostTransitionStatus: () => unknown;
   // The passthrough, and the reducer, if it's a function.
   useOptimistic: (
-    value?: unknown | null | undefined,
-    value2?: unknown | null | undefined,
-  ) => [
-    unknown | null | undefined,
-    ((value?: unknown | null | undefined) => void) | null | undefined,
-  ];
+    value?: unknown,
+    value2?: unknown,
+  ) => [unknown, ((value?: unknown) => void) | null | undefined];
   useFormState: (
-    value: (
-      value?: unknown | null | undefined,
-      value2?: unknown | null | undefined,
-    ) => unknown | null | undefined,
-    value2?: unknown | null | undefined,
+    value: (value?: unknown, value2?: unknown) => unknown,
+    value2?: unknown,
     value3?: string | null | undefined,
-  ) => [
-    unknown | null | undefined,
-    (value?: unknown | null | undefined) => void,
-    boolean,
-  ];
+  ) => [unknown, (value?: unknown) => void, boolean];
   useActionState: (
-    value: (
-      value?: unknown | null | undefined,
-      value2?: unknown | null | undefined,
-    ) => unknown | null | undefined,
-    value2?: unknown | null | undefined,
+    value: (value?: unknown, value2?: unknown) => unknown,
+    value2?: unknown,
     value3?: string | null | undefined,
-  ) => [
-    unknown | null | undefined,
-    (value?: unknown | null | undefined) => void,
-    boolean,
-  ];
+  ) => [unknown, (value?: unknown) => void, boolean];
 }

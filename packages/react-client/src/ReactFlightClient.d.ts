@@ -29,10 +29,10 @@ declare const RESPONSE_SYMBOL: unique symbol;
  * controller, which the rows of its id feed.
  */
 export interface FlightStreamController {
-  enqueueValue: (value?: unknown | null | undefined) => void;
+  enqueueValue: (value?: unknown) => void;
   enqueueModel: (value: string) => void;
   close: (value: string) => void;
-  error: (error?: unknown | null | undefined) => void;
+  error: (error?: unknown) => void;
 }
 
 export interface ProfilingResult {
@@ -45,9 +45,7 @@ export interface ProfilingResult {
  * A listener on a pending or blocked chunk: a function `then` was given, or
  * a reference of a model waiting on the chunk.
  */
-export type Listener =
-  | ((value?: unknown | null | undefined) => void)
-  | InitializationReference;
+export type Listener = ((value?: unknown) => void) | InitializationReference;
 
 /**
  * Profiling-only: the chunks a chunk's model referenced, until its
@@ -87,12 +85,12 @@ export type ChunkState =
     }
   | {
       status: 'fulfilled';
-      value: unknown | null | undefined;
+      value: unknown;
       reason: FlightStreamController | null | undefined;
     }
   | {
       status: 'rejected';
-      reason: unknown | null | undefined;
+      reason: unknown;
     }
   | {
       status: 'halted';
@@ -126,8 +124,8 @@ declare class ReactPromise {
   // by SES lockdown) because assigning over an inherited non-writable property
   // is rejected.
   then(
-    resolve?: ((value?: unknown | null | undefined) => void) | null | undefined,
-    reject?: ((value?: unknown | null | undefined) => void) | null | undefined,
+    resolve?: ((value?: unknown) => void) | null | undefined,
+    reject?: ((value?: unknown) => void) | null | undefined,
   ): void;
 }
 
@@ -147,15 +145,15 @@ export interface DebugChannel {
 
 export interface ResponseInstance {
   _bundlerConfig?: unknown;
-  _serverReferenceConfig: unknown | null;
-  _moduleLoading: unknown | null;
+  _serverReferenceConfig: unknown;
+  _moduleLoading: unknown;
   _callServer?: CallServerCallback | undefined;
   _encodeFormAction?: EncodeFormActionCallback | undefined;
   _nonce?: string | undefined;
   _chunks?: Map<number, ReactPromise> | undefined;
   _stringDecoder?: unknown;
   _closed: boolean;
-  _closedReason: unknown | null;
+  _closedReason: unknown;
   _allowPartialStream: boolean;
   // the set temporary references can be resolved from
   _tempRefs?: TemporaryReferenceSet | undefined;
@@ -223,10 +221,10 @@ export interface InitializationReference {
   key: string;
   map: (
     instance: ResponseInstance,
-    value: unknown | null | undefined,
+    value: unknown,
     value2: unknown,
     value3: string,
-  ) => unknown | null | undefined;
+  ) => unknown;
   path: string[];
   // DEV-only
   isDebug?: boolean | undefined;
@@ -239,10 +237,10 @@ export interface InitializationReference {
 export interface InitializationHandler {
   parent: InitializationHandler | null;
   chunk: ReactPromise | null;
-  value?: unknown | null | undefined;
+  value?: unknown;
   // The controller of a stream whose chunk is blocked on its debug info. Null
   // for every other model. The error the handler was rejected with.
-  reason?: unknown | null | undefined;
+  reason?: unknown;
   deps: number;
   errored: boolean;
 }
@@ -251,7 +249,7 @@ export interface InitializationHandler {
 // error upon read. Also notify any pending promises.
 export function reportGlobalError(
   weakResponse: WeakResponse,
-  error?: unknown | null | undefined,
+  error?: unknown,
 ): void;
 
 /** A DEV element's `_store`, whose `validated` is non-enumerable. */
@@ -261,24 +259,24 @@ export interface ElementStore {}
 export interface DevElement {
   $$typeof: symbol;
   type?: unknown;
-  key: unknown | null;
-  props: unknown | null;
-  _owner: unknown | null;
+  key: unknown;
+  props: unknown;
+  _owner: unknown;
 }
 
 /** A production element as the Flight client makes it. */
 export interface ProdElement {
   $$typeof: symbol;
   type?: unknown;
-  key: unknown | null;
-  ref: unknown | null;
-  props: unknown | null;
+  key: unknown;
+  ref: unknown;
+  props: unknown;
 }
 
 export function createResponse(
-  bundlerConfig: unknown | null,
-  serverReferenceConfig: unknown | null,
-  moduleLoading: unknown | null,
+  bundlerConfig: unknown,
+  serverReferenceConfig: unknown,
+  moduleLoading: unknown,
   callServer: CallServerCallback | null | undefined,
   encodeFormAction: EncodeFormActionCallback | null | undefined,
   nonce: string | null | undefined,
@@ -310,7 +308,7 @@ export interface StreamState {
 
 export function createStreamState(
   weakResponse: WeakResponse,
-  streamDebugValue?: unknown | null | undefined,
+  streamDebugValue?: unknown,
 ): StreamState;
 
 export function processBinaryChunk(

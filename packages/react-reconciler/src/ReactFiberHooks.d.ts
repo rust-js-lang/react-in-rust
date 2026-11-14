@@ -21,7 +21,7 @@ export interface Update {
   revertLane: Lane;
   action?: unknown;
   hasEagerState: boolean;
-  eagerState?: unknown | null | undefined;
+  eagerState?: unknown;
   next?: Update | null | undefined;
   gesture?: ScheduledGesture | null | undefined;
 }
@@ -30,52 +30,42 @@ export interface Update {
  * What a hook's deps are: the values it was made of, compared with
  * `Object.is`.
  */
-export type Deps = (unknown | null | undefined)[];
+export type Deps = unknown[];
 
 /**
  * What a state hook's update is applied with: the next state, of the
  * state and the action.
  */
-export type Reducer = (
-  value?: unknown | null | undefined,
-  value2?: unknown | null | undefined,
-) => unknown | null | undefined;
+export type Reducer = (value?: unknown, value2?: unknown) => unknown;
 
 /** A hook's dispatch: what schedules an update of its action. */
-export type Dispatch = (value?: unknown | null | undefined) => void;
+export type Dispatch = (value?: unknown) => void;
 
 /** What `useActionState` dispatches its action with: of the payload. */
-export type ActionDispatch = (value?: unknown | null | undefined) => void;
+export type ActionDispatch = (value?: unknown) => void;
 
 /** What a state hook gives: its state, and what updates it. */
-export type StateAndDispatch = [
-  unknown | null | undefined,
-  Dispatch | null | undefined,
-];
+export type StateAndDispatch = [unknown, Dispatch | null | undefined];
 
 /**
  * What `useActionState` gives: its state, what dispatches the action, and
  * whether it's pending.
  */
-export type ActionStateAndDispatch = [
-  unknown | null | undefined,
-  ActionDispatch,
-  boolean,
-];
+export type ActionStateAndDispatch = [unknown, ActionDispatch, boolean];
 
 export interface UpdateQueue {
   pending: Update | null;
   lanes: Lanes;
   dispatch: Dispatch | null;
   lastRenderedReducer: Reducer | null;
-  lastRenderedState?: unknown | null | undefined;
+  lastRenderedState?: unknown;
 }
 
 export interface Hook {
-  memoizedState?: unknown | null | undefined;
-  baseState?: unknown | null | undefined;
+  memoizedState?: unknown;
+  baseState?: unknown;
   baseQueue: Update | null;
-  queue?: unknown | null | undefined;
+  queue?: unknown;
   next: Hook | null;
 }
 
@@ -96,7 +86,7 @@ export interface StoreConsistencyCheck {
 }
 
 /** What `useSyncExternalStore` reads the store with. */
-export type GetSnapshot = () => unknown | null | undefined;
+export type GetSnapshot = () => unknown;
 
 /**
  * What `useSyncExternalStore` subscribes with: of what's called when the
@@ -125,28 +115,28 @@ export function renderWithHooks(
   current: Fiber | null | undefined,
   workInProgress: Fiber,
   component: Component,
-  props: unknown | null | undefined,
-  secondArg: unknown | null | undefined,
+  props: unknown,
+  secondArg: unknown,
   nextRenderLanes: Lanes,
-): unknown | null | undefined;
+): unknown;
 
 export function replaySuspendedComponentWithHooks(
   current: Fiber | null | undefined,
   workInProgress: Fiber,
   component: Component,
-  props?: unknown | null | undefined,
-  secondArg?: unknown | null | undefined,
-): unknown | null | undefined;
+  props?: unknown,
+  secondArg?: unknown,
+): unknown;
 
 // ReactFiberConfig's `TransitionStatus`.
 export function renderTransitionAwareHostComponentWithHooks(
   current: Fiber | null | undefined,
   workInProgress: Fiber,
   lanes: Lanes,
-): unknown | null | undefined;
+): unknown;
 
 // ReactFiberConfig's `TransitionStatus`.
-export function TransitionAwareHostComponent(): unknown | null | undefined;
+export function TransitionAwareHostComponent(): unknown;
 
 export function checkDidRenderIdHook(): boolean;
 
@@ -180,8 +170,8 @@ export interface ActionStateQueueNode {
   // Implements the Thenable interface. We use it to suspend until the action
   // finishes.
   status: string;
-  value?: unknown | null | undefined;
-  reason?: unknown | null | undefined;
+  value?: unknown;
+  reason?: unknown;
   listeners: (() => void)[];
   then(listener: () => void): void;
 }
@@ -190,32 +180,26 @@ export interface ActionStateQueueNode {
  * What `useEffectEvent` gives: a function calling what the component last
  * gave with its arguments.
  */
-export type EventFunction = (
-  ...args: (unknown | null | undefined)[]
-) => unknown | null | undefined;
+export type EventFunction = (...args: unknown[]) => unknown;
 
 /** What `useEffectEvent` is given: any function. */
-export type EventFunctionImpl = () => unknown | null | undefined;
+export type EventFunctionImpl = () => unknown;
 
 /** What `useDebugValue` formats its value with, for DevTools. */
-export type DebugValueFormatter = (
-  value?: unknown | null | undefined,
-) => unknown | null | undefined;
+export type DebugValueFormatter = (value?: unknown) => unknown;
 
 /** What `useMemo` calls for its value. */
-export type MemoCreate = () => unknown | null | undefined;
+export type MemoCreate = () => unknown;
 
 /** What a form's action is: called with the form's data. */
-export type FormAction = (
-  value?: unknown | null | undefined,
-) => unknown | null | undefined;
+export type FormAction = (value?: unknown) => unknown;
 
 // ReactFiberConfig's `TransitionStatus`, and the form's data.
 export function startHostTransition(
   formFiber: Fiber,
-  pendingState?: unknown | null | undefined,
+  pendingState?: unknown,
   action?: FormAction | null | undefined,
-  formData?: unknown | null | undefined,
+  formData?: unknown,
 ): void;
 
 export function requestFormReset(formFiber: Fiber): void;
@@ -225,7 +209,7 @@ export function requestFormReset(formFiber: Fiber): void;
  * call in it.
  */
 export type StartTransition = (
-  value: () => unknown | null | undefined,
+  value: () => unknown,
   value2?: StartTransitionOptions | null | undefined,
 ) => void;
 
@@ -233,9 +217,6 @@ export type StartTransition = (
  * What `useCacheRefresh` gives: what refreshes the cache, of what makes
  * its next value, and the value it seeds it with.
  */
-export type CacheRefresh = (
-  value?: unknown | null | undefined,
-  value2?: unknown | null | undefined,
-) => void;
+export type CacheRefresh = (value?: unknown, value2?: unknown) => void;
 
 export const ContextOnlyDispatcher: Dispatcher;

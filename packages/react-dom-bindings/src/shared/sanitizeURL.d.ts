@@ -5,8 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-declare function sanitizeURL(
-  url?: unknown | null | undefined,
-): unknown | null | undefined;
+declare function sanitizeURL(url?: unknown): unknown;
 
 export default sanitizeURL;

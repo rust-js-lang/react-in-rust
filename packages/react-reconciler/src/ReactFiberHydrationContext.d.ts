@@ -13,7 +13,7 @@ import type {Fiber} from './ReactInternalTypes.js';
  * The errors thrown while hydrating a boundary: one array, which the work
  * loop's recoverable errors and the boundary's state may share.
  */
-export type HydrationErrors = CapturedValue<unknown | null | undefined>[];
+export type HydrationErrors = CapturedValue<unknown>[];
 
 export function warnIfHydrating(): void;
 
@@ -56,7 +56,7 @@ export function tryToClaimNextHydratableFormMarkerInstance(
 // ReactFiberConfig's `HostContext`.
 export function prepareToHydrateHostInstance(
   fiber: Fiber,
-  hostContext?: unknown | null | undefined,
+  hostContext?: unknown,
 ): void;
 
 export function prepareToHydrateHostTextInstance(fiber: Fiber): void;
@@ -84,8 +84,6 @@ export function upgradeHydrationErrorsToRecoverable(): HydrationErrors | null;
 
 export function getIsHydrating(): boolean;
 
-export function queueHydrationError(
-  error: CapturedValue<unknown | null | undefined>,
-): void;
+export function queueHydrationError(error: CapturedValue<unknown>): void;
 
 export function emitPendingHydrationWarnings(): void;

@@ -125,9 +125,9 @@ export interface Task {
   // `!== null` tests let through.
   debugOwner?: unknown;
   // DEV-only
-  debugStack?: unknown | null | undefined;
+  debugStack?: unknown;
   // DEV-only
-  debugTask?: unknown | null | undefined;
+  debugTask?: unknown;
 }
 
 /**
@@ -148,24 +148,22 @@ export interface DeferredDebugStore {
 }
 
 /** What a resource type of `cache()` makes: any value, made once per cache. */
-export type ResourceType = () => unknown | null | undefined;
+export type ResourceType = () => unknown;
 
 /** A request's cache, of each resource type. */
-export type Cache = Map<ResourceType, unknown | null | undefined>;
+export type Cache = Map<ResourceType, unknown>;
 
 /**
  * A request's `onError`, told of each error: the digest the client is
  * sent of it, if any.
  */
-export type OnError = (
-  value?: unknown | null | undefined,
-) => string | null | undefined;
+export type OnError = (value?: unknown) => string | null | undefined;
 
 /** A request's `onAllReady`. */
 export type OnAllReady = () => void;
 
 /** A request's `onFatalError`, of what was thrown. */
-export type OnFatalError = (value?: unknown | null | undefined) => void;
+export type OnFatalError = (value?: unknown) => void;
 
 /** A request's `environmentName`: the name itself, or what gives it. */
 export type EnvironmentName = string | (() => string);
@@ -175,7 +173,7 @@ declare class RequestInstance {
   type: number;
   flushScheduled: boolean;
   // What was thrown, `undefined` too: `null` until then.
-  fatalError?: unknown | null | undefined;
+  fatalError?: unknown;
   destination: Destination | null;
   bundlerConfig: ClientManifest | null;
   cache: Cache;
@@ -298,10 +296,7 @@ export function attachAbortSignal(
   signal: AbortSignal,
 ): void;
 
-export function abort(
-  request: RequestInstance,
-  reason?: unknown | null | undefined,
-): void;
+export function abort(request: RequestInstance, reason?: unknown): void;
 
 export function resolveDebugMessage(
   request: RequestInstance,

@@ -5,8 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export const cache: (
-  fn: Function,
-) => (...args: (unknown | null | undefined)[]) => unknown | null | undefined;
+export const cache: (fn: Function) => (...args: unknown[]) => unknown;
 
 export const cacheSignal: () => AbortSignal | null | undefined;

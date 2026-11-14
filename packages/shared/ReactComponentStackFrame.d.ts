@@ -10,7 +10,7 @@ export function describeBuiltInComponentFrame(name: string): string;
 export function describeDebugInfoFrame(
   name: string,
   env?: string | null | undefined,
-  location?: any | null | undefined,
+  location?: any,
 ): string;
 
 /**

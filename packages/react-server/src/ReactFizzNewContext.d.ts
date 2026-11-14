@@ -8,7 +8,7 @@
 import type {ReactContext} from 'shared/ReactTypes';
 
 /** A context Fizz renders, of any value. */
-export type Context = ReactContext<unknown | null | undefined>;
+export type Context = ReactContext<unknown>;
 
 // Used to store the parent path of all context overrides in a shared linked list.
 // Forming a reverse tree.
@@ -34,11 +34,11 @@ export function switchContext(newSnapshot?: ContextSnapshot): void;
 
 export function pushProvider(
   context: Context,
-  nextValue?: unknown | null | undefined,
+  nextValue?: unknown,
 ): ContextSnapshot;
 
 export function popProvider(context: Context): ContextSnapshot;
 
 export function getActiveContext(): ContextNode | null;
 
-export function readContext(context: Context): unknown | null | undefined;
+export function readContext(context: Context): unknown;

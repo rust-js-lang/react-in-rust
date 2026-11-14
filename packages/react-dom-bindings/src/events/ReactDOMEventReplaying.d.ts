@@ -19,7 +19,7 @@ export function clearIfContinuousEvent(
 ): void;
 
 export function queueIfContinuousEvent(
-  blockedOn: unknown | null,
+  blockedOn: unknown,
   domEventName: string,
   eventSystemFlags: EventSystemFlags,
   targetContainer: EventTarget,

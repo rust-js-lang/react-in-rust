@@ -21,7 +21,7 @@ export type EnqueueForceUpdate = (
  */
 export type EnqueueState = (
   value: unknown,
-  value2?: unknown | null | undefined,
+  value2?: unknown,
   value3?: (() => void) | null | undefined,
   value4?: string | null | undefined,
 ) => void;

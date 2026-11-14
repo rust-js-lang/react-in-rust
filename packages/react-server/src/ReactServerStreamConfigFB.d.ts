@@ -22,7 +22,7 @@ export function flushBuffered(destination: Destination): void;
 
 export const supportsRequestStorage: boolean;
 
-export const requestStorage: unknown | null | undefined;
+export const requestStorage: unknown;
 
 export function beginWriting(destination: Destination): void;
 
@@ -47,9 +47,6 @@ export const byteLengthOfChunk: ((value: string) => number) | null;
 
 export function byteLengthOfBinaryChunk(chunk: string): number;
 
-export function closeWithError(
-  destination: Destination,
-  error?: unknown | null | undefined,
-): void;
+export function closeWithError(destination: Destination, error?: unknown): void;
 
 export function readAsDataURL(blob: Blob): Promise<string>;

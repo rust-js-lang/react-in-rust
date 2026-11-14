@@ -35,7 +35,7 @@ export function registerClientReference(
 export function registerServerReference(
   reference: unknown,
   id: string,
-  exportName?: unknown | null | undefined,
+  exportName?: unknown,
 ): ServerReference;
 
 export function createClientModuleProxy(moduleId: string): ClientReference;

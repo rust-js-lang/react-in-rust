@@ -12,7 +12,7 @@ import type {Fiber, FiberRoot} from './ReactInternalTypes.js';
 
 export function createRootErrorUpdate(
   root: FiberRoot,
-  errorInfo: CapturedValue<unknown | null | undefined>,
+  errorInfo: CapturedValue<unknown>,
   lane: Lane,
 ): Update;
 
@@ -22,13 +22,13 @@ export function initializeClassErrorUpdate(
   update: Update,
   root: FiberRoot,
   fiber: Fiber,
-  errorInfo: CapturedValue<unknown | null | undefined>,
+  errorInfo: CapturedValue<unknown>,
 ): void;
 
 export function throwException(
   root: FiberRoot,
   returnFiber: Fiber | null | undefined,
   sourceFiber: Fiber,
-  value: unknown | null | undefined,
+  value: unknown,
   rootRenderLanes: Lanes,
 ): boolean;

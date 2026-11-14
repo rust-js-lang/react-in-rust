@@ -14,7 +14,7 @@ export function addObjectToProperties(
 
 export function addValueToProperties(
   propertyName: string,
-  value: unknown | null | undefined,
+  value: unknown,
   properties: [string, string][],
   indent: number,
   prefix: string,

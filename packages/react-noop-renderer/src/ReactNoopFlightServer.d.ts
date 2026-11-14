@@ -25,11 +25,11 @@ export interface Options {
   identifierPrefix?: string | undefined;
   signal?: AbortSignal | undefined;
   debugChannel?: DebugChannel | undefined;
-  onError?: ((value?: unknown | null | undefined) => void) | undefined;
+  onError?: ((value?: unknown) => void) | undefined;
   startTime?: number | undefined;
 }
 
 export function render(
-  model?: unknown | null | undefined,
+  model?: unknown,
   options?: Options | null | undefined,
 ): Destination;

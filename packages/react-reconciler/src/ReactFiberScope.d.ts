@@ -13,9 +13,9 @@ import type {ReactScopeQuery} from 'shared/ReactTypes';
  */
 export interface ReactScopeInstance {
   DO_NOT_USE_queryAllNodes(fn: ReactScopeQuery): unknown[] | null;
-  DO_NOT_USE_queryFirstNode(fn: ReactScopeQuery): unknown | null;
+  DO_NOT_USE_queryFirstNode(fn: ReactScopeQuery): unknown;
   containsNode(node: unknown): boolean;
-  getChildContextValues(context: unknown): (unknown | null | undefined)[];
+  getChildContextValues(context: unknown): unknown[];
 }
 
 export function createScopeInstance(): ReactScopeInstance;

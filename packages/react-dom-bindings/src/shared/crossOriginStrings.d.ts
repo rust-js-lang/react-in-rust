@@ -9,10 +9,10 @@
 export type CrossOriginString = string;
 
 export function getCrossOriginString(
-  input?: unknown | null | undefined,
+  input?: unknown,
 ): CrossOriginString | null | undefined;
 
 export function getCrossOriginStringAs(
   as?: string | null | undefined,
-  input?: unknown | null | undefined,
+  input?: unknown,
 ): CrossOriginString | null | undefined;

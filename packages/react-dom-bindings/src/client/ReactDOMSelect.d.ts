@@ -24,24 +24,24 @@ export function validateSelectProps(element: Element, props: unknown): void;
 
 export function initSelect(
   element: Element,
-  value?: unknown | null | undefined,
-  defaultValue?: unknown | null | undefined,
-  multiple?: unknown | null | undefined,
+  value?: unknown,
+  defaultValue?: unknown,
+  multiple?: unknown,
 ): void;
 
 export function hydrateSelect(
   element: Element,
-  value?: unknown | null | undefined,
-  defaultValue?: unknown | null | undefined,
-  multiple?: unknown | null | undefined,
+  value?: unknown,
+  defaultValue?: unknown,
+  multiple?: unknown,
 ): void;
 
 export function updateSelect(
   element: Element,
-  value?: unknown | null | undefined,
-  defaultValue?: unknown | null | undefined,
-  multiple?: unknown | null | undefined,
-  wasMultiple?: unknown | null | undefined,
+  value?: unknown,
+  defaultValue?: unknown,
+  multiple?: unknown,
+  wasMultiple?: unknown,
 ): void;
 
 export function restoreControlledSelectState(

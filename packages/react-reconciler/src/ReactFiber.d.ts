@@ -28,7 +28,7 @@ export interface ProfilerStateNode {
 export interface PortalStateNode {
   containerInfo?: unknown;
   // Used by persistent updates
-  pendingChildren: unknown | null;
+  pendingChildren: unknown;
   implementation?: unknown;
 }
 
@@ -43,19 +43,17 @@ export interface ViewTransitionState {
   clones: unknown[] | null;
   // the current ref instance. This can change through the lifetime of the instance.
   // ReactFiberConfig's `ViewTransitionInstance`.
-  ref: unknown | null;
+  ref: unknown;
 }
 
-export function isSimpleFunctionComponent(
-  type?: unknown | null | undefined,
-): boolean;
+export function isSimpleFunctionComponent(type?: unknown): boolean;
 
 export function isFunctionClassComponent(type: unknown): boolean;
 
 // This is used to create an alternate fiber to do work on.
 export function createWorkInProgress(
   current: Fiber,
-  pendingProps?: unknown | null | undefined,
+  pendingProps?: unknown,
 ): Fiber;
 
 // Used to reuse a Fiber for a second pass.
@@ -68,10 +66,10 @@ export function createHostRootFiber(tag: RootTag, isStrictMode: boolean): Fiber;
 
 // TODO: Get rid of this helper. Only createFiberFromElement should exist.
 export function createFiberFromTypeAndProps(
-  type: unknown | null | undefined,
+  type: unknown,
   key: ReactKey | null | undefined,
-  pendingProps: unknown | null | undefined,
-  owner: unknown | null | undefined,
+  pendingProps: unknown,
+  owner: unknown,
   mode: TypeOfMode,
   lanes: Lanes,
 ): Fiber;
@@ -84,21 +82,21 @@ export function createFiberFromElement(
 
 // shared/ReactTypes' `ReactFragment`.
 export function createFiberFromFragment(
-  elements: unknown | null | undefined,
+  elements: unknown,
   mode: TypeOfMode,
   lanes: Lanes,
   key?: ReactKey | null | undefined,
 ): Fiber;
 
 export function createFiberFromSuspense(
-  pendingProps: unknown | null | undefined,
+  pendingProps: unknown,
   mode: TypeOfMode,
   lanes: Lanes,
   key?: ReactKey | null | undefined,
 ): Fiber;
 
 export function createFiberFromSuspenseList(
-  pendingProps: unknown | null | undefined,
+  pendingProps: unknown,
   mode: TypeOfMode,
   lanes: Lanes,
   key?: ReactKey | null | undefined,
@@ -113,7 +111,7 @@ export function createFiberFromOffscreen(
 
 // shared/ReactTypes' `ActivityProps`.
 export function createFiberFromActivity(
-  pendingProps: unknown | null | undefined,
+  pendingProps: unknown,
   mode: TypeOfMode,
   lanes: Lanes,
   key?: ReactKey | null | undefined,
@@ -121,7 +119,7 @@ export function createFiberFromActivity(
 
 // shared/ReactTypes' `ViewTransitionProps`.
 export function createFiberFromViewTransition(
-  pendingProps: unknown | null | undefined,
+  pendingProps: unknown,
   mode: TypeOfMode,
   lanes: Lanes,
   key?: ReactKey | null | undefined,
@@ -135,7 +133,7 @@ export function createFiberFromLegacyHidden(
 ): Fiber;
 
 export function createFiberFromTracingMarker(
-  pendingProps: unknown | null | undefined,
+  pendingProps: unknown,
   mode: TypeOfMode,
   lanes: Lanes,
   key?: ReactKey | null | undefined,
@@ -159,7 +157,7 @@ export function createFiberFromPortal(
 ): Fiber;
 
 export function createFiberFromThrow(
-  error: unknown | null | undefined,
+  error: unknown,
   mode: TypeOfMode,
   lanes: Lanes,
 ): Fiber;

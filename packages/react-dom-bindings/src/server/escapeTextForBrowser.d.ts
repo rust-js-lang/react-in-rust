@@ -38,6 +38,4 @@
  * @param {*} text Text value to escape.
  * @return {string} An escaped string.
  */
-export default function escapeTextForBrowser(
-  text?: unknown | null | undefined,
-): string;
+export default function escapeTextForBrowser(text?: unknown): string;

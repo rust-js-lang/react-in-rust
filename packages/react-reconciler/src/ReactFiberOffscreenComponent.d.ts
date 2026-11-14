@@ -40,7 +40,7 @@ export interface OffscreenState {
   // order to unhide the component.
   baseLanes: Lanes;
   // ReactFiberCacheComponent's `SpawnedCachePool`.
-  cachePool: unknown | null;
+  cachePool: unknown;
 }
 
 export interface OffscreenQueue {

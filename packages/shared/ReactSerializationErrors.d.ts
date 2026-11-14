@@ -5,22 +5,17 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export const jsxPropsParents: WeakMap<object, unknown | null | undefined>;
+export const jsxPropsParents: WeakMap<object, unknown>;
 
-export const jsxChildrenParents: WeakMap<object, unknown | null | undefined>;
+export const jsxChildrenParents: WeakMap<object, unknown>;
 
-export function isGetter(
-  object: unknown | null | undefined,
-  name: string,
-): boolean;
+export function isGetter(object: unknown, name: string): boolean;
 
 export function isSimpleObject(object: unknown): boolean;
 
-export function objectName(object?: unknown | null | undefined): string;
+export function objectName(object?: unknown): string;
 
-export function describeValueForErrorMessage(
-  value?: unknown | null | undefined,
-): string;
+export function describeValueForErrorMessage(value?: unknown): string;
 
 export function describeObjectForErrorMessage(
   objectOrArray: unknown,

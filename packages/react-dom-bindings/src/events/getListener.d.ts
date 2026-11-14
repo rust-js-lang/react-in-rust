@@ -15,4 +15,4 @@ import type {Fiber} from 'react-reconciler/src/ReactInternalTypes';
 export default function getListener(
   inst: Fiber,
   registrationName: string,
-): unknown | null | undefined;
+): unknown;

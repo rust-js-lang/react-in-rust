@@ -51,7 +51,7 @@ export function diffHydratedProperties(
   hostContext: unknown,
 ):
   | {
-      [key: string]: unknown | null | undefined;
+      [key: string]: unknown;
     }
   | null
   | undefined;
@@ -59,7 +59,7 @@ export function diffHydratedProperties(
 export function hydrateText(
   textNode: Text,
   text: string,
-  parentProps?: unknown | null | undefined,
+  parentProps?: unknown,
 ): boolean;
 
 export function diffHydratedText(

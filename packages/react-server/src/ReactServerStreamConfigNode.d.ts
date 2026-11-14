@@ -47,10 +47,7 @@ export function byteLengthOfChunk(chunk: unknown): number;
 
 export function byteLengthOfBinaryChunk(chunk: BinaryChunk): number;
 
-export function closeWithError(
-  destination: Writable,
-  error?: unknown | null | undefined,
-): void;
+export function closeWithError(destination: Writable, error?: unknown): void;
 
 export function createFastHash(input: string): string;
 

@@ -19,7 +19,7 @@ export type ServerReference<T> = T;
 export type CallServerCallback = (
   value: unknown,
   value2: unknown,
-) => Promise<unknown | null | undefined>;
+) => Promise<unknown>;
 
 export type EncodeFormActionCallback = (
   id: ServerReferenceId,
@@ -59,14 +59,14 @@ export function processReply(
   formFieldPrefix: string,
   temporaryReferences: TemporaryReferenceSet | null | undefined,
   onResolve: (body: ReplyBody) => void,
-  onReject: (value?: unknown | null | undefined) => void,
+  onReject: (value?: unknown) => void,
   signal?: AbortSignal | null | undefined,
 ): void;
 
 export function registerBoundServerReference(
   reference: ServerFunction,
   id: ServerReferenceId,
-  bound?: any | null | undefined,
+  bound?: any,
   encodeFormAction?: EncodeFormActionCallback | null | undefined,
 ): void;
 
@@ -86,7 +86,7 @@ export type FindSourceMapURLCallback = (
 /** createBoundServerReference's `metaData`. */
 export interface BoundServerReferenceMetaData {
   id: ServerReferenceId;
-  bound: any | null;
+  bound: any;
   name?: string | undefined;
   env?: string | undefined;
   location?: ReactFunctionLocation | undefined;

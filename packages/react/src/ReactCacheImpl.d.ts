@@ -12,9 +12,7 @@ export type AnyFunction = Function;
  * What `cache` gives of a function: one JS calls with the same arguments,
  * cached.
  */
-export type Cached = (
-  ...args: (unknown | null | undefined)[]
-) => unknown | null | undefined;
+export type Cached = (...args: unknown[]) => unknown;
 
 export function cache(fn: AnyFunction): Cached;
 

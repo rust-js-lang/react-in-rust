@@ -59,7 +59,7 @@ export interface PipeableStream {
   pipe: (destination: Writable) => Writable;
   // Cancel any pending I/O and put anything remaining into
   // client rendered mode.
-  abort: (reason?: unknown | null | undefined) => void;
+  abort: (reason?: unknown) => void;
 }
 
 export function renderToPipeableStream(
@@ -72,9 +72,9 @@ export function renderToPipeableStream(
  * config writes to a Writable, so its chunks are pushed into the Readable.
  */
 export interface FakeWritable {
-  write: (chunk?: unknown | null | undefined) => boolean;
+  write: (chunk?: unknown) => boolean;
   end: () => void;
-  destroy: (error?: unknown | null | undefined) => void;
+  destroy: (error?: unknown) => void;
 }
 
 // TODO: Move to sub-classing ReadableStream.

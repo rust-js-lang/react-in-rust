@@ -6,10 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 /** Whether a memo's props are equal, so that it needn't render again. */
-export type Compare = (
-  value?: unknown | null | undefined,
-  value2?: unknown | null | undefined,
-) => boolean;
+export type Compare = (value?: unknown, value2?: unknown) => boolean;
 
 /** A component that renders again only when its props change. */
 export interface Memo {
@@ -19,6 +16,6 @@ export interface Memo {
 }
 
 export function memo(
-  type?: unknown | null | undefined,
+  type?: unknown,
   compare?: Compare | null | undefined,
 ): Memo;

@@ -39,7 +39,7 @@ export type ClientReference = ClientReferenceMetadata;
 // though that risks it getting used in places it shouldn't be. This is unfortunate
 // but currently it seems to be the best option we have.
 export function prepareDestinationForModule(
-  moduleLoading: unknown | null,
+  moduleLoading: unknown,
   nonce: string | null | undefined,
   metadata: ClientReferenceMetadata,
 ): void;
@@ -56,13 +56,11 @@ export function resolveServerReference(
 
 // Start preloading the modules since we might need them soon.
 // This function doesn't suspend.
-export function preloadModule(metadata: ClientReference): any | null;
+export function preloadModule(metadata: ClientReference): any;
 
 // Actually require the module or suspend if it's not yet ready.
 // Increase priority if necessary.
-export function requireModule(
-  metadata: ClientReference,
-): unknown | null | undefined;
+export function requireModule(metadata: ClientReference): unknown;
 
 export function getModuleDebugInfo(
   metadata: ClientReference,

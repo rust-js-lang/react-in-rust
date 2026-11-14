@@ -33,17 +33,13 @@ type FormDataEntryValue = File | string;
 export function decodeAction(
   body: FormData,
   serverManifest: ServerManifest,
-): Promise<() => unknown | null | undefined> | null | undefined;
+): Promise<() => unknown> | null | undefined;
 
 export function decodeFormState(
-  actionResult: unknown | null | undefined,
+  actionResult: unknown,
   body: FormData,
   serverManifest: ServerManifest,
-): Promise<
-  | ReactFormState<unknown | null | undefined, unknown | null | undefined>
-  | null
-  | undefined
->;
+): Promise<ReactFormState<unknown, unknown> | null | undefined>;
 
 export interface DebugChannel {
   readable?: ReadableStream | undefined;

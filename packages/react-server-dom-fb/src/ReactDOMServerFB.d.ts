@@ -37,10 +37,7 @@ export function renderToStream(
   options: Options,
 ): Stream;
 
-export function abortStream(
-  stream: Stream,
-  reason?: unknown | null | undefined,
-): void;
+export function abortStream(stream: Stream, reason?: unknown): void;
 
 export function renderNextChunk(stream: Stream): string;
 

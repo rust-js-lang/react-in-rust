@@ -60,7 +60,7 @@ export function markComponentLayoutEffectUnmountStopped(): void;
 
 export function markComponentErrored(
   fiber: Fiber,
-  thrownValue: unknown | null | undefined,
+  thrownValue: unknown,
   lanes: Lanes,
 ): void;
 

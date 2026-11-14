@@ -16,6 +16,6 @@ export interface MarkupOptions {
 }
 
 export function experimental_renderToHTML(
-  children?: unknown | null | undefined,
+  children?: unknown,
   options?: MarkupOptions | null | undefined,
 ): Promise<string>;

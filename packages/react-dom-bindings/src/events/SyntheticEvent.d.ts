@@ -12,9 +12,7 @@ import type {ReactSyntheticEvent} from './ReactSyntheticEventType.js';
  * `0 | ((event) => mixed)`: the native event's property, copied, or what a
  * function makes of the native event.
  */
-export type Normalize =
-  | number
-  | ((value: unknown) => unknown | null | undefined);
+export type Normalize = number | ((value: unknown) => unknown);
 
 /** A constructor of synthetic events, of an interface's. */
 export type SyntheticEventClass = new (

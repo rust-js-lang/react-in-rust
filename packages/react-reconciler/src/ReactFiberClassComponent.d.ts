@@ -13,9 +13,9 @@ import type {Fiber} from './ReactInternalTypes.js';
  * given its previous state.
  */
 export type GetDerivedStateFromProps = (
-  value?: unknown | null | undefined,
-  value2?: unknown | null | undefined,
-) => unknown | null | undefined;
+  value?: unknown,
+  value2?: unknown,
+) => unknown;
 
 /**
  * What a class instance's `setState`, `replaceState` and `forceUpdate`
@@ -24,38 +24,35 @@ export type GetDerivedStateFromProps = (
 export interface ClassComponentUpdater {
   enqueueSetState: (
     inst: unknown,
-    payload?: unknown | null | undefined,
-    callback?: unknown | null | undefined,
+    payload?: unknown,
+    callback?: unknown,
   ) => void;
   enqueueReplaceState: (
     inst: unknown,
-    payload?: unknown | null | undefined,
-    callback?: unknown | null | undefined,
+    payload?: unknown,
+    callback?: unknown,
   ) => void;
-  enqueueForceUpdate: (
-    inst: unknown,
-    callback?: unknown | null | undefined,
-  ) => void;
+  enqueueForceUpdate: (inst: unknown, callback?: unknown) => void;
 }
 
 export function constructClassInstance(
   workInProgress: Fiber,
   ctor: unknown,
-  props?: unknown | null | undefined,
+  props?: unknown,
 ): any;
 
 // Invokes the mount life-cycles on a previously never rendered instance.
 export function mountClassInstance(
   workInProgress: Fiber,
   ctor: unknown,
-  newProps: unknown | null | undefined,
+  newProps: unknown,
   renderLanes: Lanes,
 ): void;
 
 export function resumeMountClassInstance(
   workInProgress: Fiber,
   ctor: unknown,
-  newProps: unknown | null | undefined,
+  newProps: unknown,
   renderLanes: Lanes,
 ): boolean;
 
@@ -64,11 +61,11 @@ export function updateClassInstance(
   current: Fiber,
   workInProgress: Fiber,
   ctor: unknown,
-  newProps: unknown | null | undefined,
+  newProps: unknown,
   renderLanes: Lanes,
 ): boolean;
 
 export function resolveClassComponentProps(
-  component: unknown | null | undefined,
+  component: unknown,
   baseProps: unknown,
 ): unknown;

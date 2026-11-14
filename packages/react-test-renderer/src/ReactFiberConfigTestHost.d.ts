@@ -111,7 +111,7 @@ export {
 
 export const rendererPackageName: string;
 
-export const extraDevToolsConfig: unknown | null;
+export const extraDevToolsConfig: unknown;
 
 export type Type = string;
 
@@ -134,7 +134,7 @@ export type TextTag = 'TEXT';
 
 export interface Container {
   children: Child[];
-  createNodeMock: (element: NodeMockElement) => unknown | null | undefined;
+  createNodeMock: (element: NodeMockElement) => unknown;
   tag: ContainerTag;
 }
 
@@ -143,7 +143,7 @@ export interface Instance {
   props: Props;
   isHidden: boolean;
   children: Child[];
-  internalInstanceHandle: unknown | null;
+  internalInstanceHandle: unknown;
   rootContainerInstance: Container;
   tag: InstanceTag;
 }
@@ -172,9 +172,9 @@ export type TimeoutHandle = number | object;
 
 export type EventResponder = unknown;
 
-export type TransitionStatus = unknown | null | undefined;
+export type TransitionStatus = unknown;
 
-export function getPublicInstance(inst: Child): unknown | null | undefined;
+export function getPublicInstance(inst: Child): unknown;
 
 export function appendChild(
   parentInstance: ContainerOrInstance,
@@ -359,11 +359,11 @@ export function removeRootViewTransitionClone(
   clone: Instance,
 ): void;
 
-export type InstanceMeasurement = unknown | null | undefined;
+export type InstanceMeasurement = unknown;
 
-export function measureInstance(instance: Instance): unknown | null;
+export function measureInstance(instance: Instance): unknown;
 
-export function measureClonedInstance(instance: Instance): unknown | null;
+export function measureClonedInstance(instance: Instance): unknown;
 
 export function wasInstanceInViewport(
   measurement?: InstanceMeasurement,
@@ -387,8 +387,8 @@ export function startViewTransition(
   layoutCallback: () => void,
   afterMutationCallback: () => void,
   spawnedWorkCallback: () => void,
-  passiveCallback: () => unknown | null | undefined,
-  errorCallback: (value?: unknown | null | undefined) => void,
+  passiveCallback: () => unknown,
+  errorCallback: (value?: unknown) => void,
   blockedCallback: (value: string) => void,
   finishedAnimation: () => void,
 ): RunningViewTransition | null;
@@ -404,7 +404,7 @@ export function startGestureTransition(
   transitionTypes: TransitionTypes | null | undefined,
   mutationCallback: () => void,
   animateCallback: () => void,
-  errorCallback: (value?: unknown | null | undefined) => void,
+  errorCallback: (value?: unknown) => void,
   finishedAnimation: () => void,
 ): RunningViewTransition | null;
 
@@ -444,7 +444,7 @@ export function deleteChildFromFragmentInstance(
   fragmentInstance?: FragmentInstanceType | null | undefined,
 ): void;
 
-export function getInstanceFromNode(mockNode: object): unknown | null;
+export function getInstanceFromNode(mockNode: object): unknown;
 
 export type GestureTimeline = unknown;
 
@@ -460,11 +460,11 @@ export function preparePortalMount(portalInstance: Container): void;
 
 export function prepareScopeUpdate(scopeInstance: object, inst: unknown): void;
 
-export function getInstanceFromScope(scopeInstance: object): unknown | null;
+export function getInstanceFromScope(scopeInstance: object): unknown;
 
 export function detachDeletedInstance(node: Instance): void;
 
-export function logRecoverableError(error?: unknown | null | undefined): void;
+export function logRecoverableError(error?: unknown): void;
 
 export function requestPostPaintCallback(
   callback: (value: number) => void,
@@ -505,14 +505,14 @@ export function suspendOnActiveViewTransition(
 export function waitForCommitToBeReady(
   state: SuspendedState | null | undefined,
   timeoutOffset: number,
-): unknown | null;
+): unknown;
 
 export function getSuspendedCommitReason(
   state: SuspendedState | null | undefined,
   rootContainer: Container,
 ): string | null;
 
-export const NotPendingTransition: unknown | null;
+export const NotPendingTransition: unknown;
 
 export const HostTransitionContext: ReactContext<TransitionStatus>;
 

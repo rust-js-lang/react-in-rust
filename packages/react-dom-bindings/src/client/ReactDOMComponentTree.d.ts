@@ -44,9 +44,9 @@ export function getInstanceFromNode(node: Node): Fiber | null;
  * Given a ReactDOMComponent or ReactDOMTextComponent, return the corresponding
  * DOM node.
  */
-export function getNodeFromInstance(inst: Fiber): unknown | null | undefined;
+export function getNodeFromInstance(inst: Fiber): unknown;
 
-export function getFiberCurrentPropsFromNode(node: unknown): unknown | null;
+export function getFiberCurrentPropsFromNode(node: unknown): unknown;
 
 export function updateFiberProps(node: Element, props: unknown): void;
 

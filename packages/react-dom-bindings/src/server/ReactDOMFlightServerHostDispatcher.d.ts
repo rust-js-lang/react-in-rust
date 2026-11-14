@@ -5,13 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export function preload(
-  href?: unknown | null | undefined,
-  as?: unknown | null | undefined,
-  options?: unknown | null | undefined,
-): void;
+export function preload(href?: unknown, as?: unknown, options?: unknown): void;
 
-export function preloadModule(
-  href?: unknown | null | undefined,
-  options?: unknown | null | undefined,
-): void;
+export function preloadModule(href?: unknown, options?: unknown): void;

@@ -13,9 +13,9 @@ import type {
 
 export interface SharedStateClient {
   // ReactCurrentDispatcher for Hooks
-  H: any | null;
+  H: any;
   // ReactCurrentCache for Cache
-  A: unknown | null;
+  A: unknown;
   // ReactCurrentBatchConfig for Transitions
   T: Transition | null;
   S: OnStartTransitionFinish | null;
@@ -34,7 +34,7 @@ export interface SharedStateClient {
   // promises without suspending.
   didUsePromise?: boolean | null | undefined;
   // Track first uncaught error within this act
-  thrownErrors?: (unknown | null | undefined)[] | null | undefined;
+  thrownErrors?: unknown[] | null | undefined;
   // ReactDebugCurrentFrame
   getCurrentStack?: (() => string) | null | undefined;
   // ReactOwnerStackReset

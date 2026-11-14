@@ -20,12 +20,12 @@ export function trackUsedThenable(
   thenableState: ThenableState,
   thenable: any,
   index: number,
-): unknown | null | undefined;
+): unknown;
 
 export function readPreviousThenable(
   thenableState: ThenableState,
   index: number,
-): unknown | null | undefined;
+): unknown;
 
 export function getSuspendedThenable(): any;
 

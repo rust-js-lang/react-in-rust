@@ -34,17 +34,13 @@ type FormDataEntryValue = File | string;
 export function decodeAction(
   body: FormData,
   serverManifest: any,
-): Promise<() => unknown | null | undefined> | null | undefined;
+): Promise<() => unknown> | null | undefined;
 
 export function decodeFormState(
-  actionResult: unknown | null | undefined,
+  actionResult: unknown,
   body: FormData,
   serverManifest: any,
-): Promise<
-  | ReactFormState<unknown | null | undefined, unknown | null | undefined>
-  | null
-  | undefined
->;
+): Promise<ReactFormState<unknown, unknown> | null | undefined>;
 
 /**
  * A debug channel, upstream's `Readable | WebSocket` to read or `Readable
@@ -64,7 +60,7 @@ export interface Options {
 }
 
 export interface PipeableStream {
-  abort: (reason?: unknown | null | undefined) => void;
+  abort: (reason?: unknown) => void;
   pipe: (destination: Writable) => Writable;
 }
 

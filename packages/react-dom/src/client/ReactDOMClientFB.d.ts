@@ -33,8 +33,8 @@ export {
 
 export function createPortal(
   children?: ReactNodeList | null | undefined,
-  container?: unknown | null | undefined,
-  key?: unknown | null | undefined,
+  container?: unknown,
+  key?: unknown,
 ): ReactPortal;
 
 export const flushSync: FlushSync;

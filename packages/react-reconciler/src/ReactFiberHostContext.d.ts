@@ -8,10 +8,10 @@
 import type {Fiber} from './ReactInternalTypes.js';
 
 // ReactFiberConfig's `Container`.
-export function getCurrentRootHostContainer(): unknown | null;
+export function getCurrentRootHostContainer(): unknown;
 
 // ReactFiberConfig's `Container`.
-export function getRootHostContainer(): unknown | null | undefined;
+export function getRootHostContainer(): unknown;
 
 export function getHostTransitionProvider(): Fiber | null;
 
@@ -23,7 +23,7 @@ export function pushHostContainer(
 export function popHostContainer(fiber: Fiber): void;
 
 // ReactFiberConfig's `HostContext`.
-export function getHostContext(): unknown | null | undefined;
+export function getHostContext(): unknown;
 
 export function pushHostContext(fiber: Fiber): void;
 

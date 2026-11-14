@@ -11,4 +11,4 @@ export interface ForwardRef {
   render?: unknown;
 }
 
-export function forwardRef(render?: unknown | null | undefined): ForwardRef;
+export function forwardRef(render?: unknown): ForwardRef;

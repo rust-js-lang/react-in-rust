@@ -33,7 +33,7 @@ export type ScheduleCallback = (
 ) => any;
 
 /** SchedulerMock's `log`: what a test logs, any value. */
-export type Log = (value?: unknown | null | undefined) => void;
+export type Log = (value?: unknown) => void;
 
 export const scheduleCallback: ScheduleCallback;
 

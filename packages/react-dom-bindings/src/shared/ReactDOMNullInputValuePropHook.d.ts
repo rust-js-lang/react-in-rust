@@ -5,7 +5,4 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export function validateProperties(
-  type: string,
-  props?: unknown | null | undefined,
-): void;
+export function validateProperties(type: string, props?: unknown): void;
