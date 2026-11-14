@@ -145,7 +145,7 @@ if (enableGestureTransition) {
       cancel = prevOnStartGestureTransitionFinish(
         transition,
         provider,
-        options,
+        options ?? undefined,
       );
     }
     // For every root that has work scheduled, check if there's a ScheduledGesture

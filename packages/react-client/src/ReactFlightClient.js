@@ -3190,7 +3190,7 @@ function resolveModule(response, id, model, streamState) {
 
   prepareDestinationForModule(
     response._moduleLoading,
-    response._nonce,
+    response._nonce ?? undefined,
     clientReferenceMetadata,
   );
 
@@ -3679,10 +3679,15 @@ function resolveErrorDev(response, errorInfo) {
   let tmp;
   if (isAggregateError) {
     const errors = revivedErrors;
-    const bound = AggregateError.bind(null, errors, message, errorOptions);
+    const bound = AggregateError.bind(
+      null,
+      errors,
+      message,
+      errorOptions ?? undefined,
+    );
     tmp = bound;
   } else {
-    tmp = Error.bind(null, message, errorOptions);
+    tmp = Error.bind(null, message, errorOptions ?? undefined);
   }
   const innerCall = tmp;
   const callStack = buildFakeCallStack(response, stack, env, false, innerCall);

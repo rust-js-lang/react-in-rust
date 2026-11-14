@@ -93,7 +93,7 @@ export function extractEvents(
       if (didCurrentEventScheduleTransition()) {
         // We're going to set the pending form status, but because the submission
         // was prevented, we should not fire the action function.
-        const formData = new FormData(form, submitter);
+        const formData = new FormData(form, submitter ?? undefined);
         const pendingState = {
           pending: true,
           data: formData,
@@ -122,7 +122,7 @@ export function extractEvents(
       event.preventDefault();
 
       // Dispatch the action and set a pending form status.
-      const formData = new FormData(form, submitter);
+      const formData = new FormData(form, submitter ?? undefined);
       const pendingState = {
         pending: true,
         data: formData,

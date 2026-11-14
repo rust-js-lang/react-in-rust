@@ -69,12 +69,12 @@ export function render(model, options) {
     model,
     // $FlowFixMe[incompatible-type]
     bundlerConfig,
-    options?.onError,
-    options?.identifierPrefix,
+    options?.onError ?? undefined,
+    options?.identifierPrefix ?? undefined,
     undefined,
-    options?.startTime,
+    options?.startTime ?? undefined,
     __DEV__ ? options?.environmentName : undefined,
-    __DEV__ ? options?.filterStackFrame : undefined,
+    (__DEV__ ? options?.filterStackFrame : undefined) ?? undefined,
     // $FlowFixMe[incompatible-type]
     __DEV__ && options != null && options.debugChannel != null,
   );

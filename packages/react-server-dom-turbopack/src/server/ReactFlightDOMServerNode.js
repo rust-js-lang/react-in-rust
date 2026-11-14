@@ -34,10 +34,14 @@ import {
   resolveFileInfo,
 } from 'react-server/src/ReactFlightReplyServer';
 
-export {
-  decodeAction,
-  decodeFormState,
-} from 'react-server/src/ReactFlightActionServer';
+import * as ReactFlightActionServer from 'react-server/src/ReactFlightActionServer';
+export {decodeFormState} from 'react-server/src/ReactFlightActionServer';
+
+export function decodeAction(body, serverManifest) {
+  return (
+    ReactFlightActionServer.decodeAction(body, serverManifest) ?? undefined
+  );
+}
 
 export {
   createClientModuleProxy,
@@ -515,7 +519,7 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
         }
       } catch (error) {
         $catchable(error);
-        busboyStream.destroy(error);
+        busboyStream.destroy(error ?? undefined);
         return;
       }
       const value = $borrow($fieldCell(current, 'next'), true);
@@ -541,7 +545,7 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
         resolveField(response, name, value);
       } catch (error) {
         $catchable(error);
-        busboyStream.destroy(error);
+        busboyStream.destroy(error ?? undefined);
       }
     }
   });
@@ -581,7 +585,7 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
         }
       } catch (error) {
         $catchable(error);
-        busboyStream.destroy(error);
+        busboyStream.destroy(error ?? undefined);
       }
     });
     value.on('error', error => {

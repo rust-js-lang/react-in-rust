@@ -14,8 +14,8 @@ export function prepareDestinationWithChunks(moduleLoading, chunks, nonce) {
       // A merged chunk is `[mergedChunkFilename, ...]`; preinit its own URL.
       preinitScriptForSSR(
         moduleLoading.prefix + (typeof chunk === 'string' ? chunk : chunk[0]),
-        nonce,
-        moduleLoading.crossOrigin,
+        nonce ?? undefined,
+        moduleLoading.crossOrigin ?? undefined,
       );
     }
   }

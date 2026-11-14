@@ -641,7 +641,7 @@ function requestHostTimeout(callback, ms) {
 
 function cancelHostTimeout() {
   if (localClearTimeout != null) {
-    localClearTimeout(taskTimeoutId);
+    localClearTimeout(taskTimeoutId ?? undefined);
   }
   taskTimeoutId = undefined;
 }

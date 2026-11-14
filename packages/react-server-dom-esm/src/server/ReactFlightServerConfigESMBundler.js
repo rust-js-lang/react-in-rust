@@ -41,6 +41,6 @@ export function getServerReferenceBoundArguments(config, serverReference) {
 }
 
 export function getServerReferenceLocation(config, serverReference) {
-  return serverReference.$$location;
+  return serverReference.$$location ?? undefined;
 }
 //# sourceMappingURL=ReactFlightServerConfigESMBundler.js.map

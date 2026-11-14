@@ -63,7 +63,12 @@ Component.prototype.setState = function (partialState, callback) {
     );
   }
 
-  this.updater.enqueueSetState(this, partialState, callback, 'setState');
+  this.updater.enqueueSetState(
+    this,
+    partialState,
+    callback ?? undefined,
+    'setState',
+  );
 };
 
 /**
@@ -81,7 +86,7 @@ Component.prototype.setState = function (partialState, callback) {
  * @protected
  */
 Component.prototype.forceUpdate = function (callback) {
-  this.updater.enqueueForceUpdate(this, callback, 'forceUpdate');
+  this.updater.enqueueForceUpdate(this, callback ?? undefined, 'forceUpdate');
 };
 
 /*

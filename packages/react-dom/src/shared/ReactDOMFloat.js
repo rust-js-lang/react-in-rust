@@ -134,7 +134,7 @@ export function preload(href, options) {
         /* preload */
         as,
         {
-          crossOrigin,
+          crossOrigin: crossOrigin ?? undefined,
           integrity: typeof integrity === 'string' ? integrity : undefined,
           nonce: typeof nonce === 'string' ? nonce : undefined,
           type: typeof type === 'string' ? type : undefined,
@@ -191,7 +191,7 @@ export function preloadModule(href, options) {
         /* preloadModule */
         {
           as: typeof as === 'string' && as !== 'script' ? as : undefined,
-          crossOrigin,
+          crossOrigin: crossOrigin ?? undefined,
           integrity: typeof integrity === 'string' ? integrity : undefined,
           nonce: typeof nonce === 'string' ? nonce : undefined,
           fetchPriority:
@@ -248,7 +248,7 @@ export function preinit(href, options) {
         const precedence = options.precedence;
         d.S(href, typeof precedence === 'string' ? precedence : undefined, {
           /* ReactDOMCurrentDispatcher */
-          crossOrigin,
+          crossOrigin: crossOrigin ?? undefined,
           integrity,
           fetchPriority,
         });
@@ -260,7 +260,7 @@ export function preinit(href, options) {
           href,
           /* preinitScript */
           {
-            crossOrigin,
+            crossOrigin: crossOrigin ?? undefined,
             integrity,
             fetchPriority,
             nonce: typeof nonce === 'string' ? nonce : undefined,
@@ -324,7 +324,7 @@ export function preinitModule(href, options) {
           href,
           /* preinitModuleScript */
           {
-            crossOrigin,
+            crossOrigin: crossOrigin ?? undefined,
             integrity: typeof integrity === 'string' ? integrity : undefined,
             nonce: typeof nonce === 'string' ? nonce : undefined,
             fetchPriority:

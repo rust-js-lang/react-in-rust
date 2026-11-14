@@ -22,7 +22,7 @@ export function createClientReference(id, exportName, bundles, importMap) {
     $$id: id,
     $$name: exportName,
     $$bundles: bundles,
-    $$importMap: importMap,
+    $$importMap: importMap ?? undefined,
   };
 }
 

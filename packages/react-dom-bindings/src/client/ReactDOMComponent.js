@@ -3222,7 +3222,7 @@ export function diffHydratedText(textNode, text) {
   if (normalizedServerText === normalizedClientText) {
     return null;
   }
-  return textNode.nodeValue;
+  return textNode.nodeValue ?? undefined;
 }
 
 export function restoreControlledState(domElement, tag, props) {

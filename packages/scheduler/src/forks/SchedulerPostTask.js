@@ -73,7 +73,7 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
 
   const controller = new TaskController({priority: postTaskPriority});
   const postTaskOptions = {
-    delay: options != null ? options.delay : 0,
+    delay: (options != null ? options.delay : 0) ?? undefined,
     signal: controller.signal,
   };
 

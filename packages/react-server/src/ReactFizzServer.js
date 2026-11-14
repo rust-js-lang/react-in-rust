@@ -2837,15 +2837,15 @@ function renderViewTransition(request, task, keyPath, props) {
   task.formatContext = getViewTransitionFormatContext(
     request.resumableState,
     prevContext,
-    deref,
-    value,
-    value$1,
-    value$2,
+    deref ?? undefined,
+    value ?? undefined,
+    value$1 ?? undefined,
+    value$2 ?? undefined,
     unknown,
     tmp,
     isSome,
     value$3,
-    props.name,
+    props.name ?? undefined,
     autoName,
   );
   task.keyPath = keyPath;
@@ -6078,16 +6078,16 @@ function flushSegment(request, destination, segment, hoistableState) {
       writeStartClientRenderedSuspenseBoundary(
         destination,
         request.renderState,
-        errorDigest,
-        errorMessage,
-        errorStack,
-        errorComponentStack,
+        errorDigest ?? undefined,
+        errorMessage ?? undefined,
+        errorStack ?? undefined,
+        errorComponentStack ?? undefined,
       );
     } else {
       writeStartClientRenderedSuspenseBoundary(
         destination,
         request.renderState,
-        errorDigest,
+        errorDigest ?? undefined,
         null,
         null,
         null,
@@ -6218,10 +6218,10 @@ function flushClientRenderedBoundary(request, destination, boundary) {
       request.resumableState,
       request.renderState,
       boundary.rootSegmentID,
-      errorDigest,
-      errorMessage,
-      errorStack,
-      errorComponentStack,
+      errorDigest ?? undefined,
+      errorMessage ?? undefined,
+      errorStack ?? undefined,
+      errorComponentStack ?? undefined,
     );
   } else {
     return writeClientRenderBoundaryInstruction(
@@ -6229,7 +6229,7 @@ function flushClientRenderedBoundary(request, destination, boundary) {
       request.resumableState,
       request.renderState,
       boundary.rootSegmentID,
-      errorDigest,
+      errorDigest ?? undefined,
       null,
       null,
       null,

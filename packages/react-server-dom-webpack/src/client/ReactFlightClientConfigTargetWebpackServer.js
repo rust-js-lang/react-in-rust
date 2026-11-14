@@ -17,8 +17,8 @@ export function prepareDestinationWithChunks(
     for (let i = 1; i < chunks.length; i += 2) {
       preinitScriptForSSR(
         moduleLoading.prefix + chunks[i],
-        nonce,
-        moduleLoading.crossOrigin,
+        nonce ?? undefined,
+        moduleLoading.crossOrigin ?? undefined,
       );
     }
   }

@@ -49,7 +49,7 @@ export function useFormStatus() {
 
 export function useFormState(action, initialState, permalink) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useFormState(action, initialState, permalink);
+  return dispatcher.useFormState(action, initialState, permalink ?? undefined);
 }
 
 export function requestFormReset(form) {

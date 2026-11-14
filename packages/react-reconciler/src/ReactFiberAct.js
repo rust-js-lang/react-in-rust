@@ -46,7 +46,7 @@ export function isConcurrentActEnvironment() {
           'act(...)',
       );
     }
-    return isReactActEnvironmentGlobal;
+    return isReactActEnvironmentGlobal ?? undefined;
   }
   return false;
 }

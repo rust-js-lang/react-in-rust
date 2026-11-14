@@ -703,24 +703,24 @@ export function getLowestCommonAncestor(instA, instB, getParent) {
   let tempA = nodeA;
   while (tempA != null) {
     depthA = (depthA + 1) | 0;
-    tempA = getParent(tempA);
+    tempA = getParent(tempA ?? undefined);
   }
   let depthB = 0;
   let tempB = nodeB;
   while (tempB != null) {
     depthB = (depthB + 1) | 0;
-    tempB = getParent(tempB);
+    tempB = getParent(tempB ?? undefined);
   }
 
   // If A is deeper, crawl up.
   while (((depthA - depthB) | 0) > 0) {
-    nodeA = getParent(nodeA);
+    nodeA = getParent(nodeA ?? undefined);
     depthA = (depthA - 1) | 0;
   }
 
   // If B is deeper, crawl up.
   while (((depthB - depthA) | 0) > 0) {
-    nodeB = getParent(nodeB);
+    nodeB = getParent(nodeB ?? undefined);
     depthB = (depthB - 1) | 0;
   }
 
@@ -731,8 +731,8 @@ export function getLowestCommonAncestor(instA, instB, getParent) {
     if (nodeA == nodeB || (nodeB != null && nodeB.alternate == nodeA)) {
       return nodeA ?? null;
     }
-    nodeA = getParent(nodeA);
-    nodeB = getParent(nodeB);
+    nodeA = getParent(nodeA ?? undefined);
+    nodeB = getParent(nodeB ?? undefined);
   }
   return null;
 }

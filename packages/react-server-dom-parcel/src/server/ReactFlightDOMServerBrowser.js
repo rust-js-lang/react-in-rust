@@ -217,7 +217,7 @@ export function decodeReply(body, options) {
 }
 
 export function decodeAction(body) {
-  return decodeActionImpl(body, serverManifest);
+  return decodeActionImpl(body, serverManifest) ?? undefined;
 }
 
 export function decodeFormState(actionResult, body) {

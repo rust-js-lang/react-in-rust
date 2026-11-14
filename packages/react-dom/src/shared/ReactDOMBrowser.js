@@ -12,7 +12,7 @@ export function browser(reason) {
   // value cheap and let an SSR renderer initialize the error if it defers work.
   return {
     $$typeof: REACT_RECOVERABLE_TYPE,
-    _reason: reason,
+    _reason: reason ?? undefined,
   };
 }
 //# sourceMappingURL=ReactDOMBrowser.js.map

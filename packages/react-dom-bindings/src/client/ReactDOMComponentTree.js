@@ -305,7 +305,7 @@ export function markNodeAsHoistable(node) {
 }
 
 export function getScrollEndTimer(node) {
-  return node[internalScrollTimer];
+  return node[internalScrollTimer] ?? undefined;
 }
 
 export function setScrollEndTimer(node, timer) {

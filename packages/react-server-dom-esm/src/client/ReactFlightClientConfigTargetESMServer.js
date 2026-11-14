@@ -14,12 +14,12 @@ export function prepareDestinationForModuleImpl(
   nonce,
 ) {
   if (typeof moduleLoading === 'string') {
-    preinitModuleForSSR(moduleLoading + mod, nonce);
+    preinitModuleForSSR(moduleLoading + mod, nonce ?? undefined);
   } else if (moduleLoading !== null) {
     preinitModuleForSSR(
       moduleLoading.prefix + mod,
-      nonce,
-      moduleLoading.crossOrigin,
+      nonce ?? undefined,
+      moduleLoading.crossOrigin ?? undefined,
     );
   }
 }

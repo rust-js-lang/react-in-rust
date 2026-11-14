@@ -723,7 +723,7 @@ const localRequestAnimationFrame =
   typeof requestAnimationFrame === 'function'
     ? callback => {
         requestAnimationFrame(time => {
-          callback(time);
+          callback(time ?? undefined);
         });
       }
     : scheduleTimeout != null
@@ -2144,11 +2144,11 @@ export function startViewTransition(
             // $FlowFixMe[incompatible-type]
             effect.setKeyframes(keyframes);
             // Read back the new animation to see what the underlying width/height of the pseudo-element was.
+            // $FlowFixMe[prop-missing]
             const computedStyle = getComputedStyle(
               // $FlowFixMe[incompatible-type]
               $unwrap(effect.target),
-              // $FlowFixMe[prop-missing]
-              effect.pseudoElement,
+              effect.pseudoElement ?? undefined,
             );
             if (
               computedStyle.width !== width ||
@@ -2895,7 +2895,7 @@ FragmentInstance.prototype.addEventListener = function (
     listeners.push({
       type,
       listener,
-      optionsOrUseCapture,
+      optionsOrUseCapture: optionsOrUseCapture ?? undefined,
       attachedListener,
       cleanup,
     });
@@ -2981,7 +2981,7 @@ FragmentInstance.prototype.dispatchEvent = function (event) {
         temp.addEventListener(
           type,
           attachedListener,
-          getAttachOptions(optionsOrUseCapture),
+          getAttachOptions(optionsOrUseCapture) ?? undefined,
         );
       }
     }
@@ -2994,7 +2994,7 @@ FragmentInstance.prototype.dispatchEvent = function (event) {
         temp.removeEventListener(
           type,
           attachedListener,
-          getAttachOptions(optionsOrUseCapture),
+          getAttachOptions(optionsOrUseCapture) ?? undefined,
         );
       }
     }
@@ -3127,7 +3127,9 @@ FragmentInstance.prototype.getRootNode = function (getRootNodeOptions) {
   }
   const parentHostInstance = getInstanceFromHostFiber(parentHostFiber);
   // $FlowFixMe[incompatible-type] Flow expects Node
-  const rootNode = parentHostInstance.getRootNode(getRootNodeOptions);
+  const rootNode = parentHostInstance.getRootNode(
+    getRootNodeOptions ?? undefined,
+  );
   return rootNode;
 };
 
@@ -3300,7 +3302,7 @@ FragmentInstance.prototype.scrollIntoView = function (alignToTop) {
       if (host !== undefined) {
         // The ShadowRoot's host element marks the position where the
         // fragment's content would appear.
-        host.scrollIntoView(align);
+        host.scrollIntoView(align ?? undefined);
       } else if (__DEV__) {
         console.warn(
           'You are attempting to scroll a FragmentInstance that is only ' +
@@ -3312,7 +3314,7 @@ FragmentInstance.prototype.scrollIntoView = function (alignToTop) {
     } else {
       // Narrowed down to Element by nodeType check above, but Flow doesn't know that.
       const element = target;
-      element.scrollIntoView(align);
+      element.scrollIntoView(align ?? undefined);
     }
   }
 
@@ -3327,14 +3329,14 @@ FragmentInstance.prototype.scrollIntoView = function (alignToTop) {
       continue;
     }
     const instance = getInstanceFromHostFiber(child);
-    instance.scrollIntoView(align);
+    instance.scrollIntoView(align ?? undefined);
     i = (i + (resolvedAlignToTop ? -1 : 1)) | 0;
   }
 };
 
 function addEventListenerToChild(child, type, listener, optionsOrUseCapture) {
   const instance = getInstanceFromHostFiber(child);
-  instance.addEventListener(type, listener, optionsOrUseCapture);
+  instance.addEventListener(type, listener, optionsOrUseCapture ?? undefined);
   return false;
 }
 
@@ -3345,7 +3347,11 @@ function removeEventListenerFromChild(
   optionsOrUseCapture,
 ) {
   const instance = getInstanceFromHostFiber(child);
-  instance.removeEventListener(type, listener, optionsOrUseCapture);
+  instance.removeEventListener(
+    type,
+    listener,
+    optionsOrUseCapture ?? undefined,
+  );
   return false;
 }
 
@@ -3647,7 +3653,7 @@ export function commitNewChildToFragmentInstance(
       childInstance.addEventListener(
         type,
         attachedListener,
-        getAttachOptions(optionsOrUseCapture),
+        getAttachOptions(optionsOrUseCapture) ?? undefined,
       );
     }
   }
@@ -3678,7 +3684,7 @@ export function deleteChildFromFragmentInstance(
       childInstance.removeEventListener(
         type,
         attachedListener,
-        getAttachOptions(optionsOrUseCapture),
+        getAttachOptions(optionsOrUseCapture) ?? undefined,
       );
     }
   }
@@ -4562,7 +4568,10 @@ export function setupIntersectionObserver(targets, callback, options) {
     callback(Array.from(rectRatioCache.values()));
   }
 
-  const observer = new IntersectionObserver(handleIntersection, options);
+  const observer = new IntersectionObserver(
+    handleIntersection,
+    options ?? undefined,
+  );
   targets.forEach(target => {
     observer.observe(target);
   });

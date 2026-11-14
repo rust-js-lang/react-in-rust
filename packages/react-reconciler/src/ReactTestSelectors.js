@@ -504,7 +504,7 @@ export function observeVisibleRects(hostRoot, selectors, callback, options) {
   const {disconnect, observe, unobserve} = setupIntersectionObserver(
     instanceRoots,
     callback,
-    options,
+    options ?? undefined,
   );
 
   // When React mutates the host environment, we may need to change what we're listening to.

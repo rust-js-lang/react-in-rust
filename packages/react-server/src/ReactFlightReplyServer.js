@@ -1884,7 +1884,7 @@ export function createResponse(
     _chunks: chunks,
     _closed: false,
     _closedReason: null,
-    _temporaryReferences: temporaryReferences,
+    _temporaryReferences: temporaryReferences ?? undefined,
     _serverReferenceObjects: null,
     _serverReferenceCache: new WeakMap(),
     _serverObjectReferenceCache: new WeakMap(),
@@ -1931,7 +1931,7 @@ export function resolveFile(response, key, file) {
 export function resolveFileInfo(response, key, filename, mime) {
   return {
     chunks: [],
-    filename,
+    filename: filename ?? undefined,
     mime,
   };
 }

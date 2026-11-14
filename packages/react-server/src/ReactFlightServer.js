@@ -634,7 +634,7 @@ function RequestInstance(
   this.writtenObjects = new WeakMap();
   this.writtenImportStrings = new Map();
   this.writtenImportStringsSize = 0;
-  this.temporaryReferences = temporaryReferences;
+  this.temporaryReferences = temporaryReferences ?? undefined;
   this.identifierPrefix = identifierPrefix ?? '';
   this.identifierCount = 1;
   this.taintCleanupQueue = cleanupQueue;

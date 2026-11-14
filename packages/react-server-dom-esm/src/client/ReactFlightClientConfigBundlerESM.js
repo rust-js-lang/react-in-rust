@@ -15,7 +15,11 @@ import {$catchable} from '@rust-js/std';
 // though that risks it getting used in places it shouldn't be. This is unfortunate
 // but currently it seems to be the best option we have.
 export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
-  prepareDestinationForModuleImpl(moduleLoading, metadata[0], nonce);
+  prepareDestinationForModuleImpl(
+    moduleLoading,
+    metadata[0],
+    nonce ?? undefined,
+  );
 }
 
 export function resolveClientReference(bundlerConfig, metadata) {

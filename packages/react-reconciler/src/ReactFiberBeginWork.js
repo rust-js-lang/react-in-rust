@@ -334,7 +334,7 @@ export function reconcileChildren(
     workInProgress.child =
       reconcileChildFibers(
         workInProgress,
-        currentChild,
+        currentChild ?? undefined,
         nextChildren,
         renderLanes,
       ) ?? null;
@@ -357,8 +357,12 @@ function forceUnmountCurrentAndReconcile(
   // passing null.
   const currentChild = current.child;
   workInProgress.child =
-    reconcileChildFibers(workInProgress, currentChild, null, renderLanes) ??
-    null;
+    reconcileChildFibers(
+      workInProgress,
+      currentChild ?? undefined,
+      null,
+      renderLanes,
+    ) ?? null;
   // In the second pass, we mount the new children. The trick here is that we
   // pass null in place of where we usually pass the current child set. This has
   // the effect of remounting all children regardless of whether their
@@ -901,7 +905,12 @@ function retryActivityComponentWithoutHydrating(
 
   // This will add the old fiber to the deletion list
   const currentChild = current.child;
-  reconcileChildFibers(workInProgress, currentChild, null, renderLanes);
+  reconcileChildFibers(
+    workInProgress,
+    currentChild ?? undefined,
+    null,
+    renderLanes,
+  );
 
   // We're now not suspended nor dehydrated.
   const nextProps = workInProgress.pendingProps;
@@ -2747,7 +2756,12 @@ function retrySuspenseComponentWithoutHydrating(
 
   // This will add the old fiber to the deletion list
   const currentChild = current.child;
-  reconcileChildFibers(workInProgress, currentChild, null, renderLanes);
+  reconcileChildFibers(
+    workInProgress,
+    currentChild ?? undefined,
+    null,
+    renderLanes,
+  );
 
   // We're now not suspended nor dehydrated.
   const nextProps = workInProgress.pendingProps;
@@ -2801,7 +2815,12 @@ function mountSuspenseFallbackAfterRetryWithoutHydrating(
     // We will have dropped the effect list which contains the
     // deletion. We need to reconcile to delete the current child.
     const currentChild = current.child;
-    reconcileChildFibers(workInProgress, currentChild, null, renderLanes);
+    reconcileChildFibers(
+      workInProgress,
+      currentChild ?? undefined,
+      null,
+      renderLanes,
+    );
   }
 
   return fallbackChildFragment;

@@ -89,7 +89,7 @@ export function createRecoverableError(recoverable) {
   const options = reason != null ? {cause: initializedReason} : undefined;
   const error = new Error(
     'Browser-only rendering was requested by `browser()`.',
-    options,
+    options ?? undefined,
   );
   Object.defineProperty(error, REACT_RECOVERABLE_TYPE, {value: true});
   return error;
@@ -310,7 +310,7 @@ export function finishHooks(component, props, children, refOrContext) {
 export function getThenableStateAfterSuspending() {
   const old = thenableState;
   thenableState = null;
-  return old;
+  return old ?? undefined;
 }
 
 export function checkDidRenderIdHook() {

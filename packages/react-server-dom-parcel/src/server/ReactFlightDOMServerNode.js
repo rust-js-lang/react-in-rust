@@ -526,7 +526,7 @@ export function decodeReplyFromBusboy(busboyStream, options) {
         }
       } catch (error) {
         $catchable(error);
-        busboyStream.destroy(error);
+        busboyStream.destroy(error ?? undefined);
         return;
       }
       const value = $borrow($fieldCell(current, 'next'), true);
@@ -552,7 +552,7 @@ export function decodeReplyFromBusboy(busboyStream, options) {
         resolveField(response, name, value);
       } catch (error) {
         $catchable(error);
-        busboyStream.destroy(error);
+        busboyStream.destroy(error ?? undefined);
       }
     }
   });
@@ -592,7 +592,7 @@ export function decodeReplyFromBusboy(busboyStream, options) {
         }
       } catch (error) {
         $catchable(error);
-        busboyStream.destroy(error);
+        busboyStream.destroy(error ?? undefined);
       }
     });
     value.on('error', error => {
@@ -687,7 +687,7 @@ export function decodeReplyFromAsyncIterable(iterable, options) {
 }
 
 export function decodeAction(body) {
-  return decodeActionImpl(body, serverManifest);
+  return decodeActionImpl(body, serverManifest) ?? undefined;
 }
 
 export function decodeFormState(actionResult, body) {

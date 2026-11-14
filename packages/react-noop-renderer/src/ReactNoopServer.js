@@ -268,11 +268,11 @@ export function render(children, options) {
     null,
     // $FlowFixMe[incompatible-type]
     null,
-    options?.progressiveChunkSize,
-    options?.onError,
-    options?.onBrowserBailout,
-    options?.onAllReady,
-    options?.onShellReady,
+    options?.progressiveChunkSize ?? undefined,
+    options?.onError ?? undefined,
+    options?.onBrowserBailout ?? undefined,
+    options?.onAllReady ?? undefined,
+    options?.onShellReady ?? undefined,
   );
   // $FlowFixMe[prop-missing]
   // $FlowFixMe[incompatible-type]

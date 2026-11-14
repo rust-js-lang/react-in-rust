@@ -54,7 +54,7 @@ export function useState(initialState) {
 
 export function useReducer(reducer, initialArg, init) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useReducer(reducer, initialArg, init);
+  return dispatcher.useReducer(reducer, initialArg, init ?? undefined);
 }
 
 export function useRef(initialValue) {
@@ -70,7 +70,7 @@ export function useEffect(create, deps) {
   }
 
   const dispatcher = resolveDispatcher();
-  dispatcher.useEffect(create, deps);
+  dispatcher.useEffect(create ?? undefined, deps ?? undefined);
 }
 
 export function useInsertionEffect(create, deps) {
@@ -81,7 +81,7 @@ export function useInsertionEffect(create, deps) {
   }
 
   const dispatcher = resolveDispatcher();
-  dispatcher.useInsertionEffect(create, deps);
+  dispatcher.useInsertionEffect(create ?? undefined, deps ?? undefined);
 }
 
 export function useLayoutEffect(create, deps) {
@@ -92,28 +92,28 @@ export function useLayoutEffect(create, deps) {
   }
 
   const dispatcher = resolveDispatcher();
-  dispatcher.useLayoutEffect(create, deps);
+  dispatcher.useLayoutEffect(create ?? undefined, deps ?? undefined);
 }
 
 export function useCallback(callback, deps) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useCallback(callback, deps);
+  return dispatcher.useCallback(callback, deps ?? undefined);
 }
 
 export function useMemo(create, deps) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useMemo(create, deps);
+  return dispatcher.useMemo(create, deps ?? undefined);
 }
 
 export function useImperativeHandle(ref, create, deps) {
   const dispatcher = resolveDispatcher();
-  dispatcher.useImperativeHandle(ref, create, deps);
+  dispatcher.useImperativeHandle(ref ?? undefined, create, deps ?? undefined);
 }
 
 export function useDebugValue(value, formatterFn) {
   if (__DEV__) {
     const dispatcher = resolveDispatcher();
-    dispatcher.useDebugValue(value, formatterFn);
+    dispatcher.useDebugValue(value, formatterFn ?? undefined);
   }
 }
 
@@ -141,7 +141,7 @@ export function useSyncExternalStore(
   return dispatcher.useSyncExternalStore(
     subscribe,
     getSnapshot,
-    getServerSnapshot,
+    getServerSnapshot ?? undefined,
   );
 }
 
@@ -170,11 +170,15 @@ export function useEffectEvent(callback) {
 
 export function useOptimistic(passthrough, reducer) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useOptimistic(passthrough, reducer);
+  return dispatcher.useOptimistic(passthrough, reducer ?? undefined);
 }
 
 export function useActionState(action, initialState, permalink) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useActionState(action, initialState, permalink);
+  return dispatcher.useActionState(
+    action,
+    initialState,
+    permalink ?? undefined,
+  );
 }
 //# sourceMappingURL=ReactHooks.js.map

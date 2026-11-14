@@ -579,7 +579,7 @@ export function listenToFormSubmissionsForReplaying() {
     event.preventDefault();
 
     // Take a snapshot of the FormData at the time of the event.
-    const formData = new FormData(form, formDataSubmitter);
+    const formData = new FormData(form, formDataSubmitter ?? undefined);
 
     // Queue for replaying later. This field could potentially be shared with multiple
     // Reacts on the same page since each one will preventDefault for the next one.

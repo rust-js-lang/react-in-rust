@@ -125,7 +125,7 @@ function applyViewTransitionToClones(name, className, clones, fiber) {
         : // If we have multiple Host Instances below, we add a suffix to the name to give
           // each one a unique name.
           `${name}_${i}`,
-      className,
+      className ?? undefined,
     );
   }
   if (enableProfilerTimer && enableComponentPerformanceTrack) {

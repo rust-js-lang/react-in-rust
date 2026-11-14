@@ -737,7 +737,7 @@ export function safelyCallComponentWillUnmount(
         (current, nearestMountedAncestor, instance) => {
           $unwrap(callComponentWillUnmountInDEV)(
             current,
-            nearestMountedAncestor,
+            nearestMountedAncestor ?? undefined,
             instance,
           );
         },
@@ -760,7 +760,7 @@ export function safelyCallComponentWillUnmount(
       (current, nearestMountedAncestor, instance) => {
         $unwrap(callComponentWillUnmountInDEV)(
           current,
-          nearestMountedAncestor,
+          nearestMountedAncestor ?? undefined,
           instance,
         );
       },
@@ -1026,12 +1026,12 @@ function commitProfiler(
     onRender(
       id,
       phase,
+      finishedWork.actualDuration ?? undefined,
+      finishedWork.treeBaseDuration ?? undefined,
+      finishedWork.actualStartTime ?? undefined,
       // $FlowFixMe[incompatible-type]: This should be always a number in profiling mode
-      finishedWork.actualDuration,
       // $FlowFixMe[incompatible-type]: This should be always a number in profiling mode
-      finishedWork.treeBaseDuration,
       // $FlowFixMe[incompatible-type]: This should be always a number in profiling mode
-      finishedWork.actualStartTime,
       commitStartTime,
     );
   }

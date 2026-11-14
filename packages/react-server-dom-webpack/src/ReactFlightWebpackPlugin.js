@@ -501,7 +501,7 @@ export default class ReactFlightWebpackPlugin {
             flat.push(deps[i]);
           }
         }
-        callback(undefined, flat);
+        callback(undefined, flat ?? undefined);
       },
     );
   }

@@ -363,7 +363,7 @@ export function createRenderState(
     bootstrapChunks,
     importMapChunks,
 
-    onHeaders,
+    onHeaders: onHeaders ?? undefined,
     headers: headers ?? null,
     resets: {
       font: {},
@@ -399,8 +399,8 @@ export function createRenderState(
     },
 
     nonce: {
-      script: nonceScript,
-      style: nonceStyle,
+      script: nonceScript ?? undefined,
+      style: nonceStyle ?? undefined,
     },
     // like a module global for currently rendering boundary
     hoistableState: null,

@@ -142,7 +142,7 @@ function applyViewTransitionToHostInstancesRecursive(
             viewTransitionHostInstanceIdx === 0
               ? name
               : `${name}_${viewTransitionHostInstanceIdx}`,
-            className,
+            className ?? undefined,
           );
           viewTransitionHostInstanceIdx =
             (viewTransitionHostInstanceIdx + 1) >>> 0;
@@ -198,7 +198,7 @@ function applyViewTransitionToHostInstancesRecursive(
           : // If we have multiple Host Instances below, we add a suffix to the name to give
             // each one a unique name.
             `${name}_${viewTransitionHostInstanceIdx}`,
-        className,
+        className ?? undefined,
       );
       viewTransitionHostInstanceIdx = (viewTransitionHostInstanceIdx + 1) >>> 0;
     } else if (
@@ -846,7 +846,7 @@ function measureViewTransitionHostInstancesRecursive(
               viewTransitionHostInstanceIdx === 0
                 ? newName
                 : `${newName}_${viewTransitionHostInstanceIdx}`,
-              className,
+              className ?? undefined,
             );
           }
           // TODO: cancel transition by pushing into viewTransitionCancelableChildren
@@ -936,7 +936,7 @@ function measureViewTransitionHostInstancesRecursive(
             : // If we have multiple Host Instances below, we add a suffix to the name to give
               // each one a unique name.
               `${newName}_${viewTransitionHostInstanceIdx}`,
-          className,
+          className ?? undefined,
         );
       }
       if (!inViewport || (parentViewTransition.flags & Update) === NoFlags) {

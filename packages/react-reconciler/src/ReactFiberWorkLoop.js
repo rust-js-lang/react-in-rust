@@ -4701,7 +4701,7 @@ function flushGestureAnimations() {
 }
 
 function makeErrorInfo(componentStack) {
-  const errorInfo = {componentStack};
+  const errorInfo = {componentStack: componentStack ?? undefined};
   if (__DEV__) {
     Object.defineProperty(errorInfo, 'digest', {
       get() {

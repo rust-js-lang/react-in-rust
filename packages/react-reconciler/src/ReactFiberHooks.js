@@ -4156,7 +4156,7 @@ if (__DEV__) {
     useDebugValue(value, formatterFn) {
       currentHookNameInDev = 'useDebugValue';
       updateHookTypesDev();
-      updateDebugValue(value, formatterFn);
+      updateDebugValue(value, formatterFn ?? undefined);
     },
     useDeferredValue(value, initialValue) {
       currentHookNameInDev = 'useDeferredValue';
@@ -4305,7 +4305,7 @@ if (__DEV__) {
     useDebugValue(value, formatterFn) {
       currentHookNameInDev = 'useDebugValue';
       updateHookTypesDev();
-      updateDebugValue(value, formatterFn);
+      updateDebugValue(value, formatterFn ?? undefined);
     },
     useDeferredValue(value, initialValue) {
       currentHookNameInDev = 'useDeferredValue';
@@ -4640,7 +4640,7 @@ if (__DEV__) {
       currentHookNameInDev = 'useDebugValue';
       warnInvalidHookAccess();
       updateHookTypesDev();
-      updateDebugValue(value, formatterFn);
+      updateDebugValue(value, formatterFn ?? undefined);
     },
     useDeferredValue(value, initialValue) {
       currentHookNameInDev = 'useDeferredValue';
@@ -4814,7 +4814,7 @@ if (__DEV__) {
       currentHookNameInDev = 'useDebugValue';
       warnInvalidHookAccess();
       updateHookTypesDev();
-      updateDebugValue(value, formatterFn);
+      updateDebugValue(value, formatterFn ?? undefined);
     },
     useDeferredValue(value, initialValue) {
       currentHookNameInDev = 'useDeferredValue';
