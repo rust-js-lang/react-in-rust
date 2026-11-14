@@ -9,7 +9,7 @@ import type {BootstrapScriptDescriptor} from 'react-dom-bindings/src/server/Reac
 import type {
   OnBrowserBailout,
   OnError,
-  Request,
+  RequestInstance,
 } from 'react-server/src/ReactFizzServer';
 import type {Destination} from 'react-server/src/ReactServerStreamConfigFB';
 import type {ReactNodeList} from 'shared/ReactTypes';
@@ -29,7 +29,7 @@ export interface Options {
 
 export interface Stream {
   destination: Destination;
-  request: Request;
+  request: RequestInstance;
 }
 
 export function renderToStream(

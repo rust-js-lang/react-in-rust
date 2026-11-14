@@ -63,11 +63,11 @@ function murmurhash3_32_gc(key, seed) {
     let k1 =
       (((((($index(key, i) & 0xff) | (($index(key, i + 1) & 0xff) << 8)) >>>
         0) |
-        (($index(key, (i + 2) >>> 0) & 0xff) << 16)) >>>
+        (($index(key, i + 2) & 0xff) << 16)) >>>
         0) |
-        (($index(key, (i + 3) >>> 0) & 0xff) << 24)) >>>
+        (($index(key, i + 3) & 0xff) << 24)) >>>
       0;
-    i = (i + 4) >>> 0;
+    i += 4;
 
     k1 = Math.imul(k1, c1) >>> 0;
     k1 = ((k1 << 15) | (k1 >>> 17)) >>> 0;
@@ -83,10 +83,10 @@ function murmurhash3_32_gc(key, seed) {
 
   if (remainder > 0) {
     if (remainder === 3) {
-      k1 = (k1 ^ (($index(key, (i + 2) >>> 0) & 0xff) << 16)) >>> 0;
+      k1 = (k1 ^ (($index(key, i + 2) & 0xff) << 16)) >>> 0;
     }
     if (remainder >= 2) {
-      k1 = (k1 ^ (($index(key, (i + 1) >>> 0) & 0xff) << 8)) >>> 0;
+      k1 = (k1 ^ (($index(key, i + 1) & 0xff) << 8)) >>> 0;
     }
     k1 = (k1 ^ ($index(key, i) & 0xff)) >>> 0;
 
