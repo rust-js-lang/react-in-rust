@@ -6,7 +6,7 @@
 use js::{Map, Set, Unknown, reg_exp};
 use shared::environment::__DEV__;
 use shared::react_types::{ReactNodeList, ReactPortal};
-use webapi::{console, window};
+use webapi::{console, window_global::window};
 
 use shared::react_feature_flags::DISABLE_LEGACY_MODE;
 
@@ -156,14 +156,14 @@ js::on_load! {
     if __DEV__
         && !FOUND_DEV_TOOLS.with(|&found_dev_tools| found_dev_tools)
         && CAN_USE_DOM.with(|&can_use_dom| can_use_dom)
-        && window.top() == Some(window.self_())
+        && window().top() == Some(window().self_())
     {
         // If we're in Chrome or Firefox, provide a download link if not installed.
-        if (webapi::navigator.user_agent().contains("Chrome")
-            && !webapi::navigator.user_agent().contains("Edge"))
-            || webapi::navigator.user_agent().contains("Firefox")
+        if (webapi::window_global::navigator().user_agent().contains("Chrome")
+            && !webapi::window_global::navigator().user_agent().contains("Edge"))
+            || webapi::window_global::navigator().user_agent().contains("Firefox")
         {
-            let protocol = window.location().protocol();
+            let protocol = window().location().protocol();
             // Don't warn in exotic cases like chrome-extension://.
             if reg_exp::new("^(https?|file):$", "").test(&protocol) {
                 // eslint-disable-next-line react-internal/no-production-logging

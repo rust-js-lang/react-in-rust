@@ -9,7 +9,7 @@ use std::rc::Rc;
 use js::{Kind, Promise, SymbolFor, Unknown};
 use shared::environment::__DEV__;
 use shared::react_types::{ReactAsyncInfo, ReactIOInfo, Thenable};
-use webapi::{console, performance};
+use webapi::{console, global::performance};
 
 use shared::react_symbols::REACT_LAZY_TYPE;
 
@@ -58,7 +58,7 @@ fn lazy_initializer(payload: &Rc<Payload>) -> Option<&'static Unknown> {
         if __DEV__ && let Some(io_info) = payload.io_info.get() {
             // Mark when we first kicked off the lazy request.
             // $FlowFixMe[cannot-write]
-            let now = performance.now();
+            let now = performance().now();
             io_info.start.set(now);
             io_info.end.set(now);
             // Stash a Promise for introspection of the value later.
@@ -89,7 +89,7 @@ fn lazy_initializer(payload: &Rc<Payload>) -> Option<&'static Unknown> {
                     if __DEV__ && let Some(io_info) = resolved.io_info.get() {
                         // Mark the end time of when we resolved.
                         // $FlowFixMe[cannot-write]
-                        io_info.end.set(performance.now());
+                        io_info.end.set(performance().now());
                         // Surface the default export as the resolved "value" for debug purposes.
                         let debug_value = module_object
                             .and_then(|module_object| js::get(module_object, "default"));
@@ -121,7 +121,7 @@ fn lazy_initializer(payload: &Rc<Payload>) -> Option<&'static Unknown> {
                     if __DEV__ && let Some(io_info) = rejected.io_info.get() {
                         // Mark the end time of when we rejected.
                         // $FlowFixMe[cannot-write]
-                        io_info.end.set(performance.now());
+                        io_info.end.set(performance().now());
                         // Hide unhandled rejections.
                         // $FlowFixMe[incompatible-use]
                         let _: Promise<()> = io_info

@@ -3,7 +3,7 @@
 use std::cell::RefCell;
 
 use js::{Kind, function};
-use webapi::performance;
+use webapi::global::performance;
 
 use crate::react_dom_fizz_instruction_set_shared::{
     RevealBoundaries, client_render_boundary, complete_boundary, complete_boundary_with_styles,
@@ -30,8 +30,8 @@ js::on_load! {
     listen_to_form_submissions_for_replaying();
 
     // Track the paint time of the shell.
-    let entries = if js::truthy(js::get(performance, "getEntriesByType")) {
-        performance.get_entries_by_type("paint")
+    let entries = if js::truthy(js::get(performance(), "getEntriesByType")) {
+        performance().get_entries_by_type("paint")
     } else {
         Vec::new()
     };
@@ -43,7 +43,7 @@ js::on_load! {
     } else {
         // Otherwise we wait for the next rAF for it.
         webapi::window_global::request_animation_frame(Box::new(|_| {
-            set_rt(performance.now());
+            set_rt(performance().now());
         }));
     }
 }

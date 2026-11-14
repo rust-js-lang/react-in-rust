@@ -10,7 +10,9 @@ use std::rc::Rc;
 use js::{Promise, Unknown};
 use shared::environment::{__DEV__, turbopack_load_by_url};
 use shared::react_types::{ReactAsyncInfo, ReactDebugInfo, ReactIOInfo};
-use webapi::{Performance, document, performance, performance_resource_timing, url};
+use webapi::{
+    Performance, global::performance, performance_resource_timing, url, window_global::document,
+};
 
 use crate::shared::react_flight_import_metadata::Chunk;
 
@@ -38,7 +40,7 @@ pub fn add_chunk_debug_info(target: &mut ReactDebugInfo, filename: &str) {
         } else {
             let href = match std::panic::catch_unwind(|| {
                 // $FlowFixMe[incompatible-type]
-                url::new(filename, Some(&document.base_uri())).href()
+                url::new(filename, Some(&document().base_uri())).href()
             }) {
                 Ok(href) => href,
                 Err(_) => filename.to_owned(),
@@ -49,7 +51,7 @@ pub fn add_chunk_debug_info(target: &mut ReactDebugInfo, filename: &str) {
             // $FlowFixMe[method-unbinding]
             if js::is_function(Performance::get_entries_by_type) {
                 // We may be able to collect the start and end time of this resource from Performance Observer.
-                let resource_entries = performance.get_entries_by_type("resource");
+                let resource_entries = performance().get_entries_by_type("resource");
                 for resource_entry in resource_entries {
                     if resource_entry.name() == href {
                         start = resource_entry.start_time();

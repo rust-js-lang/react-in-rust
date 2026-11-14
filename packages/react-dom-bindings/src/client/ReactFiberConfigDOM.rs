@@ -17,10 +17,6 @@ use react_reconciler::react_test_selectors::BoundingRect;
 use react_reconciler::react_test_selectors::{Intersection, ObserveVisibleRectsCallback};
 use shared::environment::__DEV__;
 use shared::react_types::ReactContext;
-use webapi::global;
-use webapi::global::btoa;
-use webapi::window_global::get_computed_style;
-use webapi::window_global::match_media;
 use webapi::{
     AbortSignal, AddEventListenerOptions, AddEventListenerOptionsOrBool, Animation,
     AnimationTimeline, CSSNumberish, CSSStyleDeclaration, CSSStyleProperties, Comment, DOMRect,
@@ -30,11 +26,17 @@ use webapi::{
     IntoBoolOrScrollIntoViewOptions, IntoEventListenerOptionsOrBool, KeyframeAnimationOptions,
     Node, NumberOrCSSNumericValueOrStr, ResizeObserver, StartViewTransitionOptions, Text,
     TimelineRangeOffsetOrCSSNumericValueOrCSSKeywordValueOrStr, ViewTransition, Window, console,
-    css_unit_value, document, html_element, html_image_element, html_link_element,
-    html_select_element, keyframe_effect, navigator, node, window, window_global,
+    css_unit_value, html_element, html_image_element, html_link_element, html_select_element,
+    keyframe_effect, node, window_global,
+    window_global::{document, navigator, window},
 };
 use webapi::{
     HTMLImageElement, IntersectionObserverEntry, IntersectionObserverInit, intersection_observer,
+};
+use webapi::{
+    global,
+    global::btoa,
+    window_global::{get_computed_style, match_media},
 };
 
 use crate::react_dom_form_actions::{FormStatus, NOT_PENDING};
@@ -732,7 +734,7 @@ thread_local! {
 }
 
 pub fn should_attempt_eager_transition() -> bool {
-    let event = window.event();
+    let event = window().event();
     if let Some(event) = event
         && event.r#type() == "popstate"
     {
@@ -762,12 +764,12 @@ thread_local! {
 }
 
 pub fn track_scheduler_event() {
-    SCHEDULER_EVENT.set(window.event());
+    SCHEDULER_EVENT.set(window().event());
 }
 
 #[cfg_attr(rust_js, rust_js::nullable)]
 pub fn resolve_event_type() -> Option<String> {
-    let event = window.event();
+    let event = window().event();
     match event {
         Some(event) if Some(event) != SCHEDULER_EVENT.get() => Some(event.r#type()),
         _ => None,
@@ -775,7 +777,7 @@ pub fn resolve_event_type() -> Option<String> {
 }
 
 pub fn resolve_event_time_stamp() -> f64 {
-    let event = window.event();
+    let event = window().event();
     match event {
         Some(event) if Some(event) != SCHEDULER_EVENT.get() => event.time_stamp(),
         _ => -1.1,
@@ -1011,7 +1013,7 @@ thread_local! {
         ENABLE_MOVE_BEFORE
             && js::is_defined(window)
             && matches!(
-                js::classify(js::get(js::get(js::get(window, "Element"), "prototype"), "moveBefore")),
+                js::classify(js::get(js::get(js::get(window(), "Element"), "prototype"), "moveBefore")),
                 Kind::Function(_)
             );
 }
@@ -1172,7 +1174,7 @@ pub fn is_singleton_scope(r#type: &str) -> bool {
 }
 
 fn create_event(r#type: &str, bubbles: bool) -> &'static Event {
-    let event = document.create_event("Event");
+    let event = document().create_event("Event");
     event.init_event(r#type, Some(bubbles), Some(false));
     event
 }
@@ -1200,7 +1202,7 @@ fn dispatch_after_detached_blur(target: &'static Element) {
         // detached target on the "afterblur" event.
         js::set(event, "relatedTarget", target);
         // Dispatch the event on the document.
-        document.dispatch_event(event);
+        document().dispatch_event(event);
     }
 }
 
@@ -2974,14 +2976,14 @@ pub fn start_gesture_transition(
         // However, in Safari, that would cause a flicker because we're applying them late.
         // TODO: Think of a feature detection for this instead.
         let ready_callback: Rc<dyn Fn()> = Rc::new(ready_callback);
-        let ready_for_animations: Box<dyn FnOnce(())> = if navigator.user_agent().contains("Chrome")
-        {
-            Box::new(move |()| {
-                window_global::request_animation_frame(Box::new(move |_| ready_callback()));
-            })
-        } else {
-            Box::new(move |()| ready_callback())
-        };
+        let ready_for_animations: Box<dyn FnOnce(())> =
+            if navigator().user_agent().contains("Chrome") {
+                Box::new(move |()| {
+                    window_global::request_animation_frame(Box::new(move |_| ready_callback()));
+                })
+            } else {
+                Box::new(move |()| ready_callback())
+            };
         let handle_error = move |error: &'static JsError| {
             // $FlowFixMe[prop-missing]
             if js::strict_equals(js::get(owner_document, "__reactViewTransition"), transition) {
@@ -3123,7 +3125,7 @@ impl ViewTransitionPseudoElement {
     fn new(pseudo: &str, name: &str) -> Self {
         ViewTransitionPseudoElement {
             // TODO: Get the owner document from the root container.
-            scope: document.document_element().unwrap(),
+            scope: document().document_element().unwrap(),
             selector: "::view-transition-".to_owned() + pseudo + "(" + name + ")",
         }
     }
@@ -3465,7 +3467,7 @@ impl FragmentInstance {
             let temp: &Node = if parent_host_instance.node_type() == DOCUMENT_NODE {
                 webapi::document::unchecked_from(parent_host_instance).create_comment("")
             } else {
-                document.create_text_node("")
+                document().create_text_node("")
             };
             if let Some(event_listeners) = &event_listeners {
                 let mut i = 0;
@@ -4239,11 +4241,11 @@ fn scroll_text_node_into_view(text_node: &TextInstance, resolved_align_to_top: b
     range.select_node_contents(text_node);
     let rect = range.get_bounding_client_rect();
     let scroll_y = if resolved_align_to_top {
-        window.scroll_y() + rect.top()
+        window().scroll_y() + rect.top()
     } else {
-        window.scroll_y() + rect.bottom() - window.inner_height()
+        window().scroll_y() + rect.bottom() - window().inner_height()
     };
-    window.scroll_to_with_x_and_y(window.scroll_x() + rect.left(), scroll_y);
+    window().scroll_to_with_x_and_y(window().scroll_x() + rect.left(), scroll_y);
 }
 
 fn add_fragment_handle_to_fiber(
@@ -5742,7 +5744,7 @@ thread_local! {
     // because we may be rendering inside an iframe.
     #[cfg_attr(rust_js, rust_js::nullable)]
     static GLOBAL_DOCUMENT: Option<&'static Document> =
-        if js::is_defined(document) { Some(document) } else { None };
+        if js::is_defined(document) { Some(document()) } else { None };
 }
 
 #[cfg_attr(rust_js, rust_js::nullable)]

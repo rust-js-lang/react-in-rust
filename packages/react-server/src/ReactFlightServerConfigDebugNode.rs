@@ -9,7 +9,7 @@ use std::rc::Rc;
 use js::{Error, JsObject, Kind, Map, Unknown};
 use shared::environment::__DEV__;
 use shared::react_types::ReactStackTrace;
-use webapi::performance;
+use webapi::global::performance;
 
 use crate::react_flight_async_sequence::{
     AWAIT_NODE, AsyncSequence, IO_NODE, PROMISE_NODE, UNRESOLVED_AWAIT_NODE,
@@ -131,7 +131,7 @@ pub fn init_async_debug_info() {
                             tag: Cell::new(UNRESOLVED_AWAIT_NODE),
                             owner: resolve_owner(),
                             stack,
-                            start: Cell::new(performance.now()),
+                            start: Cell::new(performance().now()),
                             end: Cell::new(-1.1), // set when resolved.
                             promise: promise_ref,
                             // GAP rd567: a field's comment is lost where its value is a `let`-`else`'s binding.
@@ -148,7 +148,7 @@ pub fn init_async_debug_info() {
                             } else {
                                 parse_stack_trace_private(js::error::new(None, None), 5)
                             },
-                            start: Cell::new(performance.now()),
+                            start: Cell::new(performance().now()),
                             end: Cell::new(-1.1), // Set when we resolve.
                             promise: Some(js::weak_ref::new(unsafe {
                                 js::cast(Some(&**resource))
@@ -192,7 +192,7 @@ pub fn init_async_debug_info() {
                                 } else {
                                     None
                                 },
-                                start: Cell::new(performance.now()),
+                                start: Cell::new(performance().now()),
                                 end: Cell::new(-1.1), // Only set when pinged.
                                 promise: None,
                                 awaited: RefCell::new(None),
@@ -213,7 +213,7 @@ pub fn init_async_debug_info() {
                                     } else {
                                         None
                                     },
-                                    start: Cell::new(performance.now()),
+                                    start: Cell::new(performance().now()),
                                     end: Cell::new(-1.1), // Only set when pinged.
                                     promise: None,
                                     awaited: RefCell::new(None),
@@ -239,7 +239,7 @@ pub fn init_async_debug_info() {
                             // Log the end time when we resolved the I/O.
                             let io_node = &node;
                             if io_node.end.get() < 0.0 {
-                                io_node.end.set(performance.now());
+                                io_node.end.set(performance().now());
                             } else {
                                 // This can happen more than once if it's a recurring resource like a connection.
                                 // Even for single events like setTimeout, this can happen three times due to ticks
@@ -252,7 +252,7 @@ pub fn init_async_debug_info() {
                                     owner: io_node.owner,
                                     stack: io_node.stack.clone(),
                                     start: io_node.start.clone(),
-                                    end: Cell::new(performance.now()),
+                                    end: Cell::new(performance().now()),
                                     promise: io_node.promise,
                                     // GAP rd565: a `RefCell` field's `clone()`, a moment's
                                     // borrow, is counted, `$withBorrow($fieldCell(..))`,
@@ -272,7 +272,7 @@ pub fn init_async_debug_info() {
                             // $FlowFixMe[incompatible-type]
                             LAST_RAN_AWAIT.set(Some(resolve_promise_or_await_node(
                                 &node,
-                                performance.now(),
+                                performance().now(),
                             )));
                         }
                         AWAIT_NODE => {
@@ -284,7 +284,7 @@ pub fn init_async_debug_info() {
                             // piece of code that executes the return after the last await has the execution context
                             // of the Promise.
                             let resolved_node =
-                                resolve_promise_or_await_node(&node, performance.now());
+                                resolve_promise_or_await_node(&node, performance().now());
                             // We are missing information about what this was unblocked by but we can guess that it
                             // was whatever await we ran last since this will continue in a microtask after that.
                             // This is not perfect because there could potentially be other microtasks getting in
@@ -306,7 +306,7 @@ pub fn init_async_debug_info() {
                 if let Some(node) = node {
                     let resolved_node = match node.tag.get() {
                         UNRESOLVED_AWAIT_NODE | UNRESOLVED_PROMISE_NODE => {
-                            resolve_promise_or_await_node(&node, performance.now())
+                            resolve_promise_or_await_node(&node, performance().now())
                         }
                         AWAIT_NODE | PROMISE_NODE => {
                             // We already resolved this in the before hook.
@@ -350,7 +350,7 @@ pub fn init_async_debug_info() {
                                 // We started awaiting on the callback when the original .then() resolved.
                                 resolved_node.start.set(resolved_node.end.get());
                                 // It resolved now. We could use the end time of "awaited" maybe.
-                                resolved_node.end.set(performance.now());
+                                resolved_node.end.set(performance().now());
                                 *resolved_node.previous.borrow_mut() = Some(cloned_node);
                                 *resolved_node.awaited.borrow_mut() = Some(awaited);
                             }

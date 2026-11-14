@@ -8,7 +8,7 @@ use std::rc::Rc;
 
 use js::{Class, Dict, Kind, Unknown, dict, function, string};
 use react_reconciler::react_internal_types::Fiber;
-use webapi::{Event, EventTarget, KeyboardEvent, MouseEvent, window};
+use webapi::{Event, EventTarget, KeyboardEvent, MouseEvent, window_global::window};
 
 use crate::react_synthetic_event_type::ReactSyntheticEvent;
 
@@ -344,7 +344,7 @@ thread_local! {
                 if js::has(event, "clipboardData") {
                     js::get(event, "clipboardData")
                 } else {
-                    js::get(window, "clipboardData")
+                    js::get(window(), "clipboardData")
                 }
             }),
         )])));

@@ -4,7 +4,9 @@
 // LICENSE file in the root directory of this source tree.
 
 use js::Kind;
-use webapi::{Performance, navigator, performance, performance_resource_timing};
+use webapi::{
+    Performance, global::performance, performance_resource_timing, window_global::navigator,
+};
 
 fn is_likely_static_resource(initiator_type: &str) -> bool {
     matches!(
@@ -21,7 +23,7 @@ js::export_default! {
         if js::is_function(Performance::get_entries_by_type) {
             let mut count = 0;
             let mut bits = 0.0;
-            let resource_entries = performance.get_entries_by_type("resource");
+            let resource_entries = performance().get_entries_by_type("resource");
             let mut i = 0;
             while i < resource_entries.len() {
                 let entry = performance_resource_timing::unchecked_from(resource_entries[i]);
@@ -90,9 +92,9 @@ js::export_default! {
 
         // Fallback to the navigator.connection estimate if available
         // $FlowFixMe[prop-missing]
-        if js::truthy(js::get(navigator, "connection")) {
+        if js::truthy(js::get(navigator(), "connection")) {
             // $FlowFixMe[incompatible-use]
-            let downlink = js::get(js::get(navigator, "connection"), "downlink");
+            let downlink = js::get(js::get(navigator(), "connection"), "downlink");
             if let Kind::Number(downlink) = js::classify(downlink) {
                 return downlink;
             }

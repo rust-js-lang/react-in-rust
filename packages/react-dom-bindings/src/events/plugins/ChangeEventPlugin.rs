@@ -8,7 +8,10 @@ use std::rc::Rc;
 
 use js::Unknown;
 use react_reconciler::react_internal_types::Fiber;
-use webapi::{Event, EventTarget, Node, document, window};
+use webapi::{
+    Event, EventTarget, Node,
+    window_global::{document, window},
+};
 
 use crate::event_system_flags::EventSystemFlags;
 use crate::plugin_module_type::AnyNativeEvent;
@@ -157,8 +160,8 @@ thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "isInputEventSupported")]
     static IS_INPUT_EVENT_SUPPORTED: bool = CAN_USE_DOM.with(|can_use_dom| *can_use_dom)
         && is_event_supported("input")
-        && (!js::truthy(js::get(document, "documentMode"))
-            || unsafe { js::cast::<f64>(js::get(document, "documentMode")) } > 9.0);
+        && (!js::truthy(js::get(document(), "documentMode"))
+            || unsafe { js::cast::<f64>(js::get(document(), "documentMode")) } > 9.0);
 }
 
 /// (For IE <=9) Starts tracking propertychange events on the passed-in element
@@ -303,7 +306,7 @@ pub fn extract_events(
 ) {
     let target_node = match &target_inst {
         Some(target_inst) => get_node_from_instance(target_inst),
-        None => Some(js::unknown(window)),
+        None => Some(js::unknown(window())),
     };
 
     let mut get_target_inst_func: Option<GetTargetInstFunc> = None;

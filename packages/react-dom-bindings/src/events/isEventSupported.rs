@@ -5,7 +5,8 @@
 
 use js::Kind;
 use shared::execution_environment::CAN_USE_DOM;
-use webapi::{document, tags::Div};
+use webapi::tags::Div;
+use webapi::window_global::document;
 
 js::export_default! {
     /// Checks if an event is supported in the current execution environment.
@@ -25,10 +26,10 @@ js::export_default! {
         }
 
         let event_name = "on".to_owned() + event_name_suffix;
-        let mut is_supported = js::has(document, &event_name);
+        let mut is_supported = js::has(document(), &event_name);
 
         if !is_supported {
-            let element = document.create_element(Div);
+            let element = document().create_element(Div);
             element.set_attribute(&event_name, "return;");
             is_supported = matches!(js::classify(js::get(element, &event_name)), Kind::Function(_));
         }

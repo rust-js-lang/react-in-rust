@@ -3,8 +3,9 @@
 
 use webapi::events::DOMContentLoaded;
 use webapi::{
-    EventTargetExt, HTMLElement, MutationObserverInit, MutationRecord, Node, document,
-    html_element, mutation_observer, window,
+    EventTargetExt, HTMLElement, MutationObserverInit, MutationRecord, Node, html_element,
+    mutation_observer,
+    window_global::{document, window},
 };
 
 use crate::react_dom_fizz_instruction_set_shared::{RC, RR, RS, RX};
@@ -14,8 +15,8 @@ use crate::react_dom_fizz_instruction_set_shared::{RC, RR, RS, RX};
 js::import!("./ReactDOMFizzInstructionSetExternalRuntime.js");
 
 js::on_load! {
-    if let Some(body) = document.body() {
-        if document.ready_state() == "loading" {
+    if let Some(body) = document().body() {
+        if document().ready_state() == "loading" {
             install_fizz_instr_observer(body);
         }
         handle_existing_nodes(body);
@@ -24,8 +25,8 @@ js::on_load! {
         // runtime is sent in <head> (e.g. as a preinit resource)
         let dom_body_observer = mutation_observer::new(Box::new(|_, dom_body_observer| {
             // We expect the body node to be stable once parsed / created
-            if let Some(body) = document.body() {
-                if document.ready_state() == "loading" {
+            if let Some(body) = document().body() {
+                if document().ready_state() == "loading" {
                     install_fizz_instr_observer(body);
                 }
                 handle_existing_nodes(body);
@@ -37,7 +38,7 @@ js::on_load! {
         }));
         // documentElement must already exist at this point
         dom_body_observer.observe(
-            document.document_element().expect("a loading document has its element"),
+            document().document_element().expect("a loading document has its element"),
             Some(MutationObserverInit {
                 child_list: Some(true),
                 ..Default::default()
@@ -76,7 +77,7 @@ fn install_fizz_instr_observer(target: &Node) {
             ..Default::default()
         }),
     );
-    window.add_event_listener(
+    window().add_event_listener(
         DOMContentLoaded,
         move |_: &webapi::Event| {
             handle_mutations(&fizz_instr_observer.take_records());

@@ -5,7 +5,10 @@
 
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use webapi::{Document, Node, Selection, Window, document, window};
+use webapi::{
+    Document, Node, Selection, Window,
+    window_global::{document, window},
+};
 
 use crate::get_node_for_character_offset::get_node_for_character_offset;
 use crate::html_node_type::TEXT_NODE;
@@ -26,7 +29,7 @@ pub fn get_offsets(outer_node: &'static Node) -> Option<Offsets> {
     let owner_document = outer_node.owner_document();
     let win = owner_document
         .and_then(Document::default_view)
-        .unwrap_or(window);
+        .unwrap_or(window());
     let selection = if js::is_function((win, Window::get_selection)) {
         win.get_selection()
     } else {
@@ -169,8 +172,8 @@ pub fn get_modern_offsets_from_points(
 /// @param {DOMElement|DOMTextNode} node
 /// @param {object} offsets
 pub fn set_offsets(node: &'static Node, offsets: &Offsets) {
-    let doc = node.owner_document().unwrap_or(document);
-    let win = doc.default_view().unwrap_or(window);
+    let doc = node.owner_document().unwrap_or(document());
+    let win = doc.default_view().unwrap_or(window());
 
     // Edge fails with "Object expected" in some scenarios.
     // (For instance: TinyMCE editor used in a list component that supports pasting to add more,

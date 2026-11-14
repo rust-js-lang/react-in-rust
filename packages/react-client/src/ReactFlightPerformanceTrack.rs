@@ -15,7 +15,7 @@ use shared::react_performance_track_properties::{
 use shared::react_types::{ReactAsyncInfo, ReactComponentInfo, ReactIOInfo};
 use webapi::{
     IntoStrOrNumber, IntoStrOrPerformanceMeasureOptions, Performance, PerformanceMeasureOptions,
-    console, performance,
+    console, global::performance,
 };
 
 use shared::react_io_description::get_io_description;
@@ -137,9 +137,9 @@ pub fn log_component_render(
 
             debug_task.run(function::bind(
                 Performance::measure,
-                Some(&performance),
+                Some(&performance()),
                 (
-                    performance,
+                    performance(),
                     measure_name.as_str(),
                     Some(&PerformanceMeasureOptions {
                         start: Some((if start_time < 0.0 { 0.0 } else { start_time }).into()),
@@ -158,7 +158,7 @@ pub fn log_component_render(
                     None,
                 ),
             ));
-            performance.clear_measures(Some(&measure_name));
+            performance().clear_measures(Some(&measure_name));
         } else {
             console::time_stamp(
                 &measure_name,
@@ -201,7 +201,7 @@ pub fn log_component_aborted(
                 add_object_to_properties(js::unknown_of(props), &mut properties, 0, "");
             }
 
-            performance.measure(
+            performance().measure(
                 &measure_name,
                 Some(&PerformanceMeasureOptions {
                     start: Some((if start_time < 0.0 { 0.0 } else { start_time }).into()),
@@ -219,7 +219,7 @@ pub fn log_component_aborted(
                 }),
                 None,
             );
-            performance.clear_measures(Some(&measure_name));
+            performance().clear_measures(Some(&measure_name));
         } else {
             console::time_stamp(
                 &measure_name,
@@ -269,7 +269,7 @@ pub fn log_component_errored(
                 add_object_to_properties(js::unknown_of(props), &mut properties, 0, "");
             }
 
-            performance.measure(
+            performance().measure(
                 &measure_name,
                 Some(&PerformanceMeasureOptions {
                     start: Some((if start_time < 0.0 { 0.0 } else { start_time }).into()),
@@ -287,7 +287,7 @@ pub fn log_component_errored(
                 }),
                 None,
             );
-            performance.clear_measures(Some(&measure_name));
+            performance().clear_measures(Some(&measure_name));
         } else {
             console::time_stamp(
                 &measure_name,
@@ -469,9 +469,9 @@ pub fn log_component_await_aborted(
                     + " Aborted";
             debug_task.run(function::bind(
                 Performance::measure,
-                Some(&performance),
+                Some(&performance()),
                 (
-                    performance,
+                    performance(),
                     entry_name.as_str(),
                     Some(&PerformanceMeasureOptions {
                         start: Some((if start_time < 0.0 { 0.0 } else { start_time }).into()),
@@ -490,7 +490,7 @@ pub fn log_component_await_aborted(
                     None,
                 ),
             ));
-            performance.clear_measures(Some(&entry_name));
+            performance().clear_measures(Some(&entry_name));
         } else {
             console::time_stamp(
                 &entry_name,
@@ -544,9 +544,9 @@ pub fn log_component_await_errored(
             ) + " Rejected";
             debug_task.run(function::bind(
                 Performance::measure,
-                Some(&performance),
+                Some(&performance()),
                 (
-                    performance,
+                    performance(),
                     entry_name.as_str(),
                     Some(&PerformanceMeasureOptions {
                         start: Some((if start_time < 0.0 { 0.0 } else { start_time }).into()),
@@ -565,7 +565,7 @@ pub fn log_component_await_errored(
                     None,
                 ),
             ));
-            performance.clear_measures(Some(&entry_name));
+            performance().clear_measures(Some(&entry_name));
         } else {
             console::time_stamp(
                 &entry_name,
@@ -616,9 +616,9 @@ pub fn log_component_await(
             );
             debug_task.run(function::bind(
                 Performance::measure,
-                Some(&performance),
+                Some(&performance()),
                 (
-                    performance,
+                    performance(),
                     entry_name.as_str(),
                     Some(&PerformanceMeasureOptions {
                         start: Some((if start_time < 0.0 { 0.0 } else { start_time }).into()),
@@ -637,7 +637,7 @@ pub fn log_component_await(
                     None,
                 ),
             ));
-            performance.clear_measures(Some(&entry_name));
+            performance().clear_measures(Some(&entry_name));
         } else {
             console::time_stamp(
                 &entry_name,
@@ -677,9 +677,9 @@ pub fn log_io_info_errored(io_info: &ReactIOInfo, root_env: &str, error: Option<
 
             debug_task.run(function::bind(
                 Performance::measure,
-                Some(&performance),
+                Some(&performance()),
                 (
-                    performance,
+                    performance(),
                     measure_name.as_str(),
                     Some(&PerformanceMeasureOptions {
                         start: Some((if start_time < 0.0 { 0.0 } else { start_time }).into()),
@@ -698,7 +698,7 @@ pub fn log_io_info_errored(io_info: &ReactIOInfo, root_env: &str, error: Option<
                     None,
                 ),
             ));
-            performance.clear_measures(Some(&measure_name));
+            performance().clear_measures(Some(&measure_name));
         } else {
             console::time_stamp(
                 &measure_name,
@@ -733,9 +733,9 @@ pub fn log_io_info(io_info: &ReactIOInfo, root_env: &str, value: Option<&Unknown
                 get_io_long_name(io_info, &description, io_info.env.as_deref(), root_env);
             debug_task.run(function::bind(
                 Performance::measure,
-                Some(&performance),
+                Some(&performance()),
                 (
-                    performance,
+                    performance(),
                     measure_name.as_str(),
                     Some(&PerformanceMeasureOptions {
                         start: Some((if start_time < 0.0 { 0.0 } else { start_time }).into()),
@@ -754,7 +754,7 @@ pub fn log_io_info(io_info: &ReactIOInfo, root_env: &str, value: Option<&Unknown
                     None,
                 ),
             ));
-            performance.clear_measures(Some(&measure_name));
+            performance().clear_measures(Some(&measure_name));
         } else {
             console::time_stamp(
                 &measure_name,

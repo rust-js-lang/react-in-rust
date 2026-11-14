@@ -13,8 +13,8 @@ thread_local! {
 }
 
 thread_local! {
-    static GET_CURRENT_TIME: Box<dyn Fn() -> f64> = if js::is_object(webapi::performance) && js::is_function(webapi::Performance::now) {
-        let local_performance = webapi::performance;
+    static GET_CURRENT_TIME: Box<dyn Fn() -> f64> = if js::is_object(webapi::global::performance) && js::is_function(webapi::Performance::now) {
+        let local_performance = webapi::global::performance();
         Box::new(move || local_performance.now())
     } else {
         Box::new(js::date::now)

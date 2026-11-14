@@ -8,7 +8,10 @@ use std::rc::Rc;
 
 use js::{Unknown, string};
 use react_reconciler::react_internal_types::Fiber;
-use webapi::{EventTarget, document, keyboard_event, window};
+use webapi::{
+    EventTarget, keyboard_event,
+    window_global::{document, window},
+};
 
 use crate::event_system_flags::EventSystemFlags;
 use crate::plugin_module_type::AnyNativeEvent;
@@ -33,11 +36,11 @@ const START_KEYCODE: f64 = 229.0;
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "canUseCompositionEvent")]
     static CAN_USE_COMPOSITION_EVENT: bool =
-        CAN_USE_DOM.with(|can_use_dom| *can_use_dom) && js::has(window, "CompositionEvent");
+        CAN_USE_DOM.with(|can_use_dom| *can_use_dom) && js::has(window(), "CompositionEvent");
 
     static DOCUMENT_MODE: Option<&'static Unknown> =
-        if CAN_USE_DOM.with(|can_use_dom| *can_use_dom) && js::has(document, "documentMode") {
-            js::get(document, "documentMode")
+        if CAN_USE_DOM.with(|can_use_dom| *can_use_dom) && js::has(document(), "documentMode") {
+            js::get(document(), "documentMode")
         } else {
             js::null()
         };
@@ -47,7 +50,7 @@ thread_local! {
     // useful, so we don't use it.
     #[cfg_attr(rust_js, rust_js::name = "canUseTextInputEvent")]
     static CAN_USE_TEXT_INPUT_EVENT: bool = CAN_USE_DOM.with(|can_use_dom| *can_use_dom)
-        && js::has(window, "TextEvent")
+        && js::has(window(), "TextEvent")
         && !js::truthy(DOCUMENT_MODE.with(|document_mode| *document_mode));
 
     // In IE9+, we have access to composition events, but the data supplied

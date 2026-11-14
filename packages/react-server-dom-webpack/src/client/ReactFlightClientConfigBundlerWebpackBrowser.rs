@@ -13,7 +13,9 @@ use shared::environment::{
     webpack_get_script_filename,
 };
 use shared::react_types::{ReactAsyncInfo, ReactDebugInfo, ReactIOInfo};
-use webapi::{Performance, document, performance, performance_resource_timing, url};
+use webapi::{
+    Performance, global::performance, performance_resource_timing, url, window_global::document,
+};
 
 thread_local! {
     static CHUNK_MAP: RefCell<HashMap<String, String>> = RefCell::new(HashMap::new());
@@ -67,7 +69,7 @@ pub fn add_chunk_debug_info(target: &mut ReactDebugInfo, chunk_id: &str, _filena
             let script_filename = webpack_get_script_filename(chunk_id);
             let href = match std::panic::catch_unwind(|| {
                 // $FlowFixMe[incompatible-type]
-                url::new(&script_filename, Some(&document.base_uri())).href()
+                url::new(&script_filename, Some(&document().base_uri())).href()
             }) {
                 Ok(href) => href,
                 Err(_) => script_filename,
@@ -78,7 +80,7 @@ pub fn add_chunk_debug_info(target: &mut ReactDebugInfo, chunk_id: &str, _filena
             // $FlowFixMe[method-unbinding]
             if js::is_function(Performance::get_entries_by_type) {
                 // We may be able to collect the start and end time of this resource from Performance Observer.
-                let resource_entries = performance.get_entries_by_type("resource");
+                let resource_entries = performance().get_entries_by_type("resource");
                 for resource_entry in resource_entries {
                     if resource_entry.name() == href {
                         start = resource_entry.start_time();

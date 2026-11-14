@@ -19,7 +19,7 @@ use shared::react_types::{
 };
 use webapi::{
     ConsoleTask, FormDataEntryValue, ReadableStreamController, UnderlyingSource, console,
-    performance,
+    global::performance,
 };
 
 use shared::react_feature_flags::{
@@ -767,7 +767,7 @@ fn filter_debug_info(response: &'static Response, value: &Chunk) {
     // Remove any debug info entries after the defined end time. For async info
     // that means we're including anything that was awaited before the end time,
     // but it doesn't need to be resolved before the end time.
-    let relative_end_time = debug_end_time - performance.time_origin();
+    let relative_end_time = debug_end_time - performance().time_origin();
     let mut debug_info = Vec::new();
     let value_debug_info = Rc::clone(value._debug_info.borrow().as_ref().unwrap());
     for &info in value_debug_info.borrow().iter() {
@@ -786,7 +786,7 @@ fn prune_debug_info_after_error(response: &'static Response, chunk: &Chunk) {
         return;
     };
 
-    let relative_end_time = debug_end_time - performance.time_origin();
+    let relative_end_time = debug_end_time - performance().time_origin();
     let debug_info = Rc::clone(chunk._debug_info.borrow().as_ref().unwrap());
     let mut debug_info = debug_info.borrow_mut();
     for i in 0..debug_info.len() {
@@ -3912,7 +3912,7 @@ thread_local! {
                     // Note: createFromFetch allows this to be marked at the start of the fetch
                     // where as if you use createFromReadableStream from the body of the fetch
                     // then the start time is when the headers resolved.
-                    this._debug_start_time.set(Some(debug_start_time.unwrap_or_else(|| performance.now())));
+                    this._debug_start_time.set(Some(debug_start_time.unwrap_or_else(|| performance().now())));
                     this._debug_io_started.set(Some(false));
                     // We consider everything before the first setTimeout task to be cached data
                     // and is not considered I/O required to load the stream.
@@ -4087,7 +4087,7 @@ const MIN_CHUNK_SIZE: f64 = 65536.0;
 fn increment_chunk_debug_info(stream_state: &StreamState, chunk_length: f64) {
     if __DEV__ {
         let debug_info = Rc::clone(stream_state._debug_info.borrow().as_ref().unwrap());
-        let end_time = performance.now();
+        let end_time = performance().now();
         let previous_end_time = debug_info.end.get();
         let new_byte_length = debug_info.byte_size.get().unwrap() + chunk_length;
         if new_byte_length > stream_state._debug_target_chunk_size.get().unwrap()
@@ -6380,7 +6380,7 @@ fn process_full_string_row(
                 // Track the time origin for future debug info. We track it relative
                 // to the current environment's time space.
                 let time_origin = js::to_number(&*row);
-                response._time_origin.set(Some(time_origin - performance.time_origin()));
+                response._time_origin.set(Some(time_origin - performance().time_origin()));
                 return;
             }
             // Fallthrough to share the error with Debug and Console entries.

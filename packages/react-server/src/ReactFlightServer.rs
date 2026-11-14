@@ -22,7 +22,8 @@ use shared::react_types::{
     ReactStackTrace, Thenable,
 };
 use webapi::{
-    AbortController, AbortSignal, Blob, ConsoleTask, FormData, ReadableStream, console, performance,
+    AbortController, AbortSignal, Blob, ConsoleTask, FormData, ReadableStream, console,
+    global::performance,
 };
 
 use shared::react_feature_flags::{
@@ -1178,16 +1179,16 @@ impl Request {
                 // We expect `startTime` to be an absolute timestamp, so relativize it to match the other case.
                 time_origin = debug_start_time -
                     // $FlowFixMe[prop-missing]
-                    performance.time_origin();
+                    performance().time_origin();
             } else {
-                time_origin = performance.now();
+                time_origin = performance().now();
             }
             request.time_origin.set(time_origin);
             emit_time_origin_chunk(
                 &request,
                 time_origin +
                     // $FlowFixMe[prop-missing]
-                    performance.time_origin(),
+                    performance().time_origin(),
             );
             request.abort_time.set(-0.0);
         } else {
@@ -2601,7 +2602,7 @@ fn render_function_component(
 
             // Track when we started rendering this component.
             if ENABLE_PROFILER_TIMER.with(|&enabled| enabled) {
-                advance_task_time(request, task, performance.now());
+                advance_task_time(request, task, performance().now());
             }
 
             emit_debug_chunk(request, component_debug_id, js::unknown(debug_info));
@@ -4263,7 +4264,7 @@ fn outline_model_with_format_context(
         format_context, // Except for FormatContext we optimistically use it.
         &request.abortable_tasks,
         if ENABLE_PROFILER_TIMER.with(|&enabled| enabled) {
-            performance.now() // TODO: This should really inherit the time from the task.
+            performance().now() // TODO: This should really inherit the time from the task.
         } else {
             0.0
         },
@@ -4696,7 +4697,7 @@ fn serialize_blob(request: &Rc<Request>, blob: &'static Blob) -> String {
         create_root_format_context(),
         &request.abortable_tasks,
         if ENABLE_PROFILER_TIMER.with(|&enabled| enabled) {
-            performance.now() // TODO: This should really inherit the time from the task.
+            performance().now() // TODO: This should really inherit the time from the task.
         } else {
             0.0
         },
@@ -7963,7 +7964,7 @@ fn emit_chunk(request: &Rc<Request>, task: &Rc<Task>, value: Option<&'static Rea
 
 fn errored_task(request: &Rc<Request>, task: &Rc<Task>, error: Option<&'static Unknown>) {
     if ENABLE_PROFILER_TIMER.with(|&enabled| enabled) && task.timed.get() {
-        mark_operation_end_time(request, task, performance.now());
+        mark_operation_end_time(request, task, performance().now());
     }
     task.status.set(ERRORED);
     let digest = log_recoverable_error(request, error, Some(task));
@@ -8052,7 +8053,7 @@ fn retry_task(request: &Rc<Request>, task: &Rc<Task>) {
         }
         // We've finished rendering. Log the end time.
         if ENABLE_PROFILER_TIMER.with(|&enabled| enabled) && task.timed.get() {
-            mark_operation_end_time(request, task, performance.now());
+            mark_operation_end_time(request, task, performance().now());
         }
 
         if let Some(resolved_object) = js::classify(resolved_model).object() {
@@ -8663,7 +8664,7 @@ pub fn abort(request: &Rc<Request>, reason: Option<&'static Unknown>) {
     if let Err(error) = catch_unwind(AssertUnwindSafe(|| {
         request.status.set(ABORTING);
         if ENABLE_PROFILER_TIMER.with(|&enabled| enabled) {
-            request.abort_time.set(performance.now());
+            request.abort_time.set(performance().now());
         }
         request
             .cache_controller

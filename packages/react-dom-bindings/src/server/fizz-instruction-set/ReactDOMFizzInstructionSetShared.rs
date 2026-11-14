@@ -9,8 +9,10 @@ use webapi::events::{Error, Load, Submit};
 use webapi::window_global::request_animation_frame;
 use webapi::{
     Element, Event, EventTargetExt, HTMLElement, Node, StartViewTransitionOptions, SubmitEvent,
-    ViewTransition, comment, css, document, element, form_data, global, html_form_element,
-    html_image_element, node_list, performance, tags, window, window_global,
+    ViewTransition, comment, css, element, form_data, global,
+    global::performance,
+    html_form_element, html_image_element, node_list, tags, window_global,
+    window_global::{document, window},
 };
 
 const ELEMENT_NODE: f64 = 1.0;
@@ -123,7 +125,7 @@ pub(crate) fn set_rs(complete: &'static CompleteBoundary) {
 }
 
 pub fn reveal_completed_boundaries(batch: &Batch) {
-    set_rt(performance.now());
+    set_rt(performance().now());
     for i in (0..).step_by(2) {
         let Some(&suspense_id_node) = batch.borrow().get(i) else {
             break;
@@ -256,7 +258,7 @@ pub fn reveal_completed_boundaries_with_view_transitions(
         should_start_view_transition.set(true);
     };
     let started = panic::catch_unwind(AssertUnwindSafe(|| {
-        if let Some(existing_transition) = js::get(document, "__reactViewTransition")
+        if let Some(existing_transition) = js::get(document(), "__reactViewTransition")
             && js::truthy(Some(existing_transition))
         {
             // Retry after the previous ViewTransition finishes.
@@ -430,22 +432,22 @@ pub fn reveal_completed_boundaries_with_view_transitions(
                 let mut blocking_promises = vec![
                     // Force layout to trigger font loading, we stash the actual value to trick minifiers.
                     js::promise::resolve(
-                        document
+                        document()
                             .document_element()
                             .expect("a document has its element")
                             .client_height(),
                     )
                     .into_unknown(),
                     // Block on fonts finishing loading before revealing these boundaries.
-                    document.fonts().ready().into_unknown(),
+                    document().fonts().ready().into_unknown(),
                 ];
                 for &suspensey_image in &suspensey_images {
                     if !html_image_element::unchecked_from(suspensey_image).complete() {
                         let rect = suspensey_image.get_bounding_client_rect();
                         let in_viewport = rect.bottom() > 0.0
                             && rect.right() > 0.0
-                            && rect.top() < window.inner_height()
-                            && rect.left() < window.inner_width();
+                            && rect.top() < window().inner_height()
+                            && rect.left() < window().inner_width();
                         if in_viewport {
                             // TODO: Use decode() instead of the load event here once the fix in
                             // https://issues.chromium.org/issues/420748301 has propagated fully.
@@ -460,7 +462,7 @@ pub fn reveal_completed_boundaries_with_view_transitions(
                 js::promise::race(vec![
                     js::promise::all(blocking_promises).into_unknown(),
                     js::promise::new::<()>(|resolve, _| {
-                        let current_time = performance.now();
+                        let current_time = performance().now();
                         let ms_until_timeout =
                             // If the throttle would make us miss the target metric, then shorten the throttle.
                             // performance.now()'s zero value is assumed to be the start time of the metric.
@@ -477,11 +479,11 @@ pub fn reveal_completed_boundaries_with_view_transitions(
                     .into_unknown(),
                 ])
             });
-            let transition = document.start_view_transition(Some(&StartViewTransitionOptions {
+            let transition = document().start_view_transition(Some(&StartViewTransitionOptions {
                 update: Some(Some(&update)),
                 types: Some(Some(&[])), // TODO: Add a hard coded type for Suspense reveals.
             }));
-            js::set(document, "__reactViewTransition", transition);
+            js::set(document(), "__reactViewTransition", transition);
             let restore_queue = restore_queue.take();
             transition.ready().finally(move || {
                 // Restore all the names/classes that we applied to what they were before.
@@ -498,8 +500,8 @@ pub fn reveal_completed_boundaries_with_view_transitions(
                 }
             });
             transition.finished().finally(move || {
-                if js::get(document, "__reactViewTransition") == Some(js::unknown(transition)) {
-                    js::set(document, "__reactViewTransition", Kind::Null);
+                if js::get(document(), "__reactViewTransition") == Some(js::unknown(transition)) {
+                    js::set(document(), "__reactViewTransition", Kind::Null);
                 }
             });
             // Queue any future completions into its own batch since they won't have been
@@ -526,7 +528,7 @@ pub fn client_render_boundary(
     error_component_stack: Option<&str>,
 ) {
     // Find the fallback's first element.
-    let Some(suspense_id_node) = document.get_element_by_id(suspense_boundary_id) else {
+    let Some(suspense_id_node) = document().get_element_by_id(suspense_boundary_id) else {
         // The user must have already navigated away from this tree.
         // E.g. because the parent was hydrated.
         return;
@@ -561,7 +563,7 @@ pub fn client_render_boundary(
 }
 
 pub fn complete_boundary(suspense_boundary_id: &str, content_id: &str) {
-    let Some(content_node_outer) = document.get_element_by_id(content_id) else {
+    let Some(content_node_outer) = document().get_element_by_id(content_id) else {
         // If the client has failed hydration we may have already deleted the streaming
         // segments. The server may also have emitted a complete instruction but cancelled
         // the segment. Regardless we can ignore this case.
@@ -569,7 +571,7 @@ pub fn complete_boundary(suspense_boundary_id: &str, content_id: &str) {
     };
 
     // Find the fallback's first element.
-    let Some(suspense_id_node_outer) = document.get_element_by_id(suspense_boundary_id) else {
+    let Some(suspense_id_node_outer) = document().get_element_by_id(suspense_boundary_id) else {
         // We'll never reveal this boundary so we can remove its content immediately.
         // Otherwise we'll leave it in until we reveal it.
         // This is important in case this specific boundary contains other boundaries
@@ -603,7 +605,7 @@ pub fn complete_boundary(suspense_boundary_id: &str, content_id: &str) {
             let reveal = function::bind(RV, Some(&Kind::Null), (RB,));
             request_animation_frame(Box::new(move |_| reveal()));
         } else {
-            let current_time = performance.now();
+            let current_time = performance().now();
             let ms_until_timeout =
                 // If the throttle would make us miss the target metric, then shorten the throttle.
                 // performance.now()'s zero value is assumed to be the start time of the metric.
@@ -630,10 +632,10 @@ pub fn complete_segment(container_id: &str, placeholder_id: &str) {
     // We always expect both nodes to exist here because, while we might
     // have navigated away from the main tree, we still expect the detached
     // tree to exist.
-    let segment_container = document
+    let segment_container = document()
         .get_element_by_id(container_id)
         .expect("a segment's container is in the document");
-    let placeholder_node = document
+    let placeholder_node = document()
         .get_element_by_id(placeholder_id)
         .expect("a segment's placeholder is in the document");
     let parent = |node: &Element| {
@@ -727,7 +729,7 @@ pub fn complete_boundary_with_styles(
     stylesheet_descriptors: &[Vec<String>],
 ) {
     let precedences = js::map::new::<Option<String>, &Element>(None);
-    let this_document = document;
+    let this_document = document();
     let mut last_resource: Option<&Element> = None;
 
     // Seed the precedence list with existing resources and collect hoistable style tags
@@ -808,7 +810,7 @@ pub fn complete_boundary_with_styles(
         if js::truthy(loading_state)
             && media
                 .as_deref()
-                .is_none_or(|media| media.is_empty() || window.match_media(media).matches())
+                .is_none_or(|media| media.is_empty() || window().match_media(media).matches())
         {
             dependencies.push(unsafe { js::cast::<js::Promise<Option<&Unknown>>>(loading_state) });
         }
@@ -826,7 +828,7 @@ pub fn complete_boundary_with_styles(
         last_resource = insert_resource(precedences, last_resource, precedence, resource_el);
     }
 
-    if let Some(suspense_id_node_outer) = document.get_element_by_id(suspense_boundary_id) {
+    if let Some(suspense_id_node_outer) = document().get_element_by_id(suspense_boundary_id) {
         // Mark this Suspense boundary as queued so we know not to client render it
         // at the end of document load.
         let suspense_node_outer = suspense_id_node_outer
@@ -867,7 +869,7 @@ fn insert_resource(
             .expect("a resource is in the document")
             .insert_before(resource_el, prior.next_sibling());
     } else {
-        let head = document.head().expect("a document has a head");
+        let head = document().head().expect("a document has a head");
         head.insert_before(resource_el, head.first_child());
     }
     last_resource

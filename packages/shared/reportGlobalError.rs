@@ -4,7 +4,7 @@
 // LICENSE file in the root directory of this source tree.
 
 use js::{Kind, Unknown};
-use webapi::{ErrorEventInit, Window, console, window};
+use webapi::{ErrorEventInit, Window, console, window_global::window};
 
 thread_local! {
     pub static REPORT_GLOBAL_ERROR: fn(Option<&'static Unknown>) = if js::is_function(webapi::global::report_error::<Option<&Unknown>>) {
@@ -19,7 +19,7 @@ thread_local! {
                     Kind::String(message) => message.to_string(),
                     _ => js::string(error),
                 };
-                let event = window.new_error_event(
+                let event = window().new_error_event(
                     "error",
                     Some(ErrorEventInit {
                         bubbles: Some(true),
@@ -29,7 +29,7 @@ thread_local! {
                         ..Default::default()
                     }),
                 );
-                let should_log = window.dispatch_event(event);
+                let should_log = window().dispatch_event(event);
                 if !should_log {
                     return;
                 }

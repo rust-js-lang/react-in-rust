@@ -5,7 +5,7 @@
 
 use std::convert::Infallible;
 
-use webapi::window;
+use webapi::window_global::window;
 
 use crate::react_dom_event_listener::get_event_priority;
 use react_reconciler::react_event_priorities::{
@@ -35,7 +35,7 @@ pub fn resolve_update_priority() -> EventPriority {
     if update_priority != NO_EVENT_PRIORITY {
         return update_priority;
     }
-    let Some(current_event) = window.event() else {
+    let Some(current_event) = window().event() else {
         return DEFAULT_EVENT_PRIORITY;
     };
     get_event_priority(&current_event.r#type())

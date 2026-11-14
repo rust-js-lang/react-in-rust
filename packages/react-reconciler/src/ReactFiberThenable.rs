@@ -12,7 +12,7 @@ use js::{Error, JsError, Kind, Unknown};
 use react_isomorphic::react_lazy::LazyComponent;
 use shared::environment::__DEV__;
 use shared::react_types::{ReactAsyncInfo, ReactIOInfo, Thenable};
-use webapi::{console, performance};
+use webapi::{console, global::performance};
 
 use crate::react_internal_types::Fiber;
 
@@ -189,7 +189,7 @@ pub fn track_used_thenable(
         // an inferred debug info so that we're able to track its potential I/O uniquely.
         // We don't know the real start time since the I/O could have started much
         // earlier and this could even be a cached Promise. Could be misleading.
-        let start_time = performance.now();
+        let start_time = performance().now();
         let display_name = thenable.display_name();
         let io_info = Rc::new(ReactIOInfo {
             name: Cell::new(match js::classify(display_name) {
@@ -224,7 +224,7 @@ pub fn track_used_thenable(
         // Track when we resolved the Promise as the approximate end time.
         if !matches!(thenable.status().as_deref(), Some("fulfilled" | "rejected")) {
             let track_end_time = move |_| {
-                io_info.end.set(performance.now());
+                io_info.end.set(performance().now());
             };
             thenable.then(track_end_time.clone(), track_end_time);
         }

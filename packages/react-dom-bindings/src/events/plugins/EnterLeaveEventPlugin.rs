@@ -7,7 +7,7 @@ use std::rc::Rc;
 
 use js::Unknown;
 use react_reconciler::react_internal_types::Fiber;
-use webapi::{EventTarget, mouse_event, window};
+use webapi::{EventTarget, mouse_event, window_global::window};
 
 use crate::event_system_flags::EventSystemFlags;
 use crate::plugin_module_type::AnyNativeEvent;
@@ -108,7 +108,7 @@ pub fn extract_events(
                 js::get(doc, "parentWindow")
             };
         } else {
-            win = Some(js::unknown(window));
+            win = Some(js::unknown(window()));
         }
     }
 

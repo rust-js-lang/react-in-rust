@@ -8,7 +8,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use js::{PropertyDescriptor, object};
 use shared::execution_environment::CAN_USE_DOM;
-use webapi::{AddEventListenerOptions, EventListenerObject, EventTargetExt, window};
+use webapi::{AddEventListenerOptions, EventListenerObject, EventTargetExt, window_global::window};
 
 thread_local! {
     pub static PASSIVE_BROWSER_EVENTS_SUPPORTED: Cell<bool> = const { Cell::new(false) };
@@ -32,8 +32,8 @@ js::on_load! {
                 },
             );
             let listener: &EventListenerObject = unsafe { js::cast(Some(js::unknown(&options))) };
-            window.add_event_listener_named("test", listener, Some(&options));
-            window.remove_event_listener_named("test", listener, Some(&options));
+            window().add_event_listener_named("test", listener, Some(&options));
+            window().remove_event_listener_named("test", listener, Some(&options));
         }))
         .is_err()
     {

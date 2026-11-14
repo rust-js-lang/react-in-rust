@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use webapi::{Event, EventTarget, node, window};
+use webapi::{Event, EventTarget, node, window_global::window};
 
 use crate::html_node_type::TEXT_NODE;
 
@@ -18,7 +18,7 @@ pub fn get_event_target(native_event: &Event) -> Option<&'static EventTarget> {
     let mut target = native_event
         .target()
         .or_else(|| native_event.src_element())
-        .unwrap_or(window);
+        .unwrap_or(window());
 
     // Normalize SVG <use> element events #4963
     if let Some(corresponding_use_element) = js::get(target, "correspondingUseElement")

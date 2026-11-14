@@ -6,7 +6,9 @@
 use std::cell::Cell;
 
 use js::{Dict, Unknown, dict};
-use webapi::{document, tags::Div, window};
+use webapi::tags::Div;
+use webapi::window_global::document;
+use webapi::window_global::window;
 
 unsafe extern "Rust" {
     #[link_name = "shared/ExecutionEnvironment#canUseDOM"]
@@ -63,13 +65,13 @@ thread_local! {
 // Bootstrap if a DOM exists.
 js::on_load! {
     if CAN_USE_DOM {
-        STYLE.set(js::unknown(document.create_element(Div).style()));
+        STYLE.set(js::unknown(document().create_element(Div).style()));
 
         // On some platforms, in particular some releases of Android 4.x,
         // the un-prefixed "animation" and "transition" properties are defined on the
         // style object but the events that fire will still be prefixed, so we need
         // to check if the un-prefixed events are usable, and if not remove them from the map.
-        if !js::has(window, "AnimationEvent") {
+        if !js::has(window(), "AnimationEvent") {
             VENDOR_PREFIXES.with(|vendor_prefixes| {
                 js::delete(dict::get(vendor_prefixes, "animationcancel"), "animation");
                 js::delete(dict::get(vendor_prefixes, "animationend"), "animation");
@@ -79,7 +81,7 @@ js::on_load! {
         }
 
         // Same as above
-        if !js::has(window, "TransitionEvent") {
+        if !js::has(window(), "TransitionEvent") {
             VENDOR_PREFIXES.with(|vendor_prefixes| {
                 js::delete(dict::get(vendor_prefixes, "transitionend"), "transition");
             });

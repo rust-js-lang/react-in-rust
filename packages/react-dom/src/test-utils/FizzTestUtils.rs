@@ -11,7 +11,8 @@ use react_isomorphic::create_element;
 use shared::react_types::{ReactNode, ReactNodeList};
 use webapi::{
     Document, Element, ErrorEventInit, HTMLCollection, Node, character_data, document, element,
-    html_collection, named_node_map, node_list, window,
+    html_collection, named_node_map, node_list,
+    window_global::{document, window},
 };
 
 /// What `insertNodesAndExecuteScripts` moves the nodes of.
@@ -109,7 +110,7 @@ async fn execute_script(script: &Element) {
     };
     let script_src = script.get_attribute("src");
     if let Some(script_src) = script_src.filter(|src| !src.is_empty()) {
-        if document != owner_document {
+        if document() != owner_document {
             panic!(
                 "You must set the current document to the global document to use script src in tests"
             );
@@ -121,7 +122,7 @@ async fn execute_script(script: &Element) {
             // `module.require` is the function Jest gives a module as both.
             node::module.require(&script_src);
         }) {
-            let event = window.new_error_event(
+            let event = window().new_error_event(
                 "error",
                 Some(ErrorEventInit {
                     error: x
@@ -130,7 +131,7 @@ async fn execute_script(script: &Element) {
                     ..Default::default()
                 }),
             );
-            window.dispatch_event(event);
+            window().dispatch_event(event);
         }
     } else {
         let new_script = owner_document.create_element_named("script", None);

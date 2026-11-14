@@ -12,7 +12,7 @@ use js::{Kind, Unknown, function};
 use shared::environment::__DEV__;
 use webapi::{
     ConsoleTask, IntoStrOrNumber, IntoStrOrPerformanceMeasureOptions, Performance,
-    PerformanceMeasureOptions, console, performance,
+    PerformanceMeasureOptions, console, global::performance,
 };
 
 use crate::react_captured_value::CapturedValue;
@@ -156,18 +156,18 @@ fn log_component_trigger(fiber: &Fiber, start_time: f64, end_time: f64, trigger:
         if __DEV__ && let Some(debug_task) = debug_task {
             debug_task.run(function::bind(
                 Performance::measure,
-                Some(&performance),
+                Some(&performance()),
                 (
-                    performance,
+                    performance(),
                     trigger,
                     Some(&options as &dyn IntoStrOrPerformanceMeasureOptions),
                     None,
                 ),
             ));
         } else {
-            performance.measure(trigger, Some(&options), None);
+            performance().measure(trigger, Some(&options), None);
         }
-        performance.clear_measures(Some(trigger));
+        performance().clear_measures(Some(trigger));
     }
 }
 
@@ -322,18 +322,18 @@ pub fn log_component_render(
                     if let Some(debug_task) = debug_task {
                         debug_task.run(function::bind(
                             Performance::measure,
-                            Some(&performance),
+                            Some(&performance()),
                             (
-                                performance,
+                                performance(),
                                 measure_name.as_str(),
                                 Some(&options as &dyn IntoStrOrPerformanceMeasureOptions),
                                 None,
                             ),
                         ));
                     } else {
-                        performance.measure(&measure_name, Some(&options), None);
+                        performance().measure(&measure_name, Some(&options), None);
                     }
-                    performance.clear_measures(Some(&measure_name));
+                    performance().clear_measures(Some(&measure_name));
                 } else if let Some(debug_task) = debug_task {
                     let (start_time, end_time): (&dyn IntoStrOrNumber, &dyn IntoStrOrNumber) =
                         (&start_time, &end_time);
@@ -464,18 +464,18 @@ pub fn log_component_errored(
             if __DEV__ && let Some(debug_task) = debug_task {
                 debug_task.run(function::bind(
                     Performance::measure,
-                    Some(&performance),
+                    Some(&performance()),
                     (
-                        performance,
+                        performance(),
                         measure_name.as_str(),
                         Some(&options as &dyn IntoStrOrPerformanceMeasureOptions),
                         None,
                     ),
                 ));
             } else {
-                performance.measure(&measure_name, Some(&options), None);
+                performance().measure(&measure_name, Some(&options), None);
             }
-            performance.clear_measures(Some(&measure_name));
+            performance().clear_measures(Some(&measure_name));
         } else {
             console::time_stamp(
                 &name,
@@ -545,18 +545,18 @@ fn log_component_effect_errored(
             if let Some(debug_task) = debug_task {
                 debug_task.run(function::bind(
                     Performance::measure,
-                    Some(&performance),
+                    Some(&performance()),
                     (
-                        performance,
+                        performance(),
                         measure_name.as_str(),
                         Some(&options as &dyn IntoStrOrPerformanceMeasureOptions),
                         None,
                     ),
                 ));
             } else {
-                performance.measure(&measure_name, Some(&options), None);
+                performance().measure(&measure_name, Some(&options), None);
             }
-            performance.clear_measures(Some(&measure_name));
+            performance().clear_measures(Some(&measure_name));
         } else {
             console::time_stamp(
                 &name,
@@ -848,18 +848,18 @@ pub fn log_blocking_start(
                 if let Some(debug_task) = debug_task {
                     debug_task.run(function::bind(
                         Performance::measure,
-                        Some(&performance),
+                        Some(&performance()),
                         (
-                            performance,
+                            performance(),
                             label,
                             Some(&measure_options as &dyn IntoStrOrPerformanceMeasureOptions),
                             None,
                         ),
                     ));
                 } else {
-                    performance.measure(label, Some(&measure_options), None);
+                    performance().measure(label, Some(&measure_options), None);
                 }
-                performance.clear_measures(Some(label));
+                performance().clear_measures(Some(label));
             } else {
                 console::time_stamp(
                     label,
@@ -986,18 +986,18 @@ pub fn log_gesture_start(
                 if let Some(debug_task) = debug_task {
                     debug_task.run(function::bind(
                         Performance::measure,
-                        Some(&performance),
+                        Some(&performance()),
                         (
-                            performance,
+                            performance(),
                             label,
                             Some(&measure_options as &dyn IntoStrOrPerformanceMeasureOptions),
                             None,
                         ),
                     ));
                 } else {
-                    performance.measure(label, Some(&measure_options), None);
+                    performance().measure(label, Some(&measure_options), None);
                 }
-                performance.clear_measures(Some(label));
+                performance().clear_measures(Some(label));
             } else {
                 console::time_stamp(
                     label,
@@ -1161,18 +1161,18 @@ pub fn log_transition_start(
                 if let Some(debug_task) = debug_task {
                     debug_task.run(function::bind(
                         Performance::measure,
-                        Some(&performance),
+                        Some(&performance()),
                         (
-                            performance,
+                            performance(),
                             label,
                             Some(&measure_options as &dyn IntoStrOrPerformanceMeasureOptions),
                             None,
                         ),
                     ));
                 } else {
-                    performance.measure(label, Some(&measure_options), None);
+                    performance().measure(label, Some(&measure_options), None);
                 }
-                performance.clear_measures(Some(label));
+                performance().clear_measures(Some(label));
             } else {
                 console::time_stamp(
                     label,
@@ -1426,18 +1426,18 @@ pub fn log_recovered_render_phase(
             if let Some(debug_task) = debug_task {
                 debug_task.run(function::bind(
                     Performance::measure,
-                    Some(&performance),
+                    Some(&performance()),
                     (
-                        performance,
+                        performance(),
                         "Recovered",
                         Some(&options as &dyn IntoStrOrPerformanceMeasureOptions),
                         None,
                     ),
                 ));
             } else {
-                performance.measure("Recovered", Some(&options), None);
+                performance().measure("Recovered", Some(&options), None);
             }
-            performance.clear_measures(Some("Recovered"));
+            performance().clear_measures(Some("Recovered"));
         } else {
             console::time_stamp(
                 "Recovered",
@@ -1655,18 +1655,18 @@ pub fn log_commit_errored(
             if let Some(debug_task) = debug_task {
                 debug_task.run(function::bind(
                     Performance::measure,
-                    Some(&performance),
+                    Some(&performance()),
                     (
-                        performance,
+                        performance(),
                         "Errored",
                         Some(&options as &dyn IntoStrOrPerformanceMeasureOptions),
                         None,
                     ),
                 ));
             } else {
-                performance.measure("Errored", Some(&options), None);
+                performance().measure("Errored", Some(&options), None);
             }
-            performance.clear_measures(Some("Errored"));
+            performance().clear_measures(Some("Errored"));
         } else {
             console::time_stamp(
                 "Errored",

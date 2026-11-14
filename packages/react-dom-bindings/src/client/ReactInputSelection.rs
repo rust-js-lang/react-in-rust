@@ -7,7 +7,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use webapi::{
     Document, Element, HTMLElement, Node, element, html_element, html_i_frame_element,
-    html_input_element, window,
+    html_input_element, window_global::window,
 };
 
 use crate::get_active_element::get_active_element;
@@ -72,7 +72,7 @@ fn get_active_element_deep(container_info: Option<&Node>) -> Option<&'static Ele
     let mut win = container_info
         .and_then(Node::owner_document)
         .and_then(Document::default_view)
-        .unwrap_or(window);
+        .unwrap_or(window());
     let mut element = get_active_element(Some(win.document()));
     while let Some(iframe) = element
         && js::instance_of(iframe, js::get(win, "HTMLIFrameElement"))

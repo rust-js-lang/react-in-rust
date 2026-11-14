@@ -8,7 +8,10 @@ use std::rc::Rc;
 
 use js::Unknown;
 use react_reconciler::react_internal_types::Fiber;
-use webapi::{Element, EventTarget, Node, document, window};
+use webapi::{
+    Element, EventTarget, Node,
+    window_global::{document, window},
+};
 
 use crate::event_system_flags::EventSystemFlags;
 use crate::plugin_module_type::AnyNativeEvent;
@@ -35,8 +38,8 @@ use crate::dom_plugin_event_system::{
 thread_local! {
     #[cfg_attr(rust_js, rust_js::name = "skipSelectionChangeEvent")]
     static SKIP_SELECTION_CHANGE_EVENT: bool = CAN_USE_DOM.with(|can_use_dom| *can_use_dom)
-        && js::has(document, "documentMode")
-        && unsafe { js::cast::<f64>(js::get(document, "documentMode")) } <= 11.0;
+        && js::has(document(), "documentMode")
+        && unsafe { js::cast::<f64>(js::get(document(), "documentMode")) } <= 11.0;
 }
 
 pub fn register_events() {
@@ -95,7 +98,7 @@ fn get_selection(node: &'static Element) -> &'static Unknown {
             end: js::get(node, "selectionEnd"),
         })
     } else {
-        let win = node.owner_document().default_view().unwrap_or(window);
+        let win = node.owner_document().default_view().unwrap_or(window());
         let selection = win.get_selection().unwrap();
         js::unknown_of(DocumentSelection {
             anchor_node: selection.anchor_node(),
@@ -194,7 +197,7 @@ pub fn extract_events(
 ) {
     let target_node = match &target_inst {
         Some(target_inst) => get_node_from_instance(target_inst),
-        None => Some(js::unknown(window)),
+        None => Some(js::unknown(window())),
     };
 
     match dom_event_name {

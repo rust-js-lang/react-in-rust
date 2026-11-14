@@ -10,7 +10,7 @@ use std::rc::Rc;
 use js::{TimeoutId, function};
 use webapi::{
     Performance, Scheduler, SchedulerPostTaskOptions, TaskController, TaskControllerInit, Window,
-    task_controller, window,
+    task_controller, window_global::window,
 };
 
 use crate::scheduler_priorities::{
@@ -37,9 +37,9 @@ pub use crate::scheduler_priorities::USER_BLOCKING_PRIORITY as UNSTABLE_USER_BLO
 
 thread_local! {
     // Capture local references to native APIs, in case a polyfill overrides them.
-    static PERF: &'static Performance = window.performance();
+    static PERF: &'static Performance = window().performance();
     static SET_TIMEOUT: &'static dyn Fn(Box<dyn FnOnce()>, Option<f64>) -> &'static TimeoutId =
-        js::method((window, Window::set_timeout));
+        js::method((window(), Window::set_timeout));
 
     // Use experimental Chrome Scheduler postTask API.
     static SCHEDULER: &'static Scheduler = webapi::global_this.scheduler();
