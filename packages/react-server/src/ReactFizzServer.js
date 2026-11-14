@@ -1919,11 +1919,7 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
         const row = createSuspenseListRow(previousSuspenseListRow);
         task.row = row;
         previousSuspenseListRow = row;
-        task.treeContext = pushTreeContext(
-          prevTreeContext,
-          totalChildren,
-          i | 0,
-        );
+        task.treeContext = pushTreeContext(prevTreeContext, totalChildren, i);
         const resumeSegmentId = resumeSlots[String(i)];
         // TODO: If this errors we should still continue with the next sibling.
         if (resumeSegmentId != null) {
@@ -1954,11 +1950,7 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
         const row = createSuspenseListRow(previousSuspenseListRow);
         task.row = row;
         previousSuspenseListRow = row;
-        task.treeContext = pushTreeContext(
-          prevTreeContext,
-          totalChildren,
-          i | 0,
-        );
+        task.treeContext = pushTreeContext(prevTreeContext, totalChildren, i);
         renderNode(request, task, node, i);
         row.pendingTasks--;
         if (row.pendingTasks === 0) {
@@ -2004,7 +1996,7 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
       const row = createSuspenseListRow(previousSuspenseListRow);
       task.row = row;
       previousSuspenseListRow = row;
-      task.treeContext = pushTreeContext(prevTreeContext, totalChildren, i | 0);
+      task.treeContext = pushTreeContext(prevTreeContext, totalChildren, i);
       const newSegment = createPendingSegment(
         request,
         insertionIndex,

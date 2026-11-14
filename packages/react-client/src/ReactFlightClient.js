@@ -4969,7 +4969,7 @@ function flushComponentPerformance(
           }
         }
         endTime = time; // The end time of the next entry is this time.
-        endTimeIdx = i | 0;
+        endTimeIdx = i;
       }
     } finally {
       $unborrow(debugInfo$1);
