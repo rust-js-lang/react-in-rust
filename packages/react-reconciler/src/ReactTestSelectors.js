@@ -24,13 +24,7 @@ import {
   setupIntersectionObserver,
   supportsTestSelectors,
 } from './ReactFiberConfig.js';
-import {
-  $index,
-  $removeOutOfBounds,
-  $toLowercase,
-  $withBorrow,
-  $withBorrowMut,
-} from '@rust-js/std';
+import {$index, $toLowercase, $withBorrow, $withBorrowMut} from '@rust-js/std';
 
 let COMPONENT_TYPE = 0b000;
 let HAS_PSEUDO_CLASS_TYPE = 0b001;
@@ -542,9 +536,6 @@ export function observeVisibleRects(hostRoot, selectors, callback, options) {
         commitHooks => {
           const index = commitHooks.indexOf(commitHook);
           if (index !== -1) {
-            if (index >= commitHooks.length) {
-              $removeOutOfBounds(commitHooks, index);
-            }
             commitHooks.splice(index, 1);
           }
         },
