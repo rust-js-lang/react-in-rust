@@ -142,11 +142,10 @@ if (enableGestureTransition) {
   ReactSharedInternals.G = (transition, provider, options) => {
     let cancel;
     if (prevOnStartGestureTransitionFinish !== null) {
-      cancel = prevOnStartGestureTransitionFinish(
-        transition,
-        provider,
-        options ?? undefined,
-      );
+      cancel =
+        options != null
+          ? prevOnStartGestureTransitionFinish(transition, provider, options)
+          : prevOnStartGestureTransitionFinish(transition, provider);
     }
     // For every root that has work scheduled, check if there's a ScheduledGesture
     // matching this provider and if so, increase its ref count so its retained by

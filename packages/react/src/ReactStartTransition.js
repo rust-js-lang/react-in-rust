@@ -157,11 +157,9 @@ export function startGestureTransition(provider, scope, options) {
     }
     const onStartGestureTransitionFinish = ReactSharedInternals.G;
     return onStartGestureTransitionFinish != null
-      ? onStartGestureTransitionFinish(
-          currentTransition,
-          provider,
-          options ?? undefined,
-        )
+      ? options != null
+        ? onStartGestureTransitionFinish(currentTransition, provider, options)
+        : onStartGestureTransitionFinish(currentTransition, provider)
       : undefined;
   });
   let result;

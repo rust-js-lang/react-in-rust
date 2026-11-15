@@ -259,10 +259,6 @@ const ReactNoopServer = ReactFizzServer({
 });
 
 export function render(children, options) {
-  // $FlowFixMe[incompatible-type]
-  // $FlowFixMe[incompatible-type]
-  // $FlowFixMe[incompatible-type]
-  // $FlowFixMe[incompatible-type]
   const progressiveChunkSize = options?.progressiveChunkSize;
   const onError = options?.onError;
   const onBrowserBailout = options?.onBrowserBailout;
@@ -270,9 +266,13 @@ export function render(children, options) {
   const request =
     options?.onShellReady != null
       ? ReactNoopServer.createRequest(
+          // $FlowFixMe[incompatible-type]
           children,
+          // $FlowFixMe[incompatible-type]
           null,
+          // $FlowFixMe[incompatible-type]
           null,
+          // $FlowFixMe[incompatible-type]
           null,
           progressiveChunkSize ?? undefined,
           onError ?? undefined,

@@ -52,12 +52,13 @@ function loadServerReference(bundlerConfig, metaData) {
   const preloadPromise = preloadModule(serverReference);
   const bound = metaData.bound;
   if (bound instanceof Promise) {
-    // GAP rd485: `Promise.all([..])` of any values: js's promise
-    // functions take and give `Promise`s, which a `Thenable` and a
-    // reply's `ReactPromise` are none of.
-    return Promise.all([bound, preloadPromise]).then(([args]) =>
-      bindArgs(requireModule(serverReference), args),
-    );
+    return Promise.all([
+      // GAP rd485: `Promise.all([..])` of any values: js's promise
+      // functions take and give `Promise`s, which a `Thenable` and a
+      // reply's `ReactPromise` are none of.
+      bound,
+      preloadPromise,
+    ]).then(([args]) => bindArgs(requireModule(serverReference), args));
   } else if (preloadPromise) {
     return Promise.resolve(preloadPromise).then(() =>
       // GAP rd485: as above.

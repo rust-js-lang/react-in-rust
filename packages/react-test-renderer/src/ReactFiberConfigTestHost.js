@@ -220,10 +220,8 @@ export function shouldAttemptEagerTransition() {
 export const isPrimaryRenderer = false;
 export const warnsIfNotActing = true;
 
-export const scheduleTimeout = (handler, ms) =>
-  ms != null ? setTimeout(handler, ms) : setTimeout(handler);
-export const cancelTimeout = id =>
-  id != null ? clearTimeout(id) : clearTimeout();
+export const scheduleTimeout = setTimeout;
+export const cancelTimeout = clearTimeout;
 
 export const noTimeout = -1;
 

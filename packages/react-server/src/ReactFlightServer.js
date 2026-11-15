@@ -674,20 +674,14 @@ function RequestInstance(
     // The time origin is stored as an offset in the time space of this environment.
     if (debugStartTime != null) {
       // We expect `startTime` to be an absolute timestamp, so relativize it to match the other case.
-      timeOrigin =
-        debugStartTime -
-        // $FlowFixMe[prop-missing]
-        performance.timeOrigin;
+      // $FlowFixMe[prop-missing]
+      timeOrigin = debugStartTime - performance.timeOrigin;
     } else {
       timeOrigin = performance.now();
     }
     this.timeOrigin = timeOrigin;
-    emitTimeOriginChunk(
-      this,
-      timeOrigin +
-        // $FlowFixMe[prop-missing]
-        performance.timeOrigin,
-    );
+    // $FlowFixMe[prop-missing]
+    emitTimeOriginChunk(this, timeOrigin + performance.timeOrigin);
     this.abortTime = -0;
   } else {
     timeOrigin = 0;
@@ -1791,8 +1785,8 @@ function renderFunctionComponent(
       // Run the component in an Async Context that tracks the current owner.
       if (debugTask != null) {
         result = debugTask.run(() =>
-          // $FlowFixMe[method-unbinding]
           componentStorage.run(debugInfo, () =>
+            // $FlowFixMe[method-unbinding]
             callComponentInDev(componentFn, props, debugInfo),
           ),
         );
@@ -1948,8 +1942,8 @@ function warnForMissingKey(request, key, componentDebugInfo, debugTask) {
       // Run the component in an Async Context that tracks the current owner.
       if (debugTask != null) {
         debugTask.run(() =>
-          // $FlowFixMe[method-unbinding]
           componentStorage.run(componentDebugInfo, () =>
+            // $FlowFixMe[method-unbinding]
             callComponentInDev(logKeyError, null, componentDebugInfo),
           ),
         );
@@ -3432,10 +3426,12 @@ const BlobReading = {
     }
     // TODO: Emit the chunk early and refer to it later by dedupe.
     blobReading.model.push(entry.value);
-    // $FlowFixMe[incompatible-type]
     return blobReading.reader
       .read()
-      .then(entry => BlobReading.progress(blobReading, entry))
+      .then(entry =>
+        // $FlowFixMe[incompatible-type]
+        BlobReading.progress(blobReading, entry),
+      )
       .catch(reason => BlobReading.error(blobReading, reason));
   },
 
@@ -5168,7 +5164,6 @@ function doNotLimitAdd(value) {
 }
 
 function doNotLimitHas(value) {
-  // Safety: the set is made in DEV, where debug models are rendered.
   return doNotLimit$1.has(value);
 }
 

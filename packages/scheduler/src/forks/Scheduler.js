@@ -584,14 +584,9 @@ function performWorkUntilDeadline() {
 
 // Capture local references to native APIs, in case a polyfill overrides them.
 const localSetTimeout =
-  typeof setTimeout === 'function'
-    ? (handler, ms) =>
-        ms != null ? setTimeout(handler, ms) : setTimeout(handler)
-    : undefined;
+  typeof setTimeout === 'function' ? setTimeout : undefined;
 const localClearTimeout =
-  typeof clearTimeout === 'function'
-    ? id => (id != null ? clearTimeout(id) : clearTimeout())
-    : undefined;
+  typeof clearTimeout === 'function' ? clearTimeout : undefined;
 const localSetImmediate =
   typeof setImmediate !== 'undefined' ? setImmediate : undefined; // IE and Node.js + jsdom
 

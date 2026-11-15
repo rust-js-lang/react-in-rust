@@ -49,7 +49,9 @@ export function useFormStatus() {
 
 export function useFormState(action, initialState, permalink) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useFormState(action, initialState, permalink ?? undefined);
+  return permalink != null
+    ? dispatcher.useFormState(action, initialState, permalink)
+    : dispatcher.useFormState(action, initialState);
 }
 
 export function requestFormReset(form) {

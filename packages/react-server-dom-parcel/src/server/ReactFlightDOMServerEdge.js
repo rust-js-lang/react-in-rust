@@ -269,8 +269,6 @@ export function decodeFormState(actionResult, body) {
 
 export function loadServerAction(id) {
   const reference = resolveServerReference(serverManifest, id);
-  // GAP rd596: what a thenable that isn't a `Promise` fulfils isn't
-  // js's `Fulfils`, so this promise is typed of the thenable itself.
   return Promise.resolve(reference)
     .then(() => preloadModule(reference))
     .then(() => {
