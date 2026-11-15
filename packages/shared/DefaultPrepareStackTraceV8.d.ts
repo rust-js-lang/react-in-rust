@@ -8,7 +8,7 @@
 // This file replaces DefaultPrepareStackTrace in Edge/Node Server builds.
 
 declare function prepareStackTrace(
-  error: any,
+  error: unknown,
   structuredStackTrace: any[],
 ): string;
 

@@ -179,7 +179,7 @@ export interface Fiber {
   // __DEV__ only
   _debugInfo?: unknown;
   _debugOwner?: unknown;
-  _debugStack?: any;
+  _debugStack?: unknown;
   _debugTask?:
     | {
         run<T>(f: () => T): T;

@@ -10,11 +10,11 @@ import type {ReactStackTrace} from 'shared/ReactTypes';
 // This version is only used when React fully owns the Error object and there's no risk of it having
 // been already initialized and no risky that anyone else will initialize it later.
 export function parseStackTracePrivate(
-  error: any,
+  error: unknown,
   skipFrames: number,
 ): ReactStackTrace | null;
 
 export function parseStackTrace(
-  error: any,
+  error: unknown,
   skipFrames: number,
 ): ReactStackTrace;

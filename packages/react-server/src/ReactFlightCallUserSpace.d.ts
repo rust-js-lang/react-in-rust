@@ -27,12 +27,12 @@ export const callLazyInitInDEV: CallLazyInit | null;
 export type Progress = (value: unknown) => void;
 
 /** What a step of an async iterator is told of what it threw. */
-export type IteratorError = (value: any) => void;
+export type IteratorError = (value: unknown) => void;
 
 export type CallIterator = (
   value: any,
   value2: (value: unknown) => void,
-  value3: (value: any) => void,
+  value3: (value: unknown) => void,
 ) => void;
 
 export const callIteratorInDEV: CallIterator | null;

@@ -204,14 +204,14 @@ export interface ReactComponentInfo {
     | null
     | undefined;
   // Stashed Data for the Specific Execution Environment. Not part of the transport protocol
-  debugStack?: any;
+  debugStack?: unknown;
   debugTask?:
     | {
         run<T>(f: () => T): T;
       }
     | null
     | undefined;
-  debugLocation?: any;
+  debugLocation?: unknown;
 }
 
 export interface ReactEnvironmentInfo {
