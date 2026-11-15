@@ -54,7 +54,6 @@ use react_client::react_flight_client_stream_config_web::{
 
 pub use react_server::react_flight_server_temporary_references::create_temporary_reference_set;
 
-// GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
 pub use react_server::react_flight_server_temporary_references::TemporaryReferenceSet;
 
 pub struct DebugChannel {

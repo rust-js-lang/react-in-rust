@@ -57,7 +57,6 @@ use react_server::react_server_stream_config_node::{Destination, TEXT_ENCODER};
 
 pub use react_server::react_flight_server_temporary_references::create_temporary_reference_set;
 
-// GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
 pub use react_server::react_flight_server_temporary_references::TemporaryReferenceSet;
 
 fn create_drain_handler(destination: &'static Destination, request: Rc<Request>) -> Box<dyn Fn()> {

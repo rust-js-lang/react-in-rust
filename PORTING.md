@@ -1233,8 +1233,7 @@ These differences from upstream's output are accepted:
     null` keeps a missing name's `id#undefined`;
   - readability gaps: rd582 (a conditional's text named after a callee,
     `readPartialStringChunk$1`), rd583 (`$someValue(value)` of a read),
-    rd587 (no `export type {..}` of a re-exported type), rd589
-    (getReference's `switch` of a string or a symbol is a string `switch`
+    rd589 (getReference's `switch` of a string or a symbol is a string `switch`
     and an `if` of each symbol; `then`'s function is unnamed, `function
     (resolve, _reject)`), rd591 (`readable.on('end', () => onClose())`
     where upstream passes `onClose`), rd592 (`import {Readable} from

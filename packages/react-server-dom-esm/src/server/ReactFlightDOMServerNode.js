@@ -62,8 +62,6 @@ import {
 
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
-// GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
-
 function createDrainHandler(destination, request) {
   return () => {
     startFlowing(request, destination);

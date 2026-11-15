@@ -16,7 +16,6 @@ export {
   isServerReference,
 } from '../ReactFlightESMReferences.js';
 
-// GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
 export type {
   ClientReference,
   ServerReference,

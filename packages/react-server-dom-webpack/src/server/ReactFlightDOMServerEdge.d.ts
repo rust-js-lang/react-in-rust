@@ -24,7 +24,6 @@ export {
 
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
-// GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
 export type {TemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
 type EnvironmentName = string | (() => string);
