@@ -1686,7 +1686,7 @@ function isRenderConsistentWithExternalStores(finishedWork) {
       }
       node = return$;
     }
-    const sibling = $unwrap(node.sibling);
+    const sibling = node.sibling;
     sibling.return = node.return;
     node = sibling;
   }

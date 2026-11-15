@@ -13,7 +13,6 @@ import {
   isSuspenseInstanceFallback,
   isSuspenseInstancePending,
 } from './ReactFiberConfig.js';
-import {$unwrap} from '@rust-js/std';
 
 // shared/ReactTypes' `Wakeable`s.
 
@@ -60,7 +59,7 @@ export function findFirstSuspended(row) {
       }
       node = returnFiber;
     }
-    const sibling = $unwrap(node.sibling);
+    const sibling = node.sibling;
     const returnFiber = node.return;
     sibling.return = returnFiber;
     node = sibling;
