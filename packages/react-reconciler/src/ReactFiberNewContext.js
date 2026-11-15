@@ -81,7 +81,7 @@ export function pushProvider(providerFiber, context, nextValue) {
             'same context provider. This is currently unsupported.',
         );
       }
-      context._currentRenderer = rendererSigil;
+      context._currentRenderer = rendererSigil ?? null;
     }
   } else {
     const currentValue2 = context._currentValue2;
@@ -100,7 +100,7 @@ export function pushProvider(providerFiber, context, nextValue) {
             'same context provider. This is currently unsupported.',
         );
       }
-      context._currentRenderer2 = rendererSigil;
+      context._currentRenderer2 = rendererSigil ?? null;
     }
   }
 }

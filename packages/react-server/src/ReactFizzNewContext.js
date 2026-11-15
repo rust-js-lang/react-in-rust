@@ -162,7 +162,7 @@ export function pushProvider(context, nextValue) {
             'same context provider. This is currently unsupported.',
         );
       }
-      context._currentRenderer = rendererSigil;
+      context._currentRenderer = rendererSigil ?? null;
     }
   } else {
     prevValue = context._currentValue2;
@@ -177,7 +177,7 @@ export function pushProvider(context, nextValue) {
             'same context provider. This is currently unsupported.',
         );
       }
-      context._currentRenderer2 = rendererSigil;
+      context._currentRenderer2 = rendererSigil ?? null;
     }
   }
   const prevNode = currentActiveSnapshot;
@@ -218,7 +218,7 @@ export function popProvider(context) {
             'same context provider. This is currently unsupported.',
         );
       }
-      context._currentRenderer = rendererSigil;
+      context._currentRenderer = rendererSigil ?? null;
     }
   } else {
     const value = prevSnapshot.parentValue;
@@ -233,7 +233,7 @@ export function popProvider(context) {
             'same context provider. This is currently unsupported.',
         );
       }
-      context._currentRenderer2 = rendererSigil;
+      context._currentRenderer2 = rendererSigil ?? null;
     }
   }
   const parent = prevSnapshot.parent;
