@@ -137,13 +137,13 @@ function applyViewTransitionToHostInstancesRecursive(
           const instance = child.stateNode;
           // TODO: calculate whether component is in viewport
           shouldStartViewTransition = true;
-          applyViewTransitionName(
-            instance,
+          const value =
             viewTransitionHostInstanceIdx === 0
               ? name
-              : `${name}_${viewTransitionHostInstanceIdx}`,
-            className ?? undefined,
-          );
+              : `${name}_${viewTransitionHostInstanceIdx}`;
+          className != null
+            ? applyViewTransitionName(instance, value, className)
+            : applyViewTransitionName(instance, value);
           viewTransitionHostInstanceIdx =
             (viewTransitionHostInstanceIdx + 1) >>> 0;
         } else if (
@@ -191,15 +191,15 @@ function applyViewTransitionToHostInstancesRecursive(
         inViewport = true;
       }
       shouldStartViewTransition = true;
-      applyViewTransitionName(
-        instance,
+      const value =
         viewTransitionHostInstanceIdx === 0
           ? name
           : // If we have multiple Host Instances below, we add a suffix to the name to give
             // each one a unique name.
-            `${name}_${viewTransitionHostInstanceIdx}`,
-        className ?? undefined,
-      );
+            `${name}_${viewTransitionHostInstanceIdx}`;
+      className != null
+        ? applyViewTransitionName(instance, value, className)
+        : applyViewTransitionName(instance, value);
       viewTransitionHostInstanceIdx = (viewTransitionHostInstanceIdx + 1) >>> 0;
     } else if (
       child.tag === OffscreenComponent &&
@@ -841,13 +841,13 @@ function measureViewTransitionHostInstancesRecursive(
           }
           // TODO: check if instance is out of viewport
           if ((parentViewTransition.flags & Update) !== NoFlags) {
-            applyViewTransitionName(
-              instance,
+            const value =
               viewTransitionHostInstanceIdx === 0
                 ? newName
-                : `${newName}_${viewTransitionHostInstanceIdx}`,
-              className ?? undefined,
-            );
+                : `${newName}_${viewTransitionHostInstanceIdx}`;
+            className != null
+              ? applyViewTransitionName(instance, value, className)
+              : applyViewTransitionName(instance, value);
           }
           // TODO: cancel transition by pushing into viewTransitionCancelableChildren
           viewTransitionHostInstanceIdx =
@@ -929,15 +929,15 @@ function measureViewTransitionHostInstancesRecursive(
         // We might update this node so we need to apply its new name for the new state.
         // Additionally in the ApplyGesture case we also need to do this because the clone
         // will have the name but this one won't.
-        applyViewTransitionName(
-          instance,
+        const value =
           viewTransitionHostInstanceIdx === 0
             ? newName
             : // If we have multiple Host Instances below, we add a suffix to the name to give
               // each one a unique name.
-              `${newName}_${viewTransitionHostInstanceIdx}`,
-          className ?? undefined,
-        );
+              `${newName}_${viewTransitionHostInstanceIdx}`;
+        className != null
+          ? applyViewTransitionName(instance, value, className)
+          : applyViewTransitionName(instance, value);
       }
       if (!inViewport || (parentViewTransition.flags & Update) === NoFlags) {
         // It turns out that we had no other deeper mutations, the child transitions didn't

@@ -14,13 +14,17 @@ export function prepareDestinationForModuleImpl(
   nonce,
 ) {
   if (typeof moduleLoading === 'string') {
-    preinitModuleForSSR(moduleLoading + mod, nonce ?? undefined);
+    const href = moduleLoading + mod;
+    nonce != null
+      ? preinitModuleForSSR(href, nonce)
+      : preinitModuleForSSR(href);
   } else if (moduleLoading !== null) {
-    preinitModuleForSSR(
-      moduleLoading.prefix + mod,
-      nonce ?? undefined,
-      moduleLoading.crossOrigin ?? undefined,
-    );
+    const href = moduleLoading.prefix + mod;
+    moduleLoading.crossOrigin != null
+      ? preinitModuleForSSR(href, nonce ?? undefined, moduleLoading.crossOrigin)
+      : nonce != null
+        ? preinitModuleForSSR(href, nonce)
+        : preinitModuleForSSR(href);
   }
 }
 //# sourceMappingURL=ReactFlightClientConfigTargetESMServer.js.map

@@ -10,10 +10,10 @@ import {preinitModuleForSSR} from 'react-client/src/ReactFlightClientConfig';
 export function prepareDestinationWithChunks(moduleLoading, bundles, nonce) {
   for (let i = 0; i < bundles.length; i++) {
     const bundle = bundles[i];
-    preinitModuleForSSR(
-      parcelRequire.meta.publicUrl + bundle,
-      nonce ?? undefined,
-    );
+    const href = parcelRequire.meta.publicUrl + bundle;
+    nonce != null
+      ? preinitModuleForSSR(href, nonce)
+      : preinitModuleForSSR(href);
   }
 }
 //# sourceMappingURL=ReactFlightClientConfigTargetParcelServer.js.map

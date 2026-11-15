@@ -24,7 +24,9 @@ import {$index} from '@rust-js/std';
 // but currently it seems to be the best option we have.
 export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
   const chunks = metadata[1];
-  prepareDestinationWithChunks(moduleLoading, chunks, nonce ?? undefined);
+  nonce != null
+    ? prepareDestinationWithChunks(moduleLoading, chunks, nonce)
+    : prepareDestinationWithChunks(moduleLoading, chunks);
 }
 
 export function resolveClientReference(bundlerConfig, metadata) {
@@ -148,7 +150,10 @@ export function preloadModule(metadata) {
     i++;
     const entry = chunkCache.get(chunkId);
     if (entry === undefined) {
-      const thenable = loadChunk(chunkId, chunkFilename);
+      const thenable =
+        chunkFilename != null
+          ? loadChunk(chunkId, chunkFilename)
+          : loadChunk(chunkId);
       promises.push(thenable);
       // $FlowFixMe[method-unbinding]
       function resolve() {
@@ -215,7 +220,9 @@ export function getModuleDebugInfo(metadata) {
     i++;
     const chunkFilename = chunks[i];
     i++;
-    addChunkDebugInfo(debugInfo, chunkId, chunkFilename);
+    chunkFilename != null
+      ? addChunkDebugInfo(debugInfo, chunkId, chunkFilename)
+      : addChunkDebugInfo(debugInfo, chunkId);
   }
   return debugInfo;
 }

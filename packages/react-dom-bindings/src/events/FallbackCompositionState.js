@@ -59,7 +59,10 @@ export function getData() {
   }
 
   const sliceTail = end > 1 ? 1 - end : undefined;
-  fallbackText = endValue.slice(start, sliceTail);
+  fallbackText =
+    sliceTail != null
+      ? endValue.slice(start, sliceTail)
+      : endValue.slice(start);
   return fallbackText;
 }
 

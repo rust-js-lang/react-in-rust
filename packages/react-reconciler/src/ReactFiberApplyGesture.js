@@ -118,15 +118,15 @@ function applyViewTransitionToClones(name, className, clones, fiber) {
   // later by the insertion when the clone has been created.
   for (let i = 0; i < clones.length; i++) {
     const clone = clones[i];
-    applyViewTransitionName(
-      clone,
+    const value =
       i === 0
         ? name
         : // If we have multiple Host Instances below, we add a suffix to the name to give
           // each one a unique name.
-          `${name}_${i}`,
-      className ?? undefined,
-    );
+          `${name}_${i}`;
+    className != null
+      ? applyViewTransitionName(clone, value, className)
+      : applyViewTransitionName(clone, value);
   }
   if (enableProfilerTimer && enableComponentPerformanceTrack) {
     const debugTask = fiber._debugTask;

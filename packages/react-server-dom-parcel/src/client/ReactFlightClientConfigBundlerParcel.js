@@ -11,7 +11,9 @@ import hasOwnProperty from 'shared/hasOwnProperty';
 
 export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
   const bundles = metadata[2];
-  prepareDestinationWithChunks(moduleLoading, bundles, nonce ?? undefined);
+  nonce != null
+    ? prepareDestinationWithChunks(moduleLoading, bundles, nonce)
+    : prepareDestinationWithChunks(moduleLoading, bundles);
 }
 
 export function resolveClientReference(bundlerConfig, metadata) {

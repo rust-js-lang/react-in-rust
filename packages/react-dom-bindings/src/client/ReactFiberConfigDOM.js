@@ -714,9 +714,14 @@ export const warnsIfNotActing = true;
 // if a component just imports ReactDOM (e.g. for findDOMNode).
 // Some environments might not have setTimeout or clearTimeout.
 export const scheduleTimeout =
-  typeof setTimeout === 'function' ? setTimeout : undefined;
+  typeof setTimeout === 'function'
+    ? (handler, ms) =>
+        ms != null ? setTimeout(handler, ms) : setTimeout(handler)
+    : undefined;
 export const cancelTimeout =
-  typeof clearTimeout === 'function' ? clearTimeout : undefined;
+  typeof clearTimeout === 'function'
+    ? id => (id != null ? clearTimeout(id) : clearTimeout())
+    : undefined;
 export const noTimeout = -1;
 const localPromise = typeof Promise === 'function' ? Promise : undefined;
 const localRequestAnimationFrame =

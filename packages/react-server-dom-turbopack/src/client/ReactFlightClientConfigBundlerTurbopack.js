@@ -24,7 +24,9 @@ import {$index} from '@rust-js/std';
 // but currently it seems to be the best option we have.
 export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
   const chunks = metadata[1];
-  prepareDestinationWithChunks(moduleLoading, chunks, nonce ?? undefined);
+  nonce != null
+    ? prepareDestinationWithChunks(moduleLoading, chunks, nonce)
+    : prepareDestinationWithChunks(moduleLoading, chunks);
 }
 
 export function resolveClientReference(bundlerConfig, metadata) {

@@ -427,8 +427,12 @@ function createReactNoop(reconciler, useMutation) {
       // Noop
     },
 
-    scheduleTimeout: setTimeout,
-    cancelTimeout: clearTimeout,
+    scheduleTimeout(handler, ms) {
+      return ms != null ? setTimeout(handler, ms) : setTimeout(handler);
+    },
+    cancelTimeout(id) {
+      return id != null ? clearTimeout(id) : clearTimeout();
+    },
     noTimeout: -1,
 
     supportsMicrotasks: true,

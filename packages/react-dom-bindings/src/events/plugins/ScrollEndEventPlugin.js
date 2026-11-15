@@ -87,7 +87,7 @@ const DEBOUNCE_TIMEOUT = 200;
 function debounceScrollEnd(targetInst, nativeEvent, nativeEventTarget) {
   const existingTimer = getScrollEndTimer(nativeEventTarget);
   if (existingTimer != null) {
-    clearTimeout(existingTimer);
+    existingTimer != null ? clearTimeout(existingTimer) : clearTimeout();
   }
   if (targetInst != null) {
     const newTimer = setTimeout(
@@ -151,7 +151,7 @@ export function extractEvents(
       // If we do get a native scrollend event fired, we cancel the polyfill.
       // This could happen if our feature detection is broken or if there's another
       // polyfill calling dispatchEvent to fire it before we fire ours.
-      clearTimeout(existingTimer);
+      existingTimer != null ? clearTimeout(existingTimer) : clearTimeout();
       clearScrollEndTimer(nativeEventTarget);
     } else {
       // If we didn't receive a 'scroll' event first, we ignore this event to avoid

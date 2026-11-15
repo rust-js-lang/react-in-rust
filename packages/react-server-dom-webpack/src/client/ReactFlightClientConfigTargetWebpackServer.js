@@ -15,11 +15,16 @@ export function prepareDestinationWithChunks(
 ) {
   if (moduleLoading !== null) {
     for (let i = 1; i < chunks.length; i += 2) {
-      preinitScriptForSSR(
-        moduleLoading.prefix + chunks[i],
-        nonce ?? undefined,
-        moduleLoading.crossOrigin ?? undefined,
-      );
+      const href = moduleLoading.prefix + chunks[i];
+      moduleLoading.crossOrigin != null
+        ? preinitScriptForSSR(
+            href,
+            nonce ?? undefined,
+            moduleLoading.crossOrigin,
+          )
+        : nonce != null
+          ? preinitScriptForSSR(href, nonce)
+          : preinitScriptForSSR(href);
     }
   }
 }

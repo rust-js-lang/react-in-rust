@@ -501,11 +501,10 @@ export function observeVisibleRects(hostRoot, selectors, callback, options) {
   }
 
   const instanceRoots = findAllNodes(hostRoot, selectors);
-  const {disconnect, observe, unobserve} = setupIntersectionObserver(
-    instanceRoots,
-    callback,
-    options ?? undefined,
-  );
+  const {disconnect, observe, unobserve} =
+    options != null
+      ? setupIntersectionObserver(instanceRoots, callback, options)
+      : setupIntersectionObserver(instanceRoots, callback);
 
   // When React mutates the host environment, we may need to change what we're listening to.
   const commitHook = () => {

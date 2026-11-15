@@ -283,7 +283,7 @@ export function byteLengthOfBinaryChunk(chunk) {
 
 export function closeWithError(destination, error) {
   // $FlowFixMe[incompatible-type]: This is an Error object or the destination accepts other types.
-  destination.destroy(error ?? undefined);
+  error != null ? destination.destroy(error) : destination.destroy();
 }
 
 export function createFastHash(input) {

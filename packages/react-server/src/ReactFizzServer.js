@@ -6075,14 +6075,40 @@ function flushSegment(request, destination, segment, hoistableState) {
       const errorMessage = boundary.errorMessage;
       const errorStack = boundary.errorStack;
       const errorComponentStack = boundary.errorComponentStack;
-      writeStartClientRenderedSuspenseBoundary(
-        destination,
-        request.renderState,
-        errorDigest ?? undefined,
-        errorMessage ?? undefined,
-        errorStack ?? undefined,
-        errorComponentStack ?? undefined,
-      );
+      errorComponentStack != null
+        ? writeStartClientRenderedSuspenseBoundary(
+            destination,
+            request.renderState,
+            errorDigest ?? undefined,
+            errorMessage ?? undefined,
+            errorStack ?? undefined,
+            errorComponentStack,
+          )
+        : errorStack != null
+          ? writeStartClientRenderedSuspenseBoundary(
+              destination,
+              request.renderState,
+              errorDigest ?? undefined,
+              errorMessage ?? undefined,
+              errorStack,
+            )
+          : errorMessage != null
+            ? writeStartClientRenderedSuspenseBoundary(
+                destination,
+                request.renderState,
+                errorDigest ?? undefined,
+                errorMessage,
+              )
+            : errorDigest != null
+              ? writeStartClientRenderedSuspenseBoundary(
+                  destination,
+                  request.renderState,
+                  errorDigest,
+                )
+              : writeStartClientRenderedSuspenseBoundary(
+                  destination,
+                  request.renderState,
+                );
     } else {
       writeStartClientRenderedSuspenseBoundary(
         destination,
@@ -6213,16 +6239,50 @@ function flushClientRenderedBoundary(request, destination, boundary) {
     const errorMessage = boundary.errorMessage;
     const errorStack = boundary.errorStack;
     const errorComponentStack = boundary.errorComponentStack;
-    return writeClientRenderBoundaryInstruction(
-      destination,
-      request.resumableState,
-      request.renderState,
-      boundary.rootSegmentID,
-      errorDigest ?? undefined,
-      errorMessage ?? undefined,
-      errorStack ?? undefined,
-      errorComponentStack ?? undefined,
-    );
+    return errorComponentStack != null
+      ? writeClientRenderBoundaryInstruction(
+          destination,
+          request.resumableState,
+          request.renderState,
+          boundary.rootSegmentID,
+          errorDigest ?? undefined,
+          errorMessage ?? undefined,
+          errorStack ?? undefined,
+          errorComponentStack,
+        )
+      : errorStack != null
+        ? writeClientRenderBoundaryInstruction(
+            destination,
+            request.resumableState,
+            request.renderState,
+            boundary.rootSegmentID,
+            errorDigest ?? undefined,
+            errorMessage ?? undefined,
+            errorStack,
+          )
+        : errorMessage != null
+          ? writeClientRenderBoundaryInstruction(
+              destination,
+              request.resumableState,
+              request.renderState,
+              boundary.rootSegmentID,
+              errorDigest ?? undefined,
+              errorMessage,
+            )
+          : errorDigest != null
+            ? writeClientRenderBoundaryInstruction(
+                destination,
+                request.resumableState,
+                request.renderState,
+                boundary.rootSegmentID,
+                errorDigest,
+              )
+            : writeClientRenderBoundaryInstruction(
+                destination,
+                request.resumableState,
+                request.renderState,
+                boundary.rootSegmentID,
+              );
   } else {
     return writeClientRenderBoundaryInstruction(
       destination,

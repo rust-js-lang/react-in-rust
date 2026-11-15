@@ -12,11 +12,17 @@ export function prepareDestinationWithChunks(moduleLoading, chunks, nonce) {
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
       // A merged chunk is `[mergedChunkFilename, ...]`; preinit its own URL.
-      preinitScriptForSSR(
-        moduleLoading.prefix + (typeof chunk === 'string' ? chunk : chunk[0]),
-        nonce ?? undefined,
-        moduleLoading.crossOrigin ?? undefined,
-      );
+      const href =
+        moduleLoading.prefix + (typeof chunk === 'string' ? chunk : chunk[0]);
+      moduleLoading.crossOrigin != null
+        ? preinitScriptForSSR(
+            href,
+            nonce ?? undefined,
+            moduleLoading.crossOrigin,
+          )
+        : nonce != null
+          ? preinitScriptForSSR(href, nonce)
+          : preinitScriptForSSR(href);
     }
   }
 }

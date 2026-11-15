@@ -259,21 +259,66 @@ const ReactNoopServer = ReactFizzServer({
 });
 
 export function render(children, options) {
-  const request = ReactNoopServer.createRequest(
-    // $FlowFixMe[incompatible-type]
-    children,
-    // $FlowFixMe[incompatible-type]
-    null,
-    // $FlowFixMe[incompatible-type]
-    null,
-    // $FlowFixMe[incompatible-type]
-    null,
-    options?.progressiveChunkSize ?? undefined,
-    options?.onError ?? undefined,
-    options?.onBrowserBailout ?? undefined,
-    options?.onAllReady ?? undefined,
-    options?.onShellReady ?? undefined,
-  );
+  // $FlowFixMe[incompatible-type]
+  // $FlowFixMe[incompatible-type]
+  // $FlowFixMe[incompatible-type]
+  // $FlowFixMe[incompatible-type]
+  const progressiveChunkSize = options?.progressiveChunkSize;
+  const onError = options?.onError;
+  const onBrowserBailout = options?.onBrowserBailout;
+  const onAllReady = options?.onAllReady;
+  const request =
+    options?.onShellReady != null
+      ? ReactNoopServer.createRequest(
+          children,
+          null,
+          null,
+          null,
+          progressiveChunkSize ?? undefined,
+          onError ?? undefined,
+          onBrowserBailout ?? undefined,
+          onAllReady ?? undefined,
+          options?.onShellReady,
+        )
+      : onAllReady != null
+        ? ReactNoopServer.createRequest(
+            children,
+            null,
+            null,
+            null,
+            progressiveChunkSize ?? undefined,
+            onError ?? undefined,
+            onBrowserBailout ?? undefined,
+            onAllReady,
+          )
+        : onBrowserBailout != null
+          ? ReactNoopServer.createRequest(
+              children,
+              null,
+              null,
+              null,
+              progressiveChunkSize ?? undefined,
+              onError ?? undefined,
+              onBrowserBailout,
+            )
+          : onError != null
+            ? ReactNoopServer.createRequest(
+                children,
+                null,
+                null,
+                null,
+                progressiveChunkSize ?? undefined,
+                onError,
+              )
+            : progressiveChunkSize != null
+              ? ReactNoopServer.createRequest(
+                  children,
+                  null,
+                  null,
+                  null,
+                  progressiveChunkSize,
+                )
+              : ReactNoopServer.createRequest(children, null, null, null);
   // $FlowFixMe[prop-missing]
   // $FlowFixMe[incompatible-type]
   const destination = {

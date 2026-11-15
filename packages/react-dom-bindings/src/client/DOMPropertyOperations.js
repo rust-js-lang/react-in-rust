@@ -166,7 +166,8 @@ export function setValueForNamespacedAttribute(node, namespace, name, value) {
 export function setValueForPropertyOnCustomComponent(node, name, value) {
   if (name[0] === 'o' && name[1] === 'n') {
     const useCapture = name.endsWith('Capture');
-    const eventName = name.slice(2, useCapture ? name.length - 7 : undefined);
+    const value$1 = useCapture ? name.length - 7 : undefined;
+    const eventName = value$1 != null ? name.slice(2, value$1) : name.slice(2);
 
     const prevProps = getFiberCurrentPropsFromNode(node);
     // $FlowFixMe[invalid-computed-prop]

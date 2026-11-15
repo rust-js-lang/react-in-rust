@@ -54,7 +54,9 @@ export function useState(initialState) {
 
 export function useReducer(reducer, initialArg, init) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useReducer(reducer, initialArg, init ?? undefined);
+  return init != null
+    ? dispatcher.useReducer(reducer, initialArg, init)
+    : dispatcher.useReducer(reducer, initialArg);
 }
 
 export function useRef(initialValue) {
@@ -70,7 +72,11 @@ export function useEffect(create, deps) {
   }
 
   const dispatcher = resolveDispatcher();
-  dispatcher.useEffect(create ?? undefined, deps ?? undefined);
+  deps != null
+    ? dispatcher.useEffect(create ?? undefined, deps)
+    : create != null
+      ? dispatcher.useEffect(create)
+      : dispatcher.useEffect();
 }
 
 export function useInsertionEffect(create, deps) {
@@ -81,7 +87,11 @@ export function useInsertionEffect(create, deps) {
   }
 
   const dispatcher = resolveDispatcher();
-  dispatcher.useInsertionEffect(create ?? undefined, deps ?? undefined);
+  deps != null
+    ? dispatcher.useInsertionEffect(create ?? undefined, deps)
+    : create != null
+      ? dispatcher.useInsertionEffect(create)
+      : dispatcher.useInsertionEffect();
 }
 
 export function useLayoutEffect(create, deps) {
@@ -92,28 +102,40 @@ export function useLayoutEffect(create, deps) {
   }
 
   const dispatcher = resolveDispatcher();
-  dispatcher.useLayoutEffect(create ?? undefined, deps ?? undefined);
+  deps != null
+    ? dispatcher.useLayoutEffect(create ?? undefined, deps)
+    : create != null
+      ? dispatcher.useLayoutEffect(create)
+      : dispatcher.useLayoutEffect();
 }
 
 export function useCallback(callback, deps) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useCallback(callback, deps ?? undefined);
+  return deps != null
+    ? dispatcher.useCallback(callback, deps)
+    : dispatcher.useCallback(callback);
 }
 
 export function useMemo(create, deps) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useMemo(create, deps ?? undefined);
+  return deps != null
+    ? dispatcher.useMemo(create, deps)
+    : dispatcher.useMemo(create);
 }
 
 export function useImperativeHandle(ref, create, deps) {
   const dispatcher = resolveDispatcher();
-  dispatcher.useImperativeHandle(ref ?? undefined, create, deps ?? undefined);
+  deps != null
+    ? dispatcher.useImperativeHandle(ref ?? undefined, create, deps)
+    : dispatcher.useImperativeHandle(ref ?? undefined, create);
 }
 
 export function useDebugValue(value, formatterFn) {
   if (__DEV__) {
     const dispatcher = resolveDispatcher();
-    dispatcher.useDebugValue(value, formatterFn ?? undefined);
+    formatterFn != null
+      ? dispatcher.useDebugValue(value, formatterFn)
+      : dispatcher.useDebugValue(value);
   }
 }
 
@@ -138,11 +160,9 @@ export function useSyncExternalStore(
   getServerSnapshot,
 ) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    getServerSnapshot ?? undefined,
-  );
+  return getServerSnapshot != null
+    ? dispatcher.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+    : dispatcher.useSyncExternalStore(subscribe, getSnapshot);
 }
 
 export function useCacheRefresh() {
@@ -170,15 +190,15 @@ export function useEffectEvent(callback) {
 
 export function useOptimistic(passthrough, reducer) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useOptimistic(passthrough, reducer ?? undefined);
+  return reducer != null
+    ? dispatcher.useOptimistic(passthrough, reducer)
+    : dispatcher.useOptimistic(passthrough);
 }
 
 export function useActionState(action, initialState, permalink) {
   const dispatcher = resolveDispatcher();
-  return dispatcher.useActionState(
-    action,
-    initialState,
-    permalink ?? undefined,
-  );
+  return permalink != null
+    ? dispatcher.useActionState(action, initialState, permalink)
+    : dispatcher.useActionState(action, initialState);
 }
 //# sourceMappingURL=ReactHooks.js.map
