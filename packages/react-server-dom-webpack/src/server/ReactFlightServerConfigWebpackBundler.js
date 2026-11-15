@@ -7,8 +7,6 @@
 
 import {Async} from '../shared/ReactFlightImportMetadata.js';
 
-// GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
-
 export {
   isClientReference,
   isServerReference,

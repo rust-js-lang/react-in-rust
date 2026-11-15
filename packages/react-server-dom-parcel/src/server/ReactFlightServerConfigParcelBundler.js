@@ -5,8 +5,6 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-// GAP rd587: a re-exported type writes no `export type {..}` in the `.d.ts`.
-
 export {
   isClientReference,
   isServerReference,
