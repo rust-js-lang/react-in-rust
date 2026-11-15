@@ -590,7 +590,7 @@ export function decodeReplyFromBusboy(busboyStream, webpackMap, options) {
       }
     });
     value.on('error', error => {
-      busboyStream.destroy(error);
+      error != null ? busboyStream.destroy(error) : busboyStream.destroy();
     });
     value.on('end', () => {
       pendingFile.complete = true;
