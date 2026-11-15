@@ -11,7 +11,7 @@ import hasOwnProperty from './hasOwnProperty.js';
 import {REACT_ELEMENT_TYPE} from './ReactSymbols.js';
 
 import getComponentNameFromType from './getComponentNameFromType.js';
-import {$unwrap} from '@rust-js/std';
+import {$index, $unwrap} from '@rust-js/std';
 
 // Showing wider objects in the devtools is not useful.
 const OBJECT_WIDTH_LIMIT = 100;
@@ -413,7 +413,7 @@ export function addObjectDiffToProperties(prev, next, properties, indent) {
               } else if (prevLength === properties.length) {
                 // Nothing notably changed inside the nested object. So this is only a change in reference
                 // equality. Let's note it.
-                properties[prevLength - 1][1] =
+                $index(properties, prevLength - 1)[1] =
                   'Referentially unequal but deeply equal objects. Consider memoization.';
               }
               continue;

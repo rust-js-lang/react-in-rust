@@ -2232,7 +2232,7 @@ export function startViewTransition(
         // In Safari, we need to manually cancel all manually started animations
         // or it'll block or interfer with future transitions.
         // We can't use getAnimations() due to #35336 so we collect them in an array.
-        const animation = viewTransitionAnimations[i];
+        const animation = $index(viewTransitionAnimations, i);
         animation.cancel();
       }
       // $FlowFixMe[prop-missing]
@@ -2703,13 +2703,13 @@ export function startGestureTransition(
         // In Safari, we need to manually cancel all manually started animations
         // or it'll block or interfer with future transitions.
         // We can't use getAnimations() due to #35336 so we collect them in an array.
-        const animation = viewTransitionAnimations[i];
+        const animation = $index(viewTransitionAnimations, i);
         animation.cancel();
         i++;
       }
       i = 0;
       while (i < customTimelineCleanup.length) {
-        const cleanup = customTimelineCleanup[i];
+        const cleanup = $index(customTimelineCleanup, i);
         cleanup();
         i++;
       }
@@ -5726,7 +5726,7 @@ export function hydrateHoistable(
         try {
           const end = nodes.length;
           for (let i = 0; i < end; i++) {
-            const node = $index(nodes, i);
+            const node = nodes[i];
             if (
               node.getAttribute('href') !==
                 (props.href == null || props.href === '' ? null : props.href) ||
@@ -5764,7 +5764,7 @@ export function hydrateHoistable(
         try {
           const end = nodes.length;
           for (let i = 0; i < end; i++) {
-            const node = $index(nodes, i);
+            const node = nodes[i];
 
             // We coerce content to string because it is the most likely one to
             // use a `toString` capable value. For the rest we just do identity match

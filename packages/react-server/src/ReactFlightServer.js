@@ -142,7 +142,6 @@ import {
   $index,
   $roomFor,
   $shown,
-  $slice,
   $some,
   $someGet,
   $someValue,
@@ -225,15 +224,17 @@ function stripLeadingPromiseCreationFrames(stack) {
     const url = callsite[1];
     if (!isPromiseCreationInternal(url, functionName)) {
       if (i > 0) {
-        return $slice(stack, i).map(item => [
-          item[0],
-          item[1],
-          item[2],
-          item[3],
-          item[4],
-          item[5],
-          item[6],
-        ]);
+        return stack
+          .slice(i)
+          .map(item => [
+            item[0],
+            item[1],
+            item[2],
+            item[3],
+            item[4],
+            item[5],
+            item[6],
+          ]);
       } else {
         return stack;
       }
@@ -3231,7 +3232,7 @@ function serializeServerReference(request, serverReference) {
       if (error != null) {
         const frames = parseStackTrace(error, 1);
         if (frames.length !== 0) {
-          const firstFrame = $index(frames, 0);
+          const firstFrame = frames[0];
           location = [
             firstFrame[0],
             firstFrame[1],
@@ -4178,7 +4179,7 @@ function renderModelDestructive(
             console.error(
               'Only plain objects can be passed to Client Components from Server Components. ' +
                 'Objects with symbol properties like %s are not supported.%s',
-              symbols[0].description,
+              $index(symbols, 0).description,
               describeObjectForErrorMessage(parent, parentPropertyName),
             );
           });

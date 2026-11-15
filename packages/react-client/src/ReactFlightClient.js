@@ -90,6 +90,7 @@ import {
   $fieldCell,
   $index,
   $live,
+  $removeOutOfBounds,
   $resize,
   $slice,
   $splice,
@@ -420,7 +421,7 @@ function pruneDebugInfoAfterError(response, chunk) {
   try {
     const end = debugInfo.length;
     for (let i = 0; i < end; i++) {
-      const info = $index(debugInfo, i);
+      const info = debugInfo[i];
       const time = timeOf(info);
       if (time != null && time > relativeEndTime) {
         // This array may already be attached to the Lazy suspended in Fizz.
@@ -446,7 +447,7 @@ function moveDebugInfoFromChunkToInnerValue(chunk, value) {
       resolvedValue.$$typeof === REACT_ELEMENT_TYPE ||
       resolvedValue.$$typeof === REACT_LAZY_TYPE)
   ) {
-    const debugInfo = $drain($borrowMut($unwrap(chunk._debugInfo)), 0);
+    const debugInfo = $borrowMut($unwrap(chunk._debugInfo)).splice(0);
     const valueDebugInfo = resolvedValue._debugInfo;
     if (isArray(valueDebugInfo)) {
       if (valueDebugInfo.borrows) {
@@ -568,6 +569,9 @@ function wakeChunkIfInitialized(
                   typeof listener === 'object' && listener === reference,
               );
               if (rejectionIdx !== -1) {
+                if (rejectionIdx >= rejectListeners.length) {
+                  $removeOutOfBounds(rejectListeners, rejectionIdx);
+                }
                 rejectListeners.splice(rejectionIdx, 1);
               }
             }
@@ -1075,6 +1079,9 @@ function initializeModelChunk(chunk) {
                   typeof listener$1 === 'object' && listener$1 === listener,
               );
               if (rejectionIdx !== -1) {
+                if (rejectionIdx >= rejectListeners.length) {
+                  $removeOutOfBounds(rejectListeners, rejectionIdx);
+                }
                 rejectListeners.splice(rejectionIdx, 1);
               }
             }
@@ -1351,7 +1358,7 @@ function initializeElement(response, element, lazyNode) {
       if (lazyDebugInfo.borrows) {
         $alreadyBorrowed();
       }
-      const debugInfo = $drain(lazyDebugInfo, 0);
+      const debugInfo = lazyDebugInfo.splice(0);
       const elementDebugInfo = element._debugInfo;
       if (elementDebugInfo) {
         if (elementDebugInfo.borrows) {
@@ -4859,7 +4866,7 @@ function flushComponentPerformance(
     let endTimeIdx = -1;
     try {
       for (let i = debugInfo$1.length - 1; i >= 0; i--) {
-        const info = debugInfo$1[i];
+        const info = $index(debugInfo$1, i);
         const time = timeOf(info);
         if (time == null) {
           continue;
@@ -4872,7 +4879,7 @@ function flushComponentPerformance(
           // Now that we know the start and end time, we can emit the entries between.
           // Skip awaits on client resources since they didn't block the server component.
           for (let j = endTimeIdx - 1; j > i; j--) {
-            const candidateInfo = debugInfo$1[j];
+            const candidateInfo = $index(debugInfo$1, j);
             const awaited = candidateInfo.awaited;
             if (typeof candidateInfo.name === 'string') {
               if (componentEndTime > childrenEndTime) {
@@ -4940,7 +4947,7 @@ function flushComponentPerformance(
           endTime = time; // If we don't find anything else the endTime is the start time.
           // Skip awaits on client resources since they didn't block the server component.
           for (let j = debugInfo$1.length - 1; j > i; j--) {
-            const candidateInfo = debugInfo$1[j];
+            const candidateInfo = $index(debugInfo$1, j);
             const awaited = candidateInfo.awaited;
             if (typeof candidateInfo.name === 'string') {
               if (componentEndTime > childrenEndTime) {

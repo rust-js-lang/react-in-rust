@@ -13,7 +13,7 @@ import {
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import {enableProfilerTimer} from 'shared/ReactFeatureFlags';
-import {$insertAt, $position} from '@rust-js/std';
+import {$insertAt, $position, $removeOutOfBounds} from '@rust-js/std';
 
 // TODO: Consider exporting the react-native version.
 export {default as rendererVersion} from 'shared/ReactVersion';
@@ -64,6 +64,9 @@ export function appendChild(parentInstance, child) {
   const children = parentInstance.children;
   const index = children.indexOf(child);
   if (index !== -1) {
+    if (index >= children.length) {
+      $removeOutOfBounds(children, index);
+    }
     children.splice(index, 1);
   }
   children.push(child);
@@ -73,6 +76,9 @@ export function insertBefore(parentInstance, child, beforeChild) {
   const children = parentInstance.children;
   const index = children.indexOf(child);
   if (index !== -1) {
+    if (index >= children.length) {
+      $removeOutOfBounds(children, index);
+    }
     children.splice(index, 1);
   }
   // A `beforeChild` it doesn't hold is upstream's `splice(-1, 0, child)`.
@@ -86,6 +92,9 @@ export function removeChild(parentInstance, child) {
   const children = parentInstance.children;
   const index = children.indexOf(child);
   if (index !== -1) {
+    if (index >= children.length) {
+      $removeOutOfBounds(children, index);
+    }
     children.splice(index, 1);
   } else {
     // A `child` it doesn't hold is upstream's `splice(-1, 1)`, which
@@ -149,6 +158,9 @@ export function appendInitialChild(parentInstance, child) {
   const children = parentInstance.children;
   const index = children.indexOf(child);
   if (index !== -1) {
+    if (index >= children.length) {
+      $removeOutOfBounds(children, index);
+    }
     children.splice(index, 1);
   }
   children.push(child);

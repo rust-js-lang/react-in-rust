@@ -5216,7 +5216,7 @@ function queueCompletedSegment(boundary, segment) {
       segment.chunks.length === 0 &&
       children.length === 1 &&
       children[0].boundary == null &&
-      children[0].id === -1
+      $index(children, 0).id === -1
         ? $index(children, 0)
         : undefined;
   } finally {

@@ -25,7 +25,7 @@ import {clearEntangledAsyncTransitionTypes} from './ReactFiberTransitionTypes.js
 
 import noop from 'shared/noop';
 import reportGlobalError from 'shared/reportGlobalError';
-import {$catchable} from '@rust-js/std';
+import {$catchable, $index} from '@rust-js/std';
 
 // If there are multiple, concurrent async actions, they are entangled. All
 // transition updates that occur while the async action is still in progress
@@ -148,7 +148,7 @@ export function chainThenableValue(thenable, result) {
       fulfilledThenable.status = 'fulfilled';
       fulfilledThenable.value = result;
       for (let i = 0; i < listeners.length; i++) {
-        const listener = listeners[i];
+        const listener = $index(listeners, i);
         listener(result);
       }
     },
@@ -157,7 +157,7 @@ export function chainThenableValue(thenable, result) {
       rejectedThenable.status = 'rejected';
       rejectedThenable.reason = error;
       for (let i = 0; i < listeners.length; i++) {
-        const listener = listeners[i];
+        const listener = $index(listeners, i);
         // This is a perf hack where we call the `onFulfill` ping function
         // instead of `onReject`, because we know that React is the only
         // consumer of these promises, and it passes the same listener to both.

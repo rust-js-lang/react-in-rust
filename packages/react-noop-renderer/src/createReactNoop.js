@@ -36,7 +36,9 @@ import ReactVersion from 'shared/ReactVersion';
 import {
   $cleanup,
   $displayF64,
+  $insertAt,
   $live,
+  $removeOutOfBounds,
   $toUppercase,
   $unwindsOn,
   $unwrap,
@@ -67,6 +69,9 @@ function createReactNoop(reconciler, useMutation) {
     const children = parentInstance.children;
     const index = children.indexOf(child);
     if (index !== -1) {
+      if (index >= children.length) {
+        $removeOutOfBounds(children, index);
+      }
       children.splice(index, 1);
     }
     children.push(child);
@@ -100,13 +105,16 @@ function createReactNoop(reconciler, useMutation) {
     const children = parentInstance.children;
     const index = children.indexOf(child);
     if (index !== -1) {
+      if (index >= children.length) {
+        $removeOutOfBounds(children, index);
+      }
       children.splice(index, 1);
     }
     const beforeIndex = children.indexOf(beforeChild);
     if (beforeIndex === -1) {
       throw new Error('This child does not exist.');
     }
-    children.splice(beforeIndex, 0, child);
+    $insertAt(children, beforeIndex, child);
   }
 
   function insertInContainerBefore(parentInstance, child, beforeChild) {
@@ -138,6 +146,9 @@ function createReactNoop(reconciler, useMutation) {
     const index = children.indexOf(child);
     if (index === -1) {
       throw new Error('This child does not exist.');
+    }
+    if (index >= children.length) {
+      $removeOutOfBounds(children, index);
     }
     children.splice(index, 1);
   }
