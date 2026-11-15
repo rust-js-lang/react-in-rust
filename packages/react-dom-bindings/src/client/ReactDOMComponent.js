@@ -79,7 +79,7 @@ import {
   listenToNonDelegatedEvent,
   mediaEventTypes,
 } from '../events/DOMPluginEventSystem.js';
-import {$catchUnwind, $catchable, $unwrap} from '@rust-js/std';
+import {$catchUnwind, $catchable, $toLowercase, $unwrap} from '@rust-js/std';
 
 let didWarnControlledToUncontrolled = false;
 let didWarnUncontrolledToControlled = false;
@@ -1875,7 +1875,7 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
 
 function getPossibleStandardName(propName) {
   if (__DEV__) {
-    const lowerCasedName = propName.toLowerCase();
+    const lowerCasedName = $toLowercase(propName);
     if (!possibleStandardNames.hasOwnProperty(lowerCasedName)) {
       return null;
     }
@@ -1903,7 +1903,7 @@ export function getPropsFromElement(domElement) {
     const attr = attributes[i];
     const value = getPropNameFromAttributeName(attr.name);
     serverDifferences[value] =
-      attr.name.toLowerCase() === 'style'
+      $toLowercase(attr.name) === 'style'
         ? getStylesObjectFromElement(domElement)
         : attr.value;
   }
@@ -2383,7 +2383,7 @@ function diffHydratedCustomComponent(
       case 'isContentEditable':
       case 'outerText':
       case 'outerHTML':
-        extraAttributes.delete(propKey.toLowerCase());
+        extraAttributes.delete($toLowercase(propKey));
         if (__DEV__) {
           console.error(
             'Assignment to read-only property will result in a no-op: `%s`',
@@ -2416,7 +2416,7 @@ function diffHydratedCustomComponent(
           tag !== 'svg' &&
           tag !== 'math'
         ) {
-          extraAttributes.delete(propKey.toLowerCase());
+          extraAttributes.delete($toLowercase(propKey));
         } else {
           extraAttributes.delete(propKey);
         }
@@ -2639,7 +2639,7 @@ function diffHydratedGenericElement(
       case 'formAction': {
         const serverValue = domElement.getAttribute(propKey);
         if (typeof value === 'function') {
-          extraAttributes.delete(propKey.toLowerCase());
+          extraAttributes.delete($toLowercase(propKey));
           // The server can set these extra properties to implement actions.
           // So we remove them from the extra attributes warnings.
           if (propKey === 'formAction') {
@@ -2661,7 +2661,7 @@ function diffHydratedGenericElement(
           continue;
         } else {
           if (serverValue === EXPECTED_FORM_ACTION_URL) {
-            extraAttributes.delete(propKey.toLowerCase());
+            extraAttributes.delete($toLowercase(propKey));
             warnForPropDifference(
               propKey,
               'function',
@@ -2673,7 +2673,7 @@ function diffHydratedGenericElement(
           hydrateSanitizedAttribute(
             domElement,
             propKey,
-            propKey.toLowerCase(),
+            $toLowercase(propKey),
             value,
             extraAttributes,
             serverDifferences,
@@ -2755,7 +2755,7 @@ function diffHydratedGenericElement(
         hydrateBooleanAttribute(
           domElement,
           propKey,
-          propKey.toLowerCase(),
+          $toLowercase(propKey),
           value,
           extraAttributes,
           serverDifferences,
@@ -2951,7 +2951,7 @@ function diffHydratedGenericElement(
           tag !== 'svg' &&
           tag !== 'math'
         ) {
-          extraAttributes.delete(attributeName.toLowerCase());
+          extraAttributes.delete($toLowercase(attributeName));
         } else {
           const standardName = getPossibleStandardName(propKey);
           if (standardName != null && standardName !== propKey) {
@@ -3139,7 +3139,7 @@ export function diffHydratedProperties(domElement, tag, props, hostContext) {
     const extraAttributes = new Set();
     const attributes = domElement.attributes;
     for (let i = 0; i < attributes.length; i++) {
-      const name = attributes[i].name.toLowerCase();
+      const name = $toLowercase(attributes[i].name);
       switch (name) {
         // Controlled attributes are not validated
         // TODO: Only ignore them on controlled tags.

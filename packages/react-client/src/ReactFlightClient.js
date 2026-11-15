@@ -93,6 +93,7 @@ import {
   $resize,
   $slice,
   $splice,
+  $toLowercase,
   $truncate,
   $try,
   $unborrow,
@@ -3819,7 +3820,7 @@ function ResponseInstance(
       // this is where we enter the server from the client.
       // TODO: Make this string configurable.
       this._debugRootTask = console.createTask(
-        '"use ' + rootEnv.toLowerCase() + '"',
+        '"use ' + $toLowercase(rootEnv) + '"',
       );
     }
     // Track the start of the fetch to the best of our knowledge.
@@ -4103,7 +4104,7 @@ function getRootTask(response, childEnvironmentName) {
     // Like if one environment just requests another environment.
     const createTaskFn = console.createTask.bind(
       console,
-      '"use ' + childEnvironmentName.toLowerCase() + '"',
+      '"use ' + $toLowercase(childEnvironmentName) + '"',
     );
     return rootTask.run(createTaskFn);
   }
@@ -4153,7 +4154,7 @@ function initializeFakeTask(response, debugInfo) {
   // from the old environment. So we use the owner's environment as the current.
   let taskName;
   if (env !== ownerEnv) {
-    taskName = '"use ' + env.toLowerCase() + '"';
+    taskName = '"use ' + $toLowercase(env) + '"';
   } else if (debugInfo.key !== undefined) {
     // Some unfortunate pattern matching to refine the type.
     taskName = getServerComponentTaskName(debugInfo);

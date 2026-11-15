@@ -33,7 +33,14 @@ import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 import ReactVersion from 'shared/ReactVersion';
-import {$cleanup, $displayF64, $live, $unwindsOn, $unwrap} from '@rust-js/std';
+import {
+  $cleanup,
+  $displayF64,
+  $live,
+  $toUppercase,
+  $unwindsOn,
+  $unwrap,
+} from '@rust-js/std';
 
 const NO_CONTEXT = {};
 const UPPERCASE_CONTEXT = {};
@@ -215,7 +222,7 @@ function createReactNoop(reconciler, useMutation) {
   }
 
   function computeText(rawText, hostContext) {
-    return hostContext === UPPERCASE_CONTEXT ? rawText.toUpperCase() : rawText;
+    return hostContext === UPPERCASE_CONTEXT ? $toUppercase(rawText) : rawText;
   }
 
   let suspenseyThingCache = null;
@@ -385,7 +392,7 @@ function createReactNoop(reconciler, useMutation) {
       internalInstanceHandle,
     ) {
       if (hostContext === UPPERCASE_CONTEXT) {
-        text = text.toUpperCase();
+        text = $toUppercase(text);
       }
       const id = instanceCounter++;
       const inst = {

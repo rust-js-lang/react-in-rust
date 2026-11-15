@@ -155,6 +155,8 @@ import {
   $position,
   $removeOutOfBounds,
   $retain,
+  $toLowercase,
+  $toUppercase,
   $truncate,
   $unborrow,
   $unwrap,
@@ -245,7 +247,7 @@ export function getRootHostContext(rootContainerInstance) {
     }
   }
   if (__DEV__) {
-    const validatedTag = type.toLowerCase();
+    const validatedTag = $toLowercase(type);
     const ancestorInfo = updatedAncestorInfoDev(undefined, validatedTag);
     return {
       context,
@@ -379,7 +381,7 @@ function isScriptDataBlock(props) {
   if (scriptType === '') {
     return false;
   }
-  const lower = scriptType.toLowerCase();
+  const lower = $toLowercase(scriptType);
   // Special non-MIME keywords recognized by the HTML spec
   // TODO: May be fine to also not warn about having these types be parsed as "parser-inserted"
   if (
@@ -524,7 +526,7 @@ export function createInstance(
           // We're not SVG/MathML and we don't have a dash, so we're not a custom element
           // Even if you use `is`, these should be of known type and lower case.
           if (__DEV__ && !type.includes('-')) {
-            if (type !== type.toLowerCase()) {
+            if (type !== $toLowercase(type)) {
               console.error(
                 '<%s /> is using incorrect casing. ' +
                   'Use PascalCase for React components, ' +
@@ -570,7 +572,7 @@ export function cloneMutableInstance(instance, keepChildren) {
         'startGestureTransition() required cloning a <%s> element since it exists in ' +
           'both states of the gesture. This can be problematic since it will load it twice ' +
           'Try removing or hiding it with <Activity mode="offscreen"> in the optimistic state.',
-        tagName.toLowerCase(),
+        $toLowercase(tagName),
       );
     }
   }
@@ -1592,7 +1594,7 @@ function getComputedTransform(style) {
       transform = 'rotate(' + parts[0] + ') ' + transform;
     } else if (parts.length === 2) {
       transform =
-        'rotate' + parts[0].toUpperCase() + '(' + parts[1] + ') ' + transform;
+        'rotate' + $toUppercase(parts[0]) + '(' + parts[1] + ') ' + transform;
     } else {
       transform = 'rotate3d(' + parts.join(', ') + ') ' + transform;
     }
@@ -3770,7 +3772,7 @@ function clearContainerSparingly(container) {
         continue;
       case 'LINK':
         // Stylesheet tags are retained because they may likely come from 3rd party scripts and extensions
-        if (node.rel.toLowerCase() === 'stylesheet') {
+        if ($toLowercase(node.rel) === 'stylesheet') {
           continue;
         }
         break;
@@ -3788,7 +3790,7 @@ function clearHead(head) {
       isMarkedHoistable(node) ||
       nodeName === 'SCRIPT' ||
       nodeName === 'STYLE' ||
-      (nodeName === 'LINK' && node.rel.toLowerCase() === 'stylesheet')
+      (nodeName === 'LINK' && $toLowercase(node.rel) === 'stylesheet')
     ) {
       // retain these nodes
     } else {
@@ -3817,7 +3819,7 @@ export function canHydrateInstance(instance, type, props, inRootOrSingleton) {
   while (instance.nodeType === ELEMENT_NODE) {
     const element = instance;
     const anyProps = props;
-    if (element.nodeName.toLowerCase() !== type.toLowerCase()) {
+    if ($toLowercase(element.nodeName) !== $toLowercase(type)) {
       if (!inRootOrSingleton) {
         // Usually we error for mismatched tags.
         if (element.nodeName === 'INPUT' && element.type === 'hidden') {
@@ -4222,7 +4224,7 @@ export function describeHydratableInstanceForDevWarnings(instance) {
   if (instance.nodeType === ELEMENT_NODE) {
     // Reverse engineer a set of props that can print for dev warnings
     return {
-      type: instance.nodeName.toLowerCase(),
+      type: $toLowercase(instance.nodeName),
       props: getPropsFromElement(instance),
     };
   } else if (instance.nodeType === COMMENT_NODE) {
@@ -4683,7 +4685,7 @@ export function acquireSingletonInstance(
       // we we need to warn that you are rendering more than one singleton at a time.
       getInstanceFromNodeDOMTree(instance) != null
     ) {
-      const tagName = instance.tagName.toLowerCase();
+      const tagName = $toLowercase(instance.tagName);
       console.error(
         'You are mounting a new %s component when a previous one has not first unmounted. It is an' +
           ' error to render more than one %s component at a time and attributes and children of these' +

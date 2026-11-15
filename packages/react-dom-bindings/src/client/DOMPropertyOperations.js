@@ -10,6 +10,7 @@ import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
 
 import {getFiberCurrentPropsFromNode} from './ReactDOMComponentTree.js';
 import {trackHostMutation} from 'react-reconciler/src/ReactFiberMutationTracking';
+import {$toLowercase} from '@rust-js/std';
 
 /**
  * Get the value for a attribute on a node. Only used in DEV for SSR validation.
@@ -28,7 +29,7 @@ export function getValueForAttribute(node, name, expected) {
         case 'symbol':
           return expected;
         case 'boolean': {
-          const prefix = name.toLowerCase().slice(0, 5);
+          const prefix = $toLowercase(name).slice(0, 5);
           if (prefix !== 'data-' && prefix !== 'aria-') {
             return expected;
           }
@@ -40,7 +41,7 @@ export function getValueForAttribute(node, name, expected) {
     // When CSP is enabled, browsers hide the nonce attribute
     // so we need to access the nonce property directly
     // https://html.spec.whatwg.org/multipage/urls-and-fetching.html#cryptographicnonce
-    const isNonce = name.toLowerCase() === 'nonce';
+    const isNonce = $toLowercase(name) === 'nonce';
     const value = isNonce ? node.nonce : node.getAttribute(name);
     if (__DEV__) {
       checkAttributeStringCoercion(expected, name);
@@ -78,7 +79,7 @@ export function getValueForAttributeOnCustomComponent(node, name, expected) {
     // When CSP is enabled, browsers hide the nonce attribute
     // so we need to access the nonce property directly
     // https://html.spec.whatwg.org/multipage/urls-and-fetching.html#cryptographicnonce
-    const isNonce = name.toLowerCase() === 'nonce';
+    const isNonce = $toLowercase(name) === 'nonce';
     const value = isNonce ? node.nonce : node.getAttribute(name);
 
     if (value === '' && expected === true) {
@@ -110,7 +111,7 @@ export function setValueForAttribute(node, name, value) {
         node.removeAttribute(name);
         return;
       case 'boolean': {
-        const prefix = name.toLowerCase().slice(0, 5);
+        const prefix = $toLowercase(name).slice(0, 5);
         if (prefix !== 'data-' && prefix !== 'aria-') {
           node.removeAttribute(name);
           return;

@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {enableCreateEventHandleAPI} from 'shared/ReactFeatureFlags';
+import {$toLowercase} from '@rust-js/std';
 
 export const allNativeEvents = new Set();
 
@@ -43,7 +44,7 @@ export function registerDirectEvent(registrationName, dependencies) {
   registrationNameDependencies[registrationName] = dependencies;
 
   if (__DEV__ && possibleRegistrationNames != null) {
-    const lowerCasedName = registrationName.toLowerCase();
+    const lowerCasedName = $toLowercase(registrationName);
     possibleRegistrationNames[lowerCasedName] = registrationName;
 
     if (registrationName === 'onDoubleClick') {

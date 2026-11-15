@@ -56,6 +56,7 @@ import {
   $catchable,
   $fieldCell,
   $index,
+  $toLowercase,
   $unborrow,
   $unwrap,
 } from '@rust-js/std';
@@ -368,7 +369,7 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
     }
   });
   busboyStream.on('file', (name, value, {filename, encoding, mimeType}) => {
-    if (encoding.toLowerCase() === 'base64') {
+    if ($toLowercase(encoding) === 'base64') {
       busboyStream.destroy(
         new Error(
           "React doesn't accept base64 encoded file uploads because we don't expect " +

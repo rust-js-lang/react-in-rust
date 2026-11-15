@@ -10,7 +10,13 @@ import getActiveElement from './getActiveElement.js';
 import {getOffsets, setOffsets} from './ReactDOMSelection.js';
 
 import {ELEMENT_NODE, TEXT_NODE} from './HTMLNodeType.js';
-import {$catchable, $some, $someValue, $unwrap} from '@rust-js/std';
+import {
+  $catchable,
+  $some,
+  $someValue,
+  $toLowercase,
+  $unwrap,
+} from '@rust-js/std';
 
 function isTextNode(node) {
   return node != null && node.nodeType === TEXT_NODE;
@@ -89,7 +95,7 @@ export function hasSelectionCapabilities(elem) {
   if (elem == null) {
     return false;
   }
-  const nodeName = elem.nodeName.toLowerCase();
+  const nodeName = $toLowercase(elem.nodeName);
   if (nodeName === '') {
     return false;
   }

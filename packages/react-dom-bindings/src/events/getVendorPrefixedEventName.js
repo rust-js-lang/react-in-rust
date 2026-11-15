@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {canUseDOM} from 'shared/ExecutionEnvironment';
+import {$toLowercase} from '@rust-js/std';
 
 /**
  * Generate a mapping of standard vendor prefixes using the defined style property and event name.
@@ -17,7 +18,7 @@ import {canUseDOM} from 'shared/ExecutionEnvironment';
 function makePrefixMap(styleProp, eventName) {
   const prefixes = {};
 
-  prefixes[styleProp.toLowerCase()] = eventName.toLowerCase();
+  prefixes[$toLowercase(styleProp)] = $toLowercase(eventName);
   prefixes['Webkit' + styleProp] = 'webkit' + eventName;
   prefixes['Moz' + styleProp] = 'moz' + eventName;
   return prefixes;

@@ -25,7 +25,7 @@ import {
   processDispatchQueue,
 } from '../DOMPluginEventSystem.js';
 import isCustomElement from '../../shared/isCustomElement.js';
-import {$unwrap} from '@rust-js/std';
+import {$toLowercase, $unwrap} from '@rust-js/std';
 
 export function registerEvents() {
   registerTwoPhaseEvent('onChange', [
@@ -68,7 +68,7 @@ let activeElementInst = null;
 /** SECTION: handle `change` event */
 function shouldUseChangeEvent(elem) {
   const nodeName$1 = elem?.nodeName || undefined;
-  const nodeName = nodeName$1?.toLowerCase();
+  const nodeName = nodeName$1 != null ? $toLowercase(nodeName$1) : undefined;
   return (
     nodeName === 'select' || (nodeName === 'input' && elem.type === 'file')
   );
@@ -207,7 +207,7 @@ function shouldUseClickEvent(elem) {
   const nodeName = elem?.nodeName || undefined;
   return (
     nodeName != null &&
-    nodeName.toLowerCase() === 'input' &&
+    $toLowercase(nodeName) === 'input' &&
     (elem.type === 'checkbox' || elem.type === 'radio')
   );
 }

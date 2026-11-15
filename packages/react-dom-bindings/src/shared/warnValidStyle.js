@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$toUppercase} from '@rust-js/std';
+
 // 'msTransform' is correct, but the other prefixes should be capitalized
 const badVendoredStyleNamePattern = /^(?:webkit|moz|o)[A-Z]/;
 const msPattern = /^-ms-/;
@@ -20,7 +22,7 @@ let warnedForInfinityValue = false;
 
 function camelize(string) {
   return string.replace(hyphenPattern, (_, character) =>
-    (character ?? '').toUpperCase(),
+    $toUppercase(character ?? ''),
   );
 }
 
@@ -52,7 +54,7 @@ function warnBadVendoredStyleName(name) {
     console.error(
       'Unsupported vendor-prefixed style property %s. Did you mean %s?',
       name,
-      name.charAt(0).toUpperCase() + name.slice(1),
+      $toUppercase(name.charAt(0)) + name.slice(1),
     );
   }
 }

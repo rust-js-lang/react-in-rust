@@ -24,7 +24,7 @@ import {
   setupIntersectionObserver,
   supportsTestSelectors,
 } from './ReactFiberConfig.js';
-import {$index, $withBorrow, $withBorrowMut} from '@rust-js/std';
+import {$index, $toLowercase, $withBorrow, $withBorrowMut} from '@rust-js/std';
 
 let COMPONENT_TYPE = 0b000;
 let HAS_PSEUDO_CLASS_TYPE = 0b001;
@@ -145,7 +145,7 @@ function matchSelector(fiber, selector) {
         const dataTestId = fiber.memoizedProps['data-testname'];
         if (
           typeof dataTestId === 'string' &&
-          dataTestId.toLowerCase() === selector.value.toLowerCase()
+          $toLowercase(dataTestId) === $toLowercase(selector.value)
         ) {
           return true;
         }

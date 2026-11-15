@@ -287,6 +287,7 @@ import {
   $cleanup,
   $fieldCell,
   $shown,
+  $toLowercase,
   $unborrow,
   $unwrap,
 } from '@rust-js/std';
@@ -3190,7 +3191,7 @@ function validateRevealOrder(revealOrder) {
     ) {
       didWarnAboutRevealOrder[cacheKey] = true;
       if (typeof revealOrder === 'string') {
-        switch (revealOrder.toLowerCase()) {
+        switch ($toLowercase(revealOrder)) {
           case 'together':
           case 'forwards':
           case 'backwards':
@@ -3199,7 +3200,7 @@ function validateRevealOrder(revealOrder) {
               '"%s" is not a valid value for revealOrder on <SuspenseList />. ' +
                 'Use lowercase "%s" instead.',
               revealOrder,
-              revealOrder.toLowerCase(),
+              $toLowercase(revealOrder),
             );
             break;
           case 'forward':
@@ -3208,7 +3209,7 @@ function validateRevealOrder(revealOrder) {
               '"%s" is not a valid value for revealOrder on <SuspenseList />. ' +
                 'React uses the -s suffix in the spelling. Use "%ss" instead.',
               revealOrder,
-              revealOrder.toLowerCase(),
+              $toLowercase(revealOrder),
             );
             break;
           default:

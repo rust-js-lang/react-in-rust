@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$toLowercase} from '@rust-js/std';
+
 /** @see http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#input-type-attr-summary */
 const supportedInputTypes = {
   color: true,
@@ -26,7 +28,7 @@ const supportedInputTypes = {
 
 export default function isTextInputElement(elem) {
   const nodeName$1 = elem?.nodeName || undefined;
-  const nodeName = nodeName$1?.toLowerCase();
+  const nodeName = nodeName$1 != null ? $toLowercase(nodeName$1) : undefined;
 
   if (nodeName === 'input' && elem != null) {
     return !!supportedInputTypes[elem.type];

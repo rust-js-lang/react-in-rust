@@ -8,6 +8,7 @@
 import {ATTRIBUTE_NAME_CHAR} from './isAttributeNameSafe.js';
 import validAriaProperties from './validAriaProperties.js';
 import hasOwnProperty from 'shared/hasOwnProperty';
+import {$toLowercase} from '@rust-js/std';
 
 const warnedProperties = {};
 const rARIA = new RegExp('^(aria)-[' + ATTRIBUTE_NAME_CHAR + ']*$');
@@ -20,7 +21,7 @@ function validateProperty(tagName, name) {
     }
 
     if (rARIACamel.test(name)) {
-      const ariaName = 'aria-' + name.slice(4).toLowerCase();
+      const ariaName = 'aria-' + $toLowercase(name.slice(4));
 
       // If this is an aria-* attribute, but is not listed in the known DOM
       // DOM properties, then it is an invalid aria-* attribute.
@@ -45,7 +46,7 @@ function validateProperty(tagName, name) {
     }
 
     if (rARIA.test(name)) {
-      const lowerCasedName = name.toLowerCase();
+      const lowerCasedName = $toLowercase(name);
 
       // If this is an aria-* attribute, but is not listed in the known DOM
       // DOM properties, then it is an invalid aria-* attribute.

@@ -22,7 +22,7 @@ import {
   enableCreateEventHandleAPI,
   enableScrollEndPolyfill,
 } from 'shared/ReactFeatureFlags';
-import {$unwrap} from '@rust-js/std';
+import {$toLowercase, $toUppercase, $unwrap} from '@rust-js/std';
 
 export const topLevelEventsToReactNames = new Map();
 
@@ -128,9 +128,9 @@ function registerSimpleEvent(domEventName, reactName) {
 export function registerSimpleEvents() {
   for (let i = 0; i < simpleEventPluginEvents.length; i++) {
     const eventName = simpleEventPluginEvents[i];
-    const domEventName = eventName.toLowerCase();
+    const domEventName = $toLowercase(eventName);
     const capitalizedEvent =
-      $unwrap(eventName[0]).toUpperCase() + eventName.slice(1);
+      $toUppercase($unwrap(eventName[0])) + eventName.slice(1);
     registerSimpleEvent(domEventName, 'on' + capitalizedEvent);
   }
   // Special cases where event names don't match.

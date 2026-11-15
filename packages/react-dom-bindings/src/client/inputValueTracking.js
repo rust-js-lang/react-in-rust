@@ -6,13 +6,14 @@
 // LICENSE file in the root directory of this source tree.
 
 import {checkFormFieldValueStringCoercion} from 'shared/CheckStringCoercion';
+import {$toLowercase} from '@rust-js/std';
 
 function isCheckable(elem) {
   const type = elem.type;
   const nodeName = elem.nodeName;
   return (
     nodeName !== '' &&
-    nodeName.toLowerCase() === 'input' &&
+    $toLowercase(nodeName) === 'input' &&
     (type === 'checkbox' || type === 'radio')
   );
 }

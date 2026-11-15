@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$catchable, $unwrap} from '@rust-js/std';
+import {$catchable, $toLowercase, $unwrap} from '@rust-js/std';
 
 export async function insertNodesAndExecuteScripts(source, target, CSPnonce) {
   const ownerDocument = target.ownerDocument ?? target;
@@ -160,7 +160,7 @@ export function getVisibleChildren(element) {
           props.children = nestedChildren;
         }
         children.push(
-          require('react').createElement(current.tagName.toLowerCase(), props),
+          require('react').createElement($toLowercase(current.tagName), props),
         );
       }
     } else if (node.nodeType === 3) {

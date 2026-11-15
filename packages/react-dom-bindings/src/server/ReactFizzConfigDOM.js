@@ -76,6 +76,7 @@ import {
   $displayF64,
   $index,
   $splice,
+  $toLowercase,
   $trim,
   $unwrap,
 } from '@rust-js/std';
@@ -1429,7 +1430,7 @@ function pushAttribute(
     case 'autoFocus':
     case 'multiple':
     case 'muted':
-      pushBooleanAttribute(target, name.toLowerCase(), value);
+      pushBooleanAttribute(target, $toLowercase(name), value);
       break;
     case 'xlinkHref':
       if (callable || typeof value === 'boolean') {
@@ -1582,7 +1583,7 @@ function pushAttribute(
           case 'symbol':
             return;
           case 'boolean': {
-            const prefix = attributeName.toLowerCase().slice(0, 5);
+            const prefix = $toLowercase(attributeName).slice(0, 5);
             if (prefix !== 'data-' && prefix !== 'aria-') {
               return;
             }
@@ -3806,7 +3807,7 @@ export function pushStartInstance(
       formatContext.insertionMode !== SVG_MODE &&
       formatContext.insertionMode !== MATHML_MODE &&
       type.indexOf('-') === -1 &&
-      type.toLowerCase() !== type
+      $toLowercase(type) !== type
     ) {
       console.error(
         '<%s /> is using incorrect casing. ' +
@@ -5405,7 +5406,7 @@ function writeStyleResourceAttribute(
   value, // not null or undefined
   encode,
 ) {
-  let attributeName = name.toLowerCase();
+  let attributeName = $toLowercase(name);
   if (typeof value === 'function' || typeof value === 'symbol') {
     return;
   }
@@ -6189,7 +6190,7 @@ function getPreloadAsHeader(href, as, params) {
       if (hasOwnProperty.call(params, paramName)) {
         const paramValue = params[paramName];
         if (typeof paramValue === 'string') {
-          value += `; ${paramName.toLowerCase()}="${escapeStringForLinkHeaderQuotedParamValueContext(
+          value += `; ${$toLowercase(paramName)}="${escapeStringForLinkHeaderQuotedParamValueContext(
             paramValue,
             paramName,
           )}"`;

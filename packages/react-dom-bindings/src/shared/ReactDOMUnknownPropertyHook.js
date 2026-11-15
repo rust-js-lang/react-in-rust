@@ -9,7 +9,7 @@ import {ATTRIBUTE_NAME_CHAR} from './isAttributeNameSafe.js';
 import isCustomElement from './isCustomElement.js';
 import possibleStandardNames from './possibleStandardNames.js';
 import hasOwnProperty from 'shared/hasOwnProperty';
-import {$unwrap} from '@rust-js/std';
+import {$toLowercase, $unwrap} from '@rust-js/std';
 
 const warnedProperties = {};
 const EVENT_NAME_REGEX = /^on./;
@@ -27,7 +27,7 @@ function validateProperty(tagName, name, value, eventRegistry) {
       return true;
     }
 
-    const lowerCasedName = name.toLowerCase();
+    const lowerCasedName = $toLowercase(name);
     if (lowerCasedName === 'onfocusin' || lowerCasedName === 'onfocusout') {
       console.error(
         'React uses onFocus and onBlur instead of onFocusIn and onFocusOut. ' +
@@ -231,7 +231,7 @@ function validateProperty(tagName, name, value, eventRegistry) {
             return true;
           // fallthrough
           default: {
-            const prefix = name.toLowerCase().slice(0, 5);
+            const prefix = $toLowercase(name).slice(0, 5);
             if (prefix === 'data-' || prefix === 'aria-') {
               return true;
             }

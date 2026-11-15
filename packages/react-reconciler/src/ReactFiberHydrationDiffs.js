@@ -28,7 +28,13 @@ import assign from 'shared/assign';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 
 import isArray from 'shared/isArray';
-import {$borrow, $catchable, $index, $unborrow} from '@rust-js/std';
+import {
+  $borrow,
+  $catchable,
+  $index,
+  $toLowercase,
+  $unborrow,
+} from '@rust-js/std';
 
 const maxRowLength = 120;
 const idealDepth = 15;
@@ -358,7 +364,7 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
     if (!serverProps.hasOwnProperty(propName)) {
       continue;
     }
-    serverPropNames.set(propName.toLowerCase(), propName);
+    serverPropNames.set($toLowercase(propName), propName);
   }
 
   if (serverPropNames.size === 1 && serverPropNames.has('children')) {
@@ -374,9 +380,9 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
       }
       const maxLength =
         maxRowLength - ((indent + 1) | 0) * 2 - propName.length - 1;
-      const serverPropName = serverPropNames.get(propName.toLowerCase());
+      const serverPropName = serverPropNames.get($toLowercase(propName));
       if (serverPropName != null) {
-        serverPropNames.delete(propName.toLowerCase());
+        serverPropNames.delete($toLowercase(propName));
         // There's a diff here.
         const clientValue = clientProps[propName];
         const serverValue = serverProps[serverPropName];
