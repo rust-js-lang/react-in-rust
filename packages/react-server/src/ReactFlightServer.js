@@ -2524,23 +2524,26 @@ function visitAsyncNodeImpl(
             // Note: This might also be a Promise with a displayName but potentially a worse stack.
             // We could potentially favor the outer Promise if it has a stack but not the inner.
             match = ioNode;
-          } else if (
-            (node.stack != null && hasUnfilteredFrame(request, node.stack)) ||
-            (promise != null &&
-              hasDisplayName(promise) &&
-              (ioNode.stack == null ||
-                !hasUnfilteredFrame(request, ioNode.stack)))
-          ) {
-            // If this Promise has a stack trace then we favor that over the I/O node since we're
-            // mainly dealing with Promises as the abstraction.
-            // If it has no stack but at least has a displayName and the io doesn't have a better
-            // stack anyway, then also use this Promise instead since at least it has a name.
-            match = node;
           } else {
-            // If this Promise was created inside only third party code, then try to use
-            // the inner I/O node instead. This could happen if third party calls into first
-            // party to perform some I/O.
-            match = ioNode;
+            const stack = node.stack;
+            if (
+              (stack != null && hasUnfilteredFrame(request, stack)) ||
+              (promise != null &&
+                hasDisplayName(promise) &&
+                (ioNode.stack == null ||
+                  !hasUnfilteredFrame(request, ioNode.stack)))
+            ) {
+              // If this Promise has a stack trace then we favor that over the I/O node since we're
+              // mainly dealing with Promises as the abstraction.
+              // If it has no stack but at least has a displayName and the io doesn't have a better
+              // stack anyway, then also use this Promise instead since at least it has a name.
+              match = node;
+            } else {
+              // If this Promise was created inside only third party code, then try to use
+              // the inner I/O node instead. This could happen if third party calls into first
+              // party to perform some I/O.
+              match = ioNode;
+            }
           }
         } else if (
           request.status === ABORTING &&
@@ -2550,8 +2553,9 @@ function visitAsyncNodeImpl(
           // We aborted this render. If this Promise spanned the abort time it was probably the
           // Promise that was aborted. This won't necessarily have I/O associated with it but
           // it's a point of interest.
+          const stack = node.stack;
           if (
-            (node.stack != null && hasUnfilteredFrame(request, node.stack)) ||
+            (stack != null && hasUnfilteredFrame(request, stack)) ||
             (promise != null && hasDisplayName(promise))
           ) {
             match = node;
@@ -2588,7 +2592,8 @@ function visitAsyncNodeImpl(
             // then this gets I/O ignored, which is what we want because it means it was likely
             // just part of a previous component's rendering.
             match = ioNode;
-            if (node.stack != null && isAwaitInUserspace(request, node.stack)) {
+            const stack = node.stack;
+            if (stack != null && isAwaitInUserspace(request, stack)) {
               // This await happened earlier but it was done in user space. This is the first time
               // that user space saw the value of the I/O. We know we'll emit the I/O eventually
               // but if we do it now we can override the promise value of the I/O entry to the
@@ -2599,57 +2604,57 @@ function visitAsyncNodeImpl(
                 serializeIONode(request, ioNode, awaited.promise);
               }
             }
-          } else if (
-            node.stack == null ||
-            !isAwaitInUserspace(request, node.stack)
-          ) {
-            // If this await was fully filtered out, then it was inside third party code
-            // such as in an external library. We return the I/O node and try another await.
-            match = ioNode;
-          } else if (
-            request.status === ABORTING &&
-            startTime > request.abortTime
-          ) {
-            // This was awaited after aborting so we skip it.
           } else {
-            // We found a user space await.
-
-            // Outline the IO node.
-            // The ioNode is where the I/O was initiated, but after that it could have been
-            // processed through various awaits in the internals of the third party code.
-            // Therefore we don't use the inner most Promise as the conceptual value but the
-            // Promise that was ultimately awaited by the user space await.
-            serializeIONode(request, ioNode, awaited.promise);
-
-            // If we ever visit this I/O node again, skip it because we already emitted this
-            // exact entry and we don't need two awaits on the same thing.
-            visited.nodes.set(ioNode, null);
-
-            // Ensure the owner is already outlined.
-            if (node.owner != null) {
-              outlineComponentInfo(request, node.owner);
-            }
-
-            // We log the environment at the time when the last promise pigned ping which may
-            // be later than what the environment was when we actually started awaiting.
-            const env = (0, request.environmentName)();
-            advanceTaskTime(request, task, startTime);
-            // Then emit a reference to us awaiting it in the current task.
-            request.pendingChunks++;
             const stack = node.stack;
-            emitDebugChunk(request, task.id, {
-              awaited: ioNode,
-              env,
-              owner: node.owner,
-              stack: stack != null ? filterStackTrace(request, stack) : null,
-            });
-            // Mark the end time of the await. If we're aborting then we don't emit this
-            // to signal that this never resolved inside this render.
-            markOperationEndTime(request, task, endTime);
-            if (request.status === ABORTING) {
-              // Undefined is used as a signal that we found a suitable aborted node and we don't have to find
-              // further aborted nodes.
-              match = undefined;
+            if (stack == null || !isAwaitInUserspace(request, stack)) {
+              // If this await was fully filtered out, then it was inside third party code
+              // such as in an external library. We return the I/O node and try another await.
+              match = ioNode;
+            } else if (
+              request.status === ABORTING &&
+              startTime > request.abortTime
+            ) {
+              // This was awaited after aborting so we skip it.
+            } else {
+              // We found a user space await.
+
+              // Outline the IO node.
+              // The ioNode is where the I/O was initiated, but after that it could have been
+              // processed through various awaits in the internals of the third party code.
+              // Therefore we don't use the inner most Promise as the conceptual value but the
+              // Promise that was ultimately awaited by the user space await.
+              serializeIONode(request, ioNode, awaited.promise);
+
+              // If we ever visit this I/O node again, skip it because we already emitted this
+              // exact entry and we don't need two awaits on the same thing.
+              visited.nodes.set(ioNode, null);
+
+              // Ensure the owner is already outlined.
+              if (node.owner != null) {
+                outlineComponentInfo(request, node.owner);
+              }
+
+              // We log the environment at the time when the last promise pigned ping which may
+              // be later than what the environment was when we actually started awaiting.
+              const env = (0, request.environmentName)();
+              advanceTaskTime(request, task, startTime);
+              // Then emit a reference to us awaiting it in the current task.
+              request.pendingChunks++;
+              const stack = node.stack;
+              emitDebugChunk(request, task.id, {
+                awaited: ioNode,
+                env,
+                owner: node.owner,
+                stack: stack != null ? filterStackTrace(request, stack) : null,
+              });
+              // Mark the end time of the await. If we're aborting then we don't emit this
+              // to signal that this never resolved inside this render.
+              markOperationEndTime(request, task, endTime);
+              if (request.status === ABORTING) {
+                // Undefined is used as a signal that we found a suitable aborted node and we don't have to find
+                // further aborted nodes.
+                match = undefined;
+              }
             }
           }
         }

@@ -100,10 +100,8 @@ export function defaultOnRecoverableError(error, errorInfo) {
 export function logUncaughtError(root, errorInfo) {
   try {
     if (__DEV__) {
-      componentName =
-        errorInfo.source != null
-          ? getComponentNameFromFiber(errorInfo.source)
-          : null;
+      const option = errorInfo.source;
+      componentName = option != null ? getComponentNameFromFiber(option) : null;
       errorBoundaryName = null;
     }
     const error = errorInfo.value;
@@ -130,10 +128,8 @@ export function logUncaughtError(root, errorInfo) {
 export function logCaughtError(root, boundary, errorInfo) {
   try {
     if (__DEV__) {
-      componentName =
-        errorInfo.source != null
-          ? getComponentNameFromFiber(errorInfo.source)
-          : null;
+      const option = errorInfo.source;
+      componentName = option != null ? getComponentNameFromFiber(option) : null;
       errorBoundaryName = getComponentNameFromFiber(boundary);
     }
     const error = errorInfo.value;

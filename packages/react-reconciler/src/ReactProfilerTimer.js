@@ -572,7 +572,8 @@ export function startProfilerTimer(fiber) {
 
   profilerStartTime = now();
 
-  if (fiber.actualStartTime != null && fiber.actualStartTime < 0) {
+  const actualStartTime = fiber.actualStartTime;
+  if (actualStartTime != null && actualStartTime < 0) {
     fiber.actualStartTime = profilerStartTime;
   }
 }

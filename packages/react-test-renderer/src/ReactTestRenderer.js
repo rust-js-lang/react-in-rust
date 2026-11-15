@@ -348,8 +348,8 @@ class ReactTestInstance {
     return findAll(
       this,
       node => {
-        const option = node.props;
-        return option != null && propsMatch(option, props);
+        const nodeProps = node.props;
+        return nodeProps != null && propsMatch(nodeProps, props);
       },
       options,
     );

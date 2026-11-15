@@ -1904,9 +1904,9 @@ function waitForReference(
   isAwaitingDebugInfo, // DEV-only
 ) {
   if (__DEV__) {
-    const option = response._debugChannel;
+    const debugChannel = response._debugChannel;
     if (
-      (option == null || !option.hasReadable) &&
+      (debugChannel == null || !debugChannel.hasReadable) &&
       referencedChunk.status === 'pending' &&
       parentObject[0] === REACT_ELEMENT_TYPE &&
       (key === '4' || key === '5')
@@ -4322,9 +4322,9 @@ function resolveDebugModel(response, id, json) {
   parentChunk._debugChunk = debugChunk;
   initializeDebugChunk(response, parentChunk);
   if (__DEV__ && debugChunk.status === 'blocked') {
-    const option = response._debugChannel;
+    const debugChannel = response._debugChannel;
     if (
-      (option == null || !option.hasReadable) &&
+      (debugChannel == null || !debugChannel.hasReadable) &&
       json[0] === '"' &&
       json[1] === '$'
     ) {

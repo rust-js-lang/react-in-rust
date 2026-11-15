@@ -920,43 +920,44 @@ function abortTracingMarkerTransitions(
       deletedTransitions.forEach(transition => {
         // If one of the transitions on the tracing marker is a transition
         // that was in an aborted subtree, we will abort that tracing marker
-        if (
-          markerTransitions.has(transition) &&
-          (markerInstance.aborts == null ||
-            !markerInstance.aborts.some(
-              markerAbort => markerAbort === abort,
-            )) &&
-          markerInstance.transitions != null
-        ) {
-          const transitions = markerInstance.transitions;
+        if (markerTransitions.has(transition)) {
           const aborts = markerInstance.aborts;
-          if (aborts == null) {
-            const aborts = [abort];
-            markerInstance.aborts = aborts;
-            addMarkerIncompleteCallbackToPendingTransition(
-              abortedFiber.memoizedProps.name,
-              transitions,
-              aborts,
-            );
-          } else {
-            aborts.push(abort);
-          }
-
-          // We only want to call onTransitionProgress when the marker hasn't been
-          // deleted
           if (
-            deletedOffscreenInstance != null &&
-            !isInDeletedTree &&
-            pendingBoundaries != null &&
-            pendingBoundaries.has(deletedOffscreenInstance)
+            aborts == null ||
+            !aborts.some(markerAbort => markerAbort === abort)
           ) {
-            pendingBoundaries.delete(deletedOffscreenInstance);
+            const transitions = markerInstance.transitions;
+            if (transitions != null) {
+              const aborts = markerInstance.aborts;
+              if (aborts == null) {
+                const aborts = [abort];
+                markerInstance.aborts = aborts;
+                addMarkerIncompleteCallbackToPendingTransition(
+                  abortedFiber.memoizedProps.name,
+                  transitions,
+                  aborts,
+                );
+              } else {
+                aborts.push(abort);
+              }
 
-            addMarkerProgressCallbackToPendingTransition(
-              abortedFiber.memoizedProps.name,
-              deletedTransitions,
-              pendingBoundaries,
-            );
+              // We only want to call onTransitionProgress when the marker hasn't been
+              // deleted
+              if (
+                deletedOffscreenInstance != null &&
+                !isInDeletedTree &&
+                pendingBoundaries != null &&
+                pendingBoundaries.has(deletedOffscreenInstance)
+              ) {
+                pendingBoundaries.delete(deletedOffscreenInstance);
+
+                addMarkerProgressCallbackToPendingTransition(
+                  abortedFiber.memoizedProps.name,
+                  deletedTransitions,
+                  pendingBoundaries,
+                );
+              }
+            }
           }
         }
       });
@@ -3660,9 +3661,10 @@ function commitPassiveMountOnFiber(
       if (enableProfilerTimer && enableComponentPerformanceTrack) {
         // Detect if this was a hydration commit by look at if the previous state was
         // dehydrated and this wasn't a forced client render.
+        const alternate = finishedWork.alternate;
         inHydratedSubtree =
-          finishedWork.alternate != null &&
-          !!finishedWork.alternate.memoizedState.isDehydrated &&
+          alternate != null &&
+          !!alternate.memoizedState.isDehydrated &&
           (finishedWork.flags & ForceClientRender) === NoFlags;
       }
 
@@ -3985,13 +3987,20 @@ function commitPassiveMountOnFiber(
           // firing effects inside newly mounted trees. This also applies to
           // the initial render.
           instance._visibility |= OffscreenPassiveEffectsConnected;
-          const includeWorkInProgressEffects =
-            (finishedWork.subtreeFlags & PassiveMask) !== NoFlags ||
-            (enableProfilerTimer &&
-              enableComponentPerformanceTrack &&
-              finishedWork.actualDuration !== 0 &&
-              (finishedWork.alternate == null ||
-                finishedWork.alternate.child != finishedWork.child));
+          let includeWorkInProgressEffects;
+          if ((finishedWork.subtreeFlags & PassiveMask) !== NoFlags) {
+            includeWorkInProgressEffects = true;
+          } else if (
+            enableProfilerTimer &&
+            enableComponentPerformanceTrack &&
+            finishedWork.actualDuration !== 0
+          ) {
+            const alternate = finishedWork.alternate;
+            includeWorkInProgressEffects =
+              alternate == null || alternate.child != finishedWork.child;
+          } else {
+            includeWorkInProgressEffects = false;
+          }
           recursivelyTraverseReconnectPassiveEffects(
             finishedRoot,
             finishedWork,
@@ -4103,11 +4112,13 @@ function commitPassiveMountOnFiber(
     enableComponentPerformanceTrack &&
     (finishedWork.mode & ProfileMode) !== NoMode
   ) {
-    const isMount =
-      !inHydratedSubtree &&
-      finishedWork.alternate == null &&
-      finishedWork.return != null &&
-      finishedWork.return.alternate != null;
+    let isMount;
+    if (!inHydratedSubtree && finishedWork.alternate == null) {
+      const returnFiber = finishedWork.return;
+      isMount = returnFiber != null && returnFiber.alternate != null;
+    } else {
+      isMount = false;
+    }
     if (isMount) {
       // Log the mount in the render phase.
       const startTime = $unwrap(finishedWork.actualStartTime);
@@ -4153,14 +4164,22 @@ function recursivelyTraverseReconnectPassiveEffects(
   // This function visits both newly finished work and nodes that were re-used
   // from a previously committed tree. We cannot check non-static flags if the
   // node was reused.
-  const childShouldIncludeWorkInProgressEffects =
-    includeWorkInProgressEffects &&
-    ((parentFiber.subtreeFlags & PassiveMask) !== NoFlags ||
-      (enableProfilerTimer &&
-        enableComponentPerformanceTrack &&
-        parentFiber.actualDuration !== 0 &&
-        (parentFiber.alternate == null ||
-          parentFiber.alternate.child != parentFiber.child)));
+  let childShouldIncludeWorkInProgressEffects;
+  if (!includeWorkInProgressEffects) {
+    childShouldIncludeWorkInProgressEffects = false;
+  } else if ((parentFiber.subtreeFlags & PassiveMask) !== NoFlags) {
+    childShouldIncludeWorkInProgressEffects = true;
+  } else if (
+    enableProfilerTimer &&
+    enableComponentPerformanceTrack &&
+    parentFiber.actualDuration !== 0
+  ) {
+    const alternate = parentFiber.alternate;
+    childShouldIncludeWorkInProgressEffects =
+      alternate == null || alternate.child != parentFiber.child;
+  } else {
+    childShouldIncludeWorkInProgressEffects = false;
+  }
 
   // TODO (Offscreen) Check: flags & (RefStatic | LayoutStatic)
   let child = parentFiber.child;
@@ -4829,11 +4848,12 @@ function commitPassiveUnmountOnFiber(finishedWork) {
       if (
         isHidden &&
         instance._visibility & OffscreenPassiveEffectsConnected &&
-        // For backwards compatibility, don't unmount when a tree suspends. In
-        // the future we may change this to unmount after a delay.
         (finishedWork.return == null ||
           finishedWork.return.tag !== SuspenseComponent)
       ) {
+        // For backwards compatibility, don't unmount when a tree suspends. In
+        // the future we may change this to unmount after a delay.
+        const returnFiber = finishedWork.return;
         // The effects are currently connected. Disconnect them.
         // TODO: Add option or heuristic to delay before disconnecting the
         // effects. Then if the tree reappears before the delay has elapsed, we

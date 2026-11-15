@@ -3836,7 +3836,8 @@ export function canHydrateInstance(instance, type, props, inRootOrSingleton) {
         if (__DEV__) {
           checkAttributeStringCoercion(anyProps.name, 'name');
         }
-        const name = anyProps.name != null ? '' + anyProps.name : undefined;
+        const name$1 = anyProps.name;
+        const name = name$1 != null ? '' + name$1 : undefined;
         if (
           anyProps.type !== 'hidden' ||
           element.getAttribute('name') != name

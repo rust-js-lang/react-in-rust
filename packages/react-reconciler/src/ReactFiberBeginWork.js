@@ -2143,11 +2143,11 @@ function mountIncompleteClassComponent(
 function validateFunctionComponentInDev(workInProgress, component) {
   if (__DEV__) {
     if (component && component.childContextTypes) {
-      const option = component.displayName || component.name || undefined;
+      const name = component.displayName || component.name || undefined;
       console.error(
         'childContextTypes cannot be defined on a function component.\n' +
           '  %s.childContextTypes = ...',
-        option != null ? String(option) : 'Component',
+        name != null ? String(name) : 'Component',
       );
     }
 

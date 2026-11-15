@@ -758,9 +758,9 @@ function isOnlyNewMounts(tail) {
 }
 
 function bubbleProperties(completedWork) {
+  const alternate = completedWork.alternate;
   const didBailout =
-    completedWork.alternate != null &&
-    completedWork.alternate.child == completedWork.child;
+    alternate != null && alternate.child == completedWork.child;
 
   let newChildLanes = NoLanes;
   let subtreeFlags = NoFlags;
@@ -1514,11 +1514,11 @@ export function completeWork(current, workInProgress, renderLanes) {
       // boundaries that aren't associated with a Suspense tree. In anticipation
       // of such a refactor, all the hydration logic is contained in
       // this branch.
-      if (
-        current == null ||
-        (current.memoizedState != null &&
-          current.memoizedState.dehydrated !== null)
-      ) {
+      function holds(current) {
+        const memoizedState = current.memoizedState;
+        return memoizedState != null && memoizedState.dehydrated !== null;
+      }
+      if (current == null || holds(current)) {
         const fallthroughToNormalSuspensePath =
           completeDehydratedSuspenseBoundary(
             current,

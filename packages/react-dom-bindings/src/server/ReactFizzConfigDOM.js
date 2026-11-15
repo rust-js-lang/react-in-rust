@@ -1479,8 +1479,8 @@ function pushAttribute(
     case 'seamless':
     case 'itemScope':
       if (__DEV__ && name === 'inert' && value === '') {
-        const option = didWarnForNewBooleanPropsWithEmptyValue[name];
-        if (!option) {
+        const didWarn = didWarnForNewBooleanPropsWithEmptyValue[name];
+        if (!didWarn) {
           didWarnForNewBooleanPropsWithEmptyValue[name] = true;
           console.error(
             'Received an empty string for a boolean attribute `%s`. ' +

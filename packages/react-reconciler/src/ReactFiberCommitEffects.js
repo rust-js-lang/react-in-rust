@@ -793,7 +793,8 @@ function commitAttachRef(finishedWork) {
           const instance = finishedWork.stateNode;
           const props = finishedWork.memoizedProps;
           const name = getViewTransitionName(props, instance);
-          if (instance.ref == null || instance.ref.name !== name) {
+          const instanceRef = instance.ref;
+          if (instanceRef == null || instanceRef.name !== name) {
             instance.ref = createViewTransitionInstance(name);
           }
           instanceToUse = instance.ref;
