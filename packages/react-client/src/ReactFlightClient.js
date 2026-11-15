@@ -4325,7 +4325,7 @@ function resolveDebugModel(response, id, json) {
   const previousChunk = parentChunk._debugChunk;
   parentChunk._debugChunk = null;
   const debugChunk = createResolvedModelChunk(response, json);
-  debugChunk._debugChunk = previousChunk ?? null; // Linked list of the debug chunks
+  debugChunk._debugChunk = previousChunk; // Linked list of the debug chunks
   parentChunk._debugChunk = debugChunk;
   initializeDebugChunk(response, parentChunk);
   if (__DEV__ && debugChunk.status === 'blocked') {

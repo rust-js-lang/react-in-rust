@@ -877,9 +877,8 @@ function pushHaltedAwaitOnComponentStack(task, debugInfo) {
         const bestStack =
           asyncInfo.debugStack == null ? asyncInfo.awaited : asyncInfo;
         if (bestStack.debugStack !== undefined) {
-          const old = task.componentStack;
+          const parent = task.componentStack;
           task.componentStack = null;
-          const parent = old;
           task.componentStack = {
             parent,
             type: asyncInfo,
@@ -998,9 +997,8 @@ function pushServerComponentStack(task, debugInfo) {
       if (componentInfo.debugStack === undefined) {
         continue;
       }
-      const old = task.componentStack;
+      const parent = task.componentStack;
       task.componentStack = null;
-      const parent = old;
       task.componentStack = {
         parent,
         type: componentInfo,
@@ -2133,9 +2131,8 @@ function renderSuspenseList(request, task, keyPath, props) {
         // so needs some refactoring to deal with the warning.
 
         // Restore the thenable state before resuming.
-        const old = task.thenableState;
+        const prevThenableState = task.thenableState;
         task.thenableState = null;
-        const prevThenableState = old;
         prepareToUseThenableState(prevThenableState);
 
         // We need to know how many total rows are in this set, so that we
@@ -2320,9 +2317,8 @@ function renderWithHooks(request, task, keyPath, component, props, secondArg) {
   // Reset the task's thenable state before continuing, so that if a later
   // component suspends we can reuse the same task object. If the same
   // component suspends again, the thenable state will be restored.
-  const old = task.thenableState;
+  const prevThenableState = task.thenableState;
   task.thenableState = null;
-  const prevThenableState = old;
   const componentIdentity = {};
   prepareToUseHooks(
     request,
@@ -3518,9 +3514,8 @@ function retryNode(request, task) {
         // so needs some refactoring to deal with the warning.
 
         // Restore the thenable state before resuming.
-        const old = task.thenableState;
+        const prevThenableState = task.thenableState;
         task.thenableState = null;
-        const prevThenableState = old;
         prepareToUseThenableState(prevThenableState);
 
         // We need to know how many total children are in this set, so that we

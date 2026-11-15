@@ -3430,7 +3430,7 @@ function updateSuspenseListComponent(current, workInProgress, renderLanes) {
             break;
           }
           const nextRow = row.sibling;
-          row.sibling = tail ?? null;
+          row.sibling = tail;
           tail = row;
           row = nextRow;
         }

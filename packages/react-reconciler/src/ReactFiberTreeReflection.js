@@ -46,7 +46,7 @@ export function getNearestMountedFiber(fiber) {
   if (node.tag === HostRoot) {
     // TODO: Check if this was a nested HostRoot when used with
     // renderContainerIntoSubtree.
-    return nearestMounted ?? null;
+    return nearestMounted;
   }
   // If we didn't hit the root, that means that we're in an disconnected tree
   // that has been unmounted.
