@@ -157,7 +157,7 @@ export function createRoot(
       onDefaultTransitionIndicator = options.onDefaultTransitionIndicator;
     }
     if (options.unstable_transitionCallbacks != null) {
-      transitionCallbacks = options.unstable_transitionCallbacks;
+      transitionCallbacks = options.unstable_transitionCallbacks ?? null;
     }
   }
 
@@ -253,7 +253,7 @@ export function hydrateRoot(
       onDefaultTransitionIndicator = options.onDefaultTransitionIndicator;
     }
     if (options.unstable_transitionCallbacks != null) {
-      transitionCallbacks = options.unstable_transitionCallbacks;
+      transitionCallbacks = options.unstable_transitionCallbacks ?? null;
     }
     if (options.formState != null) {
       formState = options.formState;

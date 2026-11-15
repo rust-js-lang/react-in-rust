@@ -56,7 +56,7 @@ import {
   commitNewChildToFragmentInstances,
   getParentFragmentInstances,
 } from './ReactFiberFragmentInstance.js';
-import {$catchable} from '@rust-js/std';
+import {$catchable, $unwrap} from '@rust-js/std';
 
 export function commitHostMount(finishedWork) {
   const type = finishedWork.type;
@@ -326,7 +326,7 @@ function getHostSibling(fiber) {
       }
       node = returnFiber;
     }
-    const sibling = node.sibling;
+    const sibling = $unwrap(node.sibling);
     const returnFiber = node.return;
     sibling.return = returnFiber;
     node = sibling;

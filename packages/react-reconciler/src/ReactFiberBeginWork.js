@@ -3148,7 +3148,7 @@ function propagateSuspenseContextChange(
       }
       return;
     }
-    const sibling = current.sibling;
+    const sibling = $unwrap(current.sibling);
     const returnFiber = current.return;
     sibling.return = returnFiber;
     node = sibling;

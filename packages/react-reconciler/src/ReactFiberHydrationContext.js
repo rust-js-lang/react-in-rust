@@ -835,7 +835,7 @@ export function popHydrationStateOnInterruptedWork(fiber) {
   // or advance the cursor - we're restoring, not completing.
   popToNextHostParent(fiber);
   if (fiber.tag === HostComponent && fiber.stateNode != null) {
-    nextHydratableInstance = fiber.stateNode;
+    nextHydratableInstance = fiber.stateNode ?? null;
   }
 }
 

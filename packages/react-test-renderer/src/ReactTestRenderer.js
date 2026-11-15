@@ -241,7 +241,7 @@ function getChildren(parent) {
       }
       node = parent;
     }
-    const sibling = node.sibling;
+    const sibling = $unwrap(node.sibling);
     const returnFiber = node.return;
     sibling.return = returnFiber;
     node = sibling;

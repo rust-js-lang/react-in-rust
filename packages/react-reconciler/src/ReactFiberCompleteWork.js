@@ -264,7 +264,7 @@ function appendAllChildren(
         }
         return;
       }
-      const sibling = current.sibling;
+      const sibling = $unwrap(current.sibling);
       const returnFiber = current.return;
       sibling.return = returnFiber;
       node = sibling;
@@ -328,7 +328,7 @@ function appendAllChildren(
         }
         return;
       }
-      const sibling = current.sibling;
+      const sibling = $unwrap(current.sibling);
       const returnFiber = current.return;
       sibling.return = returnFiber;
       node = sibling;
@@ -408,7 +408,7 @@ function appendAllChildrenToContainer(
         }
         current = returnFiber;
       }
-      const sibling = current.sibling;
+      const sibling = $unwrap(current.sibling);
       const returnFiber = current.return;
       sibling.return = returnFiber;
       node = sibling;
