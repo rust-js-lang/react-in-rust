@@ -2952,10 +2952,9 @@ function resolveModel(request, task, parent, parentPropertyName, value) {
     }
     return resolved;
   }
-  const rendered$1 = $unwrap(rendered);
   const resolved = [];
   for (const [i, item] of rendered.entries()) {
-    resolved.push(resolveModel(request, task, rendered$1, '' + i, item));
+    resolved.push(resolveModel(request, task, rendered, '' + i, item));
   }
   return resolved;
 }
