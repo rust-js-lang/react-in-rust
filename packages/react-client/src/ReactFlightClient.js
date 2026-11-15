@@ -1445,7 +1445,7 @@ function createElement(
   if (handler != null) {
     // We pop the stack to the previous outer handler before leaving the Element.
     // This is effectively the complete phase.
-    initializingHandler = handler.parent ?? null;
+    initializingHandler = handler.parent;
     if (handler.errored) {
       // Something errored inside this Element's props. We can turn this Element
       // into a Lazy so that we can still render up until that Lazy is rendered.

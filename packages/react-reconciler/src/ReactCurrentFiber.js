@@ -56,7 +56,7 @@ export function runWithFiberInDEV(
     setCurrentFiber(fiber);
     const _restore = [previousFiber];
     let result;
-    if (fiber != null && fiber._debugTask != null) {
+    if (fiber !== null && fiber._debugTask != null) {
       const debugTask = fiber._debugTask;
       try {
         result = debugTask.run(() => callback(arg0, arg1, arg2, arg3, arg4));

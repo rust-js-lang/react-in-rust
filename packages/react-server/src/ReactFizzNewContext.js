@@ -237,7 +237,7 @@ export function popProvider(context) {
     }
   }
   const parent = prevSnapshot.parent;
-  currentActiveSnapshot = parent ?? null;
+  currentActiveSnapshot = parent;
   return parent ?? undefined;
 }
 

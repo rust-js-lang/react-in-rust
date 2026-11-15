@@ -194,7 +194,7 @@ function captureSuspendedCallSite() {
     );
   }
   suspendedCallSiteStack = {
-    parent: currentComponentStack.parent ?? null,
+    parent: currentComponentStack.parent,
     type: currentComponentStack.type,
     owner: currentComponentStack.owner,
     stack: new Error('react-stack-top-frame'),

@@ -231,7 +231,7 @@ export function createWorkInProgress(current, pendingProps) {
       workInProgress._debugOwner = current._debugOwner;
       workInProgress._debugStack = current._debugStack;
       workInProgress._debugTask = current._debugTask;
-      workInProgress._debugHookTypes = current._debugHookTypes ?? null;
+      workInProgress._debugHookTypes = current._debugHookTypes;
     }
 
     workInProgress.alternate = current;

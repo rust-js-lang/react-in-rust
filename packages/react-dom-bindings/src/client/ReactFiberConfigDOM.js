@@ -5303,7 +5303,7 @@ export function getResource(type, currentProps, pendingProps, currentResource) {
             // For now we error because we don't support flavor changes
             let diff = '';
             if (__DEV__) {
-              diff = `\n\n  - ${describeLinkForResourceErrorDEV($unwrap(currentProps))}\n  + ${describeLinkForResourceErrorDEV(pendingProps)}`;
+              diff = `\n\n  - ${describeLinkForResourceErrorDEV(currentProps)}\n  + ${describeLinkForResourceErrorDEV(pendingProps)}`;
             }
             throw new Error(
               `Expected <link> not to update to be updated to a stylesheet with precedence. Check the \`rel\`, \`href\`, and \`precedence\` props of this component. Alternatively, check whether two different <link> components render in the same slot or share the same key.${diff}`,
@@ -5317,7 +5317,7 @@ export function getResource(type, currentProps, pendingProps, currentResource) {
         // For now we error because we don't support flavor changes
         let diff = '';
         if (__DEV__) {
-          diff = `\n\n  - ${describeLinkForResourceErrorDEV($unwrap(currentProps))}\n  + ${describeLinkForResourceErrorDEV(pendingProps)}`;
+          diff = `\n\n  - ${describeLinkForResourceErrorDEV(currentProps)}\n  + ${describeLinkForResourceErrorDEV(pendingProps)}`;
         }
         throw new Error(
           `Expected stylesheet with precedence to not be updated to a different kind of <link>. Check the \`rel\`, \`href\`, and \`precedence\` props of this component. Alternatively, check whether two different <link> components render in the same slot or share the same key.${diff}`,

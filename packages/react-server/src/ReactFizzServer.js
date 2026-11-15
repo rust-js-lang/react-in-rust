@@ -973,7 +973,7 @@ function pushSuspendedCallSiteOnComponentStack(request, task) {
       // The owner of the suspended call site would be the owner of this task.
       // We need the task itself otherwise we'd miss a frame.
       owner: ownerStack,
-      parent: suspendCallSiteStack.parent ?? null,
+      parent: suspendCallSiteStack.parent,
       stack: suspendCallSiteStack.stack,
       type: suspendCallSiteStack.type,
     };
@@ -1243,7 +1243,7 @@ function thrownValueOf(payload) {
 }
 
 function fallbackKeyPathOf(keyPath) {
-  return [keyPath[0] ?? null, 'Suspense Fallback', keyPath[2]];
+  return [keyPath[0], 'Suspense Fallback', keyPath[2]];
 }
 
 function renderSuspenseBoundary(request, someTask, keyPath, props) {
@@ -3769,7 +3769,7 @@ function warnForMissingKey(request, task, child) {
     }
 
     // $FlowFixMe[cannot-write] unable to narrow type from mixed to writable object
-    $unwrap(store).validated = 1;
+    store.validated = 1;
 
     let didWarnForKey = request.didWarnForKey;
     if (didWarnForKey == null) {

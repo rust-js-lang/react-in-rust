@@ -195,7 +195,7 @@ export function initAsyncDebugInfo() {
                 const clonedNode = {
                   tag: IO_NODE,
                   owner: ioNode.owner,
-                  stack: ioNode.stack ?? null,
+                  stack: ioNode.stack,
                   start: ioNode.start,
                   end: performance.now(),
                   promise: ioNode.promise,
@@ -295,7 +295,7 @@ export function initAsyncDebugInfo() {
                 const clonedNode = {
                   tag: AWAIT_NODE,
                   owner: resolvedNode.owner,
-                  stack: resolvedNode.stack ?? null,
+                  stack: resolvedNode.stack,
                   start: resolvedNode.start,
                   end: resolvedNode.end,
                   promise: resolvedNode.promise,
