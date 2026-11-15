@@ -12,6 +12,7 @@ import {popProvider, pushProvider} from './ReactFiberNewContext.js';
 // Intentionally not named imports because Rollup would
 // use dynamic dispatch for CommonJS interop named imports.
 import * as Scheduler from 'scheduler';
+import {$index} from '@rust-js/std';
 
 function AbortControllerShim() {
   const listeners = [];
@@ -28,7 +29,7 @@ function AbortControllerShim() {
     // called with no borrow held, so one may add another.
     const count = listeners.length;
     for (let index = 0; index < count; index++) {
-      const listener = listeners[index];
+      const listener = $index(listeners, index);
       listener();
     }
   };

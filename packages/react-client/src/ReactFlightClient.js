@@ -5571,7 +5571,7 @@ function reviveModel(response, value, parentObject, key) {
       if (items.borrows < 0) {
         $alreadyMutablyBorrowed();
       }
-      const item = items[i];
+      const item = $index(items, i);
       const revived = reviveModel(response, item, value, '' + i);
       if (items.borrows) {
         $alreadyBorrowed();
