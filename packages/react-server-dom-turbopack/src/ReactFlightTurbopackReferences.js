@@ -129,14 +129,13 @@ export function registerServerObjectReference(reference, id, exportName) {
         'Reference.',
     );
   }
-  const value = exportName === null ? id : id + '#' + String(exportName);
   return Object.defineProperties(reference, {
     $$typeof: {value: SERVER_REFERENCE_TAG},
     $$id: {
       // GAP rd594: a conditional in a call's object literal is
       // a `const value = ..` before the call, where upstream
       // writes it in the literal.
-      value,
+      value: exportName === null ? id : id + '#' + String(exportName),
       configurable: true,
     },
   });
