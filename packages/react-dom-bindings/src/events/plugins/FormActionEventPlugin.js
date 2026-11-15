@@ -98,7 +98,7 @@ export function extractEvents(
           pending: true,
           data: formData,
           method: form.method,
-          action: action ?? null,
+          action,
         };
         if (__DEV__) {
           Object.freeze(pendingState);
