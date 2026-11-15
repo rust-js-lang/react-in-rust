@@ -183,8 +183,7 @@ function findPaths(root, selectors) {
   const stack = [[root, 0]];
   let index = 0;
   while (index < stack.length) {
-    const fiber = stack[index][0];
-    let selectorIndex = stack[index][1];
+    let [fiber, selectorIndex] = stack[index];
     index++;
     const tag = fiber.tag;
     let selector = selectors[selectorIndex];
@@ -222,8 +221,7 @@ function hasMatchingPaths(root, selectors) {
   const stack = [[root, 0]];
   let index = 0;
   while (index < stack.length) {
-    const fiber = stack[index][0];
-    let selectorIndex = stack[index][1];
+    let [fiber, selectorIndex] = stack[index];
     index++;
     const tag = fiber.tag;
     let selector = selectors[selectorIndex];
@@ -306,8 +304,7 @@ export function getFindAllNodesFailureDescription(hostRoot, selectors) {
   const stack = [[root, 0]];
   let index = 0;
   while (index < stack.length) {
-    const fiber = stack[index][0];
-    let selectorIndex = stack[index][1];
+    let [fiber, selectorIndex] = stack[index];
     index++;
     const tag = fiber.tag;
     const selector = $index(selectors, selectorIndex);

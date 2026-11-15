@@ -1393,12 +1393,7 @@ export function createBoundServerReference(
     const location = metaData.location;
     if (location != null) {
       const functionName = metaData.name || '';
-      const [, filename, line, col] = [
-        location[0],
-        location[1],
-        location[2],
-        location[3],
-      ];
+      const [, filename, line, col] = location;
       const env = metaData.env || 'Server';
       const sourceMap =
         findSourceMapUrl != null ? findSourceMapUrl(filename, env) : undefined;
