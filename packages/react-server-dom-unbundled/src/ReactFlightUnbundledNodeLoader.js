@@ -186,10 +186,9 @@ function transformServerModule(source, program, url, sourceMap, loader) {
       // We iterate source mapping entries and our matched exports in parallel to source map
       // them to their original location.
       let nextEntryIdx = 0;
-      let nextEntryLine = $unwrap($index(exportedEntries, nextEntryIdx).loc)
-        .start.line;
-      let nextEntryColumn = $unwrap($index(exportedEntries, nextEntryIdx).loc)
-        .start.column;
+      let nextEntryLine = $unwrap(exportedEntries[nextEntryIdx].loc).start.line;
+      let nextEntryColumn = $unwrap(exportedEntries[nextEntryIdx].loc).start
+        .column;
       readMappings(
         mappings,
         (
