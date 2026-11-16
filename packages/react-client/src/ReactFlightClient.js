@@ -1647,26 +1647,25 @@ function initializeChunkIfUnblocked(response, handler) {
 
 function fulfillReference(response, reference, value, fulfilledChunk) {
   const {handler, parentObject, key, map, path} = reference;
-  let value$1 = value;
 
   try {
     let i = 1;
     while (i < $borrow(path).length) {
       while (
-        typeof value$1 === 'object' &&
-        value$1 != null &&
-        value$1.$$typeof === REACT_LAZY_TYPE
+        typeof value === 'object' &&
+        value != null &&
+        value.$$typeof === REACT_LAZY_TYPE
       ) {
         // We never expect to see a Lazy node on this path because we encode those as
         // separate models. This must mean that we have inserted an extra lazy node
         // e.g. to replace a blocked element. We must instead look for it inside.
-        const referencedChunk = value$1._payload;
+        const referencedChunk = value._payload;
         if (
           referencedChunk === $borrow($fieldCell(handler, 'chunk', true)).value
         ) {
           // This is a reference to the thing we're currently blocking. We can peak
           // inside of it to get the value.
-          value$1 = handler.value;
+          value = handler.value;
           continue;
         }
         if (referencedChunk.status === 'resolved_model') {
@@ -1675,7 +1674,7 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
           initializeModuleChunk(referencedChunk);
         }
         if (referencedChunk.status === 'fulfilled') {
-          value$1 = initializedValue(referencedChunk);
+          value = initializedValue(referencedChunk);
           continue;
         } else if (
           referencedChunk.status === 'blocked' ||
@@ -1693,7 +1692,7 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
             if (cyclicHandler != null) {
               // This reference points back to this chunk. We can resolve the cycle by
               // using the value from that handler.
-              value$1 = cyclicHandler.value;
+              value = cyclicHandler.value;
               continue;
             }
           }
@@ -1741,11 +1740,11 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
       }
       const name = $index(path, i);
       if (
-        typeof value$1 === 'object' &&
-        value$1 != null &&
-        hasOwnProperty.call($unwrap(value$1), name)
+        typeof value === 'object' &&
+        value != null &&
+        hasOwnProperty.call($unwrap(value), name)
       ) {
-        value$1 = value$1[name];
+        value = value[name];
         i++;
         continue;
       }
@@ -1753,19 +1752,19 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
     }
 
     while (
-      typeof value$1 === 'object' &&
-      value$1 != null &&
-      value$1.$$typeof === REACT_LAZY_TYPE
+      typeof value === 'object' &&
+      value != null &&
+      value.$$typeof === REACT_LAZY_TYPE
     ) {
       // If what we're referencing is a Lazy it must be because we inserted one as a virtual node
       // while it was blocked by other data. If it's no longer blocked, we can unwrap it.
-      const referencedChunk = value$1._payload;
+      const referencedChunk = value._payload;
       if (
         referencedChunk === $borrow($fieldCell(handler, 'chunk', true)).value
       ) {
         // This is a reference to the thing we're currently blocking. We can peak
         // inside of it to get the value.
-        value$1 = handler.value;
+        value = handler.value;
         continue;
       }
       if (referencedChunk.status === 'resolved_model') {
@@ -1776,10 +1775,10 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
       if (referencedChunk.status !== 'fulfilled') {
         break;
       }
-      value$1 = initializedValue(referencedChunk);
+      value = initializedValue(referencedChunk);
     }
 
-    const mappedValue = map(response, value$1, parentObject, key);
+    const mappedValue = map(response, value, parentObject, key);
     if (key !== __PROTO__) {
       parentObject[key] = mappedValue;
     }
