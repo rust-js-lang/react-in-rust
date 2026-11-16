@@ -1900,7 +1900,6 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
   const totalChildren = rows.length;
   let previousSuspenseListRow;
   const replay = task.replay;
-  let i;
   if (replay != null) {
     // Replay
     // First we need to check if we have any resume slots at this level.
@@ -1910,7 +1909,7 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
         // Since we are going to resume into a slot whose order was already
         // determined by the prerender, we can safely resume it even in reverse
         // render order.
-        i = !isBackwards(revealOrder)
+        const i = !isBackwards(revealOrder)
           ? n
           : (((totalChildren - 1) >>> 0) - n) >>> 0;
         const node = $index(rows, i);
