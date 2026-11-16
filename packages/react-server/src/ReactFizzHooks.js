@@ -433,39 +433,41 @@ export function useReducer(reducer, initialArg, init) {
     }
     // $FlowFixMe[incompatible-use] found when upgrading Flow
     return [workInProgressHook.memoizedState, dispatch];
-  }
-  if (__DEV__) {
-    isInHookUserCodeInDev = true;
-  }
-  // $FlowFixMe[invalid-compare]
-  let initialState;
-  if (reducer === basicStateReducer) {
-    // Special case for `useState`.
-    initialState = typeof initialArg === 'function' ? initialArg() : initialArg;
-  } else if (init !== undefined) {
-    initialState = init(initialArg);
   } else {
-    initialState = initialArg;
+    if (__DEV__) {
+      isInHookUserCodeInDev = true;
+    }
+    // $FlowFixMe[invalid-compare]
+    let initialState;
+    if (reducer === basicStateReducer) {
+      // Special case for `useState`.
+      initialState =
+        typeof initialArg === 'function' ? initialArg() : initialArg;
+    } else if (init !== undefined) {
+      initialState = init(initialArg);
+    } else {
+      initialState = initialArg;
+    }
+    if (__DEV__) {
+      isInHookUserCodeInDev = false;
+    }
+    // $FlowFixMe[incompatible-use] found when upgrading Flow
+    workInProgressHook.memoizedState = initialState;
+    // $FlowFixMe[incompatible-use] found when upgrading Flow
+    const queue = {
+      last: null,
+      dispatch: null,
+    };
+    workInProgressHook.queue = queue;
+    const dispatch = dispatchAction.bind(
+      null,
+      currentlyRenderingComponent,
+      queue,
+    );
+    queue.dispatch = dispatch;
+    // $FlowFixMe[incompatible-use] found when upgrading Flow
+    return [workInProgressHook.memoizedState, dispatch];
   }
-  if (__DEV__) {
-    isInHookUserCodeInDev = false;
-  }
-  // $FlowFixMe[incompatible-use] found when upgrading Flow
-  workInProgressHook.memoizedState = initialState;
-  // $FlowFixMe[incompatible-use] found when upgrading Flow
-  const queue = {
-    last: null,
-    dispatch: null,
-  };
-  workInProgressHook.queue = queue;
-  const dispatch = dispatchAction.bind(
-    null,
-    currentlyRenderingComponent,
-    queue,
-  );
-  queue.dispatch = dispatch;
-  // $FlowFixMe[incompatible-use] found when upgrading Flow
-  return [workInProgressHook.memoizedState, dispatch];
 }
 
 function useMemo(nextCreate, deps) {

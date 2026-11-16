@@ -296,10 +296,11 @@ function workLoop(hasTimeRemaining, initialTime) {
         if (shouldYieldForPaint) {
           needsPaint = true;
           return true;
+        } else {
+          // If `shouldYieldForPaint` is false, we keep flushing synchronously
+          // without yielding to the main thread. This is the behavior of the
+          // `toFlushAndYield` and `toFlushAndYieldThrough` testing helpers .
         }
-        // If `shouldYieldForPaint` is false, we keep flushing synchronously
-        // without yielding to the main thread. This is the behavior of the
-        // `toFlushAndYield` and `toFlushAndYieldThrough` testing helpers .
       } else {
         if (enableProfiling) {
           markTaskCompleted(currentTask$1, currentTime);

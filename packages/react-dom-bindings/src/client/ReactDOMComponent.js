@@ -913,7 +913,7 @@ function setProp(domElement, tag, key, value, props, prevValue) {
     case 'innerText':
     case 'textContent':
       return;
-    default: {
+    default:
       if (
         key === 'popoverTarget' &&
         __DEV__ &&
@@ -942,11 +942,11 @@ function setProp(domElement, tag, key, value, props, prevValue) {
         }
         // Updating events doesn't affect the visuals.
         return;
+      } else {
+        const attributeName = getAttributeAlias(key);
+        setValueForAttribute(domElement, attributeName, value);
       }
-      const attributeName = getAttributeAlias(key);
-      setValueForAttribute(domElement, attributeName, value);
       break;
-    }
   }
   // To avoid marking things as host mutations we do early returns above.
   trackHostMutation();

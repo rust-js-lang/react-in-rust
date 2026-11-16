@@ -450,51 +450,53 @@ function scheduleTaskForRootDuringMicrotask(root, currentTime) {
     root.callbackPriority = SyncLane;
     root.callbackNode = null;
     return SyncLane;
-  }
-  // We use the highest priority lane to represent the priority of the callback.
-  const existingCallbackPriority = root.callbackPriority;
-  const newCallbackPriority = getHighestPriorityLane(nextLanes);
+  } else {
+    // We use the highest priority lane to represent the priority of the callback.
+    const existingCallbackPriority = root.callbackPriority;
+    const newCallbackPriority = getHighestPriorityLane(nextLanes);
 
-  if (
-    newCallbackPriority === existingCallbackPriority &&
-    // Special case related to `act`. If the currently scheduled task is a
-    // Scheduler task, rather than an `act` task, cancel it and re-schedule
-    // on the `act` queue.
-    !(
-      __DEV__ &&
-      ReactSharedInternals.actQueue !== null &&
-      existingCallbackNode !== fakeActCallbackNode
-    )
-  ) {
-    // The priority hasn't changed. We can reuse the existing task.
+    if (
+      newCallbackPriority === existingCallbackPriority &&
+      // Special case related to `act`. If the currently scheduled task is a
+      // Scheduler task, rather than an `act` task, cancel it and re-schedule
+      // on the `act` queue.
+      !(
+        __DEV__ &&
+        ReactSharedInternals.actQueue !== null &&
+        existingCallbackNode !== fakeActCallbackNode
+      )
+    ) {
+      // The priority hasn't changed. We can reuse the existing task.
+      return newCallbackPriority;
+    } else {
+      // Cancel the existing callback. We'll schedule a new one below.
+      cancelCallback(existingCallbackNode);
+    }
+
+    const value = lanesToEventPriority(nextLanes);
+    let schedulerPriorityLevel;
+    if (value === DiscreteEventPriority || value === ContinuousEventPriority) {
+      // Scheduler does have an "ImmediatePriority", but now that we use
+      // microtasks for sync work we no longer use that. Any sync work that
+      // reaches this path is meant to be time sliced.
+      schedulerPriorityLevel = UserBlockingSchedulerPriority;
+    } else if (value === DefaultEventPriority) {
+      schedulerPriorityLevel = NormalSchedulerPriority;
+    } else if (value === IdleEventPriority) {
+      schedulerPriorityLevel = IdleSchedulerPriority;
+    } else {
+      schedulerPriorityLevel = NormalSchedulerPriority;
+    }
+
+    const newCallbackNode = scheduleCallback(
+      schedulerPriorityLevel,
+      performWorkOnRootViaSchedulerTask.bind(null, root),
+    );
+
+    root.callbackPriority = newCallbackPriority;
+    root.callbackNode = newCallbackNode;
     return newCallbackPriority;
   }
-  // Cancel the existing callback. We'll schedule a new one below.
-  cancelCallback(existingCallbackNode);
-
-  const value = lanesToEventPriority(nextLanes);
-  let schedulerPriorityLevel;
-  if (value === DiscreteEventPriority || value === ContinuousEventPriority) {
-    // Scheduler does have an "ImmediatePriority", but now that we use
-    // microtasks for sync work we no longer use that. Any sync work that
-    // reaches this path is meant to be time sliced.
-    schedulerPriorityLevel = UserBlockingSchedulerPriority;
-  } else if (value === DefaultEventPriority) {
-    schedulerPriorityLevel = NormalSchedulerPriority;
-  } else if (value === IdleEventPriority) {
-    schedulerPriorityLevel = IdleSchedulerPriority;
-  } else {
-    schedulerPriorityLevel = NormalSchedulerPriority;
-  }
-
-  const newCallbackNode = scheduleCallback(
-    schedulerPriorityLevel,
-    performWorkOnRootViaSchedulerTask.bind(null, root),
-  );
-
-  root.callbackPriority = newCallbackPriority;
-  root.callbackNode = newCallbackNode;
-  return newCallbackPriority;
 }
 
 function performWorkOnRootViaSchedulerTask(root, didTimeout) {
