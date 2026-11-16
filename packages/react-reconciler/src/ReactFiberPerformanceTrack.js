@@ -30,7 +30,14 @@ import {
   enablePerformanceIssueReporting,
   enableProfilerTimer,
 } from 'shared/ReactFeatureFlags';
-import {$borrow, $fieldCell, $unborrow, $unwrap} from '@rust-js/std';
+import {
+  $assign,
+  $borrow,
+  $fieldCell,
+  $index,
+  $unborrow,
+  $unwrap,
+} from '@rust-js/std';
 
 const supportsUserTiming =
   enableProfilerTimer &&
@@ -252,7 +259,10 @@ export function logComponentRender(
             // Note that we only consider this case if properties.length > 1 which it will only
             // be if we have emitted any diffs. We'd only emit diffs if there were any nested
             // equal objects. Therefore, we don't warn for simple shallow equality.
-            properties[0] = ['Changed Props', DEEP_EQUALITY_WARNING];
+            $assign($index(properties, 0), [
+              'Changed Props',
+              DEEP_EQUALITY_WARNING,
+            ]);
             detail.devtools.color = 'warning';
             detail.devtools.tooltipText = DEEP_EQUALITY_WARNING;
           }
