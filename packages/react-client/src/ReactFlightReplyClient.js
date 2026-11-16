@@ -829,10 +829,10 @@ export function processReply(
           const {id, bound} = referenceClosure;
           const referenceClosureJson = stringify({id, bound});
           // Upgrade to use FormData to allow us to stream this value.
-          const formData$2 = formData();
+          const formData$1 = formData();
           // The reference to this function came from the same client so we can pass it back.
           const refId = takePartId();
-          formData$2.set(formFieldPrefix + refId, referenceClosureJson);
+          formData$1.set(formFieldPrefix + refId, referenceClosureJson);
           const serverReferenceId = serializeServerReferenceID(refId);
           // Store the server reference ID for deduplication.
           writtenObjects.set(value, serverReferenceId);
