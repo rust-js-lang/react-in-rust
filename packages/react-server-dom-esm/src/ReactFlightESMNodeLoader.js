@@ -246,7 +246,7 @@ function transformServerModule(source, program, url, sourceMap, loader) {
         lastMappedLine === nextEntryLine
       ) {
         // Match
-        const entry = $index(exportedEntries, nextEntryIdx);
+        const entry = exportedEntries[nextEntryIdx];
         entry.originalLine = lastOriginalLine;
         entry.originalColumn = lastOriginalColumn;
         entry.originalSource = lastSourceIndex;
