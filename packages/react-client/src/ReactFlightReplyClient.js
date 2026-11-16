@@ -31,13 +31,7 @@ import {
   checkEvalAvailabilityOnceDev,
   usedWithSSR,
 } from './ReactFlightClientConfig.js';
-import {
-  $catchUnwind,
-  $catchable,
-  $getOrInit,
-  $unwound,
-  $unwrap,
-} from '@rust-js/std';
+import {$catchable, $getOrInit, $unwound, $unwrap} from '@rust-js/std';
 
 const ObjectPrototype = Object.prototype;
 
@@ -277,16 +271,17 @@ export function processReply(
           resolve(data);
         }
       } else {
-        const result = $catchUnwind(() => {
+        try {
           const partJson = stringify(entry.value);
           data.append(streamPrefix, partJson);
           const progress$1 = $unwrap(progress);
           reader.read().then(entry => {
             progress$1(entry);
           }, reject);
-        });
-        if (result.TAG === 'Err') {
-          reject(thrown(result._0));
+        } catch (thrown$1) {
+          $catchable(thrown$1);
+          const x = $unwound(thrown$1);
+          reject(thrown(x));
         }
       }
     };
@@ -353,16 +348,17 @@ export function processReply(
           resolve(data);
         }
       } else {
-        const result = $catchUnwind(() => {
+        try {
           const partJson = stringify(entry.value);
           data.append(streamPrefix, partJson);
           const progress$1 = $unwrap(progress);
           iterator.next().then(entry => {
             progress$1(entry);
           }, reject);
-        });
-        if (result.TAG === 'Err') {
-          reject(thrown(result._0));
+        } catch (thrown$1) {
+          $catchable(thrown$1);
+          const x = $unwound(thrown$1);
+          reject(thrown(x));
         }
       }
     };
@@ -490,20 +486,19 @@ export function processReply(
           // Upgrade to use FormData to allow us to stream this value.
           const data = formData();
           pendingParts++;
-          const result = $catchUnwind(() => {
+          let resolved;
+          try {
             const resolvedModel = init(payload);
             // We always outline this as a separate part even though we could inline it
             // because it ensures a more deterministic encoding.
             const lazyId = takePartId();
             const partJson = serializeModel(resolvedModel, lazyId);
             data.append(formFieldPrefix + lazyId, partJson);
-            return serializeByValueID(lazyId);
-          });
-          let resolved;
-          if (result.TAG === 'Ok') {
-            resolved = result._0;
-          } else {
-            const x = thrown(result._0);
+            resolved = serializeByValueID(lazyId);
+          } catch (thrown$1) {
+            $catchable(thrown$1);
+            const payload = $unwound(thrown$1);
+            const x = thrown(payload);
             if (
               typeof x === 'object' &&
               x !== null &&
