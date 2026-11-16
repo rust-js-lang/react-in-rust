@@ -3965,9 +3965,11 @@ function trackPostponedBoundary(request, trackedPostpones, boundary) {
     return suspenseBoundary;
   } else {
     // Upgrade to ReplaySuspenseBoundary.
-    const node = $borrowMut(boundaryNode, true);
-    const [name, key, children, slots] = node;
-    $assign(node, [
+    if (boundaryNode.borrows) {
+      $alreadyBorrowed();
+    }
+    const [name, key, children, slots] = boundaryNode;
+    $assign(boundaryNode, [
       name,
       key,
       children,
@@ -3975,7 +3977,6 @@ function trackPostponedBoundary(request, trackedPostpones, boundary) {
       fallbackReplayNode,
       boundary.rootSegmentID,
     ]);
-    $unborrow(node);
     return boundaryNode;
   }
 }
@@ -4104,34 +4105,29 @@ function trackPostpone(request, trackedPostpones, task, segment) {
         workingMap.set(keyPath, resumableNode);
         addToReplayParent(resumableNode, keyPath[0], trackedPostpones);
       } else {
-        const resumableNode$1 = $borrowMut(resumableNode, true);
+        if (resumableNode.borrows) {
+          $alreadyBorrowed();
+        }
         const resumableSlots = {
           get value() {
-            return resumableNode$1[3];
+            return resumableNode[3];
           },
           set value(value) {
-            resumableNode$1[3] = value;
+            resumableNode[3] = value;
           },
         };
         const slots$1 = resumableSlots.value;
-        let dict;
-        try {
-          if (slots$1 === null) {
-            const slots = {};
-            resumableSlots.value = slots;
-            dict = slots;
-          } else if (typeof slots$1 === 'number') {
-            throw new Error(
-              'It should not be possible to postpone both at the root of an element ' +
-                'as well as a slot below. This is a bug in React.',
-            );
-          } else {
-            dict = slots$1;
-          }
-        } finally {
-          $unborrow(resumableNode$1);
+        if (slots$1 === null) {
+          slots = {};
+          resumableSlots.value = slots;
+        } else if (typeof slots$1 === 'number') {
+          throw new Error(
+            'It should not be possible to postpone both at the root of an element ' +
+              'as well as a slot below. This is a bug in React.',
+          );
+        } else {
+          slots = slots$1;
         }
-        slots = dict;
       }
     }
     const value = $displayF64(task.childIndex);
@@ -4161,14 +4157,15 @@ function untrackBoundary(request, boundary) {
 
   // Downgrade to plain ReplayNode since we won't replay through it.
   // $FlowFixMe[cannot-write]: We intentionally downgrade this to the other tuple.
-  const node = $borrowMut(boundaryNode, true);
-  const [name, key] = node;
+  if (boundaryNode.borrows) {
+    $alreadyBorrowed();
+  }
+  const [name, key] = boundaryNode;
   // Remove any resumable slots.
-  $assign(node, [name, key, [], null]);
+  $assign(boundaryNode, [name, key, [], null]);
 
   // TODO: We should really just remove the boundary from all parent paths too so
   // we don't replay the path to it.
-  $unborrow(node);
 }
 
 function spawnNewSuspendedReplayTask(request, task, thenableState) {
@@ -5200,22 +5197,20 @@ function completeAll(request) {
 }
 
 function queueCompletedSegment(boundary, segment) {
-  const children = $borrow(segment.children, true);
-  let onlyChild;
-  try {
-    if (segment.chunks.borrows < 0) {
-      $alreadyMutablyBorrowed();
-    }
-    onlyChild =
-      segment.chunks.length === 0 &&
-      children.length === 1 &&
-      children[0].boundary == null &&
-      $index(children, 0).id === -1
-        ? $index(children, 0)
-        : undefined;
-  } finally {
-    $unborrow(children);
+  if (segment.children.borrows < 0) {
+    $alreadyMutablyBorrowed();
   }
+  const children = segment.children;
+  if (segment.chunks.borrows < 0) {
+    $alreadyMutablyBorrowed();
+  }
+  const onlyChild =
+    segment.chunks.length === 0 &&
+    children.length === 1 &&
+    children[0].boundary == null &&
+    $index(children, 0).id === -1
+      ? $index(children, 0)
+      : undefined;
   if (onlyChild != null) {
     // This is an empty segment. There's nothing to write, so we can instead transfer the ID
     // to the child. That way any existing references point to the child.

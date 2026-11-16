@@ -417,20 +417,18 @@ function pruneDebugInfoAfterError(response, chunk) {
 
   const relativeEndTime = debugEndTime - performance.timeOrigin;
   let debugInfo = $unwrap(chunk._debugInfo);
-  debugInfo = $borrowMut(debugInfo, true);
-  try {
-    const end = debugInfo.length;
-    for (let i = 0; i < end; i++) {
-      const info = debugInfo[i];
-      const time = timeOf(info);
-      if (time != null && time > relativeEndTime) {
-        // This array may already be attached to the Lazy suspended in Fizz.
-        $truncate(debugInfo, i);
-        return;
-      }
+  if (debugInfo.borrows) {
+    $alreadyBorrowed();
+  }
+  const end = debugInfo.length;
+  for (let i = 0; i < end; i++) {
+    const info = debugInfo[i];
+    const time = timeOf(info);
+    if (time != null && time > relativeEndTime) {
+      // This array may already be attached to the Lazy suspended in Fizz.
+      $truncate(debugInfo, i);
+      return;
     }
-  } finally {
-    $unborrow(debugInfo);
   }
 }
 
@@ -907,15 +905,13 @@ function initializeDebugChunk(response, chunk) {
           response,
           $unwrap(initializedValue(initializedChunk)),
         );
-        const debugInfo$1 = $borrowMut(debugInfo, true);
-        try {
-          if (idx >= debugInfo$1.length) {
-            $resize(debugInfo$1, (idx + 1) >>> 0, undefined, 4);
-          }
-          debugInfo$1[$at(debugInfo$1, idx)] = entry;
-        } finally {
-          $unborrow(debugInfo$1);
+        if (debugInfo.borrows) {
+          $alreadyBorrowed();
         }
+        if (idx >= debugInfo.length) {
+          $resize(debugInfo, (idx + 1) >>> 0, undefined, 4);
+        }
+        debugInfo[$at(debugInfo, idx)] = entry;
       } else if (
         initializedChunk.status === 'blocked' ||
         initializedChunk.status === 'pending' ||
