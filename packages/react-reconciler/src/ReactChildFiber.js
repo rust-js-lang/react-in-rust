@@ -2027,7 +2027,6 @@ function createChildReconciler(shouldTrackSideEffects) {
   return (returnFiber, currentFirstChild, newChild, lanes) => {
     const prevDebugInfo = currentDebugInfo;
     currentDebugInfo = null;
-    const restore = prevDebugInfo;
     try {
       // This indirection only exists so we can reset `thenableState` at the end.
       // It should get inlined by Closure.
@@ -2095,7 +2094,7 @@ function createChildReconciler(shouldTrackSideEffects) {
       return throwFiber;
     } finally {
       if ($live()) {
-        currentDebugInfo = restore;
+        currentDebugInfo = prevDebugInfo;
       }
     }
   };

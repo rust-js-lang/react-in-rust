@@ -680,19 +680,17 @@ function triggerErrorOnChunk(response, chunk, error) {
       cyclicChunk.value = null;
       cyclicChunk.reason = null;
       initializingChunk = cyclicChunk;
-      const _restore = {
-        prevHandler,
-        prevChunk,
-      };
+      let prevHandler$1 = prevHandler;
+      let prevChunk$1 = prevChunk;
       try {
         initializeDebugChunk(response, chunk);
       } catch (error) {
         $cleanup(() => {
-          const old = _restore.prevHandler;
-          _restore.prevHandler = undefined;
+          const old = prevHandler$1;
+          prevHandler$1 = undefined;
           initializingHandler = old ?? null;
-          const old$1$1 = _restore.prevChunk;
-          _restore.prevChunk = undefined;
+          const old$1$1 = prevChunk$1;
+          prevChunk$1 = undefined;
           initializingChunk = old$1$1 ?? null;
         }, error);
         throw error;
@@ -707,9 +705,9 @@ function triggerErrorOnChunk(response, chunk, error) {
           // loaded because we currently treat errors as immediately cancelling the handler.
         }
       }
-      const old = _restore.prevHandler;
+      const old = prevHandler$1;
       initializingHandler = old ?? null;
-      const old$1 = _restore.prevChunk;
+      const old$1 = prevChunk$1;
       initializingChunk = old$1 ?? null;
     }
   }
@@ -997,10 +995,8 @@ function initializeModelChunk(chunk) {
     // Should we return early if that happens?
   }
 
-  const _restore = {
-    prevHandler,
-    prevChunk,
-  };
+  let prevHandler$1 = prevHandler;
+  let prevChunk$1 = prevChunk;
 
   try {
     (() => {
@@ -1136,15 +1132,15 @@ function initializeModelChunk(chunk) {
       };
     } catch (error) {
       $cleanup(() => {
-        const old = _restore.prevHandler;
-        _restore.prevHandler = undefined;
+        const old = prevHandler$1;
+        prevHandler$1 = undefined;
         initializingHandler = old ?? null;
         if (
           (enableProfilerTimer && enableComponentPerformanceTrack) ||
           __DEV__
         ) {
-          const old = _restore.prevChunk;
-          _restore.prevChunk = undefined;
+          const old = prevChunk$1;
+          prevChunk$1 = undefined;
           initializingChunk = old ?? null;
         }
       }, error);
@@ -1155,10 +1151,10 @@ function initializeModelChunk(chunk) {
       reason,
     };
   }
-  const old = _restore.prevHandler;
+  const old = prevHandler$1;
   initializingHandler = old ?? null;
   if ((enableProfilerTimer && enableComponentPerformanceTrack) || __DEV__) {
-    const old = _restore.prevChunk;
+    const old = prevChunk$1;
     initializingChunk = old ?? null;
   }
 }
@@ -3151,14 +3147,14 @@ function resolveModule(response, id, model, streamState) {
   const chunk = chunks.get(id);
   const prevHandler = initializingHandler;
   initializingHandler = null;
-  const _restore = {prevHandler};
+  let prevHandler$1 = prevHandler;
   let clientReferenceMetadata;
   try {
     clientReferenceMetadata = parseModel(response, model);
   } catch (error) {
     $cleanup(() => {
-      const old = _restore.prevHandler;
-      _restore.prevHandler = undefined;
+      const old = prevHandler$1;
+      prevHandler$1 = undefined;
       initializingHandler = old ?? null;
     }, error);
     throw error;
@@ -3173,14 +3169,14 @@ function resolveModule(response, id, model, streamState) {
       );
     } catch (error) {
       $cleanup(() => {
-        const old = _restore.prevHandler;
-        _restore.prevHandler = undefined;
+        const old = prevHandler$1;
+        prevHandler$1 = undefined;
         initializingHandler = old ?? null;
       }, error);
       throw error;
     }
   }
-  const old = _restore.prevHandler;
+  const old = prevHandler$1;
   initializingHandler = old ?? null;
   const clientReference = resolveClientReference(
     response._bundlerConfig,
@@ -3289,19 +3285,17 @@ function resolveStream(response, id, stream, controller, streamState) {
       cyclicChunk.value = null;
       cyclicChunk.reason = null;
       initializingChunk = cyclicChunk;
-      const _restore = {
-        prevHandler,
-        prevChunk,
-      };
+      let prevHandler$1 = prevHandler;
+      let prevChunk$1 = prevChunk;
       try {
         initializeDebugChunk(response, chunk);
       } catch (error) {
         $cleanup(() => {
-          const old = _restore.prevHandler;
-          _restore.prevHandler = undefined;
+          const old = prevHandler$1;
+          prevHandler$1 = undefined;
           initializingHandler = old ?? null;
-          const old$1$2 = _restore.prevChunk;
-          _restore.prevChunk = undefined;
+          const old$1$2 = prevChunk$1;
+          prevChunk$1 = undefined;
           initializingChunk = old$1$2 ?? null;
         }, error);
         throw error;
@@ -3321,27 +3315,27 @@ function resolveStream(response, id, stream, controller, streamState) {
             );
           } catch (error) {
             $cleanup(() => {
-              const old = _restore.prevHandler;
-              _restore.prevHandler = undefined;
+              const old = prevHandler$1;
+              prevHandler$1 = undefined;
               initializingHandler = old ?? null;
-              const old$1$3 = _restore.prevChunk;
-              _restore.prevChunk = undefined;
+              const old$1$3 = prevChunk$1;
+              prevChunk$1 = undefined;
               initializingChunk = old$1$3 ?? null;
             }, error);
             throw error;
           }
-          const old = _restore.prevHandler;
-          _restore.prevHandler = undefined;
+          const old = prevHandler$1;
+          prevHandler$1 = undefined;
           initializingHandler = old ?? null;
-          const old$1$1 = _restore.prevChunk;
-          _restore.prevChunk = undefined;
+          const old$1$1 = prevChunk$1;
+          prevChunk$1 = undefined;
           initializingChunk = old$1$1 ?? null;
           return;
         }
       }
-      const old = _restore.prevHandler;
+      const old = prevHandler$1;
       initializingHandler = old ?? null;
-      const old$1 = _restore.prevChunk;
+      const old$1 = prevChunk$1;
       initializingChunk = old$1 ?? null;
     }
   }
