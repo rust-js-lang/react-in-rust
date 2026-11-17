@@ -16,9 +16,8 @@ const reportGlobalError =
           typeof window.ErrorEvent === 'function'
         ) {
           // Browser Polyfill
-          const message$1 = error?.message;
-          const message =
-            typeof message$1 === 'string' ? message$1 : String(error);
+          let message = error?.message;
+          message = typeof message === 'string' ? message : String(error);
           const event = new window.ErrorEvent('error', {
             bubbles: true,
             cancelable: true,

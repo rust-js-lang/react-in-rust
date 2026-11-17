@@ -40,8 +40,8 @@ function bind() {
     const args = ArraySlice.call(arguments, 1);
     const typeof$ = {value: SERVER_REFERENCE_TAG};
     const id = {value: this.$$id};
-    const bound$1 = this.$$bound;
-    const bound = {value: bound$1 != null ? [...bound$1, ...args] : args};
+    let bound = this.$$bound;
+    bound = {value: bound != null ? [...bound, ...args] : args};
     return __DEV__
       ? Object.defineProperties(newFn, {
           $$typeof: typeof$,

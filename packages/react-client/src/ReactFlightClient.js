@@ -1923,11 +1923,9 @@ function waitForReference(
     }
   }
 
-  const handler$1 = initializingHandler;
-  let handler;
-  if (handler$1 != null) {
-    handler$1.deps++;
-    handler = handler$1;
+  let handler = initializingHandler;
+  if (handler != null) {
+    handler.deps++;
   } else {
     handler = {
       parent: null,
@@ -2024,11 +2022,9 @@ function loadServerReference(response, metaData, parentObject, key) {
     promise = all;
   }
 
-  const handler$1 = initializingHandler;
-  let handler;
-  if (handler$1 != null) {
-    handler$1.deps++;
-    handler = handler$1;
+  let handler = initializingHandler;
+  if (handler != null) {
+    handler.deps++;
   } else {
     const handler$1 = {
       parent: null,
@@ -2042,6 +2038,7 @@ function loadServerReference(response, metaData, parentObject, key) {
     handler = handler$1;
   }
 
+  const handler$1 = handler;
   function fulfill() {
     let resolvedValue = requireModule(serverReference);
 
@@ -2066,14 +2063,14 @@ function loadServerReference(response, metaData, parentObject, key) {
 
     // If this is the root object for a model reference, where `handler.value`
     // is a stale `null`, the resolved value can be used directly.
-    if (key === '' && handler.value === null) {
-      handler.value = resolvedValue;
+    if (key === '' && handler$1.value === null) {
+      handler$1.value = resolvedValue;
     }
 
     // If the parent object is an unparsed React element tuple, we also need to
     // update the props and owner of the parsed element object (i.e.
     // handler.value).
-    const handlerValue = handler.value;
+    const handlerValue = handler$1.value;
     if (
       parentObject[0] === REACT_ELEMENT_TYPE &&
       typeof handlerValue === 'object' &&
@@ -2092,8 +2089,8 @@ function loadServerReference(response, metaData, parentObject, key) {
       }
     }
 
-    handler.deps--;
-    initializeChunkIfUnblocked(response, handler);
+    handler$1.deps--;
+    initializeChunkIfUnblocked(response, handler$1);
   }
 
   function reject(error) {
@@ -3155,9 +3152,9 @@ function resolveModule(response, id, model, streamState) {
   const prevHandler = initializingHandler;
   initializingHandler = null;
   const _restore = {prevHandler};
-  let clientReferenceMetadata$1;
+  let clientReferenceMetadata;
   try {
-    clientReferenceMetadata$1 = parseModel(response, model);
+    clientReferenceMetadata = parseModel(response, model);
   } catch (error) {
     $cleanup(() => {
       const old = _restore.prevHandler;
@@ -3183,7 +3180,6 @@ function resolveModule(response, id, model, streamState) {
       throw error;
     }
   }
-  const clientReferenceMetadata = clientReferenceMetadata$1;
   const old = _restore.prevHandler;
   initializingHandler = old ?? null;
   const clientReference = resolveClientReference(

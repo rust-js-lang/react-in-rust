@@ -170,8 +170,8 @@ function transformServerModule(source, program, url, sourceMap, loader) {
     }
   }
 
-  const mappings$1 = sourceMap ? sourceMap.mappings : undefined;
-  let mappings = typeof mappings$1 === 'string' ? mappings$1 : '';
+  let mappings = sourceMap ? sourceMap.mappings : undefined;
+  mappings = typeof mappings === 'string' ? mappings : '';
   let newSrc = source;
 
   if (exportedEntries.length !== 0) {

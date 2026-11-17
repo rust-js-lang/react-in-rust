@@ -2491,8 +2491,8 @@ export function startGestureTransition(
         ) {
           const timing = effect.getTiming();
           // $FlowFixMe[prop-missing]
-          const duration$1 = timing.duration;
-          const duration = typeof duration$1 === 'number' ? duration$1 : 0;
+          let duration = timing.duration;
+          duration = typeof duration === 'number' ? duration : 0;
           // TODO: Consider interation count higher than 1.
           // $FlowFixMe[prop-missing]
           // $FlowFixMe[unsafe-addition]
@@ -4979,8 +4979,8 @@ function preloadModule(href, options) {
   previousDispatcher.m(/* preloadModule */ href, options);
   const ownerDocument = getGlobalDocument();
   if (ownerDocument != null && href !== '') {
-    const as$1 = options ? options.as : undefined;
-    const as = typeof as$1 === 'string' ? as$1 : 'script';
+    let as = options ? options.as : undefined;
+    as = typeof as === 'string' ? as : 'script';
     const preloadSelector = `link[rel="modulepreload"][as="${escapeSelectorAttributeValueInsideDoubleQuotes(as)}"][href="${escapeSelectorAttributeValueInsideDoubleQuotes(href)}"]`;
     // Some preloads are keyed under their selector. This happens when the preload is for
     // an arbitrary type. Other preloads are keyed under the resource key they represent a preload for.
@@ -6413,9 +6413,8 @@ function insertStylesheetIntoRoot(state, root, resource, map) {
 
   let last;
   const precedencesByRoot$1 = $unwrap(precedencesByRoot);
-  const precedences$1 = precedencesByRoot$1.get(root);
-  let precedences;
-  if (precedences$1 == null) {
+  let precedences = precedencesByRoot$1.get(root);
+  if (precedences == null) {
     precedences = new Map();
     precedencesByRoot$1.set(root, precedences);
     const nodes = root.querySelectorAll(
@@ -6441,8 +6440,7 @@ function insertStylesheetIntoRoot(state, root, resource, map) {
       precedences.set(LAST_PRECEDENCE, last);
     }
   } else {
-    last = precedences$1.get(LAST_PRECEDENCE);
-    precedences = precedences$1;
+    last = precedences.get(LAST_PRECEDENCE);
   }
 
   // We only call this after we have constructed an instance so we assume it here

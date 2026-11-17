@@ -236,12 +236,11 @@ export function preinit(href, options) {
     const as = options.as;
     if (typeof as === 'string') {
       const crossOrigin = getCrossOriginStringAs(as, options.crossOrigin);
-      const integrity$1 = options.integrity;
-      const integrity =
-        typeof integrity$1 === 'string' ? integrity$1 : undefined;
-      const fetchPriority$1 = options.fetchPriority;
-      const fetchPriority =
-        typeof fetchPriority$1 === 'string' ? fetchPriority$1 : undefined;
+      let integrity = options.integrity;
+      integrity = typeof integrity === 'string' ? integrity : undefined;
+      let fetchPriority = options.fetchPriority;
+      fetchPriority =
+        typeof fetchPriority === 'string' ? fetchPriority : undefined;
       if (as === 'style') {
         /* preinitStyle */
         const d = ReactDOMSharedInternals.d;
@@ -291,8 +290,8 @@ export function preinitModule(href, options) {
         encountered,
       );
     } else {
-      const as$1 = options ? options.as : undefined;
-      const as = typeof as$1 === 'string' ? as$1 : 'script';
+      let as = options ? options.as : undefined;
+      as = typeof as === 'string' ? as : 'script';
       if (as !== 'script') {
         // We have an invalid as type and need to warn
         const typeOfAs = getValueDescriptorExpectingEnumForWarning(as);

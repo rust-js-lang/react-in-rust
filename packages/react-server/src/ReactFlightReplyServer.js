@@ -334,9 +334,8 @@ function loadServerReference(response, metaData, parentObject, key) {
   // the relevant modules already loaded but it allows for lazy loading of code
   // if needed.
   const bound = metaData.bound;
-  const serverReferencePromise$1 = preloadModule(serverReference);
-  let serverReferencePromise;
-  if (serverReferencePromise$1 === null) {
+  let serverReferencePromise = preloadModule(serverReference);
+  if (serverReferencePromise === null) {
     if (bound instanceof ReactPromise) {
       serverReferencePromise = Promise.resolve(bound);
     } else {
@@ -351,8 +350,8 @@ function loadServerReference(response, metaData, parentObject, key) {
       bound instanceof ReactPromise
         ? // GAP rd485: `Promise.all([..])` of thenables: js's promise
           // functions take `Promise`s, which a `Thenable` is none of.
-          Promise.all([serverReferencePromise$1, bound])
-        : serverReferencePromise$1;
+          Promise.all([serverReferencePromise, bound])
+        : serverReferencePromise;
   }
 
   function fulfill() {
@@ -908,11 +907,9 @@ function waitForReference(
   map,
   path,
 ) {
-  const handler$1 = initializingHandler;
-  let handler;
-  if (handler$1 != null) {
-    handler$1.deps = (handler$1.deps + 1) | 0;
-    handler = handler$1;
+  let handler = initializingHandler;
+  if (handler != null) {
+    handler.deps = (handler.deps + 1) | 0;
   } else {
     handler = {
       chunk: null,
@@ -1198,11 +1195,9 @@ function parseTypedArray(
   // Since loading the buffer is an async operation we'll be blocking the parent
   // chunk.
 
-  const handler$1 = initializingHandler;
-  let handler;
-  if (handler$1 != null) {
-    handler$1.deps = (handler$1.deps + 1) | 0;
-    handler = handler$1;
+  let handler = initializingHandler;
+  if (handler != null) {
+    handler.deps = (handler.deps + 1) | 0;
   } else {
     handler = {
       chunk: null,
@@ -1215,17 +1210,18 @@ function parseTypedArray(
     initializingHandler = handler;
   }
 
+  const handler$1 = handler;
   function reject(error) {
-    if (handler.errored) {
+    if (handler$1.errored) {
       // We've already errored. We could instead build up an AggregateError
       // but if there are multiple errors we just take the first one like
       // Promise.all.
       return;
     }
-    handler.errored = true;
-    handler.value = null;
-    handler.reason = error;
-    const chunk = handler.chunk;
+    handler$1.errored = true;
+    handler$1.value = null;
+    handler$1.reason = error;
+    const chunk = handler$1.chunk;
     if (chunk == null) {
       return;
     }
