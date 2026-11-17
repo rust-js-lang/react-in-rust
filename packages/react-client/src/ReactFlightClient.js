@@ -689,9 +689,9 @@ function triggerErrorOnChunk(response, chunk, error) {
           const old = prevHandler$1;
           prevHandler$1 = undefined;
           initializingHandler = old ?? null;
-          const old$1$1 = prevChunk$1;
+          const old$1 = prevChunk$1;
           prevChunk$1 = undefined;
-          initializingChunk = old$1$1 ?? null;
+          initializingChunk = old$1 ?? null;
         }, error);
         throw error;
       }
@@ -3294,9 +3294,9 @@ function resolveStream(response, id, stream, controller, streamState) {
           const old = prevHandler$1;
           prevHandler$1 = undefined;
           initializingHandler = old ?? null;
-          const old$1$2 = prevChunk$1;
+          const old$1 = prevChunk$1;
           prevChunk$1 = undefined;
-          initializingChunk = old$1$2 ?? null;
+          initializingChunk = old$1 ?? null;
         }, error);
         throw error;
       }
@@ -3318,18 +3318,18 @@ function resolveStream(response, id, stream, controller, streamState) {
               const old = prevHandler$1;
               prevHandler$1 = undefined;
               initializingHandler = old ?? null;
-              const old$1$3 = prevChunk$1;
+              const old$1 = prevChunk$1;
               prevChunk$1 = undefined;
-              initializingChunk = old$1$3 ?? null;
+              initializingChunk = old$1 ?? null;
             }, error);
             throw error;
           }
           const old = prevHandler$1;
           prevHandler$1 = undefined;
           initializingHandler = old ?? null;
-          const old$1$1 = prevChunk$1;
+          const old$1 = prevChunk$1;
           prevChunk$1 = undefined;
-          initializingChunk = old$1$1 ?? null;
+          initializingChunk = old$1 ?? null;
           return;
         }
       }

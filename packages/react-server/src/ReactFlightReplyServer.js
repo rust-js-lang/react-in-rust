@@ -659,9 +659,9 @@ function initializeModelChunk(chunk) {
       // if they were blocked.
       let resolveListeners;
       if (chunk.status === 'blocked') {
-        const old$1 = chunk.value;
+        const old = chunk.value;
         chunk.value = null;
-        resolveListeners = old$1;
+        resolveListeners = old;
       } else {
         resolveListeners = undefined;
       }
