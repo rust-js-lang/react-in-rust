@@ -4651,8 +4651,8 @@ function transformImportMetadata(request, value, depth) {
       if (Array.isArray(value)) {
         $roomFor(value.length, 4);
         const copy = [];
-        for (let j = 0; j < value.length; j++) {
-          const element = value[j];
+        for (let i = 0; i < value.length; i++) {
+          const element = value[i];
           if (typeof element === 'string') {
             copy.push(serializeImportString(request, element));
             continue;

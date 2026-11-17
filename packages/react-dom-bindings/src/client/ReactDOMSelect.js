@@ -61,8 +61,8 @@ function updateOptions(node, multiple, propValue, setDefaultSelected) {
   if (multiple) {
     const selectedValues = propValue;
     const selectedValue = {};
-    for (let j = 0; j < selectedValues.length; j++) {
-      const selected = selectedValues[j];
+    for (let i = 0; i < selectedValues.length; i++) {
+      const selected = selectedValues[i];
       // Prefix to avoid chaos with special keys.
       selectedValue['$' + selected] = true;
     }
@@ -156,8 +156,8 @@ export function hydrateSelect(element, value, defaultValue, multiple) {
     const selectedValues = propValue;
     const selectedValue = {};
     if (selectedValues != null) {
-      for (let j = 0; j < selectedValues.length; j++) {
-        const selected = selectedValues[j];
+      for (let i = 0; i < selectedValues.length; i++) {
+        const selected = selectedValues[i];
         // Prefix to avoid chaos with special keys.
         selectedValue['$' + selected] = true;
       }

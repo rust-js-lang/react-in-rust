@@ -495,10 +495,10 @@ export default class ReactFlightWebpackPlugin {
           return;
         }
         const flat = [];
-        for (let j = 0; j < result.length; j++) {
-          const deps = result[j];
-          for (let i = 0; i < deps.length; i++) {
-            flat.push(deps[i]);
+        for (let i = 0; i < result.length; i++) {
+          const deps = result[i];
+          for (let j = 0; j < deps.length; j++) {
+            flat.push(deps[j]);
           }
         }
         callback(undefined, flat);

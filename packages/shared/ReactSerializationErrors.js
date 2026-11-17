@@ -250,8 +250,8 @@ export function describeObjectForErrorMessage(objectOrArray, expandedName) {
     str = '<' + (describeElementType(type) || '...');
     const object = objectOrArray;
     const names = Object.keys(object);
-    for (let j = 0; j < names.length; j++) {
-      const name = names[j];
+    for (let i = 0; i < names.length; i++) {
+      const name = names[i];
       str += ' ' + (describeKeyForErrorMessage(name) + '=');
       const value = object[name];
       let substr =

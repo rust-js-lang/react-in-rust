@@ -360,8 +360,8 @@ export function findBoundingRects(hostRoot, selectors) {
   const instanceRoots = findAllNodes(hostRoot, selectors);
 
   const boundingRects = [];
-  for (let k = 0; k < instanceRoots.length; k++) {
-    const instanceRoot = instanceRoots[k];
+  for (let i = 0; i < instanceRoots.length; i++) {
+    const instanceRoot = instanceRoots[i];
     boundingRects.push(getBoundingRect(instanceRoot));
   }
 

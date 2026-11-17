@@ -517,8 +517,8 @@ function describeNode(node, indent) {
   let parentContent = '';
   const debugInfo = node.fiber._debugInfo;
   if (debugInfo != null) {
-    for (let j = 0; j < debugInfo.length; j++) {
-      const info = debugInfo[j];
+    for (let i = 0; i < debugInfo.length; i++) {
+      const info = debugInfo[i];
       const serverComponentName = info.name;
       if (typeof serverComponentName === 'string') {
         parentContent +=

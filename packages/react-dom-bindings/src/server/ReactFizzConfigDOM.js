@@ -4967,8 +4967,8 @@ function flushStylesInPreamble(destination, styleQueue) {
       writeChunk(destination, $index(hrefs, i));
     }
     writeChunk(destination, styleTagResourceOpen3);
-    for (let j = 0; j < rules.length; j++) {
-      const rule = rules[j];
+    for (let i = 0; i < rules.length; i++) {
+      const rule = rules[i];
       writeChunk(destination, rule);
     }
     writeChunk(destination, styleTagResourceClose);

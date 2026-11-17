@@ -4781,8 +4781,8 @@ function flushComponentPerformance(
     if (debugInfo.borrows < 0) {
       $alreadyMutablyBorrowed();
     }
-    for (let k = 0; k < debugInfo.length; k++) {
-      const info = debugInfo[k];
+    for (let i = 0; i < debugInfo.length; i++) {
+      const info = debugInfo[i];
       const time = timeOf(info);
       if (time != null) {
         startTime = time;
@@ -4819,8 +4819,8 @@ function flushComponentPerformance(
   let childrenEndTime = -Infinity;
   let childTrackIdx = trackIdx;
   let childTrackTime = trackTime;
-  for (let k = 0; k < children.length; k++) {
-    const child = children[k];
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i];
     const childResult = flushComponentPerformance(
       response,
       child,

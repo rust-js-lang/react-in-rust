@@ -268,8 +268,8 @@ function processDispatchQueueItemsInOrder(
       previousInstance = instance;
     }
   } else {
-    for (let j = 0; j < dispatchListeners.length; j++) {
-      const {instance, currentTarget, listener} = dispatchListeners[j];
+    for (let i = 0; i < dispatchListeners.length; i++) {
+      const {instance, currentTarget, listener} = dispatchListeners[i];
       if (instance !== previousInstance && event.isPropagationStopped()) {
         return;
       }

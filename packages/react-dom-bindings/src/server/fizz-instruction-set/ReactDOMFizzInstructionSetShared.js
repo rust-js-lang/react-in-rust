@@ -304,8 +304,8 @@ export function revealCompletedBoundariesWithViewTransitions(
         );
         // TODO: Consider marking shouldStartViewTransition if we found any images.
         // But only once we can disable the root animation for that case.
-        for (let i = 0; i < appearingImages.length; i++) {
-          suspenseyImages.push(appearingImages[i]);
+        for (let j = 0; j < appearingImages.length; j++) {
+          suspenseyImages.push(appearingImages[j]);
         }
         break;
       }

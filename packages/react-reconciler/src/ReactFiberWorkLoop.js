@@ -4373,8 +4373,8 @@ function flushSpawnedWork() {
       // Normalize the type. This is lazily created only for events.
       const pendingTypes$1 = pendingTypes ?? [];
       if (committedViewTransition != null) {
-        for (let j = 0; j < pendingEvents.length; j++) {
-          const viewTransitionEvent = pendingEvents[j];
+        for (let i = 0; i < pendingEvents.length; i++) {
+          const viewTransitionEvent = pendingEvents[i];
           const cleanup = viewTransitionEvent(pendingTypes$1);
           if (cleanup != null) {
             addViewTransitionFinishedListener(committedViewTransition, cleanup);
