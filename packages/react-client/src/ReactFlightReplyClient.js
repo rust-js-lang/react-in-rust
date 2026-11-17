@@ -377,8 +377,8 @@ export function processReply(
     return (
       JSON.stringify(
         value,
-        function (key, value$1) {
-          return resolveToJson(this, key, value$1);
+        function (key, value) {
+          return resolveToJson(this, key, value);
         },
         0,
       ) ?? ''
@@ -898,11 +898,11 @@ export function processReply(
       pendingParts = 0; // Don't resolve again later.
       // Resolve with what we have so far, which may have holes at this point.
       // They'll error when the stream completes on the server.
-      const formData$1 = formData$2;
-      if (formData$1 == null) {
+      const formData = formData$2;
+      if (formData == null) {
         resolve($unwrap(json$1));
       } else {
-        resolve(formData$1);
+        resolve(formData);
       }
     }
   }

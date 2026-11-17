@@ -15,7 +15,7 @@ import {flushSync as flushSyncIsomorphic} from '../shared/ReactDOMFlushSync.js';
 
 import {
   findHostInstance,
-  flushSyncFromReconciler as flushSyncFromReconciler$2,
+  flushSyncFromReconciler as flushSyncFromReconciler$1,
   injectIntoDevTools,
   isAlreadyRendering,
 } from 'react-reconciler/src/ReactFiberReconciler';
@@ -96,7 +96,7 @@ function flushSyncFromReconciler(fn) {
     );
   }
   // $FlowFixMe[incompatible-type]
-  return flushSyncFromReconciler$2(fn);
+  return flushSyncFromReconciler$1(fn);
 }
 
 export const flushSync = disableLegacyMode

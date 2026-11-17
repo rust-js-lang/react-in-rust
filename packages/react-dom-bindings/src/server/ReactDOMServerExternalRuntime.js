@@ -22,12 +22,12 @@ if (body !== null) {
   // runtime is sent in <head> (e.g. as a preinit resource)
   const domBodyObserver = new MutationObserver((_, domBodyObserver) => {
     // We expect the body node to be stable once parsed / created
-    const body$1 = document.body;
-    if (body$1 !== null) {
+    const body = document.body;
+    if (body !== null) {
       if (document.readyState === 'loading') {
-        installFizzInstrObserver(body$1);
+        installFizzInstrObserver(body);
       }
-      handleExistingNodes(body$1);
+      handleExistingNodes(body);
 
       // We can call disconnect without takeRecord here,
       // since we only expect a single document.body

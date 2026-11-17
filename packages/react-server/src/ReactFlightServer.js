@@ -1222,7 +1222,6 @@ function serializeReadableStream(request, task, stream) {
   };
   errorCell = error;
 
-  const error$1 = error;
   function abortStream() {
     if (streamTask.status !== PENDING) {
       return;
@@ -1242,16 +1241,15 @@ function serializeReadableStream(request, task, stream) {
     // $FlowFixMe[incompatible-use] should be able to pass mixed
     reader.cancel(reason).then(
       () => {
-        error$1();
+        error();
       },
-      error => {
-        error$1(error);
+      error$1 => {
+        error(error$1);
       },
     );
   }
   abortStreamCell = abortStream;
 
-  const error$2 = error;
   const progress = entry => {
     if (streamTask.status !== PENDING) {
       return;
@@ -1287,13 +1285,13 @@ function serializeReadableStream(request, task, stream) {
             progress(entry);
           },
           reason => {
-            error$2(reason);
+            error(reason);
           },
         );
       } catch (thrown) {
         $catchable(thrown);
         const x = $unwound(thrown);
-        error$2(thrownValueOf(x));
+        error(thrownValueOf(x));
       }
     }
   };
