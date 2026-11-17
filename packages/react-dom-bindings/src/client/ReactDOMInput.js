@@ -481,4 +481,9 @@ function setDefaultValue(node, value) {
     node.defaultValue = toString(value);
   }
 }
+
+export {
+  didWarnCheckedDefaultChecked as $$didWarnCheckedDefaultChecked,
+  didWarnValueDefaultValue as $$didWarnValueDefaultValue,
+};
 //# sourceMappingURL=ReactDOMInput.js.map

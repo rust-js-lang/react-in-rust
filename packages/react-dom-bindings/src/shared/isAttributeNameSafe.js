@@ -37,4 +37,10 @@ export default function isAttributeNameSafe(attributeName) {
   }
   return false;
 }
+
+export {
+  validatedAttributeNameCache as $$validatedAttributeNameCache,
+  illegalAttributeNameCache as $$illegalAttributeNameCache,
+  VALID_ATTRIBUTE_NAME_REGEX as $$VALID_ATTRIBUTE_NAME_REGEX,
+};
 //# sourceMappingURL=isAttributeNameSafe.js.map

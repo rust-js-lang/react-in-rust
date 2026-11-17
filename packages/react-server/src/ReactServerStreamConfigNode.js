@@ -299,4 +299,12 @@ export function readAsDataURL(blob) {
     return 'data:' + mimeType + ';base64,' + encoded;
   });
 }
+
+export {
+  supportsArrayBufferDetached as $$supportsArrayBufferDetached,
+  didWarnAboutMissingArrayBufferDetached as $$didWarnAboutMissingArrayBufferDetached,
+  currentView as $$currentView,
+  writtenBytes as $$writtenBytes,
+  destinationHasCapacity as $$destinationHasCapacity,
+};
 //# sourceMappingURL=ReactServerStreamConfigNode.js.map

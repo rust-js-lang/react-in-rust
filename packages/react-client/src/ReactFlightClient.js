@@ -5652,4 +5652,24 @@ export function injectIntoDevTools() {
   };
   return injectInternals(internals);
 }
+
+export {
+  debugChannelRegistry as $$debugChannelRegistry,
+  initializingHandler as $$initializingHandler,
+  initializingChunk as $$initializingChunk,
+  supportsCreateTask as $$supportsCreateTask,
+  isInitializingDebugInfo as $$isInitializingDebugInfo,
+  createFakeJSXCallStackInDEV as $$createFakeJSXCallStackInDEV,
+  fakeFunctionCache as $$fakeFunctionCache,
+  fakeFunctionIdx as $$fakeFunctionIdx,
+  mightHaveStaticConstructor as $$mightHaveStaticConstructor,
+  EMPTY_REFERENCE_PATH as $$EMPTY_REFERENCE_PATH,
+  ObjectPrototype as $$ObjectPrototype,
+  ArrayPrototype as $$ArrayPrototype,
+  replayConsoleWithCallStackInDEV as $$replayConsoleWithCallStackInDEV,
+  asyncIterator as $$asyncIterator,
+  ResponseInstance as $$ResponseInstance,
+  ReactSharedInternals as $$ReactSharedInternals,
+  currentOwnerInDEV as $$currentOwnerInDEV,
+};
 //# sourceMappingURL=ReactFlightClient.js.map

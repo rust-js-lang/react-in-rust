@@ -4884,4 +4884,31 @@ if (__DEV__) {
     },
   };
 }
+
+export {
+  didScheduleRenderPhaseUpdate as $$didScheduleRenderPhaseUpdate,
+  renderLanes as $$renderLanes,
+  currentlyRenderingFiber as $$currentlyRenderingFiber,
+  currentHook as $$currentHook,
+  workInProgressHook as $$workInProgressHook,
+  hookTypesDev as $$hookTypesDev,
+  hookTypesUpdateIndexDev as $$hookTypesUpdateIndexDev,
+  currentHookNameInDev as $$currentHookNameInDev,
+  didScheduleRenderPhaseUpdateDuringThisPass as $$didScheduleRenderPhaseUpdateDuringThisPass,
+  localIdCounter as $$localIdCounter,
+  thenableIndexCounter as $$thenableIndexCounter,
+  thenableState as $$thenableState,
+  HooksDispatcherOnMount as $$HooksDispatcherOnMount,
+  HooksDispatcherOnUpdate as $$HooksDispatcherOnUpdate,
+  ignorePreviousDependencies as $$ignorePreviousDependencies,
+  HooksDispatcherOnMountInDEV as $$HooksDispatcherOnMountInDEV,
+  HooksDispatcherOnMountWithHookTypesInDEV as $$HooksDispatcherOnMountWithHookTypesInDEV,
+  HooksDispatcherOnUpdateInDEV as $$HooksDispatcherOnUpdateInDEV,
+  shouldDoubleInvokeUserFnsInHooksDEV as $$shouldDoubleInvokeUserFnsInHooksDEV,
+  didWarnAboutUseWrappedInTryCatch as $$didWarnAboutUseWrappedInTryCatch,
+  didWarnAboutAsyncClientComponent as $$didWarnAboutAsyncClientComponent,
+  HooksDispatcherOnRerender as $$HooksDispatcherOnRerender,
+  HooksDispatcherOnRerenderInDEV as $$HooksDispatcherOnRerenderInDEV,
+  InvalidNestedHooksDispatcherOnUpdateInDEV as $$InvalidNestedHooksDispatcherOnUpdateInDEV,
+};
 //# sourceMappingURL=ReactFiberHooks.js.map

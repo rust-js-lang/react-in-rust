@@ -427,4 +427,6 @@ export function getEventPriority(domEventName) {
       return DefaultEventPriority;
   }
 }
+
+export {_enabled as $$_enabled};
 //# sourceMappingURL=ReactDOMEventListener.js.map

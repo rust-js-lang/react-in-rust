@@ -33,4 +33,6 @@ export function resetOwnerStackLimit() {
     );
   }
 }
+
+export {getCurrentTime as $$getCurrentTime, lastResetTime as $$lastResetTime};
 //# sourceMappingURL=ReactOwnerStackReset.js.map

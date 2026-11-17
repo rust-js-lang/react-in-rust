@@ -667,4 +667,17 @@ export function mountClassInstance(
     );
   }
 }
+
+export {
+  didWarnAboutDirectlyAssigningPropsToState as $$didWarnAboutDirectlyAssigningPropsToState,
+  didWarnAboutDeprecatedWillMount as $$didWarnAboutDeprecatedWillMount,
+  didWarnAboutUndefinedDerivedState as $$didWarnAboutUndefinedDerivedState,
+  didWarnAboutContextTypeAndContextTypes as $$didWarnAboutContextTypeAndContextTypes,
+  didWarnAboutChildContextTypes as $$didWarnAboutChildContextTypes,
+  didWarnAboutContextTypes as $$didWarnAboutContextTypes,
+  didWarnAboutGetSnapshotBeforeUpdateWithoutDidUpdate as $$didWarnAboutGetSnapshotBeforeUpdateWithoutDidUpdate,
+  didWarnAboutInvalidateContextType as $$didWarnAboutInvalidateContextType,
+  didWarnAboutUninitializedState as $$didWarnAboutUninitializedState,
+  didWarnAboutLegacyLifecyclesAndDerivedState as $$didWarnAboutLegacyLifecyclesAndDerivedState,
+};
 //# sourceMappingURL=ReactFizzClassComponent.js.map

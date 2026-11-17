@@ -29,4 +29,6 @@ export default function hyphenateStyleName(name) {
     '-ms-',
   );
 }
+
+export {uppercasePattern as $$uppercasePattern, msPattern as $$msPattern};
 //# sourceMappingURL=hyphenateStyleName.js.map

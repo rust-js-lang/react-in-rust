@@ -814,4 +814,21 @@ export function injectIntoDevTools() {
   }
   return injectInternals(internals);
 }
+
+export {
+  shouldErrorImpl as $$shouldErrorImpl,
+  shouldSuspendImpl as $$shouldSuspendImpl,
+  overrideHookState as $$overrideHookState,
+  overrideHookStateDeletePath as $$overrideHookStateDeletePath,
+  overrideHookStateRenamePath as $$overrideHookStateRenamePath,
+  overrideProps as $$overrideProps,
+  overridePropsDeletePath as $$overridePropsDeletePath,
+  overridePropsRenamePath as $$overridePropsRenamePath,
+  scheduleUpdate as $$scheduleUpdate,
+  scheduleRetry as $$scheduleRetry,
+  setErrorHandler as $$setErrorHandler,
+  setSuspenseHandler as $$setSuspenseHandler,
+  didWarnAboutNestedUpdates as $$didWarnAboutNestedUpdates,
+  didWarnAboutFindNodeInStrictMode as $$didWarnAboutFindNodeInStrictMode,
+};
 //# sourceMappingURL=ReactFiberReconciler.js.map

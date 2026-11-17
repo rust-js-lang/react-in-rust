@@ -65,4 +65,9 @@ export function untrackNamedViewTransition(fiber) {
     }
   }
 }
+
+export {
+  mountedNamedViewTransitions as $$mountedNamedViewTransitions,
+  didWarnAboutName as $$didWarnAboutName,
+};
 //# sourceMappingURL=ReactFiberDuplicateViewTransitions.js.map

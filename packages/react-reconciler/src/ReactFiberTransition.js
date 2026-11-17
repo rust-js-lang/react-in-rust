@@ -335,4 +335,6 @@ export function getOffscreenDeferredCache() {
     pool: cacheFromPool,
   };
 }
+
+export {transitionStack as $$transitionStack, resumedCache as $$resumedCache};
 //# sourceMappingURL=ReactFiberTransition.js.map

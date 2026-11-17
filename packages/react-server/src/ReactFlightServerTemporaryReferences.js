@@ -96,4 +96,6 @@ export function createTemporaryReference(temporaryReferences, id) {
 export function registerTemporaryReference(temporaryReferences, object, id) {
   temporaryReferences.set(object, id);
 }
+
+export {proxyHandlers as $$proxyHandlers};
 //# sourceMappingURL=ReactFlightServerTemporaryReferences.js.map

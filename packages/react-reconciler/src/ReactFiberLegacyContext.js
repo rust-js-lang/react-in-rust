@@ -269,4 +269,11 @@ export function findCurrentUnmaskedContext(fiber) {
     );
   }
 }
+
+export {
+  didPerformWorkStackCursor as $$didPerformWorkStackCursor,
+  contextStackCursor as $$contextStackCursor,
+  previousContext as $$previousContext,
+  warnedAboutMissingGetChildContext as $$warnedAboutMissingGetChildContext,
+};
 //# sourceMappingURL=ReactFiberLegacyContext.js.map

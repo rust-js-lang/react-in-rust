@@ -215,4 +215,6 @@ export function getMarkerInstances() {
   }
   return null;
 }
+
+export {markerInstanceStack as $$markerInstanceStack};
 //# sourceMappingURL=ReactFiberTracingMarkerComponent.js.map

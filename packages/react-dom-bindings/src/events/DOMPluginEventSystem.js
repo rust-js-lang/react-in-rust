@@ -971,4 +971,6 @@ export function accumulateEventHandleNonManagedNodeListeners(
 export function getListenerSetKey(domEventName, capture) {
   return `${domEventName}__${capture ? 'capture' : 'bubble'}`;
 }
+
+export {listeningMarker as $$listeningMarker};
 //# sourceMappingURL=DOMPluginEventSystem.js.map

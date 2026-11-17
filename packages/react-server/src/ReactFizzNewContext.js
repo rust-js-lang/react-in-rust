@@ -248,4 +248,9 @@ export function getActiveContext() {
 export function readContext(context) {
   return isPrimaryRenderer ? context._currentValue : context._currentValue2;
 }
+
+export {
+  currentActiveSnapshot as $$currentActiveSnapshot,
+  rendererSigil as $$rendererSigil,
+};
 //# sourceMappingURL=ReactFizzNewContext.js.map

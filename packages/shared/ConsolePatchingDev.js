@@ -101,4 +101,15 @@ export function reenableLogs() {
     }
   }
 }
+
+export {
+  disabledDepth as $$disabledDepth,
+  prevLog as $$prevLog,
+  prevInfo as $$prevInfo,
+  prevWarn as $$prevWarn,
+  prevError as $$prevError,
+  prevGroup as $$prevGroup,
+  prevGroupCollapsed as $$prevGroupCollapsed,
+  prevGroupEnd as $$prevGroupEnd,
+};
 //# sourceMappingURL=ConsolePatchingDev.js.map

@@ -1245,4 +1245,10 @@ export function getGroupNameOfHighestPriorityLane(lanes) {
   }
   return 'Other';
 }
+
+export {
+  nextRetryLane as $$nextRetryLane,
+  nextTransitionDeferredLane as $$nextTransitionDeferredLane,
+  nextTransitionUpdateLane as $$nextTransitionUpdateLane,
+};
 //# sourceMappingURL=ReactFiberLane.js.map

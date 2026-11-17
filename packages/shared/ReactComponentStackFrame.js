@@ -460,4 +460,11 @@ export function describeClassComponentFrame(ctor) {
 export function describeFunctionComponentFrame(fn) {
   return describeNativeComponentFrame(fn, false);
 }
+
+export {
+  reentry as $$reentry,
+  componentFrameCache as $$componentFrameCache,
+  prefix as $$prefix,
+  suffix as $$suffix,
+};
 //# sourceMappingURL=ReactComponentStackFrame.js.map

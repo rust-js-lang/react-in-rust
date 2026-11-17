@@ -605,4 +605,6 @@ export function logIOInfo(ioInfo, rootEnv, value) {
     }
   }
 }
+
+export {supportsUserTiming as $$supportsUserTiming, trackNames as $$trackNames};
 //# sourceMappingURL=ReactFlightPerformanceTrack.js.map

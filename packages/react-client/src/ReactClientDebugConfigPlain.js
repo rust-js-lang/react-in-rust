@@ -29,4 +29,6 @@ export function checkEvalAvailabilityOnceDev() {
     );
   }
 }
+
+export {hasConfirmedEval as $$hasConfirmedEval};
 //# sourceMappingURL=ReactClientDebugConfigPlain.js.map

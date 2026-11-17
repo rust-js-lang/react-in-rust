@@ -75,4 +75,6 @@ export function getViewTransitionClassName(defaultClass, eventClass) {
   }
   return eventClassName;
 }
+
+export {globalClientIdCounter as $$globalClientIdCounter};
 //# sourceMappingURL=ReactFiberViewTransitionComponent.js.map

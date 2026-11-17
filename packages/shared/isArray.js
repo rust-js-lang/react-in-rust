@@ -10,4 +10,6 @@ const isArrayImpl = Array.isArray;
 export default function isArray(a) {
   return isArrayImpl(a);
 }
+
+export {isArrayImpl as $$isArrayImpl};
 //# sourceMappingURL=isArray.js.map

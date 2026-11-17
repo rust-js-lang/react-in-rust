@@ -232,4 +232,9 @@ function detectUpdateOnUnmountedFiber(sourceFiber, parent) {
     }
   }
 }
+
+export {
+  concurrentQueues as $$concurrentQueues,
+  concurrentlyUpdatedLanes as $$concurrentlyUpdatedLanes,
+};
 //# sourceMappingURL=ReactFiberConcurrentUpdates.js.map

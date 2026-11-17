@@ -7072,4 +7072,23 @@ export function closeDebugChannel(request) {
   });
   enqueueFlush(request);
 }
+
+export {
+  currentRequest as $$currentRequest,
+  NEXT_TWO_CHUNKS_ARE_ATOMIC as $$NEXT_TWO_CHUNKS_ARE_ATOMIC,
+  TaintRegistryPendingRequests as $$TaintRegistryPendingRequests,
+  TaintRegistryValues as $$TaintRegistryValues,
+  debugModelRoot as $$debugModelRoot,
+  constructorMarker as $$constructorMarker,
+  debugNoOutline as $$debugNoOutline,
+  importStringRequest as $$importStringRequest,
+  NOT_PLAIN_IMPORT_METADATA as $$NOT_PLAIN_IMPORT_METADATA,
+  TaintRegistryByteLengths as $$TaintRegistryByteLengths,
+  doNotLimit$1 as $$doNotLimit$1,
+  canEmitDebugInfo as $$canEmitDebugInfo,
+  serializedSize as $$serializedSize,
+  modelRoot as $$modelRoot,
+  emptyRoot as $$emptyRoot,
+  TaintRegistryObjects as $$TaintRegistryObjects,
+};
 //# sourceMappingURL=ReactFlightServer.js.map

@@ -61,4 +61,10 @@ export function push(cursor, value, fiber) {
     }
   }
 }
+
+export {
+  index as $$index,
+  fiberStack as $$fiberStack,
+  valueStack as $$valueStack,
+};
 //# sourceMappingURL=ReactFiberStack.js.map

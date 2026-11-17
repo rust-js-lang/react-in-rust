@@ -645,4 +645,10 @@ export function validateTextNesting(childText, parentTag, implicitRootScope) {
 }
 
 const nonWhitespace = /\S/;
+
+export {
+  didWarn as $$didWarn,
+  nonWhitespace as $$nonWhitespace,
+  buttonScopeTags as $$buttonScopeTags,
+};
 //# sourceMappingURL=validateDOMNesting.js.map

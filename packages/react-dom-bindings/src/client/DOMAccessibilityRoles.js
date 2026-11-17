@@ -130,4 +130,6 @@ export function hasRole(element, role) {
 
   return role === getImplicitRole(element);
 }
+
+export {tagToRoleMappings as $$tagToRoleMappings};
 //# sourceMappingURL=DOMAccessibilityRoles.js.map

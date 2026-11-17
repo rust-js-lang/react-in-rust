@@ -1181,4 +1181,18 @@ export function resolveClassComponentProps(component, baseProps) {
   }
   return newProps;
 }
+
+export {
+  didWarnAboutUndefinedDerivedState as $$didWarnAboutUndefinedDerivedState,
+  didWarnAboutStateAssignmentForComponent as $$didWarnAboutStateAssignmentForComponent,
+  didWarnAboutDirectlyAssigningPropsToState as $$didWarnAboutDirectlyAssigningPropsToState,
+  didWarnAboutContextTypeAndContextTypes as $$didWarnAboutContextTypeAndContextTypes,
+  didWarnAboutChildContextTypes as $$didWarnAboutChildContextTypes,
+  didWarnAboutContextTypes as $$didWarnAboutContextTypes,
+  didWarnAboutGetSnapshotBeforeUpdateWithoutDidUpdate as $$didWarnAboutGetSnapshotBeforeUpdateWithoutDidUpdate,
+  didWarnAboutInvalidateContextType as $$didWarnAboutInvalidateContextType,
+  fakeInternalInstance as $$fakeInternalInstance,
+  didWarnAboutUninitializedState as $$didWarnAboutUninitializedState,
+  didWarnAboutLegacyLifecyclesAndDerivedState as $$didWarnAboutLegacyLifecyclesAndDerivedState,
+};
 //# sourceMappingURL=ReactFiberClassComponent.js.map

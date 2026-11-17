@@ -368,4 +368,12 @@ export function validateProperties(type, props, eventRegistry) {
   }
   warnUnknownProperties(type, props, eventRegistry);
 }
+
+export {
+  warnedProperties as $$warnedProperties,
+  EVENT_NAME_REGEX as $$EVENT_NAME_REGEX,
+  rARIA as $$rARIA,
+  rARIACamel as $$rARIACamel,
+  INVALID_EVENT_NAME_REGEX as $$INVALID_EVENT_NAME_REGEX,
+};
 //# sourceMappingURL=ReactDOMUnknownPropertyHook.js.map

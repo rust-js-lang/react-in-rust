@@ -49,4 +49,9 @@ export default function enqueueTask(task) {
   }
   $unwrap(enqueueTaskImpl)(task);
 }
+
+export {
+  enqueueTaskImpl as $$enqueueTaskImpl,
+  didWarnAboutMessageChannel as $$didWarnAboutMessageChannel,
+};
 //# sourceMappingURL=enqueueTask.js.map

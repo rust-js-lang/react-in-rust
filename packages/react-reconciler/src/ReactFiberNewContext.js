@@ -578,4 +578,14 @@ function readContextForConsumer(consumer, context) {
   }
   return value;
 }
+
+export {
+  valueCursor as $$valueCursor,
+  renderer2CursorDEV as $$renderer2CursorDEV,
+  rendererCursorDEV as $$rendererCursorDEV,
+  currentlyRenderingFiber as $$currentlyRenderingFiber,
+  lastContextDependency as $$lastContextDependency,
+  isDisallowedContextReadInDEV as $$isDisallowedContextReadInDEV,
+  rendererSigil as $$rendererSigil,
+};
 //# sourceMappingURL=ReactFiberNewContext.js.map

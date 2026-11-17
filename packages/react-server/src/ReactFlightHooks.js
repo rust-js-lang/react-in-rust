@@ -159,4 +159,11 @@ function useMemoCache(size) {
 function useCacheRefresh() {
   return unsupportedRefresh;
 }
+
+export {
+  currentRequest as $$currentRequest,
+  thenableState as $$thenableState,
+  currentComponentDebugInfo as $$currentComponentDebugInfo,
+  thenableIndexCounter as $$thenableIndexCounter,
+};
 //# sourceMappingURL=ReactFlightHooks.js.map

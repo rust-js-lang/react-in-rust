@@ -250,4 +250,12 @@ export function parseStackTrace(error, skipFrames) {
   }
   return parsedFrames;
 }
+
+export {
+  stackTraceCache as $$stackTraceCache,
+  collectedStackTrace as $$collectedStackTrace,
+  framesToSkip as $$framesToSkip,
+  frameRegExp as $$frameRegExp,
+  identifierRegExp as $$identifierRegExp,
+};
 //# sourceMappingURL=ReactFlightStackConfigV8.js.map

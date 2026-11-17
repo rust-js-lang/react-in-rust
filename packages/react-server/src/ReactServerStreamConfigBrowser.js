@@ -252,4 +252,14 @@ export function readAsDataURL(blob) {
     reader.readAsDataURL(blob);
   });
 }
+
+export {
+  supportsArrayBufferDetached as $$supportsArrayBufferDetached,
+  didWarnAboutMissingArrayBufferDetached as $$didWarnAboutMissingArrayBufferDetached,
+  textEncoder as $$textEncoder,
+  currentView as $$currentView,
+  writtenBytes as $$writtenBytes,
+  taskQueue as $$taskQueue,
+  channel as $$channel,
+};
 //# sourceMappingURL=ReactServerStreamConfigBrowser.js.map

@@ -866,4 +866,25 @@ export let currentResumableState = null;
 export function setCurrentResumableState(resumableState) {
   currentResumableState = resumableState;
 }
+
+export {
+  thenableState as $$thenableState,
+  isInHookUserCodeInDev as $$isInHookUserCodeInDev,
+  currentlyRenderingComponent as $$currentlyRenderingComponent,
+  currentlyRenderingTask as $$currentlyRenderingTask,
+  currentlyRenderingRequest as $$currentlyRenderingRequest,
+  currentlyRenderingKeyPath as $$currentlyRenderingKeyPath,
+  didScheduleRenderPhaseUpdate as $$didScheduleRenderPhaseUpdate,
+  firstWorkInProgressHook as $$firstWorkInProgressHook,
+  numberOfReRenders as $$numberOfReRenders,
+  renderPhaseUpdates as $$renderPhaseUpdates,
+  workInProgressHook as $$workInProgressHook,
+  actionStateMatchingIndex as $$actionStateMatchingIndex,
+  actionStateCounter as $$actionStateCounter,
+  localIdCounter as $$localIdCounter,
+  thenableIndexCounter as $$thenableIndexCounter,
+  throwOnUseEffectEventCall as $$throwOnUseEffectEventCall,
+  currentHookNameInDev as $$currentHookNameInDev,
+  isReRender as $$isReRender,
+};
 //# sourceMappingURL=ReactFizzHooks.js.map

@@ -239,4 +239,6 @@ function getImagePreloadKey(href, imageSrcSet, imageSizes) {
   }
   return `[image]${uniquePart}`;
 }
+
+export {previousDispatcher as $$previousDispatcher};
 //# sourceMappingURL=ReactDOMFlightServerHostDispatcher.js.map

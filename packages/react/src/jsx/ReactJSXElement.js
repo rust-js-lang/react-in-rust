@@ -919,4 +919,14 @@ export function isLazyType(object) {
     object.$$typeof === REACT_LAZY_TYPE
   );
 }
+
+export {
+  didWarnAboutElementRef as $$didWarnAboutElementRef,
+  didWarnAboutOldJsxRuntime as $$didWarnAboutOldJsxRuntime,
+  unknownOwnerDebugStack as $$unknownOwnerDebugStack,
+  unknownOwnerDebugTask as $$unknownOwnerDebugTask,
+  createTask as $$createTask,
+  specialPropKeyWarningShown as $$specialPropKeyWarningShown,
+  didWarnAboutKeySpread as $$didWarnAboutKeySpread,
+};
 //# sourceMappingURL=ReactJSXElement.js.map

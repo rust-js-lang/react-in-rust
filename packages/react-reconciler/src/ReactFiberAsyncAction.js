@@ -247,4 +247,15 @@ export function retainIsomorphicIndicator() {
 export function markIsomorphicIndicatorHandled() {
   needsIsomorphicIndicator = false;
 }
+
+export {
+  pendingEntangledRoots as $$pendingEntangledRoots,
+  pendingIsomorphicIndicator as $$pendingIsomorphicIndicator,
+  needsIsomorphicIndicator as $$needsIsomorphicIndicator,
+  isomorphicDefaultTransitionIndicator as $$isomorphicDefaultTransitionIndicator,
+  currentEntangledActionThenable as $$currentEntangledActionThenable,
+  currentEntangledLane as $$currentEntangledLane,
+  currentEntangledListeners as $$currentEntangledListeners,
+  currentEntangledPendingCount as $$currentEntangledPendingCount,
+};
 //# sourceMappingURL=ReactFiberAsyncAction.js.map

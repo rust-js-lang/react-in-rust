@@ -83,4 +83,6 @@ const unitlessNumbers = new Set([
 export default function isUnitlessNumber(name) {
   return unitlessNumbers.has(name);
 }
+
+export {unitlessNumbers as $$unitlessNumbers};
 //# sourceMappingURL=isUnitlessNumber.js.map

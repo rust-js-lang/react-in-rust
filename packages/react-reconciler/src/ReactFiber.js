@@ -760,4 +760,6 @@ export function createFiberFromThrow(error, mode, lanes) {
   fiber.lanes = lanes;
   return fiber;
 }
+
+export {hasBadMapPolyfill as $$hasBadMapPolyfill};
 //# sourceMappingURL=ReactFiber.js.map

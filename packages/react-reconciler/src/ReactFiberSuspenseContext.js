@@ -203,4 +203,9 @@ export function popSuspenseListContext(fiber) {
     shellBoundary = null;
   }
 }
+
+export {
+  suspenseHandlerStackCursor as $$suspenseHandlerStackCursor,
+  shellBoundary as $$shellBoundary,
+};
 //# sourceMappingURL=ReactFiberSuspenseContext.js.map

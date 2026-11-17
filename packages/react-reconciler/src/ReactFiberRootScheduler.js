@@ -720,4 +720,14 @@ export function markIndicatorHandled(root) {
     markIsomorphicIndicatorHandled();
   }
 }
+
+export {
+  lastScheduledRoot as $$lastScheduledRoot,
+  mightHavePendingSyncWork as $$mightHavePendingSyncWork,
+  didScheduleMicrotask as $$didScheduleMicrotask,
+  didScheduleMicrotask_act as $$didScheduleMicrotask_act,
+  currentEventTransitionLane as $$currentEventTransitionLane,
+  isFlushingWork as $$isFlushingWork,
+  fakeActCallbackNode as $$fakeActCallbackNode,
+};
 //# sourceMappingURL=ReactFiberRootScheduler.js.map

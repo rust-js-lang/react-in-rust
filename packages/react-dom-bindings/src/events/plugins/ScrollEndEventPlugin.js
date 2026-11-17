@@ -185,4 +185,10 @@ export function extractEvents(
     dispatchQueue.push({event, listeners});
   }
 }
+
+export {
+  isScrollEndEventSupported as $$isScrollEndEventSupported,
+  isTouchStarted as $$isTouchStarted,
+  isMouseDown as $$isMouseDown,
+};
 //# sourceMappingURL=ScrollEndEventPlugin.js.map

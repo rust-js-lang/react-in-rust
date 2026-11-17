@@ -181,4 +181,6 @@ export function createScopeInstance() {
     getChildContextValues,
   };
 }
+
+export {emptyObject as $$emptyObject};
 //# sourceMappingURL=ReactFiberScope.js.map

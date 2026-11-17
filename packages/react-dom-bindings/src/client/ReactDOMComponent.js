@@ -3238,4 +3238,18 @@ export function restoreControlledState(domElement, tag, props) {
       break;
   }
 }
+
+export {
+  didWarnForNewBooleanPropsWithEmptyValue as $$didWarnForNewBooleanPropsWithEmptyValue,
+  didWarnPopoverTargetObject as $$didWarnPopoverTargetObject,
+  didWarnFormActionType as $$didWarnFormActionType,
+  didWarnFormActionName as $$didWarnFormActionName,
+  didWarnFormActionMethod as $$didWarnFormActionMethod,
+  didWarnFormActionTarget as $$didWarnFormActionTarget,
+  emptyProps as $$emptyProps,
+  NORMALIZE_NULL_AND_REPLACEMENT_REGEX as $$NORMALIZE_NULL_AND_REPLACEMENT_REGEX,
+  NORMALIZE_NEWLINES_REGEX as $$NORMALIZE_NEWLINES_REGEX,
+  didWarnUncontrolledToControlled as $$didWarnUncontrolledToControlled,
+  didWarnControlledToUncontrolled as $$didWarnControlledToUncontrolled,
+};
 //# sourceMappingURL=ReactDOMComponent.js.map

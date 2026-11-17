@@ -40,4 +40,6 @@ export default function isTextInputElement(elem) {
 
   return false;
 }
+
+export {supportedInputTypes as $$supportedInputTypes};
 //# sourceMappingURL=isTextInputElement.js.map

@@ -18,4 +18,6 @@ export default function escapeSelectorAttributeValueInsideDoubleQuotes(value) {
     ch => '\\' + ch.charCodeAt(0).toString(16) + ' ',
   );
 }
+
+export {escapeSelectorAttributeValueInsideDoubleQuotesRegex as $$escapeSelectorAttributeValueInsideDoubleQuotesRegex};
 //# sourceMappingURL=escapeSelectorAttributeValueInsideDoubleQuotes.js.map

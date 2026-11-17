@@ -420,5 +420,7 @@ export {
   forEachChildren as forEach,
   mapChildren as map,
   onlyChild as only,
+  didWarnAboutMaps as $$didWarnAboutMaps,
+  userProvidedKeyEscapeRegex as $$userProvidedKeyEscapeRegex,
 };
 //# sourceMappingURL=ReactChildren.js.map

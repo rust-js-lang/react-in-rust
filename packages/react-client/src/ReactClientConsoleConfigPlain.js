@@ -44,4 +44,6 @@ export function bindToConsole(methodName, args, badgeName) {
 
   return method.bind(console, ...newArgs);
 }
+
+export {badgeFormat as $$badgeFormat, pad as $$pad};
 //# sourceMappingURL=ReactClientConsoleConfigPlain.js.map

@@ -450,4 +450,12 @@ export function checkIfUseWasUsedBefore(unsuspendedFiber, thenableState) {
     }
   }
 }
+
+export {
+  needsToResetSuspendedThenableDEV as $$needsToResetSuspendedThenableDEV,
+  lastSuspendedFiber as $$lastSuspendedFiber,
+  lastSuspendedStack as $$lastSuspendedStack,
+  didIssueUseWarning as $$didIssueUseWarning,
+  suspendedThenable as $$suspendedThenable,
+};
 //# sourceMappingURL=ReactFiberThenable.js.map

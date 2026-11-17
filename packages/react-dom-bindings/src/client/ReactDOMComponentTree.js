@@ -334,4 +334,19 @@ export function isOwnedInstance(node) {
   }
   return !!(node[internalHoistableMarker] || node[internalInstanceKey]);
 }
+
+export {
+  internalPropsKey as $$internalPropsKey,
+  internalPropsMap as $$internalPropsMap,
+  internalScrollTimer as $$internalScrollTimer,
+  internalInstanceKey as $$internalInstanceKey,
+  internalInstanceMap as $$internalInstanceMap,
+  internalContainerInstanceKey as $$internalContainerInstanceKey,
+  internalEventHandlersKey as $$internalEventHandlersKey,
+  internalHoistableMarker as $$internalHoistableMarker,
+  internalRootNodeResourcesKey as $$internalRootNodeResourcesKey,
+  internalLoadPendingKey as $$internalLoadPendingKey,
+  internalEventHandlerListenersKey as $$internalEventHandlerListenersKey,
+  internalEventHandlesSetKey as $$internalEventHandlesSetKey,
+};
 //# sourceMappingURL=ReactDOMComponentTree.js.map

@@ -58,4 +58,10 @@ export function validateOptionProps(element, props) {
     }
   }
 }
+
+export {
+  didWarnInvalidInnerHTML as $$didWarnInvalidInnerHTML,
+  didWarnSelectedSetOnOption as $$didWarnSelectedSetOnOption,
+  didWarnInvalidChild as $$didWarnInvalidChild,
+};
 //# sourceMappingURL=ReactDOMOption.js.map

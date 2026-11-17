@@ -124,4 +124,15 @@ function warnValidStyle(name, value) {
 }
 
 export default warnValidStyle;
+
+export {
+  badVendoredStyleNamePattern as $$badVendoredStyleNamePattern,
+  badStyleValueWithSemicolonPattern as $$badStyleValueWithSemicolonPattern,
+  warnedForInfinityValue as $$warnedForInfinityValue,
+  warnedForNaNValue as $$warnedForNaNValue,
+  warnedStyleValues as $$warnedStyleValues,
+  warnedStyleNames as $$warnedStyleNames,
+  msPattern as $$msPattern,
+  hyphenPattern as $$hyphenPattern,
+};
 //# sourceMappingURL=warnValidStyle.js.map

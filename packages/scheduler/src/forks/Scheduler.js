@@ -664,5 +664,22 @@ export const unstable_Profiling = enableProfiling
 export {
   getCurrentTime as unstable_now,
   shouldYieldToHost as unstable_shouldYield,
+  isMessageLoopRunning as $$isMessageLoopRunning,
+  schedulePerformWorkUntilDeadline as $$schedulePerformWorkUntilDeadline,
+  frameInterval as $$frameInterval,
+  needsPaint as $$needsPaint,
+  startTime as $$startTime,
+  GET_CURRENT_TIME as $$GET_CURRENT_TIME,
+  currentPriorityLevel as $$currentPriorityLevel,
+  taskIdCounter as $$taskIdCounter,
+  taskQueue as $$taskQueue,
+  isHostCallbackScheduled as $$isHostCallbackScheduled,
+  isPerformingWork as $$isPerformingWork,
+  timerQueue as $$timerQueue,
+  isHostTimeoutScheduled as $$isHostTimeoutScheduled,
+  localSetTimeout as $$localSetTimeout,
+  taskTimeoutId as $$taskTimeoutId,
+  localClearTimeout as $$localClearTimeout,
+  currentTask as $$currentTask,
 };
 //# sourceMappingURL=Scheduler.js.map

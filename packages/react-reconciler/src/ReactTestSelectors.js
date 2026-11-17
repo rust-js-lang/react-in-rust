@@ -547,4 +547,13 @@ export function observeVisibleRects(hostRoot, selectors, callback, options) {
     },
   };
 }
+
+export {
+  commitHooks as $$commitHooks,
+  COMPONENT_TYPE as $$COMPONENT_TYPE,
+  HAS_PSEUDO_CLASS_TYPE as $$HAS_PSEUDO_CLASS_TYPE,
+  ROLE_TYPE as $$ROLE_TYPE,
+  TEXT_TYPE as $$TEXT_TYPE,
+  TEST_NAME_TYPE as $$TEST_NAME_TYPE,
+};
 //# sourceMappingURL=ReactTestSelectors.js.map

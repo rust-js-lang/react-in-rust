@@ -901,4 +901,14 @@ export function emitPendingHydrationWarnings() {
     }
   }
 }
+
+export {
+  isHydrating as $$isHydrating,
+  didSuspendOrErrorDEV as $$didSuspendOrErrorDEV,
+  hydrationParentFiber as $$hydrationParentFiber,
+  rootOrSingletonContext as $$rootOrSingletonContext,
+  nextHydratableInstance as $$nextHydratableInstance,
+  hydrationDiffRootDEV as $$hydrationDiffRootDEV,
+  hydrationErrors as $$hydrationErrors,
+};
 //# sourceMappingURL=ReactFiberHydrationContext.js.map

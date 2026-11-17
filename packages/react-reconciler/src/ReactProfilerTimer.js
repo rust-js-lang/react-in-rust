@@ -691,4 +691,11 @@ export function stopAnimating(lanes) {
 export function trackAnimatingTask(task) {
   animatingTask ??= task;
 }
+
+export {
+  NOW as $$NOW,
+  currentUpdateIsNested as $$currentUpdateIsNested,
+  nestedUpdateScheduled as $$nestedUpdateScheduled,
+  CREATE_TASK as $$CREATE_TASK,
+};
 //# sourceMappingURL=ReactProfilerTimer.js.map

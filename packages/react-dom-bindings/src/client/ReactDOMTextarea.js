@@ -157,4 +157,6 @@ export function restoreControlledTextareaState(element, props) {
   // DOM component is still mounted; update
   updateTextarea(element, props.value, props.defaultValue);
 }
+
+export {didWarnValDefaultVal as $$didWarnValDefaultVal};
 //# sourceMappingURL=ReactDOMTextarea.js.map

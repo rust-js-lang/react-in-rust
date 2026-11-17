@@ -7018,4 +7018,18 @@ export function getPostponedState(request) {
   }
   return postponedState;
 }
+
+export {
+  flushingPartialBoundaries as $$flushingPartialBoundaries,
+  flushedByteSize as $$flushedByteSize,
+  flushingShell as $$flushingShell,
+  currentRequest as $$currentRequest,
+  didWarnAboutGenerators as $$didWarnAboutGenerators,
+  didWarnAboutMaps as $$didWarnAboutMaps,
+  didWarnAboutBadClass as $$didWarnAboutBadClass,
+  didWarnAboutContextTypes as $$didWarnAboutContextTypes,
+  didWarnAboutGetDerivedStateOnFunctionComponent as $$didWarnAboutGetDerivedStateOnFunctionComponent,
+  didWarnAboutContextTypeOnFunctionComponent as $$didWarnAboutContextTypeOnFunctionComponent,
+  didWarnAboutReassigningProps as $$didWarnAboutReassigningProps,
+};
 //# sourceMappingURL=ReactFizzServer.js.map

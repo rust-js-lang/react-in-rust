@@ -1294,4 +1294,6 @@ export function startGestureAnimations(root, finishedWork) {
   restoreViewTransitionsOnFiber(finishedWork);
   restoreRootViewTransitionName(root.containerInfo);
 }
+
+export {viewTransitionContextChanged as $$viewTransitionContextChanged};
 //# sourceMappingURL=ReactFiberApplyGesture.js.map

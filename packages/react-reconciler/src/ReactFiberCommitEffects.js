@@ -1119,4 +1119,6 @@ export function commitProfilerPostCommit(
     captureCommitPhaseError(finishedWork, returnFiber, error);
   }
 }
+
+export {didWarnAboutUndefinedSnapshotBeforeUpdate as $$didWarnAboutUndefinedSnapshotBeforeUpdate};
 //# sourceMappingURL=ReactFiberCommitEffects.js.map

@@ -67,4 +67,6 @@ export function restoreStateIfNeeded() {
     }
   }
 }
+
+export {restoreTarget as $$restoreTarget, restoreQueue as $$restoreQueue};
 //# sourceMappingURL=ReactDOMControlledComponent.js.map

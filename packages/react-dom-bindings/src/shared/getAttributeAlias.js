@@ -93,4 +93,6 @@ const aliases = new Map([
 export default function getAttributeAlias(name) {
   return aliases.get(name) || name;
 }
+
+export {aliases as $$aliases};
 //# sourceMappingURL=getAttributeAlias.js.map

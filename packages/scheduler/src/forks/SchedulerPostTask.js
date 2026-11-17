@@ -218,4 +218,12 @@ export function unstable_forceFrameRate() {}
 
 // Currently no profiling build
 export const unstable_Profiling = null;
+
+export {
+  currentPriorityLevel_DEPRECATED as $$currentPriorityLevel_DEPRECATED,
+  scheduler as $$scheduler,
+  deadline as $$deadline,
+  getCurrentTime as $$getCurrentTime,
+  setTimeout as $$setTimeout$1,
+};
 //# sourceMappingURL=SchedulerPostTask.js.map

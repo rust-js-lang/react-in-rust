@@ -147,4 +147,6 @@ export function registerSimpleEvents() {
   registerSimpleEvent(TRANSITION_CANCEL, 'onTransitionCancel');
   registerSimpleEvent(TRANSITION_END, 'onTransitionEnd');
 }
+
+export {simpleEventPluginEvents as $$simpleEventPluginEvents};
 //# sourceMappingURL=DOMEventProperties.js.map

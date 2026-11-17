@@ -2244,4 +2244,10 @@ export function validateSuspenseListChildren(children, revealOrder) {
     }
   }
 }
+
+export {
+  thenableState as $$thenableState,
+  thenableIndexCounter as $$thenableIndexCounter,
+  currentDebugInfo as $$currentDebugInfo,
+};
 //# sourceMappingURL=ReactChildFiber.js.map

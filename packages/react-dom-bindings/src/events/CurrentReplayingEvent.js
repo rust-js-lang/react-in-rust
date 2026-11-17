@@ -33,4 +33,6 @@ export function resetReplayingEvent() {
 export function isReplayingEvent(event) {
   return event === currentReplayingEvent;
 }
+
+export {currentReplayingEvent as $$currentReplayingEvent};
 //# sourceMappingURL=CurrentReplayingEvent.js.map

@@ -33,4 +33,6 @@ export function validateProperties(type, props) {
     }
   }
 }
+
+export {didWarnValueNull as $$didWarnValueNull};
 //# sourceMappingURL=ReactDOMNullInputValuePropHook.js.map

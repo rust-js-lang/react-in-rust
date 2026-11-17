@@ -421,4 +421,13 @@ export function extractEvents(
     nativeEventTarget,
   );
 }
+
+export {
+  canUseTextInputEvent as $$canUseTextInputEvent,
+  isComposing as $$isComposing,
+  useFallbackCompositionData as $$useFallbackCompositionData,
+  canUseCompositionEvent as $$canUseCompositionEvent,
+  hasSpaceKeypress as $$hasSpaceKeypress,
+  SPACEBAR_CHAR as $$SPACEBAR_CHAR,
+};
 //# sourceMappingURL=BeforeInputEventPlugin.js.map

@@ -105,4 +105,6 @@ export function pushCacheProvider(workInProgress, cache) {
 export function popCacheProvider(workInProgress, cache) {
   popProvider(CacheContext, workInProgress);
 }
+
+export {AbortControllerLocal as $$AbortControllerLocal};
 //# sourceMappingURL=ReactFiberCacheComponent.js.map

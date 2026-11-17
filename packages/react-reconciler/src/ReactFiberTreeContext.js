@@ -271,4 +271,14 @@ function warnIfNotHydrating() {
     );
   }
 }
+
+export {
+  treeForkProvider as $$treeForkProvider,
+  treeContextProvider as $$treeContextProvider,
+  idStack as $$idStack,
+  treeContextOverflow as $$treeContextOverflow,
+  treeContextId as $$treeContextId,
+  forkStack as $$forkStack,
+  treeForkCount as $$treeForkCount,
+};
 //# sourceMappingURL=ReactFiberTreeContext.js.map

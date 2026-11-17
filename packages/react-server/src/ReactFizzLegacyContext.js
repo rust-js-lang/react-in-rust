@@ -80,4 +80,6 @@ export function processChildContext(
     return {...parentContext, ...childContext};
   }
 }
+
+export {warnedAboutMissingGetChildContext as $$warnedAboutMissingGetChildContext};
 //# sourceMappingURL=ReactFizzLegacyContext.js.map

@@ -634,4 +634,17 @@ export function retryIfBlockedOn(unblocked) {
     }
   }
 }
+
+export {
+  discreteReplayableEvents as $$discreteReplayableEvents,
+  queuedFocus as $$queuedFocus,
+  queuedDrag as $$queuedDrag,
+  queuedMouse as $$queuedMouse,
+  queuedPointers as $$queuedPointers,
+  queuedPointerCaptures as $$queuedPointerCaptures,
+  hasScheduledReplayAttempt as $$hasScheduledReplayAttempt,
+  queuedChangeEventTargets as $$queuedChangeEventTargets,
+  queuedExplicitHydrationTargets as $$queuedExplicitHydrationTargets,
+  lastScheduledReplayQueue as $$lastScheduledReplayQueue,
+};
 //# sourceMappingURL=ReactDOMEventReplaying.js.map

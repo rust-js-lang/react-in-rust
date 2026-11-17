@@ -46,4 +46,6 @@ export function addEventBubbleListenerWithPassiveFlag(
 export function removeEventListener(target, eventType, listener, capture) {
   listener.remove();
 }
+
+export {EventListenerWWW as $$EventListenerWWW};
 //# sourceMappingURL=EventListener-www.js.map

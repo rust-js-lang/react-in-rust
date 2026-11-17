@@ -73,4 +73,10 @@ export function getText() {
   }
   return root$1.textContent;
 }
+
+export {
+  root as $$root,
+  startText as $$startText,
+  fallbackText as $$fallbackText,
+};
 //# sourceMappingURL=FallbackCompositionState.js.map

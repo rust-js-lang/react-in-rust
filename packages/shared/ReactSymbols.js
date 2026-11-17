@@ -59,4 +59,6 @@ export const REACT_OPTIMISTIC_KEY = Symbol.for('react.optimistic_key');
 // This is actually a symbol but Flow doesn't support comparison of symbols to refine.
 // We use a boolean since in our code we often expect string (key) or number (index),
 // so by pretending to be a boolean we cover a lot of cases that don't consider this case.
+
+export {MAYBE_ITERATOR_SYMBOL as $$MAYBE_ITERATOR_SYMBOL};
 //# sourceMappingURL=ReactSymbols.js.map

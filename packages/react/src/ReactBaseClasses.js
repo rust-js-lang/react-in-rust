@@ -143,4 +143,6 @@ pureComponentPrototype.constructor = PureComponent;
 // Avoid an extra prototype jump for these methods.
 assign(pureComponentPrototype, Component.prototype);
 pureComponentPrototype.isPureReactComponent = true;
+
+export {emptyObject as $$emptyObject};
 //# sourceMappingURL=ReactBaseClasses.js.map

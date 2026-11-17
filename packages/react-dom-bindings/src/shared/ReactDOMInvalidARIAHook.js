@@ -102,4 +102,10 @@ export function validateProperties(type, props) {
     }
   }
 }
+
+export {
+  warnedProperties as $$warnedProperties,
+  rARIACamel as $$rARIACamel,
+  rARIA as $$rARIA,
+};
 //# sourceMappingURL=ReactDOMInvalidARIAHook.js.map

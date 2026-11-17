@@ -130,4 +130,13 @@ export function markSchedulerUnsuspended(ms) {
     logEvent([SchedulerResumeEvent, ms * 1000, mainThreadIdCounter]);
   }
 }
+
+export {
+  eventLog as $$eventLog,
+  mainThreadIdCounter as $$mainThreadIdCounter,
+  runIdCounter as $$runIdCounter,
+  eventLogBuffer as $$eventLogBuffer,
+  eventLogSize as $$eventLogSize,
+  eventLogIndex as $$eventLogIndex,
+};
 //# sourceMappingURL=SchedulerProfiling.js.map

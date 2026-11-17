@@ -490,4 +490,11 @@ export function markStateUpdateScheduled(fiber, lane) {
     }
   }
 }
+
+export {
+  injectedHook as $$injectedHook,
+  rendererID as $$rendererID,
+  hasLoggedError as $$hasLoggedError,
+  injectedProfilingHooks as $$injectedProfilingHooks,
+};
 //# sourceMappingURL=ReactFiberDevToolsHook.js.map

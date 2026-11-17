@@ -4311,4 +4311,17 @@ export function beginWork(current, workInProgress, renderLanes) {
     `Unknown unit of work tag (${workInProgress.tag}). This error is likely caused by a bug in React. Please file an issue.`,
   );
 }
+
+export {
+  didReceiveUpdate as $$didReceiveUpdate,
+  didWarnAboutClassNameOnViewTransition as $$didWarnAboutClassNameOnViewTransition,
+  didWarnAboutBadClass as $$didWarnAboutBadClass,
+  didWarnAboutContextTypes as $$didWarnAboutContextTypes,
+  didWarnAboutGetDerivedStateOnFunctionComponent as $$didWarnAboutGetDerivedStateOnFunctionComponent,
+  didWarnAboutContextTypeOnFunctionComponent as $$didWarnAboutContextTypeOnFunctionComponent,
+  hasWarnedAboutUsingNoValuePropOnContextProvider as $$hasWarnedAboutUsingNoValuePropOnContextProvider,
+  SUSPENDED_MARKER as $$SUSPENDED_MARKER,
+  didWarnAboutTailOptions as $$didWarnAboutTailOptions,
+  didWarnAboutRevealOrder as $$didWarnAboutRevealOrder,
+};
 //# sourceMappingURL=ReactFiberBeginWork.js.map

@@ -18,4 +18,6 @@ export function readPartialStringChunk(decoder, buffer) {
 export function readFinalStringChunk(decoder, buffer) {
   return decoder.decode(buffer);
 }
+
+export {decoderOptions as $$decoderOptions};
 //# sourceMappingURL=ReactFlightClientStreamConfigWeb.js.map

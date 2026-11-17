@@ -6484,4 +6484,25 @@ export function resetFormInstance(form) {
   form.reset();
   ReactBrowserEventEmitterSetEnabled(false);
 }
+
+export {
+  estimatedBytesWithinLimit as $$estimatedBytesWithinLimit,
+  precedencesByRoot as $$precedencesByRoot,
+  onUnsuspend as $$onUnsuspend,
+  preloadPropsMap as $$preloadPropsMap,
+  onUnsuspendImg as $$onUnsuspendImg,
+  tagCaches as $$tagCaches,
+  localRequestAnimationFrame as $$localRequestAnimationFrame,
+  previousHydratableOnEnteringScopedSingleton as $$previousHydratableOnEnteringScopedSingleton,
+  pendingIntersectionUnobserves as $$pendingIntersectionUnobserves,
+  intersectionUnobserveScheduled as $$intersectionUnobserveScheduled,
+  supportsMoveBefore as $$supportsMoveBefore,
+  schedulerEvent as $$schedulerEvent,
+  currentPopstateTransitionEvent as $$currentPopstateTransitionEvent,
+  didWarnForClone as $$didWarnForClone,
+  didWarnScriptTags as $$didWarnScriptTags,
+  warnedUnknownTags as $$warnedUnknownTags,
+  selectionInformation as $$selectionInformation,
+  eventsEnabled as $$eventsEnabled,
+};
 //# sourceMappingURL=ReactFiberConfigDOM.js.map

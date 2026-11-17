@@ -134,4 +134,12 @@ export function taintObjectReference(message, object) {
   }
   $unwrap(TaintRegistryObjects).set(object, message);
 }
+
+export {
+  TaintRegistryObjects as $$TaintRegistryObjects,
+  TypedArrayConstructor as $$TypedArrayConstructor,
+  TaintRegistryByteLengths as $$TaintRegistryByteLengths,
+  TaintRegistryValues as $$TaintRegistryValues,
+  finalizationRegistry as $$finalizationRegistry,
+};
 //# sourceMappingURL=ReactTaint.js.map

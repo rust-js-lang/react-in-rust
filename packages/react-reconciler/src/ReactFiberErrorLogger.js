@@ -152,4 +152,9 @@ export function logCaughtError(root, boundary, errorInfo) {
     });
   }
 }
+
+export {
+  componentName as $$componentName,
+  errorBoundaryName as $$errorBoundaryName,
+};
 //# sourceMappingURL=ReactFiberErrorLogger.js.map

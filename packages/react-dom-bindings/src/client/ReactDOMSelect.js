@@ -222,4 +222,9 @@ export function restoreControlledSelectState(element, props) {
     updateOptions(node, !!props.multiple, value, false);
   }
 }
+
+export {
+  didWarnValueDefaultValue as $$didWarnValueDefaultValue,
+  valuePropNames as $$valuePropNames,
+};
 //# sourceMappingURL=ReactDOMSelect.js.map

@@ -198,4 +198,12 @@ export function extractEvents(
       break;
   }
 }
+
+export {
+  activeElement as $$activeElement,
+  activeElementInst as $$activeElementInst,
+  lastSelection as $$lastSelection,
+  mouseDown as $$mouseDown,
+  skipSelectionChangeEvent as $$skipSelectionChangeEvent,
+};
 //# sourceMappingURL=SelectEventPlugin.js.map

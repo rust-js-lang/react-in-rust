@@ -150,4 +150,11 @@ export function popHostContext(fiber) {
     }
   }
 }
+
+export {
+  contextStackCursor as $$contextStackCursor,
+  contextFiberStackCursor as $$contextFiberStackCursor,
+  rootInstanceStackCursor as $$rootInstanceStackCursor,
+  hostTransitionProviderCursor as $$hostTransitionProviderCursor,
+};
 //# sourceMappingURL=ReactFiberHostContext.js.map

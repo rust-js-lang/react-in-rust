@@ -1978,4 +1978,10 @@ export function close(response) {
   // ref count of pending chunks.
   reportGlobalError(response, new Error('Connection closed.'));
 }
+
+export {
+  ObjectPrototype as $$ObjectPrototype,
+  ArrayPrototype as $$ArrayPrototype,
+  initializingHandler as $$initializingHandler,
+};
 //# sourceMappingURL=ReactFlightReplyServer.js.map

@@ -378,4 +378,10 @@ export function getAsyncSequenceFromPromise(promise) {
   }
   return node;
 }
+
+export {
+  pendingOperations as $$pendingOperations,
+  lastRanAwait as $$lastRanAwait,
+  emptyStack as $$emptyStack,
+};
 //# sourceMappingURL=ReactFlightServerConfigDebugNode.js.map

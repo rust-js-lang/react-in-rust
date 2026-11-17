@@ -5276,4 +5276,25 @@ export function invokePassiveEffectUnmountInDEV(fiber) {
     }
   }
 }
+
+export {
+  inHydratedSubtree as $$inHydratedSubtree,
+  offscreenSubtreeIsHidden as $$offscreenSubtreeIsHidden,
+  nextEffect as $$nextEffect,
+  offscreenSubtreeWasHidden as $$offscreenSubtreeWasHidden,
+  rootViewTransitionNameCanceled as $$rootViewTransitionNameCanceled,
+  inProgressLanes as $$inProgressLanes,
+  inProgressRoot as $$inProgressRoot,
+  rootViewTransitionAffected as $$rootViewTransitionAffected,
+  inUpdateViewTransition as $$inUpdateViewTransition,
+  currentHoistableRoot as $$currentHoistableRoot,
+  offscreenDirectParentIsHidden as $$offscreenDirectParentIsHidden,
+  needsFormReset as $$needsFormReset,
+  hostParent as $$hostParent,
+  hostParentIsContainer as $$hostParentIsContainer,
+  PossiblyWeakSet as $$PossiblyWeakSet,
+  viewTransitionContextChanged as $$viewTransitionContextChanged,
+  focusedInstanceHandle as $$focusedInstanceHandle,
+  suspenseyCommitFlag as $$suspenseyCommitFlag,
+};
 //# sourceMappingURL=ReactFiberCommitWork.js.map

@@ -88,4 +88,6 @@ const ReactNoopUpdateQueue = {
 };
 
 export default ReactNoopUpdateQueue;
+
+export {ReactNoopUpdateQueue as $$ReactNoopUpdateQueue};
 //# sourceMappingURL=ReactNoopUpdateQueue.js.map

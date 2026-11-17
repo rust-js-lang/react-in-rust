@@ -70,4 +70,6 @@ export function batchedUpdates(fn, a, b) {
 export function discreteUpdates(fn, a, b, c, d) {
   return discreteUpdatesImpl(fn, a, b, c, d);
 }
+
+export {isInsideEventHandler as $$isInsideEventHandler};
 //# sourceMappingURL=ReactDOMUpdateBatching.js.map

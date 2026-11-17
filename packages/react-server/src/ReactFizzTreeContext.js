@@ -164,4 +164,6 @@ function clz32Fallback(x) {
   }
   return (31 - $f64ToInt(log(asUint) / LN2, 0, 4294967295)) >>> 0;
 }
+
+export {clz32 as $$clz32};
 //# sourceMappingURL=ReactFizzTreeContext.js.map

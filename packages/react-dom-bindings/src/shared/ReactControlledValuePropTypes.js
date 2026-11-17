@@ -59,4 +59,6 @@ export function checkControlledValueProps(tagName, props) {
     }
   }
 }
+
+export {hasReadOnlyValue as $$hasReadOnlyValue};
 //# sourceMappingURL=ReactControlledValuePropTypes.js.map

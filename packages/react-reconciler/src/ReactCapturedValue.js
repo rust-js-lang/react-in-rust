@@ -44,4 +44,6 @@ export function createCapturedValueFromError(value, stack) {
   }
   return captured;
 }
+
+export {CapturedStacks as $$CapturedStacks};
 //# sourceMappingURL=ReactCapturedValue.js.map

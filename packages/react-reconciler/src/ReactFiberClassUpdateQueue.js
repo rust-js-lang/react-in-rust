@@ -736,4 +736,11 @@ export function commitCallbacks(updateQueue, context) {
     }
   }
 }
+
+export {
+  currentlyProcessingQueue as $$currentlyProcessingQueue,
+  didWarnUpdateInsideUpdate as $$didWarnUpdateInsideUpdate,
+  hasForceUpdate as $$hasForceUpdate,
+  didReadFromEntangledAsyncAction as $$didReadFromEntangledAsyncAction,
+};
 //# sourceMappingURL=ReactFiberClassUpdateQueue.js.map

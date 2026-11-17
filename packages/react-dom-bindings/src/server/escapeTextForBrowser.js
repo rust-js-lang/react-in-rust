@@ -122,4 +122,6 @@ export default function escapeTextForBrowser(text) {
   }
   return escapeHtml(text);
 }
+
+export {matchHtmlRegExp as $$matchHtmlRegExp};
 //# sourceMappingURL=escapeTextForBrowser.js.map

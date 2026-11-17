@@ -736,4 +736,6 @@ export function getLowestCommonAncestor(instA, instB, getParent) {
   }
   return null;
 }
+
+export {searchBoundary as $$searchBoundary, searchTarget as $$searchTarget};
 //# sourceMappingURL=ReactFiberTreeReflection.js.map

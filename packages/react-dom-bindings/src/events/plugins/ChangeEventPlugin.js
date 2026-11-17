@@ -283,4 +283,10 @@ export function extractEvents(
     handleEventFunc(domEventName, targetNode, targetInst);
   }
 }
+
+export {
+  isInputEventSupported as $$isInputEventSupported,
+  activeElement as $$activeElement,
+  activeElementInst as $$activeElementInst,
+};
 //# sourceMappingURL=ChangeEventPlugin.js.map

@@ -2088,6 +2088,14 @@ These forms are decided:
   throws a RangeError past the engine's argument limit while Rust's
   `extend` never fails. rust-js is building it; rd274's inline strings
   wait for it.
+- **rust-js #2017, a library's internal exports** (the user, 2026-11-17):
+  123 modules end with `export { X as $$X, .. };`: their private
+  `static`s and `thread_local!` keys that a function another crate can
+  call reads, exported by an internal name a consuming crate imports where
+  it compiles that function itself (rust-js ADR 0914, amended). Upstream
+  has no such lines. 731 of them across the seven crates, about 51 KB,
+  each an `export` alone: no other line of the port changes, and no
+  declaration names them.
 
 ## Committing
 

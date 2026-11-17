@@ -29,4 +29,6 @@ export function resolveOwner() {
   }
   return null;
 }
+
+export {currentOwner as $$currentOwner};
 //# sourceMappingURL=ReactFlightCurrentOwner.js.map

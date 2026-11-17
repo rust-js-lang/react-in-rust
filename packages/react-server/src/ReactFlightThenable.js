@@ -150,4 +150,6 @@ export function getSuspendedThenable() {
   }
   return thenable;
 }
+
+export {suspendedThenable as $$suspendedThenable};
 //# sourceMappingURL=ReactFlightThenable.js.map

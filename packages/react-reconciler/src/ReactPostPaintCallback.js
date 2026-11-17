@@ -26,4 +26,9 @@ export function schedulePostPaintCallback(callback) {
     });
   }
 }
+
+export {
+  callbacks as $$callbacks,
+  postPaintCallbackScheduled as $$postPaintCallbackScheduled,
+};
 //# sourceMappingURL=ReactPostPaintCallback.js.map

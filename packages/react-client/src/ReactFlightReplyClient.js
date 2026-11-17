@@ -1506,4 +1506,17 @@ export function createServerReference(
   registerBoundServerReference(action, id, undefined, encodeFormAction);
   return action;
 }
+
+export {
+  knownServerReferences as $$knownServerReferences,
+  defaultEncodeFormAction as $$defaultEncodeFormAction,
+  isSignatureEqual as $$isSignatureEqual,
+  bind as $$bind,
+  fakeServerFunctionIdx as $$fakeServerFunctionIdx,
+  v8FrameRegExp as $$v8FrameRegExp,
+  jscSpiderMonkeyFrameRegExp as $$jscSpiderMonkeyFrameRegExp,
+  serverObjectReferenceProxyHandlers as $$serverObjectReferenceProxyHandlers,
+  knownServerObjectReferences as $$knownServerObjectReferences,
+  ObjectPrototype as $$ObjectPrototype,
+};
 //# sourceMappingURL=ReactFlightReplyClient.js.map

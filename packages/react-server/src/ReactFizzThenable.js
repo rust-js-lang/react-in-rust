@@ -291,4 +291,11 @@ export function ensureSuspendableThenableStateDEV(thenableState) {
     );
   }
 }
+
+export {
+  suspendedCallSiteDebugTask as $$suspendedCallSiteDebugTask,
+  suspendedCallSiteStack as $$suspendedCallSiteStack,
+  shouldCaptureSuspendedCallSite as $$shouldCaptureSuspendedCallSite,
+  suspendedThenable as $$suspendedThenable,
+};
 //# sourceMappingURL=ReactFizzThenable.js.map

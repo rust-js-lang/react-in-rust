@@ -1598,4 +1598,10 @@ export function logPassiveCommitPhase(startTime, endTime, errors, debugTask) {
     }
   }
 }
+
+export {
+  supportsUserTiming as $$supportsUserTiming,
+  currentTrack as $$currentTrack,
+  alreadyWarnedForDeepEquality as $$alreadyWarnedForDeepEquality,
+};
 //# sourceMappingURL=ReactFiberPerformanceTrack.js.map

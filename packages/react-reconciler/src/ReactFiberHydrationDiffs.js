@@ -631,4 +631,6 @@ export function describeDiff(rootNode) {
     return '';
   }
 }
+
+export {needsEscaping as $$needsEscaping};
 //# sourceMappingURL=ReactFiberHydrationDiffs.js.map

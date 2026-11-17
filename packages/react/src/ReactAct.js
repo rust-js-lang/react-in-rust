@@ -366,4 +366,11 @@ const queueSeveralMicrotasks =
         queueMicrotask(() => queueMicrotask(callback));
       }
     : queueMacrotask;
+
+export {
+  isFlushing as $$isFlushing,
+  actScopeDepth as $$actScopeDepth,
+  didWarnNoAwaitAct as $$didWarnNoAwaitAct,
+  QUEUE_SEVERAL_MICROTASKS as $$QUEUE_SEVERAL_MICROTASKS,
+};
 //# sourceMappingURL=ReactAct.js.map

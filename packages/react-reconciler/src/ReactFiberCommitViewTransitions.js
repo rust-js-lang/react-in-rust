@@ -1083,4 +1083,6 @@ export function measureNestedViewTransitions(changedParent, gesture) {
     child = child.sibling;
   }
 }
+
+export {viewTransitionHostInstanceIdx as $$viewTransitionHostInstanceIdx};
 //# sourceMappingURL=ReactFiberCommitViewTransitions.js.map

@@ -30,4 +30,6 @@ function sanitizeURL(url) {
 }
 
 export default sanitizeURL;
+
+export {isJavaScriptProtocol as $$isJavaScriptProtocol};
 //# sourceMappingURL=sanitizeURL.js.map

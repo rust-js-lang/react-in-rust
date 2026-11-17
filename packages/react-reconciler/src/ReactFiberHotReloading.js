@@ -284,4 +284,9 @@ function scheduleFibersWithFamiliesRecursively(
     }
   }
 }
+
+export {
+  resolveFamily as $$resolveFamily,
+  failedBoundaries as $$failedBoundaries,
+};
 //# sourceMappingURL=ReactFiberHotReloading.js.map

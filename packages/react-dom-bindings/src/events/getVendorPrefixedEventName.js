@@ -89,4 +89,10 @@ export default function getVendorPrefixedEventName(eventName) {
 
   return eventName;
 }
+
+export {
+  prefixedEventNames as $$prefixedEventNames,
+  vendorPrefixes as $$vendorPrefixes,
+  style as $$style,
+};
 //# sourceMappingURL=getVendorPrefixedEventName.js.map
