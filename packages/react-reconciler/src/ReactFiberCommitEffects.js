@@ -137,7 +137,7 @@ export function commitHookEffectListMount(flags, finishedWork) {
     if (lastEffect != null) {
       const firstEffect = lastEffect.next;
       let effect = firstEffect;
-      while (true) {
+      do {
         if ((effect.tag & flags) === flags) {
           if (enableSchedulingProfiler) {
             if ((flags & HookPassive) !== NoHookEffect) {
@@ -229,10 +229,7 @@ export function commitHookEffectListMount(flags, finishedWork) {
           }
         }
         effect = effect.next;
-        if (effect === firstEffect) {
-          break;
-        }
-      }
+      } while (effect !== firstEffect);
     }
   } catch (error) {
     $catchable(error);
