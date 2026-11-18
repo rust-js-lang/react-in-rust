@@ -943,10 +943,11 @@ fn use_action_state(
                                 ),
                             ));
                         }
-                        form_data.append(
-                            "$ACTION_KEY",
-                            next_postback_state_key.borrow().as_deref().unwrap(),
-                        );
+                        // The key out of its cell before `append` runs: a
+                        // server action's own `FormData` may answer it with
+                        // code that borrows the cell (rust-js #2111).
+                        let action_key = next_postback_state_key.borrow().clone().unwrap();
+                        form_data.append("$ACTION_KEY", &action_key);
                     }
                     metadata
                 },

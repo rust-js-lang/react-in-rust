@@ -403,7 +403,16 @@ import {
   stopCommittedGesture,
 } from './ReactFiberGestureScheduler.js';
 import {claimQueuedTransitionTypes} from './ReactFiberTransitionTypes.js';
-import {$catchable, $cleanup, $unwrap} from '@rust-js/std';
+import {
+  $borrowMut,
+  $catchable,
+  $cellReplace,
+  $cleanup,
+  $nullableCell,
+  $unwrap,
+  $withBorrow,
+  $withBorrowMut,
+} from '@rust-js/std';
 
 const PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map;
 
@@ -526,22 +535,30 @@ export function getWorkInProgressTransitions() {
 // The first setState call that eventually caused the current render.
 let workInProgressUpdateTask = null;
 
-let currentPendingTransitionCallbacks = null;
+const currentPendingTransitionCallbacks = $nullableCell(null);
 let currentEndTime = null;
 
 export function addTransitionStartCallbackToPendingTransition(transition) {
   if (enableTransitionTracing) {
-    currentPendingTransitionCallbacks ??= {
-      transitionStart: [],
-      transitionProgress: null,
-      transitionComplete: null,
-      markerProgress: null,
-      markerIncomplete: null,
-      markerComplete: null,
-    };
+    $withBorrowMut(
+      currentPendingTransitionCallbacks,
+      currentPendingTransitionCallbacks => {
+        currentPendingTransitionCallbacks.value ??= {
+          transitionStart: [],
+          transitionProgress: null,
+          transitionComplete: null,
+          markerProgress: null,
+          markerIncomplete: null,
+          markerComplete: null,
+        };
+        currentPendingTransitionCallbacks =
+          currentPendingTransitionCallbacks.value;
 
-    currentPendingTransitionCallbacks.transitionStart ??= [];
-    currentPendingTransitionCallbacks.transitionStart.push(transition);
+        currentPendingTransitionCallbacks.transitionStart ??= [];
+        currentPendingTransitionCallbacks.transitionStart.push(transition);
+      },
+      true,
+    );
   }
 }
 
@@ -551,20 +568,28 @@ export function addMarkerProgressCallbackToPendingTransition(
   pendingBoundaries,
 ) {
   if (enableTransitionTracing) {
-    currentPendingTransitionCallbacks ??= {
-      transitionStart: null,
-      transitionProgress: null,
-      transitionComplete: null,
-      markerProgress: new Map(),
-      markerIncomplete: null,
-      markerComplete: null,
-    };
+    $withBorrowMut(
+      currentPendingTransitionCallbacks,
+      currentPendingTransitionCallbacks => {
+        currentPendingTransitionCallbacks.value ??= {
+          transitionStart: null,
+          transitionProgress: null,
+          transitionComplete: null,
+          markerProgress: new Map(),
+          markerIncomplete: null,
+          markerComplete: null,
+        };
+        currentPendingTransitionCallbacks =
+          currentPendingTransitionCallbacks.value;
 
-    currentPendingTransitionCallbacks.markerProgress ??= new Map();
-    currentPendingTransitionCallbacks.markerProgress.set(markerName, {
-      pendingBoundaries,
-      transitions,
-    });
+        currentPendingTransitionCallbacks.markerProgress ??= new Map();
+        currentPendingTransitionCallbacks.markerProgress.set(markerName, {
+          pendingBoundaries,
+          transitions,
+        });
+      },
+      true,
+    );
   }
 }
 
@@ -574,20 +599,28 @@ export function addMarkerIncompleteCallbackToPendingTransition(
   aborts,
 ) {
   if (enableTransitionTracing) {
-    currentPendingTransitionCallbacks ??= {
-      transitionStart: null,
-      transitionProgress: null,
-      transitionComplete: null,
-      markerProgress: null,
-      markerIncomplete: new Map(),
-      markerComplete: null,
-    };
+    $withBorrowMut(
+      currentPendingTransitionCallbacks,
+      currentPendingTransitionCallbacks => {
+        currentPendingTransitionCallbacks.value ??= {
+          transitionStart: null,
+          transitionProgress: null,
+          transitionComplete: null,
+          markerProgress: null,
+          markerIncomplete: new Map(),
+          markerComplete: null,
+        };
+        currentPendingTransitionCallbacks =
+          currentPendingTransitionCallbacks.value;
 
-    currentPendingTransitionCallbacks.markerIncomplete ??= new Map();
-    currentPendingTransitionCallbacks.markerIncomplete.set(markerName, {
-      transitions,
-      aborts,
-    });
+        currentPendingTransitionCallbacks.markerIncomplete ??= new Map();
+        currentPendingTransitionCallbacks.markerIncomplete.set(markerName, {
+          transitions,
+          aborts,
+        });
+      },
+      true,
+    );
   }
 }
 
@@ -596,19 +629,27 @@ export function addMarkerCompleteCallbackToPendingTransition(
   transitions,
 ) {
   if (enableTransitionTracing) {
-    currentPendingTransitionCallbacks ??= {
-      transitionStart: null,
-      transitionProgress: null,
-      transitionComplete: null,
-      markerProgress: null,
-      markerIncomplete: null,
-      markerComplete: new Map(),
-    };
+    $withBorrowMut(
+      currentPendingTransitionCallbacks,
+      currentPendingTransitionCallbacks => {
+        currentPendingTransitionCallbacks.value ??= {
+          transitionStart: null,
+          transitionProgress: null,
+          transitionComplete: null,
+          markerProgress: null,
+          markerIncomplete: null,
+          markerComplete: new Map(),
+        };
+        currentPendingTransitionCallbacks =
+          currentPendingTransitionCallbacks.value;
 
-    currentPendingTransitionCallbacks.markerComplete ??= new Map();
-    currentPendingTransitionCallbacks.markerComplete.set(
-      markerName,
-      transitions,
+        currentPendingTransitionCallbacks.markerComplete ??= new Map();
+        currentPendingTransitionCallbacks.markerComplete.set(
+          markerName,
+          transitions,
+        );
+      },
+      true,
     );
   }
 }
@@ -618,36 +659,52 @@ export function addTransitionProgressCallbackToPendingTransition(
   boundaries,
 ) {
   if (enableTransitionTracing) {
-    currentPendingTransitionCallbacks ??= {
-      transitionStart: null,
-      transitionProgress: new Map(),
-      transitionComplete: null,
-      markerProgress: null,
-      markerIncomplete: null,
-      markerComplete: null,
-    };
+    $withBorrowMut(
+      currentPendingTransitionCallbacks,
+      currentPendingTransitionCallbacks => {
+        currentPendingTransitionCallbacks.value ??= {
+          transitionStart: null,
+          transitionProgress: new Map(),
+          transitionComplete: null,
+          markerProgress: null,
+          markerIncomplete: null,
+          markerComplete: null,
+        };
+        currentPendingTransitionCallbacks =
+          currentPendingTransitionCallbacks.value;
 
-    currentPendingTransitionCallbacks.transitionProgress ??= new Map();
-    currentPendingTransitionCallbacks.transitionProgress.set(
-      transition,
-      boundaries,
+        currentPendingTransitionCallbacks.transitionProgress ??= new Map();
+        currentPendingTransitionCallbacks.transitionProgress.set(
+          transition,
+          boundaries,
+        );
+      },
+      true,
     );
   }
 }
 
 export function addTransitionCompleteCallbackToPendingTransition(transition) {
   if (enableTransitionTracing) {
-    currentPendingTransitionCallbacks ??= {
-      transitionStart: null,
-      transitionProgress: null,
-      transitionComplete: [],
-      markerProgress: null,
-      markerIncomplete: null,
-      markerComplete: null,
-    };
+    $withBorrowMut(
+      currentPendingTransitionCallbacks,
+      currentPendingTransitionCallbacks => {
+        currentPendingTransitionCallbacks.value ??= {
+          transitionStart: null,
+          transitionProgress: null,
+          transitionComplete: [],
+          markerProgress: null,
+          markerIncomplete: null,
+          markerComplete: null,
+        };
+        currentPendingTransitionCallbacks =
+          currentPendingTransitionCallbacks.value;
 
-    currentPendingTransitionCallbacks.transitionComplete ??= [];
-    currentPendingTransitionCallbacks.transitionComplete.push(transition);
+        currentPendingTransitionCallbacks.transitionComplete ??= [];
+        currentPendingTransitionCallbacks.transitionComplete.push(transition);
+      },
+      true,
+    );
   }
 }
 
@@ -4483,10 +4540,11 @@ function flushSpawnedWork() {
     const prevRootTransitionCallbacks = root.transitionCallbacks;
     if (prevRootTransitionCallbacks != null) {
       schedulePostPaintCallback(endTime => {
-        if (currentPendingTransitionCallbacks != null) {
-          const prevPendingTransitionCallbacks =
-            currentPendingTransitionCallbacks;
-          currentPendingTransitionCallbacks = null;
+        const prevPendingTransitionCallbacks = $cellReplace(
+          $borrowMut(currentPendingTransitionCallbacks),
+          null,
+        );
+        if (prevPendingTransitionCallbacks != null) {
           scheduleCallback(IdleSchedulerPriority, () => {
             processTransitionCallbacks(
               prevPendingTransitionCallbacks,
@@ -4924,13 +4982,13 @@ function flushPassiveEffectsImpl() {
     const prevRootTransitionCallbacks = root.transitionCallbacks;
     const prevEndTime = currentEndTime;
     if (
-      currentPendingTransitionCallbacks != null &&
+      $withBorrow(currentPendingTransitionCallbacks, x => x != null) &&
       prevRootTransitionCallbacks != null &&
       prevEndTime != null
     ) {
-      const old = currentPendingTransitionCallbacks;
-      currentPendingTransitionCallbacks = null;
-      const prevPendingTransitionCallbacks = $unwrap(old);
+      const prevPendingTransitionCallbacks = $unwrap(
+        $cellReplace($borrowMut(currentPendingTransitionCallbacks), null),
+      );
       currentEndTime = null;
       scheduleCallback(IdleSchedulerPriority, () => {
         processTransitionCallbacks(

@@ -1035,7 +1035,11 @@ fn cleanup_taint_queue(request: &Request) {
         }
     });
     let taint_registry_values = TAINT_REGISTRY_VALUES.with(|&values| values.unwrap());
-    for entry_value in cleanup_queue.values.borrow().iter() {
+    // Taken out of the cell, not borrowed across the loop: the registry's
+    // map comes from React's shared internals, which JS can reach, so its
+    // `get` may run code that borrows this queue (rust-js #2111).
+    let entry_values = cleanup_queue.values.take();
+    for entry_value in &entry_values {
         let entry = taint_registry_values.get(entry_value);
         if let Some(entry) = entry {
             if entry.count.get() == 1 {
@@ -1045,7 +1049,6 @@ fn cleanup_taint_queue(request: &Request) {
             }
         }
     }
-    cleanup_queue.values.borrow_mut().clear();
 }
 
 fn default_error_handler(error: Option<&'static Unknown>) -> Option<String> {

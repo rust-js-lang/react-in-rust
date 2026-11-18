@@ -2098,6 +2098,25 @@ These forms are decided:
   library's cell borrowed unchecked while code it can't see runs). Upstream
   sees a type added mid-loop; the copy doesn't, where Rust's borrow would
   have panicked.
+- **rust-js #2111, Fizz's `$ACTION_KEY` taken out of its cell**
+  (correctness-forced; the lead, 2026-11-18, for the user's review):
+  ReactFizzHooks' form action reads `const actionKey =
+  $unwrap(nextPostbackStateKey); formData.append('$ACTION_KEY', actionKey);`
+  where upstream passes `nextPostbackStateKey` to `append` itself. The
+  `FormData` is a server action's `$$FORM_ACTION` data, a JS caller's,
+  whose `append` may be an override that borrows the key's cell: with the
+  cell borrowed across the call, rust-js refuses it (a library's cell
+  borrowed unchecked while code it can't see runs). No difference in what
+  runs: the key is read before the call either way.
+- **rust-js #2111, Flight's taint queue taken before its loop**
+  (correctness-forced; the lead, 2026-11-18, for the user's review):
+  ReactFlightServer's `cleanupTaintQueue` takes its queue's values out of
+  their cell, `cleanup_queue.values.take()`, then iterates them, where
+  upstream iterates `cleanupQueue` and sets its `length = 0` after. The
+  registry's `Map` comes from React's shared internals, which JS can
+  reach, so its `get` and `delete` may run code that borrows the queue,
+  held across the loop. Upstream also clears an entry pushed mid-loop;
+  the taken queue keeps it.
 - **rust-js #2017, a library's internal exports** (the user, 2026-11-17):
   123 modules end with `export { X as $$X, .. };`: their private
   `static`s and `thread_local!` keys that a function another crate can

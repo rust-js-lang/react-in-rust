@@ -22,7 +22,16 @@ import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
 
 import {clz32} from './clz32.js';
 import {LegacyRoot} from './ReactRootTags.js';
-import {$at, $index} from '@rust-js/std';
+import {
+  $alreadyBorrowed,
+  $alreadyMutablyBorrowed,
+  $at,
+  $borrowMut,
+  $index,
+  $iter,
+  $next,
+  $unborrow,
+} from '@rust-js/std';
 
 // TODO: Ideally these types would be opaque but that doesn't work well with
 // our reconciler fork infra, since these leak into non-reconciler packages.
@@ -437,6 +446,9 @@ export function getEntangledLanes(root, renderLanes) {
   // time we apply the entanglement.
   const allEntangledLanes = root.entangledLanes;
   if (allEntangledLanes !== NoLanes) {
+    if (root.entanglements.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
     const entanglements = root.entanglements;
     let lanes = entangledLanes & allEntangledLanes;
     while (lanes > 0) {
@@ -524,6 +536,9 @@ export function markStarvedLanesAsExpired(root, currentTime) {
   const pendingLanes = root.pendingLanes;
   const suspendedLanes = root.suspendedLanes;
   const pingedLanes = root.pingedLanes;
+  if (root.expirationTimes.borrows) {
+    $alreadyBorrowed();
+  }
   const expirationTimes = root.expirationTimes;
 
   // Iterate through the pending lanes and check if we've reached their
@@ -841,6 +856,9 @@ export function markRootSuspended(
   }
 
   // The suspended lanes are no longer CPU-bound. Clear their expiration times.
+  if (root.expirationTimes.borrows) {
+    $alreadyBorrowed();
+  }
   const expirationTimes = root.expirationTimes;
   let lanes = suspendedLanes;
   while (lanes > 0) {
@@ -893,20 +911,101 @@ export function markRootFinished(
   root.errorRecoveryDisabledLanes &= remainingLanes;
   root.shellSuspendCounter = 0;
 
-  const entanglements = root.entanglements;
-  const expirationTimes = root.expirationTimes;
-  const hiddenUpdates = root.hiddenUpdates;
+  const entanglements = $borrowMut(root.entanglements, true);
 
   // Clear the lanes that no longer have pending work
+  let entanglements$live = true;
+  let expirationTimes;
+  try {
+    expirationTimes = $borrowMut(root.expirationTimes, true);
+  } catch (error) {
+    $unborrow(entanglements);
+    throw error;
+  }
+  let expirationTimes$live = true;
+  let hiddenUpdates;
+  try {
+    hiddenUpdates = $borrowMut(root.hiddenUpdates, true);
+  } catch (error) {
+    $unborrow(expirationTimes);
+    $unborrow(entanglements);
+    throw error;
+  }
+  let hiddenUpdates$live = true;
   let lanes = noLongerPendingLanes;
+  let iter;
   while (lanes > 0) {
-    const index = pickArbitraryLaneIndex(lanes);
+    let index;
+    try {
+      index = pickArbitraryLaneIndex(lanes);
+    } catch (error) {
+      if (hiddenUpdates$live) {
+        $unborrow(hiddenUpdates);
+      }
+      if (expirationTimes$live) {
+        $unborrow(expirationTimes);
+      }
+      if (entanglements$live) {
+        $unborrow(entanglements);
+      }
+      throw error;
+    }
     const lane = 1 << index;
 
-    entanglements[$at(entanglements, index)] = NoLanes;
-    expirationTimes[$at(expirationTimes, index)] = NoTimestamp;
+    try {
+      $index(entanglements, index);
+    } catch (error) {
+      if (hiddenUpdates$live) {
+        $unborrow(hiddenUpdates);
+      }
+      if (expirationTimes$live) {
+        $unborrow(expirationTimes);
+      }
+      if (entanglements$live) {
+        $unborrow(entanglements);
+      }
+      throw error;
+    }
+    entanglements[index] = NoLanes;
+    try {
+      $index(expirationTimes, index);
+    } catch (error) {
+      if (hiddenUpdates$live) {
+        $unborrow(hiddenUpdates);
+      }
+      if (expirationTimes$live) {
+        $unborrow(expirationTimes);
+      }
+      if (entanglements$live) {
+        $unborrow(entanglements);
+      }
+      throw error;
+    }
+    expirationTimes[index] = NoTimestamp;
 
-    $index(hiddenUpdates, index);
+    let place;
+    try {
+      $index(hiddenUpdates, index);
+      place = {
+        get value() {
+          return hiddenUpdates[index];
+        },
+        set value(value) {
+          hiddenUpdates[index] = value ?? null;
+        },
+      };
+    } catch (error) {
+      if (hiddenUpdates$live) {
+        $unborrow(hiddenUpdates);
+      }
+      if (expirationTimes$live) {
+        $unborrow(expirationTimes);
+      }
+      if (entanglements$live) {
+        $unborrow(entanglements);
+      }
+      throw error;
+    }
     const hiddenUpdatesForLane = hiddenUpdates[index];
     hiddenUpdates[index] = null;
     if (hiddenUpdatesForLane != null) {
@@ -914,14 +1013,51 @@ export function markRootFinished(
       // have special logic associated with them because they may be entangled
       // with updates that occur outside that tree. But once the outer tree
       // commits, they behave like regular updates.
-      for (let i = 0; i < hiddenUpdatesForLane.length; i++) {
-        const update = hiddenUpdatesForLane[i];
+      try {
+        iter = $iter(hiddenUpdatesForLane);
+      } catch (error) {
+        if (hiddenUpdates$live) {
+          $unborrow(hiddenUpdates);
+        }
+        if (expirationTimes$live) {
+          $unborrow(expirationTimes);
+        }
+        if (entanglements$live) {
+          $unborrow(entanglements);
+        }
+        throw error;
+      }
+      while (true) {
+        let update;
+        try {
+          update = $next(iter);
+        } catch (error) {
+          if (hiddenUpdates$live) {
+            $unborrow(hiddenUpdates);
+          }
+          if (expirationTimes$live) {
+            $unborrow(expirationTimes);
+          }
+          if (entanglements$live) {
+            $unborrow(entanglements);
+          }
+          throw error;
+        }
+        if (update == null) {
+          break;
+        }
         update.lane &= ~OffscreenLane;
       }
     }
 
     lanes &= ~lane;
   }
+  entanglements$live = false;
+  $unborrow(entanglements);
+  expirationTimes$live = false;
+  $unborrow(expirationTimes);
+  hiddenUpdates$live = false;
+  $unborrow(hiddenUpdates);
 
   if (spawnedLane !== NoLane) {
     markSpawnedDeferredLane(
@@ -983,7 +1119,11 @@ function markSpawnedDeferredLane(root, spawnedLane, entangledLanes) {
   // for a new OffscreenDeferredLane, too. Will leave this for a follow-up.
   const spawnedLaneIndex = laneToIndex(spawnedLane);
   root.entangledLanes |= spawnedLane;
-  root.entanglements[$at(root.entanglements, spawnedLaneIndex)] |=
+  if (root.entanglements.borrows) {
+    $alreadyBorrowed();
+  }
+  const borrowMut = root.entanglements;
+  borrowMut[$at(borrowMut, spawnedLaneIndex)] |=
     DeferredLane |
     // If the parent render task suspended, we must also entangle those lanes
     // with the spawned task, so that the deferred task includes all the same
@@ -1007,6 +1147,9 @@ export function markRootEntangled(root, entangledLanes) {
 
   const rootEntangledLanes = root.entangledLanes | entangledLanes;
   root.entangledLanes = rootEntangledLanes;
+  if (root.entanglements.borrows) {
+    $alreadyBorrowed();
+  }
   const entanglements = root.entanglements;
   let lanes = rootEntangledLanes;
   while (lanes) {
@@ -1033,22 +1176,30 @@ export function upgradePendingLanesToSync(root, lanesToUpgrade) {
   while (lanes) {
     const index = pickArbitraryLaneIndex(lanes);
     const lane = 1 << index;
-    root.entanglements[$at(root.entanglements, SyncLaneIndex)] |= lane;
+    if (root.entanglements.borrows) {
+      $alreadyBorrowed();
+    }
+    const borrowMut = root.entanglements;
+    borrowMut[$at(borrowMut, SyncLaneIndex)] |= lane;
     lanes &= ~lane;
   }
 }
 
 export function markHiddenUpdate(root, update, lane) {
   const index = laneToIndex(lane);
-  const hiddenUpdates = root.hiddenUpdates;
-  $index(hiddenUpdates, index);
-  if (hiddenUpdates[index] == null) {
-    hiddenUpdates[index] = [update];
-  } else {
-    const hiddenUpdatesForLane = hiddenUpdates[index];
-    hiddenUpdatesForLane.push(update);
+  const hiddenUpdates = $borrowMut(root.hiddenUpdates, true);
+  try {
+    $index(hiddenUpdates, index);
+    if (hiddenUpdates[index] == null) {
+      hiddenUpdates[index] = [update];
+    } else {
+      const hiddenUpdatesForLane = hiddenUpdates[index];
+      hiddenUpdatesForLane.push(update);
+    }
+    update.lane = lane | OffscreenLane;
+  } finally {
+    $unborrow(hiddenUpdates);
   }
-  update.lane = lane | OffscreenLane;
 }
 
 export function getBumpedLaneForHydration(root, renderLanes) {
@@ -1157,12 +1308,16 @@ export function movePendingFibersToMemoized(root, lanes) {
 
 export function addTransitionToLanesMap(root, transition, lane) {
   if (enableTransitionTracing) {
-    const transitionLanesMap = root.transitionLanes;
-    const index = laneToIndex(lane);
-    const transitions = $index(transitionLanesMap, index) ?? new Set();
-    transitions.add(transition);
+    const transitionLanesMap = $borrowMut(root.transitionLanes, true);
+    try {
+      const index = laneToIndex(lane);
+      const transitions = $index(transitionLanesMap, index) ?? new Set();
+      transitions.add(transition);
 
-    transitionLanesMap[index] = transitions;
+      transitionLanesMap[index] = transitions;
+    } finally {
+      $unborrow(transitionLanesMap);
+    }
   }
 }
 
@@ -1175,6 +1330,9 @@ export function getTransitionsForLanes(root, lanes) {
   while (lanes > 0) {
     const index = laneToIndex(lanes);
     const lane = 1 << index;
+    if (root.transitionLanes.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
     const transitions = $index(root.transitionLanes, index);
     if (transitions != null) {
       transitions.forEach(transition => {
@@ -1201,6 +1359,9 @@ export function clearTransitionsForLanes(root, lanes) {
     const index = laneToIndex(lanes);
     const lane = 1 << index;
 
+    if (root.transitionLanes.borrows) {
+      $alreadyBorrowed();
+    }
     const transitionLanes = root.transitionLanes;
     const transitions = $index(transitionLanes, index);
     if (transitions != null) {

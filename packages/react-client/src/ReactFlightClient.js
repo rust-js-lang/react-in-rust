@@ -1208,12 +1208,14 @@ export function reportGlobalError(weakResponse, error) {
     }
   });
   if (__DEV__) {
-    const debugChannel = response._debugChannel;
+    const {value: debugChannel} = $borrow(
+      $fieldCell(response, '_debugChannel'),
+    );
     if (debugChannel != null) {
       // If we don't have any more ways of reading data, we don't have to send
       // any more neither. So we close the writable side.
       closeDebugChannel(debugChannel);
-      response._debugChannel = undefined;
+      $borrowMut($fieldCell(response, '_debugChannel')).value = undefined;
       // Make sure the debug channel is not closed a second time when the
       // Response gets GC:ed.
       if (debugChannelRegistry != null) {
@@ -1902,20 +1904,31 @@ function waitForReference(
   isAwaitingDebugInfo, // DEV-only
 ) {
   if (__DEV__) {
-    const debugChannel = response._debugChannel;
-    if (
-      (debugChannel == null || !debugChannel.hasReadable) &&
-      referencedChunk.status === 'pending' &&
-      parentObject[0] === REACT_ELEMENT_TYPE &&
-      (key === '4' || key === '5')
-    ) {
-      // If the parent object is an unparsed React element tuple, and this is a reference
-      // to the owner or debug stack. Then we expect the chunk to have been emitted earlier
-      // in the stream. It might be blocked on other things but chunk should no longer be pending.
-      // If it's still pending that suggests that it was referencing an object in the debug
-      // channel, but no debug channel was wired up so it's missing. In this case we can just
-      // drop the debug info instead of halting the whole stream.
-      return null;
+    const borrow = $borrow($fieldCell(response, '_debugChannel'), true);
+    let isNoneOr;
+    try {
+      isNoneOr = borrow.value == null || !borrow.value.hasReadable;
+    } catch (error) {
+      $unborrow(borrow);
+      throw error;
+    }
+    if (isNoneOr) {
+      $unborrow(borrow);
+      if (
+        referencedChunk.status === 'pending' &&
+        parentObject[0] === REACT_ELEMENT_TYPE &&
+        (key === '4' || key === '5')
+      ) {
+        // If the parent object is an unparsed React element tuple, and this is a reference
+        // to the owner or debug stack. Then we expect the chunk to have been emitted earlier
+        // in the stream. It might be blocked on other things but chunk should no longer be pending.
+        // If it's still pending that suggests that it was referencing an object in the debug
+        // channel, but no debug channel was wired up so it's missing. In this case we can just
+        // drop the debug info instead of halting the whole stream.
+        return null;
+      }
+    } else {
+      $unborrow(borrow);
     }
   }
 
@@ -2797,7 +2810,9 @@ function parseModelString(response, parentObject, key, value) {
         // Fallthrough
         if ((tag === 'P' || tag === 'E' || tag === 'Y') && __DEV__) {
           if (value.length > 2) {
-            const debugChannelCallback = response._debugChannel?.callback;
+            const borrow = $borrow($fieldCell(response, '_debugChannel'), true);
+            const debugChannelCallback = borrow.value?.callback;
+            $unborrow(borrow);
             if (debugChannelCallback != null) {
               if (value[2] === '@') {
                 // This is a deferred Promise.
@@ -3826,7 +3841,7 @@ function ResponseInstance(
     setTimeout(markIOStarted.bind(this), 0);
     this._debugEndTime = debugEndTime ?? null;
     this._debugFindSourceMapURL = findSourceMapUrl;
-    this._debugChannel = debugChannel;
+    $borrowMut($fieldCell(this, '_debugChannel')).value = debugChannel;
     this._blockedConsole = null;
     this._replayConsole = replayConsole;
     this._rootEnvironmentName = rootEnv;
@@ -3835,7 +3850,7 @@ function ResponseInstance(
         // We can't safely clean things up later, so we immediately close the
         // debug channel.
         closeDebugChannel(debugChannel);
-        this._debugChannel = undefined;
+        $borrowMut($fieldCell(this, '_debugChannel')).value = undefined;
       } else {
         // When a Response gets GC:ed because nobody is referring to any of the
         // objects that lazily load from the Response anymore, then we can close
@@ -4313,23 +4328,31 @@ function resolveDebugModel(response, id, json) {
   parentChunk._debugChunk = debugChunk;
   initializeDebugChunk(response, parentChunk);
   if (__DEV__ && debugChunk.status === 'blocked') {
-    const debugChannel = response._debugChannel;
-    if (
-      (debugChannel == null || !debugChannel.hasReadable) &&
-      json[0] === '"' &&
-      json[1] === '$'
-    ) {
-      const path = json.slice(2, json.length - 1).split(':');
-      const outlinedId = parseInt($index(path, 0), 16);
-      const chunk = getChunk(response, outlinedId);
-      if (chunk.status === 'pending') {
-        // We expect the debug chunk to have been emitted earlier in the stream. It might be
-        // blocked on other things but chunk should no longer be pending.
-        // If it's still pending that suggests that it was referencing an object in the debug
-        // channel, but no debug channel was wired up so it's missing. In this case we can just
-        // drop the debug info instead of halting the whole stream.
-        parentChunk._debugChunk = null;
+    const borrow = $borrow($fieldCell(response, '_debugChannel'), true);
+    let isNoneOr;
+    try {
+      isNoneOr = borrow.value == null || !borrow.value.hasReadable;
+    } catch (error) {
+      $unborrow(borrow);
+      throw error;
+    }
+    if (isNoneOr) {
+      $unborrow(borrow);
+      if (json[0] === '"' && json[1] === '$') {
+        const path = json.slice(2, json.length - 1).split(':');
+        const outlinedId = parseInt($index(path, 0), 16);
+        const chunk = getChunk(response, outlinedId);
+        if (chunk.status === 'pending') {
+          // We expect the debug chunk to have been emitted earlier in the stream. It might be
+          // blocked on other things but chunk should no longer be pending.
+          // If it's still pending that suggests that it was referencing an object in the debug
+          // channel, but no debug channel was wired up so it's missing. In this case we can just
+          // drop the debug info instead of halting the whole stream.
+          parentChunk._debugChunk = null;
+        }
       }
+    } else {
+      $unborrow(borrow);
     }
   }
 }
@@ -5319,6 +5342,9 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
         );
       } else {
         // Process all other row types.
+        if (buffer.borrows < 0) {
+          $alreadyMutablyBorrowed();
+        }
         const parts = buffer.slice();
         processFullBinaryRow(
           response,
@@ -5340,7 +5366,7 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
       rowTag = 0;
       rowId = 0;
       rowLength = 0;
-      buffer.length = 0;
+      $borrowMut(buffer).length = 0;
     } else {
       // The rest of this row is in a future chunk.
       const length = chunk.byteLength - i;
@@ -5361,6 +5387,9 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
       } else {
         // For other row types, stash the rest of the current chunk until we can
         // process the full row.
+        if (buffer.borrows) {
+          $alreadyBorrowed();
+        }
         buffer.push(remainingSlice);
         // Update how many bytes we're still waiting for. If we're looking for
         // a newline, this doesn't hurt since we'll just ignore it.
@@ -5493,6 +5522,9 @@ export function processStringChunk(weakResponse, streamState, chunk) {
     }
     if (lastIdx > -1) {
       // We found the last chunk of the row
+      if (buffer.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
       if (buffer.length !== 0) {
         // If we had a buffer already, it means that this chunk was split up into
         // binary chunks preceeding it.
@@ -5514,7 +5546,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
       rowTag = 0;
       rowId = 0;
       rowLength = 0;
-      buffer.length = 0;
+      $borrowMut(buffer).length = 0;
     } else if (chunkLength !== i) {
       // The rest of this row is in a future chunk. We only support passing the
       // string from chunks in their entirety. Not split up into smaller string chunks.
@@ -5620,10 +5652,12 @@ export function close(weakResponse) {
       }
     });
     if (__DEV__) {
-      const debugChannel = response._debugChannel;
+      const {value: debugChannel} = $borrow(
+        $fieldCell(response, '_debugChannel'),
+      );
       if (debugChannel != null) {
         closeDebugChannel(debugChannel);
-        response._debugChannel = undefined;
+        $borrowMut($fieldCell(response, '_debugChannel')).value = undefined;
         if (debugChannelRegistry != null) {
           debugChannelRegistry.unregister(response);
         }

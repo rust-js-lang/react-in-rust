@@ -31,7 +31,15 @@ import {
   checkEvalAvailabilityOnceDev,
   usedWithSSR,
 } from './ReactFlightClientConfig.js';
-import {$catchable, $getOrInit, $unwound, $unwrap} from '@rust-js/std';
+import {
+  $alreadyMutablyBorrowed,
+  $borrowMut,
+  $catchable,
+  $getOrInit,
+  $unborrow,
+  $unwound,
+  $unwrap,
+} from '@rust-js/std';
 
 const ObjectPrototype = Object.prototype;
 
@@ -227,6 +235,9 @@ export function processReply(
     progress = entry => {
       if (entry.done) {
         const blobId = takePartId();
+        if (buffer.borrows < 0) {
+          $alreadyMutablyBorrowed();
+        }
         const parts = buffer.slice();
         data.append(formFieldPrefix + blobId, new Blob(parts));
         data.append(streamPrefix, '"$o' + blobId.toString(16) + '"');
@@ -236,7 +247,12 @@ export function processReply(
           resolve(data);
         }
       } else {
-        buffer.push(entry.value);
+        const borrowMut = $borrowMut(buffer, true);
+        try {
+          borrowMut.push(entry.value);
+        } finally {
+          $unborrow(borrowMut);
+        }
         const progress$1 = $unwrap(progress);
         reader.read(new Uint8Array(1024)).then(entry => {
           progress$1(entry);

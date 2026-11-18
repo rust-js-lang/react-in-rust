@@ -145,6 +145,7 @@ import noop from 'shared/noop';
 import estimateBandwidth from './estimateBandwidth.js';
 import {
   $alreadyBorrowed,
+  $alreadyMutablyBorrowed,
   $borrow,
   $borrowMut,
   $catchable,
@@ -2854,9 +2855,14 @@ FragmentInstance.prototype.addEventListener = function (
   // Element.addEventListener will only apply uniquely new event listeners by default. Since we
   // need to collect the listeners to apply to appended children, we track them ourselves and use
   // custom equality check for the options.
-  const isNewEventListener =
-    indexOfEventListener(listeners, type, listener, optionsOrUseCapture) ==
-    null;
+  const borrow = $borrow(listeners, true);
+  let isNewEventListener;
+  try {
+    isNewEventListener =
+      indexOfEventListener(borrow, type, listener, optionsOrUseCapture) == null;
+  } finally {
+    $unborrow(borrow);
+  }
   if (isNewEventListener) {
     const fragmentInstance = this;
     let attachedListener = listener;
@@ -2891,6 +2897,9 @@ FragmentInstance.prototype.addEventListener = function (
       };
     }
     const attachOptions = getAttachOptions(optionsOrUseCapture);
+    if (listeners.borrows) {
+      $alreadyBorrowed();
+    }
     listeners.push({
       type,
       listener,
@@ -2919,37 +2928,47 @@ FragmentInstance.prototype.removeEventListener = function (
   if (listeners == null) {
     return;
   }
-  const index = indexOfEventListener(
-    listeners,
-    type,
-    listener,
-    optionsOrUseCapture,
-  );
-  if (index == null) {
+  const borrow = $borrow(listeners, true);
+  let index;
+  try {
+    index = indexOfEventListener(borrow, type, listener, optionsOrUseCapture);
+  } catch (error) {
+    $unborrow(borrow);
+    throw error;
+  }
+  if (index != null) {
+    $unborrow(borrow);
+    if (listeners.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    const stored = $index(listeners, index);
+    const {
+      attachedListener,
+      optionsOrUseCapture: storedOptions,
+      cleanup,
+    } = stored;
+    const attachOptions = getAttachOptions(storedOptions);
+    const fragmentFiber = this._fragmentFiber;
+    traverseFragmentInstancesAndTextInstances(
+      fragmentFiber,
+      removeEventListenerFromChild,
+      type,
+      attachedListener,
+      attachOptions,
+    );
+    if (listeners.borrows) {
+      $alreadyBorrowed();
+    }
+    if (index >= listeners.length) {
+      $removeOutOfBounds(listeners, index);
+    }
+    listeners.splice(index, 1);
+    if (cleanup != null) {
+      cleanup();
+    }
     return;
   }
-  const stored = $index(listeners, index);
-  const {
-    attachedListener,
-    optionsOrUseCapture: storedOptions,
-    cleanup,
-  } = stored;
-  const attachOptions = getAttachOptions(storedOptions);
-  const fragmentFiber = this._fragmentFiber;
-  traverseFragmentInstancesAndTextInstances(
-    fragmentFiber,
-    removeEventListenerFromChild,
-    type,
-    attachedListener,
-    attachOptions,
-  );
-  if (index >= listeners.length) {
-    $removeOutOfBounds(listeners, index);
-  }
-  listeners.splice(index, 1);
-  if (cleanup != null) {
-    cleanup();
-  }
+  $unborrow(borrow);
 };
 
 FragmentInstance.prototype.dispatchEvent = function (event) {
@@ -2961,10 +2980,13 @@ FragmentInstance.prototype.dispatchEvent = function (event) {
   }
   const parentHostInstance = getInstanceFromHostFiber(parentHostFiber);
   const eventListeners = this._eventListeners;
-  if (
-    (eventListeners != null && eventListeners.length !== 0) ||
-    !event.bubbles
-  ) {
+  function holds(eventListeners) {
+    if (eventListeners.borrows < 0) {
+      $alreadyMutablyBorrowed();
+    }
+    return eventListeners.length !== 0;
+  }
+  if ((eventListeners != null && holds(eventListeners)) || !event.bubbles) {
     // The temporary node stands in for the fragment's position so that its own
     // listeners fire before the event propagates to the parent. A Document can
     // only hold comments and processing instructions alongside its
@@ -2974,7 +2996,10 @@ FragmentInstance.prototype.dispatchEvent = function (event) {
         ? parentHostInstance.createComment('')
         : document.createTextNode('');
     if (eventListeners != null) {
-      for (let i = 0; i < eventListeners.length; i++) {
+      for (let i = 0; i < $borrow(eventListeners).length; i++) {
+        if (eventListeners.borrows < 0) {
+          $alreadyMutablyBorrowed();
+        }
         const stored = eventListeners[i];
         const {type, attachedListener, optionsOrUseCapture} = stored;
         temp.addEventListener(
@@ -2987,7 +3012,10 @@ FragmentInstance.prototype.dispatchEvent = function (event) {
     parentHostInstance.appendChild(temp);
     const cancelable = temp.dispatchEvent(event);
     if (eventListeners != null) {
-      for (let i = 0; i < eventListeners.length; i++) {
+      for (let i = 0; i < $borrow(eventListeners).length; i++) {
+        if (eventListeners.borrows < 0) {
+          $alreadyMutablyBorrowed();
+        }
         const stored = eventListeners[i];
         const {type, attachedListener, optionsOrUseCapture} = stored;
         temp.removeEventListener(
@@ -3656,7 +3684,10 @@ export function commitNewChildToFragmentInstance(
 ) {
   const eventListeners = fragmentInstance._eventListeners;
   if (eventListeners != null) {
-    for (let i = 0; i < eventListeners.length; i++) {
+    for (let i = 0; i < $borrow(eventListeners).length; i++) {
+      if (eventListeners.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
       const stored = eventListeners[i];
       const {type, attachedListener, optionsOrUseCapture} = stored;
       childInstance.addEventListener(
@@ -3687,7 +3718,10 @@ export function deleteChildFromFragmentInstance(
 ) {
   const eventListeners = fragmentInstance._eventListeners;
   if (eventListeners != null) {
-    for (let i = 0; i < eventListeners.length; i++) {
+    for (let i = 0; i < $borrow(eventListeners).length; i++) {
+      if (eventListeners.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
       const stored = eventListeners[i];
       const {type, attachedListener, optionsOrUseCapture} = stored;
       childInstance.removeEventListener(

@@ -29,9 +29,10 @@ import {
   REACT_LAZY_TYPE,
   REACT_MEMO_TYPE,
 } from 'shared/ReactSymbols';
+import {$nullableCell, $withBorrow, $withBorrowMut} from '@rust-js/std';
 
 let resolveFamily = null;
-let failedBoundaries = null;
+const failedBoundaries = $nullableCell(null);
 
 export function setRefreshHandler(handler) {
   if (__DEV__) {
@@ -139,8 +140,14 @@ export function markFailedErrorBoundaryForHotReloading(fiber) {
     if (typeof WeakSet !== 'function') {
       return;
     }
-    failedBoundaries ??= new WeakSet();
-    failedBoundaries.add(fiber);
+    $withBorrowMut(
+      failedBoundaries,
+      failedBoundaries => {
+        failedBoundaries.value ??= new WeakSet();
+        failedBoundaries.value.add(fiber);
+      },
+      true,
+    );
   }
 }
 
@@ -252,10 +259,14 @@ function scheduleFibersWithFamiliesRecursively(
           }
         }
       }
+      const failedBoundaries$1 = $withBorrow(
+        failedBoundaries,
+        failedBoundaries => failedBoundaries,
+      );
       if (
-        failedBoundaries != null &&
-        (failedBoundaries.has(fiber) ||
-          (alternate != null && failedBoundaries.has(alternate)))
+        failedBoundaries$1 != null &&
+        (failedBoundaries$1.has(fiber) ||
+          (alternate != null && failedBoundaries$1.has(alternate)))
       ) {
         needsRemount = true;
       }

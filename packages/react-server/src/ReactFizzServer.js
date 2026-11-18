@@ -465,11 +465,11 @@ export function createPrerenderRequest(
     onFatalError,
   );
   // Start tracking postponed holes during this render.
-  request.trackedPostpones = {
+  $cellReplace($borrowMut($fieldCell(request, 'trackedPostpones', true)), {
     workingMap: new Map(),
     rootNodes: [],
     rootSlots: null,
-  };
+  });
   return request;
 }
 
@@ -590,11 +590,11 @@ export function resumeAndPrerenderRequest(
     onFatalError,
   );
   // Start tracking postponed holes during this render.
-  request.trackedPostpones = {
+  $cellReplace($borrowMut($fieldCell(request, 'trackedPostpones', true)), {
     workingMap: new Map(),
     rootNodes: [],
     rootSlots: null,
-  };
+  });
   return request;
 }
 
@@ -623,7 +623,10 @@ function pingTask(request, task) {
   }
   if (request.pingedTasks.length === 1) {
     request.flushScheduled = request.destination != null;
-    if (request.trackedPostpones != null || request.status === OPENING) {
+    if (
+      $borrow($fieldCell(request, 'trackedPostpones', true)).value != null ||
+      request.status === OPENING
+    ) {
       scheduleMicrotask(() => performWork(request));
     } else {
       scheduleWork(() => performWork(request));
@@ -1337,7 +1340,9 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
   // no parent segment so there's nothing to wait on.
   contentRootSegment.parentFlushed = true;
 
-  const trackedPostpones = request.trackedPostpones;
+  const {value: trackedPostpones} = $borrow(
+    $fieldCell(request, 'trackedPostpones', true),
+  );
   if (trackedPostpones != null || defer) {
     // This is a prerender or deferred boundary. In this mode we want to render the fallback synchronously
     // and schedule the content to render later. This is the opposite of what we do during a normal render
@@ -1622,19 +1627,24 @@ function replaySuspenseBoundary(
   resumedBoundary.rootSegmentID = id;
 
   const fallbackKeyPath = fallbackKeyPathOf(keyPath);
-  const trackedPostpones = request.trackedPostpones;
-  if (trackedPostpones != null) {
-    const fallbackReplayNode = [
-      fallbackKeyPath[1],
-      fallbackKeyPath[2],
-      [],
-      null,
-    ];
-    trackedPostpones.workingMap.set(fallbackKeyPath, fallbackReplayNode);
-    resumedBoundary.tracked = {
-      contentKeyPath: keyPath,
-      fallbackNode: fallbackReplayNode,
-    };
+  const borrow = $borrow($fieldCell(request, 'trackedPostpones', true), true);
+  const trackedPostpones = borrow.value;
+  try {
+    if (trackedPostpones != null) {
+      const fallbackReplayNode = [
+        fallbackKeyPath[1],
+        fallbackKeyPath[2],
+        [],
+        null,
+      ];
+      trackedPostpones.workingMap.set(fallbackKeyPath, fallbackReplayNode);
+      resumedBoundary.tracked = {
+        contentKeyPath: keyPath,
+        fallbackNode: fallbackReplayNode,
+      };
+    }
+  } finally {
+    $unborrow(borrow);
   }
 
   // We can reuse the current context and task to render the content immediately without
@@ -4138,7 +4148,9 @@ function trackPostpone(request, trackedPostpones, task, segment) {
 // In case a boundary errors, we need to stop tracking it because we won't
 // resume it.
 function untrackBoundary(request, boundary) {
-  const trackedPostpones = request.trackedPostpones;
+  const {value: trackedPostpones} = $borrow(
+    $fieldCell(request, 'trackedPostpones', true),
+  );
   if (trackedPostpones == null) {
     return;
   }
@@ -4435,7 +4447,11 @@ function renderNode(request, task, node, childIndex) {
       if (request.aborted) {
         // A postponed root cannot flush any shell and must be rendered again in
         // full, so let it unwind instead of preserving individual holes.
-        if (request.trackedPostpones != null && task.blockedBoundary != null) {
+        if (
+          $borrow($fieldCell(request, 'trackedPostpones', true)).value !=
+            null &&
+          task.blockedBoundary != null
+        ) {
           const thenableState = isSuspenseException$1
             ? getThenableStateAfterSuspending()
             : undefined;
@@ -4664,7 +4680,7 @@ function erroredTask(request, boundary, row, error, errorInfo, debugTask) {
 
       if (
         request.pendingRootTasks === 0 &&
-        request.trackedPostpones == null &&
+        $borrow($fieldCell(request, 'trackedPostpones', true)).value == null &&
         boundary.preamble != null
       ) {
         // The root is complete and this boundary may contribute part of the preamble.
@@ -4917,7 +4933,9 @@ function finishAbortedTask(task, request, error) {
     if (replay == null) {
       // We didn't complete the root so we have nothing to show. We can close
       // the request;
-      const trackedPostpones = request.trackedPostpones;
+      const {value: trackedPostpones} = $borrow(
+        $fieldCell(request, 'trackedPostpones', true),
+      );
       if (!isRecoverableReason && trackedPostpones != null && segment != null) {
         // We are aborting a prerender and must treat the shell as halted
         // We log the error but we still resolve the prerender
@@ -4972,7 +4990,9 @@ function finishAbortedTask(task, request, error) {
   } else {
     // We construct an errorInfo from the boundary's componentStack so the error in dev will indicate which
     // boundary the message is referring to
-    const trackedPostpones = request.trackedPostpones;
+    const {value: trackedPostpones} = $borrow(
+      $fieldCell(request, 'trackedPostpones', true),
+    );
     if (boundary.status !== CLIENT_RENDERED) {
       if (!isRecoverableReason && trackedPostpones != null && segment != null) {
         // We are aborting a prerender and must halt this boundary.
@@ -5147,7 +5167,7 @@ function safelyEmitEarlyPreloads(request, shellComplete) {
 // transitioning to the next request stage and this transition can happen in multiple places in this
 // implementation.
 function completeShell(request) {
-  if (request.trackedPostpones == null) {
+  if ($borrow($fieldCell(request, 'trackedPostpones', true)).value == null) {
     // We only emit early preloads on shell completion for renders. For prerenders
     // we wait for the entire Request to finish because we are not responding to a
     // live request and can wait for as much data as possible.
@@ -5157,7 +5177,7 @@ function completeShell(request) {
     const shellComplete = true;
     safelyEmitEarlyPreloads(request, shellComplete);
   }
-  if (request.trackedPostpones == null) {
+  if ($borrow($fieldCell(request, 'trackedPostpones', true)).value == null) {
     // When the shell is complete it will be possible to flush. We attempt to prepre
     // the Preamble here in case it is ready for flushing.
     // We exclude prerenders because these cannot flush until after completeAll has been called
@@ -5177,7 +5197,7 @@ function completeAll(request) {
   // it postponed. We cannot use rootPendingTasks in the prerender case because
   // those hit zero even when the shell postpones. Instead we look at the completedRootSegment
   const shellComplete =
-    request.trackedPostpones == null ||
+    $borrow($fieldCell(request, 'trackedPostpones', true)).value == null ||
     // Prerender Request, we use the state of the root segment
     request.completedRootSegment == null ||
     request.completedRootSegment.status !== POSTPONED;
@@ -5347,7 +5367,8 @@ function finishedTask(request, boundary, row, segment) {
 
         if (
           request.pendingRootTasks === 0 &&
-          request.trackedPostpones == null &&
+          $borrow($fieldCell(request, 'trackedPostpones', true)).value ==
+            null &&
           boundary.preamble != null
         ) {
           // The root is complete and this boundary may contribute part of the preamble.
@@ -5359,7 +5380,9 @@ function finishedTask(request, boundary, row, segment) {
       } else if (boundary.status === POSTPONED) {
         const boundaryRow = boundary.row;
         if (boundaryRow != null) {
-          const trackedPostpones = request.trackedPostpones;
+          const {value: trackedPostpones} = $borrow(
+            $fieldCell(request, 'trackedPostpones', true),
+          );
           if (trackedPostpones != null) {
             // If this boundary is postponed, then we need to also postpone any blocked boundaries
             // in the next row.
@@ -5884,15 +5907,18 @@ function preparePreambleFromSegment(
       boundaryRootSegment,
       collectedPreambleSegments,
     );
-  } else if (
-    status === POSTPONED &&
-    // This segment is postponed. When prerendering we consider this pending still because
-    // it can resume. If we're rendering then this is equivalent to errored.
-    request.trackedPostpones != null
-  ) {
-    // This boundary won't contribute a preamble to the current prerender
-    return true;
   } else {
+    if (status === POSTPONED) {
+      // This segment is postponed. When prerendering we consider this pending still because
+      // it can resume. If we're rendering then this is equivalent to errored.
+      if (
+        $borrow($fieldCell(request, 'trackedPostpones', true)).value != null
+      ) {
+        // This boundary won't contribute a preamble to the current prerender
+        return true;
+      }
+      // Expected fallthrough
+    }
     if (
       (status === POSTPONED || status === CLIENT_RENDERED) &&
       segment.status === COMPLETED
@@ -6488,6 +6514,9 @@ function flushCompletedQueues(request, destination) {
         request.clientRenderedBoundaries.length === 0 &&
         request.completedBoundaries.length === 0
       ) {
+        const {value: trackedPostpones} = $borrow(
+          $fieldCell(request, 'trackedPostpones', true),
+        );
         function holds(trackedPostpones) {
           if (trackedPostpones.rootNodes.borrows < 0) {
             $alreadyMutablyBorrowed();
@@ -6497,8 +6526,7 @@ function flushCompletedQueues(request, destination) {
             trackedPostpones.rootSlots === null
           );
         }
-        isComplete =
-          request.trackedPostpones == null || holds(request.trackedPostpones);
+        isComplete = trackedPostpones == null || holds(trackedPostpones);
       } else {
         isComplete = false;
       }
@@ -6656,7 +6684,7 @@ export function startWork(request) {
       request.status = OPEN;
     }
 
-    if (request.trackedPostpones == null) {
+    if ($borrow($fieldCell(request, 'trackedPostpones', true)).value == null) {
       // this is either a regular render or a resume. For regular render we want
       // to call emitEarlyPreloads after the first performWork because we want
       // are responding to a live request and need to balance sending something early
@@ -6716,8 +6744,9 @@ function enqueueFlush(request) {
 // by moving the implementation into ReactServerStreamConfigNode and even then we may not be able to
 // eliminate all the wasted branching.
 export function prepareForStartFlowingIfBeforeAllReady(request) {
+  const borrow = $borrow($fieldCell(request, 'trackedPostpones', true));
   let shellComplete;
-  if (request.trackedPostpones == null) {
+  if (borrow.value == null) {
     // Render Request, we define shell complete by the pending root tasks
     shellComplete = request.pendingRootTasks === 0;
   } else {
@@ -6953,7 +6982,9 @@ function addToReplayParent(node, parentKeyPath, trackedPostpones) {
 
 // Returns the state of a postponed request or null if nothing was postponed.
 export function getPostponedState(request) {
-  const trackedPostpones = request.trackedPostpones;
+  const {value: trackedPostpones} = $borrow(
+    $fieldCell(request, 'trackedPostpones', true),
+  );
   function keep(trackedPostpones) {
     if (trackedPostpones.rootNodes.borrows < 0) {
       $alreadyMutablyBorrowed();
@@ -6965,7 +6996,7 @@ export function getPostponedState(request) {
   }
   if (trackedPostpones == null || !keep(trackedPostpones)) {
     // Reset. Let the flushing behave as if we completed the whole document.
-    request.trackedPostpones = null;
+    $cellReplace($borrowMut($fieldCell(request, 'trackedPostpones', true)));
     return null;
   }
   // True only when we postponed with a real shell (as opposed to postponing the

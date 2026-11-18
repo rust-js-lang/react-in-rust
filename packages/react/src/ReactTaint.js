@@ -12,12 +12,19 @@ import getPrototypeOf from 'shared/getPrototypeOf';
 import binaryToComparableString from 'shared/binaryToComparableString';
 
 import ReactSharedInternals from './ReactSharedInternalsServer.js';
-import {$unwrap} from '@rust-js/std';
+import {
+  $borrow,
+  $borrowMut,
+  $cellReplace,
+  $unborrow,
+  $unwrap,
+  $withBorrow,
+} from '@rust-js/std';
 
 let TaintRegistryObjects;
 let TaintRegistryValues;
 let TaintRegistryByteLengths;
-let TaintRegistryPendingRequests;
+const TaintRegistryPendingRequests = {};
 
 // This is the shared constructor of all typed arrays.
 let TypedArrayConstructor;
@@ -25,8 +32,12 @@ let TypedArrayConstructor;
 TaintRegistryObjects = ReactSharedInternals.TaintRegistryObjects;
 TaintRegistryValues = ReactSharedInternals.TaintRegistryValues;
 TaintRegistryByteLengths = ReactSharedInternals.TaintRegistryByteLengths;
-TaintRegistryPendingRequests =
+const taintRegistryPendingRequests =
   ReactSharedInternals.TaintRegistryPendingRequests;
+$cellReplace(
+  $borrowMut(TaintRegistryPendingRequests),
+  taintRegistryPendingRequests,
+);
 
 TypedArrayConstructor = getPrototypeOf(Uint32Array.prototype).constructor;
 
@@ -37,9 +48,16 @@ const defaultMessage =
 function cleanup(entryValue) {
   const entry = $unwrap(TaintRegistryValues).get(entryValue);
   if (entry !== undefined) {
-    $unwrap(TaintRegistryPendingRequests).forEach(requestQueue => {
-      requestQueue.push(entryValue);
-      entry.count = (entry.count + 1) >>> 0;
+    $withBorrow(TaintRegistryPendingRequests, pendingRequests => {
+      const borrow = $borrow($unwrap(pendingRequests), true);
+      try {
+        borrow.forEach(requestQueue => {
+          requestQueue.push(entryValue);
+          entry.count = (entry.count + 1) >>> 0;
+        });
+      } finally {
+        $unborrow(borrow);
+      }
     });
     if (entry.count === 1) {
       $unwrap(TaintRegistryValues).delete(entryValue);

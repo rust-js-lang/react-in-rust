@@ -130,6 +130,7 @@ import {
   unbadgeConsole,
 } from './ReactFlightServerConfig.js';
 import {
+  $alreadyBorrowed,
   $alreadyMutablyBorrowed,
   $borrow,
   $borrowMut,
@@ -548,14 +549,18 @@ function throwTaintViolation(message) {
 function cleanupTaintQueue(request) {
   const cleanupQueue = request.taintCleanupQueue;
   if (TaintRegistryPendingRequests != null) {
+    if (TaintRegistryPendingRequests.borrows) {
+      $alreadyBorrowed();
+    }
     TaintRegistryPendingRequests.delete(cleanupQueue);
   }
   const taintRegistryValues = $unwrap(TaintRegistryValues);
-  if (cleanupQueue.borrows < 0) {
-    $alreadyMutablyBorrowed();
-  }
-  for (let i = 0; i < cleanupQueue.length; i++) {
-    const entryValue = cleanupQueue[i];
+  // Taken out of the cell, not borrowed across the loop: the registry's
+  // map comes from React's shared internals, which JS can reach, so its
+  // `get` may run code that borrows this queue (rust-js #2111).
+  const entryValues = $borrowMut(cleanupQueue).splice(0);
+  for (let i = 0; i < entryValues.length; i++) {
+    const entryValue = entryValues[i];
     const entry = taintRegistryValues.get(entryValue);
     if (entry !== undefined) {
       if (entry.count === 1) {
@@ -565,7 +570,6 @@ function cleanupTaintQueue(request) {
       }
     }
   }
-  $borrowMut(cleanupQueue).length = 0;
 }
 
 function defaultErrorHandler(error) {
@@ -608,6 +612,9 @@ function RequestInstance(
   const cleanupQueue = [];
   if (enableTaint) {
     if (TaintRegistryPendingRequests != null) {
+      if (TaintRegistryPendingRequests.borrows) {
+        $alreadyBorrowed();
+      }
       TaintRegistryPendingRequests.add(cleanupQueue);
     }
   }
@@ -3382,7 +3389,10 @@ function serializeDebugBlob(request, blob) {
 
   function progress(entry) {
     if (entry.done) {
-      const length = model.length;
+      if (model.borrows < 0) {
+        $alreadyMutablyBorrowed();
+      }
+      const {length} = model;
       emitOutlinedDebugModelChunk(
         request,
         id,
@@ -3393,7 +3403,12 @@ function serializeDebugBlob(request, blob) {
       return;
     }
     // TODO: Emit the chunk early and refer to it later by dedupe.
-    model.push(entry.value);
+    const borrowMut = $borrowMut(model, true);
+    try {
+      borrowMut.push(entry.value);
+    } finally {
+      $unborrow(borrowMut);
+    }
     // $FlowFixMe[incompatible-type]
     return reader.read().then(progress).catch(error);
   }
@@ -3425,7 +3440,12 @@ const BlobReading = {
       return;
     }
     // TODO: Emit the chunk early and refer to it later by dedupe.
-    blobReading.model.push(entry.value);
+    const borrowMut = $borrowMut(blobReading.model, true);
+    try {
+      borrowMut.push(entry.value);
+    } finally {
+      $unborrow(borrowMut);
+    }
     return blobReading.reader
       .read()
       .then(entry =>

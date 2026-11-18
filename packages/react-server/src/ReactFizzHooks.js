@@ -706,7 +706,11 @@ function useActionState(action, initialState, permalink) {
             componentKeyPath,
             actionStateHookIndex,
           );
-          formData.append('$ACTION_KEY', $unwrap(nextPostbackStateKey));
+          // The key out of its cell before `append` runs: a
+          // server action's own `FormData` may answer it with
+          // code that borrows the cell (rust-js #2111).
+          const actionKey = $unwrap(nextPostbackStateKey);
+          formData.append('$ACTION_KEY', actionKey);
         }
         return metadata;
       };
