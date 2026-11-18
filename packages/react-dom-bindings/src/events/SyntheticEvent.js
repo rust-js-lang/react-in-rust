@@ -352,7 +352,7 @@ const MouseEventInterface = {
   getModifierState: getEventModifierState,
   button: 0,
   buttons: 0,
-  relatedTarget(event) {
+  relatedTarget: event => {
     if (event.relatedTarget === undefined) {
       return event.fromElement === event.srcElement
         ? event.toElement
@@ -361,14 +361,14 @@ const MouseEventInterface = {
 
     return event.relatedTarget;
   },
-  movementX(event) {
+  movementX: event => {
     if ('movementX' in event) {
       return event.movementX;
     }
     updateMouseMovementPolyfillState(event);
     return lastMovementX;
   },
-  movementY(event) {
+  movementY: event => {
     if ('movementY' in event) {
       return event.movementY;
     }
@@ -409,7 +409,7 @@ const KeyboardEventInterface = {
   locale: 0,
   getModifierState: getEventModifierState,
   // Legacy Interface
-  charCode(event) {
+  charCode: event => {
     // `charCode` is the result of a KeyPress event and represents the value of
     // the actual printable character.
 
@@ -420,7 +420,7 @@ const KeyboardEventInterface = {
     }
     return 0;
   },
-  keyCode(event) {
+  keyCode: event => {
     // `keyCode` is the result of a KeyDown/Up event and represents the value of
     // physical keyboard key.
 
@@ -433,7 +433,7 @@ const KeyboardEventInterface = {
     }
     return 0;
   },
-  which(event) {
+  which: event => {
     // `which` is an alias for either `keyCode` or `charCode` depending on the
     // type of the event.
     if (event.type === 'keypress') {
@@ -515,7 +515,7 @@ export const SyntheticTransitionEvent = createSyntheticEvent(
  */
 const WheelEventInterface = {
   ...MouseEventInterface,
-  deltaX(event) {
+  deltaX: event => {
     if ('deltaX' in event) {
       return event.deltaX;
     } else if ('wheelDeltaX' in event) {
@@ -524,7 +524,7 @@ const WheelEventInterface = {
       return 0;
     }
   },
-  deltaY(event) {
+  deltaY: event => {
     if ('deltaY' in event) {
       return event.deltaY;
     } else if ('wheelDeltaY' in event) {
