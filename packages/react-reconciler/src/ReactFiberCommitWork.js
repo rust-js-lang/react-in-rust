@@ -1828,7 +1828,7 @@ function getRetryCache(finishedWork) {
         finishedWork.stateNode = newRetryCache;
         retryCache = newRetryCache;
       }
-      return $unwrap(retryCache);
+      return retryCache;
     }
     case OffscreenComponent: {
       const instance = finishedWork.stateNode;
@@ -1838,7 +1838,7 @@ function getRetryCache(finishedWork) {
         instance._retryCache = newRetryCache;
         retryCache = newRetryCache;
       }
-      return $unwrap(retryCache);
+      return retryCache;
     }
     default:
       throw new Error(

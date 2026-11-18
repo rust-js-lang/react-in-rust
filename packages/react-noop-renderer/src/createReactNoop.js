@@ -1018,7 +1018,7 @@ function createReactNoop(reconciler, useMutation) {
     }
     // A root fiber's `stateNode` is its FiberRoot, whose `containerInfo` is the
     // container made above.
-    const rootNode = $unwrap(root).current.stateNode;
+    const rootNode = root.current.stateNode;
     return rootNode.containerInfo;
   }
 

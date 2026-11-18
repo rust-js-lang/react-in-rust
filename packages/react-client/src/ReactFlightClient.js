@@ -1568,7 +1568,7 @@ function getChunk(response, id) {
     chunks.set(id, newChunk);
     chunk = newChunk;
   }
-  return $unwrap(chunk);
+  return chunk;
 }
 
 // Like getChunk, but for weak Promise references. The server may never emit
@@ -1586,7 +1586,7 @@ function getWeakChunk(response, id) {
     chunks.set(id, newChunk);
     chunk = newChunk;
   }
-  return $unwrap(chunk);
+  return chunk;
 }
 
 // Moves a blocked chunk to INITIALIZED and wakes whatever is waiting on it. The
@@ -4072,7 +4072,6 @@ function buildFakeCallStack(
       fakeFunctionCache$1.set(frameKey, newFn);
       fn = newFn;
     }
-    fn = $unwrap(fn);
     callStack = fn.bind(null, callStack);
   }
   return callStack;
