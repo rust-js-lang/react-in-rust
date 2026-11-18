@@ -4275,7 +4275,7 @@ export function diffHydratedPropsForDevWarnings(
   props,
   hostContext,
 ) {
-  return diffHydratedProperties(instance, type, props, hostContext);
+  return diffHydratedProperties(instance, type, props, hostContext) ?? null;
 }
 
 export function validateHydratableTextInstance(text, hostContext) {
@@ -4311,7 +4311,7 @@ export function diffHydratedTextForDevWarnings(
   parentProps,
 ) {
   if (parentProps == null || parentProps[SUPPRESS_HYDRATION_WARNING] !== true) {
-    return diffHydratedText(textInstance, text);
+    return diffHydratedText(textInstance, text) ?? null;
   }
   return null;
 }

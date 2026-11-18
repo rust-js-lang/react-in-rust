@@ -5516,7 +5516,7 @@ function retryRenderTask(request, task, segment) {
           // the normal suspension path below that stores the thenable state.
           // Preserve it before finishing the abort so DEV can replay the task
           // and include this suspended use() call site in the owner stack.
-          task.thenableState = getThenableStateAfterSuspending();
+          task.thenableState = getThenableStateAfterSuspending() ?? null;
         }
         // The task has unwound from user code, so it must no longer appear to
         // be the currently rendering task while we synchronously finish it.
@@ -5658,7 +5658,7 @@ function retryReplayTask(request, task) {
           // the normal suspension path below that stores the thenable state.
           // Preserve it before finishing the abort so DEV can replay the task
           // and include this suspended use() call site in the owner stack.
-          task.thenableState = getThenableStateAfterSuspending();
+          task.thenableState = getThenableStateAfterSuspending() ?? null;
         }
         // The task has unwound from user code, so it must no longer appear to
         // be the currently rendering task while we synchronously finish it.
