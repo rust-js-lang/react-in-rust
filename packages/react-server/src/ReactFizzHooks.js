@@ -400,13 +400,12 @@ export function useReducer(reducer, initialArg, init) {
     // current hook.
     const queue = $unwrap(workInProgressHook.queue);
     const dispatch = queue.dispatch;
-    const renderPhaseUpdates$1 = renderPhaseUpdates;
-    if (renderPhaseUpdates$1 != null) {
+    if (renderPhaseUpdates != null) {
       // Render phase updates are stored in a map of queue -> linked list
-      const firstRenderPhaseUpdate = renderPhaseUpdates$1.get(queue);
+      const firstRenderPhaseUpdate = renderPhaseUpdates.get(queue);
       if (firstRenderPhaseUpdate !== undefined) {
         // $FlowFixMe[incompatible-use] found when upgrading Flow
-        renderPhaseUpdates$1.delete(queue);
+        renderPhaseUpdates.delete(queue);
         // $FlowFixMe[incompatible-use] found when upgrading Flow
         let newState = workInProgressHook.memoizedState;
         let update = firstRenderPhaseUpdate;
