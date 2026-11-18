@@ -34,15 +34,10 @@ import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 import ReactVersion from 'shared/ReactVersion';
 import {
-  $alreadyMutablyBorrowed,
-  $borrow,
-  $borrowMut,
-  $cellReplace,
   $cleanup,
   $displayF64,
   $live,
   $toUppercase,
-  $unborrow,
   $unwindsOn,
   $unwrap,
 } from '@rust-js/std';
@@ -230,7 +225,7 @@ function createReactNoop(reconciler, useMutation) {
     return hostContext === UPPERCASE_CONTEXT ? $toUppercase(rawText) : rawText;
   }
 
-  const suspenseyThingCache = {value: null};
+  let suspenseyThingCache = null;
 
   function startSuspendingCommit() {
     // Represents a subscription for all the suspensey things that block a
@@ -247,13 +242,7 @@ function createReactNoop(reconciler, useMutation) {
       // Attach a listener to the suspensey thing and create a subscription
       // object that uses reference counting to track when all the suspensey
       // things have loaded.
-      const borrow = $borrow(suspenseyThingCache, true);
-      let record;
-      try {
-        record = $unwrap(borrow.value).get(src);
-      } finally {
-        $unborrow(borrow);
-      }
+      const record = $unwrap(suspenseyThingCache).get(src);
       if (record === undefined) {
         throw new Error('Could not find record for key.');
       }
@@ -557,30 +546,14 @@ function createReactNoop(reconciler, useMutation) {
       // instance is ready to be committed. If it's not, React may yield to the
       // main thread and ask again. It's possible a load event will fire in
       // between, in which case we can avoid showing a fallback.
-      if (suspenseyThingCache.borrows < 0) {
-        $alreadyMutablyBorrowed();
-      }
-      if (suspenseyThingCache.value == null) {
-        $cellReplace($borrowMut(suspenseyThingCache), new Map());
-      }
-      const borrow = $borrow(suspenseyThingCache, true);
-      let record;
-      try {
-        record = $unwrap(borrow.value).get(src);
-      } finally {
-        $unborrow(borrow);
-      }
+      suspenseyThingCache ??= new Map();
+      const record = $unwrap(suspenseyThingCache).get(src);
       if (record === undefined) {
         const newRecord = {
           status: 'pending',
           subscriptions: null,
         };
-        const value = $borrow(suspenseyThingCache, true);
-        try {
-          $unwrap(value.value).set(src, newRecord);
-        } finally {
-          $unborrow(value);
-        }
+        $unwrap(suspenseyThingCache).set(src, newRecord);
         const onLoadStart = props.onLoadStart;
         if (typeof onLoadStart === 'function') {
           onLoadStart();
@@ -1177,45 +1150,23 @@ function createReactNoop(reconciler, useMutation) {
     },
 
     getSuspenseyThingStatus(src) {
-      const borrow = $borrow(suspenseyThingCache, true);
-      const suspenseyThingCache$1 = borrow.value;
-      try {
-        if (suspenseyThingCache$1 == null) {
-          return null;
-        } else {
-          const record = suspenseyThingCache$1.get(src);
-          return record === undefined ? null : record.status;
-        }
-      } finally {
-        $unborrow(borrow);
+      if (suspenseyThingCache == null) {
+        return null;
+      } else {
+        const record = suspenseyThingCache.get(src);
+        return record === undefined ? null : record.status;
       }
     },
 
     resolveSuspenseyThing(key) {
-      if (suspenseyThingCache.borrows < 0) {
-        $alreadyMutablyBorrowed();
-      }
-      if (suspenseyThingCache.value == null) {
-        $cellReplace($borrowMut(suspenseyThingCache), new Map());
-      }
-      const borrow = $borrow(suspenseyThingCache, true);
-      let record;
-      try {
-        record = $unwrap(borrow.value).get(key);
-      } finally {
-        $unborrow(borrow);
-      }
+      suspenseyThingCache ??= new Map();
+      const record = $unwrap(suspenseyThingCache).get(key);
       if (record === undefined) {
         const newRecord = {
           status: 'fulfilled',
           subscriptions: null,
         };
-        const value = $borrow(suspenseyThingCache, true);
-        try {
-          $unwrap(value.value).set(key, newRecord);
-        } finally {
-          $unborrow(value);
-        }
+        $unwrap(suspenseyThingCache).set(key, newRecord);
       } else if (record.status === 'pending') {
         record.status = 'fulfilled';
         if (record.subscriptions != null) {
@@ -1240,7 +1191,7 @@ function createReactNoop(reconciler, useMutation) {
     },
 
     resetSuspenseyThingCache() {
-      $cellReplace($borrowMut(suspenseyThingCache), null);
+      suspenseyThingCache = null;
     },
 
     createPortal(children, container, key) {
