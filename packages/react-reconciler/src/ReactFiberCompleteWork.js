@@ -1061,7 +1061,6 @@ export function completeWork(current, workInProgress, renderLanes) {
   // Ideally we would have a special version of the work loop only
   // for hydration.
   popTreeContext(workInProgress);
-  // We don't cut it if we're hydrating.
   switch (workInProgress.tag) {
     case IncompleteFunctionComponent:
       if (disableLegacyMode) {
@@ -1795,6 +1794,7 @@ export function completeWork(current, workInProgress, renderLanes) {
               renderedTail.alternate == null &&
               !getIsHydrating()
             ) {
+              // We don't cut it if we're hydrating.
               // We're done.
               bubbleProperties(workInProgress);
               return null;

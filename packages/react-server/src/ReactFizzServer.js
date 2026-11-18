@@ -3111,13 +3111,13 @@ function replayElement(
         pendingTasks: 1,
       };
       task.replay = childReplay;
-      // TODO check remaining slots
       try {
         renderElement(request, task, keyPath, type, props, ref);
         if (
           childReplay.pendingTasks === 1 &&
           $borrow(childReplay.nodes).length !== 0
         ) {
+          // TODO check remaining slots
           throw new Error(
             "Couldn't find all resumable slots by key/index during replaying. " +
               "The tree doesn't match so React will fallback to client rendering.",
