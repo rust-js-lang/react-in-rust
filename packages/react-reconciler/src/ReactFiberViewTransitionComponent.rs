@@ -51,7 +51,13 @@ fn get_class_name_by_type(class_by_type: Option<ViewTransitionClass>) -> Option<
     let mut class_name: Option<String> = None;
     let active_types = get_pending_transition_types();
     if let Some(active_types) = active_types {
-        for active_type in active_types.borrow().iter() {
+        // A copy, not the cell borrowed across the loop: reading
+        // `class_by_type`, a props object, may run its getter, which may
+        // call `addTransitionType`, which borrows this same cell mutably
+        // (rust-js #2106). Upstream iterates the live array, where a type
+        // added mid-loop is seen; the copy doesn't see it.
+        let types = active_types.borrow().clone();
+        for active_type in types.iter() {
             let r#match = js::dict::get(class_by_type, active_type);
             if let Some(r#match) = r#match {
                 if r#match == "none" {

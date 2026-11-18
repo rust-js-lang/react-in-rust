@@ -2088,6 +2088,16 @@ These forms are decided:
   throws a RangeError past the engine's argument limit while Rust's
   `extend` never fails. rust-js is building it; rd274's inline strings
   wait for it.
+- **rust-js #2106, getClassNameByType's types copied** (the user,
+  2026-11-18): ReactFiberViewTransitionComponent's `getClassNameByType`
+  iterates `const types = activeTypes.slice();`, a copy of the transition's
+  types, as its Rust reads `active_types.borrow().clone()`, where upstream's `for … of`
+  iterates the array itself. Its loop reads `classByType`, a props object,
+  whose getter may call `addTransitionType`, which borrows that cell
+  mutably: with the cell borrowed across the loop, rust-js refuses it (a
+  library's cell borrowed unchecked while code it can't see runs). Upstream
+  sees a type added mid-loop; the copy doesn't, where Rust's borrow would
+  have panicked.
 - **rust-js #2017, a library's internal exports** (the user, 2026-11-17):
   123 modules end with `export { X as $$X, .. };`: their private
   `static`s and `thread_local!` keys that a function another crate can

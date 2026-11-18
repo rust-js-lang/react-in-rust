@@ -3544,18 +3544,28 @@ function collectClientRects(child, rects) {
     range.selectNodeContents(textNode);
     // $FlowFixMe[method-unbinding]
     const clientRects = range.getClientRects();
-    $extend(
-      rects,
-      $lazyRange(0, clientRects.length).map(i => clientRects[i]),
-    );
+    const borrowMut = $borrowMut(rects, true);
+    try {
+      $extend(
+        borrowMut,
+        $lazyRange(0, clientRects.length).map(i => clientRects[i]),
+      );
+    } finally {
+      $unborrow(borrowMut);
+    }
   } else {
     const instance = getInstanceFromHostFiber(child);
     // $FlowFixMe[method-unbinding]
     const clientRects = instance.getClientRects();
-    $extend(
-      rects,
-      $lazyRange(0, clientRects.length).map(i => clientRects[i]),
-    );
+    const borrowMut = $borrowMut(rects, true);
+    try {
+      $extend(
+        borrowMut,
+        $lazyRange(0, clientRects.length).map(i => clientRects[i]),
+      );
+    } finally {
+      $unborrow(borrowMut);
+    }
   }
   return false;
 }

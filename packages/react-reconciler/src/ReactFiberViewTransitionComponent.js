@@ -40,8 +40,14 @@ function getClassNameByType(classByType) {
   let className;
   const activeTypes = getPendingTransitionTypes();
   if (activeTypes != null) {
-    for (let i = 0; i < activeTypes.length; i++) {
-      const activeType = activeTypes[i];
+    // A copy, not the cell borrowed across the loop: reading
+    // `class_by_type`, a props object, may run its getter, which may
+    // call `addTransitionType`, which borrows this same cell mutably
+    // (rust-js #2106). Upstream iterates the live array, where a type
+    // added mid-loop is seen; the copy doesn't see it.
+    const types = activeTypes.slice();
+    for (let i = 0; i < types.length; i++) {
+      const activeType = types[i];
       const match = classByType[activeType];
       if (match != null) {
         if (match === 'none') {
