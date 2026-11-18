@@ -416,18 +416,15 @@ function isScriptDataBlock(props) {
   return true;
 }
 
-const warnedUnknownTags = (() => {
-  const warnedUnknownTags = {};
-  // There are working polyfills for <dialog>. Let people use it.
-  warnedUnknownTags.dialog = true;
-  // Electron ships a custom <webview> tag to display external web content in
-  // an isolated frame and process.
-  // This tag is not present in non Electron environments such as JSDom which
-  // is often used for testing purposes.
-  // @see https://electronjs.org/docs/api/webview-tag
-  warnedUnknownTags.webview = true;
-  return warnedUnknownTags;
-})();
+const warnedUnknownTags = {};
+// There are working polyfills for <dialog>. Let people use it.
+warnedUnknownTags.dialog = true;
+// Electron ships a custom <webview> tag to display external web content in
+// an isolated frame and process.
+// This tag is not present in non Electron environments such as JSDom which
+// is often used for testing purposes.
+// @see https://electronjs.org/docs/api/webview-tag
+warnedUnknownTags.webview = true;
 
 export function createInstance(
   type,
