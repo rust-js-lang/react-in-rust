@@ -381,7 +381,7 @@ function describeElementDiff(type, clientProps, serverProps, indent) {
       const maxLength =
         maxRowLength - ((indent + 1) | 0) * 2 - propName.length - 1;
       const serverPropName = serverPropNames.get($toLowercase(propName));
-      if (serverPropName != null) {
+      if (serverPropName !== undefined) {
         serverPropNames.delete($toLowercase(propName));
         // There's a diff here.
         const clientValue = clientProps[propName];

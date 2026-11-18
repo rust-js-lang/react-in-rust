@@ -644,7 +644,7 @@ export function completeBoundaryWithStyles(
     let loadingState;
     let resourceEl;
     let precedence;
-    if (existing != null) {
+    if (existing !== undefined) {
       // We have an already inserted stylesheet.
       resourceEl = existing;
       loadingState = resourceEl._p;

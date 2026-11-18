@@ -320,7 +320,7 @@ function loadServerReference(response, metaData, parentObject, key) {
   // metadata object rather than a field on it, so a client-supplied metadata
   // field can't inject a resolved value and bypass the manifest lookup below.
   const cachedPromise = response._serverReferenceCache.get(metaDataKey);
-  if (cachedPromise != null) {
+  if (cachedPromise !== undefined) {
     return readServerReference(response, cachedPromise, parentObject, key);
   }
 
@@ -455,7 +455,7 @@ function loadServerObjectReference(response, metaData, parentObject, key) {
   // and each path must read only its own cache so it always applies its own
   // validation instead of the other's cached value.
   const cachedPromise = response._serverObjectReferenceCache.get(metaDataKey);
-  if (cachedPromise != null) {
+  if (cachedPromise !== undefined) {
     return readServerReference(response, cachedPromise, parentObject, key);
   }
 
@@ -729,7 +729,7 @@ export function reportGlobalError(response, error) {
 function getChunk(response, id) {
   const chunks = response._chunks;
   const chunk = chunks.get(id);
-  if (chunk != null) {
+  if (chunk !== undefined) {
     return chunk;
   } else {
     const prefix = response._prefix;
@@ -1899,7 +1899,7 @@ export function resolveField(response, key, value) {
       if (key.length > prefix.length + 'S'.length) {
         const id = +key.slice(prefix.length + 'S'.length);
         const chunk = chunks.get(id);
-        if (chunk != null) {
+        if (chunk !== undefined) {
           // The stream was already referenced so we can enqueue right away.
           resolveModelChunk(response, chunk, value, id);
           return;
@@ -1908,7 +1908,7 @@ export function resolveField(response, key, value) {
     } else {
       const id = +key.slice(prefix.length);
       const chunk = chunks.get(id);
-      if (chunk != null) {
+      if (chunk !== undefined) {
         // We were waiting on this key so now we can resolve it.
         resolveModelChunk(response, chunk, value, id);
         return;

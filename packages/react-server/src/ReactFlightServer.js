@@ -557,7 +557,7 @@ function cleanupTaintQueue(request) {
   for (let i = 0; i < cleanupQueue.length; i++) {
     const entryValue = cleanupQueue[i];
     const entry = taintRegistryValues.get(entryValue);
-    if (entry != null) {
+    if (entry !== undefined) {
       if (entry.count === 1) {
         taintRegistryValues.delete(entryValue);
       } else {
@@ -3059,7 +3059,7 @@ function serializeClientReference(
   const clientReferenceKey = getClientReferenceKey(clientReference);
   const writtenClientReferences = request.writtenClientReferences;
   const existingId = writtenClientReferences.get(clientReferenceKey);
-  if (existingId != null) {
+  if (existingId !== undefined) {
     if (isElementType(parent, parentPropertyName)) {
       // If we're encoding the "type" of an element, we can refer
       // to that by a lazy reference instead of directly since React
@@ -3117,7 +3117,7 @@ function serializeDebugClientReference(
   const clientReferenceKey = getClientReferenceKey(clientReference);
   const writtenClientReferences = request.writtenClientReferences;
   const existingId = writtenClientReferences.get(clientReferenceKey);
-  if (existingId != null) {
+  if (existingId !== undefined) {
     if (isElementType(parent, parentPropertyName)) {
       // If we're encoding the "type" of an element, we can refer
       // to that by a lazy reference instead of directly since React
@@ -3197,7 +3197,7 @@ function serializeServerReference(request, serverReference) {
     enableFlightObjectReferences && typeof serverReference === 'object';
   const writtenServerReferences = request.writtenServerReferences;
   const existingId = writtenServerReferences.get(serverReference);
-  if (existingId != null) {
+  if (existingId !== undefined) {
     return isObjectReference
       ? serializeServerObjectReferenceID(existingId)
       : serializeServerReferenceID(existingId);
@@ -3539,7 +3539,7 @@ function serializeImportString(request, value) {
   }
   const writtenStrings = request.writtenImportStrings;
   const existing = writtenStrings.get(value);
-  if (existing != null) {
+  if (existing !== undefined) {
     return existing;
   }
   const size = request.writtenImportStringsSize + value.length;
@@ -3743,7 +3743,7 @@ function renderModelDestructive(
           // by another Server Component.
         } else {
           const existingReference = writtenObjects.get(value);
-          if (existingReference != null) {
+          if (existingReference !== undefined) {
             if (modelRoot !== value) {
               // We've already emitted this as an outlined object, so we can refer to that by its
               // existing ID. TODO: We should use a lazy reference since, unlike plain objects,
@@ -3941,7 +3941,7 @@ function renderModelDestructive(
 
     if (enableTaint) {
       const tainted = $unwrap(TaintRegistryObjects).get(value);
-      if (tainted != null) {
+      if (tainted !== undefined) {
         throwTaintViolation(tainted);
       }
     }
@@ -3955,7 +3955,7 @@ function renderModelDestructive(
       // on the wire ($w instead of $@). That way the client knows to leave
       // it forever pending, instead of erroring it, if the stream closes
       // first.
-      if (existingReference != null) {
+      if (existingReference !== undefined) {
         if (
           $borrow($fieldCell(task, 'keyPath', true)).value != null ||
           task.implicitSlot
@@ -3988,7 +3988,7 @@ function renderModelDestructive(
       return promiseReference;
     }
 
-    if (existingReference != null) {
+    if (existingReference !== undefined) {
       if (modelRoot !== value) {
         // We've already emitted this as an outlined object, so we can
         // just refer to that by its existing ID.
@@ -4188,7 +4188,7 @@ function renderModelDestructive(
   if (typeof value === 'string') {
     if (enableTaint) {
       const tainted = $unwrap(TaintRegistryValues).get(value);
-      if (tainted != null) {
+      if (tainted !== undefined) {
         throwTaintViolation(tainted.message);
       }
     }
@@ -4247,7 +4247,7 @@ function renderModelDestructive(
 
     if (enableTaint) {
       const tainted = $unwrap(TaintRegistryObjects).get(value);
-      if (tainted != null) {
+      if (tainted !== undefined) {
         throwTaintViolation(tainted);
       }
     }
@@ -4284,7 +4284,7 @@ function renderModelDestructive(
   if (typeof value === 'symbol') {
     const writtenSymbols = request.writtenSymbols;
     const existingId = writtenSymbols.get(value);
-    if (existingId != null) {
+    if (existingId !== undefined) {
       return serializeByValueID(existingId);
     }
     // $FlowFixMe[incompatible-type] `description` might be undefined
@@ -4307,7 +4307,7 @@ function renderModelDestructive(
   if (typeof value === 'bigint') {
     if (enableTaint) {
       const tainted = $unwrap(TaintRegistryValues).get(value);
-      if (tainted != null) {
+      if (tainted !== undefined) {
         throwTaintViolation(tainted.message);
       }
     }
@@ -4796,7 +4796,7 @@ function outlineComponentInfo(request, componentInfo) {
   // Safety: a component's info is an object.
   const componentInfoObject = componentInfo;
   const existingRef = request.writtenDebugObjects.get(componentInfoObject);
-  if (existingRef != null) {
+  if (existingRef !== undefined) {
     // Already written
     return existingRef;
   }
@@ -4983,7 +4983,7 @@ function serializeIONode(request, ioNode, promiseRef) {
   // Safety: an async node is an object.
   const ioNodeObject = ioNode;
   const existingRef = request.writtenDebugObjects.get(ioNodeObject);
-  if (existingRef != null) {
+  if (existingRef !== undefined) {
     // Already written
     return existingRef;
   }
@@ -5068,7 +5068,7 @@ function emitTypedArrayChunk(request, id, tag, typedArray, debug) {
     const tainted = $unwrap(TaintRegistryValues).get(
       binaryToComparableString(view),
     );
-    if (tainted != null) {
+    if (tainted !== undefined) {
       throwTaintViolation(tainted.message);
     }
   }
@@ -5217,7 +5217,7 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
 
     const writtenDebugObjects = request.writtenDebugObjects;
     const existingDebugReference = writtenDebugObjects.get(value);
-    if (existingDebugReference != null) {
+    if (existingDebugReference !== undefined) {
       if (!(debugModelRoot === value)) {
         // We've already emitted this as a debug object. We favor that version if available.
         return existingDebugReference;
@@ -5230,7 +5230,7 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
       // Safety: a parent is an object or an array.
       const parentObject = parent;
       const parentReference = writtenDebugObjects.get(parentObject);
-      if (parentReference != null) {
+      if (parentReference !== undefined) {
         // If the parent has a reference, we can refer to this object indirectly
         // through the property name inside that parent.
         if (counter.objectLimit <= 0 && !doNotLimitHas(value)) {
@@ -5278,7 +5278,7 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
 
     const writtenObjects = request.writtenObjects;
     const existingReference = writtenObjects.get(value);
-    if (existingReference != null) {
+    if (existingReference !== undefined) {
       // We've already emitted this as a real object, so we can refer to that by its existing reference.
       // This might be slightly different serialization than what renderDebugModel would've produced.
       return existingReference;
@@ -5296,7 +5296,7 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
       const deferredId = request.deferredDebugObjects.existing.get(value);
       // We earlier deferred this same object. We're now going to eagerly emit it so let's emit it
       // at the same ID that we already used to refer to it.
-      if (deferredId != null) {
+      if (deferredId !== undefined) {
         request.deferredDebugObjects.existing.delete(value);
         request.deferredDebugObjects.retained.delete(deferredId);
         emitOutlinedDebugModelChunk(request, deferredId, counter, value);
@@ -5619,7 +5619,7 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
       // Serialize the body of the function as an eval so it can be printed.
       const writtenDebugObjects = request.writtenDebugObjects;
       const existingReference = writtenDebugObjects.get(value);
-      if (existingReference != null) {
+      if (existingReference !== undefined) {
         // We've already emitted this function, so we can
         // just refer to that by its existing reference.
         return existingReference;
@@ -5649,7 +5649,7 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
     case 'symbol': {
       const writtenSymbols = request.writtenSymbols;
       const existingId = writtenSymbols.get(value);
-      if (existingId != null) {
+      if (existingId !== undefined) {
         return serializeByValueID(existingId);
       }
       // $FlowFixMe[incompatible-type] `description` might be undefined
@@ -7003,7 +7003,7 @@ export function resolveDebugMessage(request, message) {
       for (let i = 0; i < ids.length; i++) {
         const id = ids[i];
         const retainedValue = request.deferredDebugObjects.retained.get(id);
-        if (retainedValue != null) {
+        if (retainedValue !== undefined) {
           // We're no longer blocked on this. We won't emit it.
           request.pendingDebugChunks--;
           request.deferredDebugObjects.retained.delete(id);
@@ -7017,7 +7017,7 @@ export function resolveDebugMessage(request, message) {
       for (let i = 0; i < ids.length; i++) {
         const id = ids[i];
         const retainedValue = request.deferredDebugObjects.retained.get(id);
-        if (retainedValue != null) {
+        if (retainedValue !== undefined) {
           // If we still have this object, and haven't emitted it before, emit it on the stream.
           const counter = {objectLimit: 10};
           request.deferredDebugObjects.retained.delete(id);
@@ -7032,7 +7032,7 @@ export function resolveDebugMessage(request, message) {
       for (let i = 0; i < ids.length; i++) {
         const id = ids[i];
         const retainedValue = request.deferredDebugObjects.retained.get(id);
-        if (retainedValue != null) {
+        if (retainedValue !== undefined) {
           // If we still have this Promise, and haven't emitted it before, wait for it
           // and then emit it on the stream.
           const counter = {objectLimit: 10};

@@ -191,11 +191,11 @@ const ReactNoopServer = ReactFizzServer({
 
   writeCompletedSegmentInstruction(destination, renderState, contentSegmentId) {
     const segment = destination.segments.get(contentSegmentId);
-    if (segment == null) {
+    if (segment === undefined) {
       throw new Error('Missing segment.');
     }
     const placeholder = destination.placeholders.get(contentSegmentId);
-    if (placeholder == null) {
+    if (placeholder === undefined) {
       throw new Error('Missing placeholder.');
     }
     const children = segment.children.slice();
@@ -215,7 +215,7 @@ const ReactNoopServer = ReactFizzServer({
     contentSegmentId,
   ) {
     const segment = destination.segments.get(contentSegmentId);
-    if (segment == null) {
+    if (segment === undefined) {
       throw new Error('Missing segment.');
     }
     const children = segment.children.slice();

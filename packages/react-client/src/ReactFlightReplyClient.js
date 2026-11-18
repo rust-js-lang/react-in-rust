@@ -430,7 +430,7 @@ export function processReply(
         const objectReferenceId = knownServerObjectReferences.get(value);
         if (objectReferenceId != null) {
           const existingReference = writtenObjects.get(value);
-          if (existingReference != null) {
+          if (existingReference !== undefined) {
             if (modelRoot !== value) {
               return existingReference;
             }
@@ -457,7 +457,7 @@ export function processReply(
           if (temporaryReferences != null && !key.includes(':')) {
             // TODO: If the property name contains a colon, we don't dedupe. Escape instead.
             const parentReference = writtenObjects.get(parent);
-            if (parentReference != null) {
+            if (parentReference !== undefined) {
               // If the parent has a reference, we can refer to this object indirectly
               // through the property name inside that parent.
               const reference = parentReference + ':' + key;
@@ -543,7 +543,7 @@ export function processReply(
       const existingReference = writtenObjects.get(value);
 
       if (typeof value.then === 'function') {
-        if (existingReference != null) {
+        if (existingReference !== undefined) {
           if (modelRoot !== value) {
             // We've already emitted this as an outlined object, so we can
             // just refer to that by its existing ID.
@@ -572,7 +572,7 @@ export function processReply(
                   ? writtenObjects.get(partValue)
                   : undefined;
               partJson =
-                previousReference != null
+                previousReference !== undefined
                   ? JSON.stringify(previousReference)
                   : serializeModel(partValue, promiseId);
             } catch (thrown$1) {
@@ -593,7 +593,7 @@ export function processReply(
         );
         return promiseReference;
       }
-      if (existingReference != null) {
+      if (existingReference !== undefined) {
         if (modelRoot !== value) {
           // We've already emitted this as an outlined object, so we can
           // just refer to that by its existing ID.
@@ -605,7 +605,7 @@ export function processReply(
       } else if (!key.includes(':')) {
         // TODO: If the property name contains a colon, we don't dedupe. Escape instead.
         const parentReference = writtenObjects.get(parent);
-        if (parentReference != null) {
+        if (parentReference !== undefined) {
           // If the parent has a reference, we can refer to this object indirectly
           // through the property name inside that parent.
           const reference = parentReference + ':' + key;
@@ -818,7 +818,7 @@ export function processReply(
         const referenceClosure = knownServerReferences.get(value);
         if (referenceClosure != null) {
           const existingReference = writtenObjects.get(value);
-          if (existingReference != null) {
+          if (existingReference !== undefined) {
             return existingReference;
           }
           const {id, bound} = referenceClosure;
@@ -836,7 +836,7 @@ export function processReply(
         if (temporaryReferences != null && !key.includes(':')) {
           // TODO: If the property name contains a colon, we don't dedupe. Escape instead.
           const parentReference = writtenObjects.get(parent);
-          if (parentReference != null) {
+          if (parentReference !== undefined) {
             // If the parent has a reference, we can refer to this object indirectly
             // through the property name inside that parent.
             const reference = parentReference + ':' + key;
@@ -854,7 +854,7 @@ export function processReply(
         if (temporaryReferences != null && !key.includes(':')) {
           // TODO: If the property name contains a colon, we don't dedupe. Escape instead.
           const parentReference = writtenObjects.get(parent);
-          if (parentReference != null) {
+          if (parentReference !== undefined) {
             // If the parent has a reference, we can refer to this object indirectly
             // through the property name inside that parent.
             const reference = parentReference + ':' + key;

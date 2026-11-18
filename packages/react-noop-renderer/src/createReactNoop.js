@@ -243,7 +243,7 @@ function createReactNoop(reconciler, useMutation) {
       // object that uses reference counting to track when all the suspensey
       // things have loaded.
       const record = $unwrap(suspenseyThingCache).get(src);
-      if (record == null) {
+      if (record === undefined) {
         throw new Error('Could not find record for key.');
       }
       if (record.status === 'fulfilled') {
@@ -548,7 +548,7 @@ function createReactNoop(reconciler, useMutation) {
       // between, in which case we can avoid showing a fallback.
       suspenseyThingCache ??= new Map();
       const record = $unwrap(suspenseyThingCache).get(src);
-      if (record == null) {
+      if (record === undefined) {
         const newRecord = {
           status: 'pending',
           subscriptions: null,
@@ -1154,14 +1154,14 @@ function createReactNoop(reconciler, useMutation) {
         return null;
       } else {
         const record = suspenseyThingCache.get(src);
-        return record == null ? null : record.status;
+        return record === undefined ? null : record.status;
       }
     },
 
     resolveSuspenseyThing(key) {
       suspenseyThingCache ??= new Map();
       const record = $unwrap(suspenseyThingCache).get(key);
-      if (record == null) {
+      if (record === undefined) {
         const newRecord = {
           status: 'fulfilled',
           subscriptions: null,
@@ -1217,7 +1217,7 @@ function createReactNoop(reconciler, useMutation) {
 
     unmountRootWithID(rootId) {
       const root = roots.get(rootId);
-      if (root != null) {
+      if (root !== undefined) {
         NoopRenderer.updateContainer(null, root, undefined, () => {
           roots.delete(rootId);
           rootContainers.delete(rootId);

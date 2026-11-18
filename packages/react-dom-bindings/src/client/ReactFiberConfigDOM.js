@@ -5037,7 +5037,7 @@ function preinitStyle(href, precedence, options) {
 
     // Check if this resource already exists
     let resource = styles.get(key);
-    if (resource != null) {
+    if (resource !== undefined) {
       // We can early return. The resource exists and there is nothing
       // more to do
       return;
@@ -5112,7 +5112,7 @@ function preinitScript(src, options) {
 
     // Check if this resource already exists
     let resource = scripts.get(key);
-    if (resource != null) {
+    if (resource !== undefined) {
       // We can early return. The resource exists and there is nothing
       // more to do
       return;
@@ -5163,7 +5163,7 @@ function preinitModuleScript(src, options) {
 
     // Check if this resource already exists
     let resource = scripts.get(key);
-    if (resource != null) {
+    if (resource !== undefined) {
       // We can early return. The resource exists and there is nothing
       // more to do
       return;
@@ -5223,7 +5223,7 @@ export function getResource(type, currentProps, pendingProps, currentResource) {
         const key = getStyleKey(href);
         const styles = getResourcesFromRoot(resourceRoot).hoistableStyles;
         let resource = styles.get(key);
-        if (resource == null) {
+        if (resource === undefined) {
           resource = {
             type: 'style',
             instance: null,
@@ -5254,7 +5254,7 @@ export function getResource(type, currentProps, pendingProps, currentResource) {
           const styles = getResourcesFromRoot(resourceRoot).hoistableStyles;
 
           let resource = styles.get(key);
-          if (resource == null) {
+          if (resource === undefined) {
             // We asserted this above but Flow can't figure out that the type satisfies
             const ownerDocument = getDocumentFromRoot(resourceRoot);
             const state = {
@@ -5334,7 +5334,7 @@ export function getResource(type, currentProps, pendingProps, currentResource) {
         const scripts = getResourcesFromRoot(resourceRoot).hoistableScripts;
 
         let resource = scripts.get(key);
-        if (resource == null) {
+        if (resource === undefined) {
           resource = {
             type: 'script',
             instance: null,
@@ -5819,7 +5819,7 @@ function getHydratableHoistableCache(type, keyAttribute, ownerDocument) {
   } else {
     caches = tagCaches;
     const maybeCache = caches.get(ownerDocument);
-    if (maybeCache == null) {
+    if (maybeCache === undefined) {
       cache = new Map();
       caches.set(ownerDocument, cache);
     } else {
@@ -6411,7 +6411,7 @@ function insertStylesheetIntoRoot(state, root, resource, map) {
   let last;
   const precedencesByRoot$1 = $unwrap(precedencesByRoot);
   let precedences = precedencesByRoot$1.get(root);
-  if (precedences == null) {
+  if (precedences === undefined) {
     precedences = new Map();
     precedencesByRoot$1.set(root, precedences);
     const nodes = root.querySelectorAll(
@@ -6433,7 +6433,7 @@ function insertStylesheetIntoRoot(state, root, resource, map) {
         last = node;
       }
     }
-    if (last != null) {
+    if (last !== undefined) {
       precedences.set(LAST_PRECEDENCE, last);
     }
   } else {

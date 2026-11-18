@@ -19,7 +19,7 @@ export function resolveTemporaryReference(
   temporaryReferences,
   temporaryReference,
 ) {
-  return temporaryReferences.get(temporaryReference) ?? undefined;
+  return temporaryReferences.get(temporaryReference);
 }
 
 const proxyHandlers = {

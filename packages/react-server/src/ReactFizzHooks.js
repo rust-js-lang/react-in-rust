@@ -403,7 +403,7 @@ export function useReducer(reducer, initialArg, init) {
     if (renderPhaseUpdates != null) {
       // Render phase updates are stored in a map of queue -> linked list
       const firstRenderPhaseUpdate = renderPhaseUpdates.get(queue);
-      if (firstRenderPhaseUpdate != null) {
+      if (firstRenderPhaseUpdate !== undefined) {
         // $FlowFixMe[incompatible-use] found when upgrading Flow
         renderPhaseUpdates.delete(queue);
         // $FlowFixMe[incompatible-use] found when upgrading Flow
@@ -536,7 +536,7 @@ function dispatchAction(componentIdentity, queue, action) {
       renderPhaseUpdates = renderPhaseUpdates$1;
     }
     const firstRenderPhaseUpdate = renderPhaseUpdates$1.get(queue);
-    if (firstRenderPhaseUpdate == null) {
+    if (firstRenderPhaseUpdate === undefined) {
       // $FlowFixMe[incompatible-use] found when upgrading Flow
       renderPhaseUpdates$1.set(queue, update);
     } else {

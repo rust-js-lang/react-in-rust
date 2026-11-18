@@ -36,7 +36,7 @@ const defaultMessage =
 
 function cleanup(entryValue) {
   const entry = $unwrap(TaintRegistryValues).get(entryValue);
-  if (entry != null) {
+  if (entry !== undefined) {
     $unwrap(TaintRegistryPendingRequests).forEach(requestQueue => {
       requestQueue.push(entryValue);
       entry.count = (entry.count + 1) >>> 0;
@@ -99,7 +99,7 @@ export function taintUniqueValue(message, lifetime, value) {
     );
   }
   const existingEntry = $unwrap(TaintRegistryValues).get(entryValue);
-  if (existingEntry == null) {
+  if (existingEntry === undefined) {
     $unwrap(TaintRegistryValues).set(entryValue, {
       message,
       count: 1,

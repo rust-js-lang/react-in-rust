@@ -998,7 +998,7 @@ const styleNameCache = new Map();
 
 function processStyleName(styleName) {
   const chunk = styleNameCache.get(styleName);
-  if (chunk != null) {
+  if (chunk !== undefined) {
     return chunk;
   }
   const result = stringToPrecomputedChunk(
@@ -1291,7 +1291,7 @@ function pushSrcObjectAttribute(target, blob) {
   blobCache ??= new WeakMap();
   const suspenseCache = $unwrap(blobCache);
   let thenable = suspenseCache.get(blob);
-  if (thenable == null) {
+  if (thenable === undefined) {
     const thenable$1 = readAsDataURL(blob);
     thenable$1.then(
       result => {
@@ -2632,7 +2632,7 @@ function pushLink(
           }
 
           const preloadResource = renderState.preloads.stylesheets.get(key);
-          if (preloadResource != null && preloadResource.length !== 0) {
+          if (preloadResource !== undefined && preloadResource.length !== 0) {
             // The Preload for this resource was created in this render pass and has not flushed yet so
             // we need to clear it to avoid it flushing.
             preloadResource.length = 0;
@@ -2663,7 +2663,7 @@ function pushLink(
         // it again since we should've hoisted it to the shell already.
         if (styleQueue != null) {
           const resource = styleQueue.sheets.get(key);
-          if (resource != null && hoistableState != null) {
+          if (resource !== undefined && hoistableState != null) {
             hoistableState.stylesheets.add(resource);
           }
         }
@@ -3055,7 +3055,7 @@ function pushImg(
     const promotablePreloads = renderState.preloads.images;
 
     const resource = promotablePreloads.get(key);
-    if (resource != null) {
+    if (resource !== undefined) {
       // We consider whether this preload can be promoted to higher priority flushing queue.
       // The only time a resource will exist here is if it was created during this render
       // and was not already in the high priority queue.
@@ -3471,7 +3471,7 @@ function pushScript(
       }
 
       const preloadResource = preloads.get(key);
-      if (preloadResource != null) {
+      if (preloadResource !== undefined) {
         // the preload resource exists was created in this render. Now that we have
         // a script resource which will emit earlier than a preload would if it
         // hasn't already flushed we prevent it from flushing by zeroing the length
@@ -3760,7 +3760,7 @@ const validatedTagCache = new Map();
 
 function startChunkForTag(tag) {
   let tagStartChunk = validatedTagCache.get(tag);
-  if (tagStartChunk != null) {
+  if (tagStartChunk !== undefined) {
     return tagStartChunk;
   }
   if (!validTagRegex.test(tag)) {
@@ -3977,7 +3977,7 @@ const endTagCache = new Map();
 
 function endChunkForTag(tag) {
   let chunk = endTagCache.get(tag);
-  if (chunk != null) {
+  if (chunk !== undefined) {
     return chunk;
   }
   chunk = stringToPrecomputedChunk('</' + tag + '>');
@@ -5918,7 +5918,7 @@ function preinitStyle(href, precedence, options) {
       // If this is the first time we've encountered this precedence we need
       // to create a StyleQueue
       let styleQueue$1;
-      if (styleQueue != null) {
+      if (styleQueue !== undefined) {
         styleQueue$1 = styleQueue;
       } else {
         styleQueue$1 = {
@@ -5949,7 +5949,7 @@ function preinitStyle(href, precedence, options) {
         }
 
         const preloadResource = renderState.preloads.stylesheets.get(key);
-        if (preloadResource != null && preloadResource.length !== 0) {
+        if (preloadResource !== undefined && preloadResource.length !== 0) {
           // The Preload for this resource was created in this render pass and has not flushed yet so
           // we need to clear it to avoid it flushing.
           preloadResource.length = 0;
@@ -6012,7 +6012,7 @@ function preinitScript(src, options) {
         }
 
         const preloadResource = renderState.preloads.scripts.get(key);
-        if (preloadResource != null) {
+        if (preloadResource !== undefined) {
           // the preload resource exists was created in this render. Now that we have
           // a script resource which will emit earlier than a preload would if it
           // hasn't already flushed we prevent it from flushing by zeroing the length
@@ -6068,7 +6068,7 @@ function preinitModuleScript(src, options) {
         }
 
         const preloadResource = renderState.preloads.moduleScripts.get(key);
-        if (preloadResource != null) {
+        if (preloadResource !== undefined) {
           // the preload resource exists was created in this render. Now that we have
           // a script resource which will emit earlier than a preload would if it
           // hasn't already flushed we prevent it from flushing by zeroing the length

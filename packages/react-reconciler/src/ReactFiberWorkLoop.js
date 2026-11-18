@@ -5085,7 +5085,7 @@ export function attachPingListener(root, wakeable, lanes) {
     pingCache.set(wakeable, threadIds);
   } else {
     const existingThreadIds = pingCache.get(wakeable);
-    if (existingThreadIds != null) {
+    if (existingThreadIds !== undefined) {
       threadIds = existingThreadIds;
     } else {
       threadIds = new Set();

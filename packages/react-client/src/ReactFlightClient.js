@@ -3071,7 +3071,7 @@ function addAsyncInfoListener(chunk, asyncInfo, value) {
 function resolveDebugHalt(response, id) {
   const chunks = $unwrap(response._chunks);
   let chunk = chunks.get(id);
-  if (chunk == null) {
+  if (chunk === undefined) {
     chunk = createPendingChunk(response);
     chunks.set(id, chunk);
   }
@@ -3088,7 +3088,7 @@ function resolveDebugHalt(response, id) {
 function resolveModel(response, id, model, streamState) {
   const chunks = $unwrap(response._chunks);
   const chunk = chunks.get(id);
-  if (chunk == null) {
+  if (chunk === undefined) {
     const newChunk = createResolvedModelChunk(response, model);
     if (__DEV__) {
       resolveChunkDebugInfo(response, streamState, newChunk);
@@ -3105,14 +3105,14 @@ function resolveModel(response, id, model, streamState) {
 function resolveText(response, id, text, streamState) {
   const chunks = $unwrap(response._chunks);
   const chunk = chunks.get(id);
-  if (chunk != null && chunk.status !== 'pending') {
+  if (chunk !== undefined && chunk.status !== 'pending') {
     // If we get more data to an already resolved ID, we assume that it's
     // a stream chunk since any other row shouldn't have more than one entry.
     const controller = streamController(chunk);
     controller.enqueueValue(text);
     return;
   }
-  if (chunk != null) {
+  if (chunk !== undefined) {
     releasePendingChunk(response, chunk);
   }
   const newChunk = createInitializedTextChunk(response, text);
@@ -3125,14 +3125,14 @@ function resolveText(response, id, text, streamState) {
 function resolveBuffer(response, id, buffer, streamState) {
   const chunks = $unwrap(response._chunks);
   const chunk = chunks.get(id);
-  if (chunk != null && chunk.status !== 'pending') {
+  if (chunk !== undefined && chunk.status !== 'pending') {
     // If we get more data to an already resolved ID, we assume that it's
     // a stream chunk since any other row shouldn't have more than one entry.
     const controller = streamController(chunk);
     controller.enqueueValue(buffer);
     return;
   }
-  if (chunk != null) {
+  if (chunk !== undefined) {
     releasePendingChunk(response, chunk);
   }
   const newChunk = createInitializedBufferChunk(response, buffer);
@@ -3195,7 +3195,7 @@ function resolveModule(response, id, model, streamState) {
   const promise = preloadModule(clientReference);
   if (promise != null) {
     let blockedChunk;
-    if (chunk == null) {
+    if (chunk === undefined) {
       // Technically, we should just treat promise as the chunk in this
       // case. Because it'll just behave as any other promise.
       const blockedChunk$1 = createBlockedChunk(response);
@@ -3230,7 +3230,7 @@ function resolveModule(response, id, model, streamState) {
       () => resolveModuleChunk(response, blockedChunk, clientReference),
       triggerErrorOnChunk.bind(null, response, rejectedChunk),
     );
-  } else if (chunk == null) {
+  } else if (chunk === undefined) {
     const newChunk = createResolvedModuleChunk(response, clientReference);
     if (__DEV__) {
       resolveChunkDebugInfo(response, streamState, newChunk);
@@ -3249,7 +3249,7 @@ function resolveModule(response, id, model, streamState) {
 function resolveStream(response, id, stream, controller, streamState) {
   const chunks = $unwrap(response._chunks);
   const chunk = chunks.get(id);
-  if (chunk == null) {
+  if (chunk === undefined) {
     const newChunk = createInitializedStreamChunk(response, stream, controller);
     if (__DEV__) {
       resolveChunkDebugInfo(response, streamState, newChunk);
@@ -3718,7 +3718,7 @@ function resolveErrorModel(response, id, row, streamState) {
     : resolveErrorProd(response);
   error.digest = errorInfo.digest;
   const errorWithDigest = error;
-  if (chunk == null) {
+  if (chunk === undefined) {
     const newChunk = createErrorChunk(response, errorWithDigest);
     if (__DEV__) {
       resolveChunkDebugInfo(response, streamState, newChunk);
@@ -4050,7 +4050,7 @@ function buildFakeCallStack(
       environmentName +
       (useEnclosingLine ? '-e' : '-n');
     let fn = fakeFunctionCache$1.get(frameKey);
-    if (fn == null) {
+    if (fn === undefined) {
       const [name, filename, line, col, enclosingLine, enclosingCol] = frame;
       const findSourceMapUrl = response._debugFindSourceMapURL;
       const sourceMap =
@@ -4562,7 +4562,7 @@ function resolveIOInfo(response, id, model) {
   let chunk;
   try {
     const chunk$1 = chunks.get(id);
-    if (chunk$1 == null) {
+    if (chunk$1 === undefined) {
       const chunk$1 = createResolvedModelChunk(response, model);
       chunks.set(id, chunk$1);
       initializeModelChunk(chunk$1);

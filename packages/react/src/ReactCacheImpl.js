@@ -36,7 +36,7 @@ export function cache(fn) {
     const fnMap = dispatcher.getCacheForType(createCacheRoot);
     const fnNode = fnMap.get(fn);
     let cacheNode;
-    if (fnNode == null) {
+    if (fnNode === undefined) {
       cacheNode = createCacheNode();
       fnMap.set(fn, cacheNode);
     } else {
@@ -56,7 +56,7 @@ export function cache(fn) {
           cacheNode.o = objectCache;
         }
         const objectNode = objectCache.get(arg);
-        if (objectNode == null) {
+        if (objectNode === undefined) {
           cacheNode = createCacheNode();
           objectCache.set(arg, cacheNode);
         } else {
@@ -70,7 +70,7 @@ export function cache(fn) {
           cacheNode.p = primitiveCache;
         }
         const primitiveNode = primitiveCache.get(arg);
-        if (primitiveNode == null) {
+        if (primitiveNode === undefined) {
           cacheNode = createCacheNode();
           primitiveCache.set(arg, cacheNode);
         } else {
