@@ -572,8 +572,7 @@ export function startProfilerTimer(fiber) {
 
   profilerStartTime = now();
 
-  const actualStartTime = fiber.actualStartTime;
-  if (actualStartTime != null && actualStartTime < 0) {
+  if (fiber.actualStartTime != null && fiber.actualStartTime < 0) {
     fiber.actualStartTime = profilerStartTime;
   }
 }
@@ -592,9 +591,8 @@ export function stopProfilerTimerIfRunningAndRecordDuration(fiber) {
 
   if (profilerStartTime >= 0) {
     const elapsedTime = now() - profilerStartTime;
-    const actualDuration = fiber.actualDuration;
     fiber.actualDuration =
-      actualDuration != null ? actualDuration + elapsedTime : null;
+      fiber.actualDuration != null ? fiber.actualDuration + elapsedTime : null;
     fiber.selfBaseDuration = elapsedTime;
     profilerStartTime = -1;
   }
@@ -607,9 +605,8 @@ export function stopProfilerTimerIfRunningAndRecordIncompleteDuration(fiber) {
 
   if (profilerStartTime >= 0) {
     const elapsedTime = now() - profilerStartTime;
-    const actualDuration = fiber.actualDuration;
     fiber.actualDuration =
-      actualDuration != null ? actualDuration + elapsedTime : null;
+      fiber.actualDuration != null ? fiber.actualDuration + elapsedTime : null;
     // We don't update the selfBaseDuration here because we errored.
     profilerStartTime = -1;
   }

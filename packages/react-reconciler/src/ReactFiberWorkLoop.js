@@ -1540,26 +1540,21 @@ function completeRootWhenReady(
     // This will also track any newly added or appearing ViewTransition
     // components for the purposes of forming pairs.
     accumulateSuspenseyCommit(finishedWork, lanes, newSuspendedState);
-    // For timeouts we use the previous fallback commit for retries and
-    // the start time of the transition for transitions. This offset
-    // represents the time already passed.
-    bb38: {
-      if (!isViewTransitionEligible) {
-        if (
-          !isGestureTransition ||
-          root.pendingGestures == null ||
-          // If this gesture already has a View Transition running then we don't
-          // have to wait on that one before proceeding. We may hold the commit
-          // on the gesture committing later on in completeRoot.
-          root.pendingGestures.running != null
-        ) {
-          break bb38;
-        }
-        const pendingGestures = root.pendingGestures;
-      }
+    if (
+      isViewTransitionEligible ||
+      (isGestureTransition &&
+        root.pendingGestures != null &&
+        // If this gesture already has a View Transition running then we don't
+        // have to wait on that one before proceeding. We may hold the commit
+        // on the gesture committing later on in completeRoot.
+        root.pendingGestures.running == null)
+    ) {
       // Wait for any pending View Transition (including gestures) to finish.
       suspendOnActiveViewTransition(newSuspendedState, root.containerInfo);
     }
+    // For timeouts we use the previous fallback commit for retries and
+    // the start time of the transition for transitions. This offset
+    // represents the time already passed.
     let timeoutOffset;
     if (includesOnlyRetries(lanes)) {
       timeoutOffset = globalMostRecentFallbackTime - now();
@@ -3563,14 +3558,13 @@ function completeRoot(
       );
     } else if (recoverableErrors != null) {
       const holds = finishedWork => {
-        const alternate = finishedWork.alternate;
         function holds(alternate) {
           const rootState = alternate.memoizedState;
           return rootState.isDehydrated;
         }
         return (
-          alternate != null &&
-          holds(alternate) &&
+          finishedWork.alternate != null &&
+          holds(finishedWork.alternate) &&
           (finishedWork.flags & ForceClientRender) !== NoFlags
         );
       };

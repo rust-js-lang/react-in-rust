@@ -5176,16 +5176,11 @@ function completeAll(request) {
   // however during a Prerender it is possible that the shell is incomplete because
   // it postponed. We cannot use rootPendingTasks in the prerender case because
   // those hit zero even when the shell postpones. Instead we look at the completedRootSegment
-  let shellComplete;
-  if (request.trackedPostpones == null) {
-    // Render, we assume it is completed
-    shellComplete = true;
-  } else {
+  const shellComplete =
+    request.trackedPostpones == null ||
     // Prerender Request, we use the state of the root segment
-    const completedRootSegment = request.completedRootSegment;
-    shellComplete =
-      completedRootSegment == null || completedRootSegment.status !== POSTPONED;
-  }
+    request.completedRootSegment == null ||
+    request.completedRootSegment.status !== POSTPONED;
   safelyEmitEarlyPreloads(request, shellComplete);
 
   // When the shell is complete it will be possible to flush. We attempt to prepre
@@ -6493,7 +6488,6 @@ function flushCompletedQueues(request, destination) {
         request.clientRenderedBoundaries.length === 0 &&
         request.completedBoundaries.length === 0
       ) {
-        const trackedPostpones = request.trackedPostpones;
         function holds(trackedPostpones) {
           if (trackedPostpones.rootNodes.borrows < 0) {
             $alreadyMutablyBorrowed();
@@ -6503,7 +6497,8 @@ function flushCompletedQueues(request, destination) {
             trackedPostpones.rootSlots === null
           );
         }
-        isComplete = trackedPostpones == null || holds(trackedPostpones);
+        isComplete =
+          request.trackedPostpones == null || holds(request.trackedPostpones);
       } else {
         isComplete = false;
       }
