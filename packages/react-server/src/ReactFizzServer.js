@@ -1554,7 +1554,7 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
     const componentStack = task.componentStack;
     const value = newBoundary.preamble?.fallback;
     const fallbackState = newBoundary.fallbackState;
-    const value$1 = getSuspenseFallbackFormatContext(
+    const unknown = getSuspenseFallbackFormatContext(
       request.resumableState,
       task.formatContext,
     );
@@ -1571,7 +1571,7 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
       fallbackState,
       fallbackAbortSet,
       fallbackKeyPath,
-      value$1,
+      unknown,
       context,
       treeContext,
       row,
@@ -4032,8 +4032,8 @@ function trackPostpone(request, trackedPostpones, task, segment) {
           get value() {
             return borrowMut[3];
           },
-          set value(value) {
-            borrowMut[3] = value;
+          set value(newValue) {
+            borrowMut[3] = newValue;
           },
         };
         slots.value = segment.id;
@@ -4068,17 +4068,17 @@ function trackPostpone(request, trackedPostpones, task, segment) {
         const resumableNode = [keyPath[1], keyPath[2], [], segment.id];
         addToReplayParent(resumableNode, keyPath[0], trackedPostpones);
       } else {
-        const value = $borrowMut(resumableNode, true);
+        const borrowMut = $borrowMut(resumableNode, true);
         const slots = {
           get value() {
-            return value[3];
+            return borrowMut[3];
           },
           set value(newValue) {
-            value[3] = newValue;
+            borrowMut[3] = newValue;
           },
         };
         slots.value = segment.id;
-        $unborrow(value);
+        $unborrow(borrowMut);
       }
     }
   } else {
@@ -6789,13 +6789,13 @@ function finishAbort(request, abortableTasks) {
           $unborrow(borrow);
         }
       } else {
-        const value = $borrow(abortableTasks, true);
+        const borrow = $borrow(abortableTasks, true);
         try {
-          for (const task of value) {
+          for (const task of borrow) {
             finishAbortedTask(task, request, error);
           }
         } finally {
-          $unborrow(value);
+          $unborrow(borrow);
         }
       }
       if (abortableTasks.borrows) {
@@ -6898,13 +6898,13 @@ export function abort(request, reason) {
       $unborrow(borrow);
     }
   } else {
-    const value = $borrow(abortableTasks, true);
+    const borrow = $borrow(abortableTasks, true);
     try {
-      for (const task of value) {
+      for (const task of borrow) {
         abortTask(task, request);
       }
     } finally {
-      $unborrow(value);
+      $unborrow(borrow);
     }
   }
   // Even though this looks async some renderers schedule work sync

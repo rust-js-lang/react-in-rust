@@ -252,9 +252,9 @@ export function createWorkInProgress(current, pendingProps) {
     if (enableOptimisticKey) {
       // For optimistic keys, the Fibers can have different keys if one is optimistic
       // and the other one is filled in.
-      const value = $borrow($fieldCell(current, 'key'), true);
-      const key = value.value;
-      $unborrow(value);
+      const borrow = $borrow($fieldCell(current, 'key'), true);
+      const key = borrow.value;
+      $unborrow(borrow);
       $cellReplace($borrowMut($fieldCell(workInProgress, 'key')), key);
     }
 

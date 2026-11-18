@@ -1821,21 +1821,21 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
           break;
         default:
           if (__DEV__ && reference.isDebug !== true) {
-            const value = $borrow($fieldCell(handler, 'chunk', true), true);
+            const borrow = $borrow($fieldCell(handler, 'chunk', true), true);
             try {
-              transferReferencedDebugInfo(value.value, fulfilledChunk);
+              transferReferencedDebugInfo(borrow.value, fulfilledChunk);
             } finally {
-              $unborrow(value);
+              $unborrow(borrow);
             }
           }
           break;
       }
     } else if (__DEV__ && reference.isDebug !== true) {
-      const value = $borrow($fieldCell(handler, 'chunk', true), true);
+      const borrow = $borrow($fieldCell(handler, 'chunk', true), true);
       try {
-        transferReferencedDebugInfo(value.value, fulfilledChunk);
+        transferReferencedDebugInfo(borrow.value, fulfilledChunk);
       } finally {
-        $unborrow(value);
+        $unborrow(borrow);
       }
     }
   } catch (thrown$1) {

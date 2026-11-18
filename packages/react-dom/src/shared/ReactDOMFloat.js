@@ -223,8 +223,8 @@ export function preinit(href, options) {
         getValueDescriptorExpectingEnumForWarning(options),
       );
     } else {
-      const value = options.as;
-      if (value !== 'style' && value !== 'script') {
+      const as = options.as;
+      if (as !== 'style' && as !== 'script') {
         console.error(
           'ReactDOM.preinit(): Expected the `as` property in the `options` argument (second) to contain a valid value describing the type of resource to be preinitialized but encountered %s instead. Valid values for `as` are "style" and "script".',
           getValueDescriptorExpectingEnumForWarning(options.as),
@@ -252,9 +252,9 @@ export function preinit(href, options) {
           fetchPriority,
         });
       } else if (as === 'script') {
-        const value = ReactDOMSharedInternals.d;
+        const d = ReactDOMSharedInternals.d;
         const nonce = options.nonce;
-        value.X(
+        d.X(
           /* ReactDOMCurrentDispatcher */
           href,
           /* preinitScript */

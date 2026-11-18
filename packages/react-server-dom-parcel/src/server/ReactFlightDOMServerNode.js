@@ -489,7 +489,6 @@ export function decodeReplyFromBusboy(busboyStream, options) {
     options?.arraySizeLimit,
   );
 
-  const busboyStream$1 = busboyStream;
   let head;
   let tail$1;
   let bodyFinished = false;
@@ -527,8 +526,8 @@ export function decodeReplyFromBusboy(busboyStream, options) {
         }
       } catch (error) {
         $catchable(error);
-        const busboyStream = busboyStream$1;
-        error != null ? busboyStream.destroy(error) : busboyStream.destroy();
+        const value = busboyStream;
+        error != null ? value.destroy(error) : value.destroy();
         return;
       }
       const value = $borrow($fieldCell(current, 'next'), true);

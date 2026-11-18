@@ -48,7 +48,7 @@ export {
 import {
   createStringDecoder,
   readFinalStringChunk,
-  readPartialStringChunk as readPartialStringChunk$1,
+  readPartialStringChunk,
 } from 'react-client/src/ReactFlightClientStreamConfigWeb';
 import {$unwrap} from '@rust-js/std';
 
@@ -62,10 +62,10 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
   function progress({done, value}) {
     // GAP rd582: the conditional's temporary is named after the else
     // branch's callee, whose import is renamed for it.
-    const readPartialStringChunk = done
+    const value$1 = done
       ? readFinalStringChunk(stringDecoder, new Uint8Array(0))
-      : readPartialStringChunk$1(stringDecoder, value);
-    stringBuffer += readPartialStringChunk;
+      : readPartialStringChunk(stringDecoder, value);
+    stringBuffer += value$1;
     const messages = stringBuffer.split('\n');
     const last = messages.pop() ?? '';
     for (let i = 0; i < messages.length; i++) {
