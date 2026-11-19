@@ -228,7 +228,7 @@ export function describeNativeComponentFrame(fn, construct) {
         ReactSharedInternals.H = previousDispatcher ?? null;
         reenableLogs();
       }
-      Error.prepareStackTrace = previousPrepareStackTrace ?? undefined;
+      Error.prepareStackTrace = previousPrepareStackTrace;
     }, error);
     throw error;
   }
@@ -250,7 +250,7 @@ export function describeNativeComponentFrame(fn, construct) {
           ReactSharedInternals.H = previousDispatcher ?? null;
           reenableLogs();
         }
-        Error.prepareStackTrace = previousPrepareStackTrace ?? undefined;
+        Error.prepareStackTrace = previousPrepareStackTrace;
       }, error);
       throw error;
     }
@@ -266,7 +266,7 @@ export function describeNativeComponentFrame(fn, construct) {
         ReactSharedInternals.H = previousDispatcher ?? null;
         reenableLogs();
       }
-      Error.prepareStackTrace = previousPrepareStackTrace ?? undefined;
+      Error.prepareStackTrace = previousPrepareStackTrace;
     }, error);
     throw error;
   }
@@ -285,7 +285,7 @@ export function describeNativeComponentFrame(fn, construct) {
           ReactSharedInternals.H = previousDispatcher ?? null;
           reenableLogs();
         }
-        Error.prepareStackTrace = previousPrepareStackTrace ?? undefined;
+        Error.prepareStackTrace = previousPrepareStackTrace;
       }, error);
       throw error;
     }
@@ -299,7 +299,7 @@ export function describeNativeComponentFrame(fn, construct) {
           ReactSharedInternals.H = previousDispatcher ?? null;
           reenableLogs();
         }
-        Error.prepareStackTrace = previousPrepareStackTrace ?? undefined;
+        Error.prepareStackTrace = previousPrepareStackTrace;
       }, error);
       throw error;
     }
@@ -360,8 +360,7 @@ export function describeNativeComponentFrame(fn, construct) {
                     ReactSharedInternals.H = previousDispatcher ?? null;
                     reenableLogs();
                   }
-                  Error.prepareStackTrace =
-                    previousPrepareStackTrace ?? undefined;
+                  Error.prepareStackTrace = previousPrepareStackTrace;
                 }, error);
                 throw error;
               }
@@ -380,8 +379,7 @@ export function describeNativeComponentFrame(fn, construct) {
                     ReactSharedInternals.H = previousDispatcher ?? null;
                     reenableLogs();
                   }
-                  Error.prepareStackTrace =
-                    previousPrepareStackTrace ?? undefined;
+                  Error.prepareStackTrace = previousPrepareStackTrace;
                 }, error);
                 throw error;
               }
@@ -396,8 +394,7 @@ export function describeNativeComponentFrame(fn, construct) {
                       ReactSharedInternals.H = previousDispatcher ?? null;
                       reenableLogs();
                     }
-                    Error.prepareStackTrace =
-                      previousPrepareStackTrace ?? undefined;
+                    Error.prepareStackTrace = previousPrepareStackTrace;
                   }, error);
                   throw error;
                 }
@@ -414,8 +411,7 @@ export function describeNativeComponentFrame(fn, construct) {
                       ReactSharedInternals.H = previousDispatcher ?? null;
                       reenableLogs();
                     }
-                    Error.prepareStackTrace =
-                      previousPrepareStackTrace ?? undefined;
+                    Error.prepareStackTrace = previousPrepareStackTrace;
                   }, error);
                   throw error;
                 }
@@ -427,7 +423,7 @@ export function describeNativeComponentFrame(fn, construct) {
                 ReactSharedInternals.H = previousDispatcher ?? null;
                 reenableLogs();
               }
-              Error.prepareStackTrace = previousPrepareStackTrace ?? undefined;
+              Error.prepareStackTrace = previousPrepareStackTrace;
               return result;
             }
           } while (s >= 1 && c >= 0);
@@ -443,7 +439,7 @@ export function describeNativeComponentFrame(fn, construct) {
     ReactSharedInternals.H = previousDispatcher ?? null;
     reenableLogs();
   }
-  Error.prepareStackTrace = previousPrepareStackTrace ?? undefined;
+  Error.prepareStackTrace = previousPrepareStackTrace;
   // Fallback to just using the name if we couldn't make it throw.
   const name = fn.displayName || fn.name;
   const syntheticFrame = name ? describeBuiltInComponentFrame(name) : '';

@@ -11,7 +11,7 @@ export function formatOwnerStack(error) {
   const prevPrepareStackTrace = Error.prepareStackTrace;
   Error.prepareStackTrace = DefaultPrepareStackTrace;
   let stack = error.stack ?? '';
-  Error.prepareStackTrace = prevPrepareStackTrace ?? undefined;
+  Error.prepareStackTrace = prevPrepareStackTrace;
   if (stack.startsWith('Error: react-stack-top-frame\n')) {
     // V8's default formatting prefixes with the error message which we
     // don't want/need.

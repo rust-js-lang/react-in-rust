@@ -153,16 +153,16 @@ export function parseStackTracePrivate(error, skipFrames) {
     tmp = error.stack !== '';
   } catch (error) {
     $cleanup(() => {
-      Error.prepareStackTrace = previousPrepare ?? undefined;
+      Error.prepareStackTrace = previousPrepare;
     }, error);
     throw error;
   }
   if (tmp) {
     const result = null;
-    Error.prepareStackTrace = previousPrepare ?? undefined;
+    Error.prepareStackTrace = previousPrepare;
     return result;
   }
-  Error.prepareStackTrace = previousPrepare ?? undefined;
+  Error.prepareStackTrace = previousPrepare;
   return collectedStackTrace;
 }
 
@@ -187,11 +187,11 @@ export function parseStackTrace(error, skipFrames) {
     stack = String(error.stack);
   } catch (error) {
     $cleanup(() => {
-      Error.prepareStackTrace = previousPrepare ?? undefined;
+      Error.prepareStackTrace = previousPrepare;
     }, error);
     throw error;
   }
-  Error.prepareStackTrace = previousPrepare ?? undefined;
+  Error.prepareStackTrace = previousPrepare;
 
   const result = collectedStackTrace;
   if (result != null) {
