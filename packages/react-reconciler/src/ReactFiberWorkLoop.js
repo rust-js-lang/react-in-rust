@@ -3613,7 +3613,7 @@ function completeRoot(
         lanes,
         workInProgressUpdateTask,
       );
-    } else if (recoverableErrors != null) {
+    } else if (recoverableErrors !== null) {
       const holds = finishedWork => {
         function holds(alternate) {
           const rootState = alternate.memoizedState;
@@ -3690,7 +3690,7 @@ function completeRoot(
   pendingFinishedWork = finishedWork;
   pendingEffectsRoot = root;
   pendingEffectsLanes = lanes;
-  pendingPassiveTransitions = transitions ?? null;
+  pendingPassiveTransitions = transitions;
   pendingRecoverableErrors = recoverableErrors;
   pendingDidIncludeRenderPhaseUpdate = didIncludeRenderPhaseUpdate;
   if (enableProfilerTimer) {
