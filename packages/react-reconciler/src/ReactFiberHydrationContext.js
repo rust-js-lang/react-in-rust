@@ -623,7 +623,8 @@ export function prepareToHydrateHostSuspenseInstance(fiber) {
   }
 
   const suspenseState = fiber.memoizedState;
-  const suspenseInstance = suspenseState?.dehydrated;
+  const suspenseInstance =
+    suspenseState != null ? suspenseState.dehydrated : null;
 
   if (suspenseInstance == null) {
     throw new Error(
@@ -659,7 +660,8 @@ function skipPastDehydratedSuspenseInstance(fiber) {
     );
   }
   const suspenseState = fiber.memoizedState;
-  const suspenseInstance = suspenseState?.dehydrated;
+  const suspenseInstance =
+    suspenseState != null ? suspenseState.dehydrated : null;
 
   if (suspenseInstance == null) {
     throw new Error(
