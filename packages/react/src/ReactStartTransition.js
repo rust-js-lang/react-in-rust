@@ -156,7 +156,7 @@ export function startGestureTransition(provider, scope, options) {
       );
     }
     const onStartGestureTransitionFinish = ReactSharedInternals.G;
-    return onStartGestureTransitionFinish != null
+    return onStartGestureTransitionFinish !== null
       ? options != null
         ? onStartGestureTransitionFinish(currentTransition, provider, options)
         : onStartGestureTransitionFinish(currentTransition, provider)

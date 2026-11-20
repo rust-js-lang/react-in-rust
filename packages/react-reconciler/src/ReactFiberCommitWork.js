@@ -1948,7 +1948,7 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
       // but this was the behavior we originally shipped.
       if (flags & Update) {
         const updateQueue = finishedWork.updateQueue;
-        if (updateQueue != null && updateQueue.events != null) {
+        if (updateQueue != null && updateQueue.events !== null) {
           const eventPayloads = updateQueue.events;
           for (let i = 0; i < eventPayloads.length; i++) {
             const {ref, nextImpl} = eventPayloads[i];

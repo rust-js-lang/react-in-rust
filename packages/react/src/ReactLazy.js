@@ -183,7 +183,7 @@ export function lazy(ctor) {
       owner,
       debugStack: error,
       // eslint-disable-next-line react-internal/no-production-logging
-      debugTask: createTask != null ? createTask('lazy()') : null,
+      debugTask: createTask !== undefined ? createTask('lazy()') : null,
     };
     payload._ioInfo = ioInfo;
     // Add debug info to the lazy, but this doesn't have an await stack yet.
