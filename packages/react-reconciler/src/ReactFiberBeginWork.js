@@ -2198,7 +2198,7 @@ function mountSuspenseOffscreenState(renderLanes) {
 function updateSuspenseOffscreenState(prevOffscreenState, renderLanes) {
   const prevCachePool = prevOffscreenState.cachePool;
   let cachePool;
-  if (prevCachePool != null) {
+  if (prevCachePool !== null) {
     const parentCache = $unwrap(
       isPrimaryRenderer
         ? CacheContext._currentValue
