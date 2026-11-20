@@ -161,7 +161,7 @@ export function revealCompletedBoundariesWithViewTransitions(
         const appearingElement = appearingElements[j];
         appearingViewTransitions.set(
           appearingElement.getAttribute('vt-name'),
-          appearingElement ?? null,
+          appearingElement,
         );
       }
     }
