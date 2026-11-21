@@ -2811,7 +2811,8 @@ function parseModelString(response, parentObject, key, value) {
         if ((tag === 'P' || tag === 'E' || tag === 'Y') && __DEV__) {
           if (value.length > 2) {
             const borrow = $borrow($fieldCell(response, '_debugChannel'), true);
-            const debugChannelCallback = borrow.value?.callback;
+            const debugChannelCallback =
+              borrow.value != null ? borrow.value.callback : null;
             $unborrow(borrow);
             if (debugChannelCallback != null) {
               if (value[2] === '@') {
