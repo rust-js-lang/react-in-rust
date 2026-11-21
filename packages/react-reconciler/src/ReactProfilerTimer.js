@@ -194,7 +194,7 @@ export function startHostActionTimer(fiber) {
   // transition lane for the action update. Using the debug task from the host fiber.
   if (blockingUpdateTime < 0) {
     blockingUpdateTime = now();
-    blockingUpdateTask = (__DEV__ ? fiber._debugTask : undefined) ?? null;
+    blockingUpdateTask = __DEV__ ? (fiber._debugTask ?? null) : null;
     if (isAlreadyRendering()) {
       blockingUpdateType = SPAWNED_UPDATE;
     }
@@ -216,7 +216,7 @@ export function startHostActionTimer(fiber) {
   }
   if (transitionUpdateTime < 0) {
     transitionUpdateTime = now();
-    transitionUpdateTask = (__DEV__ ? fiber._debugTask : undefined) ?? null;
+    transitionUpdateTask = __DEV__ ? (fiber._debugTask ?? null) : null;
     if (transitionStartTime < 0) {
       const newEventTime = resolveEventTimeStamp();
       const newEventType = resolveEventType();

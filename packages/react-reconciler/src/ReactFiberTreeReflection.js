@@ -140,7 +140,7 @@ export function findCurrentFiberUsingSlowPath(fiber) {
         // If both copies of the parent fiber point to the same child, we can
         // assume that the child is current. This happens when we bailout on low
         // priority: the bailed out fiber's child reuses the current child.
-        if (parentA.child == parentB.child) {
+        if (parentA.child === parentB.child) {
           let child = parentA.child;
           while (child != null) {
             if (child === a) {
@@ -160,7 +160,7 @@ export function findCurrentFiberUsingSlowPath(fiber) {
           // way this could possibly happen is if this was unmounted, if at all.
           throw new Error('Unable to find node on an unmounted component.');
         } else {
-          if (a.return != b.return) {
+          if (a.return !== b.return) {
             // The return pointer of A and the return pointer of B point to different
             // fibers. We assume that return pointers never criss-cross, so A must
             // belong to the child set of A.return, and B must belong to the child
@@ -593,7 +593,7 @@ export function isFragmentContainedByFiber(fragmentFiber, otherFiber) {
       (current.tag === HostComponent ||
         current.tag === HostRoot ||
         current.tag === HostSingleton) &&
-      (current === fiberHostParent || current.alternate == fiberHostParent)
+      (current === fiberHostParent || current.alternate === fiberHostParent)
     ) {
       return true;
     }

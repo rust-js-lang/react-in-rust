@@ -2110,7 +2110,7 @@ export function resetChildReconcilerOnUnwind() {
 }
 
 export function cloneChildFibers(current, workInProgress) {
-  if (current != null && workInProgress.child != current.child) {
+  if (current != null && workInProgress.child !== current.child) {
     throw new Error('Resuming work not yet implemented.');
   }
 

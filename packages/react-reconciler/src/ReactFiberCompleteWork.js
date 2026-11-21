@@ -200,7 +200,7 @@ function markCloned(workInProgress) {
 
 /** In persistent mode, return whether this update needs to clone the subtree. */
 function doesRequireClone(current, completedWork) {
-  const didBailout = current != null && current.child == completedWork.child;
+  const didBailout = current != null && current.child === completedWork.child;
   if (didBailout) {
     return false;
   }
@@ -760,7 +760,7 @@ function isOnlyNewMounts(tail) {
 function bubbleProperties(completedWork) {
   const didBailout =
     completedWork.alternate != null &&
-    completedWork.alternate.child == completedWork.child;
+    completedWork.alternate.child === completedWork.child;
 
   let newChildLanes = NoLanes;
   let subtreeFlags = NoFlags;

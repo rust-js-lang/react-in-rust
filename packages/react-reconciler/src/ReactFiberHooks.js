@@ -1229,7 +1229,7 @@ function updateReducerImpl(hook, current, reducer) {
       pendingQueue.next = baseFirst;
     }
     const current$1 = $unwrap(current);
-    if (__DEV__ && current$1.baseQueue != baseQueue) {
+    if (__DEV__ && current$1.baseQueue !== baseQueue) {
       // Internal invariant that should never happen, but feasibly could in
       // the future if we implement resuming, or some form of that.
       console.error(
@@ -3573,7 +3573,7 @@ function isRenderPhaseUpdate(fiber) {
   const renderingFiber = currentlyRenderingFiber;
   return (
     renderingFiber === fiber ||
-    (alternate != null && alternate == renderingFiber)
+    (alternate != null && alternate === renderingFiber)
   );
 }
 

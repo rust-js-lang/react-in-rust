@@ -3504,7 +3504,7 @@ function recursivelyTraversePassiveMountEffects(
       enableComponentPerformanceTrack &&
       parentFiber.actualDuration !== 0 &&
       (parentFiber.alternate == null ||
-        parentFiber.alternate.child != parentFiber.child))
+        parentFiber.alternate.child !== parentFiber.child))
   ) {
     let child = parentFiber.child;
     while (child != null) {
@@ -3991,7 +3991,7 @@ function commitPassiveMountOnFiber(
               enableComponentPerformanceTrack &&
               finishedWork.actualDuration !== 0 &&
               (finishedWork.alternate == null ||
-                finishedWork.alternate.child != finishedWork.child));
+                finishedWork.alternate.child !== finishedWork.child));
           recursivelyTraverseReconnectPassiveEffects(
             finishedRoot,
             finishedWork,
@@ -4160,7 +4160,7 @@ function recursivelyTraverseReconnectPassiveEffects(
         enableComponentPerformanceTrack &&
         parentFiber.actualDuration !== 0 &&
         (parentFiber.alternate == null ||
-          parentFiber.alternate.child != parentFiber.child)));
+          parentFiber.alternate.child !== parentFiber.child)));
 
   // TODO (Offscreen) Check: flags & (RefStatic | LayoutStatic)
   let child = parentFiber.child;
@@ -4419,7 +4419,7 @@ function recursivelyTraverseAtomicPassiveEffects(
       enableComponentPerformanceTrack &&
       parentFiber.actualDuration !== 0 &&
       (parentFiber.alternate == null ||
-        parentFiber.alternate.child != parentFiber.child))
+        parentFiber.alternate.child !== parentFiber.child))
   ) {
     let child = parentFiber.child;
     while (child != null) {

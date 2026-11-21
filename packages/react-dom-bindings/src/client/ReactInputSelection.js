@@ -138,7 +138,7 @@ export function restoreSelection(priorSelectionInformation, containerInfo) {
   const priorFocusedElem = priorSelectionInformation.focusedElem;
   const priorSelectionRange = priorSelectionInformation.selectionRange;
   if (
-    curFocusedElem != priorFocusedElem &&
+    curFocusedElem !== priorFocusedElem &&
     priorFocusedElem != null &&
     isInDocument(priorFocusedElem)
   ) {

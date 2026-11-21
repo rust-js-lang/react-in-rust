@@ -191,7 +191,7 @@ export function logComponentRender(
   if (supportsUserTiming) {
     const alternate = fiber.alternate;
     let selfTime = $unwrap(fiber.actualDuration);
-    if (alternate == null || alternate.child != fiber.child) {
+    if (alternate == null || alternate.child !== fiber.child) {
       let child = fiber.child;
       while (child != null) {
         selfTime -= $unwrap(child.actualDuration);

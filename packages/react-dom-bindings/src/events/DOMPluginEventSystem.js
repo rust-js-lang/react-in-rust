@@ -878,7 +878,7 @@ function accumulateEnterLeaveListenersForEvent(
     const alternate = instance.alternate;
     const stateNode = instance.stateNode;
     const tag = instance.tag;
-    if (alternate != null && alternate == common) {
+    if (alternate != null && alternate === common) {
       break;
     }
     if (
