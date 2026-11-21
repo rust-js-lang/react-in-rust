@@ -160,7 +160,7 @@ export interface ResponseInstance {
   // Profiling-only
   _timeOrigin?: number | undefined;
   // Profiling-only,
-  _pendingInitialRender?: (number | object) | null | undefined;
+  _pendingInitialRender?: number | object | null | undefined;
   // DEV-only
   _pendingChunks?: number | undefined;
   // DEV-only

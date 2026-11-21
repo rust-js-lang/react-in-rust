@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import type {SomeNone} from '@rust-js/std';
+
 /**
  * Where a selection starts and ends, as character offsets: an input's
  * `selectionStart` and `selectionEnd`, which are null where it has no
@@ -12,7 +14,7 @@
  */
 export interface Offsets {
   start: number | null;
-  end?: number | null | undefined;
+  end?: number | SomeNone | undefined;
 }
 
 /**

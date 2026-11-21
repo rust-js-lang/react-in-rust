@@ -205,7 +205,7 @@ export const scheduleTimeout: (
   ms?: number | null | undefined,
 ) => number | object;
 
-export const cancelTimeout: (id?: (number | object) | null | undefined) => void;
+export const cancelTimeout: (id?: number | object | null | undefined) => void;
 
 export const noTimeout: number;
 

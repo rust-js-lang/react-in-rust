@@ -207,7 +207,7 @@ export const scheduleTimeout:
   | undefined;
 
 export const cancelTimeout:
-  | ((value?: (number | object) | null | undefined) => void)
+  | ((value?: number | object | null | undefined) => void)
   | null
   | undefined;
 

@@ -81,7 +81,7 @@ export function markNodeAsHoistable(node: Node): void;
 
 export function getScrollEndTimer(
   node: EventTarget,
-): (number | object) | null | undefined;
+): number | object | null | undefined;
 
 export function setScrollEndTimer(
   node: EventTarget,
