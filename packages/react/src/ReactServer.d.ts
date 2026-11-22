@@ -38,6 +38,7 @@ export {cache, cacheSignal} from './ReactCacheServer.js';
 
 export {default as version} from 'shared/ReactVersion';
 
+// DEV-only
 export {captureOwnerStack} from './ReactOwnerStack.js';
 
 export const Children: Children;

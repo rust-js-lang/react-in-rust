@@ -39,6 +39,7 @@ export {cache, cacheSignal} from './ReactCacheServer.js';
 
 export {default as version} from 'shared/ReactVersion';
 
+// Experimental
 export {REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList} from 'shared/ReactSymbols';
 
 export const Children: Children;

@@ -92,6 +92,7 @@ export {
   isSingletonScope,
 } from './ReactFiberConfigNoopSingletons.js';
 
+// createReactNoop will overwrite these with the mutation or persistence versions.
 export {
   supportsMutation,
   cloneMutableInstance,

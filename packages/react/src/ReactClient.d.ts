@@ -58,6 +58,7 @@ export {default as __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRA
 
 export * as __COMPILER_RUNTIME from './ReactCompilerRuntime.js';
 
+// Concurrent Mode
 export {
   getCacheForType as unstable_getCacheForType,
   useCacheRefresh as unstable_useCacheRefresh,
@@ -74,18 +75,24 @@ export {
   REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList,
 } from 'shared/ReactSymbols';
 
+// enableScopeAPI
 export {REACT_SCOPE_TYPE as unstable_Scope} from 'shared/ReactSymbols';
 
+// enableTransitionTracing
 export {REACT_TRACING_MARKER_TYPE as unstable_TracingMarker} from 'shared/ReactSymbols';
 
+// enableViewTransition
 export {addTransitionType} from './ReactTransitionType.js';
 
 export {REACT_VIEW_TRANSITION_TYPE as ViewTransition} from 'shared/ReactSymbols';
 
+// enableGestureTransition
 export {startGestureTransition as unstable_startGestureTransition} from './ReactStartTransition.js';
 
+// enableOptimisticKey
 export {REACT_OPTIMISTIC_KEY as optimisticKey} from 'shared/ReactSymbols';
 
+// DEV-only
 export {act} from './ReactAct.js';
 
 export {useId} from './ReactHooks.js';

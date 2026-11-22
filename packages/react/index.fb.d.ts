@@ -64,8 +64,11 @@ export {
 
 export {jsx, jsxDEV, jsxs} from './src/jsx/ReactJSX.js';
 
+// export for backwards compatibility during upgrade
 export {useMemoCache as unstable_useMemoCache} from './src/ReactHooks.js';
 
+// export to match the name of the OSS function typically exported from
+// react/compiler-runtime
 export {useMemoCache as c} from './src/ReactHooks.js';
 
 export const captureOwnerStack:

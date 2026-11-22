@@ -9,6 +9,7 @@ import type {EventPriority} from 'react-reconciler/src/ReactEventPriorities';
 import type {TransitionTypes} from 'react/src/ReactTransitionType';
 import type {ReactContext} from 'shared/ReactTypes';
 
+// TODO: Consider exporting the react-native version.
 export {default as rendererVersion} from 'shared/ReactVersion';
 
 export {

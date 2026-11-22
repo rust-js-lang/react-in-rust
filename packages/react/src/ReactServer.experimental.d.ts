@@ -47,10 +47,13 @@ export {startTransition} from './ReactStartTransition.js';
 
 export {default as version} from 'shared/ReactVersion';
 
+// Experimental
 export {REACT_SUSPENSE_LIST_TYPE as unstable_SuspenseList} from 'shared/ReactSymbols';
 
+// enableOptimisticKey
 export {REACT_OPTIMISTIC_KEY as optimisticKey} from 'shared/ReactSymbols';
 
+// These are server-only
 export {
   taintObjectReference as experimental_taintObjectReference,
   taintUniqueValue as experimental_taintUniqueValue,
