@@ -17,6 +17,7 @@ import {
   createResumableState,
   createRootFormatContext,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOMLegacy';
+import {$stringPanic} from '@rust-js/std';
 
 export {default as version} from 'shared/ReactVersion';
 
@@ -77,7 +78,7 @@ export function renderToStringImpl(
     // Note: This error message is the one we use on the client. It doesn't
     // really make sense here. But this is the legacy server renderer, anyway.
     // We're going to delete it soon.
-    throw new Error(
+    throw $stringPanic(
       'A component suspended while responding to synchronous input. This ' +
         'will cause the UI to be replaced with a loading indicator. To fix, ' +
         'updates that suspend should be wrapped with startTransition.',

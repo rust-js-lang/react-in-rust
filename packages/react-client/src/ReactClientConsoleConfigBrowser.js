@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$splice} from '@rust-js/std';
+import {$splice, $stringPanic} from '@rust-js/std';
 
 // Keep in sync with ReactServerConsoleConfig
 const badgeFormat = '%c%s%c';
@@ -24,7 +24,7 @@ const pad = ' ';
 export function bindToConsole(methodName, args, badgeName) {
   const method = console[methodName];
   if (typeof method !== 'function') {
-    throw new Error(`console.${methodName} is no function`);
+    throw $stringPanic(`console.${methodName} is no function`);
   }
   let offset = 0;
   switch (methodName) {

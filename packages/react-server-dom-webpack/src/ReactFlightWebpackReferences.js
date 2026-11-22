@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$stringPanic} from '@rust-js/std';
+
 const CLIENT_REFERENCE_TAG = Symbol.for('react.client.reference');
 const SERVER_REFERENCE_TAG = Symbol.for('react.server.reference');
 
@@ -165,7 +167,7 @@ const deepProxyHandlers = {
     }
     // eslint-disable-next-line react-internal/safe-string-coercion
     const expression = String(target.name) + '.' + String(name);
-    throw new Error(
+    throw $stringPanic(
       `Cannot access ${expression} on the server. You cannot dot into a client module from a server component. You can only pass the imported name through.`,
     );
   },
@@ -207,7 +209,7 @@ function getReference(target, name) {
         const moduleId = target.$$id;
         target.default = registerClientReferenceImpl(
           function () {
-            throw new Error(
+            throw $stringPanic(
               `Attempted to call the default export of ${moduleId} from the server but it's on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.`,
             );
           },
@@ -271,7 +273,7 @@ function getReference(target, name) {
     const reference = registerClientReferenceImpl(
       function () {
         // eslint-disable-next-line react-internal/safe-string-coercion
-        throw new Error(
+        throw $stringPanic(
           `Attempted to call ${name}() from the server but ${name} is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.`,
         );
       },

@@ -265,7 +265,7 @@ import {
   untrackNamedViewTransition,
 } from './ReactFiberDuplicateViewTransitions.js';
 import {markIndicatorHandled} from './ReactFiberRootScheduler.js';
-import {$catchable, $index, $unwrap} from '@rust-js/std';
+import {$catchable, $index, $stringPanic, $unwrap} from '@rust-js/std';
 
 // shared/ReactTypes' `Wakeable`.
 
@@ -1841,7 +1841,7 @@ function getRetryCache(finishedWork) {
       return retryCache;
     }
     default:
-      throw new Error(
+      throw $stringPanic(
         `Unexpected Suspense handler tag (${finishedWork.tag}). This is a bug in React.`,
       );
   }

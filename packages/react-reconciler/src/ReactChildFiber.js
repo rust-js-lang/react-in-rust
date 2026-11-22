@@ -70,6 +70,7 @@ import {
   $cellReplace,
   $fieldCell,
   $live,
+  $stringPanic,
   $unborrow,
 } from '@rust-js/std';
 
@@ -278,7 +279,7 @@ function throwOnInvalidObjectTypeImpl(returnFiber, newChild) {
   // $FlowFixMe[method-unbinding]
   const childString = Object.prototype.toString.call(newChild);
 
-  throw new Error(
+  throw $stringPanic(
     `Objects are not valid as a React child (found: ${
       childString === '[object Object]'
         ? 'object with keys {' + Object.keys(newChild).join(', ') + '}'

@@ -16,6 +16,7 @@ import {
   $borrow,
   $borrowMut,
   $cellReplace,
+  $stringPanic,
   $unborrow,
   $unwrap,
   $withBorrow,
@@ -112,7 +113,7 @@ export function taintUniqueValue(message, lifetime, value) {
         'taintUniqueValue cannot taint objects or functions. Try taintObjectReference instead.',
       );
     }
-    throw new Error(
+    throw $stringPanic(
       `Cannot taint a ${kind} because the value is too general and not unique enough to block globally.`,
     );
   }

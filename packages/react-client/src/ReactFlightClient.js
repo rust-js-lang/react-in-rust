@@ -94,6 +94,7 @@ import {
   $resize,
   $slice,
   $splice,
+  $stringPanic,
   $toLowercase,
   $truncate,
   $try,
@@ -2678,7 +2679,7 @@ function parseModelString(response, parentObject, key, value) {
         const reference = '$' + value.slice(2);
         const temporaryReferences = response._tempRefs;
         if (temporaryReferences == null) {
-          throw new Error(
+          throw $stringPanic(
             'Missing a temporary reference set but the RSC response returned a temporary reference. ' +
               'Pass a temporaryReference option with the set that was used with the reply.',
           );
@@ -2899,7 +2900,7 @@ function parseModelTuple(response, value) {
 }
 
 function missingCall(id, args) {
-  throw new Error(
+  throw $stringPanic(
     'Trying to call a function from "use server" but the callServer option ' +
       'was not implemented in your router runtime.',
   );
@@ -3179,7 +3180,7 @@ function resolveModule(response, id, model, streamState) {
     try {
       // We resolve the client reference below and have nothing to wait on,
       // so the metadata can't reference a row that hasn't arrived.
-      throw new Error(
+      throw $stringPanic(
         'A client reference was blocked on a row that has not been received yet. ' +
           'This is a bug in React.',
       );
@@ -5193,7 +5194,7 @@ function processFullStringRow(response, streamState, id, tag, row) {
         resolveConsoleEntry(response, row);
         return;
       }
-      throw new Error(
+      throw $stringPanic(
         'Failed to read a RSC payload created by a development version of React ' +
           'on the server while using a production version on the client. Always use ' +
           'matching versions on the server and the client.',
@@ -5502,7 +5503,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
         break;
       case ROW_CHUNK_BY_LENGTH:
         if (rowTag !== 84) {
-          throw new Error(
+          throw $stringPanic(
             'Binary RSC chunks cannot be encoded as strings. ' +
               'This is a bug in the wiring of the React streams.',
           );
@@ -5512,7 +5513,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
         // chunk. We add extra validation that the length is at least within the
         // possible byte range it could possibly be to catch mistakes.
         if (rowLength < chunkLength || chunkLength > rowLength * 3) {
-          throw new Error(
+          throw $stringPanic(
             'String chunks need to be passed in their original shape. ' +
               'Not split into smaller string chunks. ' +
               'This is a bug in the wiring of the React streams.',
@@ -5529,7 +5530,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
       if (buffer.length !== 0) {
         // If we had a buffer already, it means that this chunk was split up into
         // binary chunks preceeding it.
-        throw new Error(
+        throw $stringPanic(
           'String chunks need to be passed in their original shape. ' +
             'Not split into smaller string chunks. ' +
             'This is a bug in the wiring of the React streams.',
@@ -5553,7 +5554,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
       // string from chunks in their entirety. Not split up into smaller string chunks.
       // We could support this by buffering them but we shouldn't need to for
       // this use case.
-      throw new Error(
+      throw $stringPanic(
         'String chunks need to be passed in their original shape. ' +
           'Not split into smaller string chunks. ' +
           'This is a bug in the wiring of the React streams.',

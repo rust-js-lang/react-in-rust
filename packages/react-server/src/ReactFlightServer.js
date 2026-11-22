@@ -146,6 +146,7 @@ import {
   $some,
   $someGet,
   $someValue,
+  $stringPanic,
   $try,
   $unborrow,
   $unwinding,
@@ -543,7 +544,7 @@ const {
 
 function throwTaintViolation(message) {
   // eslint-disable-next-line react-internal/prod-error-codes
-  throw new Error(message);
+  throw $stringPanic(message);
 }
 
 function cleanupTaintQueue(request) {
@@ -4164,7 +4165,7 @@ function renderModelDestructive(
       proto !== Object.prototype &&
       (proto === null || getPrototypeOf(proto) !== null)
     ) {
-      throw new Error(
+      throw $stringPanic(
         `Only plain objects, and a few built-ins, can be passed to Client Components from Server Components. Classes or null prototypes are not supported.${describeObjectForErrorMessage(parent, parentPropertyName)}`,
       );
     }
@@ -4279,7 +4280,7 @@ function renderModelDestructive(
           'on the server.',
       );
     } else if (/^on[A-Z]/.test(parentPropertyName)) {
-      throw new Error(
+      throw $stringPanic(
         `Event handlers cannot be passed to Client Component props.${describeObjectForErrorMessage(parent, parentPropertyName)}\nIf you need interactivity, consider converting part of this to a Client Component.`,
       );
     } else if (
@@ -4291,11 +4292,11 @@ function renderModelDestructive(
       const fallback = functionValue.name;
       const componentName = value || fallback || 'Component';
       const value$1 = describeObjectForErrorMessage(parent, parentPropertyName);
-      throw new Error(
+      throw $stringPanic(
         `Functions are not valid as a child of Client Components. This may happen if you return ${$shown(componentName)} instead of <${$shown(componentName)} /> from render. Or maybe you meant to call this function rather than return it.${value$1}`,
       );
     } else {
-      throw new Error(
+      throw $stringPanic(
         `Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.${describeObjectForErrorMessage(parent, parentPropertyName)}`,
       );
     }
@@ -4312,7 +4313,7 @@ function renderModelDestructive(
 
     if (Symbol.for(name) !== value) {
       const arg = describeObjectForErrorMessage(parent, parentPropertyName);
-      throw new Error(
+      throw $stringPanic(
         `Only global symbols received from Symbol.for(...) can be passed to Client Components. The symbol Symbol.for(${name}) cannot be found among global symbols.${arg}`,
       );
     }
@@ -4334,7 +4335,7 @@ function renderModelDestructive(
     return serializeBigInt(value);
   }
 
-  throw new Error(
+  throw $stringPanic(
     `Type ${typeof value} is not supported in Client Component props.${describeObjectForErrorMessage(parent, parentPropertyName)}`,
   );
 }
@@ -4375,7 +4376,7 @@ function logRecoverableError(
   const errorDigest = result._0;
   if (errorDigest != null && typeof errorDigest !== 'string') {
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $stringPanic(
       `onError returned something with a type other than "string". onError should return a string and may return null or undefined but must not return anything else. It received something of type "${typeof errorDigest}" instead`,
     );
   }

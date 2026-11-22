@@ -37,6 +37,7 @@ import {
   $cleanup,
   $displayF64,
   $live,
+  $stringPanic,
   $toUppercase,
   $unwindsOn,
   $unwrap,
@@ -538,7 +539,7 @@ function createReactNoop(reconciler, useMutation) {
 
     preloadInstance(instance, type, props) {
       if (type !== 'suspensey-thing' || typeof props.src !== 'string') {
-        throw new Error(`Attempted to preload unexpected instance: ${type}`);
+        throw $stringPanic(`Attempted to preload unexpected instance: ${type}`);
       }
       const src = props.src;
 
@@ -584,7 +585,7 @@ function createReactNoop(reconciler, useMutation) {
     bindToConsole(methodName, args, badgeName) {
       const method = console[methodName];
       if (typeof method !== 'function') {
-        throw new Error(`console.${methodName} is no function`);
+        throw $stringPanic(`console.${methodName} is no function`);
       }
       return method.bind(console, ...args);
     },

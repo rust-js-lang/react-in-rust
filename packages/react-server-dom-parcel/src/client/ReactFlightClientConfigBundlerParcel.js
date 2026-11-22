@@ -8,6 +8,7 @@
 import {prepareDestinationWithChunks} from 'react-client/src/ReactFlightClientConfig';
 
 import hasOwnProperty from 'shared/hasOwnProperty';
+import {$stringPanic} from '@rust-js/std';
 
 export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
   const bundles = metadata[2];
@@ -27,7 +28,7 @@ export function resolveServerReference(bundlerConfig, ref) {
   const name = ref.slice(idx + 1);
   const bundles = bundlerConfig[id];
   if (bundles == null) {
-    throw new Error('Invalid server action: ' + ref);
+    throw $stringPanic('Invalid server action: ' + ref);
   }
   return [id, name, bundles];
 }

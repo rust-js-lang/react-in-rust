@@ -126,7 +126,7 @@ export {
 import {TotalLanes, getLabelForLane} from './ReactFiberLane.js';
 
 import {registerDefaultIndicator} from './ReactFiberAsyncAction.js';
-import {$index, $unwrap} from '@rust-js/std';
+import {$index, $stringPanic, $unwrap} from '@rust-js/std';
 
 let didWarnAboutNestedUpdates;
 let didWarnAboutFindNodeInStrictMode;
@@ -161,7 +161,7 @@ export function findHostInstance(component) {
       throw new Error('Unable to find node on an unmounted component.');
     } else {
       const keys = Object.keys(component).join(',');
-      throw new Error(
+      throw $stringPanic(
         `Argument appears to not be a ReactComponent. Keys: ${keys}`,
       );
     }
@@ -181,7 +181,7 @@ export function findHostInstanceWithWarning(component, methodName) {
         throw new Error('Unable to find node on an unmounted component.');
       } else {
         const keys = Object.keys(component).join(',');
-        throw new Error(
+        throw $stringPanic(
           `Argument appears to not be a ReactComponent. Keys: ${keys}`,
         );
       }

@@ -178,7 +178,7 @@ import {
 } from './ReactFiberTracingMarkerComponent.js';
 
 import {suspendCommit} from './ReactFiberThenable.js';
-import {$unwrap} from '@rust-js/std';
+import {$stringPanic, $unwrap} from '@rust-js/std';
 
 /**
  * Tag the fiber with an update effect. This turns a Placement into
@@ -892,7 +892,7 @@ function completeDehydratedActivityBoundary(
     // Activity boundary, and also after we've reentered it for further hydration.
     if (current == null) {
       if (!wasHydrated) {
-        throw new Error(
+        throw $stringPanic(
           'A dehydrated suspense component was completed without a hydrated node. ' +
             'This is probably a bug in React.',
         );
@@ -979,7 +979,7 @@ function completeDehydratedSuspenseBoundary(
     // Suspense boundary, and also after we've reentered it for further hydration.
     if (current == null) {
       if (!wasHydrated) {
-        throw new Error(
+        throw $stringPanic(
           'A dehydrated suspense component was completed without a hydrated node. ' +
             'This is probably a bug in React.',
         );
@@ -1288,7 +1288,7 @@ export function completeWork(current, workInProgress, renderLanes) {
         } else {
           if (!newProps) {
             if (workInProgress.stateNode == null) {
-              throw new Error(
+              throw $stringPanic(
                 'We must have new props for new mounts. This error is likely ' +
                   'caused by a bug in React. Please file an issue.',
               );
@@ -1346,7 +1346,7 @@ export function completeWork(current, workInProgress, renderLanes) {
       } else {
         if (!newProps) {
           if (workInProgress.stateNode == null) {
-            throw new Error(
+            throw $stringPanic(
               'We must have new props for new mounts. This error is likely ' +
                 'caused by a bug in React. Please file an issue.',
             );
@@ -1441,7 +1441,7 @@ export function completeWork(current, workInProgress, renderLanes) {
         updateHostText(current, workInProgress, oldText, newText);
       } else {
         if (typeof newText !== 'string' && workInProgress.stateNode == null) {
-          throw new Error(
+          throw $stringPanic(
             'We must have new props for new mounts. This error is likely ' +
               'caused by a bug in React. Please file an issue.',
           );
@@ -2052,7 +2052,7 @@ export function completeWork(current, workInProgress, renderLanes) {
       break;
   }
 
-  throw new Error(
+  throw $stringPanic(
     `Unknown unit of work tag (${workInProgress.tag}). This error is likely caused by a bug in React. Please file an issue.`,
   );
 }

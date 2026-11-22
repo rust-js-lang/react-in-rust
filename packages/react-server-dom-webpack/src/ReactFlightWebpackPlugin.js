@@ -18,7 +18,7 @@ import Template from 'webpack/lib/Template';
 import ModuleDependency from 'webpack/lib/dependencies/ModuleDependency';
 import NullDependency from 'webpack/lib/dependencies/NullDependency';
 import neoAsync from 'neo-async';
-import {$next} from '@rust-js/std';
+import {$next, $stringPanic} from '@rust-js/std';
 
 export class ClientReferenceDependency extends ModuleDependency {
   constructor(request) {
@@ -47,12 +47,12 @@ export default class ReactFlightWebpackPlugin {
 
   constructor(options) {
     if (options == null) {
-      throw new Error(
+      throw $stringPanic(
         `${PLUGIN_NAME}: You must specify the isServer option as a boolean.`,
       );
     }
     if (typeof options.isServer !== 'boolean') {
-      throw new Error(
+      throw $stringPanic(
         `${PLUGIN_NAME}: You must specify the isServer option as a boolean.`,
       );
     }

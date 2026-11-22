@@ -79,7 +79,13 @@ import {
   listenToNonDelegatedEvent,
   mediaEventTypes,
 } from '../events/DOMPluginEventSystem.js';
-import {$catchUnwind, $catchable, $toLowercase, $unwrap} from '@rust-js/std';
+import {
+  $catchUnwind,
+  $catchable,
+  $stringPanic,
+  $toLowercase,
+  $unwrap,
+} from '@rust-js/std';
 
 let didWarnControlledToUncontrolled = false;
 let didWarnUncontrolledToControlled = false;
@@ -628,7 +634,7 @@ function setProp(domElement, tag, key, value, props, prevValue) {
     case 'dangerouslySetInnerHTML':
       if (value != null) {
         if (typeof value !== 'object' || !('__html' in value)) {
-          throw new Error(
+          throw $stringPanic(
             '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
               'Please visit https://react.dev/link/dangerously-set-inner-html ' +
               'for more information.',
@@ -960,7 +966,7 @@ function setPropOnCustomElement(domElement, tag, key, value, props, prevValue) {
     case 'dangerouslySetInnerHTML':
       if (value != null) {
         if (typeof value !== 'object' || !('__html' in value)) {
-          throw new Error(
+          throw $stringPanic(
             '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
               'Please visit https://react.dev/link/dangerously-set-inner-html ' +
               'for more information.',
@@ -1090,7 +1096,7 @@ export function setInitialProperties(domElement, tag, props) {
           case 'children':
           case 'dangerouslySetInnerHTML':
             // TODO: Can we make this a DEV warning to avoid this deny list?
-            throw new Error(
+            throw $stringPanic(
               `${tag} is a void element tag and must neither have \`children\` nor use \`dangerouslySetInnerHTML\`.`,
             );
           default:
@@ -1151,7 +1157,7 @@ export function setInitialProperties(domElement, tag, props) {
           case 'children':
           case 'dangerouslySetInnerHTML':
             if (propValue != null) {
-              throw new Error(
+              throw $stringPanic(
                 `${tag} is a void element tag and must neither have \`children\` nor use \`dangerouslySetInnerHTML\`.`,
               );
             }
@@ -1352,7 +1358,7 @@ export function setInitialProperties(domElement, tag, props) {
           case 'children':
           case 'dangerouslySetInnerHTML':
             // TODO: Can we make this a DEV warning to avoid this deny list?
-            throw new Error(
+            throw $stringPanic(
               `${tag} is a void element tag and must neither have \`children\` nor use \`dangerouslySetInnerHTML\`.`,
             );
           default:
@@ -1497,7 +1503,7 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
             case 'children':
             case 'dangerouslySetInnerHTML':
               if (nextProp != null) {
-                throw new Error(
+                throw $stringPanic(
                   `${tag} is a void element tag and must neither have \`children\` nor use \`dangerouslySetInnerHTML\`.`,
                 );
               }
@@ -1795,7 +1801,7 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
             case 'dangerouslySetInnerHTML':
               if (nextProp != null) {
                 // TODO: Can we make this a DEV warning to avoid this deny list?
-                throw new Error(
+                throw $stringPanic(
                   `${tag} is a void element tag and must neither have \`children\` nor use \`dangerouslySetInnerHTML\`.`,
                 );
               }

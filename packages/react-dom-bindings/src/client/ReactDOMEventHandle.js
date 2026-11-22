@@ -21,6 +21,7 @@ import {
   enableCreateEventHandleAPI,
   enableScopeAPI,
 } from 'shared/ReactFeatureFlags';
+import {$stringPanic} from '@rust-js/std';
 
 function isValidEventTarget(target) {
   return typeof target.addEventListener === 'function';
@@ -75,7 +76,7 @@ export function createEventHandle(type, options) {
     // event from the list of known events has now become a breaking change for
     // any code relying on the createEventHandle API.
     if (!allNativeEvents.has(domEventName)) {
-      throw new Error(
+      throw $stringPanic(
         `Cannot call unstable_createEventHandle with "${domEventName}", as it is not an event known to React.`,
       );
     }

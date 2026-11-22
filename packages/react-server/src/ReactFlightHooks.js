@@ -13,7 +13,7 @@ import {
 import {createThenableState, trackUsedThenable} from './ReactFlightThenable.js';
 
 import {isClientReference} from './ReactFlightServerConfig.js';
-import {$roomFor} from '@rust-js/std';
+import {$roomFor, $stringPanic} from '@rust-js/std';
 
 let currentRequest = null;
 let thenableIndexCounter = 0;
@@ -145,7 +145,7 @@ function use(usable) {
     }
   } else {
     // eslint-disable-next-line react-internal/safe-string-coercion
-    throw new Error(
+    throw $stringPanic(
       `An unsupported type was passed to use(): ${String(usable)}`,
     );
   }

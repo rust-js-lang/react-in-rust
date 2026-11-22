@@ -62,6 +62,7 @@ export {
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 
 import escapeTextForBrowser from 'react-dom-bindings/src/server/escapeTextForBrowser';
+import {$stringPanic} from '@rust-js/std';
 
 export function getViewTransitionFormatContext(
   resumableState,
@@ -101,7 +102,7 @@ export function pushStartInstance(
         );
       }
       if (typeof propValue === 'function') {
-        throw new Error(
+        throw $stringPanic(
           `Cannot pass event handlers (${propKey}) in renderToHTML because the HTML will never be hydrated so they can never get called.`,
         );
       }

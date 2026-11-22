@@ -157,6 +157,7 @@ import {
   $cleanup,
   $index,
   $roomFor,
+  $stringPanic,
   $unwrap,
 } from '@rust-js/std';
 
@@ -1059,7 +1060,9 @@ function use(usable) {
   }
 
   // eslint-disable-next-line react-internal/safe-string-coercion
-  throw new Error(`An unsupported type was passed to use(): ${String(usable)}`);
+  throw $stringPanic(
+    `An unsupported type was passed to use(): ${String(usable)}`,
+  );
 }
 
 function useMemoCache(size) {

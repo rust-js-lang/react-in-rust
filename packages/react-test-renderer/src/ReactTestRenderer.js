@@ -52,7 +52,7 @@ import {
   disableLegacyMode,
   enableReactTestRendererWarning,
 } from 'shared/ReactFeatureFlags';
-import {$index, $shown, $unwrap} from '@rust-js/std';
+import {$index, $shown, $stringPanic, $unwrap} from '@rust-js/std';
 
 function defaultOnDefaultTransitionIndicator() {}
 
@@ -190,7 +190,7 @@ function toTree(node) {
     case ScopeComponent:
       return childrenToTree(node.child);
     default:
-      throw new Error(
+      throw $stringPanic(
         `toTree() does not yet know how to handle nodes with tag=${node.tag}`,
       );
   }
@@ -266,7 +266,7 @@ class ReactTestInstance {
 
   constructor(fiber) {
     if (!validWrapperTypes.has(fiber.tag)) {
-      throw new Error(
+      throw $stringPanic(
         `Unexpected object passed to ReactTestInstance constructor (tag: ${fiber.tag}). This is probably a bug in React.`,
       );
     }
@@ -390,7 +390,7 @@ function expectOne(all, message) {
       ? 'No instances found '
       : `Expected 1 but found ${all.length} instances `;
 
-  throw new Error(prefix + message);
+  throw $stringPanic(prefix + message);
 }
 
 function propsMatch(props, filter) {

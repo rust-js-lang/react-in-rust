@@ -35,7 +35,13 @@ import {getFormState} from './ReactFizzServer.js';
 import noop from 'shared/noop';
 
 import {createFastHash} from './ReactServerStreamConfig.js';
-import {$catchable, $index, $roomFor, $unwrap} from '@rust-js/std';
+import {
+  $catchable,
+  $index,
+  $roomFor,
+  $stringPanic,
+  $unwrap,
+} from '@rust-js/std';
 
 let currentlyRenderingComponent = null;
 let currentlyRenderingTask = null;
@@ -148,7 +154,7 @@ let currentHookNameInDev;
 
 function resolveCurrentlyRenderingComponent() {
   if (currentlyRenderingComponent == null) {
-    throw new Error(
+    throw $stringPanic(
       'Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for' +
         ' one of the following reasons:\n' +
         '1. You might have mismatching versions of React and the renderer (such as React DOM)\n' +
@@ -515,7 +521,7 @@ function useRef(initialValue) {
 
 function dispatchAction(componentIdentity, queue, action) {
   if (numberOfReRenders >= RE_RENDER_LIMIT) {
-    throw new Error(
+    throw $stringPanic(
       'Too many re-renders. React limits the number of renders to prevent ' +
         'an infinite loop.',
     );
@@ -572,7 +578,7 @@ export function useEffectEvent(callback) {
 
 function useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot) {
   if (getServerSnapshot === undefined) {
-    throw new Error(
+    throw $stringPanic(
       'Missing getServerSnapshot, which is required for ' +
         'server-rendered content. Will revert to client rendering.',
     );
@@ -767,7 +773,9 @@ function use(usable) {
   }
 
   // eslint-disable-next-line react-internal/safe-string-coercion
-  throw new Error(`An unsupported type was passed to use(): ${String(usable)}`);
+  throw $stringPanic(
+    `An unsupported type was passed to use(): ${String(usable)}`,
+  );
 }
 
 export function unwrapThenable(thenable) {
@@ -800,7 +808,7 @@ function useMemoCache(size) {
 }
 
 function clientHookNotSupported() {
-  throw new Error(
+  throw $stringPanic(
     'Cannot use state or effect Hooks in renderToHTML because ' +
       'this component will never be hydrated.',
   );

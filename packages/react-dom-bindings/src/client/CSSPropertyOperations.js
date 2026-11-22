@@ -14,6 +14,7 @@ import isUnitlessNumber from '../shared/isUnitlessNumber.js';
 import {checkCSSPropertyStringCoercion} from 'shared/CheckStringCoercion';
 
 import {trackHostMutation} from 'react-reconciler/src/ReactFiberMutationTracking';
+import {$stringPanic} from '@rust-js/std';
 
 /*
  * Operations for dealing with CSS properties.
@@ -108,7 +109,7 @@ function setValueForStyle(style, styleName, value) {
  */
 export function setValueForStyles(node, styles, prevStyles) {
   if (styles != null && typeof styles !== 'object') {
-    throw new Error(
+    throw $stringPanic(
       'The `style` prop expects a mapping from style properties to values, ' +
         "not a string. For example, style={{marginRight: spacing + 'em'}} when " +
         'using JSX.',

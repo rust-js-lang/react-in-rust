@@ -15,6 +15,7 @@ import {
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
+import {$stringPanic} from '@rust-js/std';
 
 export {default as rendererVersion} from 'shared/ReactVersion';
 export const rendererPackageName = 'react-art';
@@ -288,7 +289,7 @@ export function createInstance(type, props, internalInstanceHandle) {
   }
 
   if (instance === undefined) {
-    throw new Error(`ReactART does not support the type "${type}"`);
+    throw $stringPanic(`ReactART does not support the type "${type}"`);
   }
 
   instance._applyProps(instance, props);

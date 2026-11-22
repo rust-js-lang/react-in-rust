@@ -18,7 +18,7 @@ import {
   createServerReference as createServerReferenceImpl,
   processReply,
 } from 'react-client/src/ReactFlightReplyClient';
-import {$unwrap} from '@rust-js/std';
+import {$stringPanic, $unwrap} from '@rust-js/std';
 
 export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
 
@@ -36,7 +36,7 @@ function findSourceMapURL(filename, environmentName) {
 }
 
 function noServerCall(id, args) {
-  throw new Error(
+  throw $stringPanic(
     'Server Functions cannot be called during initial render. ' +
       'This would create a fetch waterfall. Try to use a Server Component ' +
       'to pass data to Client Components instead.',

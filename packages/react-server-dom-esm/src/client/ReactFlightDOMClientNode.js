@@ -16,11 +16,12 @@ import {
 } from 'react-client/src/ReactFlightClient';
 
 import {createServerReference as createServerReferenceImpl} from 'react-client/src/ReactFlightReplyClient';
+import {$stringPanic} from '@rust-js/std';
 
 export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
 
 function noServerCall(id, args) {
-  throw new Error(
+  throw $stringPanic(
     'Server Functions cannot be called during initial render. ' +
       'This would create a fetch waterfall. Try to use a Server Component ' +
       'to pass data to Client Components instead.',

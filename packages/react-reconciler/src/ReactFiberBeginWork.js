@@ -287,6 +287,7 @@ import {
   $cleanup,
   $fieldCell,
   $shown,
+  $stringPanic,
   $toLowercase,
   $unborrow,
   $unwrap,
@@ -2096,7 +2097,7 @@ function mountLazyComponent(current, workInProgress, elementType, renderLanes) {
   // This message intentionally doesn't mention ForwardRef or MemoComponent
   // because the fact that it's a separate type of work is an
   // implementation detail.
-  throw new Error(
+  throw $stringPanic(
     `Element type is invalid. Received a promise that resolves to: ${$shown(loggedComponent)}. Lazy element type must resolve to a class or function.${hint}`,
   );
 }
@@ -4307,7 +4308,7 @@ export function beginWork(current, workInProgress, renderLanes) {
       throw workInProgress.pendingProps;
   }
 
-  throw new Error(
+  throw $stringPanic(
     `Unknown unit of work tag (${workInProgress.tag}). This error is likely caused by a bug in React. Please file an issue.`,
   );
 }

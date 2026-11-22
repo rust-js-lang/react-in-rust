@@ -8,6 +8,7 @@
 import {disableLegacyContext} from 'shared/ReactFeatureFlags';
 
 import getComponentNameFromType from 'shared/getComponentNameFromType';
+import {$stringPanic} from '@rust-js/std';
 
 const warnedAboutMissingGetChildContext = __DEV__ ? {} : undefined;
 
@@ -70,7 +71,7 @@ export function processChildContext(
     const childContext = instance.getChildContext();
     for (const contextKey in childContext) {
       if (!(contextKey in childContextTypes)) {
-        throw new Error(
+        throw $stringPanic(
           `${
             getComponentNameFromType(type) || 'Unknown'
           }.getChildContext(): key "${contextKey}" is not defined in childContextTypes.`,

@@ -30,7 +30,13 @@ import {
   getBackingString,
   getStreamChunks,
 } from './ReactFlightReplyBackingFormData.js';
-import {$catchable, $cleanup, $index, $unwrap} from '@rust-js/std';
+import {
+  $catchable,
+  $cleanup,
+  $index,
+  $stringPanic,
+  $unwrap,
+} from '@rust-js/std';
 
 const __PROTO__ = '__proto__';
 
@@ -366,7 +372,7 @@ function loadServerReference(response, metaData, parentObject, key) {
           ? promiseValue.slice()
           : [];
         if (boundArgs.length > MAX_BOUND_ARGS) {
-          throw new Error(
+          throw $stringPanic(
             `Server Function has too many bound arguments. Received ${boundArgs.length} but the limit is ${MAX_BOUND_ARGS}.`,
           );
         }
@@ -966,7 +972,7 @@ function getOutlinedModel(
     let arrayRoot;
     if (arrayRootOrController != null) {
       if (typeof arrayRootOrController.error === 'function') {
-        throw new Error(
+        throw $stringPanic(
           'Expected an initialized chunk but got an initialized stream chunk instead. ' +
             'This payload may have been submitted by an older version of React.',
         );
@@ -1611,7 +1617,7 @@ function parseModelString(response, obj, key, value, reference, arrayRoot) {
       case 'T': {
         // Temporary Reference
         if (reference == null || response._temporaryReferences == null) {
-          throw new Error(
+          throw $stringPanic(
             'Could not reference an opaque temporary reference. ' +
               'This is likely due to misconfiguring the temporaryReferences options ' +
               'on the server.',
@@ -1675,7 +1681,7 @@ function parseModelString(response, obj, key, value, reference, arrayRoot) {
         // BigInt
         const bigIntStr = value.slice(2);
         if (bigIntStr.length > MAX_BIGINT_DIGITS) {
-          throw new Error(
+          throw $stringPanic(
             `BigInt is too large. Received ${bigIntStr.length} digits but the limit is ${MAX_BIGINT_DIGITS}.`,
           );
         }

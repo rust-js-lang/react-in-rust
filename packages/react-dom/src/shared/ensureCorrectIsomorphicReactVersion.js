@@ -8,11 +8,12 @@
 import reactDOMPackageVersion from 'shared/ReactVersion';
 
 import * as IsomorphicReactPackage from 'react';
+import {$stringPanic} from '@rust-js/std';
 
 export function ensureCorrectIsomorphicReactVersion() {
   const isomorphicReactPackageVersion = IsomorphicReactPackage.version;
   if (isomorphicReactPackageVersion !== reactDOMPackageVersion) {
-    throw new Error(
+    throw $stringPanic(
       `Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ${isomorphicReactPackageVersion}\n  - react-dom:  ${reactDOMPackageVersion}\nLearn more: https://react.dev/warnings/version-mismatch`,
     );
   }

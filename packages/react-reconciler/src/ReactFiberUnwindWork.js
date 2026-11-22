@@ -55,6 +55,7 @@ import {
   popMarkerInstance,
   popRootMarkerInstance,
 } from './ReactFiberTracingMarkerComponent.js';
+import {$stringPanic} from '@rust-js/std';
 
 export function unwindWork(current, workInProgress, renderLanes) {
   // Note: This intentionally doesn't check if we're hydrating because comparing
@@ -118,7 +119,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
         popSuspenseHandler(workInProgress);
 
         if (workInProgress.alternate == null) {
-          throw new Error(
+          throw $stringPanic(
             'Threw in newly mounted dehydrated component. This is likely a bug in ' +
               'React. Please file an issue.',
           );
@@ -146,7 +147,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
       const suspenseState = workInProgress.memoizedState;
       if (suspenseState != null && suspenseState.dehydrated !== null) {
         if (workInProgress.alternate == null) {
-          throw new Error(
+          throw $stringPanic(
             'Threw in newly mounted dehydrated component. This is likely a bug in ' +
               'React. Please file an issue.',
           );

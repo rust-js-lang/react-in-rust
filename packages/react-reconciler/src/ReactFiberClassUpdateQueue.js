@@ -127,7 +127,7 @@ import {
   peekEntangledActionLane,
   peekEntangledActionThenable,
 } from './ReactFiberAsyncAction.js';
-import {$cleanup, $shown, $unwrap} from '@rust-js/std';
+import {$cleanup, $shown, $stringPanic, $unwrap} from '@rust-js/std';
 
 export const UpdateState = 0;
 export const ReplaceState = 1;
@@ -678,7 +678,7 @@ export function processUpdateQueue(
 
 function callCallback(callback, context) {
   if (typeof callback !== 'function') {
-    throw new Error(
+    throw $stringPanic(
       `Invalid argument passed as callback. Expected a function. Instead received: ${$shown(callback)}`,
     );
   }

@@ -194,6 +194,7 @@ import {
   $removeOutOfBounds,
   $some,
   $someValue,
+  $stringPanic,
   $symbolFor,
   $truncate,
   $unborrow,
@@ -2981,7 +2982,7 @@ function renderElement(request, task, keyPath, type, props, ref) {
       'named imports.';
   }
 
-  throw new Error(
+  throw $stringPanic(
     `Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: ${
       type == null ? String(type) : typeof type
     }.${info}`,
@@ -3100,7 +3101,7 @@ function replayElement(
       // Matched a replayable path.
       // Let's double check that the component name matches as a precaution.
       if (name != null && name !== nodeName) {
-        throw new Error(
+        throw $stringPanic(
           `Expected the resume to render <${String(nodeName)}> in this slot but instead it rendered <${name}>. The tree doesn't match so React will fallback to client rendering.`,
         );
       }
@@ -3177,7 +3178,7 @@ function replayElement(
       // Let's double check that the component type matches.
       if (type !== REACT_SUSPENSE_TYPE) {
         const expectedType = 'Suspense';
-        throw new Error(
+        throw $stringPanic(
           `Expected the resume to render <${expectedType}> in this slot but instead it rendered <${
             getComponentNameFromType(type) || 'Unknown'
           }>. The tree doesn't match so React will fallback to client rendering.`,
@@ -3595,7 +3596,7 @@ function retryNode(request, task) {
     // $FlowFixMe[method-unbinding]
     const childString = Object.prototype.toString.call(node$1);
 
-    throw new Error(
+    throw $stringPanic(
       `Objects are not valid as a React child (found: ${
         childString === '[object Object]'
           ? 'object with keys {' + Object.keys(node$1).join(', ') + '}'

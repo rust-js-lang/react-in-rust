@@ -21,7 +21,7 @@ import {
 import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
 import isArray from 'shared/isArray';
 import {enableOptimisticKey, ownerStackLimit} from 'shared/ReactFeatureFlags';
-import {$catchable, $shown, $unwrap} from '@rust-js/std';
+import {$catchable, $shown, $stringPanic, $unwrap} from '@rust-js/std';
 
 function noTask(name) {
   return null;
@@ -789,7 +789,7 @@ export function cloneAndReplaceKey(oldElement, newKey) {
  */
 export function cloneElement(element, config, ...children) {
   if (element == null) {
-    throw new Error(
+    throw $stringPanic(
       `The argument must be a React element, but you passed ${$shown(element)}.`,
     );
   }

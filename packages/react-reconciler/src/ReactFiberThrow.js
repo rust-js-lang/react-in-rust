@@ -84,7 +84,7 @@ import {noopSuspenseyCommitThenable} from './ReactFiberThenable.js';
 
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 import {callComponentDidCatchInDEV} from './ReactFiberCallUserSpace.js';
-import {$unwrap} from '@rust-js/std';
+import {$stringPanic, $unwrap} from '@rust-js/std';
 
 export function createRootErrorUpdate(root, errorInfo, lane) {
   const update = createUpdate(lane);
@@ -495,7 +495,7 @@ export function throwException(
           }
           break;
       }
-      throw new Error(
+      throw $stringPanic(
         `Unexpected Suspense handler tag (${suspenseBoundary.tag}). This is a bug in React.`,
       );
     } else {

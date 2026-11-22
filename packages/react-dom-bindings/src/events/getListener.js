@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {getFiberCurrentPropsFromNode} from '../client/ReactDOMComponentTree.js';
+import {$stringPanic} from '@rust-js/std';
 
 function isInteractive(tag) {
   return (
@@ -58,7 +59,7 @@ export default function getListener(inst, registrationName) {
   }
 
   if (listener && typeof listener !== 'function') {
-    throw new Error(
+    throw $stringPanic(
       `Expected \`${registrationName}\` listener to be a function, instead got a value of \`${typeof listener}\` type.`,
     );
   }

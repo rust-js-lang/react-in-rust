@@ -19,6 +19,7 @@ import {
 } from './ReactWorkTags.js';
 
 import {Hydrating, NoFlags, Placement} from './ReactFiberFlags.js';
+import {$stringPanic} from '@rust-js/std';
 
 export function getNearestMountedFiber(fiber) {
   let node = fiber;
@@ -210,7 +211,7 @@ export function findCurrentFiberUsingSlowPath(fiber) {
               }
 
               if (!didFindChild) {
-                throw new Error(
+                throw $stringPanic(
                   'Child was not found in either parent set. This indicates a bug ' +
                     'in React related to the return pointer. Please file an issue.',
                 );
@@ -219,7 +220,7 @@ export function findCurrentFiberUsingSlowPath(fiber) {
           }
 
           if (a.alternate !== b) {
-            throw new Error(
+            throw $stringPanic(
               "Return fibers should always be each others' alternates. " +
                 'This error is likely caused by a bug in React. Please file an issue.',
             );

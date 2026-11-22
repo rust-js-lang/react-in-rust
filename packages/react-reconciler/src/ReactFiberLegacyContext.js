@@ -12,6 +12,7 @@ import {ClassComponent, HostRoot} from './ReactWorkTags.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 
 import {createCursor, pop, push} from './ReactFiberStack.js';
+import {$stringPanic} from '@rust-js/std';
 
 const warnedAboutMissingGetChildContext = __DEV__ ? {} : undefined;
 
@@ -167,7 +168,7 @@ export function processChildContext(fiber, type, parentContext) {
     const childContext = instance.getChildContext();
     for (const contextKey in childContext) {
       if (!(contextKey in childContextTypes)) {
-        throw new Error(
+        throw $stringPanic(
           `${
             getComponentNameFromFiber(fiber) || 'Unknown'
           }.getChildContext(): key "${contextKey}" is not defined in childContextTypes.`,

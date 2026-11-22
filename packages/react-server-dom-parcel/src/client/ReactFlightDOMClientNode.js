@@ -14,6 +14,7 @@ import {
   processStringChunk,
   reportGlobalError,
 } from 'react-client/src/ReactFlightClient';
+import {$stringPanic} from '@rust-js/std';
 
 export * from './ReactFlightDOMClientEdge.js';
 
@@ -29,7 +30,7 @@ function findSourceMapURL(filename, environmentName) {
 }
 
 function noServerCall(id, args) {
-  throw new Error(
+  throw $stringPanic(
     'Server Functions cannot be called during initial render. ' +
       'This would create a fetch waterfall. Try to use a Server Component ' +
       'to pass data to Client Components instead.',

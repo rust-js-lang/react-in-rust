@@ -25,6 +25,7 @@ import {
 import is from 'shared/objectIs';
 
 import {getHostTransitionProvider} from './ReactFiberHostContext.js';
+import {$stringPanic} from '@rust-js/std';
 
 const valueCursor = createCursor(null);
 
@@ -550,7 +551,7 @@ function readContextForConsumer(consumer, context) {
   };
   if (lastContextDependency == null) {
     if (consumer == null) {
-      throw new Error(
+      throw $stringPanic(
         'Context can only be read while React is rendering. ' +
           'In classes, you can read it in the render method or getDerivedStateFromProps. ' +
           'In function components, you can read it directly in the function body, but not ' +

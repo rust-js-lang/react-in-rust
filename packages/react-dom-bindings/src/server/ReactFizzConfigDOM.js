@@ -76,6 +76,7 @@ import {
   $displayF64,
   $index,
   $splice,
+  $stringPanic,
   $toLowercase,
   $trim,
   $unwrap,
@@ -1014,7 +1015,7 @@ const styleSeparator = stringToPrecomputedChunk(';');
 
 function pushStyleAttribute(target, style) {
   if (typeof style !== 'object') {
-    throw new Error(
+    throw $stringPanic(
       'The `style` prop expects a mapping from style properties to values, ' +
         "not a string. For example, style={{marginRight: spacing + 'em'}} when " +
         'using JSX.',
@@ -1155,7 +1156,7 @@ function pushAdditionalFormFields(target, formData) {
 
 function validateAdditionalFormField(value, key) {
   if (typeof value !== 'string') {
-    throw new Error(
+    throw $stringPanic(
       'File/Blob fields are not yet supported in progressive forms. ' +
         'Will fallback to client hydration.',
     );
@@ -1606,7 +1607,7 @@ function pushInnerHTML(target, innerHTML, children) {
     }
 
     if (typeof innerHTML !== 'object' || !('__html' in innerHTML)) {
-      throw new Error(
+      throw $stringPanic(
         '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
           'Please visit https://react.dev/link/dangerously-set-inner-html ' +
           'for more information.',
@@ -3171,7 +3172,7 @@ function pushSelfClosing(target, props, tag, formatContext) {
       switch (propKey) {
         case 'children':
         case 'dangerouslySetInnerHTML':
-          throw new Error(
+          throw $stringPanic(
             `${tag} is a self-closing tag and must neither have \`children\` nor use \`dangerouslySetInnerHTML\`.`,
           );
         default:
@@ -3727,7 +3728,7 @@ function pushStartPreformattedElement(target, props, tag, formatContext) {
     }
 
     if (typeof innerHTML !== 'object' || !('__html' in innerHTML)) {
-      throw new Error(
+      throw $stringPanic(
         '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
           'Please visit https://react.dev/link/dangerously-set-inner-html ' +
           'for more information.',
@@ -3764,7 +3765,7 @@ function startChunkForTag(tag) {
     return tagStartChunk;
   }
   if (!validTagRegex.test(tag)) {
-    throw new Error(`Invalid tag: ${tag}`);
+    throw $stringPanic(`Invalid tag: ${tag}`);
   }
 
   tagStartChunk = stringToPrecomputedChunk('<' + tag);

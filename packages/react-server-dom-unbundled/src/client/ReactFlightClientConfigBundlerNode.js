@@ -10,6 +10,7 @@ import {isAsyncImport} from '../shared/ReactFlightImportMetadata.js';
 import {prepareDestinationWithChunks} from 'react-client/src/ReactFlightClientConfig';
 
 import hasOwnProperty from 'shared/hasOwnProperty';
+import {$stringPanic} from '@rust-js/std';
 
 // The reason this function needs to defined here in this file instead of just
 // being exported directly from the WebpackDestination... file is because the
@@ -38,7 +39,7 @@ export function resolveClientReference(bundlerConfig, metadata) {
     // If we don't have this specific name, we might have the full module.
     const moduleData = moduleExports?.['*'];
     if (moduleData == null) {
-      throw new Error(
+      throw $stringPanic(
         `Could not find the module "${id}" in the React Server Consumer Manifest. This is probably a bug in the React Server Components bundler.`,
       );
     }

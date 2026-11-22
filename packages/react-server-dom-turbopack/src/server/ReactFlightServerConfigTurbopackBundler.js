@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {Async} from '../shared/ReactFlightImportMetadata.js';
+import {$stringPanic} from '@rust-js/std';
 
 export {
   isClientReference,
@@ -35,12 +36,12 @@ export function resolveClientReferenceMetadata(config, clientReference) {
     }
   }
   if (resolvedModuleData == null) {
-    throw new Error(
+    throw $stringPanic(
       `Could not find the module "${modulePath}" in the React Client Manifest. This is probably a bug in the React Server Components bundler.`,
     );
   }
   if (resolvedModuleData.async === true && clientReference.$$async === true) {
-    throw new Error(
+    throw $stringPanic(
       `The module "${modulePath}" is marked as an async ESM module but was loaded as a CJS proxy. This is probably a bug in the React Server Components bundler.`,
     );
   }

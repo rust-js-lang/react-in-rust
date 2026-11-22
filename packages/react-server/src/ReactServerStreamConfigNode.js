@@ -9,7 +9,7 @@ import {TextEncoder} from 'util';
 
 import {createHash} from 'crypto';
 import hasOwnProperty from 'shared/hasOwnProperty';
-import {$unwrap} from '@rust-js/std';
+import {$stringPanic, $unwrap} from '@rust-js/std';
 
 const supportsArrayBufferDetached = hasOwnProperty.call(
   ArrayBuffer.prototype,
@@ -97,7 +97,7 @@ function writeViewChunk(destination, chunk) {
   if (chunk.byteLength === 0) {
     if (supportsArrayBufferDetached) {
       if (chunk.buffer.detached) {
-        throw new Error(
+        throw $stringPanic(
           'Cannot transport a detached buffer. ' +
             'This usually happens when trying to transport multiple buffer-spanning views on the same underyling buffer. ' +
             'Either reuse the exact same view by identity or copy the underlying buffer manually via `view.slice()`.',

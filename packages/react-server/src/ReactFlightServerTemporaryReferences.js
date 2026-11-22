@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$stringPanic} from '@rust-js/std';
+
 const TEMPORARY_REFERENCE_TAG = Symbol.for('react.temporary.reference');
 
 export function createTemporaryReferenceSet() {
@@ -66,7 +68,7 @@ const proxyHandlers = {
       return Object.prototype[Symbol.toStringTag];
     }
     // eslint-disable-next-line react-internal/safe-string-coercion
-    throw new Error(
+    throw $stringPanic(
       `Cannot access ${String(name)} on the server. You cannot dot into a temporary client reference from a server component. You can only pass the value through to the client.`,
     );
   },
@@ -80,7 +82,7 @@ const proxyHandlers = {
 export function createTemporaryReference(temporaryReferences, id) {
   const reference = Object.defineProperties(
     function () {
-      throw new Error(
+      throw $stringPanic(
         'Attempted to call a temporary Client Reference from the server but it is on the client. ' +
           "It's not possible to invoke a client function from the server, it can " +
           'only be rendered as a Component or passed to props of a Client Component.',

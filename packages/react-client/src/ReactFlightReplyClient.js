@@ -36,6 +36,7 @@ import {
   $borrowMut,
   $catchable,
   $getOrInit,
+  $stringPanic,
   $unborrow,
   $unwound,
   $unwrap,
@@ -490,7 +491,7 @@ export function processReply(
             modelRoot = undefined;
             return serializeTemporaryReferenceMarker();
           }
-          throw new Error(
+          throw $stringPanic(
             'React Element cannot be passed to Server Functions from the Client without a ' +
               'temporary reference set. Pass a TemporaryReferenceSet to the options.' +
               (__DEV__ ? describeObjectForErrorMessage(parent, key) : ''),
@@ -765,7 +766,7 @@ export function processReply(
         (proto === null || getPrototypeOf(proto) !== null)
       ) {
         if (temporaryReferences == null) {
-          throw new Error(
+          throw $stringPanic(
             'Only plain objects, and a few built-ins, can be passed to Server Functions. ' +
               'Classes or null prototypes are not supported.' +
               (__DEV__ ? describeObjectForErrorMessage(parent, key) : ''),
@@ -861,7 +862,7 @@ export function processReply(
             return serializeTemporaryReferenceMarker();
           }
         }
-        throw new Error(
+        throw $stringPanic(
           'Client Functions cannot be passed directly to Server Functions. ' +
             'Only Functions passed from the Server can be passed back again.',
         );
@@ -879,7 +880,7 @@ export function processReply(
             return serializeTemporaryReferenceMarker();
           }
         }
-        throw new Error(
+        throw $stringPanic(
           'Symbols cannot be passed to a Server Function without a ' +
             'temporary reference set. Pass a TemporaryReferenceSet to the options.' +
             (__DEV__ ? describeObjectForErrorMessage(parent, key) : ''),
@@ -887,7 +888,7 @@ export function processReply(
       case 'bigint':
         return serializeBigInt(value);
       case 'object':
-        throw new Error(
+        throw $stringPanic(
           `Type ${typeof value} is not supported as an argument to a Server Function.`,
         );
     }
@@ -1023,7 +1024,7 @@ function formAction(name, data) {
 function defaultEncodeFormAction(identifierPrefix) {
   const referenceClosure = knownServerReferences.get(this);
   if (referenceClosure == null) {
-    throw new Error(
+    throw $stringPanic(
       'Tried to encode a Server Action from a different instance than the encoder is from. ' +
         'This is a bug in React.',
     );
@@ -1065,7 +1066,7 @@ function defaultEncodeFormAction(identifierPrefix) {
 function customEncodeFormAction(reference, identifierPrefix, encodeFormAction) {
   const referenceClosure = knownServerReferences.get(reference);
   if (referenceClosure == null) {
-    throw new Error(
+    throw $stringPanic(
       'Tried to encode a Server Action from a different instance than the encoder is from. ' +
         'This is a bug in React.',
     );
@@ -1077,7 +1078,7 @@ function customEncodeFormAction(reference, identifierPrefix, encodeFormAction) {
 function isSignatureEqual(referenceId, numberOfBoundArgs) {
   const referenceClosure = knownServerReferences.get(this);
   if (referenceClosure == null) {
-    throw new Error(
+    throw $stringPanic(
       'Tried to encode a Server Action from a different instance than the encoder is from. ' +
         'This is a bug in React.',
     );
@@ -1303,7 +1304,7 @@ const serverObjectReferenceProxyHandlers = {
       return Object.prototype[Symbol.toStringTag];
     }
     // eslint-disable-next-line react-internal/safe-string-coercion
-    throw new Error(
+    throw $stringPanic(
       `Cannot access ${String(name)} on the client. You cannot read a Server Reference to an object on the client. You can only pass it back to the server.`,
     );
   },

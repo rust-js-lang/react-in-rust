@@ -20,6 +20,7 @@ import {enableOptimisticKey} from 'shared/ReactFeatureFlags';
 import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
 
 import {cloneAndReplaceKey, isValidElement} from './jsx/ReactJSXElement.js';
+import {$stringPanic} from '@rust-js/std';
 
 const SEPARATOR = '.';
 const SUBSEPARATOR = ':';
@@ -295,7 +296,7 @@ function mapIntoArray(children, array, escapedPrefix, nameSoFar, callback) {
       // eslint-disable-next-line react-internal/safe-string-coercion
       const childrenString = String(children);
 
-      throw new Error(
+      throw $stringPanic(
         `Objects are not valid as a React child (found: ${
           childrenString === '[object Object]'
             ? 'object with keys {' + Object.keys(children).join(', ') + '}'

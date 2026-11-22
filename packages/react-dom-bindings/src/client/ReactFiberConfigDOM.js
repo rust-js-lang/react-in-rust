@@ -156,6 +156,7 @@ import {
   $position,
   $removeOutOfBounds,
   $retain,
+  $stringPanic,
   $toLowercase,
   $toUppercase,
   $truncate,
@@ -5346,7 +5347,7 @@ export function getResource(type, currentProps, pendingProps, currentResource) {
             if (__DEV__) {
               diff = `\n\n  - ${describeLinkForResourceErrorDEV(currentProps)}\n  + ${describeLinkForResourceErrorDEV(pendingProps)}`;
             }
-            throw new Error(
+            throw $stringPanic(
               `Expected <link> not to update to be updated to a stylesheet with precedence. Check the \`rel\`, \`href\`, and \`precedence\` props of this component. Alternatively, check whether two different <link> components render in the same slot or share the same key.${diff}`,
             );
           }
@@ -5360,7 +5361,7 @@ export function getResource(type, currentProps, pendingProps, currentResource) {
         if (__DEV__) {
           diff = `\n\n  - ${describeLinkForResourceErrorDEV(currentProps)}\n  + ${describeLinkForResourceErrorDEV(pendingProps)}`;
         }
-        throw new Error(
+        throw $stringPanic(
           `Expected stylesheet with precedence to not be updated to a different kind of <link>. Check the \`rel\`, \`href\`, and \`precedence\` props of this component. Alternatively, check whether two different <link> components render in the same slot or share the same key.${diff}`,
         );
       }
@@ -5397,7 +5398,7 @@ export function getResource(type, currentProps, pendingProps, currentResource) {
       };
     }
     default:
-      throw new Error(
+      throw $stringPanic(
         `getResource encountered a type it did not expect: "${type}". this is a bug in React.`,
       );
   }
@@ -5652,7 +5653,7 @@ export function acquireResource(hoistableRoot, resource, props) {
       case 'void':
         return null;
       default:
-        throw new Error(
+        throw $stringPanic(
           `acquireResource encountered a resource type it did not expect: "${resource.type}". this is a bug in React.`,
         );
     }
@@ -5840,7 +5841,7 @@ export function hydrateHoistable(
       setInitialProperties(instance, type, props);
       $unwrap(ownerDocument.head).appendChild(instance);
     } else {
-      throw new Error(
+      throw $stringPanic(
         `getNodesForType encountered a type it did not expect: "${type}". This is a bug in React.`,
       );
     }
