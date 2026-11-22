@@ -70,6 +70,7 @@ import {
   $cellReplace,
   $fieldCell,
   $live,
+  $panic,
   $stringPanic,
   $unborrow,
 } from '@rust-js/std';
@@ -149,9 +150,10 @@ if (__DEV__) {
     }
 
     if (typeof store !== 'object') {
-      throw new Error(
+      throw $panic(
         'React Component in warnForMissingKey should have a _store. ' +
           'This error is likely caused by a bug in React. Please file an issue.',
+        'packages/react-reconciler/src/ReactChildFiber.rs:145:17',
       );
     }
 
@@ -267,12 +269,13 @@ function coerceRef(workInProgress, element) {
 
 function throwOnInvalidObjectTypeImpl(returnFiber, newChild) {
   if (newChild.$$typeof === REACT_LEGACY_ELEMENT_TYPE) {
-    throw new Error(
+    throw $panic(
       'A React Element from an older version of React was rendered. ' +
         'This is not supported. It can happen if:\n' +
         '- Multiple copies of the "react" package is used.\n' +
         '- A library pre-bundled an old copy of "react" or "react/jsx-runtime".\n' +
         '- A compiler tries to "inline" JSX instead of using the runtime.',
+      'packages/react-reconciler/src/ReactChildFiber.rs:298:9',
     );
   }
 
@@ -285,6 +288,7 @@ function throwOnInvalidObjectTypeImpl(returnFiber, newChild) {
         ? 'object with keys {' + Object.keys(newChild).join(', ') + '}'
         : childString
     }). If you meant to render a collection of children, use an array instead.`,
+    'packages/react-reconciler/src/ReactChildFiber.rs:310:5',
   );
 }
 
@@ -427,7 +431,11 @@ function createChildReconciler(shouldTrackSideEffects) {
 
     let existingChild = currentFirstChild;
     while (existingChild != null) {
-      const borrow = $borrow($fieldCell(existingChild, 'key'), true);
+      const borrow = $borrow(
+        $fieldCell(existingChild, 'key'),
+        'packages/react-reconciler/src/ReactChildFiber.rs:512:33',
+        true,
+      );
       const key = borrow.value;
       $unborrow(borrow);
       if (key == null) {
@@ -590,7 +598,13 @@ function createChildReconciler(shouldTrackSideEffects) {
     const existing = useFiber(current, portal.children || []);
     if (enableOptimisticKey) {
       // If the old key was optimistic we need to now save the real one.
-      $cellReplace($borrowMut($fieldCell(existing, 'key')), portal.key);
+      $cellReplace(
+        $borrowMut(
+          $fieldCell(existing, 'key'),
+          'packages/react-reconciler/src/ReactChildFiber.rs:711:26',
+        ),
+        portal.key,
+      );
     }
     existing.return = returnFiber;
     if (__DEV__) {
@@ -621,7 +635,13 @@ function createChildReconciler(shouldTrackSideEffects) {
     const existing = useFiber(current, fragment);
     if (enableOptimisticKey) {
       // If the old key was optimistic we need to now save the real one.
-      $cellReplace($borrowMut($fieldCell(existing, 'key')), key);
+      $cellReplace(
+        $borrowMut(
+          $fieldCell(existing, 'key'),
+          'packages/react-reconciler/src/ReactChildFiber.rs:745:26',
+        ),
+        key,
+      );
     }
     existing.return = returnFiber;
     if (__DEV__) {
@@ -760,7 +780,11 @@ function createChildReconciler(shouldTrackSideEffects) {
   function updateSlot(returnFiber, oldFiber, newChild, lanes) {
     // Update the fiber if the keys match, otherwise return null.
     function then(oldFiber) {
-      const borrow = $borrow($fieldCell(oldFiber, 'key'), true);
+      const borrow = $borrow(
+        $fieldCell(oldFiber, 'key'),
+        'packages/react-reconciler/src/ReactChildFiber.rs:903:64',
+        true,
+      );
       $unborrow(borrow);
       return borrow.value;
     }
@@ -1252,7 +1276,11 @@ function createChildReconciler(shouldTrackSideEffects) {
             // current, that means that we reused the fiber. We need to delete
             // it from the child list so that we don't add it to the deletion
             // list.
-            const borrow = $borrow($fieldCell(currentFiber, 'key'), true);
+            const borrow = $borrow(
+              $fieldCell(currentFiber, 'key'),
+              'packages/react-reconciler/src/ReactChildFiber.rs:1438:53',
+              true,
+            );
             const key = borrow.value;
             $unborrow(borrow);
             if (key != null) {
@@ -1314,9 +1342,10 @@ function createChildReconciler(shouldTrackSideEffects) {
     const iteratorFn = getIteratorFn(newChildrenIterable);
 
     if (typeof iteratorFn !== 'function') {
-      throw new Error(
+      throw $panic(
         'An object is not an iterable. This error is likely caused by a bug in ' +
           'React. Please file an issue.',
+        'packages/react-reconciler/src/ReactChildFiber.rs:1503:13',
       );
     }
 
@@ -1406,7 +1435,10 @@ function createChildReconciler(shouldTrackSideEffects) {
     }
 
     if (newChildren == null) {
-      throw new Error('An iterable object provided no iterator.');
+      throw $panic(
+        'An iterable object provided no iterator.',
+        'packages/react-reconciler/src/ReactChildFiber.rs:1613:13',
+      );
     }
 
     // To save bytes, we reuse the logic by creating a synchronous Iterable and
@@ -1432,7 +1464,10 @@ function createChildReconciler(shouldTrackSideEffects) {
     lanes,
   ) {
     if (newChildren == null) {
-      throw new Error('An iterable object provided no iterator.');
+      throw $panic(
+        'An iterable object provided no iterator.',
+        'packages/react-reconciler/src/ReactChildFiber.rs:1651:13',
+      );
     }
 
     let resultingFirstChild = null;
@@ -1579,7 +1614,11 @@ function createChildReconciler(shouldTrackSideEffects) {
             // current, that means that we reused the fiber. We need to delete
             // it from the child list so that we don't add it to the deletion
             // list.
-            const borrow = $borrow($fieldCell(currentFiber, 'key'), true);
+            const borrow = $borrow(
+              $fieldCell(currentFiber, 'key'),
+              'packages/react-reconciler/src/ReactChildFiber.rs:1793:53',
+              true,
+            );
             const key = borrow.value;
             $unborrow(borrow);
             if (key != null) {
@@ -1678,7 +1717,11 @@ function createChildReconciler(shouldTrackSideEffects) {
       const current = child;
       // TODO: If key === null and child.key === null, then this only applies to
       // the first item in the list.
-      const borrow = $borrow($fieldCell(current, 'key'), true);
+      const borrow = $borrow(
+        $fieldCell(current, 'key'),
+        'packages/react-reconciler/src/ReactChildFiber.rs:1893:41',
+        true,
+      );
       const childKey = borrow.value;
       $unborrow(borrow);
       if (
@@ -1699,7 +1742,13 @@ function createChildReconciler(shouldTrackSideEffects) {
             const existing = useFiber(current, element.props.children);
             if (enableOptimisticKey) {
               // If the old key was optimistic we need to now save the real one.
-              $cellReplace($borrowMut($fieldCell(existing, 'key')), key);
+              $cellReplace(
+                $borrowMut(
+                  $fieldCell(existing, 'key'),
+                  'packages/react-reconciler/src/ReactChildFiber.rs:1906:42',
+                ),
+                key,
+              );
             }
             coerceRef(existing, element);
             existing.return = returnFiber;
@@ -1728,7 +1777,13 @@ function createChildReconciler(shouldTrackSideEffects) {
           const existing = useFiber(current, element.props);
           if (enableOptimisticKey) {
             // If the old key was optimistic we need to now save the real one.
-            $cellReplace($borrowMut($fieldCell(existing, 'key')), key);
+            $cellReplace(
+              $borrowMut(
+                $fieldCell(existing, 'key'),
+                'packages/react-reconciler/src/ReactChildFiber.rs:1938:38',
+              ),
+              key,
+            );
           }
           coerceRef(existing, element);
           existing.return = returnFiber;
@@ -1790,7 +1845,11 @@ function createChildReconciler(shouldTrackSideEffects) {
       const current = child;
       // TODO: If key === null and child.key === null, then this only applies to
       // the first item in the list.
-      const borrow = $borrow($fieldCell(current, 'key'), true);
+      const borrow = $borrow(
+        $fieldCell(current, 'key'),
+        'packages/react-reconciler/src/ReactChildFiber.rs:1999:41',
+        true,
+      );
       const childKey = borrow.value;
       $unborrow(borrow);
       if (
@@ -1809,7 +1868,13 @@ function createChildReconciler(shouldTrackSideEffects) {
           const existing = useFiber(current, portal.children || []);
           if (enableOptimisticKey) {
             // If the old key was optimistic we need to now save the real one.
-            $cellReplace($borrowMut($fieldCell(existing, 'key')), key);
+            $cellReplace(
+              $borrowMut(
+                $fieldCell(existing, 'key'),
+                'packages/react-reconciler/src/ReactChildFiber.rs:2027:38',
+              ),
+              key,
+            );
           }
           existing.return = returnFiber;
           return existing;
@@ -2112,7 +2177,10 @@ export function resetChildReconcilerOnUnwind() {
 
 export function cloneChildFibers(current, workInProgress) {
   if (current != null && workInProgress.child !== current.child) {
-    throw new Error('Resuming work not yet implemented.');
+    throw $panic(
+      'Resuming work not yet implemented.',
+      'packages/react-reconciler/src/ReactChildFiber.rs:2359:9',
+    );
   }
 
   const child = workInProgress.child;

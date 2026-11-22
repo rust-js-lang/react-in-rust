@@ -32,7 +32,7 @@ function write(destination, buffer) {
 }
 
 import ReactFizzServer from 'react-server';
-import {$index, $splice} from '@rust-js/std';
+import {$index, $panic, $splice, $stdSites} from '@rust-js/std';
 
 // $FlowFixMe[prop-missing]
 // $FlowFixMe[incompatible-type]
@@ -107,6 +107,7 @@ const ReactNoopServer = ReactFizzServer({
     const parent = $index(
       destination.stack,
       (destination.stack.length - 1) >>> 0,
+      'packages/react-noop-renderer/src/ReactNoopServer.rs:334:52',
     );
     destination.placeholders.set(id, {
       parent,
@@ -131,6 +132,7 @@ const ReactNoopServer = ReactFizzServer({
     const parent = $index(
       destination.stack,
       (destination.stack.length - 1) >>> 0,
+      'packages/react-noop-renderer/src/ReactNoopServer.rs:360:52',
     );
     parent.children.push(suspenseInstance);
     destination.stack.push(suspenseInstance);
@@ -144,6 +146,7 @@ const ReactNoopServer = ReactFizzServer({
     const parent = $index(
       destination.stack,
       (destination.stack.length - 1) >>> 0,
+      'packages/react-noop-renderer/src/ReactNoopServer.rs:372:52',
     );
     parent.children.push(suspenseInstance);
     destination.stack.push(suspenseInstance);
@@ -157,6 +160,7 @@ const ReactNoopServer = ReactFizzServer({
     const parent = $index(
       destination.stack,
       (destination.stack.length - 1) >>> 0,
+      'packages/react-noop-renderer/src/ReactNoopServer.rs:384:52',
     );
     parent.children.push(suspenseInstance);
     destination.stack.push(suspenseInstance);
@@ -179,7 +183,10 @@ const ReactNoopServer = ReactFizzServer({
     const segment = {children: []};
     destination.segments.set(id, segment);
     if (destination.stack.length !== 0) {
-      throw new Error('Segments are only expected at the root of the stack.');
+      throw $panic(
+        'Segments are only expected at the root of the stack.',
+        'packages/react-noop-renderer/src/ReactNoopServer.rs:410:17',
+      );
     }
     destination.stack.push(segment);
     return true;
@@ -192,11 +199,17 @@ const ReactNoopServer = ReactFizzServer({
   writeCompletedSegmentInstruction(destination, renderState, contentSegmentId) {
     const segment = destination.segments.get(contentSegmentId);
     if (segment === undefined) {
-      throw new Error('Missing segment.');
+      throw $panic(
+        'Missing segment.',
+        'packages/react-noop-renderer/src/ReactNoopServer.rs:425:17',
+      );
     }
     const placeholder = destination.placeholders.get(contentSegmentId);
     if (placeholder === undefined) {
-      throw new Error('Missing placeholder.');
+      throw $panic(
+        'Missing placeholder.',
+        'packages/react-noop-renderer/src/ReactNoopServer.rs:428:17',
+      );
     }
     const children = segment.children.slice();
     $splice(
@@ -204,6 +217,7 @@ const ReactNoopServer = ReactFizzServer({
       placeholder.index,
       placeholder.index,
       children,
+      $stdSites.vecDrain[0],
     );
     return true;
   },
@@ -216,7 +230,10 @@ const ReactNoopServer = ReactFizzServer({
   ) {
     const segment = destination.segments.get(contentSegmentId);
     if (segment === undefined) {
-      throw new Error('Missing segment.');
+      throw $panic(
+        'Missing segment.',
+        'packages/react-noop-renderer/src/ReactNoopServer.rs:441:17',
+      );
     }
     const children = segment.children.slice();
     boundary.children = children;

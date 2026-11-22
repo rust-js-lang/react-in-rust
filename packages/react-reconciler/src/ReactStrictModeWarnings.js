@@ -9,7 +9,13 @@ import {runWithFiberInDEV} from './ReactCurrentFiber.js';
 
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 import {NoMode, StrictLegacyMode} from './ReactTypeOfMode.js';
-import {$assign, $borrowMut, $withBorrow, $withBorrowMut} from '@rust-js/std';
+import {
+  $assign,
+  $borrowMut,
+  $stdSites,
+  $withBorrow,
+  $withBorrowMut,
+} from '@rust-js/std';
 
 const ReactStrictModeWarnings = {
   recordUnsafeLifecycleWarnings(fiber, instance) {},
@@ -74,6 +80,7 @@ if (__DEV__) {
         pending => {
           pending.push(fiber);
         },
+        $stdSites.localKeyWithBorrowMut[0],
         true,
       );
     }
@@ -87,6 +94,7 @@ if (__DEV__) {
         pending => {
           pending.push(fiber);
         },
+        $stdSites.localKeyWithBorrowMut[0],
         true,
       );
     }
@@ -101,6 +109,7 @@ if (__DEV__) {
         pending => {
           pending.push(fiber);
         },
+        $stdSites.localKeyWithBorrowMut[0],
         true,
       );
     }
@@ -114,6 +123,7 @@ if (__DEV__) {
         pending => {
           pending.push(fiber);
         },
+        $stdSites.localKeyWithBorrowMut[0],
         true,
       );
     }
@@ -128,6 +138,7 @@ if (__DEV__) {
         pending => {
           pending.push(fiber);
         },
+        $stdSites.localKeyWithBorrowMut[0],
         true,
       );
     }
@@ -141,6 +152,7 @@ if (__DEV__) {
         pending => {
           pending.push(fiber);
         },
+        $stdSites.localKeyWithBorrowMut[0],
         true,
       );
     }
@@ -153,6 +165,7 @@ if (__DEV__) {
       $withBorrow(
         pendingComponentWillMountWarnings,
         pending => pending.length !== 0,
+        $stdSites.localKeyWithBorrow[0],
         true,
       )
     ) {
@@ -167,9 +180,13 @@ if (__DEV__) {
             didWarnAboutUnsafeLifecycles.add(fiber.type);
           }
         },
+        $stdSites.localKeyWithBorrow[0],
         true,
       );
-      $assign($borrowMut(pendingComponentWillMountWarnings), []);
+      $assign(
+        $borrowMut(pendingComponentWillMountWarnings, $stdSites.localKeySet[0]),
+        [],
+      );
     }
 
     const unsafeComponentWillMountUniqueNames = new Set();
@@ -177,6 +194,7 @@ if (__DEV__) {
       $withBorrow(
         pendingUNSAFE_ComponentWillMountWarnings,
         pending => pending.length !== 0,
+        $stdSites.localKeyWithBorrow[0],
         true,
       )
     ) {
@@ -191,9 +209,16 @@ if (__DEV__) {
             didWarnAboutUnsafeLifecycles.add(fiber.type);
           }
         },
+        $stdSites.localKeyWithBorrow[0],
         true,
       );
-      $assign($borrowMut(pendingUNSAFE_ComponentWillMountWarnings), []);
+      $assign(
+        $borrowMut(
+          pendingUNSAFE_ComponentWillMountWarnings,
+          $stdSites.localKeySet[0],
+        ),
+        [],
+      );
     }
 
     const componentWillReceivePropsUniqueNames = new Set();
@@ -201,6 +226,7 @@ if (__DEV__) {
       $withBorrow(
         pendingComponentWillReceivePropsWarnings,
         pending => pending.length !== 0,
+        $stdSites.localKeyWithBorrow[0],
         true,
       )
     ) {
@@ -215,9 +241,16 @@ if (__DEV__) {
             didWarnAboutUnsafeLifecycles.add(fiber.type);
           }
         },
+        $stdSites.localKeyWithBorrow[0],
         true,
       );
-      $assign($borrowMut(pendingComponentWillReceivePropsWarnings), []);
+      $assign(
+        $borrowMut(
+          pendingComponentWillReceivePropsWarnings,
+          $stdSites.localKeySet[0],
+        ),
+        [],
+      );
     }
 
     const unsafeComponentWillReceivePropsUniqueNames = new Set();
@@ -225,6 +258,7 @@ if (__DEV__) {
       $withBorrow(
         pendingUNSAFE_ComponentWillReceivePropsWarnings,
         pending => pending.length !== 0,
+        $stdSites.localKeyWithBorrow[0],
         true,
       )
     ) {
@@ -239,9 +273,16 @@ if (__DEV__) {
             didWarnAboutUnsafeLifecycles.add(fiber.type);
           }
         },
+        $stdSites.localKeyWithBorrow[0],
         true,
       );
-      $assign($borrowMut(pendingUNSAFE_ComponentWillReceivePropsWarnings), []);
+      $assign(
+        $borrowMut(
+          pendingUNSAFE_ComponentWillReceivePropsWarnings,
+          $stdSites.localKeySet[0],
+        ),
+        [],
+      );
     }
 
     const componentWillUpdateUniqueNames = new Set();
@@ -249,6 +290,7 @@ if (__DEV__) {
       $withBorrow(
         pendingComponentWillUpdateWarnings,
         pending => pending.length !== 0,
+        $stdSites.localKeyWithBorrow[0],
         true,
       )
     ) {
@@ -263,9 +305,16 @@ if (__DEV__) {
             didWarnAboutUnsafeLifecycles.add(fiber.type);
           }
         },
+        $stdSites.localKeyWithBorrow[0],
         true,
       );
-      $assign($borrowMut(pendingComponentWillUpdateWarnings), []);
+      $assign(
+        $borrowMut(
+          pendingComponentWillUpdateWarnings,
+          $stdSites.localKeySet[0],
+        ),
+        [],
+      );
     }
 
     const unsafeComponentWillUpdateUniqueNames = new Set();
@@ -273,6 +322,7 @@ if (__DEV__) {
       $withBorrow(
         pendingUNSAFE_ComponentWillUpdateWarnings,
         pending => pending.length !== 0,
+        $stdSites.localKeyWithBorrow[0],
         true,
       )
     ) {
@@ -287,9 +337,16 @@ if (__DEV__) {
             didWarnAboutUnsafeLifecycles.add(fiber.type);
           }
         },
+        $stdSites.localKeyWithBorrow[0],
         true,
       );
-      $assign($borrowMut(pendingUNSAFE_ComponentWillUpdateWarnings), []);
+      $assign(
+        $borrowMut(
+          pendingUNSAFE_ComponentWillUpdateWarnings,
+          $stdSites.localKeySet[0],
+        ),
+        [],
+      );
     }
 
     // Finally, we flush all the warnings
@@ -420,6 +477,7 @@ if (__DEV__) {
           }
           pendingLegacyContextWarning.get(strictRoot).push(fiber);
         },
+        $stdSites.localKeyWithBorrowMut[0],
         true,
       );
     }
@@ -458,18 +516,52 @@ if (__DEV__) {
           });
         }
       },
+      $stdSites.localKeyWithBorrow[0],
       true,
     );
   };
 
   ReactStrictModeWarnings.discardPendingWarnings = () => {
-    $assign($borrowMut(pendingComponentWillMountWarnings), []);
-    $assign($borrowMut(pendingUNSAFE_ComponentWillMountWarnings), []);
-    $assign($borrowMut(pendingComponentWillReceivePropsWarnings), []);
-    $assign($borrowMut(pendingUNSAFE_ComponentWillReceivePropsWarnings), []);
-    $assign($borrowMut(pendingComponentWillUpdateWarnings), []);
-    $assign($borrowMut(pendingUNSAFE_ComponentWillUpdateWarnings), []);
-    $assign($borrowMut(pendingLegacyContextWarning), new Map());
+    $assign(
+      $borrowMut(pendingComponentWillMountWarnings, $stdSites.localKeySet[0]),
+      [],
+    );
+    $assign(
+      $borrowMut(
+        pendingUNSAFE_ComponentWillMountWarnings,
+        $stdSites.localKeySet[0],
+      ),
+      [],
+    );
+    $assign(
+      $borrowMut(
+        pendingComponentWillReceivePropsWarnings,
+        $stdSites.localKeySet[0],
+      ),
+      [],
+    );
+    $assign(
+      $borrowMut(
+        pendingUNSAFE_ComponentWillReceivePropsWarnings,
+        $stdSites.localKeySet[0],
+      ),
+      [],
+    );
+    $assign(
+      $borrowMut(pendingComponentWillUpdateWarnings, $stdSites.localKeySet[0]),
+      [],
+    );
+    $assign(
+      $borrowMut(
+        pendingUNSAFE_ComponentWillUpdateWarnings,
+        $stdSites.localKeySet[0],
+      ),
+      [],
+    );
+    $assign(
+      $borrowMut(pendingLegacyContextWarning, $stdSites.localKeySet[0]),
+      new Map(),
+    );
   };
 }
 

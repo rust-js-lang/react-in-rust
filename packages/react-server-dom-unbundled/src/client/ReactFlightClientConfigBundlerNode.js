@@ -41,6 +41,7 @@ export function resolveClientReference(bundlerConfig, metadata) {
     if (moduleData == null) {
       throw $stringPanic(
         `Could not find the module "${id}" in the React Server Consumer Manifest. This is probably a bug in the React Server Components bundler.`,
+        'packages/react-server-dom-unbundled/src/client/ReactFlightClientConfigBundlerNode.rs:83:13',
       );
     }
     resolvedModuleData = moduleData;

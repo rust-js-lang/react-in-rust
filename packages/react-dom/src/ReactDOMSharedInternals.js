@@ -6,15 +6,17 @@
 // LICENSE file in the root directory of this source tree.
 
 import noop from 'shared/noop';
+import {$panic} from '@rust-js/std';
 
 // This should line up with NoEventPriority from react-reconciler/src/ReactEventPriorities
 // but we can't depend on the react-reconciler from this isomorphic code.
 export const NoEventPriority = 0;
 
 function requestFormReset(element) {
-  throw new Error(
+  throw $panic(
     'Invalid form element. requestFormReset must be passed a form that was ' +
       'rendered by React.',
+    'packages/react-dom/src/ReactDOMSharedInternals.rs:30:5',
   );
 }
 

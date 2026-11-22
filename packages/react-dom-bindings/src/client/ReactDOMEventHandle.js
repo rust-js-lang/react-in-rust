@@ -21,7 +21,7 @@ import {
   enableCreateEventHandleAPI,
   enableScopeAPI,
 } from 'shared/ReactFeatureFlags';
-import {$stringPanic} from '@rust-js/std';
+import {$panic, $stringPanic} from '@rust-js/std';
 
 function isValidEventTarget(target) {
   return typeof target.addEventListener === 'function';
@@ -55,9 +55,10 @@ function registerReactDOMEvent(target, domEventName, isCapturePhaseListener) {
       eventTarget,
     );
   } else {
-    throw new Error(
+    throw $panic(
       'ReactDOM.createEventHandle: setter called on an invalid ' +
         'target. Provide a valid EventTarget or an element managed by React.',
+      'packages/react-dom-bindings/src/client/ReactDOMEventHandle.rs:85:9',
     );
   }
 }
@@ -78,6 +79,7 @@ export function createEventHandle(type, options) {
     if (!allNativeEvents.has(domEventName)) {
       throw $stringPanic(
         `Cannot call unstable_createEventHandle with "${domEventName}", as it is not an event known to React.`,
+        'packages/react-dom-bindings/src/client/ReactDOMEventHandle.rs:110:13',
       );
     }
 
@@ -91,9 +93,10 @@ export function createEventHandle(type, options) {
 
     const eventHandle = (target, callback) => {
       if (typeof callback !== 'function') {
-        throw new Error(
+        throw $panic(
           'ReactDOM.createEventHandle: setter called with an invalid ' +
             'callback. The callback must be a function.',
+          'packages/react-dom-bindings/src/client/ReactDOMEventHandle.rs:129:21',
         );
       }
 

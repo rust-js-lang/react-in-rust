@@ -46,6 +46,7 @@ export function resolveClientReference(bundlerConfig, metadata) {
       if (moduleData == null) {
         throw $stringPanic(
           `Could not find the module "${id}" in the React Server Consumer Manifest. This is probably a bug in the React Server Components bundler.`,
+          'packages/react-server-dom-turbopack/src/client/ReactFlightClientConfigBundlerTurbopack.rs:96:17',
         );
       }
       resolvedModuleData = moduleData;
@@ -80,6 +81,7 @@ export function resolveServerReference(bundlerConfig, id) {
   if (resolvedModuleData == null) {
     throw $stringPanic(
       `Could not find the module "${id}" in the React Server Manifest. This is probably a bug in the React Server Components bundler.`,
+      'packages/react-server-dom-turbopack/src/client/ReactFlightClientConfigBundlerTurbopack.rs:141:9',
     );
   }
   if (resolvedModuleData.async === true) {
@@ -203,7 +205,11 @@ export function getModuleDebugInfo(metadata) {
   const debugInfo = [];
   let i = 0;
   while (i < chunks.length) {
-    const chunk = $index(chunks, i);
+    const chunk = $index(
+      chunks,
+      i,
+      'packages/react-server-dom-turbopack/src/client/ReactFlightClientConfigBundlerTurbopack.rs:289:22',
+    );
     i++;
     // A merged chunk is `[mergedChunkFilename, ...]`; use its own filename.
     addChunkDebugInfo(debugInfo, typeof chunk === 'string' ? chunk : chunk[0]);

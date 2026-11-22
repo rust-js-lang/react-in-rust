@@ -154,7 +154,10 @@ export function prerender(model, turbopackMap, options) {
     const onFatalError = reject;
     let request;
     function onAllReady() {
-      const request$1 = $unwrap(request);
+      const request$1 = $unwrap(
+        request,
+        'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerEdge.rs:260:66',
+      );
       const stream = new ReadableStream(
         {
           type: 'bytes',

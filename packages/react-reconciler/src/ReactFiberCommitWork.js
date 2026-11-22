@@ -265,7 +265,7 @@ import {
   untrackNamedViewTransition,
 } from './ReactFiberDuplicateViewTransitions.js';
 import {markIndicatorHandled} from './ReactFiberRootScheduler.js';
-import {$catchable, $index, $stringPanic, $unwrap} from '@rust-js/std';
+import {$catchable, $index, $panic, $stringPanic, $unwrap} from '@rust-js/std';
 
 // shared/ReactTypes' `Wakeable`.
 
@@ -518,9 +518,10 @@ function commitBeforeMutationEffectsOnFiber(
     // Fallthrough
     default:
       if ((flags & Snapshot) !== NoFlags) {
-        throw new Error(
+        throw $panic(
           'This unit of work tag should not have side-effects. This error is ' +
             'likely caused by a bug in React. Please file an issue.',
+          'packages/react-reconciler/src/ReactFiberCommitWork.rs:690:17',
         );
       }
       break;
@@ -607,8 +608,10 @@ function commitLayoutEffectOnFiber(
       }
       if (enableProfilerTimer && enableProfilerCommitHooks) {
         finishedRoot.effectDuration =
-          $unwrap(finishedRoot.effectDuration) +
-          popNestedEffectDurations(prevProfilerEffectDuration);
+          $unwrap(
+            finishedRoot.effectDuration,
+            'packages/react-reconciler/src/ReactFiberCommitWork.rs:769:57',
+          ) + popNestedEffectDurations(prevProfilerEffectDuration);
       }
       break;
     }
@@ -883,9 +886,15 @@ function abortRootTransitions(
     const rootTransitions = root.incompleteTransitions;
     deletedTransitions.forEach(transition => {
       if (rootTransitions.has(transition)) {
-        const transitionInstance = $unwrap(rootTransitions.get(transition));
+        const transitionInstance = $unwrap(
+          rootTransitions.get(transition),
+          'packages/react-reconciler/src/ReactFiberCommitWork.rs:1019:76',
+        );
         transitionInstance.aborts ??= [];
-        const aborts = $unwrap(transitionInstance.aborts);
+        const aborts = $unwrap(
+          transitionInstance.aborts,
+          'packages/react-reconciler/src/ReactFiberCommitWork.rs:1025:74',
+        );
         aborts.push(abort);
 
         if (deletedOffscreenInstance != null) {
@@ -1354,9 +1363,10 @@ function commitDeletionEffects(root, returnFiber, deletedFiber) {
       parent = current.return;
     }
     if (hostParent == null) {
-      throw new Error(
+      throw $panic(
         'Expected to find a host parent. This error is likely caused by ' +
           'a bug in React. Please file an issue.',
+        'packages/react-reconciler/src/ReactFiberCommitWork.rs:1501:13',
       );
     }
 
@@ -1843,6 +1853,7 @@ function getRetryCache(finishedWork) {
     default:
       throw $stringPanic(
         `Unexpected Suspense handler tag (${finishedWork.tag}). This is a bug in React.`,
+        'packages/react-reconciler/src/ReactFiberCommitWork.rs:1997:13',
       );
   }
 }
@@ -1862,8 +1873,9 @@ function attachSuspenseRetryListeners(finishedWork, wakeables) {
           // If we have pending work still, associate the original updaters with it.
           restorePendingUpdaters(inProgressRoot, inProgressLanes);
         } else {
-          throw new Error(
+          throw $panic(
             'Expected finished root and lanes to be set. This is a bug in React.',
+            'packages/react-reconciler/src/ReactFiberCommitWork.rs:2024:21',
           );
         }
       }
@@ -2182,9 +2194,10 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
 
       if (flags & Update && supportsMutation) {
         if (finishedWork.stateNode == null) {
-          throw new Error(
+          throw $panic(
             'This should have a text node initialized. This error is likely ' +
               'caused by a bug in React. Please file an issue.',
+            'packages/react-reconciler/src/ReactFiberCommitWork.rs:2387:21',
           );
         }
 
@@ -2244,8 +2257,10 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
 
       if (enableProfilerTimer && enableProfilerCommitHooks) {
         root.effectDuration =
-          $unwrap(root.effectDuration) +
-          popNestedEffectDurations(prevProfilerEffectDuration);
+          $unwrap(
+            root.effectDuration,
+            'packages/react-reconciler/src/ReactFiberCommitWork.rs:2458:48',
+          ) + popNestedEffectDurations(prevProfilerEffectDuration);
       }
 
       popMutationContext(false);
@@ -2345,7 +2360,10 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
       //
       // Also, all this logic could/should move to the passive phase so it
       // doesn't block paint.
-      const offscreenFiber = $unwrap(finishedWork.child);
+      const offscreenFiber = $unwrap(
+        finishedWork.child,
+        'packages/react-reconciler/src/ReactFiberCommitWork.rs:2561:72',
+      );
       if (offscreenFiber.flags & Visibility) {
         // Throttle the appearance and disappearance of Suspense fallbacks.
         const isShowingFallback = finishedWork.memoizedState != null;
@@ -2721,8 +2739,16 @@ function commitAfterMutationEffectsOnFiber(finishedWork, root, lanes) {
         if (cancelableChildren != null) {
           for (let i = 0; i < cancelableChildren.length; i += 3) {
             const instance = cancelableChildren[i];
-            const oldName = $index(cancelableChildren, i + 1);
-            const props = $index(cancelableChildren, i + 2);
+            const oldName = $index(
+              cancelableChildren,
+              i + 1,
+              'packages/react-reconciler/src/ReactFiberCommitWork.rs:2983:68',
+            );
+            const props = $index(
+              cancelableChildren,
+              i + 2,
+              'packages/react-reconciler/src/ReactFiberCommitWork.rs:2984:65',
+            );
             cancelViewTransitionName(instance, oldName, props);
           }
         }
@@ -3385,7 +3411,10 @@ function commitOffscreenPassiveMountEffects(current, finishedWork, instance) {
             // the render phase (ie the transitions associated with this boundary)
             // into the transitions set.
             instance._transitions ??= new Set();
-            $unwrap(instance._transitions).add(transition);
+            $unwrap(
+              instance._transitions,
+              'packages/react-reconciler/src/ReactFiberCommitWork.rs:3666:52',
+            ).add(transition);
           });
         }
 
@@ -3405,7 +3434,10 @@ function commitOffscreenPassiveMountEffects(current, finishedWork, instance) {
                   markerInstance.pendingBoundaries ??= new Map();
                   instance._pendingMarkers ??= new Set();
 
-                  $unwrap(instance._pendingMarkers).add(markerInstance);
+                  $unwrap(
+                    instance._pendingMarkers,
+                    'packages/react-reconciler/src/ReactFiberCommitWork.rs:3694:46',
+                  ).add(markerInstance);
                 }
               });
             }
@@ -3515,7 +3547,12 @@ function recursivelyTraversePassiveMountEffects(
           child,
           committedLanes,
           committedTransitions,
-          nextSibling != null ? $unwrap(nextSibling.actualStartTime) : endTime,
+          nextSibling != null
+            ? $unwrap(
+                nextSibling.actualStartTime,
+                'packages/react-reconciler/src/ReactFiberCommitWork.rs:3821:84',
+              )
+            : endTime,
         );
         child = nextSibling;
       } else {
@@ -3588,12 +3625,18 @@ function commitPassiveMountOnFiber(
         enableProfilerTimer &&
         enableComponentPerformanceTrack &&
         (finishedWork.mode & ProfileMode) !== NoMode &&
-        $unwrap(finishedWork.actualStartTime) > 0 &&
+        $unwrap(
+          finishedWork.actualStartTime,
+          'packages/react-reconciler/src/ReactFiberCommitWork.rs:3899:58',
+        ) > 0 &&
         (finishedWork.flags & PerformedWork) !== NoFlags
       ) {
         logComponentRender(
           finishedWork,
-          $unwrap(finishedWork.actualStartTime),
+          $unwrap(
+            finishedWork.actualStartTime,
+            'packages/react-reconciler/src/ReactFiberCommitWork.rs:3904:59',
+          ),
           endTime,
           inHydratedSubtree,
           committedLanes,
@@ -3623,12 +3666,18 @@ function commitPassiveMountOnFiber(
         enableProfilerTimer &&
         enableComponentPerformanceTrack &&
         (finishedWork.mode & ProfileMode) !== NoMode &&
-        $unwrap(finishedWork.actualStartTime) > 0
+        $unwrap(
+          finishedWork.actualStartTime,
+          'packages/react-reconciler/src/ReactFiberCommitWork.rs:3930:58',
+        ) > 0
       ) {
         if ((finishedWork.flags & DidCapture) !== NoFlags) {
           logComponentErrored(
             finishedWork,
-            $unwrap(finishedWork.actualStartTime),
+            $unwrap(
+              finishedWork.actualStartTime,
+              'packages/react-reconciler/src/ReactFiberCommitWork.rs:3935:63',
+            ),
             endTime,
             // TODO: The captured values are all hidden inside the updater/callback closures so
             // we can't get to the errors but they're there so we should be able to log them.
@@ -3637,7 +3686,10 @@ function commitPassiveMountOnFiber(
         } else if ((finishedWork.flags & PerformedWork) !== NoFlags) {
           logComponentRender(
             finishedWork,
-            $unwrap(finishedWork.actualStartTime),
+            $unwrap(
+              finishedWork.actualStartTime,
+              'packages/react-reconciler/src/ReactFiberCommitWork.rs:3944:63',
+            ),
             endTime,
             inHydratedSubtree,
             committedLanes,
@@ -3735,8 +3787,10 @@ function commitPassiveMountOnFiber(
       }
       if (enableProfilerTimer && enableProfilerCommitHooks) {
         finishedRoot.passiveEffectDuration =
-          $unwrap(finishedRoot.passiveEffectDuration) +
-          popNestedEffectDurations(prevProfilerEffectDuration);
+          $unwrap(
+            finishedRoot.passiveEffectDuration,
+            'packages/react-reconciler/src/ReactFiberCommitWork.rs:4057:65',
+          ) + popNestedEffectDurations(prevProfilerEffectDuration);
       }
       break;
     }
@@ -3804,7 +3858,10 @@ function commitPassiveMountOnFiber(
             // If there were no hydration errors, that suggests that this was an intentional client
             // rendered boundary.
             if (hydrationErrors != null) {
-              const startTime = $unwrap(finishedWork.actualStartTime);
+              const startTime = $unwrap(
+                finishedWork.actualStartTime,
+                'packages/react-reconciler/src/ReactFiberCommitWork.rs:4136:84',
+              );
               logComponentErrored(
                 finishedWork,
                 startTime,
@@ -3860,7 +3917,10 @@ function commitPassiveMountOnFiber(
             // If there were no hydration errors, that suggests that this was an intentional client
             // rendered boundary.
             if (hydrationErrors != null) {
-              const startTime = $unwrap(finishedWork.actualStartTime);
+              const startTime = $unwrap(
+                finishedWork.actualStartTime,
+                'packages/react-reconciler/src/ReactFiberCommitWork.rs:4195:84',
+              );
               logComponentErrored(
                 finishedWork,
                 startTime,
@@ -4009,7 +4069,10 @@ function commitPassiveMountOnFiber(
             !inHydratedSubtree
           ) {
             // Log the reappear in the render phase.
-            const startTime = $unwrap(finishedWork.actualStartTime);
+            const startTime = $unwrap(
+              finishedWork.actualStartTime,
+              'packages/react-reconciler/src/ReactFiberCommitWork.rs:4356:80',
+            );
             if (startTime >= 0 && endTime - startTime > 0.05) {
               logComponentReappeared(finishedWork, startTime, endTime);
             }
@@ -4110,7 +4173,10 @@ function commitPassiveMountOnFiber(
       finishedWork.return.alternate != null;
     if (isMount) {
       // Log the mount in the render phase.
-      const startTime = $unwrap(finishedWork.actualStartTime);
+      const startTime = $unwrap(
+        finishedWork.actualStartTime,
+        'packages/react-reconciler/src/ReactFiberCommitWork.rs:4456:68',
+      );
       if (startTime >= 0 && endTime - startTime > 0.05) {
         logComponentMount(finishedWork, startTime, endTime);
       }
@@ -4173,7 +4239,12 @@ function recursivelyTraverseReconnectPassiveEffects(
         committedLanes,
         committedTransitions,
         childShouldIncludeWorkInProgressEffects,
-        nextSibling != null ? $unwrap(nextSibling.actualStartTime) : endTime,
+        nextSibling != null
+          ? $unwrap(
+              nextSibling.actualStartTime,
+              'packages/react-reconciler/src/ReactFiberCommitWork.rs:4526:80',
+            )
+          : endTime,
       );
       child = nextSibling;
     } else {
@@ -4216,12 +4287,18 @@ export function reconnectPassiveEffects(
     enableComponentPerformanceTrack &&
     includeWorkInProgressEffects &&
     (finishedWork.mode & ProfileMode) !== NoMode &&
-    $unwrap(finishedWork.actualStartTime) > 0 &&
+    $unwrap(
+      finishedWork.actualStartTime,
+      'packages/react-reconciler/src/ReactFiberCommitWork.rs:4571:50',
+    ) > 0 &&
     (finishedWork.flags & PerformedWork) !== NoFlags
   ) {
     logComponentRender(
       finishedWork,
-      $unwrap(finishedWork.actualStartTime),
+      $unwrap(
+        finishedWork.actualStartTime,
+        'packages/react-reconciler/src/ReactFiberCommitWork.rs:4576:51',
+      ),
       endTime,
       inHydratedSubtree,
       committedLanes,
@@ -4430,7 +4507,12 @@ function recursivelyTraverseAtomicPassiveEffects(
           child,
           committedLanes,
           committedTransitions,
-          nextSibling != null ? $unwrap(nextSibling.actualStartTime) : endTime,
+          nextSibling != null
+            ? $unwrap(
+                nextSibling.actualStartTime,
+                'packages/react-reconciler/src/ReactFiberCommitWork.rs:4793:84',
+              )
+            : endTime,
         );
         child = nextSibling;
       } else {
@@ -4461,12 +4543,18 @@ function commitAtomicPassiveEffects(
     enableProfilerTimer &&
     enableComponentPerformanceTrack &&
     (finishedWork.mode & ProfileMode) !== NoMode &&
-    $unwrap(finishedWork.actualStartTime) > 0 &&
+    $unwrap(
+      finishedWork.actualStartTime,
+      'packages/react-reconciler/src/ReactFiberCommitWork.rs:4825:50',
+    ) > 0 &&
     (finishedWork.flags & PerformedWork) !== NoFlags
   ) {
     logComponentRender(
       finishedWork,
-      $unwrap(finishedWork.actualStartTime),
+      $unwrap(
+        finishedWork.actualStartTime,
+        'packages/react-reconciler/src/ReactFiberCommitWork.rs:4830:51',
+      ),
       endTime,
       inHydratedSubtree,
       committedLanes,
@@ -4802,8 +4890,10 @@ function commitPassiveUnmountOnFiber(finishedWork) {
       if (enableProfilerTimer && enableProfilerCommitHooks) {
         const finishedRoot = finishedWork.stateNode;
         finishedRoot.passiveEffectDuration =
-          $unwrap(finishedRoot.passiveEffectDuration) +
-          popNestedEffectDurations(prevProfilerEffectDuration);
+          $unwrap(
+            finishedRoot.passiveEffectDuration,
+            'packages/react-reconciler/src/ReactFiberCommitWork.rs:5141:65',
+          ) + popNestedEffectDurations(prevProfilerEffectDuration);
       }
       break;
     }
@@ -5088,7 +5178,10 @@ function commitPassiveUnmountInsideDeletedTreeOnFiber(
     case SuspenseComponent:
       if (enableTransitionTracing) {
         // We need to mark this fiber's parents as deleted
-        const offscreenFiber = $unwrap(current.child);
+        const offscreenFiber = $unwrap(
+          current.child,
+          'packages/react-reconciler/src/ReactFiberCommitWork.rs:5427:70',
+        );
         const instance = offscreenFiber.stateNode;
         const transitions = instance._transitions;
         if (transitions != null) {

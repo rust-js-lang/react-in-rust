@@ -32,6 +32,8 @@ import {
   $catchable,
   $cleanup,
   $live,
+  $panic,
+  $stdSites,
   $unwindsOn,
   $withBorrow,
   $withBorrowMut,
@@ -112,6 +114,7 @@ function advanceTimers(currentTime) {
         }
       }
     },
+    $stdSites.localKeyWithBorrowMut[0],
     true,
   );
 }
@@ -128,6 +131,7 @@ function handleTimeout(currentTime) {
       const startTime = $withBorrow(
         timerQueue,
         timerQueue => peek(timerQueue)?.startTime,
+        $stdSites.localKeyWithBorrow[0],
         true,
       );
       if (startTime != null) {
@@ -323,6 +327,7 @@ function workLoop(hasTimeRemaining, initialTime) {
     const startTime = $withBorrow(
       timerQueue,
       timerQueue => peek(timerQueue)?.startTime,
+      $stdSites.localKeyWithBorrow[0],
       true,
     );
     if (startTime != null) {
@@ -453,10 +458,20 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
   if (startTime > currentTime) {
     // This is a delayed task.
     newTask.sortIndex = startTime;
-    $withBorrowMut(timerQueue, timerQueue => push(timerQueue, newTask), true);
+    $withBorrowMut(
+      timerQueue,
+      timerQueue => push(timerQueue, newTask),
+      $stdSites.localKeyWithBorrowMut[0],
+      true,
+    );
     if (
       peek(taskQueue) == null &&
-      $withBorrow(timerQueue, timerQueue => peek(timerQueue) === newTask, true)
+      $withBorrow(
+        timerQueue,
+        timerQueue => peek(timerQueue) === newTask,
+        $stdSites.localKeyWithBorrow[0],
+        true,
+      )
     ) {
       // All tasks are delayed, and this is the task with the earliest delay.
       if (isHostTimeoutScheduled) {
@@ -542,7 +557,10 @@ function forceFrameRate() {
 
 export function reset() {
   if (isFlushing) {
-    throw new Error('Cannot reset while already flushing work.');
+    throw $panic(
+      'Cannot reset while already flushing work.',
+      'packages/scheduler/src/forks/SchedulerMock.rs:453:9',
+    );
   }
   currentMockTime = 0;
   scheduledCallback = null;
@@ -558,7 +576,10 @@ export function reset() {
 // Should only be used via an assertion helper that inspects the yielded values.
 export function unstable_flushNumberOfYields(count) {
   if (isFlushing) {
-    throw new Error('Already flushing work.');
+    throw $panic(
+      'Already flushing work.',
+      'packages/scheduler/src/forks/SchedulerMock.rs:482:9',
+    );
   }
   const cb = scheduledCallback;
   if (cb != null) {
@@ -586,7 +607,10 @@ export function unstable_flushNumberOfYields(count) {
 
 export function unstable_flushUntilNextPaint() {
   if (isFlushing) {
-    throw new Error('Already flushing work.');
+    throw $panic(
+      'Already flushing work.',
+      'packages/scheduler/src/forks/SchedulerMock.rs:515:9',
+    );
   }
   const cb = scheduledCallback;
   if (cb != null) {
@@ -620,7 +644,10 @@ export function unstable_hasPendingWork() {
 
 export function unstable_flushExpired() {
   if (isFlushing) {
-    throw new Error('Already flushing work.');
+    throw $panic(
+      'Already flushing work.',
+      'packages/scheduler/src/forks/SchedulerMock.rs:553:9',
+    );
   }
   if (scheduledCallback != null) {
     isFlushing = true;
@@ -642,7 +669,10 @@ export function unstable_flushExpired() {
 export function unstable_flushAllWithoutAsserting() {
   // Returns false if no work was flushed.
   if (isFlushing) {
-    throw new Error('Already flushing work.');
+    throw $panic(
+      'Already flushing work.',
+      'packages/scheduler/src/forks/SchedulerMock.rs:569:9',
+    );
   }
   const cb = scheduledCallback;
   if (cb != null) {
@@ -676,17 +706,19 @@ export function unstable_clearLog() {
 
 export function unstable_flushAll() {
   if (yieldedValues != null) {
-    throw new Error(
+    throw $panic(
       'Log is not empty. Assert on the log of yielded values before ' +
         'flushing additional work.',
+      'packages/scheduler/src/forks/SchedulerMock.rs:598:9',
     );
   }
   unstable_flushAllWithoutAsserting();
   if (yieldedValues != null) {
-    throw new Error(
+    throw $panic(
       'While flushing work, something yielded a value. Use an ' +
         'assertion helper to assert on the log of yielded values, e.g. ' +
         'expect(Scheduler).toFlushAndYield([...])',
+      'packages/scheduler/src/forks/SchedulerMock.rs:605:9',
     );
   }
 }

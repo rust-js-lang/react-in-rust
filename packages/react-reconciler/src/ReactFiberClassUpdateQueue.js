@@ -637,6 +637,7 @@ export function processUpdateQueue(
         pendingQueue.next = null;
         const firstPendingUpdate = $unwrap(
           old,
+          'packages/react-reconciler/src/ReactFiberClassUpdateQueue.rs:732:34',
           'a pending update in a circular list',
         );
         update = firstPendingUpdate;
@@ -680,6 +681,7 @@ function callCallback(callback, context) {
   if (typeof callback !== 'function') {
     throw $stringPanic(
       `Invalid argument passed as callback. Expected a function. Instead received: ${$shown(callback)}`,
+      'packages/react-reconciler/src/ReactFiberClassUpdateQueue.rs:775:9',
     );
   }
 

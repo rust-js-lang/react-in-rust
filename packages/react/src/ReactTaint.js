@@ -16,6 +16,8 @@ import {
   $borrow,
   $borrowMut,
   $cellReplace,
+  $panic,
+  $stdSites,
   $stringPanic,
   $unborrow,
   $unwrap,
@@ -36,7 +38,7 @@ TaintRegistryByteLengths = ReactSharedInternals.TaintRegistryByteLengths;
 const taintRegistryPendingRequests =
   ReactSharedInternals.TaintRegistryPendingRequests;
 $cellReplace(
-  $borrowMut(TaintRegistryPendingRequests),
+  $borrowMut(TaintRegistryPendingRequests, $stdSites.localKeySet[0]),
   taintRegistryPendingRequests,
 );
 
@@ -47,21 +49,35 @@ const defaultMessage =
   'This would leak it to the client.';
 
 function cleanup(entryValue) {
-  const entry = $unwrap(TaintRegistryValues).get(entryValue);
+  const entry = $unwrap(
+    TaintRegistryValues,
+    'packages/react/src/ReactTaint.rs:66:45',
+  ).get(entryValue);
   if (entry !== undefined) {
-    $withBorrow(TaintRegistryPendingRequests, pendingRequests => {
-      const borrow = $borrow($unwrap(pendingRequests), true);
-      try {
-        borrow.forEach(requestQueue => {
-          requestQueue.push(entryValue);
-          entry.count = (entry.count + 1) >>> 0;
-        });
-      } finally {
-        $unborrow(borrow);
-      }
-    });
+    $withBorrow(
+      TaintRegistryPendingRequests,
+      pendingRequests => {
+        const borrow = $borrow(
+          $unwrap(pendingRequests, 'packages/react/src/ReactTaint.rs:71:18'),
+          'packages/react/src/ReactTaint.rs:72:18',
+          true,
+        );
+        try {
+          borrow.forEach(requestQueue => {
+            requestQueue.push(entryValue);
+            entry.count = (entry.count + 1) >>> 0;
+          });
+        } finally {
+          $unborrow(borrow);
+        }
+      },
+      $stdSites.localKeyWithBorrow[0],
+    );
     if (entry.count === 1) {
-      $unwrap(TaintRegistryValues).delete(entryValue);
+      $unwrap(
+        TaintRegistryValues,
+        'packages/react/src/ReactTaint.rs:80:41',
+      ).delete(entryValue);
     } else {
       entry.count = (entry.count - 1) >>> 0;
     }
@@ -77,7 +93,7 @@ const finalizationRegistry =
 
 export function taintUniqueValue(message, lifetime, value) {
   if (!enableTaint) {
-    throw new Error('Not implemented.');
+    throw $panic('Not implemented.', 'packages/react/src/ReactTaint.rs:101:9');
   }
   // eslint-disable-next-line react-internal/safe-string-coercion
   message = '' + (message || defaultMessage);
@@ -86,9 +102,10 @@ export function taintUniqueValue(message, lifetime, value) {
     lifetime === null ||
     (typeof lifetime !== 'object' && typeof lifetime !== 'function')
   ) {
-    throw new Error(
+    throw $panic(
       'To taint a value, a lifetime must be defined by passing an object that holds ' +
         'the value.',
+      'packages/react/src/ReactTaint.rs:114:9',
     );
   }
   let entryValue;
@@ -103,26 +120,37 @@ export function taintUniqueValue(message, lifetime, value) {
     // hashing in the Map implementation. It doesn't really matter what form the string
     // take as long as it's the same when we look it up.
     // We're not too worried about collisions since this should be a high entropy value.
-    $unwrap(TaintRegistryByteLengths).add(value.byteLength);
+    $unwrap(
+      TaintRegistryByteLengths,
+      'packages/react/src/ReactTaint.rs:132:14',
+    ).add(value.byteLength);
     entryValue = binaryToComparableString(value);
   } else {
     // $FlowFixMe[invalid-compare]
     const kind = value === null ? 'null' : typeof value;
     if (kind === 'object' || kind === 'function') {
-      throw new Error(
+      throw $panic(
         'taintUniqueValue cannot taint objects or functions. Try taintObjectReference instead.',
+        'packages/react/src/ReactTaint.rs:143:13',
       );
     }
     throw $stringPanic(
       `Cannot taint a ${kind} because the value is too general and not unique enough to block globally.`,
+      'packages/react/src/ReactTaint.rs:147:9',
     );
   }
-  const existingEntry = $unwrap(TaintRegistryValues).get(entryValue);
+  const existingEntry = $unwrap(
+    TaintRegistryValues,
+    'packages/react/src/ReactTaint.rs:151:54',
+  ).get(entryValue);
   if (existingEntry === undefined) {
-    $unwrap(TaintRegistryValues).set(entryValue, {
-      message,
-      count: 1,
-    });
+    $unwrap(TaintRegistryValues, 'packages/react/src/ReactTaint.rs:154:41').set(
+      entryValue,
+      {
+        message,
+        count: 1,
+      },
+    );
   } else {
     existingEntry.count = (existingEntry.count + 1) >>> 0;
   }
@@ -133,13 +161,14 @@ export function taintUniqueValue(message, lifetime, value) {
 
 export function taintObjectReference(message, object) {
   if (!enableTaint) {
-    throw new Error('Not implemented.');
+    throw $panic('Not implemented.', 'packages/react/src/ReactTaint.rs:171:9');
   }
   // eslint-disable-next-line react-internal/safe-string-coercion
   message = '' + (message || defaultMessage);
   if (typeof object === 'string' || typeof object === 'bigint') {
-    throw new Error(
+    throw $panic(
       'Only objects or functions can be passed to taintObjectReference. Try taintUniqueValue instead.',
+      'packages/react/src/ReactTaint.rs:180:9',
     );
   }
   if (
@@ -147,11 +176,15 @@ export function taintObjectReference(message, object) {
     object === null ||
     (typeof object !== 'object' && typeof object !== 'function')
   ) {
-    throw new Error(
+    throw $panic(
       'Only objects or functions can be passed to taintObjectReference.',
+      'packages/react/src/ReactTaint.rs:189:9',
     );
   }
-  $unwrap(TaintRegistryObjects).set(object, message);
+  $unwrap(TaintRegistryObjects, 'packages/react/src/ReactTaint.rs:192:34').set(
+    object,
+    message,
+  );
 }
 
 export {

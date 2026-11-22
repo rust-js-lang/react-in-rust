@@ -158,7 +158,10 @@ export function initializeClassErrorUpdate(update, root, fiber, errorInfo) {
         markLegacyErrorBoundaryAsFailed(this);
       }
       if (__DEV__) {
-        $unwrap(callComponentDidCatchInDEV)(this, errorInfo);
+        $unwrap(
+          callComponentDidCatchInDEV,
+          'packages/react-reconciler/src/ReactFiberThrow.rs:197:53',
+        )(this, errorInfo);
       } else {
         const error = errorInfo.value;
         const stack = errorInfo.stack;
@@ -497,6 +500,7 @@ export function throwException(
       }
       throw $stringPanic(
         `Unexpected Suspense handler tag (${suspenseBoundary.tag}). This is a bug in React.`,
+        'packages/react-reconciler/src/ReactFiberThrow.rs:585:13',
       );
     } else {
       // No boundary was found. Unless this is a sync update, this is OK.
@@ -580,7 +584,10 @@ export function throwException(
         );
       }
       const current = root.current;
-      const workInProgress = $unwrap(current.alternate);
+      const workInProgress = $unwrap(
+        current.alternate,
+        'packages/react-reconciler/src/ReactFiberThrow.rs:687:71',
+      );
       // Schedule an update at the root to log the error but this shouldn't
       // actually happen because we should recover.
       workInProgress.flags |= ShouldCapture;

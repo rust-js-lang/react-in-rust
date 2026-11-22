@@ -12,7 +12,7 @@ import {ClassComponent, HostRoot} from './ReactWorkTags.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 
 import {createCursor, pop, push} from './ReactFiberStack.js';
-import {$stringPanic} from '@rust-js/std';
+import {$panic, $stringPanic} from '@rust-js/std';
 
 const warnedAboutMissingGetChildContext = __DEV__ ? {} : undefined;
 
@@ -124,9 +124,10 @@ export function popTopLevelContextObject(fiber) {
 export function pushTopLevelContextObject(fiber, context, didChange) {
   if (!disableLegacyContext) {
     if (contextStackCursor.current !== emptyContextObject) {
-      throw new Error(
+      throw $panic(
         'Unexpected context found on stack. ' +
           'This error is likely caused by a bug in React. Please file an issue.',
+        'packages/react-reconciler/src/ReactFiberLegacyContext.rs:189:13',
       );
     }
 
@@ -172,6 +173,7 @@ export function processChildContext(fiber, type, parentContext) {
           `${
             getComponentNameFromFiber(fiber) || 'Unknown'
           }.getChildContext(): key "${contextKey}" is not defined in childContextTypes.`,
+          'packages/react-reconciler/src/ReactFiberLegacyContext.rs:246:17',
         );
       }
     }
@@ -211,9 +213,10 @@ export function invalidateContextProvider(workInProgress, type, didChange) {
     const instance = workInProgress.stateNode;
 
     if (!instance) {
-      throw new Error(
+      throw $panic(
         'Expected to have an instance by this point. ' +
           'This error is likely caused by a bug in React. Please file an issue.',
+        'packages/react-reconciler/src/ReactFiberLegacyContext.rs:305:13',
       );
     }
 
@@ -264,9 +267,10 @@ export function findCurrentUnmaskedContext(fiber) {
       node = node.return;
     } while (node != null);
 
-    throw new Error(
+    throw $panic(
       'Found unexpected detached subtree parent. ' +
         'This error is likely caused by a bug in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberLegacyContext.rs:368:9',
     );
   }
 }

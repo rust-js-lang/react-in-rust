@@ -75,7 +75,9 @@ import {
   $catchable,
   $displayF64,
   $index,
+  $panic,
   $splice,
+  $stdSites,
   $stringPanic,
   $toLowercase,
   $trim,
@@ -1019,6 +1021,7 @@ function pushStyleAttribute(target, style) {
       'The `style` prop expects a mapping from style properties to values, ' +
         "not a string. For example, style={{marginRight: spacing + 'em'}} when " +
         'using JSX.',
+      'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:1451:9',
     );
   }
 
@@ -1159,6 +1162,7 @@ function validateAdditionalFormField(value, key) {
     throw $stringPanic(
       'File/Blob fields are not yet supported in progressive forms. ' +
         'Will fallback to client hydration.',
+      'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:1624:40',
     );
   }
   return value;
@@ -1290,7 +1294,10 @@ let blobCache = null;
 function pushSrcObjectAttribute(target, blob) {
   // Throwing a Promise style suspense read of the Blob content.
   blobCache ??= new WeakMap();
-  const suspenseCache = $unwrap(blobCache);
+  const suspenseCache = $unwrap(
+    blobCache,
+    'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:1812:43',
+  );
   let thenable = suspenseCache.get(blob);
   if (thenable === undefined) {
     const thenable$1 = readAsDataURL(blob);
@@ -1601,8 +1608,9 @@ function pushAttribute(
 function pushInnerHTML(target, innerHTML, children) {
   if (innerHTML != null) {
     if (children != null) {
-      throw new Error(
+      throw $panic(
         'Can only set one of `children` or `props.dangerouslySetInnerHTML`.',
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:2064:13',
       );
     }
 
@@ -1611,6 +1619,7 @@ function pushInnerHTML(target, innerHTML, children) {
         '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
           'Please visit https://react.dev/link/dangerously-set-inner-html ' +
           'for more information.',
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:2068:13',
       );
     }
 
@@ -1989,12 +1998,18 @@ function injectFormReplayingRuntime(resumableState, renderState) {
     } else {
       // Otherwise we added to the beginning of the scripts. This will mean that it
       // appears before the shell ID unfortunately.
-      $splice(bootstrapChunks, 0, 0, [
-        renderState.startInlineScript,
-        endOfStartTag,
-        formReplayingRuntimeScript,
-        endInlineScript,
-      ]);
+      $splice(
+        bootstrapChunks,
+        0,
+        0,
+        [
+          renderState.startInlineScript,
+          endOfStartTag,
+          formReplayingRuntimeScript,
+          endInlineScript,
+        ],
+        $stdSites.vecDrain[0],
+      );
     }
   }
 }
@@ -2172,8 +2187,9 @@ function pushInput(target, props, resumableState, renderState, formatContext) {
       switch (propKey) {
         case 'children':
         case 'dangerouslySetInnerHTML':
-          throw new Error(
+          throw $panic(
             'input is a self-closing tag and must neither have `children` nor use `dangerouslySetInnerHTML`.',
+            'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:2673:59',
           );
         case 'name':
           name = propValue;
@@ -2430,8 +2446,9 @@ function pushStartTextArea(target, props, formatContext) {
           defaultValue = propValue;
           break;
         case 'dangerouslySetInnerHTML':
-          throw new Error(
+          throw $panic(
             '`dangerouslySetInnerHTML` does not make sense on <textarea>.',
+            'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:2892:21',
           );
         default:
           pushAttribute(target, propKey, propValue);
@@ -2457,15 +2474,19 @@ function pushStartTextArea(target, props, formatContext) {
     }
 
     if (value !== undefined) {
-      throw new Error(
+      throw $panic(
         'If you supply `defaultValue` on a <textarea>, do not pass children.',
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:2918:13',
       );
     }
 
     if (isArray(children)) {
       const items = children;
       if (items.length > 1) {
-        throw new Error('<textarea> can only have at most one child.');
+        throw $panic(
+          '<textarea> can only have at most one child.',
+          'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:2924:17',
+        );
       }
 
       // TODO: remove the coercion and the DEV check below because it will
@@ -2748,8 +2769,9 @@ function pushLinkImpl(target, props) {
       switch (propKey) {
         case 'children':
         case 'dangerouslySetInnerHTML':
-          throw new Error(
+          throw $panic(
             'link is a self-closing tag and must neither have `children` nor use `dangerouslySetInnerHTML`.',
+            'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:3244:59',
           );
         default:
           pushAttribute(target, propKey, propValue);
@@ -3174,6 +3196,7 @@ function pushSelfClosing(target, props, tag, formatContext) {
         case 'dangerouslySetInnerHTML':
           throw $stringPanic(
             `${tag} is a self-closing tag and must neither have \`children\` nor use \`dangerouslySetInnerHTML\`.`,
+            'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:3743:59',
           );
         default:
           pushAttribute(target, propKey, propValue);
@@ -3200,8 +3223,9 @@ function pushStartMenuItem(target, props, formatContext) {
       switch (propKey) {
         case 'children':
         case 'dangerouslySetInnerHTML':
-          throw new Error(
+          throw $panic(
             'menuitems cannot have `children` nor `dangerouslySetInnerHTML`.',
+            'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:3773:21',
           );
         default:
           pushAttribute(target, propKey, propValue);
@@ -3337,7 +3361,10 @@ function pushStartHead(
     const preamble = preambleState ?? renderState.preamble;
 
     if (preamble.headChunks != null) {
-      throw new Error('The `<head>` tag may only be rendered once.');
+      throw $panic(
+        'The `<head>` tag may only be rendered once.',
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:3928:13',
+      );
     }
 
     // Insert a marker in the body where the contribution to the head was in case we need to clear it.
@@ -3367,7 +3394,10 @@ function pushStartBody(
     const preamble = preambleState ?? renderState.preamble;
 
     if (preamble.bodyChunks != null) {
-      throw new Error('The `<body>` tag may only be rendered once.');
+      throw $panic(
+        'The `<body>` tag may only be rendered once.',
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:3960:13',
+      );
     }
 
     // Insert a marker in the body where the contribution to the body tag was in case we need to clear it.
@@ -3397,7 +3427,10 @@ function pushStartHtml(
     const preamble = preambleState ?? renderState.preamble;
 
     if (preamble.htmlChunks != null) {
-      throw new Error('The `<html>` tag may only be rendered once.');
+      throw $panic(
+        'The `<html>` tag may only be rendered once.',
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:3992:13',
+      );
     }
 
     // Insert a marker in the body where the contribution to the head was in case we need to clear it.
@@ -3722,8 +3755,9 @@ function pushStartPreformattedElement(target, props, tag, formatContext) {
   // or component that returns a string.
   if (innerHTML !== undefined) {
     if (children !== null) {
-      throw new Error(
+      throw $panic(
         'Can only set one of `children` or `props.dangerouslySetInnerHTML`.',
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:4337:13',
       );
     }
 
@@ -3732,6 +3766,7 @@ function pushStartPreformattedElement(target, props, tag, formatContext) {
         '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
           'Please visit https://react.dev/link/dangerously-set-inner-html ' +
           'for more information.',
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:4341:13',
       );
     }
 
@@ -3765,7 +3800,10 @@ function startChunkForTag(tag) {
     return tagStartChunk;
   }
   if (!validTagRegex.test(tag)) {
-    throw $stringPanic(`Invalid tag: ${tag}`);
+    throw $stringPanic(
+      `Invalid tag: ${tag}`,
+      'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:4394:13',
+    );
   }
 
   tagStartChunk = stringToPrecomputedChunk('<' + tag);
@@ -4216,8 +4254,9 @@ export function writeStartPendingSuspenseBoundary(
   writeChunk(destination, startPendingSuspenseBoundary1);
 
   if (id == null) {
-    throw new Error(
+    throw $panic(
       'An ID must have been assigned before we can complete the boundary.',
+      'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:4798:9',
     );
   }
 
@@ -4362,7 +4401,10 @@ export function writeStartSegment(destination, renderState, formatContext, id) {
       start = startSegmentColGroup;
       end = startSegmentColGroup2;
     } else {
-      throw new Error('Unknown insertion mode. This is a bug in React.');
+      throw $panic(
+        'Unknown insertion mode. This is a bug in React.',
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:4960:14',
+      );
     }
   }
   writeChunk(destination, start);
@@ -4399,7 +4441,10 @@ export function writeEndSegment(destination, formatContext) {
       end = endSegmentColGroup;
       break;
     default:
-      throw new Error('Unknown insertion mode. This is a bug in React.');
+      throw $panic(
+        'Unknown insertion mode. This is a bug in React.',
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:4980:14',
+      );
   }
   return writeChunkAndReturn(destination, end);
 }
@@ -4772,8 +4817,9 @@ function escapeJSStringsForInstructionScripts(input) {
       case '\u2029':
         return '\\u2029';
       default:
-        throw new Error(
+        throw $panic(
           'escapeJSStringsForInstructionScripts encountered a match it does not know how to replace. this means the match regex and the replacement characters are no longer in sync. This is a bug in React',
+          'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:5398:18',
         );
     }
   });
@@ -4797,8 +4843,9 @@ function escapeJSObjectForInstructionScripts(input) {
       case '\u2029':
         return '\\u2029';
       default:
-        throw new Error(
+        throw $panic(
           'escapeJSObjectForInstructionScripts encountered a match it does not know how to replace. this means the match regex and the replacement characters are no longer in sync. This is a bug in React',
+          'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:5421:18',
         );
     }
   });
@@ -4829,6 +4876,7 @@ function flushStyleTagsLateForBoundary(destination, styleQueue) {
   if (hrefs.length !== 0) {
     const renderState = $unwrap(
       currentlyFlushingRenderState,
+      'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:5454:14',
       'styles flush while a render state flushes',
     );
     writeChunk(destination, renderState.startInlineStyle);
@@ -4841,7 +4889,14 @@ function flushStyleTagsLateForBoundary(destination, styleQueue) {
       writeChunk(destination, spaceSeparator);
       i++;
     }
-    writeChunk(destination, $index(hrefs, i));
+    writeChunk(
+      destination,
+      $index(
+        hrefs,
+        i,
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:5471:48',
+      ),
+    );
     writeChunk(destination, lateStyleTagResourceOpen3);
     for (let j = 0; j < rules.length; j++) {
       const rule = rules[j];
@@ -4952,6 +5007,7 @@ function flushStylesInPreamble(destination, styleQueue) {
   if (!hasStylesheets || hrefs.length !== 0) {
     const renderState = $unwrap(
       currentlyFlushingRenderState,
+      'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:5588:14',
       'styles flush while a render state flushes',
     );
     writeChunk(destination, renderState.startInlineStyle);
@@ -4965,7 +5021,14 @@ function flushStylesInPreamble(destination, styleQueue) {
         writeChunk(destination, spaceSeparator);
         i++;
       }
-      writeChunk(destination, $index(hrefs, i));
+      writeChunk(
+        destination,
+        $index(
+          hrefs,
+          i,
+          'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:5600:52',
+        ),
+      );
     }
     writeChunk(destination, styleTagResourceOpen3);
     for (let i = 0; i < rules.length; i++) {
@@ -5390,8 +5453,9 @@ function writeStyleResourceDependency(
           break;
         case 'children':
         case 'dangerouslySetInnerHTML':
-          throw new Error(
+          throw $panic(
             'link is a self-closing tag and must neither have `children` nor use `dangerouslySetInnerHTML`.',
+            'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:6059:59',
           );
         default:
           writeStyleResourceAttribute(destination, propKey, propValue, encode);
@@ -5765,7 +5829,10 @@ function preload(href, as, options) {
         const hasAsType = unknownResources.hasOwnProperty(as);
         let resources;
         if (hasAsType) {
-          const resources$1 = $unwrap(unknownResources[as]);
+          const resources$1 = $unwrap(
+            unknownResources[as],
+            'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:6517:73',
+          );
           if (resources$1.hasOwnProperty(key)) {
             // we can return if we already have this resource
             return;
@@ -5851,7 +5918,10 @@ function preloadModule(href, options) {
       const hasAsType = moduleUnknownResources.hasOwnProperty(as);
       let resources;
       if (hasAsType) {
-        const resources$1 = $unwrap(moduleUnknownResources[as]);
+        const resources$1 = $unwrap(
+          moduleUnknownResources[as],
+          'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:6621:81',
+        );
         if (resources$1.hasOwnProperty(key)) {
           // we can return if we already have this resource
           return;
@@ -6160,8 +6230,16 @@ function stylesheetPropsFromRawProps(rawProps) {
 }
 
 function adoptPreloadCredentials(target, preloadState) {
-  target.crossOrigin ??= $index(preloadState, 0);
-  target.integrity ??= $index(preloadState, 1);
+  target.crossOrigin ??= $index(
+    preloadState,
+    0,
+    'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:7027:40',
+  );
+  target.integrity ??= $index(
+    preloadState,
+    1,
+    'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:7030:38',
+  );
 }
 
 function getPrefetchDNSAsHeader(href) {
@@ -6244,8 +6322,9 @@ function escapeHrefForLinkHeaderURLContextReplacer(match) {
     case '\r':
       return '%0D';
     default:
-      throw new Error(
+      throw $panic(
         'escapeLinkHrefForHeaderContextReplacer encountered a match it does not know how to replace. this means the match regex and the replacement characters are no longer in sync. This is a bug in React',
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:7138:14',
       );
   }
 }
@@ -6280,8 +6359,9 @@ function escapeStringForLinkHeaderQuotedParamValueContextReplacer(match) {
     case '\r':
       return '%0D';
     default:
-      throw new Error(
+      throw $panic(
         'escapeStringForLinkHeaderQuotedParamValueContextReplacer encountered a match it does not know how to replace. this means the match regex and the replacement characters are no longer in sync. This is a bug in React',
+        'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:7178:14',
       );
   }
 }

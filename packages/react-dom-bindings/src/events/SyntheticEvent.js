@@ -325,7 +325,10 @@ const modifierKeyToProp = {
 // getModifierState. If getModifierState is not supported, we map it to a set of
 // modifier keys exposed by the event. In this case, Lock-keys are not supported.
 function modifierStateGetter(keyArg) {
-  const nativeEvent = $unwrap(this.nativeEvent);
+  const nativeEvent = $unwrap(
+    this.nativeEvent,
+    'packages/react-dom-bindings/src/events/SyntheticEvent.rs:491:67',
+  );
   if (nativeEvent.getModifierState) {
     return nativeEvent.getModifierState(keyArg);
   }

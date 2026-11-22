@@ -52,7 +52,7 @@ import {
   disableLegacyMode,
   enableReactTestRendererWarning,
 } from 'shared/ReactFeatureFlags';
-import {$index, $shown, $stringPanic, $unwrap} from '@rust-js/std';
+import {$index, $panic, $shown, $stringPanic, $unwrap} from '@rust-js/std';
 
 function defaultOnDefaultTransitionIndicator() {}
 
@@ -129,7 +129,11 @@ function flatten(arr) {
   let n;
   while ((n = stack.pop()) != null) {
     while (n.i < n.array.length) {
-      const el = $index(n.array, n.i);
+      const el = $index(
+        n.array,
+        n.i,
+        'packages/react-test-renderer/src/ReactTestRenderer.rs:184:22',
+      );
       n.i = (n.i + 1) >>> 0;
       if (Array.isArray(el)) {
         stack.push(n);
@@ -192,6 +196,7 @@ function toTree(node) {
     default:
       throw $stringPanic(
         `toTree() does not yet know how to handle nodes with tag=${node.tag}`,
+        'packages/react-test-renderer/src/ReactTestRenderer.rs:254:14',
       );
   }
 }
@@ -235,7 +240,10 @@ function getChildren(parent) {
       continue;
     }
     while (node.sibling == null) {
-      const parent = $unwrap(node.return);
+      const parent = $unwrap(
+        node.return,
+        'packages/react-test-renderer/src/ReactTestRenderer.rs:313:57',
+      );
       if (parent === startingNode) {
         break outer;
       }
@@ -257,8 +265,9 @@ class ReactTestInstance {
     const fiber = findCurrentFiberUsingSlowPath(this._fiber);
 
     if (fiber == null) {
-      throw new Error(
+      throw $panic(
         "Can't read from currently-mounting component. This error is likely caused by a bug in React. Please file an issue.",
+        'packages/react-test-renderer/src/ReactTestRenderer.rs:343:13',
       );
     }
     return fiber;
@@ -268,6 +277,7 @@ class ReactTestInstance {
     if (!validWrapperTypes.has(fiber.tag)) {
       throw $stringPanic(
         `Unexpected object passed to ReactTestInstance constructor (tag: ${fiber.tag}). This is probably a bug in React.`,
+        'packages/react-test-renderer/src/ReactTestRenderer.rs:353:13',
       );
     }
 
@@ -390,7 +400,10 @@ function expectOne(all, message) {
       ? 'No instances found '
       : `Expected 1 but found ${all.length} instances `;
 
-  throw $stringPanic(prefix + message);
+  throw $stringPanic(
+    prefix + message,
+    'packages/react-test-renderer/src/ReactTestRenderer.rs:527:5',
+  );
 }
 
 function propsMatch(props, filter) {
@@ -530,12 +543,18 @@ export function create(element, options) {
     get() {
       const fiberRoot = root;
       if (fiberRoot == null) {
-        throw new Error("Can't access .root on unmounted test renderer");
+        throw $panic(
+          "Can't access .root on unmounted test renderer",
+          'packages/react-test-renderer/src/ReactTestRenderer.rs:721:21',
+        );
       }
       const current = fiberRoot.current;
       const children = getChildren(current);
       if (children.length === 0) {
-        throw new Error("Can't access .root on unmounted test renderer");
+        throw $panic(
+          "Can't access .root on unmounted test renderer",
+          'packages/react-test-renderer/src/ReactTestRenderer.rs:726:21',
+        );
       } else {
         return children.length === 1
           ? // Normally, we skip the root and just give you the child.

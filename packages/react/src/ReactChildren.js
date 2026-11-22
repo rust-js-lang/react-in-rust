@@ -20,7 +20,7 @@ import {enableOptimisticKey} from 'shared/ReactFeatureFlags';
 import {checkKeyStringCoercion} from 'shared/CheckStringCoercion';
 
 import {cloneAndReplaceKey, isValidElement} from './jsx/ReactJSXElement.js';
-import {$stringPanic} from '@rust-js/std';
+import {$panic, $stringPanic} from '@rust-js/std';
 
 const SEPARATOR = '.';
 const SUBSEPARATOR = ':';
@@ -41,7 +41,10 @@ function escape(key) {
       case ':':
         return '=2';
       default:
-        throw new Error('internal error: entered unreachable code');
+        throw $panic(
+          'internal error: entered unreachable code',
+          'packages/react/src/ReactChildren.rs:41:18',
+        );
     }
   });
 
@@ -304,6 +307,7 @@ function mapIntoArray(children, array, escapedPrefix, nameSoFar, callback) {
         }). ` +
           'If you meant to render a collection of children, use an array ' +
           'instead.',
+        'packages/react/src/ReactChildren.rs:321:13',
       );
     }
   }
@@ -408,8 +412,9 @@ export function toArray(children) {
  */
 function onlyChild(children) {
   if (!isValidElement(children)) {
-    throw new Error(
+    throw $panic(
       'React.Children.only expected to receive a single React element child.',
+      'packages/react/src/ReactChildren.rs:458:9',
     );
   }
 

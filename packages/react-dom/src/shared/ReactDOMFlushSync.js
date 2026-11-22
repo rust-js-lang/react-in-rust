@@ -12,7 +12,7 @@ import {DiscreteEventPriority} from 'react-reconciler/src/ReactEventPriorities';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
-import {$cleanup} from '@rust-js/std';
+import {$cleanup, $panic} from '@rust-js/std';
 
 function flushSyncImpl(fn) {
   const previousTransition = ReactSharedInternals.T;
@@ -102,8 +102,9 @@ function flushSyncImpl(fn) {
 }
 
 function flushSyncErrorInBuildsThatSupportLegacyMode(fn) {
-  throw new Error(
+  throw $panic(
     'Expected this build of React to not support legacy mode but it does. This is a bug in React.',
+    'packages/react-dom/src/shared/ReactDOMFlushSync.rs:65:5',
   );
 }
 

@@ -447,7 +447,9 @@ export function getEntangledLanes(root, renderLanes) {
   const allEntangledLanes = root.entangledLanes;
   if (allEntangledLanes !== NoLanes) {
     if (root.entanglements.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-reconciler/src/ReactFiberLane.rs:467:48',
+      );
     }
     const entanglements = root.entanglements;
     let lanes = entangledLanes & allEntangledLanes;
@@ -455,7 +457,11 @@ export function getEntangledLanes(root, renderLanes) {
       const index = pickArbitraryLaneIndex(lanes);
       const lane = 1 << index;
 
-      entangledLanes |= $index(entanglements, index);
+      entangledLanes |= $index(
+        entanglements,
+        index,
+        'packages/react-reconciler/src/ReactFiberLane.rs:473:45',
+      );
 
       lanes &= ~lane;
     }
@@ -537,7 +543,7 @@ export function markStarvedLanesAsExpired(root, currentTime) {
   const suspendedLanes = root.suspendedLanes;
   const pingedLanes = root.pingedLanes;
   if (root.expirationTimes.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-reconciler/src/ReactFiberLane.rs:554:54');
   }
   const expirationTimes = root.expirationTimes;
 
@@ -556,7 +562,11 @@ export function markStarvedLanesAsExpired(root, currentTime) {
     const index = pickArbitraryLaneIndex(lanes);
     const lane = 1 << index;
 
-    const expirationTime = $index(expirationTimes, index);
+    const expirationTime = $index(
+      expirationTimes,
+      index,
+      'packages/react-reconciler/src/ReactFiberLane.rs:573:47',
+    );
     if (expirationTime === NoTimestamp) {
       // Found a pending lane with no expiration time. If it's not suspended, or
       // if it's pinged, assume it's CPU-bound. Compute a new expiration time
@@ -857,7 +867,7 @@ export function markRootSuspended(
 
   // The suspended lanes are no longer CPU-bound. Clear their expiration times.
   if (root.expirationTimes.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-reconciler/src/ReactFiberLane.rs:870:54');
   }
   const expirationTimes = root.expirationTimes;
   let lanes = suspendedLanes;
@@ -865,7 +875,13 @@ export function markRootSuspended(
     const index = pickArbitraryLaneIndex(lanes);
     const lane = 1 << index;
 
-    expirationTimes[$at(expirationTimes, index)] = NoTimestamp;
+    expirationTimes[
+      $at(
+        expirationTimes,
+        index,
+        'packages/react-reconciler/src/ReactFiberLane.rs:876:25',
+      )
+    ] = NoTimestamp;
 
     lanes &= ~lane;
   }
@@ -911,13 +927,21 @@ export function markRootFinished(
   root.errorRecoveryDisabledLanes &= remainingLanes;
   root.shellSuspendCounter = 0;
 
-  const entanglements = $borrowMut(root.entanglements, true);
+  const entanglements = $borrowMut(
+    root.entanglements,
+    'packages/react-reconciler/src/ReactFiberLane.rs:928:48',
+    true,
+  );
 
   // Clear the lanes that no longer have pending work
   let entanglements$live = true;
   let expirationTimes;
   try {
-    expirationTimes = $borrowMut(root.expirationTimes, true);
+    expirationTimes = $borrowMut(
+      root.expirationTimes,
+      'packages/react-reconciler/src/ReactFiberLane.rs:929:54',
+      true,
+    );
   } catch (error) {
     $unborrow(entanglements);
     throw error;
@@ -925,7 +949,11 @@ export function markRootFinished(
   let expirationTimes$live = true;
   let hiddenUpdates;
   try {
-    hiddenUpdates = $borrowMut(root.hiddenUpdates, true);
+    hiddenUpdates = $borrowMut(
+      root.hiddenUpdates,
+      'packages/react-reconciler/src/ReactFiberLane.rs:930:50',
+      true,
+    );
   } catch (error) {
     $unborrow(expirationTimes);
     $unborrow(entanglements);
@@ -953,7 +981,11 @@ export function markRootFinished(
     const lane = 1 << index;
 
     try {
-      $index(entanglements, index);
+      $index(
+        entanglements,
+        index,
+        'packages/react-reconciler/src/ReactFiberLane.rs:938:22',
+      );
     } catch (error) {
       if (hiddenUpdates$live) {
         $unborrow(hiddenUpdates);
@@ -968,7 +1000,11 @@ export function markRootFinished(
     }
     entanglements[index] = NoLanes;
     try {
-      $index(expirationTimes, index);
+      $index(
+        expirationTimes,
+        index,
+        'packages/react-reconciler/src/ReactFiberLane.rs:939:25',
+      );
     } catch (error) {
       if (hiddenUpdates$live) {
         $unborrow(hiddenUpdates);
@@ -985,7 +1021,11 @@ export function markRootFinished(
 
     let place;
     try {
-      $index(hiddenUpdates, index);
+      $index(
+        hiddenUpdates,
+        index,
+        'packages/react-reconciler/src/ReactFiberLane.rs:941:62',
+      );
       place = {
         get value() {
           return hiddenUpdates[index];
@@ -1120,10 +1160,16 @@ function markSpawnedDeferredLane(root, spawnedLane, entangledLanes) {
   const spawnedLaneIndex = laneToIndex(spawnedLane);
   root.entangledLanes |= spawnedLane;
   if (root.entanglements.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-reconciler/src/ReactFiberLane.rs:1019:24');
   }
   const borrowMut = root.entanglements;
-  borrowMut[$at(borrowMut, spawnedLaneIndex)] |=
+  borrowMut[
+    $at(
+      borrowMut,
+      spawnedLaneIndex,
+      'packages/react-reconciler/src/ReactFiberLane.rs:1019:36',
+    )
+  ] |=
     DeferredLane |
     // If the parent render task suspended, we must also entangle those lanes
     // with the spawned task, so that the deferred task includes all the same
@@ -1148,7 +1194,7 @@ export function markRootEntangled(root, entangledLanes) {
   const rootEntangledLanes = root.entangledLanes | entangledLanes;
   root.entangledLanes = rootEntangledLanes;
   if (root.entanglements.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-reconciler/src/ReactFiberLane.rs:1042:48');
   }
   const entanglements = root.entanglements;
   let lanes = rootEntangledLanes;
@@ -1159,7 +1205,12 @@ export function markRootEntangled(root, entangledLanes) {
       // Is this one of the newly entangled lanes?
       (lane & entangledLanes) |
       // Is this lane transitively entangled with the newly entangled lanes?
-      ($index(entanglements, index) & entangledLanes)
+      ($index(
+        entanglements,
+        index,
+        'packages/react-reconciler/src/ReactFiberLane.rs:1051:29',
+      ) &
+        entangledLanes)
     ) {
       entanglements[index] |= entangledLanes;
     }
@@ -1177,19 +1228,35 @@ export function upgradePendingLanesToSync(root, lanesToUpgrade) {
     const index = pickArbitraryLaneIndex(lanes);
     const lane = 1 << index;
     if (root.entanglements.borrows) {
-      $alreadyBorrowed();
+      $alreadyBorrowed(
+        'packages/react-reconciler/src/ReactFiberLane.rs:1070:28',
+      );
     }
     const borrowMut = root.entanglements;
-    borrowMut[$at(borrowMut, SyncLaneIndex)] |= lane;
+    borrowMut[
+      $at(
+        borrowMut,
+        SyncLaneIndex,
+        'packages/react-reconciler/src/ReactFiberLane.rs:1070:40',
+      )
+    ] |= lane;
     lanes &= ~lane;
   }
 }
 
 export function markHiddenUpdate(root, update, lane) {
   const index = laneToIndex(lane);
-  const hiddenUpdates = $borrowMut(root.hiddenUpdates, true);
+  const hiddenUpdates = $borrowMut(
+    root.hiddenUpdates,
+    'packages/react-reconciler/src/ReactFiberLane.rs:1077:50',
+    true,
+  );
   try {
-    $index(hiddenUpdates, index);
+    $index(
+      hiddenUpdates,
+      index,
+      'packages/react-reconciler/src/ReactFiberLane.rs:1078:30',
+    );
     if (hiddenUpdates[index] == null) {
       hiddenUpdates[index] = [update];
     } else {
@@ -1271,7 +1338,11 @@ export function addFiberToLanesMap(root, fiber, lanes) {
     const index = laneToIndex(lanes);
     const lane = 1 << index;
 
-    const updaters = $index(pendingUpdatersLaneMap, index);
+    const updaters = $index(
+      pendingUpdatersLaneMap,
+      index,
+      'packages/react-reconciler/src/ReactFiberLane.rs:1138:54',
+    );
     updaters.add(fiber);
 
     lanes &= ~lane;
@@ -1291,7 +1362,11 @@ export function movePendingFibersToMemoized(root, lanes) {
     const index = laneToIndex(lanes);
     const lane = 1 << index;
 
-    const updaters = $index(pendingUpdatersLaneMap, index);
+    const updaters = $index(
+      pendingUpdatersLaneMap,
+      index,
+      'packages/react-reconciler/src/ReactFiberLane.rs:1158:54',
+    );
     if (updaters.size !== 0) {
       updaters.forEach(fiber => {
         const alternate = fiber.alternate;
@@ -1308,10 +1383,19 @@ export function movePendingFibersToMemoized(root, lanes) {
 
 export function addTransitionToLanesMap(root, transition, lane) {
   if (enableTransitionTracing) {
-    const transitionLanesMap = $borrowMut(root.transitionLanes, true);
+    const transitionLanesMap = $borrowMut(
+      root.transitionLanes,
+      'packages/react-reconciler/src/ReactFiberLane.rs:1175:62',
+      true,
+    );
     try {
       const index = laneToIndex(lane);
-      const transitions = $index(transitionLanesMap, index) ?? new Set();
+      const transitions =
+        $index(
+          transitionLanesMap,
+          index,
+          'packages/react-reconciler/src/ReactFiberLane.rs:1177:47',
+        ) ?? new Set();
       transitions.add(transition);
 
       transitionLanesMap[index] = transitions;
@@ -1331,9 +1415,15 @@ export function getTransitionsForLanes(root, lanes) {
     const index = laneToIndex(lanes);
     const lane = 1 << index;
     if (root.transitionLanes.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-reconciler/src/ReactFiberLane.rs:1197:49',
+      );
     }
-    const transitions = $index(root.transitionLanes, index);
+    const transitions = $index(
+      root.transitionLanes,
+      index,
+      'packages/react-reconciler/src/ReactFiberLane.rs:1197:57',
+    );
     if (transitions != null) {
       transitions.forEach(transition => {
         transitionsForLanes.push(transition);
@@ -1360,10 +1450,16 @@ export function clearTransitionsForLanes(root, lanes) {
     const lane = 1 << index;
 
     if (root.transitionLanes.borrows) {
-      $alreadyBorrowed();
+      $alreadyBorrowed(
+        'packages/react-reconciler/src/ReactFiberLane.rs:1223:58',
+      );
     }
     const transitionLanes = root.transitionLanes;
-    const transitions = $index(transitionLanes, index);
+    const transitions = $index(
+      transitionLanes,
+      index,
+      'packages/react-reconciler/src/ReactFiberLane.rs:1224:43',
+    );
     if (transitions != null) {
       transitionLanes[index] = null;
     }

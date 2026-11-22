@@ -28,7 +28,10 @@ export function resolveServerReference(bundlerConfig, ref) {
   const name = ref.slice(idx + 1);
   const bundles = bundlerConfig[id];
   if (bundles == null) {
-    throw $stringPanic('Invalid server action: ' + ref);
+    throw $stringPanic(
+      'Invalid server action: ' + ref,
+      'packages/react-server-dom-parcel/src/client/ReactFlightClientConfigBundlerParcel.rs:80:9',
+    );
   }
   return [id, name, bundles];
 }

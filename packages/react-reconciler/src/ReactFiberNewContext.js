@@ -25,7 +25,7 @@ import {
 import is from 'shared/objectIs';
 
 import {getHostTransitionProvider} from './ReactFiberHostContext.js';
-import {$stringPanic} from '@rust-js/std';
+import {$panic, $stringPanic} from '@rust-js/std';
 
 const valueCursor = createCursor(null);
 
@@ -249,8 +249,9 @@ function propagateContextChanges(
       // mark it as having updates.
       const parentSuspense = fiber.return;
       if (parentSuspense == null) {
-        throw new Error(
+        throw $panic(
           'We just came from a parent so we must have had a parent. This is a bug in React.',
+          'packages/react-reconciler/src/ReactFiberNewContext.rs:290:17',
         );
       }
 
@@ -401,7 +402,10 @@ function propagateParentContextChanges(
     if (parent.tag === ContextProvider) {
       const currentParent = parent.alternate;
       if (currentParent == null) {
-        throw new Error('Should have a current fiber. This is a bug in React.');
+        throw $panic(
+          'Should have a current fiber. This is a bug in React.',
+          'packages/react-reconciler/src/ReactFiberNewContext.rs:447:17',
+        );
       }
 
       const oldProps = currentParent.memoizedProps;
@@ -425,7 +429,10 @@ function propagateParentContextChanges(
       // provider. E.g. in React DOM, this would be a <form />.
       const currentParent = parent.alternate;
       if (currentParent == null) {
-        throw new Error('Should have a current fiber. This is a bug in React.');
+        throw $panic(
+          'Should have a current fiber. This is a bug in React.',
+          'packages/react-reconciler/src/ReactFiberNewContext.rs:471:17',
+        );
       }
 
       // ReactFiberHooks' `Hook`, of ReactFiberConfig's `TransitionStatus`.
@@ -556,6 +563,7 @@ function readContextForConsumer(consumer, context) {
           'In classes, you can read it in the render method or getDerivedStateFromProps. ' +
           'In function components, you can read it directly in the function body, but not ' +
           'inside Hooks like useReducer() or useMemo().',
+        'packages/react-reconciler/src/ReactFiberNewContext.rs:612:17',
       );
     }
 

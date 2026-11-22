@@ -18,7 +18,7 @@ import Template from 'webpack/lib/Template';
 import ModuleDependency from 'webpack/lib/dependencies/ModuleDependency';
 import NullDependency from 'webpack/lib/dependencies/NullDependency';
 import neoAsync from 'neo-async';
-import {$next, $stringPanic} from '@rust-js/std';
+import {$next, $panic, $stringPanic} from '@rust-js/std';
 
 export class ClientReferenceDependency extends ModuleDependency {
   constructor(request) {
@@ -49,15 +49,20 @@ export default class ReactFlightWebpackPlugin {
     if (options == null) {
       throw $stringPanic(
         `${PLUGIN_NAME}: You must specify the isServer option as a boolean.`,
+        'packages/react-server-dom-webpack/src/ReactFlightWebpackPlugin.rs:149:13',
       );
     }
     if (typeof options.isServer !== 'boolean') {
       throw $stringPanic(
         `${PLUGIN_NAME}: You must specify the isServer option as a boolean.`,
+        'packages/react-server-dom-webpack/src/ReactFlightWebpackPlugin.rs:152:13',
       );
     }
     if (options.isServer) {
-      throw new Error('TODO: Implement the server compiler.');
+      throw $panic(
+        'TODO: Implement the server compiler.',
+        'packages/react-server-dom-webpack/src/ReactFlightWebpackPlugin.rs:155:13',
+      );
     }
     let clientReferences;
     if (options.clientReferences == null) {
@@ -419,8 +424,9 @@ export default class ReactFlightWebpackPlugin {
                 resolvedDirectory == null ||
                 typeof resolvedDirectory !== 'string'
               ) {
-                throw new Error(
+                throw $panic(
                   'internal error: entered unreachable code: a context resolves to its directory',
+                  'packages/react-server-dom-webpack/src/ReactFlightWebpackPlugin.rs:582:29',
                 );
               }
               const options = {

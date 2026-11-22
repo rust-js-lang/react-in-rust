@@ -8,11 +8,14 @@
 // Renderers that don't support mutation
 // can re-export everything from this module.
 
+import {$panic} from '@rust-js/std';
+
 function shim() {
-  throw new Error(
+  throw $panic(
     'This entrypoint of react-noop-renderer does not support mutation. ' +
       'This error is likely caused by a bug in React. ' +
       'Please file an issue.',
+    'packages/react-noop-renderer/src/ReactFiberConfigNoopNoMutation.rs:12:5',
   );
 }
 

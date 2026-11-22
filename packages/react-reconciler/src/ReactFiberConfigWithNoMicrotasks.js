@@ -8,11 +8,14 @@
 // Renderers that don't support microtasks
 // can re-export everything from this module.
 
+import {$panic} from '@rust-js/std';
+
 function shim() {
-  throw new Error(
+  throw $panic(
     'The current renderer does not support microtasks. ' +
       'This error is likely caused by a bug in React. ' +
       'Please file an issue.',
+    'packages/react-reconciler/src/ReactFiberConfigWithNoMicrotasks.rs:10:5',
   );
 }
 

@@ -56,7 +56,10 @@ function lazyInitializer(payload) {
               ioInfo.end = performance.now();
               // Surface the default export as the resolved "value" for debug purposes.
               const debugValue = moduleObject?.default;
-              $unwrap(resolveDebugValue)(debugValue);
+              $unwrap(
+                resolveDebugValue,
+                'packages/react/src/ReactLazy.rs:96:45',
+              )(debugValue);
               // $FlowFixMe[incompatible-use]
               // $FlowFixMe[prop-missing]
               ioInfo.value.status = 'fulfilled';
@@ -87,8 +90,14 @@ function lazyInitializer(payload) {
               ioInfo.end = performance.now();
               // Hide unhandled rejections.
               // $FlowFixMe[incompatible-use]
-              $unwrap(ioInfo.value).then(noop, noop);
-              $unwrap(rejectDebugValue)(error);
+              $unwrap(
+                ioInfo.value,
+                'packages/react/src/ReactLazy.rs:130:30',
+              ).then(noop, noop);
+              $unwrap(
+                rejectDebugValue,
+                'packages/react/src/ReactLazy.rs:132:44',
+              )(error);
               // $FlowFixMe[incompatible-use]
               // $FlowFixMe[prop-missing]
               ioInfo.value.status = 'rejected';

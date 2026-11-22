@@ -37,6 +37,7 @@ import {
   $cleanup,
   $displayF64,
   $live,
+  $panic,
   $stringPanic,
   $toUppercase,
   $unwindsOn,
@@ -62,7 +63,10 @@ function createReactNoop(reconciler, useMutation) {
       typeof parentInstance.rootID === 'string' ? undefined : parentInstance.id;
 
     if (prevParent !== -1 && prevParent != parentId) {
-      throw new Error('Reparenting is not allowed');
+      throw $panic(
+        'Reparenting is not allowed',
+        'packages/react-noop-renderer/src/createReactNoop.rs:505:13',
+      );
     }
     child.parent = parentId;
     const children = parentInstance.children;
@@ -77,8 +81,9 @@ function createReactNoop(reconciler, useMutation) {
     if (typeof parentInstance.rootID !== 'string') {
       // Some calls to this aren't typesafe.
       // This helps surface mistakes in tests.
-      throw new Error(
+      throw $panic(
         'appendChildToContainer() first argument is not a container.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:530:13',
       );
     }
     appendChildToContainerOrInstance(parentInstance, child);
@@ -88,7 +93,10 @@ function createReactNoop(reconciler, useMutation) {
     if (typeof parentInstance.rootID === 'string') {
       // Some calls to this aren't typesafe.
       // This helps surface mistakes in tests.
-      throw new Error('appendChild() first argument is not an instance.');
+      throw $panic(
+        'appendChild() first argument is not an instance.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:542:13',
+      );
     }
     appendChildToContainerOrInstance(parentInstance, child);
   }
@@ -105,7 +113,10 @@ function createReactNoop(reconciler, useMutation) {
     }
     const beforeIndex = children.indexOf(beforeChild);
     if (beforeIndex === -1) {
-      throw new Error('This child does not exist.');
+      throw $panic(
+        'This child does not exist.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:571:13',
+      );
     }
     children.splice(beforeIndex, 0, child);
   }
@@ -114,8 +125,9 @@ function createReactNoop(reconciler, useMutation) {
     if (typeof parentInstance.rootID !== 'string') {
       // Some calls to this aren't typesafe.
       // This helps surface mistakes in tests.
-      throw new Error(
+      throw $panic(
         'insertInContainerBefore() first argument is not a container.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:584:13',
       );
     }
     insertInContainerOrInstanceBefore(parentInstance, child, beforeChild);
@@ -125,7 +137,10 @@ function createReactNoop(reconciler, useMutation) {
     if (typeof parentInstance.rootID === 'string') {
       // Some calls to this aren't typesafe.
       // This helps surface mistakes in tests.
-      throw new Error('insertBefore() first argument is not an instance.');
+      throw $panic(
+        'insertBefore() first argument is not an instance.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:597:13',
+      );
     }
     insertInContainerOrInstanceBefore(parentInstance, child, beforeChild);
   }
@@ -138,7 +153,10 @@ function createReactNoop(reconciler, useMutation) {
     const children = parentInstance.children;
     const index = children.indexOf(child);
     if (index === -1) {
-      throw new Error('This child does not exist.');
+      throw $panic(
+        'This child does not exist.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:620:13',
+      );
     }
     children.splice(index, 1);
   }
@@ -147,8 +165,9 @@ function createReactNoop(reconciler, useMutation) {
     if (typeof parentInstance.rootID !== 'string') {
       // Some calls to this aren't typesafe.
       // This helps surface mistakes in tests.
-      throw new Error(
+      throw $panic(
         'removeChildFromContainer() first argument is not a container.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:629:13',
       );
     }
     removeChildFromContainerOrInstance(parentInstance, child);
@@ -158,7 +177,10 @@ function createReactNoop(reconciler, useMutation) {
     if (typeof parentInstance.rootID === 'string') {
       // Some calls to this aren't typesafe.
       // This helps surface mistakes in tests.
-      throw new Error('removeChild() first argument is not an instance.');
+      throw $panic(
+        'removeChild() first argument is not an instance.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:641:13',
+      );
     }
     removeChildFromContainerOrInstance(parentInstance, child);
   }
@@ -213,7 +235,10 @@ function createReactNoop(reconciler, useMutation) {
 
   function shouldSetTextContent(type, props) {
     if (type === 'errorInBeginPhase') {
-      throw new Error('Error in host config.');
+      throw $panic(
+        'Error in host config.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:733:13',
+      );
     }
     return (
       typeof props.children === 'string' ||
@@ -243,9 +268,15 @@ function createReactNoop(reconciler, useMutation) {
       // Attach a listener to the suspensey thing and create a subscription
       // object that uses reference counting to track when all the suspensey
       // things have loaded.
-      const record = $unwrap(suspenseyThingCache).get(src);
+      const record = $unwrap(
+        suspenseyThingCache,
+        'packages/react-noop-renderer/src/createReactNoop.rs:774:61',
+      ).get(src);
       if (record === undefined) {
-        throw new Error('Could not find record for key.');
+        throw $panic(
+          'Could not find record for key.',
+          'packages/react-noop-renderer/src/createReactNoop.rs:776:21',
+        );
       }
       if (record.status === 'fulfilled') {
         // Already loaded.
@@ -254,11 +285,15 @@ function createReactNoop(reconciler, useMutation) {
         // Stash the subscription on the record. In `resolveSuspenseyThing`,
         // we'll use this fire the commit once all the things have loaded.
         record.subscriptions ??= [];
-        $unwrap(record.subscriptions).push(state);
+        $unwrap(
+          record.subscriptions,
+          'packages/react-noop-renderer/src/createReactNoop.rs:791:26',
+        ).push(state);
       }
     } else {
-      throw new Error(
+      throw $panic(
         'Did not expect this host component to be visited when suspending the commit. Did you check the SuspendCommit flag?',
+        'packages/react-noop-renderer/src/createReactNoop.rs:795:17',
       );
     }
   }
@@ -320,7 +355,10 @@ function createReactNoop(reconciler, useMutation) {
       internalInstanceHandle,
     ) {
       if (type === 'errorInCompletePhase') {
-        throw new Error('Error in host config.');
+        throw $panic(
+          'Error in host config.',
+          'packages/react-noop-renderer/src/createReactNoop.rs:869:25',
+        );
       }
       if (__DEV__) {
         // The `if` statement here prevents auto-disabling of the safe coercion
@@ -374,7 +412,10 @@ function createReactNoop(reconciler, useMutation) {
     appendInitialChild(parentInstance, child) {
       const prevParent = child.parent;
       if (prevParent !== -1 && prevParent !== parentInstance.id) {
-        throw new Error('Reparenting is not allowed');
+        throw $panic(
+          'Reparenting is not allowed',
+          'packages/react-noop-renderer/src/createReactNoop.rs:961:21',
+        );
       }
       child.parent = parentInstance.id;
       parentInstance.children.push(child);
@@ -491,7 +532,10 @@ function createReactNoop(reconciler, useMutation) {
     warnsIfNotActing: true,
 
     getInstanceFromNode() {
-      throw new Error('Not yet implemented.');
+      throw $panic(
+        'Not yet implemented.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:1088:40',
+      );
     },
 
     beforeActiveInstanceBlur() {
@@ -539,7 +583,10 @@ function createReactNoop(reconciler, useMutation) {
 
     preloadInstance(instance, type, props) {
       if (type !== 'suspensey-thing' || typeof props.src !== 'string') {
-        throw $stringPanic(`Attempted to preload unexpected instance: ${type}`);
+        throw $stringPanic(
+          `Attempted to preload unexpected instance: ${type}`,
+          'packages/react-noop-renderer/src/createReactNoop.rs:1135:25',
+        );
       }
       const src = props.src;
 
@@ -548,13 +595,19 @@ function createReactNoop(reconciler, useMutation) {
       // main thread and ask again. It's possible a load event will fire in
       // between, in which case we can avoid showing a fallback.
       suspenseyThingCache ??= new Map();
-      const record = $unwrap(suspenseyThingCache).get(src);
+      const record = $unwrap(
+        suspenseyThingCache,
+        'packages/react-noop-renderer/src/createReactNoop.rs:1145:65',
+      ).get(src);
       if (record === undefined) {
         const newRecord = {
           status: 'pending',
           subscriptions: null,
         };
-        $unwrap(suspenseyThingCache).set(src, newRecord);
+        $unwrap(
+          suspenseyThingCache,
+          'packages/react-noop-renderer/src/createReactNoop.rs:1152:60',
+        ).set(src, newRecord);
         const onLoadStart = props.onLoadStart;
         if (typeof onLoadStart === 'function') {
           onLoadStart();
@@ -585,7 +638,10 @@ function createReactNoop(reconciler, useMutation) {
     bindToConsole(methodName, args, badgeName) {
       const method = console[methodName];
       if (typeof method !== 'function') {
-        throw $stringPanic(`console.${methodName} is no function`);
+        throw $stringPanic(
+          `console.${methodName} is no function`,
+          'packages/react-noop-renderer/src/createReactNoop.rs:1181:21',
+        );
       }
       return method.bind(console, ...args);
     },
@@ -596,12 +652,18 @@ function createReactNoop(reconciler, useMutation) {
 
     cloneMutableInstance() {
       // required for enableGestureTransition
-      throw new Error('Not yet implemented.');
+      throw $panic(
+        'Not yet implemented.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:1193:13',
+      );
     },
 
     cloneMutableTextInstance() {
       // required for enableGestureTransition
-      throw new Error('Not yet implemented.');
+      throw $panic(
+        'Not yet implemented.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:1198:13',
+      );
     },
 
     commitMount(instance, type, newProps) {
@@ -610,7 +672,10 @@ function createReactNoop(reconciler, useMutation) {
 
     commitUpdate(instance, type, oldProps, newProps) {
       if (oldProps == null) {
-        throw new Error('Should have old props');
+        throw $panic(
+          'Should have old props',
+          'packages/react-noop-renderer/src/createReactNoop.rs:1209:21',
+        );
       }
       hostUpdateCounter++;
       instance.prop = newProps.prop;
@@ -670,11 +735,17 @@ function createReactNoop(reconciler, useMutation) {
     restoreRootViewTransitionName(rootContainer) {},
 
     cloneRootViewTransitionContainer(rootContainer) {
-      throw new Error('Not yet implemented.');
+      throw $panic(
+        'Not yet implemented.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:1282:13',
+      );
     },
 
     removeRootViewTransitionClone(rootContainer, clone) {
-      throw new Error('Not implemented.');
+      throw $panic(
+        'Not implemented.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:1286:13',
+      );
     },
 
     measureInstance(instance) {
@@ -778,7 +849,10 @@ function createReactNoop(reconciler, useMutation) {
         }
         if (tmp) {
           // Trigger an error for testing purposes
-          throw new Error('Error when completing root');
+          throw $panic(
+            'Error when completing root',
+            'packages/react-noop-renderer/src/createReactNoop.rs:1369:17',
+          );
         }
       }
     },
@@ -1026,21 +1100,31 @@ function createReactNoop(reconciler, useMutation) {
   function renderToRootWithID(element, rootId, callback) {
     const container = getOrCreateRootContainer(rootId, ConcurrentRoot);
     const root = roots.get(container.rootID);
-    NoopRenderer.updateContainer(element, $unwrap(root), undefined, callback);
+    NoopRenderer.updateContainer(
+      element,
+      $unwrap(
+        root,
+        'packages/react-noop-renderer/src/createReactNoop.rs:1685:59',
+      ),
+      undefined,
+      callback,
+    );
   }
 
   return {
     _Scheduler: Scheduler,
 
     getChildren(rootId) {
-      throw new Error(
+      throw $panic(
         'No longer supported due to bad performance when used with `expect()`. Use `ReactNoop.getChildrenAsJSX()` instead or, if you really need to, `dangerouslyGetChildren` after you carefully considered the warning in its JSDOC.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:1693:13',
       );
     },
 
     getPendingChildren(rootId) {
-      throw new Error(
+      throw $panic(
         'No longer supported due to bad performance when used with `expect()`. Use `ReactNoop.getPendingChildrenAsJSX()` instead or, if you really need to, `dangerouslyGetPendingChildren` after you carefully considered the warning in its JSDOC.',
+        'packages/react-noop-renderer/src/createReactNoop.rs:1699:13',
       );
     },
 
@@ -1103,7 +1187,10 @@ function createReactNoop(reconciler, useMutation) {
 
     createLegacyRoot() {
       if (disableLegacyMode) {
-        throw new Error('createLegacyRoot: Unsupported Legacy Mode API.');
+        throw $panic(
+          'createLegacyRoot: Unsupported Legacy Mode API.',
+          'packages/react-noop-renderer/src/createReactNoop.rs:1782:21',
+        );
       }
 
       const id = idCounter++;
@@ -1161,13 +1248,19 @@ function createReactNoop(reconciler, useMutation) {
 
     resolveSuspenseyThing(key) {
       suspenseyThingCache ??= new Map();
-      const record = $unwrap(suspenseyThingCache).get(key);
+      const record = $unwrap(
+        suspenseyThingCache,
+        'packages/react-noop-renderer/src/createReactNoop.rs:1860:61',
+      ).get(key);
       if (record === undefined) {
         const newRecord = {
           status: 'fulfilled',
           subscriptions: null,
         };
-        $unwrap(suspenseyThingCache).set(key, newRecord);
+        $unwrap(
+          suspenseyThingCache,
+          'packages/react-noop-renderer/src/createReactNoop.rs:1867:56',
+        ).set(key, newRecord);
       } else if (record.status === 'pending') {
         record.status = 'fulfilled';
         if (record.subscriptions != null) {
@@ -1180,8 +1273,9 @@ function createReactNoop(reconciler, useMutation) {
               const commit = subscription.commit;
               subscription.commit = null;
               if (commit == null) {
-                throw new Error(
+                throw $panic(
                   'Expected commit to be a function. This is a bug in React.',
+                  'packages/react-noop-renderer/src/createReactNoop.rs:1882:45',
                 );
               }
               commit();
@@ -1206,12 +1300,23 @@ function createReactNoop(reconciler, useMutation) {
 
     renderLegacySyncRoot(element, callback) {
       if (disableLegacyMode) {
-        throw new Error('createLegacyRoot: Unsupported Legacy Mode API.');
+        throw $panic(
+          'createLegacyRoot: Unsupported Legacy Mode API.',
+          'packages/react-noop-renderer/src/createReactNoop.rs:1921:21',
+        );
       }
       const rootId = DEFAULT_ROOT_ID;
       const container = getOrCreateRootContainer(rootId, LegacyRoot);
       const root = roots.get(container.rootID);
-      NoopRenderer.updateContainer(element, $unwrap(root), undefined, callback);
+      NoopRenderer.updateContainer(
+        element,
+        $unwrap(
+          root,
+          'packages/react-noop-renderer/src/createReactNoop.rs:1926:63',
+        ),
+        undefined,
+        callback,
+      );
     },
 
     renderToRootWithID,
@@ -1364,7 +1469,10 @@ function createReactNoop(reconciler, useMutation) {
           }
         }
 
-        const lastPending = $unwrap(updateQueue.shared).pending;
+        const lastPending = $unwrap(
+          updateQueue.shared,
+          'packages/react-noop-renderer/src/createReactNoop.rs:2120:80',
+        ).pending;
         if (lastPending != null) {
           const firstPending = lastPending.next;
           const pendingUpdate = firstPending;

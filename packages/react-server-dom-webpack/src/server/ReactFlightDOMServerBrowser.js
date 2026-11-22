@@ -148,7 +148,10 @@ export function prerender(model, webpackMap, options) {
     const onFatalError = reject;
     let request;
     function onAllReady() {
-      const request$1 = $unwrap(request);
+      const request$1 = $unwrap(
+        request,
+        'packages/react-server-dom-webpack/src/server/ReactFlightDOMServerBrowser.rs:254:66',
+      );
       const stream = new ReadableStream(
         {
           type: 'bytes',

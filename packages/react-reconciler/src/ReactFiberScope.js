@@ -22,7 +22,13 @@ import {enableScopeAPI} from 'shared/ReactFeatureFlags';
 import {$unwrap} from '@rust-js/std';
 
 function getSuspenseFallbackChild(fiber) {
-  return $unwrap($unwrap(fiber.child).sibling).child;
+  return $unwrap(
+    $unwrap(
+      fiber.child,
+      'packages/react-reconciler/src/ReactFiberScope.rs:51:10',
+    ).sibling,
+    'packages/react-reconciler/src/ReactFiberScope.rs:55:10',
+  ).child;
 }
 
 const emptyObject = {};

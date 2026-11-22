@@ -6,13 +6,20 @@
 // LICENSE file in the root directory of this source tree.
 
 import {currentTaskInDEV} from './ReactFizzCurrentTask.js';
+import {$panic} from '@rust-js/std';
 
 function getCacheForType(resourceType) {
-  throw new Error('Not implemented.');
+  throw $panic(
+    'Not implemented.',
+    'packages/react-server/src/ReactFizzAsyncDispatcher.rs:35:5',
+  );
 }
 
 function cacheSignal() {
-  throw new Error('Not implemented.');
+  throw $panic(
+    'Not implemented.',
+    'packages/react-server/src/ReactFizzAsyncDispatcher.rs:39:5',
+  );
 }
 
 export const DefaultAsyncDispatcher = {

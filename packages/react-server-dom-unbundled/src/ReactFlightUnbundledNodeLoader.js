@@ -8,7 +8,15 @@
 import createMappingsSerializer from 'webpack-sources/lib/helpers/createMappingsSerializer.js';
 import readMappings from 'webpack-sources/lib/helpers/readMappings.js';
 import * as acorn from 'acorn-loose';
-import {$KeySet, $chars, $index, $rev, $try, $unwrap} from '@rust-js/std';
+import {
+  $KeySet,
+  $chars,
+  $index,
+  $panic,
+  $rev,
+  $try,
+  $unwrap,
+} from '@rust-js/std';
 
 let warnedAboutConditionsFlag = false;
 
@@ -145,7 +153,10 @@ function transformServerModule(source, program, url, sourceMap, loader) {
             addLocalExportedNames(exportedEntries, localNames, declarator.id);
           }
         } else {
-          const id = $unwrap(node.declaration.id);
+          const id = $unwrap(
+            node.declaration.id,
+            'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:307:51',
+          );
           const name = id.name;
           addExportedEntry(
             exportedEntries,
@@ -186,9 +197,14 @@ function transformServerModule(source, program, url, sourceMap, loader) {
       // We iterate source mapping entries and our matched exports in parallel to source map
       // them to their original location.
       let nextEntryIdx = 0;
-      let nextEntryLine = $unwrap(exportedEntries[nextEntryIdx].loc).start.line;
-      let nextEntryColumn = $unwrap(exportedEntries[nextEntryIdx].loc).start
-        .column;
+      let nextEntryLine = $unwrap(
+        exportedEntries[nextEntryIdx].loc,
+        'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:360:76',
+      ).start.line;
+      let nextEntryColumn = $unwrap(
+        exportedEntries[nextEntryIdx].loc,
+        'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:361:78',
+      ).start.column;
       readMappings(
         mappings,
         (
@@ -207,7 +223,11 @@ function transformServerModule(source, program, url, sourceMap, loader) {
             // We're past the entry which means that the best match we have is the previous entry.
             if (lastMappedLine === nextEntryLine) {
               // Match
-              const entry = $index(exportedEntries, nextEntryIdx);
+              const entry = $index(
+                exportedEntries,
+                nextEntryIdx,
+                'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:377:62',
+              );
               entry.originalLine = lastOriginalLine;
               entry.originalColumn = lastOriginalColumn;
               entry.originalSource = lastSourceIndex;
@@ -217,10 +237,14 @@ function transformServerModule(source, program, url, sourceMap, loader) {
             }
             nextEntryIdx = (nextEntryIdx + 1) >>> 0;
             if (nextEntryIdx < exportedEntries.length) {
-              nextEntryLine = $unwrap(exportedEntries[nextEntryIdx].loc).start
-                .line;
-              nextEntryColumn = $unwrap(exportedEntries[nextEntryIdx].loc).start
-                .column;
+              nextEntryLine = $unwrap(
+                exportedEntries[nextEntryIdx].loc,
+                'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:388:70',
+              ).start.line;
+              nextEntryColumn = $unwrap(
+                exportedEntries[nextEntryIdx].loc,
+                'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:390:70',
+              ).start.column;
             } else {
               nextEntryLine = -1;
               nextEntryColumn = -1;
@@ -262,10 +286,14 @@ function transformServerModule(source, program, url, sourceMap, loader) {
         lastMappedLine++;
       }
 
-      sourceLineCount = $unwrap(program.loc).end.line;
+      sourceLineCount = $unwrap(
+        program.loc,
+        'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:429:45',
+      ).end.line;
       if (sourceLineCount < lastMappedLine) {
-        throw new Error(
+        throw $panic(
           'The source map has more mappings than there are lines.',
+          'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:431:17',
         );
       }
       // If the original source string had more lines than there are mappings in the source map.
@@ -297,7 +325,10 @@ function transformServerModule(source, program, url, sourceMap, loader) {
       for (const entry of exportedEntries) {
         // Point each entry to original location.
         entry.originalSource = 0;
-        entry.originalLine = $unwrap(entry.loc).start.line;
+        entry.originalLine = $unwrap(
+          entry.loc,
+          'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:460:49',
+        ).start.line;
         // We use column zero since we do the short-hand line-only source maps above.
         entry.originalColumn = 0; // entry.loc.start.column;
       }
@@ -353,7 +384,12 @@ function transformServerModule(source, program, url, sourceMap, loader) {
     sourceMap.mappings = mappings;
     newSrc +=
       '//# sourceMappingURL=data:application/json;charset=utf-8;base64,' +
-      Buffer.from($unwrap(JSON.stringify(sourceMap))).toString('base64');
+      Buffer.from(
+        $unwrap(
+          JSON.stringify(sourceMap),
+          'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:515:77',
+        ),
+      ).toString('base64');
   }
 
   return newSrc;
@@ -390,8 +426,9 @@ function resolveClientImport(specifier, parentUrl) {
   // always convert to explicit exported names instead.
   const conditions = ['node', 'import'];
   if (stashedResolve == null) {
-    throw new Error(
+    throw $panic(
       'Expected resolve to have been called before transformSource',
+      'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:562:9',
     );
   }
   return stashedResolve(
@@ -424,7 +461,10 @@ async function parseExportNamesInto(body, names, parentUrl, loader) {
           loader,
         );
         if (typeof loaded.source !== 'string') {
-          throw new Error('Expected the transformed source to be a string.');
+          throw $panic(
+            'Expected the transformed source to be a string.',
+            'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:603:25',
+          );
         }
         // GAP rd690: a `match` of the `Result` whose `Err` continues is `$try`, not `try`/`catch`.
         // GAP rd692: `Default` of the untagged `EcmaVersion` is refused, so each field is named.
@@ -452,7 +492,13 @@ async function parseExportNamesInto(body, names, parentUrl, loader) {
             addExportNames(names, declarator.id);
           }
         } else {
-          addExportNames(names, $unwrap(node.declaration.id));
+          addExportNames(
+            names,
+            $unwrap(
+              node.declaration.id,
+              'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:642:66',
+            ),
+          );
         }
       }
       for (const specifier of node.specifiers) {
@@ -506,8 +552,9 @@ async function transformClientModule(program, url, sourceMap, loader) {
 async function loadClientImport(url, defaultTransformSource) {
   const stashedGetSource$1 = stashedGetSource;
   if (stashedGetSource$1 == null) {
-    throw new Error(
+    throw $panic(
       'Expected getSource to have been called before transformSource',
+      'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:711:9',
     );
   }
   // TODO: Validate that this is another module by calling getFormat.
@@ -550,7 +597,15 @@ async function transformModuleIfNeeded(source, url, loader) {
       sourceMappingUrl = text.slice(19);
       sourceMappingStart = start;
       sourceMappingEnd = end;
-      sourceMappingLines = $unwrap(endLoc).line - $unwrap(startLoc).line;
+      sourceMappingLines =
+        $unwrap(
+          endLoc,
+          'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:773:52',
+        ).line -
+        $unwrap(
+          startLoc,
+          'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:773:78',
+        ).line;
     }
   }
   let program;
@@ -595,8 +650,9 @@ async function transformModuleIfNeeded(source, url, loader) {
   }
 
   if (useClient && useServer) {
-    throw new Error(
+    throw $panic(
       'Cannot have both "use client" and "use server" directives in the same file.',
+      'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:811:9',
     );
   }
 
@@ -640,7 +696,10 @@ export async function transformSource(source, context, defaultTransformSource) {
   );
   if (context.format === 'module') {
     if (typeof transformed.source !== 'string') {
-      throw new Error('Expected source to have been transformed to a string.');
+      throw $panic(
+        'Expected source to have been transformed to a string.',
+        'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:863:13',
+      );
     }
     const newSrc = await transformModuleIfNeeded(
       transformed.source,
@@ -656,7 +715,10 @@ export async function load(url, context, defaultLoad) {
   const result = await defaultLoad(url, context, defaultLoad);
   if (result.format === 'module') {
     if (typeof result.source !== 'string') {
-      throw new Error('Expected source to have been loaded into a string.');
+      throw $panic(
+        'Expected source to have been loaded into a string.',
+        'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeLoader.rs:886:13',
+      );
     }
     const newSrc = await transformModuleIfNeeded(
       result.source,

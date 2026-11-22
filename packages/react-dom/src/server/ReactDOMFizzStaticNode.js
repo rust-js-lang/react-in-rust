@@ -84,7 +84,13 @@ export function prerenderToNodeStream(children, options) {
       let writable;
       const readable = new Readable({
         read() {
-          startFlowing(request, $unwrap(writable));
+          startFlowing(
+            request,
+            $unwrap(
+              writable,
+              'packages/react-dom/src/server/ReactDOMFizzStaticNode.rs:126:64',
+            ),
+          );
         },
       });
       writable = createFakeWritableFromReadable(readable);
@@ -145,7 +151,13 @@ export function prerender(children, options) {
               createFakeWritableFromReadableStreamController(controller);
           },
           pull() {
-            startFlowing(request, $unwrap(writable));
+            startFlowing(
+              request,
+              $unwrap(
+                writable,
+                'packages/react-dom/src/server/ReactDOMFizzStaticNode.rs:225:68',
+              ),
+            );
           },
           cancel(reason) {
             stopFlowing(request);
@@ -219,7 +231,13 @@ export function resumeAndPrerenderToNodeStream(
       let writable;
       const readable = new Readable({
         read() {
-          startFlowing(request, $unwrap(writable));
+          startFlowing(
+            request,
+            $unwrap(
+              writable,
+              'packages/react-dom/src/server/ReactDOMFizzStaticNode.rs:314:64',
+            ),
+          );
         },
       });
       writable = createFakeWritableFromReadable(readable);
@@ -264,7 +282,13 @@ export function resumeAndPrerender(children, postponedState, options) {
               createFakeWritableFromReadableStreamController(controller);
           },
           pull() {
-            startFlowing(request, $unwrap(writable));
+            startFlowing(
+              request,
+              $unwrap(
+                writable,
+                'packages/react-dom/src/server/ReactDOMFizzStaticNode.rs:375:68',
+              ),
+            );
           },
           cancel(reason) {
             stopFlowing(request);

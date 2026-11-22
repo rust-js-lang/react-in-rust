@@ -141,11 +141,13 @@ import {
   $f64ToInt,
   $fieldCell,
   $index,
+  $panic,
   $roomFor,
   $shown,
   $some,
   $someGet,
   $someValue,
+  $stdSites,
   $stringPanic,
   $try,
   $unborrow,
@@ -493,8 +495,9 @@ function taskDebugStackTrace(request, task) {
   if (error == null) {
     // `undefined.stack` throws, as upstream's parseStackTrace of it does.
     debugStack.stack;
-    throw new Error(
+    throw $panic(
       "internal error: entered unreachable code: reading an undefined value's property throws",
+      'packages/react-server/src/ReactFlightServer.rs:866:9',
     );
   }
   return filterStackTrace(request, parseStackTrace(error, 1));
@@ -511,8 +514,9 @@ function taskDebugOwnerInfo(debugOwner) {
   if (info == null) {
     // `undefined.owner` throws, as upstream's outlineComponentInfo of it does.
     debugOwner.owner;
-    throw new Error(
+    throw $panic(
       "internal error: entered unreachable code: reading an undefined value's property throws",
+      'packages/react-server/src/ReactFlightServer.rs:884:9',
     );
   }
   return info;
@@ -544,22 +548,32 @@ const {
 
 function throwTaintViolation(message) {
   // eslint-disable-next-line react-internal/prod-error-codes
-  throw $stringPanic(message);
+  throw $stringPanic(
+    message,
+    'packages/react-server/src/ReactFlightServer.rs:1027:5',
+  );
 }
 
 function cleanupTaintQueue(request) {
   const cleanupQueue = request.taintCleanupQueue;
   if (TaintRegistryPendingRequests != null) {
     if (TaintRegistryPendingRequests.borrows) {
-      $alreadyBorrowed();
+      $alreadyBorrowed(
+        'packages/react-server/src/ReactFlightServer.rs:1034:30',
+      );
     }
     TaintRegistryPendingRequests.delete(cleanupQueue);
   }
-  const taintRegistryValues = $unwrap(TaintRegistryValues);
+  const taintRegistryValues = $unwrap(
+    TaintRegistryValues,
+    'packages/react-server/src/ReactFlightServer.rs:1037:77',
+  );
   // Taken out of the cell, not borrowed across the loop: the registry's
   // map comes from React's shared internals, which JS can reach, so its
   // `get` may run code that borrows this queue (rust-js #2111).
-  const entryValues = $borrowMut(cleanupQueue).splice(0);
+  const entryValues = $borrowMut(cleanupQueue, $stdSites.refCellTake[0]).splice(
+    0,
+  );
   for (let i = 0; i < entryValues.length; i++) {
     const entryValue = entryValues[i];
     const entry = taintRegistryValues.get(entryValue);
@@ -594,8 +608,9 @@ function RequestInstance(
 ) {
   const a = ReactSharedInternals.A;
   if (a != null && a !== DefaultAsyncDispatcher) {
-    throw new Error(
+    throw $panic(
       'Currently React only supports one RSC renderer at a time.',
+      'packages/react-server/src/ReactFlightServer.rs:1082:21',
     );
   }
   ReactSharedInternals.A = DefaultAsyncDispatcher;
@@ -614,7 +629,9 @@ function RequestInstance(
   if (enableTaint) {
     if (TaintRegistryPendingRequests != null) {
       if (TaintRegistryPendingRequests.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-server/src/ReactFlightServer.rs:1109:38',
+        );
       }
       TaintRegistryPendingRequests.add(cleanupQueue);
     }
@@ -971,7 +988,11 @@ function emitRequestedDebugThenable(request, id, counter, thenable) {
 }
 
 function createThenableTask(request, task, thenable) {
-  const borrow = $borrow($fieldCell(task, 'keyPath', true), true);
+  const borrow = $borrow(
+    $fieldCell(task, 'keyPath', true),
+    'packages/react-server/src/ReactFlightServer.rs:1536:34',
+    true,
+  );
   const keyPath = borrow.value;
   $unborrow(borrow);
   return createTask(
@@ -1024,7 +1045,11 @@ function serializeThenable(request, task, thenable) {
         // The parent task is mutated as serialization continues, so we
         // snapshot the context that the new task needs if it's created
         // later.
-        const borrow = $borrow($fieldCell(task, 'keyPath', true), true);
+        const borrow = $borrow(
+          $fieldCell(task, 'keyPath', true),
+          'packages/react-server/src/ReactFlightServer.rs:1603:42',
+          true,
+        );
         const keyPath = borrow.value;
         $unborrow(borrow);
         const implicitSlot = task.implicitSlot;
@@ -1175,7 +1200,11 @@ function serializeReadableStream(request, task, stream) {
   const reader = stream.getReader();
 
   // This task won't actually be retried. We just use it to attempt synchronous renders.
-  const borrow = $borrow($fieldCell(task, 'keyPath', true), true);
+  const borrow = $borrow(
+    $fieldCell(task, 'keyPath', true),
+    'packages/react-server/src/ReactFlightServer.rs:1789:34',
+    true,
+  );
   const keyPath = borrow.value;
   $unborrow(borrow);
   const streamTask = createTask(
@@ -1210,15 +1239,24 @@ function serializeReadableStream(request, task, stream) {
     }
     request.cacheController.signal.removeEventListener(
       'abort',
-      $unwrap(abortStreamCell),
+      $unwrap(
+        abortStreamCell,
+        'packages/react-server/src/ReactFlightServer.rs:1850:41',
+      ),
     );
     erroredTask(request, streamTask, reason);
     enqueueFlush(request);
 
     // $FlowFixMe[incompatible-type] should be able to pass mixed
     // $FlowFixMe[incompatible-use]
-    const onFulfilled = $unwrap(errorCell);
-    const onRejected = $unwrap(errorCell);
+    const onFulfilled = $unwrap(
+      errorCell,
+      'packages/react-server/src/ReactFlightServer.rs:1859:45',
+    );
+    const onRejected = $unwrap(
+      errorCell,
+      'packages/react-server/src/ReactFlightServer.rs:1860:45',
+    );
     reader.cancel(reason).then(
       () => {
         onFulfilled();
@@ -1235,7 +1273,13 @@ function serializeReadableStream(request, task, stream) {
       return;
     }
     const signal = request.cacheController.signal;
-    signal.removeEventListener('abort', $unwrap(abortStreamCell));
+    signal.removeEventListener(
+      'abort',
+      $unwrap(
+        abortStreamCell,
+        'packages/react-server/src/ReactFlightServer.rs:1880:81',
+      ),
+    );
     const reason = signal.reason;
     if (request.type === PRERENDER) {
       request.abortableTasks.delete(streamTask);
@@ -1281,13 +1325,19 @@ function serializeReadableStream(request, task, stream) {
         streamTask.model = value;
         if (isByteStream) {
           // Chunks of byte streams are always Uint8Array instances.
-          const chunk = $unwrap(streamTask.model);
+          const chunk = $unwrap(
+            streamTask.model,
+            'packages/react-server/src/ReactFlightServer.rs:1938:79',
+          );
           emitTypedArrayChunk(request, streamTask.id, 'b', chunk, false);
         } else {
           tryStreamTask(request, streamTask);
         }
         enqueueFlush(request);
-        const progress = $unwrap(progressCell);
+        const progress = $unwrap(
+          progressCell,
+          'packages/react-server/src/ReactFlightServer.rs:1945:57',
+        );
         reader.read().then(
           entry => {
             progress(entry);
@@ -1318,7 +1368,11 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
   const isIterator = iterable === iterator;
 
   // This task won't actually be retried. We just use it to attempt synchronous renders.
-  const borrow = $borrow($fieldCell(task, 'keyPath', true), true);
+  const borrow = $borrow(
+    $fieldCell(task, 'keyPath', true),
+    'packages/react-server/src/ReactFlightServer.rs:1982:34',
+    true,
+  );
   const keyPath = borrow.value;
   $unborrow(borrow);
   const streamTask = createTask(
@@ -1359,7 +1413,13 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
       return;
     }
     const signal = request.cacheController.signal;
-    signal.removeEventListener('abort', $unwrap(abortIterableCell));
+    signal.removeEventListener(
+      'abort',
+      $unwrap(
+        abortIterableCell,
+        'packages/react-server/src/ReactFlightServer.rs:2050:83',
+      ),
+    );
     const reason = signal.reason;
     if (request.type === PRERENDER) {
       request.abortableTasks.delete(streamTask);
@@ -1396,7 +1456,10 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
 
   // What `callIteratorInDEV` is given of `progress` and `error`.
   function devProgress(entry) {
-    const progress = $unwrap(progressCell);
+    const progress = $unwrap(
+      progressCell,
+      'packages/react-server/src/ReactFlightServer.rs:2101:59',
+    );
     progress(entry);
   }
   function devError(reason) {
@@ -1404,9 +1467,15 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
   }
   function nextStep() {
     if (__DEV__) {
-      $unwrap(callIteratorInDEV)(iterator, devProgress, devError);
+      $unwrap(
+        callIteratorInDEV,
+        'packages/react-server/src/ReactFlightServer.rs:2114:87',
+      )(iterator, devProgress, devError);
     } else {
-      const progress = $unwrap(progressCell);
+      const progress = $unwrap(
+        progressCell,
+        'packages/react-server/src/ReactFlightServer.rs:2122:53',
+      );
       iterator.next().then(
         entry => {
           progress(entry);
@@ -1785,7 +1854,10 @@ function renderFunctionComponent(
     }
     componentDebugInfo = debugInfo;
     prepareToUseHooksForComponent(prevThenableState, debugInfo);
-    const callComponentInDev = $unwrap(callComponentInDEV);
+    const callComponentInDev = $unwrap(
+      callComponentInDEV,
+      'packages/react-server/src/ReactFlightServer.rs:2625:86',
+    );
     // $FlowFixMe[constant-condition]
     if (supportsComponentStorage) {
       const debugTask = task.debugTask;
@@ -1883,7 +1955,11 @@ function renderFunctionComponent(
   }
 
   // Track this element's key on the Server Component on the keyPath context..
-  const borrow = $borrow($fieldCell(task, 'keyPath', true), true);
+  const borrow = $borrow(
+    $fieldCell(task, 'keyPath', true),
+    'packages/react-server/src/ReactFlightServer.rs:2730:39',
+    true,
+  );
   const prevKeyPath = borrow.value;
   $unborrow(borrow);
   const prevImplicitSlot = task.implicitSlot;
@@ -1893,10 +1969,16 @@ function renderFunctionComponent(
     const optimisticKey = REACT_OPTIMISTIC_KEY;
     if (key === optimisticKey || prevKeyPath === optimisticKey) {
       // The optimistic key is viral. It turns the whole key into optimistic if any part is.
-      $borrowMut($fieldCell(task, 'keyPath', true)).value = optimisticKey;
+      $borrowMut(
+        $fieldCell(task, 'keyPath', true),
+        'packages/react-server/src/ReactFlightServer.rs:2738:28',
+      ).value = optimisticKey;
     } else {
       // Neither is the optimistic key, the only key of a symbol: each is text.
-      $borrowMut($fieldCell(task, 'keyPath', true)).value =
+      $borrowMut(
+        $fieldCell(task, 'keyPath', true),
+        'packages/react-server/src/ReactFlightServer.rs:2741:28',
+      ).value =
         prevKeyPath != null &&
         typeof key === 'string' &&
         typeof prevKeyPath === 'string'
@@ -1911,7 +1993,10 @@ function renderFunctionComponent(
     task.implicitSlot = true;
   }
   const json = renderModelDestructive(request, task, emptyRoot, '', result);
-  $borrowMut($fieldCell(task, 'keyPath', true)).value = prevKeyPath;
+  $borrowMut(
+    $fieldCell(task, 'keyPath', true),
+    'packages/react-server/src/ReactFlightServer.rs:2756:20',
+  ).value = prevKeyPath;
   task.implicitSlot = prevImplicitSlot;
   return json;
 }
@@ -1943,7 +2028,10 @@ function warnForMissingKey(request, key, componentDebugInfo, debugTask) {
       );
     }
 
-    const callComponentInDev = $unwrap(callComponentInDEV);
+    const callComponentInDev = $unwrap(
+      callComponentInDEV,
+      'packages/react-server/src/ReactFlightServer.rs:2803:86',
+    );
     // $FlowFixMe[constant-condition]
     if (supportsComponentStorage) {
       // Run the component in an Async Context that tracks the current owner.
@@ -2005,7 +2093,11 @@ function renderFragment(request, task, children) {
     }
   }
 
-  const borrow = $borrow($fieldCell(task, 'keyPath', true), true);
+  const borrow = $borrow(
+    $fieldCell(task, 'keyPath', true),
+    'packages/react-server/src/ReactFlightServer.rs:2873:43',
+    true,
+  );
   try {
     if (borrow.value != null) {
       // We have a Server Component that specifies a key but we're now splitting
@@ -2061,7 +2153,11 @@ function renderFragment(request, task, children) {
 }
 
 function renderAsyncFragment(request, task, children, getAsyncIterator) {
-  const borrow = $borrow($fieldCell(task, 'keyPath', true), true);
+  const borrow = $borrow(
+    $fieldCell(task, 'keyPath', true),
+    'packages/react-server/src/ReactFlightServer.rs:2929:43',
+    true,
+  );
   try {
     if (borrow.value != null) {
       // We have a Server Component that specifies a key but we're now splitting
@@ -2109,7 +2205,11 @@ function renderClientElement(
 ) {
   // We prepend the terminal client element that actually gets serialized with
   // the keys of any Server Components which are not serialized.
-  const borrow = $borrow($fieldCell(task, 'keyPath', true), true);
+  const borrow = $borrow(
+    $fieldCell(task, 'keyPath', true),
+    'packages/react-server/src/ReactFlightServer.rs:2980:34',
+    true,
+  );
   const keyPath = borrow.value;
   $unborrow(borrow);
   const optimisticKey = REACT_OPTIMISTIC_KEY;
@@ -2190,7 +2290,11 @@ const MAX_DEDUPLICATED_IMPORT_STRINGS_SIZE = 32768;
 function deferTask(request, task) {
   // Like outlineTask but instead the item is scheduled to be serialized
   // after its parent in the stream.
-  const borrow = $borrow($fieldCell(task, 'keyPath', true), true);
+  const borrow = $borrow(
+    $fieldCell(task, 'keyPath', true),
+    'packages/react-server/src/ReactFlightServer.rs:3082:34',
+    true,
+  );
   const keyPath = borrow.value;
   $unborrow(borrow);
   const newTask = createTask(
@@ -2211,7 +2315,11 @@ function deferTask(request, task) {
 }
 
 function outlineTask(request, task) {
-  const borrow = $borrow($fieldCell(task, 'keyPath', true), true);
+  const borrow = $borrow(
+    $fieldCell(task, 'keyPath', true),
+    'packages/react-server/src/ReactFlightServer.rs:3117:34',
+    true,
+  );
   const keyPath = borrow.value;
   $unborrow(borrow);
   const newTask = createTask(
@@ -2265,8 +2373,9 @@ function renderElement(
     // cases.
     // TODO: `ref` is now just a prop when `enableRefAsProp` is on. Should we
     // do what the above comment says?
-    throw new Error(
+    throw $panic(
       'Refs cannot be used in Server Components, nor passed to Client Components.',
+      'packages/react-server/src/ReactFlightServer.rs:3192:9',
     );
   }
   if (__DEV__) {
@@ -2302,7 +2411,12 @@ function renderElement(
       warnForMissingKey(request, key, componentDebugInfo, task.debugTask);
     }
     const prevImplicitSlot = task.implicitSlot;
-    if ($borrow($fieldCell(task, 'keyPath', true)).value == null) {
+    if (
+      $borrow(
+        $fieldCell(task, 'keyPath', true),
+        'packages/react-server/src/ReactFlightServer.rs:3245:26',
+      ).value == null
+    ) {
       task.implicitSlot = true;
     }
     const json = renderModelDestructive(
@@ -2323,7 +2437,10 @@ function renderElement(
           const lazy = type;
           let wrappedType;
           if (__DEV__) {
-            wrappedType = $unwrap(callLazyInitInDEV)(lazy);
+            wrappedType = $unwrap(
+              callLazyInitInDEV,
+              'packages/react-server/src/ReactFlightServer.rs:3266:77',
+            )(lazy);
           } else {
             const payload = lazy._payload;
             const init = lazy._init;
@@ -2351,7 +2468,10 @@ function renderElement(
             request,
             task,
             key,
-            $unwrap(type.render),
+            $unwrap(
+              type.render,
+              'packages/react-server/src/ReactFlightServer.rs:3288:47',
+            ),
             props,
             validated,
           );
@@ -2371,7 +2491,10 @@ function renderElement(
             // Disable the key warning that would happen otherwise because this
             // element gets serialized inside an array. We'll error later anyway.
             const element = type;
-            $unwrap(element._store).validated = 1;
+            $unwrap(
+              element._store,
+              'packages/react-server/src/ReactFlightServer.rs:3309:51',
+            ).validated = 1;
           }
           break;
       }
@@ -2512,7 +2635,10 @@ function visitAsyncNodeImpl(
     case PROMISE_NODE: {
       const awaited = node.awaited;
       let match = previousIoNode;
-      const promise = $unwrap(node.promise).deref();
+      const promise = $unwrap(
+        node.promise,
+        'packages/react-server/src/ReactFlightServer.rs:3488:40',
+      ).deref();
       if (awaited != null) {
         const ioNode = visitAsyncNode(request, task, awaited, visited, cutOff);
         if (ioNode === undefined) {
@@ -2665,7 +2791,10 @@ function visitAsyncNodeImpl(
       }
       // We need to forward after we visit awaited nodes because what ever I/O we requested that's
       // the thing that generated this node and its virtual children.
-      const promise = $unwrap(node.promise).deref();
+      const promise = $unwrap(
+        node.promise,
+        'packages/react-server/src/ReactFlightServer.rs:3663:40',
+      ).deref();
       if (promise != null) {
         forwardPromiseDebugInfo(request, task, promise, visited);
       }
@@ -2673,7 +2802,10 @@ function visitAsyncNodeImpl(
     }
     default:
       // eslint-disable-next-line react-internal/prod-error-codes
-      throw new Error('Unknown AsyncSequence tag. This is a bug in React.');
+      throw $panic(
+        'Unknown AsyncSequence tag. This is a bug in React.',
+        'packages/react-server/src/ReactFlightServer.rs:3671:13',
+      );
   }
 }
 
@@ -3312,7 +3444,10 @@ function serializeSet(request, set) {
 
 /** The DEV-only set of what's never limited, `doNotLimit`. */
 function doNotLimit() {
-  return $unwrap(doNotLimit$1);
+  return $unwrap(
+    doNotLimit$1,
+    'packages/react-server/src/ReactFlightServer.rs:4437:52',
+  );
 }
 
 function serializeDebugMap(request, counter, map) {
@@ -3391,7 +3526,9 @@ function serializeDebugBlob(request, blob) {
   function progress(entry) {
     if (entry.done) {
       if (model.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-server/src/ReactFlightServer.rs:4542:37',
+        );
       }
       const {length} = model;
       emitOutlinedDebugModelChunk(
@@ -3404,7 +3541,11 @@ function serializeDebugBlob(request, blob) {
       return;
     }
     // TODO: Emit the chunk early and refer to it later by dedupe.
-    const borrowMut = $borrowMut(model, true);
+    const borrowMut = $borrowMut(
+      model,
+      'packages/react-server/src/ReactFlightServer.rs:4555:20',
+      true,
+    );
     try {
       borrowMut.push(entry.value);
     } finally {
@@ -3435,13 +3576,20 @@ const BlobReading = {
     if (entry.done) {
       blobReading.request.cacheController.signal.removeEventListener(
         'abort',
-        $unwrap(blobReading.abortBlob),
+        $unwrap(
+          blobReading.abortBlob,
+          'packages/react-server/src/ReactFlightServer.rs:4624:78',
+        ),
       );
       pingTask(blobReading.request, blobReading.newTask);
       return;
     }
     // TODO: Emit the chunk early and refer to it later by dedupe.
-    const borrowMut = $borrowMut(blobReading.model, true);
+    const borrowMut = $borrowMut(
+      blobReading.model,
+      'packages/react-server/src/ReactFlightServer.rs:4629:20',
+      true,
+    );
     try {
       borrowMut.push(entry.value);
     } finally {
@@ -3462,7 +3610,10 @@ const BlobReading = {
     }
     blobReading.request.cacheController.signal.removeEventListener(
       'abort',
-      $unwrap(blobReading.abortBlob),
+      $unwrap(
+        blobReading.abortBlob,
+        'packages/react-server/src/ReactFlightServer.rs:4648:74',
+      ),
     );
     erroredTask(blobReading.request, blobReading.newTask, reason);
     enqueueFlush(blobReading.request);
@@ -3484,7 +3635,13 @@ const BlobReading = {
       return;
     }
     const signal = blobReading.request.cacheController.signal;
-    signal.removeEventListener('abort', $unwrap(blobReading.abortBlob));
+    signal.removeEventListener(
+      'abort',
+      $unwrap(
+        blobReading.abortBlob,
+        'packages/react-server/src/ReactFlightServer.rs:4673:76',
+      ),
+    );
     const reason = signal.reason;
     if (blobReading.request.type === PRERENDER) {
       blobReading.request.abortableTasks.delete(blobReading.newTask);
@@ -3594,7 +3751,11 @@ function renderModel(request, task, parent, key, value) {
   // First time we're serializing the key, we should add it to the size.
   serializedSize += key.length;
 
-  const borrow = $borrow($fieldCell(task, 'keyPath', true), true);
+  const borrow = $borrow(
+    $fieldCell(task, 'keyPath', true),
+    'packages/react-server/src/ReactFlightServer.rs:4809:39',
+    true,
+  );
   const prevKeyPath = borrow.value;
   $unborrow(borrow);
   const prevImplicitSlot = task.implicitSlot;
@@ -3648,7 +3809,11 @@ function renderModel(request, task, parent, key, value) {
     ) {
       // Something suspended, we'll need to create a new task and resolve it later.
       const value = task.model;
-      const value$1 = $borrow($fieldCell(task, 'keyPath', true), true);
+      const value$1 = $borrow(
+        $fieldCell(task, 'keyPath', true),
+        'packages/react-server/src/ReactFlightServer.rs:4864:27',
+        true,
+      );
       const implicitSlot = task.implicitSlot;
       const formatContext = task.formatContext;
       const get = enableProfilerTimer ? task.time : 0;
@@ -3679,7 +3844,10 @@ function renderModel(request, task, parent, key, value) {
 
       // Restore the context. We assume that this will be restored by the inner
       // functions in case nothing throws so we don't use "finally" here.
-      $borrowMut($fieldCell(task, 'keyPath', true)).value = prevKeyPath;
+      $borrowMut(
+        $fieldCell(task, 'keyPath', true),
+        'packages/react-server/src/ReactFlightServer.rs:4896:24',
+      ).value = prevKeyPath;
       task.implicitSlot = prevImplicitSlot;
 
       if (wasReactNode) {
@@ -3690,7 +3858,10 @@ function renderModel(request, task, parent, key, value) {
 
     // Restore the context. We assume that this will be restored by the inner
     // functions in case nothing throws so we don't use "finally" here.
-    $borrowMut($fieldCell(task, 'keyPath', true)).value = prevKeyPath;
+    $borrowMut(
+      $fieldCell(task, 'keyPath', true),
+      'packages/react-server/src/ReactFlightServer.rs:4907:20',
+    ).value = prevKeyPath;
     task.implicitSlot = prevImplicitSlot;
 
     // Something errored. We'll still send everything we have up until this point.
@@ -3756,7 +3927,10 @@ function renderModelDestructive(
         let elementReference;
         const writtenObjects = request.writtenObjects;
         if (
-          $borrow($fieldCell(task, 'keyPath', true)).value != null ||
+          $borrow(
+            $fieldCell(task, 'keyPath', true),
+            'packages/react-server/src/ReactFlightServer.rs:4985:34',
+          ).value != null ||
           task.implicitSlot
         ) {
           // If we're in some kind of context we can't reuse the result of this render or
@@ -3885,7 +4059,10 @@ function renderModelDestructive(
         const lazy = value;
         let resolvedModel;
         if (__DEV__) {
-          resolvedModel = $unwrap(callLazyInitInDEV)(lazy);
+          resolvedModel = $unwrap(
+            callLazyInitInDEV,
+            'packages/react-server/src/ReactFlightServer.rs:5125:77',
+          )(lazy);
         } else {
           const payload = lazy._payload;
           const init = lazy._init;
@@ -3923,12 +4100,13 @@ function renderModelDestructive(
         );
       }
       case REACT_LEGACY_ELEMENT_TYPE:
-        throw new Error(
+        throw $panic(
           'A React Element from an older version of React was rendered. ' +
             'This is not supported. It can happen if:\n' +
             '- Multiple copies of the "react" package is used.\n' +
             '- A library pre-bundled an old copy of "react" or "react/jsx-runtime".\n' +
             '- A compiler tries to "inline" JSX instead of using the runtime.',
+          'packages/react-server/src/ReactFlightServer.rs:5166:17',
         );
     }
 
@@ -3961,7 +4139,10 @@ function renderModelDestructive(
     }
 
     if (enableTaint) {
-      const tainted = $unwrap(TaintRegistryObjects).get(value);
+      const tainted = $unwrap(
+        TaintRegistryObjects,
+        'packages/react-server/src/ReactFlightServer.rs:5212:42',
+      ).get(value);
       if (tainted !== undefined) {
         throwTaintViolation(tainted);
       }
@@ -3978,7 +4159,10 @@ function renderModelDestructive(
       // first.
       if (existingReference !== undefined) {
         if (
-          $borrow($fieldCell(task, 'keyPath', true)).value != null ||
+          $borrow(
+            $fieldCell(task, 'keyPath', true),
+            'packages/react-server/src/ReactFlightServer.rs:5229:34',
+          ).value != null ||
           task.implicitSlot
         ) {
           // If we're in some kind of context we can't reuse the result of this render or
@@ -4167,6 +4351,7 @@ function renderModelDestructive(
     ) {
       throw $stringPanic(
         `Only plain objects, and a few built-ins, can be passed to Client Components from Server Components. Classes or null prototypes are not supported.${describeObjectForErrorMessage(parent, parentPropertyName)}`,
+        'packages/react-server/src/ReactFlightServer.rs:5502:13',
       );
     }
     if (__DEV__) {
@@ -4194,7 +4379,11 @@ function renderModelDestructive(
             console.error(
               'Only plain objects can be passed to Client Components from Server Components. ' +
                 'Objects with symbol properties like %s are not supported.%s',
-              $index(symbols, 0).description,
+              $index(
+                symbols,
+                0,
+                'packages/react-server/src/ReactFlightServer.rs:5551:40',
+              ).description,
               describeObjectForErrorMessage(parent, parentPropertyName),
             );
           });
@@ -4208,7 +4397,10 @@ function renderModelDestructive(
 
   if (typeof value === 'string') {
     if (enableTaint) {
-      const tainted = $unwrap(TaintRegistryValues).get(value);
+      const tainted = $unwrap(
+        TaintRegistryValues,
+        'packages/react-server/src/ReactFlightServer.rs:5571:40',
+      ).get(value);
       if (tainted !== undefined) {
         throwTaintViolation(tainted.message);
       }
@@ -4267,21 +4459,26 @@ function renderModelDestructive(
     }
 
     if (enableTaint) {
-      const tainted = $unwrap(TaintRegistryObjects).get(value);
+      const tainted = $unwrap(
+        TaintRegistryObjects,
+        'packages/react-server/src/ReactFlightServer.rs:5637:42',
+      ).get(value);
       if (tainted !== undefined) {
         throwTaintViolation(tainted);
       }
     }
 
     if (isOpaqueTemporaryReference(functionValue)) {
-      throw new Error(
+      throw $panic(
         'Could not reference an opaque temporary reference. ' +
           'This is likely due to misconfiguring the temporaryReferences options ' +
           'on the server.',
+        'packages/react-server/src/ReactFlightServer.rs:5645:13',
       );
     } else if (/^on[A-Z]/.test(parentPropertyName)) {
       throw $stringPanic(
         `Event handlers cannot be passed to Client Component props.${describeObjectForErrorMessage(parent, parentPropertyName)}\nIf you need interactivity, consider converting part of this to a Client Component.`,
+        'packages/react-server/src/ReactFlightServer.rs:5651:13',
       );
     } else if (
       __DEV__ &&
@@ -4294,10 +4491,12 @@ function renderModelDestructive(
       const value$1 = describeObjectForErrorMessage(parent, parentPropertyName);
       throw $stringPanic(
         `Functions are not valid as a child of Client Components. This may happen if you return ${$shown(componentName)} instead of <${$shown(componentName)} /> from render. Or maybe you meant to call this function rather than return it.${value$1}`,
+        'packages/react-server/src/ReactFlightServer.rs:5669:13',
       );
     } else {
       throw $stringPanic(
         `Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.${describeObjectForErrorMessage(parent, parentPropertyName)}`,
+        'packages/react-server/src/ReactFlightServer.rs:5676:13',
       );
     }
   }
@@ -4315,6 +4514,7 @@ function renderModelDestructive(
       const arg = describeObjectForErrorMessage(parent, parentPropertyName);
       throw $stringPanic(
         `Only global symbols received from Symbol.for(...) can be passed to Client Components. The symbol Symbol.for(${name}) cannot be found among global symbols.${arg}`,
+        'packages/react-server/src/ReactFlightServer.rs:5695:13',
       );
     }
 
@@ -4327,7 +4527,10 @@ function renderModelDestructive(
 
   if (typeof value === 'bigint') {
     if (enableTaint) {
-      const tainted = $unwrap(TaintRegistryValues).get(value);
+      const tainted = $unwrap(
+        TaintRegistryValues,
+        'packages/react-server/src/ReactFlightServer.rs:5714:40',
+      ).get(value);
       if (tainted !== undefined) {
         throwTaintViolation(tainted.message);
       }
@@ -4337,6 +4540,7 @@ function renderModelDestructive(
 
   throw $stringPanic(
     `Type ${typeof value} is not supported in Client Component props.${describeObjectForErrorMessage(parent, parentPropertyName)}`,
+    'packages/react-server/src/ReactFlightServer.rs:5723:5',
   );
 }
 
@@ -4378,6 +4582,7 @@ function logRecoverableError(
     // eslint-disable-next-line react-internal/prod-error-codes
     throw $stringPanic(
       `onError returned something with a type other than "string". onError should return a string and may return null or undefined but must not return anything else. It received something of type "${typeof errorDigest}" instead`,
+      'packages/react-server/src/ReactFlightServer.rs:5767:9',
     );
   }
   return errorDigest ?? '';
@@ -4619,7 +4824,10 @@ function stringifyImportMetadataWithReplacer(
   importStringRequest = __DEV__ && debug ? null : request;
   const result = $catchUnwind(() =>
     // $FlowFixMe[incompatible-type] stringify can return null
-    $unwrap(JSON.stringify(clientReferenceMetadata, importMetadataReplacer, 0)),
+    $unwrap(
+      JSON.stringify(clientReferenceMetadata, importMetadataReplacer, 0),
+      'packages/react-server/src/ReactFlightServer.rs:6065:14',
+    ),
   );
   importStringRequest = prevRequest;
   if (result.TAG !== 'Ok') {
@@ -4762,8 +4970,9 @@ function emitDebugHaltChunk(request, id) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'emitDebugHaltChunk should never be called in production mode. This is a bug in React.',
+      'packages/react-server/src/ReactFlightServer.rs:6226:9',
     );
   }
   // This emits a marker that this row will never complete and should intentionally never resolve
@@ -4777,8 +4986,9 @@ function emitDebugChunk(request, id, debugInfo) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'emitDebugChunk should never be called in production mode. This is a bug in React.',
+      'packages/react-server/src/ReactFlightServer.rs:6244:9',
     );
   }
 
@@ -4809,8 +5019,9 @@ function outlineComponentInfo(request, componentInfo) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'outlineComponentInfo should never be called in production mode. This is a bug in React.',
+      'packages/react-server/src/ReactFlightServer.rs:6308:9',
     );
   }
 
@@ -4906,8 +5117,9 @@ function emitIOInfoChunk(
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'emitIOInfoChunk should never be called in production mode. This is a bug in React.',
+      'packages/react-server/src/ReactFlightServer.rs:6413:9',
     );
   }
 
@@ -5083,12 +5295,19 @@ function serializeIONode(request, ioNode, promiseRef) {
 function emitTypedArrayChunk(request, id, tag, typedArray, debug) {
   // Safety: what's given is an `ArrayBufferView`.
   const view = typedArray;
-  if (enableTaint && $unwrap(TaintRegistryByteLengths).has(view.byteLength)) {
+  if (
+    enableTaint &&
+    $unwrap(
+      TaintRegistryByteLengths,
+      'packages/react-server/src/ReactFlightServer.rs:6612:48',
+    ).has(view.byteLength)
+  ) {
     // If we have had any tainted values of this length, we check
     // to see if these bytes matches any entries in the registry.
-    const tainted = $unwrap(TaintRegistryValues).get(
-      binaryToComparableString(view),
-    );
+    const tainted = $unwrap(
+      TaintRegistryValues,
+      'packages/react-server/src/ReactFlightServer.rs:6618:36',
+    ).get(binaryToComparableString(view));
     if (tainted !== undefined) {
       throwTaintViolation(tainted.message);
     }
@@ -5131,8 +5350,9 @@ function emitTextChunk(request, id, text, debug) {
   let tmp = byteLengthOfChunk;
   if (tmp == null) {
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'Existence of byteLengthOfChunk should have already been checked. This is a bug in React.',
+      'packages/react-server/src/ReactFlightServer.rs:6669:9',
     );
   }
   const byteLengthOfChunk$1 = tmp;
@@ -5166,8 +5386,9 @@ function serializeEval(source) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'serializeEval should never be called in production mode. This is a bug in React.',
+      'packages/react-server/src/ReactFlightServer.rs:6710:9',
     );
   }
   return '$E' + source;
@@ -5743,8 +5964,9 @@ function emitOutlinedDebugModelChunk(request, id, counter, model) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'emitOutlinedDebugModel should never be called in production mode. This is a bug in React.',
+      'packages/react-server/src/ReactFlightServer.rs:7405:9',
     );
   }
 
@@ -5800,8 +6022,9 @@ function outlineDebugModel(request, counter, model) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'outlineDebugModel should never be called in production mode. This is a bug in React.',
+      'packages/react-server/src/ReactFlightServer.rs:7474:9',
     );
   }
 
@@ -5815,8 +6038,9 @@ function emitConsoleChunk(request, methodName, owner, env, stackTrace, args) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'emitConsoleChunk should never be called in production mode. This is a bug in React.',
+      'packages/react-server/src/ReactFlightServer.rs:7499:9',
     );
   }
 
@@ -6139,7 +6363,10 @@ function emitChunk(request, task, value) {
   // $FlowFixMe[invalid-compare]
   if (typeof value === 'string' && byteLengthOfChunk != null) {
     if (enableTaint) {
-      const tainted = $unwrap(TaintRegistryValues).get(value);
+      const tainted = $unwrap(
+        TaintRegistryValues,
+        'packages/react-server/src/ReactFlightServer.rs:7862:40',
+      ).get(value);
       if (tainted != null) {
         throwTaintViolation(tainted.message);
       }
@@ -6322,7 +6549,12 @@ function retryTask(request, task) {
     modelRoot = resolvedModel;
 
     // The keyPath resets at any terminal child node.
-    $cellReplace($borrowMut($fieldCell(task, 'keyPath', true)));
+    $cellReplace(
+      $borrowMut(
+        $fieldCell(task, 'keyPath', true),
+        'packages/react-server/src/ReactFlightServer.rs:8039:23',
+      ),
+    );
     task.implicitSlot = false;
 
     if (__DEV__) {
@@ -6544,14 +6776,23 @@ function flushCompletedChunks(request) {
           const item = debugChunks[i];
           if (isNextTwoChunksAreAtomic(item)) {
             if (i + 2 >= debugChunks.length) {
-              throw new Error(
+              throw $panic(
                 'A chunk pair is incomplete. This is a bug in React.',
+                'packages/react-server/src/ReactFlightServer.rs:8269:25',
               );
             }
             request.pendingDebugChunks -= 2;
-            const headerChunk = $index(debugChunks, i + 1);
+            const headerChunk = $index(
+              debugChunks,
+              i + 1,
+              'packages/react-server/src/ReactFlightServer.rs:8274:61',
+            );
             writeChunk(debugDestination, headerChunk);
-            const contentChunk = $index(debugChunks, i + 2);
+            const contentChunk = $index(
+              debugChunks,
+              i + 2,
+              'packages/react-server/src/ReactFlightServer.rs:8276:62',
+            );
             writeChunk(debugDestination, contentChunk);
             i += 2;
           } else {
@@ -6560,7 +6801,7 @@ function flushCompletedChunks(request) {
           }
           i++;
         }
-        $drain(debugChunks, 0, i);
+        $drain(debugChunks, 0, $stdSites.vecDrain[0], i);
       });
       completeWriting(debugDestination);
       if (result.TAG === 'Err') {
@@ -6580,7 +6821,11 @@ function flushCompletedChunks(request) {
       let i = 0;
       while (i < importsChunks.length) {
         request.pendingChunks--;
-        const chunk = $index(importsChunks, i);
+        const chunk = $index(
+          importsChunks,
+          i,
+          'packages/react-server/src/ReactFlightServer.rs:8307:52',
+        );
         const keepWriting = writeChunkAndReturn(destination, chunk);
         if (!keepWriting) {
           request.destination = null;
@@ -6589,7 +6834,7 @@ function flushCompletedChunks(request) {
         }
         i++;
       }
-      $drain(importsChunks, 0, i);
+      $drain(importsChunks, 0, $stdSites.vecDrain[0], i);
 
       // Next comes hints.
       const hintChunks = request.completedHintChunks;
@@ -6604,7 +6849,7 @@ function flushCompletedChunks(request) {
         }
         i++;
       }
-      $drain(hintChunks, 0, i);
+      $drain(hintChunks, 0, $stdSites.vecDrain[0], i);
 
       // Debug meta data comes before the model data because it will often end up blocking the model from
       // completing since the JSX will reference the debug data.
@@ -6616,14 +6861,23 @@ function flushCompletedChunks(request) {
           let keepWriting;
           if (isNextTwoChunksAreAtomic(item)) {
             if (i + 2 >= debugChunks.length) {
-              throw new Error(
+              throw $panic(
                 'A chunk pair is incomplete. This is a bug in React.',
+                'packages/react-server/src/ReactFlightServer.rs:8343:29',
               );
             }
             request.pendingDebugChunks -= 2;
-            const headerChunk = $index(debugChunks, i + 1);
+            const headerChunk = $index(
+              debugChunks,
+              i + 1,
+              'packages/react-server/src/ReactFlightServer.rs:8348:65',
+            );
             writeChunk(destination, headerChunk);
-            const contentChunk = $index(debugChunks, i + 2);
+            const contentChunk = $index(
+              debugChunks,
+              i + 2,
+              'packages/react-server/src/ReactFlightServer.rs:8350:66',
+            );
             keepWriting = writeChunkAndReturn(destination, contentChunk);
             i += 2;
           } else {
@@ -6637,7 +6891,7 @@ function flushCompletedChunks(request) {
           }
           i++;
         }
-        $drain(debugChunks, 0, i);
+        $drain(debugChunks, 0, $stdSites.vecDrain[0], i);
       }
 
       // Next comes model data.
@@ -6648,14 +6902,23 @@ function flushCompletedChunks(request) {
         let keepWriting;
         if (isNextTwoChunksAreAtomic(item)) {
           if (i + 2 >= regularChunks.length) {
-            throw new Error(
+            throw $panic(
               'A chunk pair is incomplete. This is a bug in React.',
+              'packages/react-server/src/ReactFlightServer.rs:8377:25',
             );
           }
           request.pendingChunks -= 2;
-          const headerChunk = $index(regularChunks, i + 1);
+          const headerChunk = $index(
+            regularChunks,
+            i + 1,
+            'packages/react-server/src/ReactFlightServer.rs:8382:63',
+          );
           writeChunk(destination, headerChunk);
-          const contentChunk = $index(regularChunks, i + 2);
+          const contentChunk = $index(
+            regularChunks,
+            i + 2,
+            'packages/react-server/src/ReactFlightServer.rs:8384:64',
+          );
           keepWriting = writeChunkAndReturn(destination, contentChunk);
           i += 2;
         } else {
@@ -6669,7 +6932,7 @@ function flushCompletedChunks(request) {
         }
         i++;
       }
-      $drain(regularChunks, 0, i);
+      $drain(regularChunks, 0, $stdSites.vecDrain[0], i);
 
       // Finally, errors are sent. The idea is that it's ok to delay
       // any error messages and prioritize display of other parts of
@@ -6678,7 +6941,11 @@ function flushCompletedChunks(request) {
       i = 0;
       while (i < errorChunks.length) {
         request.pendingChunks--;
-        const chunk = $index(errorChunks, i);
+        const chunk = $index(
+          errorChunks,
+          i,
+          'packages/react-server/src/ReactFlightServer.rs:8411:50',
+        );
         const keepWriting = writeChunkAndReturn(destination, chunk);
         if (!keepWriting) {
           request.destination = null;
@@ -6687,7 +6954,7 @@ function flushCompletedChunks(request) {
         }
         i++;
       }
-      $drain(errorChunks, 0, i);
+      $drain(errorChunks, 0, $stdSites.vecDrain[0], i);
     });
     request.flushScheduled = false;
     completeWriting(destination);
@@ -7002,13 +7269,15 @@ export function resolveDebugMessage(request, message) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'resolveDebugMessage should never be called in production mode. This is a bug in React.',
+      'packages/react-server/src/ReactFlightServer.rs:8738:9',
     );
   }
   if (request.deferredDebugObjects == null) {
-    throw new Error(
+    throw $panic(
       "resolveDebugMessage/closeDebugChannel should not be called for a Request that wasn't kept alive. This is a bug in React.",
+      'packages/react-server/src/ReactFlightServer.rs:8743:9',
     );
   }
   if (message === '') {
@@ -7063,8 +7332,9 @@ export function resolveDebugMessage(request, message) {
       }
       break;
     default:
-      throw new Error(
+      throw $panic(
         'Unknown command. The debugChannel was not wired up properly.',
+        'packages/react-server/src/ReactFlightServer.rs:8807:13',
       );
   }
 }
@@ -7073,14 +7343,16 @@ export function closeDebugChannel(request) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'closeDebugChannel should never be called in production mode. This is a bug in React.',
+      'packages/react-server/src/ReactFlightServer.rs:8816:9',
     );
   }
   // This clears all remaining deferred objects, potentially resulting in the completion of the Request.
   if (request.deferredDebugObjects == null) {
-    throw new Error(
+    throw $panic(
       "resolveDebugMessage/closeDebugChannel should not be called for a Request that wasn't kept alive. This is a bug in React.",
+      'packages/react-server/src/ReactFlightServer.rs:8822:9',
     );
   }
   request.deferredDebugObjects.retained.forEach((value, id) => {

@@ -58,7 +58,10 @@ function getSelection(node) {
     };
   } else {
     const win = node.ownerDocument.defaultView ?? window;
-    const selection = $unwrap(win.getSelection());
+    const selection = $unwrap(
+      win.getSelection(),
+      'packages/react-dom-bindings/src/events/plugins/SelectEventPlugin.rs:102:45',
+    );
     return {
       anchorNode: selection.anchorNode,
       anchorOffset: selection.anchorOffset,
@@ -102,7 +105,12 @@ function constructSelectEvent(dispatchQueue, nativeEvent, nativeEventTarget) {
   }
 
   // Only fire when selection has actually changed.
-  const currentSelection = getSelection($unwrap(activeElement));
+  const currentSelection = getSelection(
+    $unwrap(
+      activeElement,
+      'packages/react-dom-bindings/src/events/plugins/SelectEventPlugin.rs:149:64',
+    ),
+  );
   if (lastSelection == null || !shallowEqual(lastSelection, currentSelection)) {
     lastSelection = currentSelection;
 

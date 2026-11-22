@@ -10,7 +10,7 @@ import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {getOwnerStackByFiberInDev} from './ReactFiberComponentStack.js';
 
 import {getComponentNameFromOwner} from './getComponentNameFromFiber.js';
-import {$cleanup} from '@rust-js/std';
+import {$cleanup, $panic} from '@rust-js/std';
 
 export let current = null;
 export let isRendering = false;
@@ -89,8 +89,9 @@ export function runWithFiberInDEV(
   }
   // These errors should never make it into a build so we don't need to encode them in codes.json
   // eslint-disable-next-line react-internal/prod-error-codes
-  throw new Error(
+  throw $panic(
     'runWithFiberInDEV should never be called in production. This is a bug in React.',
+    'packages/react-reconciler/src/ReactCurrentFiber.rs:89:5',
   );
 }
 

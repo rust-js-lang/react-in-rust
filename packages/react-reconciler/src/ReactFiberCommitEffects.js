@@ -155,7 +155,11 @@ export function commitHookEffectListMount(flags, finishedWork) {
             }
             destroy = runWithFiberInDEV(
               finishedWork,
-              effect => $unwrap(callCreateInDEV)(effect),
+              effect =>
+                $unwrap(
+                  callCreateInDEV,
+                  'packages/react-reconciler/src/ReactFiberCommitEffects.rs:162:83',
+                )(effect),
               effect,
             );
             if ((flags & HookInsertion) !== NoHookEffect) {
@@ -364,7 +368,10 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
         runWithFiberInDEV(
           finishedWork,
           (finishedWork, instance) => {
-            $unwrap(callComponentDidMountInDEV)(finishedWork, instance);
+            $unwrap(
+              callComponentDidMountInDEV,
+              'packages/react-reconciler/src/ReactFiberCommitEffects.rs:412:69',
+            )(finishedWork, instance);
           },
           finishedWork,
           instance,
@@ -383,7 +390,10 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
       runWithFiberInDEV(
         finishedWork,
         (finishedWork, instance) => {
-          $unwrap(callComponentDidMountInDEV)(finishedWork, instance);
+          $unwrap(
+            callComponentDidMountInDEV,
+            'packages/react-reconciler/src/ReactFiberCommitEffects.rs:448:69',
+          )(finishedWork, instance);
         },
         finishedWork,
         instance,
@@ -440,13 +450,10 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
         runWithFiberInDEV(
           finishedWork,
           (finishedWork, instance, prevProps, prevState, snapshot) => {
-            $unwrap(callComponentDidUpdateInDEV)(
-              finishedWork,
-              instance,
-              prevProps,
-              prevState,
-              snapshot,
-            );
+            $unwrap(
+              callComponentDidUpdateInDEV,
+              'packages/react-reconciler/src/ReactFiberCommitEffects.rs:535:70',
+            )(finishedWork, instance, prevProps, prevState, snapshot);
           },
           finishedWork,
           instance,
@@ -472,13 +479,10 @@ export function commitClassLayoutLifecycles(finishedWork, current) {
       runWithFiberInDEV(
         finishedWork,
         (finishedWork, instance, prevProps, prevState, snapshot) => {
-          $unwrap(callComponentDidUpdateInDEV)(
-            finishedWork,
-            instance,
-            prevProps,
-            prevState,
-            snapshot,
-          );
+          $unwrap(
+            callComponentDidUpdateInDEV,
+            'packages/react-reconciler/src/ReactFiberCommitEffects.rs:578:70',
+          )(finishedWork, instance, prevProps, prevState, snapshot);
         },
         finishedWork,
         instance,
@@ -510,7 +514,10 @@ export function commitClassDidMount(finishedWork) {
       runWithFiberInDEV(
         finishedWork,
         (finishedWork, instance) => {
-          $unwrap(callComponentDidMountInDEV)(finishedWork, instance);
+          $unwrap(
+            callComponentDidMountInDEV,
+            'packages/react-reconciler/src/ReactFiberCommitEffects.rs:623:57',
+          )(finishedWork, instance);
         },
         finishedWork,
         instance,
@@ -732,11 +739,10 @@ export function safelyCallComponentWillUnmount(
       runWithFiberInDEV(
         current,
         (current, nearestMountedAncestor, instance) => {
-          $unwrap(callComponentWillUnmountInDEV)(
-            current,
-            nearestMountedAncestor ?? undefined,
-            instance,
-          );
+          $unwrap(
+            callComponentWillUnmountInDEV,
+            'packages/react-reconciler/src/ReactFiberCommitEffects.rs:936:60',
+          )(current, nearestMountedAncestor ?? undefined, instance);
         },
         current,
         nearestMountedAncestor,
@@ -755,11 +761,10 @@ export function safelyCallComponentWillUnmount(
     runWithFiberInDEV(
       current,
       (current, nearestMountedAncestor, instance) => {
-        $unwrap(callComponentWillUnmountInDEV)(
-          current,
-          nearestMountedAncestor ?? undefined,
-          instance,
-        );
+        $unwrap(
+          callComponentWillUnmountInDEV,
+          'packages/react-reconciler/src/ReactFiberCommitEffects.rs:966:60',
+        )(current, nearestMountedAncestor ?? undefined, instance);
       },
       current,
       nearestMountedAncestor,
@@ -988,7 +993,10 @@ function safelyCallDestroy(current, nearestMountedAncestor, destroy) {
     runWithFiberInDEV(
       current,
       (current, nearestMountedAncestor, destroy) => {
-        $unwrap(callDestroyInDEV)(current, nearestMountedAncestor, destroy);
+        $unwrap(
+          callDestroyInDEV,
+          'packages/react-reconciler/src/ReactFiberCommitEffects.rs:1219:41',
+        )(current, nearestMountedAncestor, destroy);
       },
       current,
       nearestMountedAncestor,

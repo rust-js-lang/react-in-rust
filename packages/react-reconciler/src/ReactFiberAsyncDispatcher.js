@@ -13,7 +13,10 @@ import {current as currentOwner} from './ReactCurrentFiber.js';
 import {$unwrap} from '@rust-js/std';
 
 function getCacheForType(resourceType) {
-  const cache = $unwrap(readContext(CacheContext));
+  const cache = $unwrap(
+    readContext(CacheContext),
+    'packages/react-reconciler/src/ReactFiberAsyncDispatcher.rs:41:61',
+  );
   let cacheForType = cache.data.get(resourceType);
   if (cacheForType === undefined) {
     cacheForType = resourceType();
@@ -23,7 +26,10 @@ function getCacheForType(resourceType) {
 }
 
 function cacheSignal() {
-  const cache = $unwrap(readContext(CacheContext));
+  const cache = $unwrap(
+    readContext(CacheContext),
+    'packages/react-reconciler/src/ReactFiberAsyncDispatcher.rs:51:61',
+  );
   return cache.controller.signal;
 }
 

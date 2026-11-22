@@ -13,6 +13,7 @@
 import {readModule} from '../flight-modules.js';
 
 import ReactFlightClient from 'react-client/flight';
+import {$panic} from '@rust-js/std';
 
 const decoderOptions = {stream: true};
 
@@ -86,8 +87,9 @@ function checkEvalAvailabilityOnceDev() {
       }
     }
   } else {
-    throw new Error(
+    throw $panic(
       'checkEvalAvailabilityOnceDev should never be called in production mode. This is a bug in React.',
+      'packages/react-noop-renderer/src/ReactNoopFlightClient.rs:132:9',
     );
   }
 }

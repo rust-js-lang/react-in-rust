@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import * as Scheduler from './Scheduler.js';
+import {$panic} from '@rust-js/std';
 
 // This type is supposed to reflect the actual methods and arguments currently supported by the C++ implementation:
 // https://github.com/react/react-native/blob/main/packages/react-native/ReactCommon/react/renderer/runtimescheduler/RuntimeSchedulerBinding.cpp
@@ -73,6 +74,9 @@ export const unstable_forceFrameRate = throwNotImplemented;
 export const unstable_Profiling = null;
 
 function throwNotImplemented() {
-  throw new Error('Not implemented.');
+  throw $panic(
+    'Not implemented.',
+    'packages/scheduler/src/forks/SchedulerNative.rs:128:5',
+  );
 }
 //# sourceMappingURL=SchedulerNative.js.map

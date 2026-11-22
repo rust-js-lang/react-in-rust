@@ -26,7 +26,7 @@ import {
 import {textEncoder} from 'react-server/src/ReactServerStreamConfigNode';
 
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
-import {$unwrap} from '@rust-js/std';
+import {$panic, $unwrap} from '@rust-js/std';
 
 export {default as version} from 'shared/ReactVersion';
 
@@ -84,8 +84,9 @@ export function renderToPipeableStream(children, options) {
   return {
     pipe(destination) {
       if (hasStartedFlowing) {
-        throw new Error(
+        throw $panic(
           'React currently only supports piping to one writable stream.',
+          'packages/react-dom/src/server/ReactDOMFizzServerNode.rs:141:21',
         );
       }
       hasStartedFlowing = true;
@@ -160,7 +161,13 @@ export function renderToReadableStream(children, options) {
               createFakeWritableFromReadableStreamController(controller);
           },
           pull() {
-            startFlowing(request, $unwrap(writable));
+            startFlowing(
+              request,
+              $unwrap(
+                writable,
+                'packages/react-dom/src/server/ReactDOMFizzServerNode.rs:265:68',
+              ),
+            );
           },
           cancel(reason) {
             stopFlowing(request);
@@ -247,8 +254,9 @@ export function resumeToPipeableStream(children, postponedState, options) {
   return {
     pipe(destination) {
       if (hasStartedFlowing) {
-        throw new Error(
+        throw $panic(
           'React currently only supports piping to one writable stream.',
+          'packages/react-dom/src/server/ReactDOMFizzServerNode.rs:371:21',
         );
       }
       hasStartedFlowing = true;
@@ -295,7 +303,13 @@ export function resume(children, postponedState, options) {
               createFakeWritableFromReadableStreamController(controller);
           },
           pull() {
-            startFlowing(request, $unwrap(writable));
+            startFlowing(
+              request,
+              $unwrap(
+                writable,
+                'packages/react-dom/src/server/ReactDOMFizzServerNode.rs:436:68',
+              ),
+            );
           },
           cancel(reason) {
             stopFlowing(request);

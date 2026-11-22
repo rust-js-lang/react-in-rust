@@ -7,6 +7,7 @@
 
 import ReactNoopUpdateQueue from './ReactNoopUpdateQueue.js';
 import assign from 'shared/assign';
+import {$panic} from '@rust-js/std';
 
 const emptyObject = {};
 if (__DEV__) {
@@ -57,9 +58,10 @@ Component.prototype.setState = function (partialState, callback) {
     typeof partialState !== 'function' &&
     partialState != null
   ) {
-    throw new Error(
+    throw $panic(
       'takes an object of state variables to update or a ' +
         'function which returns an object of state variables.',
+      'packages/react/src/ReactBaseClasses.rs:92:13',
     );
   }
 

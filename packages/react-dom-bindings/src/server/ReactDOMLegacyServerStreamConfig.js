@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$panic} from '@rust-js/std';
+
 export function scheduleWork(callback) {
   callback();
 }
@@ -44,13 +46,19 @@ export function stringToPrecomputedChunk(content) {
 }
 
 export function typedArrayToBinaryChunk(content) {
-  throw new Error('Not implemented.');
+  throw $panic(
+    'Not implemented.',
+    'packages/react-dom-bindings/src/server/ReactDOMLegacyServerStreamConfig.rs:72:5',
+  );
 }
 
 export const byteLengthOfChunk = null;
 
 export function byteLengthOfBinaryChunk(chunk) {
-  throw new Error('Not implemented.');
+  throw $panic(
+    'Not implemented.',
+    'packages/react-dom-bindings/src/server/ReactDOMLegacyServerStreamConfig.rs:80:5',
+  );
 }
 
 export function closeWithError(destination, error) {

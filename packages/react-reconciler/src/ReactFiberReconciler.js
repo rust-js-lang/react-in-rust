@@ -126,7 +126,7 @@ export {
 import {TotalLanes, getLabelForLane} from './ReactFiberLane.js';
 
 import {registerDefaultIndicator} from './ReactFiberAsyncAction.js';
-import {$index, $stringPanic, $unwrap} from '@rust-js/std';
+import {$index, $panic, $stringPanic, $unwrap} from '@rust-js/std';
 
 let didWarnAboutNestedUpdates;
 let didWarnAboutFindNodeInStrictMode;
@@ -158,11 +158,15 @@ export function findHostInstance(component) {
   const fiber = getInstance(component);
   if (fiber == null) {
     if (typeof component.render === 'function') {
-      throw new Error('Unable to find node on an unmounted component.');
+      throw $panic(
+        'Unable to find node on an unmounted component.',
+        'packages/react-reconciler/src/ReactFiberReconciler.rs:278:17',
+      );
     } else {
       const keys = Object.keys(component).join(',');
       throw $stringPanic(
         `Argument appears to not be a ReactComponent. Keys: ${keys}`,
+        'packages/react-reconciler/src/ReactFiberReconciler.rs:281:17',
       );
     }
   }
@@ -178,11 +182,15 @@ export function findHostInstanceWithWarning(component, methodName) {
     const fiber = getInstance(component);
     if (fiber == null) {
       if (typeof component.render === 'function') {
-        throw new Error('Unable to find node on an unmounted component.');
+        throw $panic(
+          'Unable to find node on an unmounted component.',
+          'packages/react-reconciler/src/ReactFiberReconciler.rs:299:21',
+        );
       } else {
         const keys = Object.keys(component).join(',');
         throw $stringPanic(
           `Argument appears to not be a ReactComponent. Keys: ${keys}`,
+          'packages/react-reconciler/src/ReactFiberReconciler.rs:302:21',
         );
       }
     }
@@ -194,6 +202,7 @@ export function findHostInstanceWithWarning(component, methodName) {
       const componentName = getComponentNameFromFiber(fiber) || 'Component';
       const didWarnAboutFindNodeInStrictMode$1 = $unwrap(
         didWarnAboutFindNodeInStrictMode,
+        'packages/react-reconciler/src/ReactFiberReconciler.rs:312:67',
       );
       if (!didWarnAboutFindNodeInStrictMode$1[componentName]) {
         didWarnAboutFindNodeInStrictMode$1[componentName] = true;
@@ -557,7 +566,18 @@ if (__DEV__) {
     } else {
       const end = (newPath.length - 1) >>> 0;
       for (let i = 0; i < end; i++) {
-        if ($index(oldPath, i) !== $index(newPath, i)) {
+        if (
+          $index(
+            oldPath,
+            i,
+            'packages/react-reconciler/src/ReactFiberReconciler.rs:882:43',
+          ) !==
+          $index(
+            newPath,
+            i,
+            'packages/react-reconciler/src/ReactFiberReconciler.rs:882:56',
+          )
+        ) {
           console.warn(
             'copyWithRename() expects paths to be the same except for the deepest key',
           );
@@ -706,7 +726,11 @@ if (__DEV__) {
 
 // An object or an array, copied with the value at `path` gone.
 function copyWithDeleteImpl(obj, path, index) {
-  const key = $index(path, index);
+  const key = $index(
+    path,
+    index,
+    'packages/react-reconciler/src/ReactFiberReconciler.rs:822:23',
+  );
   const updated = Array.isArray(obj) ? obj.slice() : {...obj};
   if (index + 1 === path.length) {
     if (Array.isArray(updated)) {
@@ -721,10 +745,18 @@ function copyWithDeleteImpl(obj, path, index) {
 }
 
 function copyWithRenameImpl(obj, oldPath, newPath, index) {
-  const oldKey = $index(oldPath, index);
+  const oldKey = $index(
+    oldPath,
+    index,
+    'packages/react-reconciler/src/ReactFiberReconciler.rs:849:27',
+  );
   const updated = Array.isArray(obj) ? obj.slice() : {...obj};
   if (index + 1 === oldPath.length) {
-    const newKey = $index(newPath, index);
+    const newKey = $index(
+      newPath,
+      index,
+      'packages/react-reconciler/src/ReactFiberReconciler.rs:855:31',
+    );
     updated[newKey] = updated[oldKey];
     if (Array.isArray(updated)) {
       updated.splice(oldKey, 1);

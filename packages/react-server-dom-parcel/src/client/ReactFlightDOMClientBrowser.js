@@ -20,7 +20,7 @@ import {
   createServerReference as createServerReferenceImpl,
   processReply,
 } from 'react-client/src/ReactFlightReplyClient';
-import {$unwrap} from '@rust-js/std';
+import {$panic, $unwrap} from '@rust-js/std';
 
 export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
 
@@ -44,8 +44,9 @@ export function setServerCallback(fn) {
 
 function callCurrentServerCallback(id, args) {
   if (callServer == null) {
-    throw new Error(
+    throw $panic(
       'No server callback has been registered. Call setServerCallback to register one.',
+      'packages/react-server-dom-parcel/src/client/ReactFlightDOMClientBrowser.rs:58:9',
     );
   }
   return callServer(id, args);
@@ -134,7 +135,10 @@ function startReadingFromUniversalStream(response, stream, onDone) {
     } else {
       processBinaryChunk(response, streamState, value);
     }
-    const progress$1 = $unwrap(progress);
+    const progress$1 = $unwrap(
+      progress,
+      'packages/react-server-dom-parcel/src/client/ReactFlightDOMClientBrowser.rs:191:46',
+    );
     reader
       .read()
       .then(entry => {
@@ -142,7 +146,10 @@ function startReadingFromUniversalStream(response, stream, onDone) {
       })
       .catch(error);
   };
-  const progress$1 = $unwrap(progress);
+  const progress$1 = $unwrap(
+    progress,
+    'packages/react-server-dom-parcel/src/client/ReactFlightDOMClientBrowser.rs:198:46',
+  );
   reader
     .read()
     .then(entry => {
@@ -163,7 +170,10 @@ function startReadingFromStream(response, stream, onDone, debugValue) {
     }
     const buffer = entry.value;
     processBinaryChunk(response, streamState, buffer);
-    const progress$1 = $unwrap(progress);
+    const progress$1 = $unwrap(
+      progress,
+      'packages/react-server-dom-parcel/src/client/ReactFlightDOMClientBrowser.rs:227:46',
+    );
     reader
       .read()
       .then(entry => {
@@ -171,7 +181,10 @@ function startReadingFromStream(response, stream, onDone, debugValue) {
       })
       .catch(error);
   };
-  const progress$1 = $unwrap(progress);
+  const progress$1 = $unwrap(
+    progress,
+    'packages/react-server-dom-parcel/src/client/ReactFlightDOMClientBrowser.rs:234:46',
+  );
   reader
     .read()
     .then(entry => {

@@ -8,7 +8,7 @@
 import Module from 'module';
 import {pathToFileURL} from 'url';
 import * as acorn from 'acorn-loose';
-import {$unwrap} from '@rust-js/std';
+import {$panic, $unwrap} from '@rust-js/std';
 
 export default function register() {
   const registerServerReference =
@@ -61,8 +61,9 @@ export default function register() {
     }
 
     if (useClient && useServer) {
-      throw new Error(
+      throw $panic(
         'Cannot have both "use client" and "use server" directives in the same file.',
+        'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeRegister.rs:103:21',
       );
     }
 
@@ -89,7 +90,12 @@ export default function register() {
           null,
         );
       } else {
-        const keys = Object.keys($unwrap(exports));
+        const keys = Object.keys(
+          $unwrap(
+            exports,
+            'packages/react-server-dom-unbundled/src/ReactFlightUnbundledNodeRegister.rs:134:57',
+          ),
+        );
         for (let i = 0; i < keys.length; i++) {
           const key = keys[i];
           const value = exports[key];

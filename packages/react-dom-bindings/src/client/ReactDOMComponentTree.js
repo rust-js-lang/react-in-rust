@@ -21,6 +21,7 @@ import {
   enableInternalInstanceMap,
   enableScopeAPI,
 } from 'shared/ReactFeatureFlags';
+import {$panic} from '@rust-js/std';
 
 const randomKey = Math.random().toString(36).slice(2);
 const internalInstanceKey = '__reactFiber$' + randomKey;
@@ -219,7 +220,10 @@ export function getNodeFromInstance(inst) {
 
   // Without this first invariant, passing a non-DOM-component triggers the next
   // invariant for a missing parent, which is super confusing.
-  throw new Error('getNodeFromInstance: Invalid argument.');
+  throw $panic(
+    'getNodeFromInstance: Invalid argument.',
+    'packages/react-dom-bindings/src/client/ReactDOMComponentTree.rs:265:5',
+  );
 }
 
 export function getFiberCurrentPropsFromNode(node) {

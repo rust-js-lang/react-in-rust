@@ -26,16 +26,40 @@ export function pop(cursor, fiber) {
   }
   const index$1 = index >>> 0;
 
-  if (__DEV__ && fiber !== $index(fiberStack, index$1)) {
+  if (
+    __DEV__ &&
+    fiber !==
+      $index(
+        fiberStack,
+        index$1,
+        'packages/react-reconciler/src/ReactFiberStack.rs:44:76',
+      )
+  ) {
     console.error('Unexpected Fiber popped.');
   }
 
-  cursor.current = $index(valueStack, index$1);
+  cursor.current = $index(
+    valueStack,
+    index$1,
+    'packages/react-reconciler/src/ReactFiberStack.rs:51:85',
+  );
 
-  valueStack[$at(valueStack, index$1)] = undefined;
+  valueStack[
+    $at(
+      valueStack,
+      index$1,
+      'packages/react-reconciler/src/ReactFiberStack.rs:53:58',
+    )
+  ] = undefined;
 
   if (__DEV__) {
-    fiberStack[$at(fiberStack, index$1)] = undefined;
+    fiberStack[
+      $at(
+        fiberStack,
+        index$1,
+        'packages/react-reconciler/src/ReactFiberStack.rs:56:62',
+      )
+    ] = undefined;
   }
 
   index = (index - 1) | 0;

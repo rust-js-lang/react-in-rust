@@ -24,7 +24,14 @@ import {
   setupIntersectionObserver,
   supportsTestSelectors,
 } from './ReactFiberConfig.js';
-import {$index, $toLowercase, $withBorrow, $withBorrowMut} from '@rust-js/std';
+import {
+  $index,
+  $panic,
+  $stdSites,
+  $toLowercase,
+  $withBorrow,
+  $withBorrowMut,
+} from '@rust-js/std';
 
 let COMPONENT_TYPE = 0b000;
 let HAS_PSEUDO_CLASS_TYPE = 0b001;
@@ -80,8 +87,9 @@ function findFiberRootForHostRoot(hostRoot) {
   const maybeFiber = getInstanceFromNode(hostRoot);
   if (maybeFiber !== null) {
     if (typeof maybeFiber.memoizedProps['data-testname'] !== 'string') {
-      throw new Error(
+      throw $panic(
         'Invalid host root specified. Should be either a React container or a node with a testname attribute.',
+        'packages/react-reconciler/src/ReactTestSelectors.rs:175:13',
       );
     }
 
@@ -90,8 +98,9 @@ function findFiberRootForHostRoot(hostRoot) {
     const fiberRoot = findFiberRoot(hostRoot);
 
     if (fiberRoot === null) {
-      throw new Error(
+      throw $panic(
         'Could not find React container within specified host subtree.',
+        'packages/react-reconciler/src/ReactTestSelectors.rs:185:13',
       );
     }
 
@@ -152,7 +161,10 @@ function matchSelector(fiber, selector) {
       }
       break;
     default:
-      throw new Error('Invalid selector type specified.');
+      throw $panic(
+        'Invalid selector type specified.',
+        'packages/react-reconciler/src/ReactTestSelectors.rs:236:9',
+      );
   }
 
   return false;
@@ -173,7 +185,10 @@ function selectorToString(selector) {
     case TEST_NAME_TYPE:
       return `[data-testname="${selector.value}"]`;
     default:
-      throw new Error('Invalid selector type specified.');
+      throw $panic(
+        'Invalid selector type specified.',
+        'packages/react-reconciler/src/ReactTestSelectors.rs:261:9',
+      );
   }
 }
 
@@ -256,7 +271,10 @@ function hasMatchingPaths(root, selectors) {
 
 export function findAllNodes(hostRoot, selectors) {
   if (!supportsTestSelectors) {
-    throw new Error('Test selector API is not supported by this renderer.');
+    throw $panic(
+      'Test selector API is not supported by this renderer.',
+      'packages/react-reconciler/src/ReactTestSelectors.rs:345:9',
+    );
   }
 
   const root = findFiberRootForHostRoot(hostRoot);
@@ -292,7 +310,10 @@ export function findAllNodes(hostRoot, selectors) {
 
 export function getFindAllNodesFailureDescription(hostRoot, selectors) {
   if (!supportsTestSelectors) {
-    throw new Error('Test selector API is not supported by this renderer.');
+    throw $panic(
+      'Test selector API is not supported by this renderer.',
+      'packages/react-reconciler/src/ReactTestSelectors.rs:382:9',
+    );
   }
 
   const root = findFiberRootForHostRoot(hostRoot);
@@ -307,7 +328,11 @@ export function getFindAllNodesFailureDescription(hostRoot, selectors) {
     let [fiber, selectorIndex] = stack[index];
     index++;
     const tag = fiber.tag;
-    const selector = $index(selectors, selectorIndex);
+    const selector = $index(
+      selectors,
+      selectorIndex,
+      'packages/react-reconciler/src/ReactTestSelectors.rs:397:25',
+    );
 
     if (
       (tag === HostComponent ||
@@ -354,7 +379,10 @@ export function getFindAllNodesFailureDescription(hostRoot, selectors) {
 
 export function findBoundingRects(hostRoot, selectors) {
   if (!supportsTestSelectors) {
-    throw new Error('Test selector API is not supported by this renderer.');
+    throw $panic(
+      'Test selector API is not supported by this renderer.',
+      'packages/react-reconciler/src/ReactTestSelectors.rs:454:9',
+    );
   }
 
   const instanceRoots = findAllNodes(hostRoot, selectors);
@@ -366,7 +394,11 @@ export function findBoundingRects(hostRoot, selectors) {
   }
 
   for (let i = boundingRects.length - 1; i > 0; i--) {
-    const targetRect = $index(boundingRects, i);
+    const targetRect = $index(
+      boundingRects,
+      i,
+      'packages/react-reconciler/src/ReactTestSelectors.rs:465:42',
+    );
     const targetLeft = targetRect.x;
     const targetRight = targetLeft + targetRect.width;
     const targetTop = targetRect.y;
@@ -442,7 +474,10 @@ export function findBoundingRects(hostRoot, selectors) {
 
 export function focusWithin(hostRoot, selectors) {
   if (!supportsTestSelectors) {
-    throw new Error('Test selector API is not supported by this renderer.');
+    throw $panic(
+      'Test selector API is not supported by this renderer.',
+      'packages/react-reconciler/src/ReactTestSelectors.rs:542:9',
+    );
   }
 
   const root = findFiberRootForHostRoot(hostRoot);
@@ -487,6 +522,7 @@ export function onCommitRoot() {
           commitHook();
         });
       },
+      $stdSites.localKeyWithBorrow[0],
       true,
     );
   }
@@ -494,7 +530,10 @@ export function onCommitRoot() {
 
 export function observeVisibleRects(hostRoot, selectors, callback, options) {
   if (!supportsTestSelectors) {
-    throw new Error('Test selector API is not supported by this renderer.');
+    throw $panic(
+      'Test selector API is not supported by this renderer.',
+      'packages/react-reconciler/src/ReactTestSelectors.rs:607:9',
+    );
   }
 
   const instanceRoots = findAllNodes(hostRoot, selectors);
@@ -525,6 +564,7 @@ export function observeVisibleRects(hostRoot, selectors, callback, options) {
     commitHooks => {
       commitHooks.push(commitHook);
     },
+    $stdSites.localKeyWithBorrowMut[0],
     true,
   );
 
@@ -539,6 +579,7 @@ export function observeVisibleRects(hostRoot, selectors, callback, options) {
             commitHooks.splice(index, 1);
           }
         },
+        $stdSites.localKeyWithBorrowMut[0],
         true,
       );
 

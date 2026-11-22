@@ -17,7 +17,7 @@ import {isAwaitInUserspace, resolveRequest} from './ReactFlightServer.js';
 import {AsyncResource, createHook, executionAsyncId} from 'async_hooks';
 
 import {parseStackTracePrivate} from './ReactFlightServerConfig.js';
-import {$fieldCell, $try, $withBorrow} from '@rust-js/std';
+import {$fieldCell, $panic, $try, $withBorrow} from '@rust-js/std';
 
 const pendingOperations = new Map();
 
@@ -206,11 +206,13 @@ export function initAsyncDebugInfo() {
                     $withBorrow(
                       $fieldCell(ioNode, 'awaited', true),
                       value => value,
+                      'packages/react-server/src/ReactFlightServerConfigDebugNode.rs:260:62',
                     ) ?? null,
                   previous:
                     $withBorrow(
                       $fieldCell(ioNode, 'previous', true),
                       value => value,
+                      'packages/react-server/src/ReactFlightServerConfigDebugNode.rs:261:64',
                     ) ?? null,
                 };
                 pendingOperations.set(asyncId, clonedNode);
@@ -270,8 +272,9 @@ export function initAsyncDebugInfo() {
               break;
             default:
               // eslint-disable-next-line react-internal/prod-error-codes
-              throw new Error(
+              throw $panic(
                 'A Promise should never be an IO_NODE. This is a bug in React.',
+                'packages/react-server/src/ReactFlightServerConfigDebugNode.rs:317:29',
               );
           }
           const currentAsyncId = executionAsyncId();
@@ -304,11 +307,13 @@ export function initAsyncDebugInfo() {
                     $withBorrow(
                       $fieldCell(resolvedNode, 'awaited', true),
                       value => value,
+                      'packages/react-server/src/ReactFlightServerConfigDebugNode.rs:347:68',
                     ) ?? null,
                   previous:
                     $withBorrow(
                       $fieldCell(resolvedNode, 'previous', true),
                       value => value,
+                      'packages/react-server/src/ReactFlightServerConfigDebugNode.rs:348:70',
                     ) ?? null,
                 };
                 // We started awaiting on the callback when the original .then() resolved.

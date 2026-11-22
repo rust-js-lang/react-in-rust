@@ -104,7 +104,10 @@ if (__DEV__) {
 
 function hasValidRef(config) {
   if (__DEV__ && hasOwnProperty.call(config, 'ref')) {
-    const getter = $unwrap(Object.getOwnPropertyDescriptor(config, 'ref')).get;
+    const getter = $unwrap(
+      Object.getOwnPropertyDescriptor(config, 'ref'),
+      'packages/react/src/jsx/ReactJSXElement.rs:135:14',
+    ).get;
     if (getter != null && getter.isReactWarning) {
       return false;
     }
@@ -114,7 +117,10 @@ function hasValidRef(config) {
 
 function hasValidKey(config) {
   if (__DEV__ && hasOwnProperty.call(config, 'key')) {
-    const getter = $unwrap(Object.getOwnPropertyDescriptor(config, 'key')).get;
+    const getter = $unwrap(
+      Object.getOwnPropertyDescriptor(config, 'key'),
+      'packages/react/src/jsx/ReactJSXElement.rs:149:14',
+    ).get;
     if (getter != null && getter.isReactWarning) {
       return false;
     }
@@ -791,6 +797,7 @@ export function cloneElement(element, config, ...children) {
   if (element == null) {
     throw $stringPanic(
       `The argument must be a React element, but you passed ${$shown(element)}.`,
+      'packages/react/src/jsx/ReactJSXElement.rs:986:9',
     );
   }
 

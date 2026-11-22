@@ -25,6 +25,7 @@ import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
 
 import escapeSelectorAttributeValueInsideDoubleQuotes from './escapeSelectorAttributeValueInsideDoubleQuotes.js';
 import {queueChangeEvent} from '../events/ReactDOMEventReplaying.js';
+import {$panic} from '@rust-js/std';
 
 let didWarnValueDefaultValue = false;
 let didWarnCheckedDefaultChecked = false;
@@ -443,9 +444,10 @@ export function restoreControlledInputState(element, props) {
       const otherProps = getFiberCurrentPropsFromNode(otherNode);
 
       if (otherProps == null) {
-        throw new Error(
+        throw $panic(
           'ReactDOMInput: Mixing React and non-React radio inputs with the ' +
             'same `name` is not supported.',
+          'packages/react-dom-bindings/src/client/ReactDOMInput.rs:468:17',
         );
       }
 

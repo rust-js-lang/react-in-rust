@@ -63,6 +63,7 @@ export function writeChunk(destination, chunk) {
           'Cannot transport a detached buffer. ' +
             'This usually happens when trying to transport multiple buffer-spanning views on the same underyling buffer. ' +
             'Either reuse the exact same view by identity or copy the underlying buffer manually via `view.slice()`.',
+          'packages/react-server/src/ReactServerStreamConfigEdge.rs:84:17',
         );
       }
     } else if (__DEV__ && !didWarnAboutMissingArrayBufferDetached) {
@@ -83,7 +84,14 @@ export function writeChunk(destination, chunk) {
     // it directly and expect it is not re-used
     if (writtenBytes > 0) {
       destination.enqueue(
-        new Uint8Array($unwrap(currentView).buffer, 0, writtenBytes),
+        new Uint8Array(
+          $unwrap(
+            currentView,
+            'packages/react-server/src/ReactServerStreamConfigEdge.rs:111:36',
+          ).buffer,
+          0,
+          writtenBytes,
+        ),
       );
       currentView = new Uint8Array(VIEW_SIZE);
       writtenBytes = 0;
@@ -93,28 +101,45 @@ export function writeChunk(destination, chunk) {
   }
 
   let bytesToWrite = chunk;
-  const allowableBytes = $unwrap(currentView).length - writtenBytes;
+  const allowableBytes =
+    $unwrap(
+      currentView,
+      'packages/react-server/src/ReactServerStreamConfigEdge.rs:123:46',
+    ).length - writtenBytes;
   if (allowableBytes < bytesToWrite.byteLength) {
     // this chunk would overflow the current view. We enqueue a full view
     // and start a new view with the remaining chunk
     if (allowableBytes === 0) {
       // the current view is already full, send it
-      destination.enqueue($unwrap(currentView));
+      destination.enqueue(
+        $unwrap(
+          currentView,
+          'packages/react-server/src/ReactServerStreamConfigEdge.rs:129:52',
+        ),
+      );
     } else {
       // fill up the current view and apply the remaining chunk bytes
       // to a new view.
-      $unwrap(currentView).set(
-        bytesToWrite.subarray(0, allowableBytes),
-        writtenBytes,
-      );
+      $unwrap(
+        currentView,
+        'packages/react-server/src/ReactServerStreamConfigEdge.rs:133:32',
+      ).set(bytesToWrite.subarray(0, allowableBytes), writtenBytes);
       // writtenBytes += allowableBytes; // this can be skipped because we are going to immediately reset the view
-      destination.enqueue($unwrap(currentView));
+      destination.enqueue(
+        $unwrap(
+          currentView,
+          'packages/react-server/src/ReactServerStreamConfigEdge.rs:138:52',
+        ),
+      );
       bytesToWrite = bytesToWrite.subarray(allowableBytes);
     }
     currentView = new Uint8Array(VIEW_SIZE);
     writtenBytes = 0;
   }
-  $unwrap(currentView).set(bytesToWrite, writtenBytes);
+  $unwrap(
+    currentView,
+    'packages/react-server/src/ReactServerStreamConfigEdge.rs:146:10',
+  ).set(bytesToWrite, writtenBytes);
   writtenBytes += bytesToWrite.byteLength;
 }
 

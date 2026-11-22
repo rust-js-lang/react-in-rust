@@ -156,6 +156,7 @@ import {
   $catchable,
   $cleanup,
   $index,
+  $panic,
   $roomFor,
   $stringPanic,
   $unwrap,
@@ -220,7 +221,10 @@ let ignorePreviousDependencies = false;
 
 function mountHookTypesDev() {
   if (__DEV__) {
-    const hookName = $unwrap(currentHookNameInDev);
+    const hookName = $unwrap(
+      currentHookNameInDev,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:375:56',
+    );
     if (hookTypesDev == null) {
       hookTypesDev = [hookName];
     } else {
@@ -231,7 +235,10 @@ function mountHookTypesDev() {
 
 function updateHookTypesDev() {
   if (__DEV__) {
-    const hookName = $unwrap(currentHookNameInDev);
+    const hookName = $unwrap(
+      currentHookNameInDev,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:386:56',
+    );
 
     if (hookTypesDev != null) {
       hookTypesUpdateIndexDev = (hookTypesUpdateIndexDev + 1) | 0;
@@ -258,7 +265,10 @@ function checkDepsAreArrayDev(deps) {
 
 function warnOnHookMismatchInDev(currentHookName) {
   if (__DEV__) {
-    const renderingFiber = $unwrap(currentlyRenderingFiber);
+    const renderingFiber = $unwrap(
+      currentlyRenderingFiber,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:419:83',
+    );
     const componentName = getComponentNameFromFiber(renderingFiber);
     if (!didWarnAboutMismatchedHooksForComponent.has(componentName)) {
       didWarnAboutMismatchedHooksForComponent.add(componentName);
@@ -305,7 +315,10 @@ function warnOnHookMismatchInDev(currentHookName) {
 
 function warnOnUseFormStateInDev() {
   if (__DEV__) {
-    const renderingFiber = $unwrap(currentlyRenderingFiber);
+    const renderingFiber = $unwrap(
+      currentlyRenderingFiber,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:479:83',
+    );
     const componentName = getComponentNameFromFiber(renderingFiber);
     if (!didWarnAboutUseFormState.has(componentName)) {
       didWarnAboutUseFormState.add(componentName);
@@ -334,7 +347,10 @@ function warnIfAsyncClientComponent(component) {
         '[object AsyncGeneratorFunction]';
     if (isAsyncFunction) {
       // Encountered an async Client Component. This is not yet supported.
-      const renderingFiber = $unwrap(currentlyRenderingFiber);
+      const renderingFiber = $unwrap(
+        currentlyRenderingFiber,
+        'packages/react-reconciler/src/ReactFiberHooks.rs:510:87',
+      );
       const componentName = getComponentNameFromFiber(renderingFiber);
       if (!didWarnAboutAsyncClientComponent.has(componentName)) {
         didWarnAboutAsyncClientComponent.add(componentName);
@@ -351,13 +367,14 @@ function warnIfAsyncClientComponent(component) {
 }
 
 function throwInvalidHookError() {
-  throw new Error(
+  throw $panic(
     'Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for' +
       ' one of the following reasons:\n' +
       '1. You might have mismatching versions of React and the renderer (such as React DOM)\n' +
       '2. You might be breaking the Rules of Hooks\n' +
       '3. You might have more than one copy of React in the same app\n' +
       'See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.',
+    'packages/react-reconciler/src/ReactFiberHooks.rs:534:5',
   );
 }
 
@@ -400,7 +417,20 @@ function areHookInputsEqual(
   // $FlowFixMe[incompatible-use] found when upgrading Flow
   for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
     // $FlowFixMe[incompatible-use] found when upgrading Flow
-    if (!is($index(nextDeps, i), $index(prevDeps, i))) {
+    if (
+      !is(
+        $index(
+          nextDeps,
+          i,
+          'packages/react-reconciler/src/ReactFiberHooks.rs:589:36',
+        ),
+        $index(
+          prevDeps,
+          i,
+          'packages/react-reconciler/src/ReactFiberHooks.rs:589:51',
+        ),
+      )
+    ) {
       return false;
     }
   }
@@ -499,7 +529,10 @@ export function renderWithHooks(
 
   shouldDoubleInvokeUserFnsInHooksDEV = shouldDoubleRenderDev;
   let children = __DEV__
-    ? $unwrap(callComponentInDEV)(component, props, secondArg)
+    ? $unwrap(
+        callComponentInDEV,
+        'packages/react-reconciler/src/ReactFiberHooks.rs:709:35',
+      )(component, props, secondArg)
     : component(props, secondArg);
   shouldDoubleInvokeUserFnsInHooksDEV = false;
 
@@ -605,9 +638,10 @@ function finishRenderingHooks(current, workInProgress, component) {
   thenableState = null;
 
   if (didRenderTooFewHooks) {
-    throw new Error(
+    throw $panic(
       'Rendered fewer hooks than expected. This may be caused by an accidental ' +
         'early return statement.',
+      'packages/react-reconciler/src/ReactFiberHooks.rs:815:9',
     );
   }
 
@@ -710,9 +744,10 @@ function renderWithHooksAgain(workInProgress, component, props, secondArg) {
     didScheduleRenderPhaseUpdateDuringThisPass = false;
 
     if (numberOfReRenders >= RE_RENDER_LIMIT) {
-      throw new Error(
+      throw $panic(
         'Too many re-renders. React limits the number of renders to prevent ' +
           'an infinite loop.',
+        'packages/react-reconciler/src/ReactFiberHooks.rs:925:13',
       );
     }
 
@@ -743,7 +778,10 @@ function renderWithHooksAgain(workInProgress, component, props, secondArg) {
       ReactSharedInternals.H = HooksDispatcherOnRerender;
     }
     children = __DEV__
-      ? $unwrap(callComponentInDEV)(component, props, secondArg)
+      ? $unwrap(
+          callComponentInDEV,
+          'packages/react-reconciler/src/ReactFiberHooks.rs:962:39',
+        )(component, props, secondArg)
       : component(props, secondArg);
   } while (didScheduleRenderPhaseUpdateDuringThisPass);
   return children;
@@ -783,7 +821,10 @@ export function TransitionAwareHostComponent() {
   const prevResetState = currentHook != null ? currentHook.memoizedState : null;
   if (prevResetState !== nextResetState) {
     // Schedule a form reset
-    const renderingFiber = $unwrap(currentlyRenderingFiber);
+    const renderingFiber = $unwrap(
+      currentlyRenderingFiber,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:1011:83',
+    );
     renderingFiber.flags |= FormReset;
   }
 
@@ -882,7 +923,10 @@ function mountWorkInProgressHook() {
   };
   if (workInProgressHook == null) {
     // This is the first hook in the list
-    const renderingFiber = $unwrap(currentlyRenderingFiber);
+    const renderingFiber = $unwrap(
+      currentlyRenderingFiber,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:1119:87',
+    );
     renderingFiber.memoizedState = hook;
   } else {
     // Append to the end of the list
@@ -897,7 +941,10 @@ function updateWorkInProgressHook() {
   // render phase update. It assumes there is either a current hook we can
   // clone, or a work-in-progress hook from a previous render pass that we can
   // use as a base.
-  const renderingFiber = $unwrap(currentlyRenderingFiber);
+  const renderingFiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:1138:79',
+  );
   let nextCurrentHook;
   if (currentHook == null) {
     const current = renderingFiber.alternate;
@@ -925,12 +972,16 @@ function updateWorkInProgressHook() {
         // This is the initial render. This branch is reached when the component
         // suspends, resumes, then renders an additional hook.
         // Should never be reached because we should switch to the mount dispatcher first.
-        throw new Error(
+        throw $panic(
           'Update hook called on initial render. This is likely a bug in React. Please file an issue.',
+          'packages/react-reconciler/src/ReactFiberHooks.rs:1171:17',
         );
       } else {
         // This is an update. We should always have a current hook.
-        throw new Error('Rendered more hooks than during the previous render.');
+        throw $panic(
+          'Rendered more hooks than during the previous render.',
+          'packages/react-reconciler/src/ReactFiberHooks.rs:1176:17',
+        );
       }
     }
 
@@ -984,7 +1035,10 @@ function useThenable(thenable) {
   const index = thenableIndexCounter;
   thenableIndexCounter = (thenableIndexCounter + 1) >>> 0;
   thenableState ??= createThenableState();
-  const thenableState$1 = $unwrap(thenableState);
+  const thenableState$1 = $unwrap(
+    thenableState,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:1240:67',
+  );
   const renderingFiber = currentlyRenderingFiber;
   const result = trackUsedThenable(
     thenableState$1,
@@ -1006,7 +1060,10 @@ function useThenable(thenable) {
   // dispatcher. Could optimize, but probably not be worth it.
 
   // This is the same logic as in updateWorkInProgressHook.
-  const workInProgressFiber = $unwrap(renderingFiber);
+  const workInProgressFiber = $unwrap(
+    renderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:1266:50',
+  );
   const nextWorkInProgressHook =
     workInProgressHook == null
       ? // We're at the beginning of the list, so read from the first hook from
@@ -1062,13 +1119,17 @@ function use(usable) {
   // eslint-disable-next-line react-internal/safe-string-coercion
   throw $stringPanic(
     `An unsupported type was passed to use(): ${String(usable)}`,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:1334:5',
   );
 }
 
 function useMemoCache(size) {
   let memoCache;
   // Fast-path, load memo cache from wip fiber if already prepared
-  const renderingFiber = $unwrap(currentlyRenderingFiber);
+  const renderingFiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:1343:79',
+  );
   let updateQueue = renderingFiber.updateQueue;
   if (updateQueue != null) {
     memoCache = updateQueue.memoCache;
@@ -1152,7 +1213,10 @@ function useMemoCache(size) {
     }
   }
   memoCache.index = (memoCache.index + 1) >>> 0;
-  return $unwrap(data);
+  return $unwrap(
+    data,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:1457:10',
+  );
 }
 
 function basicStateReducer(state, action) {
@@ -1192,7 +1256,10 @@ function mountReducer(reducer, initialArg, init) {
   hook.queue = queue;
   const dispatch = dispatchReducerAction.bind(
     null,
-    $unwrap(currentlyRenderingFiber),
+    $unwrap(
+      currentlyRenderingFiber,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:1505:65',
+    ),
     queue,
   );
   queue.dispatch = dispatch;
@@ -1208,9 +1275,10 @@ function updateReducerImpl(hook, current, reducer) {
   const queue = hook.queue;
 
   if (queue == null) {
-    throw new Error(
+    throw $panic(
       'Should have a queue. You are likely calling Hooks conditionally, ' +
         'which is not allowed. (https://react.dev/link/invalid-hook-call)',
+      'packages/react-reconciler/src/ReactFiberHooks.rs:1531:9',
     );
   }
 
@@ -1231,7 +1299,10 @@ function updateReducerImpl(hook, current, reducer) {
       baseQueue.next = pendingFirst;
       pendingQueue.next = baseFirst;
     }
-    const current$1 = $unwrap(current);
+    const current$1 = $unwrap(
+      current,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:1554:31',
+    );
     if (__DEV__ && current$1.baseQueue !== baseQueue) {
       // Internal invariant that should never happen, but feasibly could in
       // the future if we implement resuming, or some form of that.
@@ -1256,7 +1327,10 @@ function updateReducerImpl(hook, current, reducer) {
     // baseState is derived from other reactive values.
   } else {
     // We have a queue to process.
-    const first = $unwrap(baseQueue.next);
+    const first = $unwrap(
+      baseQueue.next,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:1581:58',
+    );
     let newState = baseState;
 
     let newBaseState = null;
@@ -1264,7 +1338,10 @@ function updateReducerImpl(hook, current, reducer) {
     let newBaseQueueLast;
     let update = first;
     let didReadFromEntangledAsyncAction = false;
-    const renderingFiber = $unwrap(currentlyRenderingFiber);
+    const renderingFiber = $unwrap(
+      currentlyRenderingFiber,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:1589:87',
+    );
     do {
       // An extra OffscreenLane bit is added to updates that were made to
       // a hidden tree, so that we can distinguish them from updates that were
@@ -1294,8 +1371,9 @@ function updateReducerImpl(hook, current, reducer) {
           } else {
             const root = getWorkInProgressRoot();
             if (root == null) {
-              throw new Error(
+              throw $panic(
                 'Expected a work-in-progress root. This is a bug in React. Please file an issue.',
+                'packages/react-reconciler/src/ReactFiberHooks.rs:1627:33',
               );
             }
             // We assume that the currently rendering gesture is the one first in the queue.
@@ -1479,9 +1557,10 @@ function rerenderReducer(reducer, initialArg, init) {
   const queue = hook.queue;
 
   if (queue == null) {
-    throw new Error(
+    throw $panic(
       'Should have a queue. You are likely calling Hooks conditionally, ' +
         'which is not allowed. (https://react.dev/link/invalid-hook-call)',
+      'packages/react-reconciler/src/ReactFiberHooks.rs:1841:9',
     );
   }
 
@@ -1496,7 +1575,10 @@ function rerenderReducer(reducer, initialArg, init) {
     // The queue doesn't persist past this render pass.
     queue.pending = null;
 
-    const firstRenderPhaseUpdate = $unwrap(lastRenderPhaseUpdate.next);
+    const firstRenderPhaseUpdate = $unwrap(
+      lastRenderPhaseUpdate.next,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:1858:88',
+    );
     let update = firstRenderPhaseUpdate;
     do {
       // Process this render phase update. We don't have to check the
@@ -1504,7 +1586,10 @@ function rerenderReducer(reducer, initialArg, init) {
       // render's.
       const action = update.action;
       newState = reducer(newState, action);
-      const next = $unwrap(update.next);
+      const next = $unwrap(
+        update.next,
+        'packages/react-reconciler/src/ReactFiberHooks.rs:1866:53',
+      );
       update = next;
     } while (update !== firstRenderPhaseUpdate);
 
@@ -1534,16 +1619,20 @@ function mountSyncExternalStore(
   // A function, or undefined where none was given.
   getServerSnapshot,
 ) {
-  const fiber = $unwrap(currentlyRenderingFiber);
+  const fiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:1899:69',
+  );
   const hook = mountWorkInProgressHook();
 
   const isHydrating = getIsHydrating();
   let nextSnapshot;
   if (isHydrating) {
     if (getServerSnapshot === undefined) {
-      throw new Error(
+      throw $panic(
         'Missing getServerSnapshot, which is required for ' +
           'server-rendered content. Will revert to client rendering.',
+        'packages/react-reconciler/src/ReactFiberHooks.rs:1906:13',
       );
     }
     nextSnapshot = getServerSnapshot();
@@ -1578,8 +1667,9 @@ function mountSyncExternalStore(
     const root = getWorkInProgressRoot();
 
     if (root == null) {
-      throw new Error(
+      throw $panic(
         'Expected a work-in-progress root. This is a bug in React. Please file an issue.',
+        'packages/react-reconciler/src/ReactFiberHooks.rs:1943:13',
       );
     }
 
@@ -1621,7 +1711,10 @@ function updateSyncExternalStore(
   // A function, or undefined where none was given.
   getServerSnapshot,
 ) {
-  const fiber = $unwrap(currentlyRenderingFiber);
+  const fiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:2002:69',
+  );
   const hook = updateWorkInProgressHook();
   // Read the current snapshot from the store on every render. This breaks the
   // normal rules of React, and only works because store updates are
@@ -1631,9 +1724,10 @@ function updateSyncExternalStore(
   if (isHydrating) {
     // Needed for strict mode double render
     if (getServerSnapshot === undefined) {
-      throw new Error(
+      throw $panic(
         'Missing getServerSnapshot, which is required for ' +
           'server-rendered content. Will revert to client rendering.',
+        'packages/react-reconciler/src/ReactFiberHooks.rs:2012:13',
       );
     }
     nextSnapshot = getServerSnapshot();
@@ -1698,8 +1792,9 @@ function updateSyncExternalStore(
     const root = getWorkInProgressRoot();
 
     if (root == null) {
-      throw new Error(
+      throw $panic(
         'Expected a work-in-progress root. This is a bug in React. Please file an issue.',
+        'packages/react-reconciler/src/ReactFiberHooks.rs:2102:13',
       );
     }
 
@@ -1717,7 +1812,10 @@ function pushStoreConsistencyCheck(fiber, getSnapshot, renderedSnapshot) {
     getSnapshot,
     value: renderedSnapshot,
   };
-  const renderingFiber = $unwrap(currentlyRenderingFiber);
+  const renderingFiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:2125:79',
+  );
   const componentUpdateQueue = renderingFiber.updateQueue;
   if (componentUpdateQueue == null) {
     const componentUpdateQueue = createFunctionComponentUpdateQueue();
@@ -1823,7 +1921,10 @@ function mountState(initialState) {
   const queue = hook.queue;
   const dispatch = dispatchSetState.bind(
     null,
-    $unwrap(currentlyRenderingFiber),
+    $unwrap(
+      currentlyRenderingFiber,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:2246:65',
+    ),
     queue,
   );
   queue.dispatch = dispatch;
@@ -1854,7 +1955,10 @@ function mountOptimistic(passthrough, reducer) {
   // This is different than the normal setState function.
   const dispatch = dispatchOptimisticSetState.bind(
     null,
-    $unwrap(currentlyRenderingFiber),
+    $unwrap(
+      currentlyRenderingFiber,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:2283:65',
+    ),
     true,
     queue,
   );
@@ -1924,7 +2028,10 @@ function dispatchActionState(
   payload,
 ) {
   if (isRenderPhaseUpdate(fiber)) {
-    throw new Error('Cannot update action state while rendering.');
+    throw $panic(
+      'Cannot update action state while rendering.',
+      'packages/react-reconciler/src/ReactFiberHooks.rs:2422:9',
+    );
   }
 
   const currentAction = actionQueue.action;
@@ -2154,13 +2261,19 @@ function onActionSuccess(actionQueue, actionNode, nextState) {
   // are any.
   const last = actionQueue.pending;
   if (last != null) {
-    const first = $unwrap(last.next);
+    const first = $unwrap(
+      last.next,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:2677:48',
+    );
     if (first === last) {
       // This was the last action in the queue.
       actionQueue.pending = null;
     } else {
       // Remove the first node from the circular queue.
-      const next = $unwrap(first.next);
+      const next = $unwrap(
+        first.next,
+        'packages/react-reconciler/src/ReactFiberHooks.rs:2683:52',
+      );
       last.next = next;
 
       // Run the next action.
@@ -2174,13 +2287,19 @@ function onActionError(actionQueue, actionNode, error) {
   const last = actionQueue.pending;
   actionQueue.pending = null;
   if (last != null) {
-    const first = $unwrap(last.next);
+    const first = $unwrap(
+      last.next,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:2700:48',
+    );
     let actionNode$1 = actionNode;
     do {
       actionNode$1.status = 'rejected';
       actionNode$1.reason = error;
       notifyActionListeners(actionNode$1);
-      const next = $unwrap(actionNode$1.next);
+      const next = $unwrap(
+        actionNode$1.next,
+        'packages/react-reconciler/src/ReactFiberHooks.rs:2706:58',
+      );
       actionNode$1 = next;
     } while (actionNode$1 !== first);
   }
@@ -2206,9 +2325,15 @@ function actionStateReducer(oldState, newState) {
 
 function mountActionState(action, initialStateProp, permalink) {
   let initialState = initialStateProp;
-  const renderingFiber = $unwrap(currentlyRenderingFiber);
+  const renderingFiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:2744:79',
+  );
   if (getIsHydrating()) {
-    const root = $unwrap(getWorkInProgressRoot());
+    const root = $unwrap(
+      getWorkInProgressRoot(),
+      'packages/react-reconciler/src/ReactFiberHooks.rs:2746:48',
+    );
     const ssrFormState = root.formState;
     // If a formState option was passed to the root, there are form state
     // markers that we need to hydrate. These indicate whether the form state
@@ -2333,12 +2458,18 @@ function updateActionStateImpl(
 
   const actionQueueHook = updateWorkInProgressHook();
   const actionQueue = actionQueueHook.queue;
-  const dispatch = $unwrap(actionQueue.dispatch);
+  const dispatch = $unwrap(
+    actionQueue.dispatch,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:2889:48',
+  );
 
   // Check if a new action was passed. If so, update it in an effect.
   const prevAction = actionQueueHook.memoizedState;
   if (action !== prevAction) {
-    const renderingFiber = $unwrap(currentlyRenderingFiber);
+    const renderingFiber = $unwrap(
+      currentlyRenderingFiber,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:2894:83',
+    );
     renderingFiber.flags |= PassiveEffect;
     pushSimpleEffect(
       HookHasEffect | HookPassive,
@@ -2385,7 +2516,10 @@ function rerenderActionState(action, initialState, permalink) {
 
   const actionQueueHook = updateWorkInProgressHook();
   const actionQueue = actionQueueHook.queue;
-  const dispatch = $unwrap(actionQueue.dispatch);
+  const dispatch = $unwrap(
+    actionQueue.dispatch,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:2949:48',
+  );
 
   // This may have changed during the rerender.
   actionQueueHook.memoizedState = action;
@@ -2407,7 +2541,10 @@ function pushSimpleEffect(tag, inst, create, deps) {
 }
 
 function pushEffectImpl(effect) {
-  const renderingFiber = $unwrap(currentlyRenderingFiber);
+  const renderingFiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:2978:79',
+  );
   let componentUpdateQueue = renderingFiber.updateQueue;
   if (componentUpdateQueue == null) {
     componentUpdateQueue = createFunctionComponentUpdateQueue();
@@ -2445,7 +2582,10 @@ function updateRef(initialValue) {
 function mountEffectImpl(fiberFlags, hookFlags, create, deps) {
   const hook = mountWorkInProgressHook();
   const nextDeps = deps ?? null;
-  const renderingFiber = $unwrap(currentlyRenderingFiber);
+  const renderingFiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:3042:79',
+  );
   renderingFiber.flags |= fiberFlags;
   hook.memoizedState = pushSimpleEffect(
     HookHasEffect | hookFlags,
@@ -2473,7 +2613,10 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps) {
     }
   }
 
-  const renderingFiber = $unwrap(currentlyRenderingFiber);
+  const renderingFiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:3086:79',
+  );
   renderingFiber.flags |= fiberFlags;
 
   hook.memoizedState = pushSimpleEffect(
@@ -2485,7 +2628,10 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps) {
 }
 
 function mountEffect(create, deps) {
-  const renderingFiber = $unwrap(currentlyRenderingFiber);
+  const renderingFiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:3101:79',
+  );
   if (__DEV__ && (renderingFiber.mode & StrictEffectsMode) !== NoMode) {
     mountEffectImpl(
       MountPassiveDevEffect | PassiveEffect | PassiveStaticEffect,
@@ -2508,7 +2654,10 @@ function updateEffect(create, deps) {
 }
 
 function useEffectEventImpl(payload) {
-  const renderingFiber = $unwrap(currentlyRenderingFiber);
+  const renderingFiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:3124:79',
+  );
   renderingFiber.flags |= UpdateEffect;
   const componentUpdateQueue = renderingFiber.updateQueue;
   if (componentUpdateQueue == null) {
@@ -2529,8 +2678,9 @@ function mountEvent(callback) {
   // $FlowFixMe[incompatible-type]
   return (...args) => {
     if (isInvalidExecutionContextForEventFunction()) {
-      throw new Error(
+      throw $panic(
         "A function wrapped in useEffectEvent can't be called during rendering.",
+        'packages/react-reconciler/src/ReactFiberHooks.rs:3165:13',
       );
     }
     return ref.impl.apply(undefined, args);
@@ -2547,8 +2697,9 @@ function updateEvent(callback) {
   // $FlowFixMe[incompatible-type]
   return (...args) => {
     if (isInvalidExecutionContextForEventFunction()) {
-      throw new Error(
+      throw $panic(
         "A function wrapped in useEffectEvent can't be called during rendering.",
+        'packages/react-reconciler/src/ReactFiberHooks.rs:3181:13',
       );
     }
     return ref.impl.apply(undefined, args);
@@ -2565,7 +2716,10 @@ function updateInsertionEffect(create, deps) {
 
 function mountLayoutEffect(create, deps) {
   let fiberFlags = UpdateEffect | LayoutStaticEffect;
-  const renderingFiber = $unwrap(currentlyRenderingFiber);
+  const renderingFiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:3197:79',
+  );
   if (__DEV__ && (renderingFiber.mode & StrictEffectsMode) !== NoMode) {
     fiberFlags |= MountLayoutDevEffect;
   }
@@ -2620,7 +2774,10 @@ function mountImperativeHandle(ref, create, deps) {
   const effectDeps = deps != null ? [...deps, ref] : undefined;
 
   let fiberFlags = UpdateEffect | LayoutStaticEffect;
-  const renderingFiber = $unwrap(currentlyRenderingFiber);
+  const renderingFiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:3277:79',
+  );
   if (__DEV__ && (renderingFiber.mode & StrictEffectsMode) !== NoMode) {
     fiberFlags |= MountLayoutDevEffect;
   }
@@ -2741,7 +2898,10 @@ function mountDeferredValue(value, initialValue) {
 
 function updateDeferredValue(value, initialValue) {
   const hook = updateWorkInProgressHook();
-  const resolvedCurrentHook = $unwrap(currentHook);
+  const resolvedCurrentHook = $unwrap(
+    currentHook,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:3441:72',
+  );
   const prevValue = resolvedCurrentHook.memoizedState;
   return updateDeferredValueImpl(hook, prevValue, value, initialValue);
 }
@@ -2787,7 +2947,10 @@ function mountDeferredValueImpl(hook, value, initialValue) {
 
     // Schedule a deferred render to switch to the final value.
     const deferredLane = requestDeferredLane();
-    const renderingFiber = $unwrap(currentlyRenderingFiber);
+    const renderingFiber = $unwrap(
+      currentlyRenderingFiber,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:3497:83',
+    );
     renderingFiber.lanes = mergeLanes(renderingFiber.lanes, deferredLane);
     markSkippedUpdateLanes(deferredLane);
 
@@ -2826,7 +2989,10 @@ function updateDeferredValueImpl(hook, prevValue, value, initialValue) {
 
       // Schedule a deferred render
       const deferredLane = requestDeferredLane();
-      const renderingFiber = $unwrap(currentlyRenderingFiber);
+      const renderingFiber = $unwrap(
+        currentlyRenderingFiber,
+        'packages/react-reconciler/src/ReactFiberHooks.rs:3544:87',
+      );
       renderingFiber.lanes = mergeLanes(renderingFiber.lanes, deferredLane);
       markSkippedUpdateLanes(deferredLane);
 
@@ -3037,9 +3203,10 @@ const noop = () => undefined;
 // ReactFiberConfig's `TransitionStatus`, and the form's data.
 export function startHostTransition(formFiber, pendingState, action, formData) {
   if (formFiber.tag !== HostComponent) {
-    throw new Error(
+    throw $panic(
       'Expected the form instance to be a HostComponent. This ' +
         'is a bug in React.',
+      'packages/react-reconciler/src/ReactFiberHooks.rs:3762:9',
     );
   }
 
@@ -3155,11 +3322,12 @@ export function requestFormReset(formFiber) {
       );
     }
   } else if (enableGestureTransition && transition.gesture != null) {
-    throw new Error(
+    throw $panic(
       'Cannot requestFormReset() inside a startGestureTransition. ' +
         'There should be no side-effects associated with starting a ' +
         'Gesture until its Action is invoked. Move side-effects to the ' +
         'Action instead.',
+      'packages/react-reconciler/src/ReactFiberHooks.rs:3892:13',
     );
   }
 
@@ -3171,10 +3339,16 @@ export function requestFormReset(formFiber) {
     // instead.
     // TODO: We should really stash the Queue somewhere stateful
     // just like how setState binds the Queue.
-    const alternate = $unwrap(formFiber.alternate);
+    const alternate = $unwrap(
+      formFiber.alternate,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:3910:63',
+    );
     stateHook = alternate.memoizedState;
   }
-  const resetStateHook = $unwrap(stateHook.next);
+  const resetStateHook = $unwrap(
+    stateHook.next,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:3913:61',
+  );
   const resetStateQueue = resetStateHook.queue;
   dispatchSetStateInternal(
     formFiber,
@@ -3187,7 +3361,10 @@ export function requestFormReset(formFiber) {
 function mountTransition() {
   const stateHook = mountStateImpl(false);
   // The `start` method never changes.
-  const renderingFiber = $unwrap(currentlyRenderingFiber);
+  const renderingFiber = $unwrap(
+    currentlyRenderingFiber,
+    'packages/react-reconciler/src/ReactFiberHooks.rs:3931:79',
+  );
   const queue = stateHook.queue;
   const start = startTransition.bind(null, renderingFiber, queue, true, false);
   const hook = mountWorkInProgressHook();
@@ -3227,7 +3404,10 @@ function useHostTransitionStatus() {
 function mountId() {
   const hook = mountWorkInProgressHook();
 
-  const root = $unwrap(getWorkInProgressRoot());
+  const root = $unwrap(
+    getWorkInProgressRoot(),
+    'packages/react-reconciler/src/ReactFiberHooks.rs:3981:44',
+  );
   // TODO: In Fizz, id generation is specific to each server config. Maybe we
   // should do this in Fiber, too? Deferring this decision for now because
   // there's no other place to store the prefix except for an internal field on
@@ -3271,7 +3451,13 @@ function updateId() {
 
 function mountRefresh() {
   const hook = mountWorkInProgressHook();
-  const refresh = refreshCache.bind(null, $unwrap(currentlyRenderingFiber));
+  const refresh = refreshCache.bind(
+    null,
+    $unwrap(
+      currentlyRenderingFiber,
+      'packages/react-reconciler/src/ReactFiberHooks.rs:4036:62',
+    ),
+  );
   hook.memoizedState = refresh;
   return refresh;
 }
@@ -3526,7 +3712,10 @@ function dispatchOptimisticSetState(fiber, throwIfDuringRender, queue, action) {
     // throwing because throwing would be a breaking change. setOptimisticState
     // is a new API so it's OK to throw.
     if (throwIfDuringRender) {
-      throw new Error('Cannot update optimistic state while rendering.');
+      throw $panic(
+        'Cannot update optimistic state while rendering.',
+        'packages/react-reconciler/src/ReactFiberHooks.rs:4328:13',
+      );
     } else {
       // startTransition was called during render. We don't need to do anything
       // besides warn here because the render phase update would be overidden by

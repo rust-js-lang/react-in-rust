@@ -75,6 +75,7 @@ export function processChildContext(
           `${
             getComponentNameFromType(type) || 'Unknown'
           }.getChildContext(): key "${contextKey}" is not defined in childContextTypes.`,
+          'packages/react-server/src/ReactFizzLegacyContext.rs:100:17',
         );
       }
     }

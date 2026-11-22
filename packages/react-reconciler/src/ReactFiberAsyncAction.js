@@ -148,7 +148,11 @@ export function chainThenableValue(thenable, result) {
       fulfilledThenable.status = 'fulfilled';
       fulfilledThenable.value = result;
       for (let i = 0; i < listeners.length; i++) {
-        const listener = $index(listeners, i);
+        const listener = $index(
+          listeners,
+          i,
+          'packages/react-reconciler/src/ReactFiberAsyncAction.rs:217:54',
+        );
         listener(result);
       }
     },
@@ -157,7 +161,11 @@ export function chainThenableValue(thenable, result) {
       rejectedThenable.status = 'rejected';
       rejectedThenable.reason = error;
       for (let i = 0; i < listeners.length; i++) {
-        const listener = $index(listeners, i);
+        const listener = $index(
+          listeners,
+          i,
+          'packages/react-reconciler/src/ReactFiberAsyncAction.rs:229:50',
+        );
         // This is a perf hack where we call the `onFulfill` ping function
         // instead of `onReject`, because we know that React is the only
         // consumer of these promises, and it passes the same listener to both.

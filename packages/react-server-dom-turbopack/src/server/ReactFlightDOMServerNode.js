@@ -63,6 +63,7 @@ import {
   $catchable,
   $fieldCell,
   $index,
+  $panic,
   $toLowercase,
   $unborrow,
   $unwrap,
@@ -194,8 +195,9 @@ export function renderToPipeableStream(model, turbopackMap, options) {
   return {
     pipe(destination) {
       if (hasStartedFlowing) {
-        throw new Error(
+        throw $panic(
           'React currently only supports piping to one writable stream.',
+          'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:294:21',
         );
       }
       hasStartedFlowing = true;
@@ -337,7 +339,13 @@ export function renderToReadableStream(model, turbopackMap, options) {
             createFakeWritableFromReadableStreamController(controller);
         },
         pull(controller) {
-          startFlowingDebug(request, $unwrap(debugWritable));
+          startFlowingDebug(
+            request,
+            $unwrap(
+              debugWritable,
+              'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:545:84',
+            ),
+          );
         },
       },
       // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -358,7 +366,13 @@ export function renderToReadableStream(model, turbopackMap, options) {
         startWork(request);
       },
       pull(controller) {
-        startFlowing(request, $unwrap(writable));
+        startFlowing(
+          request,
+          $unwrap(
+            writable,
+            'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:575:68',
+          ),
+        );
       },
       cancel(reason) {
         stopFlowing(request);
@@ -392,11 +406,20 @@ export function prerenderToNodeStream(model, turbopackMap, options) {
     const onFatalError = reject;
     let request;
     function onAllReady() {
-      const request$1 = $unwrap(request);
+      const request$1 = $unwrap(
+        request,
+        'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:632:66',
+      );
       let writable;
       const readable = new Readable({
         read() {
-          startFlowing(request$1, $unwrap(writable));
+          startFlowing(
+            request$1,
+            $unwrap(
+              writable,
+              'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:636:76',
+            ),
+          );
         },
       });
       writable = createFakeWritableFromNodeReadable(readable);
@@ -429,7 +452,10 @@ export function prerender(model, turbopackMap, options) {
     const onFatalError = reject;
     let request;
     function onAllReady() {
-      const request$1 = $unwrap(request);
+      const request$1 = $unwrap(
+        request,
+        'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:689:66',
+      );
       let writable;
       const stream = new ReadableStream(
         {
@@ -439,7 +465,13 @@ export function prerender(model, turbopackMap, options) {
               createFakeWritableFromReadableStreamController(controller);
           },
           pull(controller) {
-            startFlowing(request$1, $unwrap(writable));
+            startFlowing(
+              request$1,
+              $unwrap(
+                writable,
+                'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:701:80',
+              ),
+            );
           },
           cancel(reason) {
             stopFlowing(request$1);
@@ -497,7 +529,11 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
       }
       try {
         const name = current.name;
-        const borrow = $borrow(current.file, true);
+        const borrow = $borrow(
+          current.file,
+          'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:796:84',
+          true,
+        );
         try {
           resolveFileComplete(response, name, borrow);
         } finally {
@@ -513,7 +549,11 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
             resolveField(
               response,
               queuedFields[i],
-              $index(queuedFields, i + 1),
+              $index(
+                queuedFields,
+                i + 1,
+                'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:800:88',
+              ),
             );
           }
         }
@@ -523,7 +563,11 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
         error != null ? value.destroy(error) : value.destroy();
         return;
       }
-      const value = $borrow($fieldCell(current, 'next'), true);
+      const value = $borrow(
+        $fieldCell(current, 'next'),
+        'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:808:52',
+        true,
+      );
       head = value.value;
       $unborrow(value);
     }
@@ -571,14 +615,21 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
     };
     const tail = tail$1;
     if (tail != null) {
-      $borrowMut($fieldCell(tail, 'next')).value = pendingFile;
+      $borrowMut(
+        $fieldCell(tail, 'next'),
+        'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:896:32',
+      ).value = pendingFile;
     } else {
       head = pendingFile;
     }
     tail$1 = pendingFile;
     value.on('data', chunk => {
       try {
-        const borrowMut = $borrowMut(fileHandle, true);
+        const borrowMut = $borrowMut(
+          fileHandle,
+          'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:908:50',
+          true,
+        );
         try {
           resolveFileChunk(response, borrowMut, chunk);
         } finally {

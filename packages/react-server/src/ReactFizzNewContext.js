@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {isPrimaryRenderer} from './ReactFizzConfig.js';
+import {$panic} from '@rust-js/std';
 
 const rendererSigil = __DEV__
   ? // Use this to detect multiple renderers using the same context
@@ -47,14 +48,16 @@ function popToNearestCommonAncestor(prev, next) {
     const parentNext = next.parent;
     if (parentPrev == null) {
       if (parentNext != null) {
-        throw new Error(
+        throw $panic(
           'The stacks must reach the root at the same time. This is a bug in React.',
+          'packages/react-server/src/ReactFizzNewContext.rs:89:21',
         );
       }
     } else {
       if (parentNext == null) {
-        throw new Error(
+        throw $panic(
           'The stacks must reach the root at the same time. This is a bug in React.',
+          'packages/react-server/src/ReactFizzNewContext.rs:96:21',
         );
       }
 
@@ -83,8 +86,9 @@ function pushAllNext(next) {
 function popPreviousToCommonLevel(prev, next) {
   popNode(prev);
   if (prev.parent == null) {
-    throw new Error(
+    throw $panic(
       'The depth must equal at least at zero before reaching the root. This is a bug in React.',
+      'packages/react-server/src/ReactFizzNewContext.rs:127:9',
     );
   }
 
@@ -99,8 +103,9 @@ function popPreviousToCommonLevel(prev, next) {
 
 function popNextToCommonLevel(prev, next) {
   if (next.parent == null) {
-    throw new Error(
+    throw $panic(
       'The depth must equal at least at zero before reaching the root. This is a bug in React.',
+      'packages/react-server/src/ReactFizzNewContext.rs:143:9',
     );
   }
 
@@ -195,8 +200,9 @@ export function pushProvider(context, nextValue) {
 export function popProvider(context) {
   const prevSnapshot = currentActiveSnapshot;
   if (prevSnapshot == null) {
-    throw new Error(
+    throw $panic(
       'Tried to pop a Context at the root of the app. This is a bug in React.',
+      'packages/react-server/src/ReactFizzNewContext.rs:251:9',
     );
   }
 

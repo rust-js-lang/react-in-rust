@@ -45,7 +45,7 @@ import {
   readFinalStringChunk,
   readPartialStringChunk,
 } from 'react-client/src/ReactFlightClientStreamConfigWeb';
-import {$unwrap} from '@rust-js/std';
+import {$panic, $unwrap} from '@rust-js/std';
 
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
@@ -149,7 +149,10 @@ export function prerender(model, options) {
     const onFatalError = reject;
     let request;
     function onAllReady() {
-      const request$1 = $unwrap(request);
+      const request$1 = $unwrap(
+        request,
+        'packages/react-server-dom-parcel/src/server/ReactFlightDOMServerBrowser.rs:240:66',
+      );
       const stream = new ReadableStream(
         {
           type: 'bytes',
@@ -231,7 +234,10 @@ export function loadServerAction(id) {
     .then(() => {
       const fn = requireModule(reference);
       if (typeof fn !== 'function') {
-        throw new Error('Server actions must be functions');
+        throw $panic(
+          'Server actions must be functions',
+          'packages/react-server-dom-parcel/src/server/ReactFlightDOMServerBrowser.rs:361:17',
+        );
       }
       return fn;
     });

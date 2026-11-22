@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$splice, $stringPanic} from '@rust-js/std';
+import {$splice, $stdSites, $stringPanic} from '@rust-js/std';
 
 // Keep in sync with ReactServerConsoleConfig
 const badgeFormat = '[%s]';
@@ -14,7 +14,10 @@ const pad = ' ';
 export function bindToConsole(methodName, args, badgeName) {
   const method = console[methodName];
   if (typeof method !== 'function') {
-    throw $stringPanic(`console.${methodName} is no function`);
+    throw $stringPanic(
+      `console.${methodName} is no function`,
+      'packages/react-client/src/ReactClientConsoleConfigPlain.rs:21:9',
+    );
   }
   let offset = 0;
   switch (methodName) {
@@ -33,13 +36,22 @@ export function bindToConsole(methodName, args, badgeName) {
   const newArgs = args.slice();
   const format = newArgs[offset];
   if (typeof format === 'string') {
-    $splice(newArgs, offset, offset + 1, [
-      badgeFormat + ' ' + format,
-      pad + badgeName + pad,
-    ]);
+    $splice(
+      newArgs,
+      offset,
+      offset + 1,
+      [badgeFormat + ' ' + format, pad + badgeName + pad],
+      $stdSites.vecDrain[0],
+    );
   } else {
     const at = Math.min(offset, newArgs.length);
-    $splice(newArgs, at, at, [badgeFormat, pad + badgeName + pad]);
+    $splice(
+      newArgs,
+      at,
+      at,
+      [badgeFormat, pad + badgeName + pad],
+      $stdSites.vecDrain[0],
+    );
   }
 
   return method.bind(console, ...newArgs);

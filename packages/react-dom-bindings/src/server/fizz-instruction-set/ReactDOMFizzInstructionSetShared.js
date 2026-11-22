@@ -29,7 +29,11 @@ export function revealCompletedBoundaries(batch) {
   window.$RT = performance.now();
   for (let i = 0; i < batch.length; i += 2) {
     const suspenseIdNode = batch[i];
-    const contentNode = $index(batch, i + 1);
+    const contentNode = $index(
+      batch,
+      i + 1,
+      'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:133:42',
+    );
     const parentNode = contentNode.parentNode;
     if (parentNode !== null) {
       // We can detach the content now.
@@ -94,6 +98,7 @@ export function revealCompletedBoundaries(batch) {
 
     suspenseNode = $unwrap(
       suspenseNode,
+      'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:198:43',
       "a boundary's comment is before its first node",
     );
     suspenseNode.data = SUSPENSE_START_DATA;
@@ -250,7 +255,11 @@ export function revealCompletedBoundariesWithViewTransitions(
       }
 
       // Apply enter animations to the new nodes about to be inserted.
-      const contentNode = $index(batch, i + 1);
+      const contentNode = $index(
+        batch,
+        i + 1,
+        'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:372:46',
+      );
       let enterElement = contentNode.firstElementChild;
       while (enterElement !== null) {
         const paired =
@@ -316,8 +325,11 @@ export function revealCompletedBoundariesWithViewTransitions(
         const blockingPromises = [
           // Force layout to trigger font loading, we stash the actual value to trick minifiers.
           Promise.resolve(
-            $unwrap(document.documentElement, 'a document has its element')
-              .clientHeight,
+            $unwrap(
+              document.documentElement,
+              'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:437:30',
+              'a document has its element',
+            ).clientHeight,
           ),
           document.fonts.ready,
         ];
@@ -416,6 +428,7 @@ export function clientRenderBoundary(
   // Find the boundary around the fallback. This is always the previous node.
   const suspenseNode = $unwrap(
     suspenseIdNode.previousSibling,
+    'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:539:10',
     "a boundary's comment is before its first node",
   );
   // Tag it to be client rendered.
@@ -459,6 +472,7 @@ export function completeBoundary(suspenseBoundaryId, contentId) {
     // that may get completed before we reveal this one.
     $unwrap(
       contentNodeOuter.parentNode,
+      'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:581:14',
       "a boundary's content is in the document",
     ).removeChild(contentNodeOuter);
 
@@ -472,6 +486,7 @@ export function completeBoundary(suspenseBoundaryId, contentId) {
   // at the end of document load.
   const suspenseNodeOuter = $unwrap(
     suspenseIdNodeOuter.previousSibling,
+    'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:594:10',
     "a boundary's comment is before its first node",
   );
   suspenseNodeOuter.data = SUSPENSE_QUEUED_START_DATA;
@@ -518,14 +533,20 @@ export function completeSegment(containerId, placeholderId) {
   // tree to exist.
   const segmentContainer = $unwrap(
     document.getElementById(containerId),
+    'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:637:10',
     "a segment's container is in the document",
   );
   const placeholderNode = $unwrap(
     document.getElementById(placeholderId),
+    'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:640:10',
     "a segment's placeholder is in the document",
   );
   const parent = node =>
-    $unwrap(node.parentNode, "a segment's nodes are in the document");
+    $unwrap(
+      node.parentNode,
+      'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:643:14',
+      "a segment's nodes are in the document",
+    );
   parent(segmentContainer).removeChild(segmentContainer);
   let firstChild;
   while ((firstChild = segmentContainer.firstChild) !== null) {
@@ -551,7 +572,11 @@ export function listenToFormSubmissionsForReplaying() {
       // We let earlier events to prevent the action from submitting.
       return;
     }
-    const form = $unwrap(event.target, 'a submit event has a form');
+    const form = $unwrap(
+      event.target,
+      'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:672:32',
+      'a submit event has a form',
+    );
     // Read as any value, as upstream's `event['submitter']`: a host that
     // has no `submitter`, JSDOM or an older Safari, gives `undefined`.
     const submitter = event.submitter;
@@ -636,6 +661,7 @@ export function completeBoundaryWithStyles(
     const descriptor = stylesheetDescriptor.values();
     const href = $unwrap(
       descriptor.next().value,
+      'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:771:14',
       "a stylesheet's descriptor starts with its href",
     );
 
@@ -714,6 +740,7 @@ export function completeBoundaryWithStyles(
     // at the end of document load.
     const suspenseNodeOuter = $unwrap(
       suspenseIdNodeOuter.previousSibling,
+      'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:836:14',
       "a boundary's comment is before its first node",
     );
     suspenseNodeOuter.data = SUSPENSE_QUEUED_START_DATA;
@@ -749,12 +776,17 @@ function insertResource(precedences, lastResource, precedence, resourceEl) {
   // Finally, we insert the newly constructed instance at an appropriate location
   // in the Document.
   if (prior != null) {
-    $unwrap(prior.parentNode, 'a resource is in the document').insertBefore(
-      resourceEl,
-      prior.nextSibling,
-    );
+    $unwrap(
+      prior.parentNode,
+      'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:869:14',
+      'a resource is in the document',
+    ).insertBefore(resourceEl, prior.nextSibling);
   } else {
-    const head = $unwrap(document.head, 'a document has a head');
+    const head = $unwrap(
+      document.head,
+      'packages/react-dom-bindings/src/server/fizz-instruction-set/ReactDOMFizzInstructionSetShared.rs:872:38',
+      'a document has a head',
+    );
     head.insertBefore(resourceEl, head.firstChild);
   }
   return lastResource;

@@ -36,9 +36,15 @@ export function getData() {
     return fallbackText;
   }
 
-  const startValue = $unwrap(startText);
+  const startValue = $unwrap(
+    startText,
+    'packages/react-dom-bindings/src/events/FallbackCompositionState.rs:48:60',
+  );
   const startLength = startValue.length;
-  const endValue = $unwrap(getText());
+  const endValue = $unwrap(
+    getText(),
+    'packages/react-dom-bindings/src/events/FallbackCompositionState.rs:50:32',
+  );
   const endLength = endValue.length;
 
   let start = 0;
@@ -67,7 +73,10 @@ export function getData() {
 }
 
 export function getText() {
-  const root$1 = $unwrap(root);
+  const root$1 = $unwrap(
+    root,
+    'packages/react-dom-bindings/src/events/FallbackCompositionState.rs:80:27',
+  );
   if ('value' in root$1) {
     return root$1.value;
   }

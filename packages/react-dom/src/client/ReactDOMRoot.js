@@ -36,6 +36,7 @@ import {
 
 import {defaultOnDefaultTransitionIndicator} from './ReactDOMDefaultTransitionIndicator.js';
 import {ConcurrentRoot} from 'react-reconciler/src/ReactRootTags';
+import {$panic} from '@rust-js/std';
 
 function ReactDOMRoot(internalRoot) {
   this._internalRoot = internalRoot;
@@ -45,7 +46,10 @@ ReactDOMHydrationRoot.prototype.render = ReactDOMRoot.prototype.render =
   function (children, ...args) {
     const root = this._internalRoot;
     if (root == null) {
-      throw new Error('Cannot update an unmounted root.');
+      throw $panic(
+        'Cannot update an unmounted root.',
+        'packages/react-dom/src/client/ReactDOMRoot.rs:51:13',
+      );
     }
 
     if (__DEV__) {
@@ -101,7 +105,10 @@ export function createRoot(
   options,
 ) {
   if (!isValidContainer(container)) {
-    throw new Error('Target container is not a DOM element.');
+    throw $panic(
+      'Target container is not a DOM element.',
+      'packages/react-dom/src/client/ReactDOMRoot.rs:170:9',
+    );
   }
 
   warnIfReactDOMContainerInDEV(container);
@@ -205,7 +212,10 @@ export function hydrateRoot(
   options,
 ) {
   if (!isValidContainer(container)) {
-    throw new Error('Target container is not a DOM element.');
+    throw $panic(
+      'Target container is not a DOM element.',
+      'packages/react-dom/src/client/ReactDOMRoot.rs:299:9',
+    );
   }
 
   warnIfReactDOMContainerInDEV(container);

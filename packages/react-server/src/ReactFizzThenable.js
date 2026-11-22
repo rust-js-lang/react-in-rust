@@ -11,7 +11,7 @@
 import noop from 'shared/noop';
 
 import {currentTaskInDEV} from './ReactFizzCurrentTask.js';
-import {$unwrap} from '@rust-js/std';
+import {$panic, $unwrap} from '@rust-js/std';
 
 // An error that is thrown (e.g. by `use`) to trigger Suspense. If we
 // detect this is caught by userspace, we'll log a warning in development.
@@ -67,10 +67,11 @@ export function trackUsedThenable(thenableState, thenable, index) {
       // React would still have a Component stack but that could only be used
       // as an approximation.
       if (rejectedError == null && !('reason' in thenable)) {
-        throw new Error(
+        throw $panic(
           'A rejected Promise was passed to React without a `reason` property. ' +
             'React threw a generic error from where the Promise was used to assist in identifying the problematic Promise. ' +
             "Make sure that instrumented Promises correctly set the `reason` property when setting `status` to `'rejected'`.",
+          'packages/react-server/src/ReactFizzThenable.rs:90:17',
         );
       }
 
@@ -147,9 +148,10 @@ export function getSuspendedThenable() {
   const thenable = suspendedThenable;
   suspendedThenable = null;
   if (thenable == null) {
-    throw new Error(
+    throw $panic(
       'Expected a suspended thenable. This is a bug in React. Please file ' +
         'an issue.',
+      'packages/react-server/src/ReactFizzThenable.rs:174:9',
     );
   }
   return thenable;
@@ -160,9 +162,10 @@ let shouldCaptureSuspendedCallSite = false;
 export function setCaptureSuspendedCallSiteDEV(capture) {
   if (!__DEV__) {
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'setCaptureSuspendedCallSiteDEV was called in a production environment. ' +
         'This is a bug in React.',
+      'packages/react-server/src/ReactFizzThenable.rs:190:9',
     );
   }
   shouldCaptureSuspendedCallSite = capture;
@@ -180,17 +183,19 @@ function captureSuspendedCallSite() {
   const currentTask = currentTaskInDEV;
   if (currentTask == null) {
     // eslint-disable-next-line react-internal/prod-error-codes -- not a prod error
-    throw new Error(
+    throw $panic(
       'Expected to have a current task when tracking a suspend call site. ' +
         'This is a bug in React.',
+      'packages/react-server/src/ReactFizzThenable.rs:213:9',
     );
   }
   const currentComponentStack = currentTask.componentStack;
   if (currentComponentStack == null) {
     // eslint-disable-next-line react-internal/prod-error-codes -- not a prod error
-    throw new Error(
+    throw $panic(
       'Expected to have a component stack on the current task when ' +
         'tracking a suspended call site. This is a bug in React.',
+      'packages/react-server/src/ReactFizzThenable.rs:220:9',
     );
   }
   suspendedCallSiteStack = {
@@ -215,9 +220,10 @@ export function getSuspendedCallSiteStackDEV() {
     return old;
   } else {
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'getSuspendedCallSiteDEV was called in a production environment. ' +
         'This is a bug in React.',
+      'packages/react-server/src/ReactFizzThenable.rs:253:9',
     );
   }
 }
@@ -229,16 +235,20 @@ export function getSuspendedCallSiteDebugTaskDEV() {
     return old;
   } else {
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'getSuspendedCallSiteDebugTaskDEV was called in a production environment. ' +
         'This is a bug in React.',
+      'packages/react-server/src/ReactFizzThenable.rs:270:9',
     );
   }
 }
 
 export function ensureSuspendableThenableStateDEV(thenableState) {
   if (__DEV__) {
-    const lastThenable = $unwrap(thenableState.at(-1));
+    const lastThenable = $unwrap(
+      thenableState.at(-1),
+      'packages/react-server/src/ReactFizzThenable.rs:280:61',
+    );
     // Reset the last thenable back to pending.
     let tmp;
     switch (lastThenable.status) {
@@ -285,9 +295,10 @@ export function ensureSuspendableThenableStateDEV(thenableState) {
     return tmp;
   } else {
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'ensureSuspendableThenableStateDEV was called in a production environment. ' +
         'This is a bug in React.',
+      'packages/react-server/src/ReactFizzThenable.rs:321:9',
     );
   }
 }

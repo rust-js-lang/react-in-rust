@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$panic} from '@rust-js/std';
+
 let hasConfirmedEval = false;
 
 export function checkEvalAvailabilityOnceDev() {
@@ -26,8 +28,9 @@ export function checkEvalAvailabilityOnceDev() {
     }
   } else {
     // These errors should never make it into a build so we don't need to encode them in codes.json
-    throw new Error(
+    throw $panic(
       'checkEvalAvailabilityOnceDev should never be called in production mode. This is a bug in React.',
+      'packages/react-client/src/ReactClientDebugConfigBrowser.rs:32:9',
     );
   }
 }

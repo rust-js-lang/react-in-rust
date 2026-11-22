@@ -92,7 +92,7 @@ import {
 import {trackAnimatingTask} from './ReactProfilerTimer.js';
 
 import {scheduleGestureTransitionEvent} from './ReactFiberWorkLoop.js';
-import {$cleanup, $index, $unwrap} from '@rust-js/std';
+import {$cleanup, $index, $panic, $unwrap} from '@rust-js/std';
 
 // Used during the apply phase to track whether a parent ViewTransition component
 // might have been affected by any mutations / relayouts below.
@@ -141,7 +141,10 @@ function trackDeletedPairViewTransitions(deletion) {
     // We've found all.
     return;
   }
-  const pairs = $unwrap(appearingViewTransitions);
+  const pairs = $unwrap(
+    appearingViewTransitions,
+    'packages/react-reconciler/src/ReactFiberApplyGesture.rs:248:10',
+  );
   if ((deletion.subtreeFlags & ViewTransitionNamedStatic) === NoFlags) {
     // This has no named view transitions in its subtree.
     return;
@@ -219,7 +222,10 @@ function trackEnterViewTransitions(deletion) {
       // Delete the entry so that we know when we've found all of them
       // and can stop searching (size reaches zero).
       // Refined by the pair.
-      $unwrap(appearingViewTransitions).delete(name);
+      $unwrap(
+        appearingViewTransitions,
+        'packages/react-reconciler/src/ReactFiberApplyGesture.rs:345:22',
+      ).delete(name);
       // The "old" instance is actually the one we're inserting.
       const oldInstance = pair;
       // The "new" instance is the already mounted one we're deleting.
@@ -260,8 +266,9 @@ function applyAppearingPairViewTransition(child) {
       const props = child.memoizedProps;
       const name = props.name;
       if (name == null || name === 'auto') {
-        throw new Error(
+        throw $panic(
           'Found a pair with an auto name. This is a bug in React.',
+          'packages/react-reconciler/src/ReactFiberApplyGesture.rs:389:17',
         );
       }
       // Note that this class name that doesn't actually really matter because the
@@ -483,9 +490,10 @@ function recursivelyInsertNewFiber(
     case HostText: {
       const textInstance = finishedWork.stateNode;
       if (textInstance == null) {
-        throw new Error(
+        throw $panic(
           'This should have a text node initialized. This error is likely ' +
             'caused by a bug in React. Please file an issue.',
+          'packages/react-reconciler/src/ReactFiberApplyGesture.rs:603:17',
         );
       }
       // For insertions we don't need to clone. It's already new state node.
@@ -623,9 +631,10 @@ function recursivelyInsertClonesFromExistingTree(
       case HostText: {
         const textInstance = child.stateNode;
         if (textInstance == null) {
-          throw new Error(
+          throw $panic(
             'This should have a text node initialized. This error is likely ' +
               'caused by a bug in React. Please file an issue.',
+            'packages/react-reconciler/src/ReactFiberApplyGesture.rs:735:21',
           );
         }
         const clone = cloneMutableTextInstance(textInstance);
@@ -861,9 +870,10 @@ function insertDestinationClonesOfFiber(
     case HostText: {
       const textInstance = finishedWork.stateNode;
       if (textInstance == null) {
-        throw new Error(
+        throw $panic(
           'This should have a text node initialized. This error is likely ' +
             'caused by a bug in React. Please file an issue.',
+          'packages/react-reconciler/src/ReactFiberApplyGesture.rs:1003:17',
         );
       }
       const clone = cloneMutableTextInstance(textInstance);
@@ -1212,8 +1222,16 @@ export function applyDepartureTransitions(root, finishedWork) {
     if (cancelableChildren != null) {
       for (let i = 0; i < cancelableChildren.length; i += 3) {
         const instance = cancelableChildren[i];
-        const oldName = $index(cancelableChildren, i + 1);
-        const props = $index(cancelableChildren, i + 2);
+        const oldName = $index(
+          cancelableChildren,
+          i + 1,
+          'packages/react-reconciler/src/ReactFiberApplyGesture.rs:1318:60',
+        );
+        const props = $index(
+          cancelableChildren,
+          i + 2,
+          'packages/react-reconciler/src/ReactFiberApplyGesture.rs:1319:57',
+        );
         cancelViewTransitionName(instance, oldName, props);
       }
     }

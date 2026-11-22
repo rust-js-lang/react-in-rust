@@ -38,6 +38,7 @@ import {createFastHash} from './ReactServerStreamConfig.js';
 import {
   $catchable,
   $index,
+  $panic,
   $roomFor,
   $stringPanic,
   $unwrap,
@@ -161,6 +162,7 @@ function resolveCurrentlyRenderingComponent() {
         '2. You might be breaking the Rules of Hooks\n' +
         '3. You might have more than one copy of React in the same app\n' +
         'See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.',
+      'packages/react-server/src/ReactFizzHooks.rs:234:9',
     );
   }
 
@@ -172,7 +174,10 @@ function resolveCurrentlyRenderingComponent() {
         'https://react.dev/link/rules-of-hooks',
     );
   }
-  return $unwrap(currentlyRenderingComponent);
+  return $unwrap(
+    currentlyRenderingComponent,
+    'packages/react-server/src/ReactFizzHooks.rs:255:41',
+  );
 }
 
 function areHookInputsEqual(nextDeps, prevDeps) {
@@ -204,7 +209,20 @@ function areHookInputsEqual(nextDeps, prevDeps) {
   // $FlowFixMe[incompatible-use] found when upgrading Flow
   for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
     // $FlowFixMe[incompatible-use] found when upgrading Flow
-    if (!objectIs($index(nextDeps, i), $index(prevDeps, i))) {
+    if (
+      !objectIs(
+        $index(
+          nextDeps,
+          i,
+          'packages/react-server/src/ReactFizzHooks.rs:296:36',
+        ),
+        $index(
+          prevDeps,
+          i,
+          'packages/react-server/src/ReactFizzHooks.rs:296:51',
+        ),
+      )
+    ) {
       return false;
     }
   }
@@ -213,7 +231,10 @@ function areHookInputsEqual(nextDeps, prevDeps) {
 
 function createHook() {
   if (numberOfReRenders > 0) {
-    throw new Error('Rendered more hooks than during the previous render');
+    throw $panic(
+      'Rendered more hooks than during the previous render',
+      'packages/react-server/src/ReactFizzHooks.rs:307:9',
+    );
   }
   return {
     memoizedState: null,
@@ -404,7 +425,10 @@ export function useReducer(reducer, initialArg, init) {
   if (isReRender) {
     // This is a re-render. Apply the new render phase updates to the previous
     // current hook.
-    const queue = $unwrap(workInProgressHook.queue);
+    const queue = $unwrap(
+      workInProgressHook.queue,
+      'packages/react-server/src/ReactFizzHooks.rs:530:66',
+    );
     const dispatch = queue.dispatch;
     if (renderPhaseUpdates != null) {
       // Render phase updates are stored in a map of queue -> linked list
@@ -524,6 +548,7 @@ function dispatchAction(componentIdentity, queue, action) {
     throw $stringPanic(
       'Too many re-renders. React limits the number of renders to prevent ' +
         'an infinite loop.',
+      'packages/react-server/src/ReactFizzHooks.rs:667:9',
     );
   }
 
@@ -566,8 +591,9 @@ export function useCallback(callback, deps) {
 }
 
 const throwOnUseEffectEventCall = (..._) => {
-  throw new Error(
+  throw $panic(
     "A function wrapped in useEffectEvent can't be called during rendering.",
+    'packages/react-server/src/ReactFizzHooks.rs:727:13',
   );
 };
 
@@ -581,6 +607,7 @@ function useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot) {
     throw $stringPanic(
       'Missing getServerSnapshot, which is required for ' +
         'server-rendered content. Will revert to client rendering.',
+      'packages/react-server/src/ReactFizzHooks.rs:742:9',
     );
   }
   return getServerSnapshot();
@@ -592,7 +619,10 @@ function useDeferredValue(value, initialValue) {
 }
 
 function unsupportedStartTransition(callback, options) {
-  throw new Error('startTransition cannot be called during server rendering.');
+  throw $panic(
+    'startTransition cannot be called during server rendering.',
+    'packages/react-server/src/ReactFizzHooks.rs:770:5',
+  );
 }
 
 function useTransition() {
@@ -606,7 +636,10 @@ function useHostTransitionStatus() {
 }
 
 function unsupportedSetOptimisticState(action) {
-  throw new Error('Cannot update optimistic state while rendering.');
+  throw $panic(
+    'Cannot update optimistic state while rendering.',
+    'packages/react-server/src/ReactFizzHooks.rs:784:5',
+  );
 }
 
 function useOptimistic(passthrough, reducer) {
@@ -636,7 +669,10 @@ function useActionState(action, initialState, permalink) {
   // track the position of this useActionState hook relative to the other ones in
   // this component, so we can generate a unique key for each one.
   const actionStateHookIndex = actionStateCounter++;
-  const request = $unwrap(currentlyRenderingRequest);
+  const request = $unwrap(
+    currentlyRenderingRequest,
+    'packages/react-server/src/ReactFizzHooks.rs:849:10',
+  );
 
   // $FlowFixMe[prop-missing]
   const formAction = action.$$FORM_ACTION;
@@ -715,7 +751,10 @@ function useActionState(action, initialState, permalink) {
           // The key out of its cell before `append` runs: a
           // server action's own `FormData` may answer it with
           // code that borrows the cell (rust-js #2111).
-          const actionKey = $unwrap(nextPostbackStateKey);
+          const actionKey = $unwrap(
+            nextPostbackStateKey,
+            'packages/react-server/src/ReactFizzHooks.rs:949:83',
+          );
           formData.append('$ACTION_KEY', actionKey);
         }
         return metadata;
@@ -737,14 +776,18 @@ function useActionState(action, initialState, permalink) {
 }
 
 function useId() {
-  const task = $unwrap(currentlyRenderingTask);
+  const task = $unwrap(
+    currentlyRenderingTask,
+    'packages/react-server/src/ReactFizzHooks.rs:974:67',
+  );
   const treeContext = task.treeContext;
   const treeId = getTreeId(treeContext);
 
   const resumableState = currentResumableState;
   if (resumableState == null) {
-    throw new Error(
+    throw $panic(
       'Invalid hook call. Hooks can only be called inside of the body of a function component.',
+      'packages/react-server/src/ReactFizzHooks.rs:979:9',
     );
   }
 
@@ -775,6 +818,7 @@ function use(usable) {
   // eslint-disable-next-line react-internal/safe-string-coercion
   throw $stringPanic(
     `An unsupported type was passed to use(): ${String(usable)}`,
+    'packages/react-server/src/ReactFizzHooks.rs:1013:5',
   );
 }
 
@@ -795,7 +839,10 @@ export function readPreviousThenableFromState() {
 }
 
 function unsupportedRefresh(fetch, seedKey) {
-  throw new Error('Cache cannot be refreshed during server rendering.');
+  throw $panic(
+    'Cache cannot be refreshed during server rendering.',
+    'packages/react-server/src/ReactFizzHooks.rs:1036:5',
+  );
 }
 
 function useCacheRefresh() {
@@ -811,6 +858,7 @@ function clientHookNotSupported() {
   throw $stringPanic(
     'Cannot use state or effect Hooks in renderToHTML because ' +
       'this component will never be hydrated.',
+    'packages/react-server/src/ReactFizzHooks.rs:1053:5',
   );
 }
 

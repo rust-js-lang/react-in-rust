@@ -29,7 +29,11 @@ function AbortControllerShim() {
     // called with no borrow held, so one may add another.
     const count = listeners.length;
     for (let index = 0; index < count; index++) {
-      const listener = $index(listeners, index);
+      const listener = $index(
+        listeners,
+        index,
+        'packages/react-reconciler/src/ReactFiberCacheComponent.rs:72:65',
+      );
       listener();
     }
   };

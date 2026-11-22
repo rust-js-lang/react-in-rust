@@ -5,15 +5,23 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$panic} from '@rust-js/std';
+
 export function createStringDecoder(preserveByteOrderMark) {
   return null;
 }
 
 export function readPartialStringChunk(decoder, buffer) {
-  throw new Error('Not implemented.');
+  throw $panic(
+    'Not implemented.',
+    'packages/react-markup/src/ReactMarkupLegacyClientStreamConfig.rs:19:5',
+  );
 }
 
 export function readFinalStringChunk(decoder, buffer) {
-  throw new Error('Not implemented.');
+  throw $panic(
+    'Not implemented.',
+    'packages/react-markup/src/ReactMarkupLegacyClientStreamConfig.rs:23:5',
+  );
 }
 //# sourceMappingURL=ReactMarkupLegacyClientStreamConfig.js.map

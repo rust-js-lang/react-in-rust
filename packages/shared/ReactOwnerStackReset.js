@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import ReactSharedInternals from './ReactSharedInternals.js';
+import {$panic} from '@rust-js/std';
 
 let lastResetTime = 0;
 
@@ -28,8 +29,9 @@ export function resetOwnerStackLimit() {
   } else {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'resetOwnerStackLimit should never be called in production mode. This is a bug in React.',
+      'packages/shared/ReactOwnerStackReset.rs:35:9',
     );
   }
 }

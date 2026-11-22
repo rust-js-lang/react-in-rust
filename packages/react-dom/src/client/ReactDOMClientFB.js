@@ -39,6 +39,7 @@ import {
 } from 'react-dom-bindings/src/events/ReactDOMControlledComponent';
 
 import Internals from '../ReactDOMSharedInternalsFB.js';
+import {$panic} from '@rust-js/std';
 
 export {
   preconnect,
@@ -79,7 +80,10 @@ export function createPortal(
   key,
 ) {
   if (!isValidContainer(container)) {
-    throw new Error('Target container is not a DOM element.');
+    throw $panic(
+      'Target container is not a DOM element.',
+      'packages/react-dom/src/client/ReactDOMClientFB.rs:83:9',
+    );
   }
 
   // TODO: pass ReactDOM portal implementation as third argument

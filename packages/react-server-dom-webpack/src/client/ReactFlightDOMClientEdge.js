@@ -27,6 +27,7 @@ function noServerCall(id, args) {
     'Server Functions cannot be called during initial render. ' +
       'This would create a fetch waterfall. Try to use a Server Component ' +
       'to pass data to Client Components instead.',
+    'packages/react-server-dom-webpack/src/client/ReactFlightDOMClientEdge.rs:44:5',
   );
 }
 
@@ -73,7 +74,10 @@ function startReadingFromStream(response, stream, onDone, debugValue) {
     }
     const buffer = entry.value;
     processBinaryChunk(response, streamState, buffer);
-    const progress$1 = $unwrap(progress);
+    const progress$1 = $unwrap(
+      progress,
+      'packages/react-server-dom-webpack/src/client/ReactFlightDOMClientEdge.rs:152:46',
+    );
     reader
       .read()
       .then(entry => {
@@ -81,7 +85,10 @@ function startReadingFromStream(response, stream, onDone, debugValue) {
       })
       .catch(error);
   };
-  const progress$1 = $unwrap(progress);
+  const progress$1 = $unwrap(
+    progress,
+    'packages/react-server-dom-webpack/src/client/ReactFlightDOMClientEdge.rs:159:46',
+  );
   reader
     .read()
     .then(entry => {

@@ -53,14 +53,15 @@ import {
 import assign from 'shared/assign';
 
 import noop from 'shared/noop';
-import {$unwrap} from '@rust-js/std';
+import {$panic, $unwrap} from '@rust-js/std';
 
 // Provided by www
 const ReactFiberErrorDialogWWW = require('ReactFiberErrorDialog');
 
 if (typeof ReactFiberErrorDialogWWW.showErrorDialog !== 'function') {
-  throw new Error(
+  throw $panic(
     'Expected ReactFiberErrorDialog.showErrorDialog to be a function.',
+    'packages/react-dom/src/client/ReactDOMRootFB.rs:81:9',
   );
 }
 
@@ -201,7 +202,12 @@ function legacyCreateRootFromDOMContainer(
     if (typeof callback === 'function') {
       const originalCallback = callback;
       callback = () => {
-        const instance = getPublicRootInstance($unwrap(root));
+        const instance = getPublicRootInstance(
+          $unwrap(
+            root,
+            'packages/react-dom/src/client/ReactDOMRootFB.rs:252:81',
+          ),
+        );
         originalCallback.call(instance);
       };
     }
@@ -244,7 +250,12 @@ function legacyCreateRootFromDOMContainer(
     if (typeof callback === 'function') {
       const originalCallback = callback;
       callback = () => {
-        const instance = getPublicRootInstance($unwrap(root));
+        const instance = getPublicRootInstance(
+          $unwrap(
+            root,
+            'packages/react-dom/src/client/ReactDOMRootFB.rs:300:81',
+          ),
+        );
         originalCallback.call(instance);
       };
     }
@@ -377,7 +388,10 @@ export function render(
         'ReactDOM.render was removed in React 19. Use createRoot instead.',
       );
     }
-    throw new Error('ReactDOM: Unsupported Legacy Mode API.');
+    throw $panic(
+      'ReactDOM: Unsupported Legacy Mode API.',
+      'packages/react-dom/src/client/ReactDOMRootFB.rs:460:9',
+    );
   }
   if (__DEV__) {
     console.error(
@@ -389,7 +403,10 @@ export function render(
   }
 
   if (!isValidContainer(container)) {
-    throw new Error('Target container is not a DOM element.');
+    throw $panic(
+      'Target container is not a DOM element.',
+      'packages/react-dom/src/client/ReactDOMRootFB.rs:472:9',
+    );
   }
 
   if (__DEV__) {
@@ -424,10 +441,16 @@ export function unmountComponentAtNode(
         'unmountComponentAtNode was removed in React 19. Use root.unmount() instead.',
       );
     }
-    throw new Error('ReactDOM: Unsupported Legacy Mode API.');
+    throw $panic(
+      'ReactDOM: Unsupported Legacy Mode API.',
+      'packages/react-dom/src/client/ReactDOMRootFB.rs:509:9',
+    );
   }
   if (!isValidContainer(container)) {
-    throw new Error('Target container is not a DOM element.');
+    throw $panic(
+      'Target container is not a DOM element.',
+      'packages/react-dom/src/client/ReactDOMRootFB.rs:512:9',
+    );
   }
 
   if (__DEV__) {

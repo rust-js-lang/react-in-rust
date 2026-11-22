@@ -190,11 +190,17 @@ export function logComponentRender(
   }
   if (supportsUserTiming) {
     const alternate = fiber.alternate;
-    let selfTime = $unwrap(fiber.actualDuration);
+    let selfTime = $unwrap(
+      fiber.actualDuration,
+      'packages/react-reconciler/src/ReactFiberPerformanceTrack.rs:232:57',
+    );
     if (alternate == null || alternate.child !== fiber.child) {
       let child = fiber.child;
       while (child != null) {
-        selfTime -= $unwrap(child.actualDuration);
+        selfTime -= $unwrap(
+          child.actualDuration,
+          'packages/react-reconciler/src/ReactFiberPerformanceTrack.rs:239:60',
+        );
         child = child.sibling;
       }
     }
@@ -250,7 +256,10 @@ export function logComponentRender(
             isDeeplyEqual &&
             !alreadyWarnedForDeepEquality &&
             !includesSomeLane(alternate.lanes, committedLanes) &&
-            $unwrap(fiber.actualDuration) > 100
+            $unwrap(
+              fiber.actualDuration,
+              'packages/react-reconciler/src/ReactFiberPerformanceTrack.rs:297:56',
+            ) > 100
           ) {
             alreadyWarnedForDeepEquality = true;
             // This is the first component in a subtree which rerendered with deeply equal props
@@ -259,10 +268,14 @@ export function logComponentRender(
             // Note that we only consider this case if properties.length > 1 which it will only
             // be if we have emitted any diffs. We'd only emit diffs if there were any nested
             // equal objects. Therefore, we don't warn for simple shallow equality.
-            $assign($index(properties, 0), [
-              'Changed Props',
-              DEEP_EQUALITY_WARNING,
-            ]);
+            $assign(
+              $index(
+                properties,
+                0,
+                'packages/react-reconciler/src/ReactFiberPerformanceTrack.rs:306:35',
+              ),
+              ['Changed Props', DEEP_EQUALITY_WARNING],
+            );
             detail.devtools.color = 'warning';
             detail.devtools.tooltipText = DEEP_EQUALITY_WARNING;
           }
@@ -361,7 +374,11 @@ export function logComponentErrored(fiber, startTime, endTime, errors) {
               String(error);
         properties.push(['Error', message]);
       }
-      const borrow = $borrow($fieldCell(fiber, 'key'), true);
+      const borrow = $borrow(
+        $fieldCell(fiber, 'key'),
+        'packages/react-reconciler/src/ReactFiberPerformanceTrack.rs:431:33',
+        true,
+      );
       const key = borrow.value;
       $unborrow(borrow);
       if (key != null) {
@@ -432,7 +449,11 @@ function logComponentEffectErrored(fiber, startTime, endTime, errors) {
               String(error);
         properties.push(['Error', message]);
       }
-      const borrow = $borrow($fieldCell(fiber, 'key'), true);
+      const borrow = $borrow(
+        $fieldCell(fiber, 'key'),
+        'packages/react-reconciler/src/ReactFiberPerformanceTrack.rs:521:33',
+        true,
+      );
       const key = borrow.value;
       $unborrow(borrow);
       if (key != null) {

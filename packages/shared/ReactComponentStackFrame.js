@@ -12,7 +12,7 @@ import ReactSharedInternals from './ReactSharedInternals.js';
 import DefaultPrepareStackTrace from './DefaultPrepareStackTrace.js';
 
 import {formatOwnerStack} from './ReactOwnerStackFrames.js';
-import {$catchable, $cleanup} from '@rust-js/std';
+import {$catchable, $cleanup, $panic} from '@rust-js/std';
 
 let prefix;
 let suffix = '';
@@ -21,7 +21,7 @@ export function describeBuiltInComponentFrame(name) {
   if (prefix == null) {
     // Extract the VM specific prefix used by each line.
     try {
-      throw new Error();
+      throw $panic('', 'packages/shared/ReactComponentStackFrame.rs:30:38');
     } catch (x) {
       $catchable(x);
       const stack = x.stack ?? '';
@@ -86,14 +86,17 @@ function DetermineComponentFrameRoot(fn, construct) {
     if (construct) {
       // Something should be setting the props in the constructor.
       function Fake() {
-        throw new Error();
+        throw $panic('', 'packages/shared/ReactComponentStackFrame.rs:159:17');
       }
       // $FlowFixMe[prop-missing]
       Object.defineProperty(Fake.prototype, 'props', {
         set() {
           // We use a throwing setter instead of frozen or non-writable props
           // because that won't throw in a non-strict mode function.
-          throw new Error();
+          throw $panic(
+            '',
+            'packages/shared/ReactComponentStackFrame.rs:169:25',
+          );
         },
       });
       if (
@@ -122,7 +125,10 @@ function DetermineComponentFrameRoot(fn, construct) {
         Object.defineProperty(prototype, 'props', {
           configurable: true,
           set() {
-            throw new Error();
+            throw $panic(
+              '',
+              'packages/shared/ReactComponentStackFrame.rs:193:40',
+            );
           },
         });
         try {
@@ -145,7 +151,7 @@ function DetermineComponentFrameRoot(fn, construct) {
       }
     } else {
       try {
-        throw new Error();
+        throw $panic('', 'packages/shared/ReactComponentStackFrame.rs:205:42');
       } catch (x) {
         $catchable(x);
         control = x;

@@ -25,7 +25,13 @@ export function processTransitionCallbacks(
     if (transitionStart != null && onTransitionStart != null) {
       transitionStart.forEach(transition => {
         if (transition.name != null) {
-          onTransitionStart(transition.name, $unwrap(transition.startTime));
+          onTransitionStart(
+            transition.name,
+            $unwrap(
+              transition.startTime,
+              'packages/react-reconciler/src/ReactFiberTracingMarkerComponent.rs:112:75',
+            ),
+          );
         }
       });
     }
@@ -45,7 +51,10 @@ export function processTransitionCallbacks(
               onMarkerProgress(
                 transition.name,
                 markerName,
-                $unwrap(transition.startTime),
+                $unwrap(
+                  transition.startTime,
+                  'packages/react-reconciler/src/ReactFiberTracingMarkerComponent.rs:134:61',
+                ),
                 endTime,
                 pending,
               );
@@ -64,7 +73,10 @@ export function processTransitionCallbacks(
             onMarkerComplete(
               transition.name,
               markerName,
-              $unwrap(transition.startTime),
+              $unwrap(
+                transition.startTime,
+                'packages/react-reconciler/src/ReactFiberTracingMarkerComponent.rs:155:57',
+              ),
               endTime,
             );
           }
@@ -101,7 +113,10 @@ export function processTransitionCallbacks(
             onMarkerIncomplete(
               transition.name,
               markerName,
-              $unwrap(transition.startTime),
+              $unwrap(
+                transition.startTime,
+                'packages/react-reconciler/src/ReactFiberTracingMarkerComponent.rs:201:61',
+              ),
               filteredAborts,
             );
           }
@@ -116,7 +131,10 @@ export function processTransitionCallbacks(
         if (transition.name != null) {
           onTransitionProgress(
             transition.name,
-            $unwrap(transition.startTime),
+            $unwrap(
+              transition.startTime,
+              'packages/react-reconciler/src/ReactFiberTracingMarkerComponent.rs:219:53',
+            ),
             endTime,
             Array.from(pending.values()),
           );
@@ -131,7 +149,10 @@ export function processTransitionCallbacks(
         if (transition.name != null) {
           onTransitionComplete(
             transition.name,
-            $unwrap(transition.startTime),
+            $unwrap(
+              transition.startTime,
+              'packages/react-reconciler/src/ReactFiberTracingMarkerComponent.rs:234:78',
+            ),
             endTime,
           );
         }

@@ -16,7 +16,7 @@ import {
   createResponse,
   getRoot,
 } from './ReactFlightReplyServer.js';
-import {$shown, $stringPanic} from '@rust-js/std';
+import {$panic, $shown, $stringPanic} from '@rust-js/std';
 
 function bindArgs(fn, args) {
   // GAP rd562: upstream's `args.length > MAX_BOUND_ARGS`, JS's `>` of any
@@ -25,6 +25,7 @@ function bindArgs(fn, args) {
   if (length != null && length > MAX_BOUND_ARGS) {
     throw $stringPanic(
       `Server Function has too many bound arguments. Received ${$shown(length)} but the limit is ${MAX_BOUND_ARGS}.`,
+      'packages/react-server/src/ReactFlightActionServer.rs:36:9',
     );
   }
 
@@ -143,7 +144,10 @@ export function decodeAction(body, serverManifest) {
       bound: null,
     });
   } else {
-    throw new Error('Cannot handle action key. This is a bug in React.');
+    throw $panic(
+      'Cannot handle action key. This is a bug in React.',
+      'packages/react-server/src/ReactFlightActionServer.rs:169:9',
+    );
   }
 
   // Return the action with the remaining FormData bound to the first argument.

@@ -42,13 +42,20 @@ const idealDepth = 15;
 function findNotableNode(node, indent) {
   if (
     node.serverProps === undefined &&
-    $borrow(node.serverTail).length === 0 &&
+    $borrow(
+      node.serverTail,
+      'packages/react-reconciler/src/ReactFiberHydrationDiffs.rs:77:29',
+    ).length === 0 &&
     node.children.length === 1 &&
     node.distanceFromLeaf > 3 &&
     node.distanceFromLeaf > ((idealDepth - indent) | 0)
   ) {
     // This is not an interesting node for contextual purposes so we can skip it.
-    const child = $index(node.children, 0);
+    const child = $index(
+      node.children,
+      0,
+      'packages/react-reconciler/src/ReactFiberHydrationDiffs.rs:83:54',
+    );
     return findNotableNode(child, indent);
   }
   return node;
@@ -506,7 +513,12 @@ function describeNode(node, indent) {
   const skipToNode = findNotableNode(node, indent);
   if (
     skipToNode !== node &&
-    (node.children.length !== 1 || $index(node.children, 0) !== skipToNode)
+    (node.children.length !== 1 ||
+      $index(
+        node.children,
+        0,
+        'packages/react-reconciler/src/ReactFiberHydrationDiffs.rs:602:51',
+      ) !== skipToNode)
   ) {
     return (
       indentation(indent) + '...\n' + describeNode(skipToNode, (indent + 1) | 0)
@@ -574,7 +586,11 @@ function describeNode(node, indent) {
   let childFiber = node.fiber.child;
   let diffIdx = 0;
   while (childFiber != null && diffIdx < node.children.length) {
-    const childNode = $index(node.children, diffIdx);
+    const childNode = $index(
+      node.children,
+      diffIdx,
+      'packages/react-reconciler/src/ReactFiberHydrationDiffs.rs:678:59',
+    );
     if (childNode.fiber === childFiber) {
       // This was a match in the diff.
       childContent += describeNode(childNode, indent);
@@ -594,7 +610,11 @@ function describeNode(node, indent) {
   }
 
   // Deleted tail nodes
-  const serverTail = $borrow(node.serverTail, true);
+  const serverTail = $borrow(
+    node.serverTail,
+    'packages/react-reconciler/src/ReactFiberHydrationDiffs.rs:698:40',
+    true,
+  );
   if (node.serverProps === null) {
     indent = (indent - 1) | 0;
   }

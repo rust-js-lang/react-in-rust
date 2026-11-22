@@ -28,7 +28,10 @@ export function prefetchDNS(href, ...args) {
       const options = args[0];
       if (
         typeof options === 'object' &&
-        $unwrap(options).hasOwnProperty('crossOrigin')
+        $unwrap(
+          options,
+          'packages/react-dom/src/shared/ReactDOMFloat.rs:41:26',
+        ).hasOwnProperty('crossOrigin')
       ) {
         console.error(
           'ReactDOM.prefetchDNS(): Expected only one argument, `href`, but encountered %s as a second argument instead. This argument is reserved for future options and is currently disallowed. It looks like the you are attempting to set a crossOrigin property for this DNS lookup hint. Browsers do not perform DNS queries using CORS and setting this attribute on the resource hint has no effect. Try calling ReactDOM.prefetchDNS() with just a single string argument, `href`.',

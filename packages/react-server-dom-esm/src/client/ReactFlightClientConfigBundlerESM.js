@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {prepareDestinationForModuleImpl} from 'react-client/src/ReactFlightClientConfig';
-import {$catchable} from '@rust-js/std';
+import {$catchable, $panic} from '@rust-js/std';
 
 // The reason this function needs to defined here in this file instead of just
 // being exported directly from the WebpackDestination... file is because the
@@ -34,8 +34,9 @@ export function resolveServerReference(config, id) {
   const exportName = id.slice(idx + 1);
   const fullUrl = id.slice(0, idx);
   if (!fullUrl.startsWith(baseUrl)) {
-    throw new Error(
+    throw $panic(
       'Attempted to load a Server Reference outside the hosted root.',
+      'packages/react-server-dom-esm/src/client/ReactFlightClientConfigBundlerESM.rs:83:9',
     );
   }
   return {

@@ -61,6 +61,7 @@ export default function getListener(inst, registrationName) {
   if (listener && typeof listener !== 'function') {
     throw $stringPanic(
       `Expected \`${registrationName}\` listener to be a function, instead got a value of \`${typeof listener}\` type.`,
+      'packages/react-dom-bindings/src/events/getListener.rs:52:13',
     );
   }
 

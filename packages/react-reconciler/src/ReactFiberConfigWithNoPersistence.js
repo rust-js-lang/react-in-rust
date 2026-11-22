@@ -8,11 +8,14 @@
 // Renderers that don't support persistence
 // can re-export everything from this module.
 
+import {$panic} from '@rust-js/std';
+
 function shim() {
-  throw new Error(
+  throw $panic(
     'The current renderer does not support persistence. ' +
       'This error is likely caused by a bug in React. ' +
       'Please file an issue.',
+    'packages/react-reconciler/src/ReactFiberConfigWithNoPersistence.rs:10:5',
   );
 }
 

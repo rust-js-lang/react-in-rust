@@ -122,6 +122,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
           throw $stringPanic(
             'Threw in newly mounted dehydrated component. This is likely a bug in ' +
               'React. Please file an issue.',
+            'packages/react-reconciler/src/ReactFiberUnwindWork.rs:115:21',
           );
         }
 
@@ -150,6 +151,7 @@ export function unwindWork(current, workInProgress, renderLanes) {
           throw $stringPanic(
             'Threw in newly mounted dehydrated component. This is likely a bug in ' +
               'React. Please file an issue.',
+            'packages/react-reconciler/src/ReactFiberUnwindWork.rs:150:21',
           );
         }
 

@@ -113,6 +113,7 @@ export function setValueForStyles(node, styles, prevStyles) {
       'The `style` prop expects a mapping from style properties to values, ' +
         "not a string. For example, style={{marginRight: spacing + 'em'}} when " +
         'using JSX.',
+      'packages/react-dom-bindings/src/client/CSSPropertyOperations.rs:140:9',
     );
   }
   if (__DEV__ && styles) {

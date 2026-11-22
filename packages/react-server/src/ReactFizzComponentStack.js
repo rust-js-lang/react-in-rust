@@ -36,7 +36,14 @@ function describeComponentStackByType(type) {
     return describeBuiltInComponentFrame(type);
   }
   if (typeof type === 'function') {
-    if (shouldConstruct($unwrap(type))) {
+    if (
+      shouldConstruct(
+        $unwrap(
+          type,
+          'packages/react-server/src/ReactFizzComponentStack.rs:55:36',
+        ),
+      )
+    ) {
       return describeClassComponentFrame(type);
     } else {
       return describeFunctionComponentFrame(type);
@@ -165,7 +172,12 @@ export function getOwnerStackByComponentStackNodeInDev(componentStack) {
       // if the element was created in module scope. E.g. hoisted. We could add a a single
       // stack frame for context for example but it doesn't say much if that's a wrapper.
       if (owner && ownerStack) {
-        info += '\n' + $unwrap(ownerStack);
+        info +=
+          '\n' +
+          $unwrap(
+            ownerStack,
+            'packages/react-server/src/ReactFizzComponentStack.rs:209:58',
+          );
       }
     }
     return info;

@@ -178,7 +178,7 @@ import {
 } from './ReactFiberTracingMarkerComponent.js';
 
 import {suspendCommit} from './ReactFiberThenable.js';
-import {$stringPanic, $unwrap} from '@rust-js/std';
+import {$panic, $stringPanic, $unwrap} from '@rust-js/std';
 
 /**
  * Tag the fiber with an update effect. This turns a Placement into
@@ -770,8 +770,14 @@ function bubbleProperties(completedWork) {
     if (enableProfilerTimer && (completedWork.mode & ProfileMode) !== NoMode) {
       // In profiling mode, resetChildExpirationTime is also used to reset
       // profiler durations.
-      let actualDuration = $unwrap(completedWork.actualDuration);
-      let treeBaseDuration = $unwrap(completedWork.selfBaseDuration);
+      let actualDuration = $unwrap(
+        completedWork.actualDuration,
+        'packages/react-reconciler/src/ReactFiberCompleteWork.rs:958:76',
+      );
+      let treeBaseDuration = $unwrap(
+        completedWork.selfBaseDuration,
+        'packages/react-reconciler/src/ReactFiberCompleteWork.rs:959:82',
+      );
 
       let child = completedWork.child;
       while (child != null) {
@@ -791,10 +797,16 @@ function bubbleProperties(completedWork) {
         // render. In that case it should not bubble. We determine whether it was
         // cloned by comparing the child pointer.
         // $FlowFixMe[unsafe-addition] addition with possible null/undefined value
-        actualDuration += $unwrap(child.actualDuration);
+        actualDuration += $unwrap(
+          child.actualDuration,
+          'packages/react-reconciler/src/ReactFiberCompleteWork.rs:979:66',
+        );
 
         // $FlowFixMe[unsafe-addition] addition with possible null/undefined value
-        treeBaseDuration += $unwrap(child.treeBaseDuration);
+        treeBaseDuration += $unwrap(
+          child.treeBaseDuration,
+          'packages/react-reconciler/src/ReactFiberCompleteWork.rs:982:72',
+        );
         child = child.sibling;
       }
 
@@ -826,7 +838,10 @@ function bubbleProperties(completedWork) {
     if (enableProfilerTimer && (completedWork.mode & ProfileMode) !== NoMode) {
       // In profiling mode, resetChildExpirationTime is also used to reset
       // profiler durations.
-      let treeBaseDuration = $unwrap(completedWork.selfBaseDuration);
+      let treeBaseDuration = $unwrap(
+        completedWork.selfBaseDuration,
+        'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1020:82',
+      );
 
       let child = completedWork.child;
       while (child != null) {
@@ -843,7 +858,10 @@ function bubbleProperties(completedWork) {
         subtreeFlags |= child.flags & StaticMask;
 
         // $FlowFixMe[unsafe-addition] addition with possible null/undefined value
-        treeBaseDuration += $unwrap(child.treeBaseDuration);
+        treeBaseDuration += $unwrap(
+          child.treeBaseDuration,
+          'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1037:72',
+        );
         child = child.sibling;
       }
 
@@ -895,6 +913,7 @@ function completeDehydratedActivityBoundary(
         throw $stringPanic(
           'A dehydrated suspense component was completed without a hydrated node. ' +
             'This is probably a bug in React.',
+          'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1090:17',
         );
       }
       prepareToHydrateHostActivityInstance(workInProgress);
@@ -910,8 +929,14 @@ function completeDehydratedActivityBoundary(
           if (primaryChildFragment != null) {
             // $FlowFixMe[unsafe-arithmetic] Flow doesn't support type casting in combination with the -= operator
             workInProgress.treeBaseDuration =
-              $unwrap(workInProgress.treeBaseDuration) -
-              $unwrap(primaryChildFragment.treeBaseDuration);
+              $unwrap(
+                workInProgress.treeBaseDuration,
+                'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1110:71',
+              ) -
+              $unwrap(
+                primaryChildFragment.treeBaseDuration,
+                'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1111:83',
+              );
           }
         }
       }
@@ -944,8 +969,14 @@ function completeDehydratedActivityBoundary(
           if (primaryChildFragment != null) {
             // $FlowFixMe[unsafe-arithmetic] Flow doesn't support type casting in combination with the -= operator
             workInProgress.treeBaseDuration =
-              $unwrap(workInProgress.treeBaseDuration) -
-              $unwrap(primaryChildFragment.treeBaseDuration);
+              $unwrap(
+                workInProgress.treeBaseDuration,
+                'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1146:71',
+              ) -
+              $unwrap(
+                primaryChildFragment.treeBaseDuration,
+                'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1147:83',
+              );
           }
         }
       }
@@ -982,6 +1013,7 @@ function completeDehydratedSuspenseBoundary(
         throw $stringPanic(
           'A dehydrated suspense component was completed without a hydrated node. ' +
             'This is probably a bug in React.',
+          'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1184:17',
         );
       }
       prepareToHydrateHostSuspenseInstance(workInProgress);
@@ -997,8 +1029,14 @@ function completeDehydratedSuspenseBoundary(
           if (primaryChildFragment != null) {
             // $FlowFixMe[unsafe-arithmetic] Flow doesn't support type casting in combination with the -= operator
             workInProgress.treeBaseDuration =
-              $unwrap(workInProgress.treeBaseDuration) -
-              $unwrap(primaryChildFragment.treeBaseDuration);
+              $unwrap(
+                workInProgress.treeBaseDuration,
+                'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1204:71',
+              ) -
+              $unwrap(
+                primaryChildFragment.treeBaseDuration,
+                'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1205:83',
+              );
           }
         }
       }
@@ -1031,8 +1069,14 @@ function completeDehydratedSuspenseBoundary(
           if (primaryChildFragment != null) {
             // $FlowFixMe[unsafe-arithmetic] Flow doesn't support type casting in combination with the -= operator
             workInProgress.treeBaseDuration =
-              $unwrap(workInProgress.treeBaseDuration) -
-              $unwrap(primaryChildFragment.treeBaseDuration);
+              $unwrap(
+                workInProgress.treeBaseDuration,
+                'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1240:71',
+              ) -
+              $unwrap(
+                primaryChildFragment.treeBaseDuration,
+                'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1241:83',
+              );
           }
         }
       }
@@ -1291,6 +1335,7 @@ export function completeWork(current, workInProgress, renderLanes) {
               throw $stringPanic(
                 'We must have new props for new mounts. This error is likely ' +
                   'caused by a bug in React. Please file an issue.',
+                'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1518:25',
               );
             }
 
@@ -1349,6 +1394,7 @@ export function completeWork(current, workInProgress, renderLanes) {
             throw $stringPanic(
               'We must have new props for new mounts. This error is likely ' +
                 'caused by a bug in React. Please file an issue.',
+              'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1579:25',
             );
           }
 
@@ -1444,6 +1490,7 @@ export function completeWork(current, workInProgress, renderLanes) {
           throw $stringPanic(
             'We must have new props for new mounts. This error is likely ' +
               'caused by a bug in React. Please file an issue.',
+            'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1686:21',
           );
         }
         // This can happen when we abort work.
@@ -1494,8 +1541,9 @@ export function completeWork(current, workInProgress, renderLanes) {
           // but now we suspended again. We should never arrive here because we should
           // not have pushed a suspense handler during that second pass and it should
           // instead have suspended above.
-          throw new Error(
+          throw $panic(
             'Client rendering an Activity suspended it again. This is a bug in React.',
+            'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1739:21',
           );
         }
 
@@ -1560,7 +1608,10 @@ export function completeWork(current, workInProgress, renderLanes) {
       const prevDidTimeout = current != null && current.memoizedState != null;
 
       if (nextDidTimeout) {
-        const offscreenFiber = $unwrap(workInProgress.child);
+        const offscreenFiber = $unwrap(
+          workInProgress.child,
+          'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1801:79',
+        );
         let previousCache = null;
         const alternate = offscreenFiber.alternate;
         if (
@@ -1585,7 +1636,10 @@ export function completeWork(current, workInProgress, renderLanes) {
       // a passive effect, which is when we process the transitions
       if (nextDidTimeout !== prevDidTimeout) {
         if (enableTransitionTracing) {
-          const offscreenFiber = $unwrap(workInProgress.child);
+          const offscreenFiber = $unwrap(
+            workInProgress.child,
+            'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1833:83',
+          );
           offscreenFiber.flags |= Passive;
         }
 
@@ -1601,7 +1655,10 @@ export function completeWork(current, workInProgress, renderLanes) {
         // phase will handle scheduling the effect. It's only when the fallback
         // is active that we have to do anything special.
         if (nextDidTimeout) {
-          const offscreenFiber = $unwrap(workInProgress.child);
+          const offscreenFiber = $unwrap(
+            workInProgress.child,
+            'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1851:83',
+          );
           offscreenFiber.flags |= Visibility;
         }
       }
@@ -1629,8 +1686,14 @@ export function completeWork(current, workInProgress, renderLanes) {
         if (primaryChildFragment != null) {
           // $FlowFixMe[unsafe-arithmetic] Flow doesn't support type casting in combination with the -= operator
           workInProgress.treeBaseDuration =
-            $unwrap(workInProgress.treeBaseDuration) -
-            $unwrap(primaryChildFragment.treeBaseDuration);
+            $unwrap(
+              workInProgress.treeBaseDuration,
+              'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1882:67',
+            ) -
+            $unwrap(
+              primaryChildFragment.treeBaseDuration,
+              'packages/react-reconciler/src/ReactFiberCompleteWork.rs:1883:79',
+            );
         }
       }
       return null;
@@ -2054,6 +2117,7 @@ export function completeWork(current, workInProgress, renderLanes) {
 
   throw $stringPanic(
     `Unknown unit of work tag (${workInProgress.tag}). This error is likely caused by a bug in React. Please file an issue.`,
+    'packages/react-reconciler/src/ReactFiberCompleteWork.rs:2358:5',
   );
 }
 //# sourceMappingURL=ReactFiberCompleteWork.js.map

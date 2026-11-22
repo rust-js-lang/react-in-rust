@@ -99,7 +99,10 @@ function startReadingFromUniversalStream(response, stream, onDone) {
     } else {
       processBinaryChunk(response, streamState, value);
     }
-    const progress$1 = $unwrap(progress);
+    const progress$1 = $unwrap(
+      progress,
+      'packages/react-server-dom-esm/src/client/ReactFlightDOMClientBrowser.rs:175:46',
+    );
     reader
       .read()
       .then(entry => {
@@ -107,7 +110,10 @@ function startReadingFromUniversalStream(response, stream, onDone) {
       })
       .catch(error);
   };
-  const progress$1 = $unwrap(progress);
+  const progress$1 = $unwrap(
+    progress,
+    'packages/react-server-dom-esm/src/client/ReactFlightDOMClientBrowser.rs:182:46',
+  );
   reader
     .read()
     .then(entry => {
@@ -128,7 +134,10 @@ function startReadingFromStream(response, stream, onDone, debugValue) {
     }
     const buffer = entry.value;
     processBinaryChunk(response, streamState, buffer);
-    const progress$1 = $unwrap(progress);
+    const progress$1 = $unwrap(
+      progress,
+      'packages/react-server-dom-esm/src/client/ReactFlightDOMClientBrowser.rs:211:46',
+    );
     reader
       .read()
       .then(entry => {
@@ -136,7 +145,10 @@ function startReadingFromStream(response, stream, onDone, debugValue) {
       })
       .catch(error);
   };
-  const progress$1 = $unwrap(progress);
+  const progress$1 = $unwrap(
+    progress,
+    'packages/react-server-dom-esm/src/client/ReactFlightDOMClientBrowser.rs:218:46',
+  );
   reader
     .read()
     .then(entry => {

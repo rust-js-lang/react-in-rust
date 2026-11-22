@@ -47,7 +47,7 @@ import {
   enableViewTransitionForPersistenceMode,
   enableViewTransitionParentEnterExit,
 } from 'shared/ReactFeatureFlags';
-import {$index, $unwrap} from '@rust-js/std';
+import {$index, $panic, $unwrap} from '@rust-js/std';
 
 export let shouldStartViewTransition = false;
 
@@ -284,8 +284,9 @@ function commitAppearingPairViewTransitions(placement) {
           const props = child.memoizedProps;
           const name = props.name;
           if (name == null || name === 'auto') {
-            throw new Error(
+            throw $panic(
               'Found a pair with an auto name. This is a bug in React.',
+              'packages/react-reconciler/src/ReactFiberCommitViewTransitions.rs:352:25',
             );
           }
           const className = getViewTransitionClassName(
@@ -569,7 +570,10 @@ function commitDeletedPairViewTransitions(deletion) {
             }
             // Delete the entry so that we know when we've found all of them
             // and can stop searching (size reaches zero).
-            const pairs = $unwrap(appearingViewTransitions);
+            const pairs = $unwrap(
+              appearingViewTransitions,
+              'packages/react-reconciler/src/ReactFiberCommitViewTransitions.rs:642:56',
+            );
             pairs.delete(name);
             const foundAll = pairs.size === 0;
             if (foundAll) {
@@ -617,7 +621,10 @@ export function commitExitViewTransitions(deletion) {
         // Delete the entry so that we know when we've found all of them
         // and can stop searching (size reaches zero).
         // Refined by the pair.
-        $unwrap(appearingViewTransitions).delete(name);
+        $unwrap(
+          appearingViewTransitions,
+          'packages/react-reconciler/src/ReactFiberCommitViewTransitions.rs:705:26',
+        ).delete(name);
         // Note: If the other side ends up outside the viewport, we'll still run this.
         // Therefore it's possible for onShare to be called with only an old snapshot.
         scheduleViewTransitionEvent(deletion, props.onShare);
@@ -899,6 +906,7 @@ function measureViewTransitionHostInstancesRecursive(
         const previousMeasurement = $index(
           previousMeasurements,
           viewTransitionHostInstanceIdx,
+          'packages/react-reconciler/src/ReactFiberCommitViewTransitions.rs:994:21',
         );
         const nextMeasurement = measureInstance(instance);
         if (

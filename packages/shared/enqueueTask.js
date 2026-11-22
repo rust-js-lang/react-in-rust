@@ -47,7 +47,7 @@ export default function enqueueTask(task) {
       };
     }
   }
-  $unwrap(enqueueTaskImpl)(task);
+  $unwrap(enqueueTaskImpl, 'packages/shared/enqueueTask.rs:67:33')(task);
 }
 
 export {

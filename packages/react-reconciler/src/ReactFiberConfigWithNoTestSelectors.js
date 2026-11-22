@@ -8,11 +8,14 @@
 // Renderers that don't support test selectors
 // can re-export everything from this module.
 
+import {$panic} from '@rust-js/std';
+
 function shim() {
-  throw new Error(
+  throw $panic(
     'The current renderer does not support test selectors. ' +
       'This error is likely caused by a bug in React. ' +
       'Please file an issue.',
+    'packages/react-reconciler/src/ReactFiberConfigWithNoTestSelectors.rs:10:5',
   );
 }
 

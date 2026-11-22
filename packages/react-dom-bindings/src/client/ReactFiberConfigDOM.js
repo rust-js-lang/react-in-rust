@@ -153,9 +153,11 @@ import {
   $extend,
   $index,
   $lazyRange,
+  $panic,
   $position,
   $removeOutOfBounds,
   $retain,
+  $stdSites,
   $stringPanic,
   $toLowercase,
   $toUppercase,
@@ -199,7 +201,10 @@ let selectionInformation = null;
 function getOwnerDocumentFromRootContainer(rootContainerElement) {
   return rootContainerElement.nodeType === DOCUMENT_NODE
     ? rootContainerElement
-    : $unwrap(rootContainerElement.ownerDocument);
+    : $unwrap(
+        rootContainerElement.ownerDocument,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:253:49',
+      );
 }
 
 export function getRootHostContext(rootContainerInstance) {
@@ -225,7 +230,10 @@ export function getRootHostContext(rootContainerInstance) {
     default: {
       const container =
         !disableCommentsAsDOMContainers && nodeType === COMMENT_NODE
-          ? $unwrap(rootContainerInstance.parentNode)
+          ? $unwrap(
+              rootContainerInstance.parentNode,
+              'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:284:55',
+            )
           : rootContainerInstance;
       type = container.tagName;
       const namespaceUri = container.namespaceURI;
@@ -331,7 +339,13 @@ export function beforeActiveInstanceBlur(internalInstanceHandle) {
   if (enableCreateEventHandleAPI) {
     ReactBrowserEventEmitterSetEnabled(true);
     dispatchBeforeDetachedBlur(
-      $unwrap($unwrap(selectionInformation).focusedElem),
+      $unwrap(
+        $unwrap(
+          selectionInformation,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:388:52',
+        ).focusedElem,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:390:18',
+      ),
       internalInstanceHandle,
     );
     ReactBrowserEventEmitterSetEnabled(false);
@@ -342,14 +356,26 @@ export function afterActiveInstanceBlur() {
   if (enableCreateEventHandleAPI) {
     ReactBrowserEventEmitterSetEnabled(true);
     dispatchAfterDetachedBlur(
-      $unwrap($unwrap(selectionInformation).focusedElem),
+      $unwrap(
+        $unwrap(
+          selectionInformation,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:403:52',
+        ).focusedElem,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:405:18',
+      ),
     );
     ReactBrowserEventEmitterSetEnabled(false);
   }
 }
 
 export function resetAfterCommit(containerInfo) {
-  restoreSelection($unwrap(selectionInformation), containerInfo);
+  restoreSelection(
+    $unwrap(
+      selectionInformation,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:413:46',
+    ),
+    containerInfo,
+  );
   ReactBrowserEventEmitterSetEnabled(eventsEnabled);
   eventsEnabled = null;
   selectionInformation = null;
@@ -486,7 +512,10 @@ export function createInstance(
           }
           div.innerHTML = '<script><' + '/script>';
           // This is guaranteed to yield a script element.
-          const firstChild = $unwrap(div.firstChild);
+          const firstChild = $unwrap(
+            div.firstChild,
+            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:548:53',
+          );
           domElement = div.removeChild(firstChild);
           break;
         }
@@ -640,7 +669,10 @@ export function createTextInstance(
 ) {
   if (__DEV__) {
     const hostContextDev = hostContext;
-    const ancestorInfo = $unwrap(hostContextDev.ancestorInfo);
+    const ancestorInfo = $unwrap(
+      hostContextDev.ancestorInfo,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:716:69',
+    );
     if (ancestorInfo.current != null) {
       validateTextNesting(
         text,
@@ -763,7 +795,10 @@ export const scheduleMicrotask =
     ? queueMicrotask
     : localPromise != null
       ? callback => {
-          $unwrap(localPromise)
+          $unwrap(
+            localPromise,
+            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:857:22',
+          )
             .resolve(null)
             .then(() => {
               callback();
@@ -816,7 +851,10 @@ export function commitMount(
       // is already a noop regardless of which properties are assigned. We should revisit if browsers update
       // this heuristic in the future.
       if (newProps.src) {
-        const src = $unwrap(newProps.src);
+        const src = $unwrap(
+          newProps.src,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:910:41',
+        );
         if (enableSrcObject && typeof src === 'object') {
           // For object src, we can't just set the src again to the same blob URL because it might have
           // already revoked if it loaded before this. However, we can create a new blob URL and set that.
@@ -962,12 +1000,18 @@ export function appendChildToContainer(container, child) {
   }
   let parentNode;
   if (container.nodeType === DOCUMENT_NODE) {
-    parentNode = $unwrap(container.body);
+    parentNode = $unwrap(
+      container.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1092:60',
+    );
   } else if (
     !disableCommentsAsDOMContainers &&
     container.nodeType === COMMENT_NODE
   ) {
-    const parentNode = $unwrap(container.parentNode);
+    const parentNode = $unwrap(
+      container.parentNode,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1094:83',
+    );
     if (supportsMoveBefore && child.parentNode !== null) {
       // $FlowFixMe[prop-missing]: We've checked this with supportsMoveBefore.
       parentNode.moveBefore(child, container);
@@ -978,7 +1022,10 @@ export function appendChildToContainer(container, child) {
   } else {
     parentNode =
       container.nodeName === 'HTML'
-        ? $unwrap(container.ownerDocument.body)
+        ? $unwrap(
+            container.ownerDocument.body,
+            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1105:52',
+          )
         : container;
   }
   if (supportsMoveBefore && child.parentNode !== null) {
@@ -1017,14 +1064,23 @@ export function insertInContainerBefore(container, child, beforeChild) {
   }
   let parentNode;
   if (container.nodeType === DOCUMENT_NODE) {
-    parentNode = $unwrap(container.body);
+    parentNode = $unwrap(
+      container.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1154:60',
+    );
   } else if (
     !disableCommentsAsDOMContainers &&
     container.nodeType === COMMENT_NODE
   ) {
-    parentNode = $unwrap(container.parentNode);
+    parentNode = $unwrap(
+      container.parentNode,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1156:65',
+    );
   } else if (container.nodeName === 'HTML') {
-    parentNode = $unwrap(container.ownerDocument.body);
+    parentNode = $unwrap(
+      container.ownerDocument.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1158:52',
+    );
   } else {
     parentNode = container;
   }
@@ -1076,14 +1132,23 @@ export function removeChild(parentInstance, child) {
 export function removeChildFromContainer(container, child) {
   let parentNode;
   if (container.nodeType === DOCUMENT_NODE) {
-    parentNode = $unwrap(container.body);
+    parentNode = $unwrap(
+      container.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1215:60',
+    );
   } else if (
     !disableCommentsAsDOMContainers &&
     container.nodeType === COMMENT_NODE
   ) {
-    parentNode = $unwrap(container.parentNode);
+    parentNode = $unwrap(
+      container.parentNode,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1217:65',
+    );
   } else if (container.nodeName === 'HTML') {
-    parentNode = $unwrap(container.ownerDocument.body);
+    parentNode = $unwrap(
+      container.ownerDocument.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1219:52',
+    );
   } else {
     parentNode = container;
   }
@@ -1122,18 +1187,27 @@ function clearHydrationBoundary(parentInstance, hydrationInstance) {
         // If a preamble contribution marker is found within the bounds of this boundary,
         // then it contributed to the html tag and we need to reset it.
         const ownerDocument = parentInstance.ownerDocument;
-        const documentElement = $unwrap(ownerDocument.documentElement);
+        const documentElement = $unwrap(
+          ownerDocument.documentElement,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1259:84',
+        );
         clearSingletonPreambleContribution(documentElement);
       } else if (data === PREAMBLE_CONTRIBUTION_HEAD) {
         const ownerDocument = parentInstance.ownerDocument;
-        const head = $unwrap(ownerDocument.head);
+        const head = $unwrap(
+          ownerDocument.head,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1263:60',
+        );
         clearSingletonPreambleContribution(head);
         // We need to clear the head because this is the only singleton that can have children that
         // were part of this boundary but are not inside this boundary.
         clearHead(head);
       } else if (data === PREAMBLE_CONTRIBUTION_BODY) {
         const ownerDocument = parentInstance.ownerDocument;
-        const body = $unwrap(ownerDocument.body);
+        const body = $unwrap(
+          ownerDocument.body,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1270:60',
+        );
         clearSingletonPreambleContribution(body);
       }
     }
@@ -1156,14 +1230,23 @@ export function clearSuspenseBoundary(parentInstance, suspenseInstance) {
 function clearHydrationBoundaryFromContainer(container, hydrationInstance) {
   let parentNode;
   if (container.nodeType === DOCUMENT_NODE) {
-    parentNode = $unwrap(container.body);
+    parentNode = $unwrap(
+      container.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1304:60',
+    );
   } else if (
     !disableCommentsAsDOMContainers &&
     container.nodeType === COMMENT_NODE
   ) {
-    parentNode = $unwrap(container.parentNode);
+    parentNode = $unwrap(
+      container.parentNode,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1306:65',
+    );
   } else if (container.nodeName === 'HTML') {
-    parentNode = $unwrap(container.ownerDocument.body);
+    parentNode = $unwrap(
+      container.ownerDocument.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1308:52',
+    );
   } else {
     parentNode = container;
   }
@@ -1537,9 +1620,15 @@ export function cancelRootViewTransitionName(rootContainer) {
 export function restoreRootViewTransitionName(rootContainer) {
   let containerInstance;
   if (rootContainer.nodeType === DOCUMENT_NODE) {
-    containerInstance = $unwrap(rootContainer.body);
+    containerInstance = $unwrap(
+      rootContainer.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1773:14',
+    );
   } else if (rootContainer.nodeName === 'HTML') {
-    containerInstance = $unwrap(rootContainer.ownerDocument.body);
+    containerInstance = $unwrap(
+      rootContainer.ownerDocument.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1775:57',
+    );
   } else {
     // If the container is not the whole document, then we ideally should probably
     // clone the whole document outside of the React too.
@@ -1658,15 +1747,22 @@ export function cloneRootViewTransitionContainer(rootContainer) {
 
   let containerInstance;
   if (rootContainer.nodeType === DOCUMENT_NODE) {
-    containerInstance = $unwrap(rootContainer.body);
+    containerInstance = $unwrap(
+      rootContainer.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1906:14',
+    );
   } else if (rootContainer.nodeName === 'HTML') {
-    containerInstance = $unwrap(rootContainer.ownerDocument.body);
+    containerInstance = $unwrap(
+      rootContainer.ownerDocument.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1908:57',
+    );
   } else if (
     !disableCommentsAsDOMContainers &&
     rootContainer.nodeType === COMMENT_NODE
   ) {
-    throw new Error(
+    throw $panic(
       'Cannot use a startGestureTransition() with a comment node root.',
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1910:9',
     );
   } else {
     // If the container is not the whole document, then we ideally should probably
@@ -1676,8 +1772,9 @@ export function cloneRootViewTransitionContainer(rootContainer) {
 
   const containerParent = containerInstance.parentNode;
   if (containerParent === null) {
-    throw new Error(
+    throw $panic(
       'Cannot use a startGestureTransition() on a detached root.',
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:1918:9',
     );
   }
 
@@ -1771,9 +1868,15 @@ export function cloneRootViewTransitionContainer(rootContainer) {
 export function removeRootViewTransitionClone(rootContainer, clone) {
   let containerInstance;
   if (rootContainer.nodeType === DOCUMENT_NODE) {
-    containerInstance = $unwrap(rootContainer.body);
+    containerInstance = $unwrap(
+      rootContainer.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2008:14',
+    );
   } else if (rootContainer.nodeName === 'HTML') {
-    containerInstance = $unwrap(rootContainer.ownerDocument.body);
+    containerInstance = $unwrap(
+      rootContainer.ownerDocument.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2010:57',
+    );
   } else {
     // If the container is not the whole document, then we ideally should probably
     // clone the whole document outside of the React too.
@@ -1781,8 +1884,9 @@ export function removeRootViewTransitionClone(rootContainer, clone) {
   }
   const containerParent = containerInstance.parentNode;
   if (containerParent === null) {
-    throw new Error(
+    throw $panic(
       'Cannot use a startGestureTransition() on a detached root.',
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2017:9',
     );
   }
   // We assume that the clone is still within the same parent.
@@ -1793,7 +1897,10 @@ export function removeRootViewTransitionClone(rootContainer, clone) {
 }
 
 function createMeasurement(rect, computedStyle, element) {
-  const ownerWindow = $unwrap(element.ownerDocument.defaultView);
+  const ownerWindow = $unwrap(
+    element.ownerDocument.defaultView,
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2044:64',
+  );
   return {
     rect,
     // Absolutely positioned instances don't contribute their size to the parent.
@@ -1974,7 +2081,10 @@ export function startViewTransition(
   const ownerDocument =
     rootContainer.nodeType === DOCUMENT_NODE
       ? rootContainer
-      : $unwrap(rootContainer.ownerDocument);
+      : $unwrap(
+          rootContainer.ownerDocument,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2244:41',
+        );
   try {
     const types = transitionTypes?.slice();
     // $FlowFixMe[prop-missing]
@@ -1983,7 +2093,10 @@ export function startViewTransition(
         // Note: We read the existence of a pending navigation before we apply the
         // mutations. That way we're not waiting on a navigation that we spawned
         // from this update. Only navigations that started before this commit.
-        const ownerWindow = $unwrap(ownerDocument.defaultView);
+        const ownerWindow = $unwrap(
+          ownerDocument.defaultView,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2257:70',
+        );
         const pendingNavigation =
           typeof ownerWindow.navigation !== 'undefined'
             ? ownerWindow.navigation.transition
@@ -2096,7 +2209,10 @@ export function startViewTransition(
     const viewTransitionAnimations = [];
 
     function readyCallback() {
-      const documentElement = $unwrap(ownerDocument.documentElement);
+      const documentElement = $unwrap(
+        ownerDocument.documentElement,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2373:84',
+      );
       // Loop through all View Transition Animations.
       // $FlowFixMe[prop-missing]
       // $FlowFixMe[incompatible-type]
@@ -2148,7 +2264,10 @@ export function startViewTransition(
             // $FlowFixMe[prop-missing]
             const computedStyle = getComputedStyle(
               // $FlowFixMe[incompatible-type]
-              $unwrap(effect.target),
+              $unwrap(
+                effect.target,
+                'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2427:49',
+              ),
               effect.pseudoElement ?? undefined,
             );
             if (
@@ -2157,10 +2276,18 @@ export function startViewTransition(
             ) {
               // Oops. Turns out that the pseudo-element had a different width/height so we need to let it
               // be overridden. Add it back.
-              const first = $index(keyframes, 0);
+              const first = $index(
+                keyframes,
+                0,
+                'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2436:54',
+              );
               first.width = width;
               first.height = height;
-              const last = $index(keyframes, (keyframes.length - 1) >>> 0);
+              const last = $index(
+                keyframes,
+                (keyframes.length - 1) >>> 0,
+                'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2439:53',
+              );
               last.width = width;
               last.height = height;
               // $FlowFixMe[incompatible-type]
@@ -2231,7 +2358,11 @@ export function startViewTransition(
         // In Safari, we need to manually cancel all manually started animations
         // or it'll block or interfer with future transitions.
         // We can't use getAnimations() due to #35336 so we collect them in an array.
-        const animation = $index(viewTransitionAnimations, i);
+        const animation = $index(
+          viewTransitionAnimations,
+          i,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2481:68',
+        );
         animation.cancel();
       }
       // $FlowFixMe[prop-missing]
@@ -2369,7 +2500,13 @@ function animateGesture(
     // from the old position, we need to adjust it from the out of viewport
     // position. If this is going from old to new it only applies to first
     // keyframe. Otherwise it applies to every keyframe.
-    moveOldFrameIntoViewport($index(keyframes, 0));
+    moveOldFrameIntoViewport(
+      $index(
+        keyframes,
+        0,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2662:47',
+      ),
+    );
   }
   if (unchangedDimensions && width != null && height != null) {
     // Read the underlying width/height of the pseudo-element. The previous animation
@@ -2450,7 +2587,10 @@ export function startGestureTransition(
   const ownerDocument =
     rootContainer.nodeType === DOCUMENT_NODE
       ? rootContainer
-      : $unwrap(rootContainer.ownerDocument);
+      : $unwrap(
+          rootContainer.ownerDocument,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2767:41',
+        );
   try {
     // Force layout before we start the Transition. This works around a bug in Safari
     // if one of the clones end up being a stylesheet that isn't loaded or uncached.
@@ -2467,7 +2607,10 @@ export function startGestureTransition(
     const customTimelineCleanup = []; // Cleanup Animations started in a CustomTimeline
     const viewTransitionAnimations = [];
     function readyCallback() {
-      const documentElement = $unwrap(ownerDocument.documentElement);
+      const documentElement = $unwrap(
+        ownerDocument.documentElement,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2792:84',
+      );
       // Loop through all View Transition Animations.
       // $FlowFixMe[prop-missing]
       // $FlowFixMe[incompatible-type]
@@ -2495,7 +2638,11 @@ export function startGestureTransition(
           // TODO: Consider interation count higher than 1.
           // $FlowFixMe[prop-missing]
           // $FlowFixMe[unsafe-addition]
-          const durationWithDelay = $unwrap(timing.delay) + duration;
+          const durationWithDelay =
+            $unwrap(
+              timing.delay,
+              'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2827:68',
+            ) + duration;
           if (durationWithDelay > longestDuration) {
             longestDuration = durationWithDelay;
           }
@@ -2560,12 +2707,21 @@ export function startGestureTransition(
           // $FlowFixMe[prop-missing]
           let adjustedRangeStart =
             rangeEnd -
-            (duration + $unwrap(timing.delay)) * durationToRangeMultipler;
+            (duration +
+              $unwrap(
+                timing.delay,
+                'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2897:66',
+              )) *
+              durationToRangeMultipler;
           let adjustedRangeEnd =
             rangeEnd -
             // $FlowFixMe[prop-missing]
             // $FlowFixMe[unsafe-arithmetic]
-            $unwrap(timing.delay) * durationToRangeMultipler;
+            $unwrap(
+              timing.delay,
+              'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2901:44',
+            ) *
+              durationToRangeMultipler;
           if (
             timing.direction === 'reverse' ||
             timing.direction === 'alternate-reverse'
@@ -2578,7 +2734,10 @@ export function startGestureTransition(
           animateGesture(
             effect.getKeyframes(),
             // $FlowFixMe[incompatible-type]: Always documentElement atm.
-            $unwrap(effect.target),
+            $unwrap(
+              effect.target,
+              'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2911:45',
+            ),
             pseudoElement,
             timeline,
             viewTransitionAnimations,
@@ -2606,7 +2765,10 @@ export function startGestureTransition(
               animateGesture(
                 [{}, {}],
                 // $FlowFixMe[incompatible-type]: Always documentElement atm.
-                $unwrap(effect.target),
+                $unwrap(
+                  effect.target,
+                  'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:2940:53',
+                ),
                 pseudoElementName,
                 timeline,
                 viewTransitionAnimations,
@@ -2702,13 +2864,21 @@ export function startGestureTransition(
         // In Safari, we need to manually cancel all manually started animations
         // or it'll block or interfer with future transitions.
         // We can't use getAnimations() due to #35336 so we collect them in an array.
-        const animation = $index(viewTransitionAnimations, i);
+        const animation = $index(
+          viewTransitionAnimations,
+          i,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3016:68',
+        );
         animation.cancel();
         i++;
       }
       i = 0;
       while (i < customTimelineCleanup.length) {
-        const cleanup = $index(customTimelineCleanup, i);
+        const cleanup = $index(
+          customTimelineCleanup,
+          i,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3022:63',
+        );
         cleanup();
         i++;
       }
@@ -2757,7 +2927,10 @@ export function addViewTransitionFinishedListener(transition, callback) {
  */
 function ViewTransitionPseudoElement(pseudo, name) {
   // TODO: Get the owner document from the root container.
-  this._scope = $unwrap(document.documentElement);
+  this._scope = $unwrap(
+    document.documentElement,
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3128:50',
+  );
   this._selector = '::view-transition-' + pseudo + '(' + name + ')';
 }
 
@@ -2820,8 +2993,9 @@ export function getCurrentGestureOffset(timeline) {
   // A CustomTimeline's currentTime is a number, as a CSSNumberish is.
   const time = timeline.currentTime;
   if (time === null) {
-    throw new Error(
+    throw $panic(
       'Cannot start a gesture with a disconnected AnimationTimeline.',
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3239:9',
     );
   }
   return typeof time === 'number' ? time : time.value;
@@ -2856,7 +3030,11 @@ FragmentInstance.prototype.addEventListener = function (
   // Element.addEventListener will only apply uniquely new event listeners by default. Since we
   // need to collect the listeners to apply to appended children, we track them ourselves and use
   // custom equality check for the options.
-  const borrow = $borrow(listeners, true);
+  const borrow = $borrow(
+    listeners,
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3331:24',
+    true,
+  );
   let isNewEventListener;
   try {
     isNewEventListener =
@@ -2899,7 +3077,9 @@ FragmentInstance.prototype.addEventListener = function (
     }
     const attachOptions = getAttachOptions(optionsOrUseCapture);
     if (listeners.borrows) {
-      $alreadyBorrowed();
+      $alreadyBorrowed(
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3390:23',
+      );
     }
     listeners.push({
       type,
@@ -2929,7 +3109,11 @@ FragmentInstance.prototype.removeEventListener = function (
   if (listeners == null) {
     return;
   }
-  const borrow = $borrow(listeners, true);
+  const borrow = $borrow(
+    listeners,
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3419:24',
+    true,
+  );
   let index;
   try {
     index = indexOfEventListener(borrow, type, listener, optionsOrUseCapture);
@@ -2940,9 +3124,15 @@ FragmentInstance.prototype.removeEventListener = function (
   if (index != null) {
     $unborrow(borrow);
     if (listeners.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3426:43',
+      );
     }
-    const stored = $index(listeners, index);
+    const stored = $index(
+      listeners,
+      index,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3426:51',
+    );
     const {
       attachedListener,
       optionsOrUseCapture: storedOptions,
@@ -2958,10 +3148,16 @@ FragmentInstance.prototype.removeEventListener = function (
       attachOptions,
     );
     if (listeners.borrows) {
-      $alreadyBorrowed();
+      $alreadyBorrowed(
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3442:19',
+      );
     }
     if (index >= listeners.length) {
-      $removeOutOfBounds(listeners, index);
+      $removeOutOfBounds(
+        listeners,
+        index,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3442:32',
+      );
     }
     listeners.splice(index, 1);
     if (cleanup != null) {
@@ -2983,7 +3179,9 @@ FragmentInstance.prototype.dispatchEvent = function (event) {
   const eventListeners = this._eventListeners;
   function holds(eventListeners) {
     if (eventListeners.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3460:61',
+      );
     }
     return eventListeners.length !== 0;
   }
@@ -2997,9 +3195,19 @@ FragmentInstance.prototype.dispatchEvent = function (event) {
         ? parentHostInstance.createComment('')
         : document.createTextNode('');
     if (eventListeners != null) {
-      for (let i = 0; i < $borrow(eventListeners).length; i++) {
+      for (
+        let i = 0;
+        i <
+        $borrow(
+          eventListeners,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3474:43',
+        ).length;
+        i++
+      ) {
         if (eventListeners.borrows < 0) {
-          $alreadyMutablyBorrowed();
+          $alreadyMutablyBorrowed(
+            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3475:61',
+          );
         }
         const stored = eventListeners[i];
         const {type, attachedListener, optionsOrUseCapture} = stored;
@@ -3013,9 +3221,19 @@ FragmentInstance.prototype.dispatchEvent = function (event) {
     parentHostInstance.appendChild(temp);
     const cancelable = temp.dispatchEvent(event);
     if (eventListeners != null) {
-      for (let i = 0; i < $borrow(eventListeners).length; i++) {
+      for (
+        let i = 0;
+        i <
+        $borrow(
+          eventListeners,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3496:43',
+        ).length;
+        i++
+      ) {
         if (eventListeners.borrows < 0) {
-          $alreadyMutablyBorrowed();
+          $alreadyMutablyBorrowed(
+            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3497:61',
+          );
         }
         const stored = eventListeners[i];
         const {type, attachedListener, optionsOrUseCapture} = stored;
@@ -3050,7 +3268,11 @@ FragmentInstance.prototype.focusLast = function (focusOptions) {
     collectChildren,
     children,
   );
-  const borrow = $borrow(children, true);
+  const borrow = $borrow(
+    children,
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3542:31',
+    true,
+  );
   try {
     for (let i = borrow.length - 1; i >= 0; i--) {
       const child = borrow[i];
@@ -3108,7 +3330,10 @@ FragmentInstance.prototype.observeUsing = function (observer) {
     }
   }
   this._observers ??= new Set();
-  $unwrap(this._observers).add(observer);
+  $unwrap(
+    this._observers,
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3603:30',
+  ).add(observer);
   traverseFragmentInstancesAndTextInstances(
     fragmentFiber,
     observeChild,
@@ -3278,9 +3503,10 @@ FragmentInstance.prototype.compareDocumentPosition = function (otherNode) {
 
 FragmentInstance.prototype.scrollIntoView = function (alignToTop) {
   if (typeof alignToTop === 'object') {
-    throw new Error(
+    throw $panic(
       'FragmentInstance.scrollIntoView() does not support ' +
         'scrollIntoViewOptions. Use the alignToTop boolean instead.',
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3794:13',
     );
   }
   // First, get the children nodes
@@ -3348,7 +3574,11 @@ FragmentInstance.prototype.scrollIntoView = function (alignToTop) {
 
   let i = resolvedAlignToTop ? children.length - 1 : 0;
   while (i !== (resolvedAlignToTop ? -1 : children.length)) {
-    const child = $index(children, i >>> 0);
+    const child = $index(
+      children,
+      i >>> 0,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3895:34',
+    );
     // For text nodes, use Range API to scroll to their position
     if (child.tag === HostText) {
       const textNode = getInstanceFromHostFiber(child);
@@ -3441,7 +3671,9 @@ function setFocusOnFiberIfFocusable(fiber, focusOptions) {
 
 function collectChildren(child, collection) {
   if (collection.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed(
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:4033:16',
+    );
   }
   collection.push(child);
   return false;
@@ -3508,6 +3740,7 @@ function cancelPendingIntersectionUnobserve(
           pending.instance !== instance,
       );
     },
+    $stdSites.localKeyWithBorrowMut[0],
     true,
   );
 }
@@ -3530,6 +3763,7 @@ function unobservePendingChildren(fragmentInstance, observer) {
         }
       });
     },
+    $stdSites.localKeyWithBorrowMut[0],
     true,
   );
 }
@@ -3548,6 +3782,7 @@ function schedulePendingIntersectionUnobserve(
         instance,
       });
     },
+    $stdSites.localKeyWithBorrowMut[0],
     true,
   );
   if (!intersectionUnobserveScheduled) {
@@ -3557,7 +3792,10 @@ function schedulePendingIntersectionUnobserve(
     // exit fires first, then drop the observer's strong ref to the node.
     requestPostPaintCallback(() => {
       intersectionUnobserveScheduled = false;
-      const pending = $borrowMut(pendingIntersectionUnobserves).splice(0);
+      const pending = $borrowMut(
+        pendingIntersectionUnobserves,
+        $stdSites.refCellTake[0],
+      ).splice(0);
       for (let i = 0; i < pending.length; i++) {
         const item = pending[i];
         item.observer.unobserve(item.instance);
@@ -3573,7 +3811,11 @@ function collectClientRects(child, rects) {
     range.selectNodeContents(textNode);
     // $FlowFixMe[method-unbinding]
     const clientRects = range.getClientRects();
-    const borrowMut = $borrowMut(rects, true);
+    const borrowMut = $borrowMut(
+      rects,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:4183:14',
+      true,
+    );
     try {
       $extend(
         borrowMut,
@@ -3586,7 +3828,11 @@ function collectClientRects(child, rects) {
     const instance = getInstanceFromHostFiber(child);
     // $FlowFixMe[method-unbinding]
     const clientRects = instance.getClientRects();
-    const borrowMut = $borrowMut(rects, true);
+    const borrowMut = $borrowMut(
+      rects,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:4190:14',
+      true,
+    );
     try {
       $extend(
         borrowMut,
@@ -3685,9 +3931,19 @@ export function commitNewChildToFragmentInstance(
 ) {
   const eventListeners = fragmentInstance._eventListeners;
   if (eventListeners != null) {
-    for (let i = 0; i < $borrow(eventListeners).length; i++) {
+    for (
+      let i = 0;
+      i <
+      $borrow(
+        eventListeners,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:4305:35',
+      ).length;
+      i++
+    ) {
       if (eventListeners.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:4306:53',
+        );
       }
       const stored = eventListeners[i];
       const {type, attachedListener, optionsOrUseCapture} = stored;
@@ -3719,9 +3975,19 @@ export function deleteChildFromFragmentInstance(
 ) {
   const eventListeners = fragmentInstance._eventListeners;
   if (eventListeners != null) {
-    for (let i = 0; i < $borrow(eventListeners).length; i++) {
+    for (
+      let i = 0;
+      i <
+      $borrow(
+        eventListeners,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:4347:35',
+      ).length;
+      i++
+    ) {
       if (eventListeners.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:4348:53',
+        );
       }
       const stored = eventListeners[i];
       const {type, attachedListener, optionsOrUseCapture} = stored;
@@ -4211,9 +4477,15 @@ export function getFirstHydratableChild(parentInstance) {
 export function getFirstHydratableChildWithinContainer(parentContainer) {
   let parentElement;
   if (parentContainer.nodeType === 9) {
-    parentElement = $unwrap(parentContainer.body);
+    parentElement = $unwrap(
+      parentContainer.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:4917:18',
+    );
   } else if (parentContainer.nodeName === 'HTML') {
-    parentElement = $unwrap(parentContainer.ownerDocument.body);
+    parentElement = $unwrap(
+      parentContainer.ownerDocument.body,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:4921:84',
+    );
   } else {
     parentElement = parentContainer;
   }
@@ -4323,12 +4595,18 @@ export function diffHydratedPropsForDevWarnings(
 export function validateHydratableTextInstance(text, hostContext) {
   if (__DEV__) {
     const hostContextDev = hostContext;
-    const ancestor = $unwrap(hostContextDev.ancestorInfo).current;
+    const ancestor = $unwrap(
+      hostContextDev.ancestorInfo,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5062:65',
+    ).current;
     if (ancestor != null) {
       return validateTextNesting(
         text,
         ancestor.tag,
-        $unwrap(hostContextDev.ancestorInfo).implicitRootScope,
+        $unwrap(
+          hostContextDev.ancestorInfo,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5070:22',
+        ).implicitRootScope,
       );
     }
   }
@@ -4640,8 +4918,14 @@ export function setupIntersectionObserver(targets, callback, options) {
 }
 
 export function requestPostPaintCallback(callback) {
-  $unwrap(localRequestAnimationFrame)(() => {
-    $unwrap(localRequestAnimationFrame)(callback);
+  $unwrap(
+    localRequestAnimationFrame,
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5428:54',
+  )(() => {
+    $unwrap(
+      localRequestAnimationFrame,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5429:58',
+    )(callback);
   });
 }
 
@@ -4675,10 +4959,11 @@ export function resolveSingletonInstance(
     case 'html': {
       const documentElement = ownerDocument.documentElement;
       if (documentElement === null) {
-        throw new Error(
+        throw $panic(
           'React expected an <html> element (document.documentElement) to exist in the Document but one was' +
             ' not found. React never removes the documentElement for any Document it renders into so' +
             ' the cause is likely in some other script running on this page.',
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5461:17',
         );
       }
       return documentElement;
@@ -4686,10 +4971,11 @@ export function resolveSingletonInstance(
     case 'head': {
       const head = ownerDocument.head;
       if (head === null) {
-        throw new Error(
+        throw $panic(
           'React expected a <head> element (document.head) to exist in the Document but one was' +
             ' not found. React never removes the head for any Document it renders into so' +
             ' the cause is likely in some other script running on this page.',
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5471:17',
         );
       }
       return head;
@@ -4697,17 +4983,19 @@ export function resolveSingletonInstance(
     case 'body': {
       const body = ownerDocument.body;
       if (body === null) {
-        throw new Error(
+        throw $panic(
           'React expected a <body> element (document.body) to exist in the Document but one was' +
             ' not found. React never removes the body for any Document it renders into so' +
             ' the cause is likely in some other script running on this page.',
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5481:17',
         );
       }
       return body;
     }
     default:
-      throw new Error(
+      throw $panic(
         'resolveSingletonInstance was called with an element type that is not supported. This is a bug in React.',
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5490:13',
       );
   }
 }
@@ -4856,8 +5144,9 @@ function flushSyncWork() {
     // we need to return true if any of them were rendering.
     return !!previousWasRendering || wasRendering;
   } else {
-    throw new Error(
+    throw $panic(
       'flushSyncWork should not be called from builds that support legacy mode. This is a bug in React.',
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5715:9',
     );
   }
 }
@@ -4926,7 +5215,10 @@ function preconnectAs(rel, href, crossOrigin) {
         const instance = ownerDocument.createElement('link');
         setInitialProperties(instance, 'link', preconnectProps);
         markNodeAsHoistable(instance);
-        $unwrap(ownerDocument.head).appendChild(instance);
+        $unwrap(
+          ownerDocument.head,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5786:39',
+        ).appendChild(instance);
       }
     }
   }
@@ -5011,7 +5303,10 @@ function preload(href, as, options) {
           instance.onload = clear;
         }
         markNodeAsHoistable(instance);
-        $unwrap(ownerDocument.head).appendChild(instance);
+        $unwrap(
+          ownerDocument.head,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5914:39',
+        ).appendChild(instance);
       }
     }
   }
@@ -5064,7 +5359,10 @@ function preloadModule(href, options) {
         const instance = ownerDocument.createElement('link');
         setInitialProperties(instance, 'link', props);
         markNodeAsHoistable(instance);
-        $unwrap(ownerDocument.head).appendChild(instance);
+        $unwrap(
+          ownerDocument.head,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5980:39',
+        ).appendChild(instance);
       }
     }
   }
@@ -5183,7 +5481,10 @@ function preinitScript(src, options) {
       instance = script;
       markNodeAsHoistable(script);
       setInitialProperties(script, 'link', scriptProps);
-      $unwrap(ownerDocument.head).appendChild(script);
+      $unwrap(
+        ownerDocument.head,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6149:35',
+      ).appendChild(script);
     }
 
     // Construct a Resource and cache it
@@ -5235,7 +5536,10 @@ function preinitModuleScript(src, options) {
       instance = script;
       markNodeAsHoistable(script);
       setInitialProperties(script, 'link', scriptProps);
-      $unwrap(ownerDocument.head).appendChild(script);
+      $unwrap(
+        ownerDocument.head,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6206:35',
+      ).appendChild(script);
     }
 
     // Construct a Resource and cache it
@@ -5253,8 +5557,9 @@ function preinitModuleScript(src, options) {
 export function getResource(type, currentProps, pendingProps, currentResource) {
   const resourceRoot = getCurrentResourceRoot();
   if (resourceRoot == null) {
-    throw new Error(
+    throw $panic(
       '"resourceRoot" was expected to exist. This is a bug in React.',
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6254:9',
     );
   }
   switch (type) {
@@ -5349,6 +5654,7 @@ export function getResource(type, currentProps, pendingProps, currentResource) {
             }
             throw $stringPanic(
               `Expected <link> not to update to be updated to a stylesheet with precedence. Check the \`rel\`, \`href\`, and \`precedence\` props of this component. Alternatively, check whether two different <link> components render in the same slot or share the same key.${diff}`,
+              'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6361:21',
             );
           }
           return resource;
@@ -5363,6 +5669,7 @@ export function getResource(type, currentProps, pendingProps, currentResource) {
         }
         throw $stringPanic(
           `Expected stylesheet with precedence to not be updated to a different kind of <link>. Check the \`rel\`, \`href\`, and \`precedence\` props of this component. Alternatively, check whether two different <link> components render in the same slot or share the same key.${diff}`,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6384:21',
         );
       }
       return null;
@@ -5400,6 +5707,7 @@ export function getResource(type, currentProps, pendingProps, currentResource) {
     default:
       throw $stringPanic(
         `getResource encountered a type it did not expect: "${type}". this is a bug in React.`,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6430:13',
       );
   }
 }
@@ -5506,9 +5814,15 @@ function preloadStylesheet(ownerDocument, key, preloadProps, state) {
     link.onload = clear;
     setInitialProperties(link, 'link', preloadProps);
     markNodeAsHoistable(link);
-    $unwrap(ownerDocument.head).appendChild(link);
+    $unwrap(
+      ownerDocument.head,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6558:31',
+    ).appendChild(link);
   }
-  instance = $unwrap(instance);
+  instance = $unwrap(
+    instance,
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6560:29',
+  );
   // $FlowFixMe[incompatible-type] -- if instance is an Element it will also be an HTMLLinkElement
   state.preload = instance;
   instance.addEventListener('load', () => {
@@ -5586,7 +5900,10 @@ export function acquireResource(hoistableRoot, resource, props) {
           getStylesheetSelectorFromKey(key),
         );
         if (instance !== null) {
-          const state = $unwrap(resource.state);
+          const state = $unwrap(
+            resource.state,
+            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6667:57',
+          );
           state.loading |= Inserted;
           resource.instance = instance;
           markNodeAsHoistable(instance);
@@ -5609,7 +5926,10 @@ export function acquireResource(hoistableRoot, resource, props) {
           linkInstance.onerror = reject;
         });
         setInitialProperties(instance, 'link', stylesheetProps);
-        const state = $unwrap(resource.state);
+        const state = $unwrap(
+          resource.state,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6696:53',
+        );
         state.loading |= Inserted;
         insertStylesheet(instance, qualifiedProps.precedence, hoistableRoot);
         resource.instance = instance;
@@ -5645,7 +5965,10 @@ export function acquireResource(hoistableRoot, resource, props) {
         instance = ownerDocument.createElement('script');
         markNodeAsHoistable(instance);
         setInitialProperties(instance, 'link', scriptProps);
-        $unwrap(ownerDocument.head).appendChild(instance);
+        $unwrap(
+          ownerDocument.head,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6732:39',
+        ).appendChild(instance);
         resource.instance = instance;
 
         return instance;
@@ -5655,6 +5978,7 @@ export function acquireResource(hoistableRoot, resource, props) {
       default:
         throw $stringPanic(
           `acquireResource encountered a resource type it did not expect: "${resource.type}". this is a bug in React.`,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6739:17',
         );
     }
   } else {
@@ -5672,11 +5996,22 @@ export function acquireResource(hoistableRoot, resource, props) {
     // for the insertion.
     if (
       resource.type === 'stylesheet' &&
-      ($unwrap(resource.state).loading & Inserted) === NotLoaded
+      ($unwrap(
+        resource.state,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6759:41',
+      ).loading &
+        Inserted) ===
+        NotLoaded
     ) {
       const qualifiedProps = props;
-      const instance = $unwrap(resource.instance);
-      const state = $unwrap(resource.state);
+      const instance = $unwrap(
+        resource.instance,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6762:52',
+      );
+      const state = $unwrap(
+        resource.state,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6763:49',
+      );
       state.loading |= Inserted;
       insertStylesheet(instance, qualifiedProps.precedence, hoistableRoot);
     }
@@ -5711,7 +6046,13 @@ function insertStylesheet(instance, precedence, root) {
     // must exist.
     prior.parentNode.insertBefore(instance, prior.nextSibling);
   } else {
-    const parent = root.nodeType === DOCUMENT_NODE ? $unwrap(root.head) : root;
+    const parent =
+      root.nodeType === DOCUMENT_NODE
+        ? $unwrap(
+            root.head,
+            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6805:59',
+          )
+        : root;
     parent.insertBefore(instance, parent.firstChild);
   }
 }
@@ -5747,10 +6088,10 @@ export function hydrateHoistable(
       instance.hasAttribute('itemprop')
     ) {
       instance = ownerDocument.createElement(type);
-      $unwrap(ownerDocument.head).insertBefore(
-        instance,
-        ownerDocument.querySelector('head > title'),
-      );
+      $unwrap(
+        ownerDocument.head,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6891:47',
+      ).insertBefore(instance, ownerDocument.querySelector('head > title'));
     }
     setInitialProperties(instance, type, props);
     precacheFiberNode(internalInstanceHandle, instance);
@@ -5764,7 +6105,11 @@ export function hydrateHoistable(
       const key = type + (props.href ? '' + props.href : '');
       const maybeNodes = cache.get(key);
       if (maybeNodes != null) {
-        const nodes = $borrowMut(maybeNodes, true);
+        const nodes = $borrowMut(
+          maybeNodes,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6915:49',
+          true,
+        );
         try {
           const end = nodes.length;
           for (let i = 0; i < end; i++) {
@@ -5792,7 +6137,10 @@ export function hydrateHoistable(
       }
       instance = ownerDocument.createElement(type);
       setInitialProperties(instance, type, props);
-      $unwrap(ownerDocument.head).appendChild(instance);
+      $unwrap(
+        ownerDocument.head,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6959:39',
+      ).appendChild(instance);
     } else if (type === 'meta') {
       const cache = getHydratableHoistableCache(
         'meta',
@@ -5802,7 +6150,11 @@ export function hydrateHoistable(
       const key = type + (props.content ? '' + props.content : '');
       const maybeNodes = cache.get(key);
       if (maybeNodes != null) {
-        const nodes = $borrowMut(maybeNodes, true);
+        const nodes = $borrowMut(
+          maybeNodes,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:6971:49',
+          true,
+        );
         try {
           const end = nodes.length;
           for (let i = 0; i < end; i++) {
@@ -5839,10 +6191,14 @@ export function hydrateHoistable(
       }
       instance = ownerDocument.createElement(type);
       setInitialProperties(instance, type, props);
-      $unwrap(ownerDocument.head).appendChild(instance);
+      $unwrap(
+        ownerDocument.head,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7030:39',
+      ).appendChild(instance);
     } else {
       throw $stringPanic(
         `getNodesForType encountered a type it did not expect: "${type}". This is a bug in React.`,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7033:17',
       );
     }
   }
@@ -5893,7 +6249,9 @@ function getHydratableHoistableCache(type, keyAttribute, ownerDocument) {
       const existing = cache.get(key);
       if (existing != null) {
         if (existing.borrows) {
-          $alreadyBorrowed();
+          $alreadyBorrowed(
+            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7092:26',
+          );
         }
         existing.push(node);
       } else {
@@ -5907,7 +6265,10 @@ function getHydratableHoistableCache(type, keyAttribute, ownerDocument) {
 
 export function mountHoistable(hoistableRoot, type, instance) {
   const ownerDocument = getDocumentFromRoot(hoistableRoot);
-  $unwrap(ownerDocument.head).insertBefore(
+  $unwrap(
+    ownerDocument.head,
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7104:27',
+  ).insertBefore(
     instance,
     type === 'title' ? ownerDocument.querySelector('head > title') : null,
   );
@@ -5924,7 +6285,10 @@ export function isHostHoistableType(type, props, hostContext) {
     const hostContextDev = hostContext;
     // We can only render resources when we are not within the host container context
     outsideHostContainerContext =
-      $unwrap(hostContextDev.ancestorInfo).containerTagInScope == null;
+      $unwrap(
+        hostContextDev.ancestorInfo,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7133:14',
+      ).containerTagInScope == null;
     hostContextProd = hostContextDev.context;
   } else {
     hostContextProd = hostContext;
@@ -6108,7 +6472,12 @@ export function maySuspendCommitInSyncRender(type, props) {
 export function mayResourceSuspendCommit(resource) {
   return (
     resource.type === 'stylesheet' &&
-    ($unwrap(resource.state).loading & Inserted) === NotLoaded
+    ($unwrap(
+      resource.state,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7313:37',
+    ).loading &
+      Inserted) ===
+      NotLoaded
   );
 }
 
@@ -6124,7 +6493,12 @@ export function preloadInstance(instance, type, props) {
 export function preloadResource(resource) {
   if (
     resource.type === 'stylesheet' &&
-    ($unwrap(resource.state).loading & Settled) === NotLoaded
+    ($unwrap(
+      resource.state,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7327:37',
+    ).loading &
+      Settled) ===
+      NotLoaded
   ) {
     // Return false to indicate this resource should suspend
     return false;
@@ -6196,7 +6570,14 @@ export function suspendResource(state, hoistableRoot, resource, props) {
         return;
       }
     }
-    if (($unwrap(resource.state).loading & Inserted) === NotLoaded) {
+    if (
+      ($unwrap(
+        resource.state,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7446:37',
+      ).loading &
+        Inserted) ===
+      NotLoaded
+    ) {
       if (resource.instance == null) {
         const qualifiedProps = props;
         const key = getStyleKey(qualifiedProps.href);
@@ -6223,7 +6604,10 @@ export function suspendResource(state, hoistableRoot, resource, props) {
             const ping = onUnsuspend.bind(state);
             loadingState.then(ping, ping);
           }
-          const resourceState = $unwrap(resource.state);
+          const resourceState = $unwrap(
+            resource.state,
+            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7471:66',
+          );
           resourceState.loading |= Inserted;
           resource.instance = instance;
           markNodeAsHoistable(instance);
@@ -6253,12 +6637,23 @@ export function suspendResource(state, hoistableRoot, resource, props) {
       }
 
       state.stylesheets ??= new Map();
-      $unwrap(state.stylesheets).set(resource, hoistableRoot);
+      $unwrap(
+        state.stylesheets,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7513:18',
+      ).set(resource, hoistableRoot);
 
-      const preloadEl = $unwrap(resource.state).preload;
+      const preloadEl = $unwrap(
+        resource.state,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7516:54',
+      ).preload;
       if (
         preloadEl != null &&
-        ($unwrap(resource.state).loading & Settled) === NotLoaded
+        ($unwrap(
+          resource.state,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7518:45',
+        ).loading &
+          Settled) ===
+          NotLoaded
       ) {
         state.count++;
         const ping = onUnsuspend.bind(state);
@@ -6273,7 +6668,10 @@ export function suspendOnActiveViewTransition(state, rootContainer) {
   const ownerDocument =
     rootContainer.nodeType === DOCUMENT_NODE
       ? rootContainer
-      : $unwrap(rootContainer.ownerDocument);
+      : $unwrap(
+          rootContainer.ownerDocument,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7536:41',
+        );
   // $FlowFixMe[prop-missing]
   const activeViewTransition = ownerDocument.__reactViewTransition;
   if (activeViewTransition == null) {
@@ -6448,13 +6846,21 @@ function insertSuspendedStylesheets(state, resources) {
 }
 
 function insertStylesheetIntoRoot(state, root, resource, map) {
-  if ($unwrap(resource.state).loading & Inserted) {
+  if (
+    $unwrap(
+      resource.state,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7756:33',
+    ).loading & Inserted
+  ) {
     // This resource was inserted by another root committing. we don't need to insert it again
     return;
   }
 
   let last;
-  const precedencesByRoot$1 = $unwrap(precedencesByRoot);
+  const precedencesByRoot$1 = $unwrap(
+    precedencesByRoot,
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7762:57',
+  );
   let precedences = precedencesByRoot$1.get(root);
   if (precedences === undefined) {
     precedences = new Map();
@@ -6486,9 +6892,15 @@ function insertStylesheetIntoRoot(state, root, resource, map) {
   }
 
   // We only call this after we have constructed an instance so we assume it here
-  const instance = $unwrap(resource.instance);
+  const instance = $unwrap(
+    resource.instance,
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7800:44',
+  );
   // We will always have a precedence for stylesheet instances
-  const precedence = $unwrap(instance.getAttribute('data-precedence'));
+  const precedence = $unwrap(
+    instance.getAttribute('data-precedence'),
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7802:64',
+  );
 
   const prior = precedences.get(precedence) ?? last;
   if (prior == last) {
@@ -6504,10 +6916,19 @@ function insertStylesheetIntoRoot(state, root, resource, map) {
   if (prior != null) {
     prior.parentNode.insertBefore(instance, prior.nextSibling);
   } else {
-    const parent = root.nodeType === DOCUMENT_NODE ? $unwrap(root.head) : root;
+    const parent =
+      root.nodeType === DOCUMENT_NODE
+        ? $unwrap(
+            root.head,
+            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7822:59',
+          )
+        : root;
     parent.insertBefore(instance, parent.firstChild);
   }
-  const resourceState = $unwrap(resource.state);
+  const resourceState = $unwrap(
+    resource.state,
+    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:7828:50',
+  );
   resourceState.loading |= Inserted;
 }
 

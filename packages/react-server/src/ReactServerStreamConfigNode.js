@@ -57,7 +57,10 @@ function writeStringChunk(destination, stringChunk) {
     if (writtenBytes > 0) {
       writeToDestination(
         destination,
-        $unwrap(currentView).subarray(0, writtenBytes),
+        $unwrap(
+          currentView,
+          'packages/react-server/src/ReactServerStreamConfigNode.rs:104:22',
+        ).subarray(0, writtenBytes),
       );
       currentView = new Uint8Array(VIEW_SIZE);
       writtenBytes = 0;
@@ -67,9 +70,15 @@ function writeStringChunk(destination, stringChunk) {
     return;
   }
 
-  let target = $unwrap(currentView);
+  let target = $unwrap(
+    currentView,
+    'packages/react-server/src/ReactServerStreamConfigNode.rs:115:41',
+  );
   if (writtenBytes > 0) {
-    target = $unwrap(currentView).subarray(writtenBytes);
+    target = $unwrap(
+      currentView,
+      'packages/react-server/src/ReactServerStreamConfigNode.rs:119:14',
+    ).subarray(writtenBytes);
   }
   const {read, written} = textEncoder.encodeInto(stringChunk, target);
   writtenBytes += written;
@@ -77,17 +86,29 @@ function writeStringChunk(destination, stringChunk) {
   if (read < stringChunk.length) {
     writeToDestination(
       destination,
-      $unwrap(currentView).subarray(0, writtenBytes),
+      $unwrap(
+        currentView,
+        'packages/react-server/src/ReactServerStreamConfigNode.rs:131:18',
+      ).subarray(0, writtenBytes),
     );
     currentView = new Uint8Array(VIEW_SIZE);
     writtenBytes = textEncoder.encodeInto(
       stringChunk.slice(read),
-      $unwrap(currentView),
+      $unwrap(
+        currentView,
+        'packages/react-server/src/ReactServerStreamConfigNode.rs:140:44',
+      ),
     ).written;
   }
 
   if (writtenBytes === VIEW_SIZE) {
-    writeToDestination(destination, $unwrap(currentView));
+    writeToDestination(
+      destination,
+      $unwrap(
+        currentView,
+        'packages/react-server/src/ReactServerStreamConfigNode.rs:148:62',
+      ),
+    );
     currentView = new Uint8Array(VIEW_SIZE);
     writtenBytes = 0;
   }
@@ -101,6 +122,7 @@ function writeViewChunk(destination, chunk) {
           'Cannot transport a detached buffer. ' +
             'This usually happens when trying to transport multiple buffer-spanning views on the same underyling buffer. ' +
             'Either reuse the exact same view by identity or copy the underlying buffer manually via `view.slice()`.',
+          'packages/react-server/src/ReactServerStreamConfigNode.rs:158:17',
         );
       }
     } else if (__DEV__ && !didWarnAboutMissingArrayBufferDetached) {
@@ -122,7 +144,10 @@ function writeViewChunk(destination, chunk) {
     if (writtenBytes > 0) {
       writeToDestination(
         destination,
-        $unwrap(currentView).subarray(0, writtenBytes),
+        $unwrap(
+          currentView,
+          'packages/react-server/src/ReactServerStreamConfigNode.rs:188:22',
+        ).subarray(0, writtenBytes),
       );
       currentView = new Uint8Array(VIEW_SIZE);
       writtenBytes = 0;
@@ -132,32 +157,57 @@ function writeViewChunk(destination, chunk) {
   }
 
   let bytesToWrite = chunk;
-  const allowableBytes = $unwrap(currentView).length - writtenBytes;
+  const allowableBytes =
+    $unwrap(
+      currentView,
+      'packages/react-server/src/ReactServerStreamConfigNode.rs:199:46',
+    ).length - writtenBytes;
   if (allowableBytes < bytesToWrite.byteLength) {
     // this chunk would overflow the current view. We enqueue a full view
     // and start a new view with the remaining chunk
     if (allowableBytes === 0) {
       // the current view is already full, send it
-      writeToDestination(destination, $unwrap(currentView));
+      writeToDestination(
+        destination,
+        $unwrap(
+          currentView,
+          'packages/react-server/src/ReactServerStreamConfigNode.rs:205:66',
+        ),
+      );
     } else {
       // fill up the current view and apply the remaining chunk bytes
       // to a new view.
-      $unwrap(currentView).set(
-        bytesToWrite.subarray(0, allowableBytes),
-        writtenBytes,
-      );
+      $unwrap(
+        currentView,
+        'packages/react-server/src/ReactServerStreamConfigNode.rs:209:32',
+      ).set(bytesToWrite.subarray(0, allowableBytes), writtenBytes);
       writtenBytes += allowableBytes;
-      writeToDestination(destination, $unwrap(currentView));
+      writeToDestination(
+        destination,
+        $unwrap(
+          currentView,
+          'packages/react-server/src/ReactServerStreamConfigNode.rs:214:66',
+        ),
+      );
       bytesToWrite = bytesToWrite.subarray(allowableBytes);
     }
     currentView = new Uint8Array(VIEW_SIZE);
     writtenBytes = 0;
   }
-  $unwrap(currentView).set(bytesToWrite, writtenBytes);
+  $unwrap(
+    currentView,
+    'packages/react-server/src/ReactServerStreamConfigNode.rs:222:10',
+  ).set(bytesToWrite, writtenBytes);
   writtenBytes += bytesToWrite.byteLength;
 
   if (writtenBytes === VIEW_SIZE) {
-    writeToDestination(destination, $unwrap(currentView));
+    writeToDestination(
+      destination,
+      $unwrap(
+        currentView,
+        'packages/react-server/src/ReactServerStreamConfigNode.rs:227:62',
+      ),
+    );
     currentView = new Uint8Array(VIEW_SIZE);
     writtenBytes = 0;
   }

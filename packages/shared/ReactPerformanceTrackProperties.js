@@ -183,6 +183,7 @@ export function addValueToProperties(
               didTruncate
                 ? JSON.stringify([...value.slice(0, OBJECT_WIDTH_LIMIT), '…'])
                 : JSON.stringify(value),
+              'packages/shared/ReactPerformanceTrackProperties.rs:205:22',
             );
             break;
           } else if (kind === 'Entries') {

@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$catchable, $toLowercase, $unwrap} from '@rust-js/std';
+import {$catchable, $panic, $toLowercase, $unwrap} from '@rust-js/std';
 
 export async function insertNodesAndExecuteScripts(source, target, CSPnonce) {
   const ownerDocument = target.ownerDocument ?? target;
@@ -30,7 +30,10 @@ export async function insertNodesAndExecuteScripts(source, target, CSPnonce) {
   let node;
   while ((node = source.firstChild) !== null) {
     if (lastChild === node) {
-      throw new Error('Infinite loop.');
+      throw $panic(
+        'Infinite loop.',
+        'packages/react-dom/src/test-utils/FizzTestUtils.rs:64:13',
+      );
     }
     lastChild = node;
 
@@ -48,7 +51,10 @@ export async function insertNodesAndExecuteScripts(source, target, CSPnonce) {
         // When we have renderIntoContainer and renderDocument this will be
         // more enforceable. At the moment you can misconfigure your stream and end up
         // with instructions that are deep in the document
-        $unwrap(ownerDocument.body).appendChild(element);
+        $unwrap(
+          ownerDocument.body,
+          'packages/react-dom/src/test-utils/FizzTestUtils.rs:80:39',
+        ).appendChild(element);
       } else {
         target.appendChild(element);
 
@@ -77,15 +83,17 @@ async function executeScript(script) {
   const ownerDocument = script.ownerDocument;
   const parent = script.parentNode;
   if (parent === null) {
-    throw new Error(
+    throw $panic(
       'executeScript expects to be called on script nodes that are currently in a document',
+      'packages/react-dom/src/test-utils/FizzTestUtils.rs:107:9',
     );
   }
   const scriptSrc = script.getAttribute('src');
   if (scriptSrc) {
     if (document !== ownerDocument) {
-      throw new Error(
+      throw $panic(
         'You must set the current document to the global document to use script src in tests',
+        'packages/react-dom/src/test-utils/FizzTestUtils.rs:114:13',
       );
     }
 

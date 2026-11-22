@@ -348,7 +348,12 @@ export function queueExplicitHydrationTarget(target) {
     }
     i++;
   }
-  $insertAt(queuedExplicitHydrationTargets, i, queuedTarget);
+  $insertAt(
+    queuedExplicitHydrationTargets,
+    i,
+    queuedTarget,
+    'packages/react-dom-bindings/src/events/ReactDOMEventReplaying.rs:381:43',
+  );
   if (i === 0) {
     attemptExplicitHydrationTarget(queuedTarget);
   }
@@ -381,7 +386,11 @@ function attemptReplayContinuousQueuedEvent(queuedEvent) {
     }
     // This target container was successfully dispatched. Try the next.
     if (0 >= targetContainers.length) {
-      $removeOutOfBounds(targetContainers, 0);
+      $removeOutOfBounds(
+        targetContainers,
+        0,
+        'packages/react-dom-bindings/src/events/ReactDOMEventReplaying.rs:417:40',
+      );
     }
     targetContainers.splice(0, 1);
   }
@@ -564,7 +573,11 @@ export function retryIfBlockedOn(unblocked) {
     if (nextExplicitTarget.blockedOn === null) {
       // We're unblocked.
       if (0 >= queuedExplicitHydrationTargets.length) {
-        $removeOutOfBounds(queuedExplicitHydrationTargets, 0);
+        $removeOutOfBounds(
+          queuedExplicitHydrationTargets,
+          0,
+          'packages/react-dom-bindings/src/events/ReactDOMEventReplaying.rs:687:91',
+        );
       }
       queuedExplicitHydrationTargets.splice(0, 1)[0];
     }

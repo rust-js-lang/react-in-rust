@@ -15,7 +15,7 @@ import {
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
-import {$stringPanic} from '@rust-js/std';
+import {$panic, $stringPanic} from '@rust-js/std';
 
 export {default as rendererVersion} from 'shared/ReactVersion';
 export const rendererPackageName = 'react-art';
@@ -260,7 +260,10 @@ export * from 'react-reconciler/src/ReactFiberConfigWithNoSingletons';
 export function appendInitialChild(parentInstance, child) {
   if (typeof child === 'string') {
     // Noop for string children of Text (eg <Text>{'foo'}{'bar'}</Text>)
-    throw new Error('Text children should already be flattened.');
+    throw $panic(
+      'Text children should already be flattened.',
+      'packages/react-art/src/ReactFiberConfigART.rs:375:13',
+    );
   }
   child.inject(parentInstance);
 }
@@ -289,7 +292,10 @@ export function createInstance(type, props, internalInstanceHandle) {
   }
 
   if (instance === undefined) {
-    throw $stringPanic(`ReactART does not support the type "${type}"`);
+    throw $stringPanic(
+      `ReactART does not support the type "${type}"`,
+      'packages/react-art/src/ReactFiberConfigART.rs:418:9',
+    );
   }
 
   instance._applyProps(instance, props);
@@ -419,7 +425,10 @@ export function appendChildToContainer(parentInstance, child) {
 
 export function insertBefore(parentInstance, child, beforeChild) {
   if (child === beforeChild) {
-    throw new Error('ReactART: Can not insert node before itself');
+    throw $panic(
+      'ReactART: Can not insert node before itself',
+      'packages/react-art/src/ReactFiberConfigART.rs:577:9',
+    );
   }
 
   child.injectBefore(beforeChild);
@@ -427,7 +436,10 @@ export function insertBefore(parentInstance, child, beforeChild) {
 
 export function insertInContainerBefore(parentInstance, child, beforeChild) {
   if (child === beforeChild) {
-    throw new Error('ReactART: Can not insert node before itself');
+    throw $panic(
+      'ReactART: Can not insert node before itself',
+      'packages/react-art/src/ReactFiberConfigART.rs:589:9',
+    );
   }
 
   child.injectBefore(beforeChild);
@@ -494,11 +506,17 @@ export function restoreRootViewTransitionName(rootContainer) {
 }
 
 export function cloneRootViewTransitionContainer(rootContainer) {
-  throw new Error('Not implemented.');
+  throw $panic(
+    'Not implemented.',
+    'packages/react-art/src/ReactFiberConfigART.rs:665:5',
+  );
 }
 
 export function removeRootViewTransitionClone(rootContainer, clone) {
-  throw new Error('Not implemented.');
+  throw $panic(
+    'Not implemented.',
+    'packages/react-art/src/ReactFiberConfigART.rs:669:5',
+  );
 }
 
 export function measureInstance(instance) {
@@ -540,7 +558,10 @@ export function createViewTransitionInstance(name) {
 }
 
 export function getCurrentGestureOffset(provider) {
-  throw new Error('startGestureTransition is not yet supported in react-art.');
+  throw $panic(
+    'startGestureTransition is not yet supported in react-art.',
+    'packages/react-art/src/ReactFiberConfigART.rs:733:5',
+  );
 }
 
 export function clearContainer(container) {

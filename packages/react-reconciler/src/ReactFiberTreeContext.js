@@ -226,6 +226,7 @@ export function popTreeContext(workInProgress) {
   while (workInProgress === treeForkProvider) {
     const [forkCount, forkProvider] = $unwrap(
       forkStack.pop(),
+      'packages/react-reconciler/src/ReactFiberTreeContext.rs:254:14',
       'a fork pushed by the work-in-progress',
     );
     treeForkProvider = forkProvider ?? null;
@@ -235,6 +236,7 @@ export function popTreeContext(workInProgress) {
   while (workInProgress === treeContextProvider) {
     const [id, overflow, provider] = $unwrap(
       idStack.pop(),
+      'packages/react-reconciler/src/ReactFiberTreeContext.rs:264:14',
       'an id pushed by the work-in-progress',
     );
     treeContextProvider = provider ?? null;

@@ -56,7 +56,7 @@ import {
   commitNewChildToFragmentInstances,
   getParentFragmentInstances,
 } from './ReactFiberFragmentInstance.js';
-import {$catchable} from '@rust-js/std';
+import {$catchable, $panic} from '@rust-js/std';
 
 export function commitHostMount(finishedWork) {
   const type = finishedWork.type;
@@ -508,9 +508,10 @@ function commitPlacement(finishedWork) {
   }
 
   if (hostParentFiber == null) {
-    throw new Error(
+    throw $panic(
       'Expected to find a host parent. This error is likely caused by a bug ' +
         'in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberCommitHostEffects.rs:744:9',
     );
   }
 
@@ -566,9 +567,10 @@ function commitPlacement(finishedWork) {
       break;
     }
     default:
-      throw new Error(
+      throw $panic(
         'Invalid host parent fiber. This error is likely caused by a bug ' +
           'in React. Please file an issue.',
+        'packages/react-reconciler/src/ReactFiberCommitHostEffects.rs:798:14',
       );
   }
 }

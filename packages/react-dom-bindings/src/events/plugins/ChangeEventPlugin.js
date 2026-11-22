@@ -102,7 +102,12 @@ function runEventInBatch(dispatchQueue) {
 }
 
 function getInstIfValueChanged(targetInst) {
-  const targetNode = getNodeFromInstance($unwrap(targetInst));
+  const targetNode = getNodeFromInstance(
+    $unwrap(
+      targetInst,
+      'packages/react-dom-bindings/src/events/plugins/ChangeEventPlugin.rs:139:58',
+    ),
+  );
   if (updateValueIfChanged(targetNode)) {
     return targetInst;
   }

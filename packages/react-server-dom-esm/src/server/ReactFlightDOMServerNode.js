@@ -56,6 +56,7 @@ import {
   $catchable,
   $fieldCell,
   $index,
+  $panic,
   $toLowercase,
   $unborrow,
   $unwrap,
@@ -187,8 +188,9 @@ export function renderToPipeableStream(model, moduleBasePath, options) {
   return {
     pipe(destination) {
       if (hasStartedFlowing) {
-        throw new Error(
+        throw $panic(
           'React currently only supports piping to one writable stream.',
+          'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:283:21',
         );
       }
       hasStartedFlowing = true;
@@ -258,11 +260,20 @@ export function prerenderToNodeStream(model, moduleBasePath, options) {
     const onFatalError = reject;
     let request;
     function onAllReady() {
-      const request$1 = $unwrap(request);
+      const request$1 = $unwrap(
+        request,
+        'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:395:66',
+      );
       let writable;
       const readable = new Readable({
         read() {
-          startFlowing(request$1, $unwrap(writable));
+          startFlowing(
+            request$1,
+            $unwrap(
+              writable,
+              'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:399:76',
+            ),
+          );
         },
       });
       writable = createFakeWritable(readable);
@@ -314,7 +325,11 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
       }
       try {
         const name = current.name;
-        const borrow = $borrow(current.file, true);
+        const borrow = $borrow(
+          current.file,
+          'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:487:84',
+          true,
+        );
         try {
           resolveFileComplete(response, name, borrow);
         } finally {
@@ -330,7 +345,11 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
             resolveField(
               response,
               queuedFields[i],
-              $index(queuedFields, i + 1),
+              $index(
+                queuedFields,
+                i + 1,
+                'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:491:88',
+              ),
             );
           }
         }
@@ -340,7 +359,11 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
         error != null ? value.destroy(error) : value.destroy();
         return;
       }
-      const value = $borrow($fieldCell(current, 'next'), true);
+      const value = $borrow(
+        $fieldCell(current, 'next'),
+        'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:499:52',
+        true,
+      );
       head = value.value;
       $unborrow(value);
     }
@@ -388,14 +411,21 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
     };
     const tail = tail$1;
     if (tail != null) {
-      $borrowMut($fieldCell(tail, 'next')).value = pendingFile;
+      $borrowMut(
+        $fieldCell(tail, 'next'),
+        'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:587:32',
+      ).value = pendingFile;
     } else {
       head = pendingFile;
     }
     tail$1 = pendingFile;
     value.on('data', chunk => {
       try {
-        const borrowMut = $borrowMut(fileHandle, true);
+        const borrowMut = $borrowMut(
+          fileHandle,
+          'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:599:50',
+          true,
+        );
         try {
           resolveFileChunk(response, borrowMut, chunk);
         } finally {

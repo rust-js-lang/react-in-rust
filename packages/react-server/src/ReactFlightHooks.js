@@ -13,7 +13,7 @@ import {
 import {createThenableState, trackUsedThenable} from './ReactFlightThenable.js';
 
 import {isClientReference} from './ReactFlightServerConfig.js';
-import {$roomFor, $stringPanic} from '@rust-js/std';
+import {$panic, $roomFor, $stringPanic} from '@rust-js/std';
 
 let currentRequest = null;
 let thenableIndexCounter = 0;
@@ -91,23 +91,33 @@ export const HooksDispatcher = {
 };
 
 function unsupportedHook() {
-  throw new Error('This Hook is not supported in Server Components.');
+  throw $panic(
+    'This Hook is not supported in Server Components.',
+    'packages/react-server/src/ReactFlightHooks.rs:114:5',
+  );
 }
 
 function unsupportedRefresh(fetch, seedKey) {
-  throw new Error(
+  throw $panic(
     'Refreshing the cache is not supported in Server Components.',
+    'packages/react-server/src/ReactFlightHooks.rs:118:5',
   );
 }
 
 function unsupportedContext() {
-  throw new Error('Cannot read a Client Context from a Server Component.');
+  throw $panic(
+    'Cannot read a Client Context from a Server Component.',
+    'packages/react-server/src/ReactFlightHooks.rs:122:5',
+  );
 }
 
 function useId() {
   const request = currentRequest;
   if (request == null) {
-    throw new Error('useId can only be used while React is rendering');
+    throw $panic(
+      'useId can only be used while React is rendering',
+      'packages/react-server/src/ReactFlightHooks.rs:127:9',
+    );
   }
   const id = request.identifierCount++;
   // use 'S' for Flight components to distinguish from 'R' and 'r' in Fizz/Client
@@ -139,14 +149,21 @@ function use(usable) {
     const value = usable.value;
     if (value != null && value.$$typeof === REACT_CONTEXT_TYPE) {
       // Show a more specific message since it's a common mistake.
-      throw new Error('Cannot read a Client Context from a Server Component.');
+      throw $panic(
+        'Cannot read a Client Context from a Server Component.',
+        'packages/react-server/src/ReactFlightHooks.rs:163:13',
+      );
     } else {
-      throw new Error('Cannot use() an already resolved Client Reference.');
+      throw $panic(
+        'Cannot use() an already resolved Client Reference.',
+        'packages/react-server/src/ReactFlightHooks.rs:165:13',
+      );
     }
   } else {
     // eslint-disable-next-line react-internal/safe-string-coercion
     throw $stringPanic(
       `An unsupported type was passed to use(): ${String(usable)}`,
+      'packages/react-server/src/ReactFlightHooks.rs:169:9',
     );
   }
 }

@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$panic} from '@rust-js/std';
+
 export {default as rendererVersion} from 'shared/ReactVersion';
 export const rendererPackageName = 'react-markup';
 
@@ -13,20 +15,23 @@ export * from 'react-client/src/ReactClientConsoleConfigPlain';
 export * from 'react-client/src/ReactClientDebugConfigPlain';
 
 export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
-  throw new Error(
+  throw $panic(
     'renderToHTML should not have emitted Client References. This is a bug in React.',
+    'packages/react-markup/../react-client/src/forks/ReactFlightClientConfig.markup.rs:38:5',
   );
 }
 
 export function resolveClientReference(bundlerConfig, metadata) {
-  throw new Error(
+  throw $panic(
     'renderToHTML should not have emitted Client References. This is a bug in React.',
+    'packages/react-markup/../react-client/src/forks/ReactFlightClientConfig.markup.rs:46:5',
   );
 }
 
 export function resolveServerReference(config, id) {
-  throw new Error(
+  throw $panic(
     'renderToHTML should not have emitted Server References. This is a bug in React.',
+    'packages/react-markup/../react-client/src/forks/ReactFlightClientConfig.markup.rs:51:5',
   );
 }
 
@@ -35,14 +40,16 @@ export function preloadModule(metadata) {
 }
 
 export function requireModule(metadata) {
-  throw new Error(
+  throw $panic(
     'renderToHTML should not have emitted Client References. This is a bug in React.',
+    'packages/react-markup/../react-client/src/forks/ReactFlightClientConfig.markup.rs:62:5',
   );
 }
 
 export function getModuleDebugInfo(metadata) {
-  throw new Error(
+  throw $panic(
     'renderToHTML should not have emitted Client References. This is a bug in React.',
+    'packages/react-markup/../react-client/src/forks/ReactFlightClientConfig.markup.rs:67:5',
   );
 }
 

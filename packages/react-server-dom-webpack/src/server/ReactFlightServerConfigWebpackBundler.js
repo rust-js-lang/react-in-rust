@@ -38,11 +38,13 @@ export function resolveClientReferenceMetadata(config, clientReference) {
   if (resolvedModuleData == null) {
     throw $stringPanic(
       `Could not find the module "${modulePath}" in the React Client Manifest. This is probably a bug in the React Server Components bundler.`,
+      'packages/react-server-dom-webpack/src/server/ReactFlightServerConfigWebpackBundler.rs:51:9',
     );
   }
   if (resolvedModuleData.async === true && clientReference.$$async === true) {
     throw $stringPanic(
       `The module "${modulePath}" is marked as an async ESM module but was loaded as a CJS proxy. This is probably a bug in the React Server Components bundler.`,
+      'packages/react-server-dom-webpack/src/server/ReactFlightServerConfigWebpackBundler.rs:58:9',
     );
   }
   return resolvedModuleData.async === true || clientReference.$$async === true

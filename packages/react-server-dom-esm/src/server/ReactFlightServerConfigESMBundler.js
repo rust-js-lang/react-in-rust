@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$panic} from '@rust-js/std';
+
 export {
   isClientReference,
   isServerReference,
@@ -21,8 +23,9 @@ export function resolveClientReferenceMetadata(config, clientReference) {
   const exportName = id.slice(idx + 1);
   const fullUrl = id.slice(0, idx);
   if (!fullUrl.startsWith(baseUrl)) {
-    throw new Error(
+    throw $panic(
       'Attempted to load a Client Module outside the hosted root.',
+      'packages/react-server-dom-esm/src/server/ReactFlightServerConfigESMBundler.rs:39:9',
     );
   }
   // Relative URL

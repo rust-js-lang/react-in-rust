@@ -15,6 +15,7 @@ export function ensureCorrectIsomorphicReactVersion() {
   if (isomorphicReactPackageVersion !== reactDOMPackageVersion) {
     throw $stringPanic(
       `Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ${isomorphicReactPackageVersion}\n  - react-dom:  ${reactDOMPackageVersion}\nLearn more: https://react.dev/warnings/version-mismatch`,
+      'packages/react-dom/src/shared/ensureCorrectIsomorphicReactVersion.rs:17:9',
     );
   }
 }

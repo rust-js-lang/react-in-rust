@@ -29,6 +29,7 @@ import {
   REACT_LAZY_TYPE,
   REACT_MEMO_TYPE,
 } from 'shared/ReactSymbols';
+import {$panic} from '@rust-js/std';
 
 let resolveFamily = null;
 let failedBoundaries = null;
@@ -216,7 +217,10 @@ function scheduleFibersWithFamiliesRecursively(
 
       const resolve = resolveFamily;
       if (resolve == null) {
-        throw new Error('Expected resolveFamily to be set during hot reload.');
+        throw $panic(
+          'Expected resolveFamily to be set during hot reload.',
+          'packages/react-reconciler/src/ReactFiberHotReloading.rs:253:17',
+        );
       }
 
       let needsRender = false;

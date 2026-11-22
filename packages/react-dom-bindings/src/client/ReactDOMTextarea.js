@@ -14,6 +14,7 @@ import {disableTextareaChildren} from 'shared/ReactFeatureFlags';
 
 import {track, trackHydrated} from './inputValueTracking.js';
 import {queueChangeEvent} from '../events/ReactDOMEventReplaying.js';
+import {$panic} from '@rust-js/std';
 
 let didWarnValDefaultVal = false;
 
@@ -93,14 +94,18 @@ export function initTextarea(element, value, defaultValue, children) {
   if (initialValue == null) {
     if (children != null && !disableTextareaChildren) {
       if (defaultValue != null) {
-        throw new Error(
+        throw $panic(
           'If you supply `defaultValue` on a <textarea>, do not pass children.',
+          'packages/react-dom-bindings/src/client/ReactDOMTextarea.rs:114:17',
         );
       }
 
       if (isArray(children)) {
         if (children.length > 1) {
-          throw new Error('<textarea> can only have at most one child.');
+          throw $panic(
+            '<textarea> can only have at most one child.',
+            'packages/react-dom-bindings/src/client/ReactDOMTextarea.rs:119:21',
+          );
         }
 
         children = children[0];

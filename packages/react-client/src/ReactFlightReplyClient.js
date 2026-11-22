@@ -36,6 +36,7 @@ import {
   $borrowMut,
   $catchable,
   $getOrInit,
+  $panic,
   $stringPanic,
   $unborrow,
   $unwound,
@@ -196,7 +197,10 @@ export function processReply(
   /** The reply's form data, made the first time a part needs one. */
   function formData() {
     formData$2 ??= new FormData();
-    return $unwrap(formData$2);
+    return $unwrap(
+      formData$2,
+      'packages/react-client/src/ReactFlightReplyClient.rs:278:30',
+    );
   }
 
   function takePartId() {
@@ -237,7 +241,9 @@ export function processReply(
       if (entry.done) {
         const blobId = takePartId();
         if (buffer.borrows < 0) {
-          $alreadyMutablyBorrowed();
+          $alreadyMutablyBorrowed(
+            'packages/react-client/src/ReactFlightReplyClient.rs:332:22',
+          );
         }
         const parts = buffer.slice();
         data.append(formFieldPrefix + blobId, new Blob(parts));
@@ -248,19 +254,29 @@ export function processReply(
           resolve(data);
         }
       } else {
-        const borrowMut = $borrowMut(buffer, true);
+        const borrowMut = $borrowMut(
+          buffer,
+          'packages/react-client/src/ReactFlightReplyClient.rs:352:22',
+          true,
+        );
         try {
           borrowMut.push(entry.value);
         } finally {
           $unborrow(borrowMut);
         }
-        const progress$1 = $unwrap(progress);
+        const progress$1 = $unwrap(
+          progress,
+          'packages/react-client/src/ReactFlightReplyClient.rs:354:54',
+        );
         reader.read(new Uint8Array(1024)).then(entry => {
           progress$1(entry);
         }, reject);
       }
     };
-    const progress$1 = $unwrap(progress);
+    const progress$1 = $unwrap(
+      progress,
+      'packages/react-client/src/ReactFlightReplyClient.rs:364:50',
+    );
     reader.read(new Uint8Array(1024)).then(entry => {
       progress$1(entry);
     }, reject);
@@ -291,7 +307,10 @@ export function processReply(
         try {
           const partJson = stringify(entry.value);
           data.append(streamPrefix, partJson);
-          const progress$1 = $unwrap(progress);
+          const progress$1 = $unwrap(
+            progress,
+            'packages/react-client/src/ReactFlightReplyClient.rs:405:58',
+          );
           reader.read().then(entry => {
             progress$1(entry);
           }, reject);
@@ -302,7 +321,10 @@ export function processReply(
         }
       }
     };
-    const progress$1 = $unwrap(progress);
+    const progress$1 = $unwrap(
+      progress,
+      'packages/react-client/src/ReactFlightReplyClient.rs:417:50',
+    );
     reader.read().then(entry => {
       progress$1(entry);
     }, reject);
@@ -368,7 +390,10 @@ export function processReply(
         try {
           const partJson = stringify(entry.value);
           data.append(streamPrefix, partJson);
-          const progress$1 = $unwrap(progress);
+          const progress$1 = $unwrap(
+            progress,
+            'packages/react-client/src/ReactFlightReplyClient.rs:495:62',
+          );
           iterator.next().then(entry => {
             progress$1(entry);
           }, reject);
@@ -379,7 +404,10 @@ export function processReply(
         }
       }
     };
-    const progress$1 = $unwrap(progress);
+    const progress$1 = $unwrap(
+      progress,
+      'packages/react-client/src/ReactFlightReplyClient.rs:508:50',
+    );
     iterator.next().then(entry => {
       progress$1(entry);
     }, reject);
@@ -495,6 +523,7 @@ export function processReply(
             'React Element cannot be passed to Server Functions from the Client without a ' +
               'temporary reference set. Pass a TemporaryReferenceSet to the options.' +
               (__DEV__ ? describeObjectForErrorMessage(parent, key) : ''),
+            'packages/react-client/src/ReactFlightReplyClient.rs:648:21',
           );
         case REACT_LAZY_TYPE: {
           // Resolve lazy as if it wasn't here. In the future this will be encoded as a Promise.
@@ -734,7 +763,10 @@ export function processReply(
 
       const iteratorFn = getIteratorFn(value);
       if (iteratorFn != null) {
-        const iterator = $unwrap(iteratorFn.call(value));
+        const iterator = $unwrap(
+          iteratorFn.call(value),
+          'packages/react-client/src/ReactFlightReplyClient.rs:989:18',
+        );
         if (iterator === value) {
           // Iterator, not Iterable
           const iteratorId = takePartId();
@@ -770,6 +802,7 @@ export function processReply(
             'Only plain objects, and a few built-ins, can be passed to Server Functions. ' +
               'Classes or null prototypes are not supported.' +
               (__DEV__ ? describeObjectForErrorMessage(parent, key) : ''),
+            'packages/react-client/src/ReactFlightReplyClient.rs:1043:21',
           );
         }
         // We will have written this object to the temporary reference set above
@@ -865,6 +898,7 @@ export function processReply(
         throw $stringPanic(
           'Client Functions cannot be passed directly to Server Functions. ' +
             'Only Functions passed from the Server can be passed back again.',
+          'packages/react-client/src/ReactFlightReplyClient.rs:1160:17',
         );
       }
       case 'symbol':
@@ -884,12 +918,14 @@ export function processReply(
           'Symbols cannot be passed to a Server Function without a ' +
             'temporary reference set. Pass a TemporaryReferenceSet to the options.' +
             (__DEV__ ? describeObjectForErrorMessage(parent, key) : ''),
+          'packages/react-client/src/ReactFlightReplyClient.rs:1187:17',
         );
       case 'bigint':
         return serializeBigInt(value);
       case 'object':
         throw $stringPanic(
           `Type ${typeof value} is not supported as an argument to a Server Function.`,
+          'packages/react-client/src/ReactFlightReplyClient.rs:1203:17',
         );
     }
   }
@@ -917,7 +953,12 @@ export function processReply(
       // They'll error when the stream completes on the server.
       const formData = formData$2;
       if (formData == null) {
-        resolve($unwrap(json$1));
+        resolve(
+          $unwrap(
+            json$1,
+            'packages/react-client/src/ReactFlightReplyClient.rs:1233:70',
+          ),
+        );
       } else {
         resolve(formData);
       }
@@ -980,8 +1021,14 @@ function encodeFormData(reference) {
     resolve = res;
     reject = rej;
   });
-  const resolve$1 = $unwrap(resolve);
-  const reject$1 = $unwrap(reject);
+  const resolve$1 = $unwrap(
+    resolve,
+    'packages/react-client/src/ReactFlightReplyClient.rs:1340:38',
+  );
+  const reject$1 = $unwrap(
+    reject,
+    'packages/react-client/src/ReactFlightReplyClient.rs:1340:55',
+  );
   processReply(
     reference,
     '',
@@ -1027,6 +1074,7 @@ function defaultEncodeFormAction(identifierPrefix) {
     throw $stringPanic(
       'Tried to encode a Server Action from a different instance than the encoder is from. ' +
         'This is a bug in React.',
+      'packages/react-client/src/ReactFlightReplyClient.rs:1389:17',
     );
   }
   let data;
@@ -1069,6 +1117,7 @@ function customEncodeFormAction(reference, identifierPrefix, encodeFormAction) {
     throw $stringPanic(
       'Tried to encode a Server Action from a different instance than the encoder is from. ' +
         'This is a bug in React.',
+      'packages/react-client/src/ReactFlightReplyClient.rs:1443:9',
     );
   }
   const boundPromise = referenceClosure.bound ?? Promise.resolve([]);
@@ -1081,6 +1130,7 @@ function isSignatureEqual(referenceId, numberOfBoundArgs) {
     throw $stringPanic(
       'Tried to encode a Server Action from a different instance than the encoder is from. ' +
         'This is a bug in React.',
+      'packages/react-client/src/ReactFlightReplyClient.rs:1464:17',
     );
   }
   if (referenceClosure.id !== referenceId) {
@@ -1306,11 +1356,13 @@ const serverObjectReferenceProxyHandlers = {
     // eslint-disable-next-line react-internal/safe-string-coercion
     throw $stringPanic(
       `Cannot access ${String(name)} on the client. You cannot read a Server Reference to an object on the client. You can only pass it back to the server.`,
+      'packages/react-client/src/ReactFlightReplyClient.rs:1727:13',
     );
   },
   set() {
-    throw new Error(
+    throw $panic(
       'Cannot assign to a Server Reference to an object on the client.',
+      'packages/react-client/src/ReactFlightReplyClient.rs:1734:13',
     );
   },
 };

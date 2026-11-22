@@ -409,6 +409,8 @@ import {
   $cellReplace,
   $cleanup,
   $nullableCell,
+  $panic,
+  $stdSites,
   $unwrap,
   $withBorrow,
   $withBorrowMut,
@@ -557,6 +559,7 @@ export function addTransitionStartCallbackToPendingTransition(transition) {
         currentPendingTransitionCallbacks.transitionStart ??= [];
         currentPendingTransitionCallbacks.transitionStart.push(transition);
       },
+      $stdSites.localKeyWithBorrowMut[0],
       true,
     );
   }
@@ -588,6 +591,7 @@ export function addMarkerProgressCallbackToPendingTransition(
           transitions,
         });
       },
+      $stdSites.localKeyWithBorrowMut[0],
       true,
     );
   }
@@ -619,6 +623,7 @@ export function addMarkerIncompleteCallbackToPendingTransition(
           aborts,
         });
       },
+      $stdSites.localKeyWithBorrowMut[0],
       true,
     );
   }
@@ -649,6 +654,7 @@ export function addMarkerCompleteCallbackToPendingTransition(
           transitions,
         );
       },
+      $stdSites.localKeyWithBorrowMut[0],
       true,
     );
   }
@@ -679,6 +685,7 @@ export function addTransitionProgressCallbackToPendingTransition(
           boundaries,
         );
       },
+      $stdSites.localKeyWithBorrowMut[0],
       true,
     );
   }
@@ -703,6 +710,7 @@ export function addTransitionCompleteCallbackToPendingTransition(transition) {
         currentPendingTransitionCallbacks.transitionComplete ??= [];
         currentPendingTransitionCallbacks.transitionComplete.push(transition);
       },
+      $stdSites.localKeyWithBorrowMut[0],
       true,
     );
   }
@@ -835,8 +843,9 @@ export function requestUpdateLane(fiber) {
   const transition = requestCurrentTransition();
   if (transition != null) {
     if (enableGestureTransition && transition.gesture != null) {
-      throw new Error(
+      throw $panic(
         'Cannot setState on regular state inside a startGestureTransition. Gestures can only update the useOptimistic() hook. There should be no side-effects associated with starting a Gesture until its Action is invoked. Move side-effects to the Action instead.',
+        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:951:13',
       );
     }
     if (__DEV__) {
@@ -935,7 +944,10 @@ export function scheduleViewTransitionEvent(fiber, callback) {
 
 export function scheduleGestureTransitionEvent(fiber, callback) {
   if (enableGestureTransition && callback != null) {
-    const applyingGesture = $unwrap(pendingEffectsRoot).pendingGestures;
+    const applyingGesture = $unwrap(
+      pendingEffectsRoot,
+      'packages/react-reconciler/src/ReactFiberWorkLoop.rs:1076:18',
+    ).pendingGestures;
     if (applyingGesture != null) {
       const state = fiber.stateNode;
       let instance = state.ref;
@@ -1106,7 +1118,10 @@ export function isUnsafeClassRenderPhaseUpdate(fiber) {
 
 export function performWorkOnRoot(root, lanes, forceSync) {
   if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
-    throw new Error('Should not already be working.');
+    throw $panic(
+      'Should not already be working.',
+      'packages/react-reconciler/src/ReactFiberWorkLoop.rs:1271:9',
+    );
   }
 
   if (
@@ -1190,7 +1205,10 @@ export function performWorkOnRoot(root, lanes, forceSync) {
       // TODO: It's possible that even a concurrent render may never have yielded
       // to the main thread, if it was fast enough, or if it expired. We could
       // skip the consistency check in that case, too.
-      const finishedWork = $unwrap(root.current.alternate);
+      const finishedWork = $unwrap(
+        root.current.alternate,
+        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:1354:82',
+      );
       if (
         renderWasConcurrent &&
         !isRenderConsistentWithExternalStores(finishedWork)
@@ -1415,7 +1433,10 @@ function finishConcurrentRender(
   switch (exitStatus) {
     case RootInProgress:
     case RootFatalErrored:
-      throw new Error('Root did not complete. This is a bug in React.');
+      throw $panic(
+        'Root did not complete. This is a bug in React.',
+        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:1588:13',
+      );
     case RootSuspendedWithDelay:
       if (!includesOnlyTransitions(lanes) && !includesOnlyRetries(lanes)) {
         // Commit the placeholder.
@@ -1457,7 +1478,10 @@ function finishConcurrentRender(
     case RootCompleted:
       break;
     default:
-      throw new Error('Unknown root exit status.');
+      throw $panic(
+        'Unknown root exit status.',
+        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:1630:13',
+      );
   }
 
   if (shouldForceFlushFallbacksInDEV()) {
@@ -1950,7 +1974,10 @@ export function flushSyncFromReconciler(f) {
   if (
     pendingEffectsStatus !== NO_PENDING_EFFECTS &&
     !disableLegacyMode &&
-    $unwrap(pendingEffectsRoot).tag === LegacyRoot &&
+    $unwrap(
+      pendingEffectsRoot,
+      'packages/react-reconciler/src/ReactFiberWorkLoop.rs:2140:43',
+    ).tag === LegacyRoot &&
     (executionContext & (RenderContext | CommitContext)) === NoContext
   ) {
     flushPendingEffects();
@@ -3055,8 +3082,9 @@ function renderRootConcurrent(root, lanes) {
                 workInProgressRootExitStatus = RootSuspendedAtTheShell;
                 return;
               default:
-                throw new Error(
+                throw $panic(
                   'Unexpected SuspendedReason. This is a bug in React.',
+                  'packages/react-reconciler/src/ReactFiberWorkLoop.rs:3284:25',
                 );
             }
           }
@@ -3516,10 +3544,16 @@ function unwindUnitOfWork(unitOfWork, skipSiblings) {
       stopProfilerTimerIfRunningAndRecordIncompleteDuration(incompleteWork);
 
       // Include the time spent working on failed children before continuing.
-      let actualDuration = $unwrap(incompleteWork.actualDuration);
+      let actualDuration = $unwrap(
+        incompleteWork.actualDuration,
+        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:3811:77',
+      );
       let child = incompleteWork.child;
       while (child != null) {
-        actualDuration += $unwrap(child.actualDuration);
+        actualDuration += $unwrap(
+          child.actualDuration,
+          'packages/react-reconciler/src/ReactFiberWorkLoop.rs:3814:63',
+        );
         child = child.sibling;
       }
       incompleteWork.actualDuration = actualDuration;
@@ -3590,7 +3624,10 @@ function completeRoot(
   flushRenderPhaseStrictModeWarningsInDEV();
 
   if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
-    throw new Error('Should not already be working.');
+    throw $panic(
+      'Should not already be working.',
+      'packages/react-reconciler/src/ReactFiberWorkLoop.rs:3903:9',
+    );
   }
 
   if (enableProfilerTimer && enableComponentPerformanceTrack) {
@@ -3665,8 +3702,9 @@ function completeRoot(
   }
 
   if (finishedWork === root.current) {
-    throw new Error(
+    throw $panic(
       'Cannot commit the same tree as before. This error is likely caused by a bug in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberWorkLoop.rs:3978:9',
     );
   }
 
@@ -3979,7 +4017,10 @@ function reportViewTransitionError(error) {
   if (pendingEffectsStatus === NO_PENDING_EFFECTS) {
     return;
   }
-  const root = $unwrap(pendingEffectsRoot);
+  const root = $unwrap(
+    pendingEffectsRoot,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:4341:63',
+  );
   const onRecoverableError = root.onRecoverableError;
   onRecoverableError(error, makeErrorInfo(null));
 }
@@ -4052,8 +4093,14 @@ function flushAfterMutationEffects() {
     return;
   }
   pendingEffectsStatus = NO_PENDING_EFFECTS;
-  const root = $unwrap(pendingEffectsRoot);
-  const finishedWork = $unwrap(pendingFinishedWork);
+  const root = $unwrap(
+    pendingEffectsRoot,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:4412:63',
+  );
+  const finishedWork = $unwrap(
+    pendingFinishedWork,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:4413:73',
+  );
   const lanes = pendingEffectsLanes;
   commitAfterMutationEffects(root, finishedWork, lanes);
   pendingEffectsStatus = PENDING_SPAWNED_WORK;
@@ -4065,8 +4112,14 @@ function flushMutationEffects() {
   }
   pendingEffectsStatus = NO_PENDING_EFFECTS;
 
-  const root = $unwrap(pendingEffectsRoot);
-  const finishedWork = $unwrap(pendingFinishedWork);
+  const root = $unwrap(
+    pendingEffectsRoot,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:4425:63',
+  );
+  const finishedWork = $unwrap(
+    pendingFinishedWork,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:4426:73',
+  );
   const lanes = pendingEffectsLanes;
   const subtreeMutationHasEffects =
     (finishedWork.subtreeFlags & MutationMask) !== NoFlags;
@@ -4147,8 +4200,14 @@ function flushLayoutEffects() {
     }
   }
 
-  const root = $unwrap(pendingEffectsRoot);
-  const finishedWork = $unwrap(pendingFinishedWork);
+  const root = $unwrap(
+    pendingEffectsRoot,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:4483:63',
+  );
+  const finishedWork = $unwrap(
+    pendingFinishedWork,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:4484:73',
+  );
   const lanes = pendingEffectsLanes;
 
   if (enableDefaultTransitionIndicator) {
@@ -4293,8 +4352,14 @@ function flushSpawnedWork() {
   // opportunity to paint.
   requestPaint();
 
-  const root = $unwrap(pendingEffectsRoot);
-  const finishedWork = $unwrap(pendingFinishedWork);
+  const root = $unwrap(
+    pendingEffectsRoot,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:4615:63',
+  );
+  const finishedWork = $unwrap(
+    pendingFinishedWork,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:4616:73',
+  );
   const lanes = pendingEffectsLanes;
   const recoverableErrors = pendingRecoverableErrors;
   const didIncludeRenderPhaseUpdate = pendingDidIncludeRenderPhaseUpdate;
@@ -4541,7 +4606,10 @@ function flushSpawnedWork() {
     if (prevRootTransitionCallbacks != null) {
       schedulePostPaintCallback(endTime => {
         const prevPendingTransitionCallbacks = $cellReplace(
-          $borrowMut(currentPendingTransitionCallbacks),
+          $borrowMut(
+            currentPendingTransitionCallbacks,
+            $stdSites.refCellTake[0],
+          ),
           null,
         );
         if (prevPendingTransitionCallbacks != null) {
@@ -4631,8 +4699,14 @@ function flushGestureMutations() {
     return;
   }
   pendingEffectsStatus = NO_PENDING_EFFECTS;
-  const root = $unwrap(pendingEffectsRoot);
-  const finishedWork = $unwrap(pendingFinishedWork);
+  const root = $unwrap(
+    pendingEffectsRoot,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:4955:63',
+  );
+  const finishedWork = $unwrap(
+    pendingFinishedWork,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:4956:73',
+  );
 
   const prevTransition = ReactSharedInternals.T;
   ReactSharedInternals.T = null;
@@ -4697,10 +4771,16 @@ function flushGestureAnimations() {
   pendingEffectsStatus = NO_PENDING_EFFECTS;
   const old = pendingEffectsRoot;
   pendingEffectsRoot = null;
-  const root = $unwrap(old); // Clear for GC purposes.
+  const root = $unwrap(
+    old,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5014:44',
+  ); // Clear for GC purposes.
   const old$1 = pendingFinishedWork;
   pendingFinishedWork = null;
-  const finishedWork = $unwrap(old$1); // Clear for GC purposes.
+  const finishedWork = $unwrap(
+    old$1,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5015:54',
+  ); // Clear for GC purposes.
   pendingEffectsLanes = NoLanes;
 
   pendingViewTransition = null; // The view transition has now fully started.
@@ -4831,7 +4911,10 @@ function flushPassiveEffects() {
   // priority within React itself, so we can mutate the variable directly.
   // Cache the root since pendingEffectsRoot is cleared in
   // flushPassiveEffectsImpl
-  const root = $unwrap(pendingEffectsRoot);
+  const root = $unwrap(
+    pendingEffectsRoot,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5171:63',
+  );
   // Cache and clear the remaining lanes flag; it must be reset since this
   // method can be called from various places, not always from completeRoot
   // where the remaining lanes are known
@@ -4890,7 +4973,10 @@ function flushPassiveEffectsImpl() {
 
   const old = pendingEffectsRoot;
   pendingEffectsRoot = null;
-  const root = $unwrap(old); // Clear for GC purposes.
+  const root = $unwrap(
+    old,
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5198:44',
+  ); // Clear for GC purposes.
   const lanes = pendingEffectsLanes;
   pendingEffectsStatus = NO_PENDING_EFFECTS;
   pendingFinishedWork = null; // Clear for GC purposes.
@@ -4906,7 +4992,10 @@ function flushPassiveEffectsImpl() {
   }
 
   if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
-    throw new Error('Cannot flush passive effects while already rendering.');
+    throw $panic(
+      'Cannot flush passive effects while already rendering.',
+      'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5214:9',
+    );
   }
 
   if (enableProfilerTimer && enableComponentPerformanceTrack) {
@@ -4982,12 +5071,23 @@ function flushPassiveEffectsImpl() {
     const prevRootTransitionCallbacks = root.transitionCallbacks;
     const prevEndTime = currentEndTime;
     if (
-      $withBorrow(currentPendingTransitionCallbacks, x => x != null) &&
+      $withBorrow(
+        currentPendingTransitionCallbacks,
+        x => x != null,
+        $stdSites.localKeyWithBorrow[0],
+      ) &&
       prevRootTransitionCallbacks != null &&
       prevEndTime != null
     ) {
       const prevPendingTransitionCallbacks = $unwrap(
-        $cellReplace($borrowMut(currentPendingTransitionCallbacks), null),
+        $cellReplace(
+          $borrowMut(
+            currentPendingTransitionCallbacks,
+            $stdSites.refCellTake[0],
+          ),
+          null,
+        ),
+        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5298:61',
       );
       currentEndTime = null;
       scheduleCallback(IdleSchedulerPriority, () => {
@@ -5330,8 +5430,9 @@ export function resolveRetryWakeable(boundaryFiber, wakeable) {
       break;
     }
     default:
-      throw new Error(
+      throw $panic(
         'Pinged unknown suspense boundary type. This is probably a bug in React.',
+        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5675:13',
       );
   }
 
@@ -5354,8 +5455,9 @@ function throwForcedInfiniteRenderLoopError(root, renderLanes) {
       renderLanes,
     );
   }
-  throw new Error(
+  throw $panic(
     'Maximum update depth exceeded. This could be an infinite loop. This can happen when a component repeatedly calls setState during render phase or inside useLayoutEffect, causing infinite render loop. React limits the number of nested updates to prevent infinite loops.',
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5699:5',
   );
 }
 
@@ -5390,8 +5492,9 @@ export function throwIfInfiniteUpdateLoopDetected(
             );
           }
         } else {
-          throw new Error(
+          throw $panic(
             'Maximum update depth exceeded. This can happen when a component repeatedly calls setState inside componentWillUpdate or componentDidUpdate. React limits the number of nested updates to prevent infinite loops.',
+            'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5740:21',
           );
         }
       } else if (updateKind === NESTED_UPDATE_PHASE_SPAWN) {
@@ -5407,8 +5510,9 @@ export function throwIfInfiniteUpdateLoopDetected(
         }
       }
     } else {
-      throw new Error(
+      throw $panic(
         'Maximum update depth exceeded. This can happen when a component repeatedly calls setState inside componentWillUpdate or componentDidUpdate. React limits the number of nested updates to prevent infinite loops.',
+        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5763:13',
       );
     }
   }

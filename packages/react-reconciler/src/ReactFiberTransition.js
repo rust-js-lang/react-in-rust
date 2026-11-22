@@ -205,7 +205,10 @@ function peekCacheFromPool() {
   }
 
   // Otherwise, check the root's cache pool.
-  const root = $unwrap(getWorkInProgressRoot());
+  const root = $unwrap(
+    getWorkInProgressRoot(),
+    'packages/react-reconciler/src/ReactFiberTransition.rs:235:44',
+  );
   return root.pooledCache;
 }
 
@@ -227,7 +230,10 @@ export function requestCacheFromPool(renderLanes) {
   // - One of several fiber types: host root, cache boundary, suspense
   //   component. These retain and release in the commit phase.
 
-  const root = $unwrap(getWorkInProgressRoot());
+  const root = $unwrap(
+    getWorkInProgressRoot(),
+    'packages/react-reconciler/src/ReactFiberTransition.rs:257:44',
+  );
   const freshCache = createCache();
   root.pooledCache = freshCache;
   retainCache(freshCache);
@@ -313,6 +319,7 @@ export function getSuspendedCache() {
       isPrimaryRenderer
         ? CacheContext._currentValue
         : CacheContext._currentValue2,
+      'packages/react-reconciler/src/ReactFiberTransition.rs:358:14',
     ),
     pool: cacheFromPool,
   };
@@ -331,6 +338,7 @@ export function getOffscreenDeferredCache() {
       isPrimaryRenderer
         ? CacheContext._currentValue
         : CacheContext._currentValue2,
+      'packages/react-reconciler/src/ReactFiberTransition.rs:378:14',
     ),
     pool: cacheFromPool,
   };

@@ -40,14 +40,15 @@ import {
   createResumableState,
   createRootFormatContext,
 } from './ReactFizzConfigMarkup.js';
-import {$cleanup} from '@rust-js/std';
+import {$cleanup, $panic} from '@rust-js/std';
 
 // This is the intersection of ReactNodeList and ReactClientValue minus
 // Client/ServerReferences.
 
 function noServerCallOrFormAction(id, args) {
-  throw new Error(
+  throw $panic(
     'renderToHTML should not have emitted Server References. This is a bug in React.',
+    'packages/react-markup/src/ReactMarkupServer.rs:57:5',
   );
 }
 

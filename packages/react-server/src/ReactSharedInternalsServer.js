@@ -10,6 +10,7 @@ import {$unwrap} from '@rust-js/std';
 
 const ReactSharedInternalsServer = $unwrap(
   React.__SERVER_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+  'packages/react-server/src/ReactSharedInternalsServer.rs:15:93',
   'The "react" package in this environment is not configured correctly. The "react-server" condition must be enabled in any environment that runs React Server Components.',
 );
 

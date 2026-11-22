@@ -191,9 +191,11 @@ import {
   $insertAt,
   $iter,
   $next,
+  $panic,
   $removeOutOfBounds,
   $some,
   $someValue,
+  $stdSites,
   $stringPanic,
   $symbolFor,
   $truncate,
@@ -304,7 +306,10 @@ function isEligibleForOutlining(request, boundary) {
 function defaultErrorHandler(error, errorInfo) {
   if (typeof error === 'object') {
     const environmentName =
-      error !== null ? $unwrap(error).environmentName : undefined;
+      error !== null
+        ? $unwrap(error, 'packages/react-server/src/ReactFizzServer.rs:690:40')
+            .environmentName
+        : undefined;
     if (typeof environmentName === 'string') {
       // This was a Server error. We print the environment name in a badge just like we do with
       // replays of console logs to indicate that the source of this throw as actually the Server.
@@ -641,7 +646,7 @@ function pingRejectedTask(request, task, error) {
   }
   const abortSet = task.abortSet;
   if (abortSet.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:1053:19');
   }
   if (!abortSet.delete(task)) {
     // finishAbort already completed this task with the request's abort reason.
@@ -687,6 +692,7 @@ function createSuspenseBoundary(
     row.pendingTasks++;
     const {value: blockedBoundaries} = $borrowMut(
       $fieldCell(row, 'boundaries', true),
+      'packages/react-server/src/ReactFizzServer.rs:1098:58',
     );
     if (blockedBoundaries != null) {
       // Previous rows will block this boundary itself from completing.
@@ -761,7 +767,7 @@ function createRenderTask(
     debugTask: (__DEV__ ? debugTask : undefined) ?? null,
   };
   if (abortSet.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:1192:15');
   }
   abortSet.add(task);
   return task;
@@ -815,7 +821,7 @@ function createReplayTask(
     debugTask: (__DEV__ ? debugTask : undefined) ?? null,
   };
   if (abortSet.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:1253:15');
   }
   abortSet.add(task);
   return task;
@@ -866,8 +872,9 @@ function getStackFromNode(stackNode) {
 function pushHaltedAwaitOnComponentStack(task, debugInfo) {
   if (!__DEV__) {
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'pushHaltedAwaitOnComponentStack should never be called in production. This is a bug in React.',
+      'packages/react-server/src/ReactFizzServer.rs:1301:9',
     );
   }
   if (debugInfo != null) {
@@ -953,7 +960,10 @@ function rerenderStalledTask(request, task) {
 function pushSuspendedCallSiteOnComponentStack(request, task) {
   setCaptureSuspendedCallSiteDEV(true);
   // refined at the callsite
-  const thenableState = $unwrap(task.thenableState);
+  const thenableState = $unwrap(
+    task.thenableState,
+    'packages/react-server/src/ReactFizzServer.rs:1400:63',
+  );
   const restoreThenableState = ensureSuspendableThenableStateDEV(thenableState);
   const result = $catchUnwind(() => rerenderStalledTask(request, task));
   restoreThenableState();
@@ -984,8 +994,9 @@ function pushSuspendedCallSiteOnComponentStack(request, task) {
 function pushServerComponentStack(task, debugInfo) {
   if (!__DEV__) {
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'pushServerComponentStack should never be called in production. This is a bug in React.',
+      'packages/react-server/src/ReactFizzServer.rs:1430:9',
     );
   }
   // Build a Server Component parent stack from the debugInfo.
@@ -1017,7 +1028,10 @@ function pushComponentStack(task) {
   // It's unfortunate that we need to do this refinement twice. Once for
   // the stack frame and then once again while actually
   if (typeof node === 'object' && node !== null) {
-    const node$1 = $unwrap(node);
+    const node$1 = $unwrap(
+      node,
+      'packages/react-server/src/ReactFizzServer.rs:1470:25',
+    );
     switch (node$1.$$typeof) {
       case REACT_ELEMENT_TYPE: {
         const element = node$1;
@@ -1129,7 +1143,10 @@ function encodeErrorForBoundary(
     // In dev we additionally encode the error message and component stack on the boundary
     let tmp;
     if (error instanceof Error) {
-      const error$1 = $unwrap(error);
+      const error$1 = $unwrap(
+        error,
+        'packages/react-server/src/ReactFizzServer.rs:1615:31',
+      );
       tmp = [
         // eslint-disable-next-line react-internal/safe-string-coercion
         String(error$1.message),
@@ -1137,7 +1154,15 @@ function encodeErrorForBoundary(
         String(error$1.stack),
       ];
     } else if (typeof error === 'object' && error !== null) {
-      tmp = [describeObjectForErrorMessage($unwrap(error)), undefined];
+      tmp = [
+        describeObjectForErrorMessage(
+          $unwrap(
+            error,
+            'packages/react-server/src/ReactFizzServer.rs:1624:57',
+          ),
+        ),
+        undefined,
+      ];
     } else {
       // eslint-disable-next-line react-internal/safe-string-coercion
       tmp = [String(error), undefined];
@@ -1281,7 +1306,10 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
   const parentBoundary = task.blockedBoundary;
   const parentPreamble = task.blockedPreamble;
   const parentHoistableState = task.hoistableState;
-  const parentSegment = $unwrap(task.blockedSegment);
+  const parentSegment = $unwrap(
+    task.blockedSegment,
+    'packages/react-server/src/ReactFizzServer.rs:1844:64',
+  );
 
   // Each time we enter a suspense boundary, we split out into a new segment for
   // the fallback so that we can later replace that segment with the content.
@@ -1304,7 +1332,9 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
   );
 
   if (parentSegment.chunks.borrows < 0) {
-    $alreadyMutablyBorrowed();
+    $alreadyMutablyBorrowed(
+      'packages/react-server/src/ReactFizzServer.rs:1867:49',
+    );
   }
   const {length: insertionIndex} = parentSegment.chunks;
   // The children of the boundary segment is actually the fallback.
@@ -1318,7 +1348,7 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
     false,
   );
   if (parentSegment.children.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:1880:10');
   }
   parentSegment.children.push(boundarySegment);
   // The parentSegment has a child Segment at this index so we reset the lastPushedText marker on the parent
@@ -1660,10 +1690,17 @@ function replaySuspenseBoundary(
     // We use the safe form because we don't handle suspending here. Only error handling.
     renderNode(request, task, content, -1);
 
-    if (replay.pendingTasks === 1 && $borrow(replay.nodes).length !== 0) {
-      throw new Error(
+    if (
+      replay.pendingTasks === 1 &&
+      $borrow(
+        replay.nodes,
+        'packages/react-server/src/ReactFizzServer.rs:2254:63',
+      ).length !== 0
+    ) {
+      throw $panic(
         "Couldn't find all resumable slots by key/index during replaying. " +
           "The tree doesn't match so React will fallback to client rendering.",
+        'packages/react-server/src/ReactFizzServer.rs:2255:13',
       );
     }
     replay.pendingTasks--;
@@ -1783,7 +1820,10 @@ function unblockSuspenseListRow(request, unblockedRow, inheritedHoistables) {
     // Unblocking the boundaries will decrement the count of this row but we keep it above
     // zero so they never finish this row recursively.
     const unblockedBoundaries = $cellReplace(
-      $borrowMut($fieldCell(unblockedRow, 'boundaries', true)),
+      $borrowMut(
+        $fieldCell(unblockedRow, 'boundaries', true),
+        $stdSites.refCellTake[0],
+      ),
     );
     if (unblockedBoundaries != null) {
       for (let i = 0; i < unblockedBoundaries.length; i++) {
@@ -1814,7 +1854,10 @@ function trackPostponedSuspenseListRow(
   // and so ends up recursive which can lead to stack overflow for very long lists.
   if (postponedRow != null) {
     const postponedBoundaries = $cellReplace(
-      $borrowMut($fieldCell(postponedRow, 'boundaries', true)),
+      $borrowMut(
+        $fieldCell(postponedRow, 'boundaries', true),
+        $stdSites.refCellTake[0],
+      ),
     );
     if (postponedBoundaries != null) {
       for (let i = 0; i < postponedBoundaries.length; i++) {
@@ -1830,7 +1873,11 @@ function tryToResolveTogetherRow(request, togetherRow) {
   // If we have a "together" row and all the pendingTasks are really the boundaries themselves,
   // and we won't outline any of them then we can unblock this row early so that we can inline
   // all the boundaries at once.
-  const boundaries = $borrow($fieldCell(togetherRow, 'boundaries', true), true);
+  const boundaries = $borrow(
+    $fieldCell(togetherRow, 'boundaries', true),
+    'packages/react-server/src/ReactFizzServer.rs:2426:50',
+    true,
+  );
   const boundaries$1 = boundaries.value;
   if (boundaries$1 != null) {
     if (togetherRow.pendingTasks === boundaries$1.length) {
@@ -1870,7 +1917,13 @@ function createSuspenseListRow(previousRow) {
     // If the previous row is not done yet, we add ourselves to be blocked on it.
     // When it finishes, we'll decrement our pending tasks.
     newRow.pendingTasks++;
-    $cellReplace($borrowMut($fieldCell(newRow, 'boundaries', true)), []);
+    $cellReplace(
+      $borrowMut(
+        $fieldCell(newRow, 'boundaries', true),
+        'packages/react-server/src/ReactFizzServer.rs:2463:28',
+      ),
+      [],
+    );
     previousRow.next = newRow;
   }
   return newRow;
@@ -1913,7 +1966,11 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
         const i = !isBackwards(revealOrder)
           ? n
           : (((totalChildren - 1) >>> 0) - n) >>> 0;
-        const node = $index(rows, i);
+        const node = $index(
+          rows,
+          i,
+          'packages/react-server/src/ReactFizzServer.rs:2534:28',
+        );
         const row = createSuspenseListRow(previousSuspenseListRow);
         task.row = row;
         previousSuspenseListRow = row;
@@ -1941,7 +1998,11 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
         const i = !isBackwards(revealOrder)
           ? n
           : (((totalChildren - 1) >>> 0) - n) >>> 0;
-        const node = $index(rows, i);
+        const node = $index(
+          rows,
+          i,
+          'packages/react-server/src/ReactFizzServer.rs:2568:28',
+        );
         if (__DEV__) {
           warnForMissingKey(request, task, node);
         }
@@ -1976,13 +2037,20 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
     // For backwards direction we need to do things a bit differently.
     // We give each row its own segment so that we can render the content in
     // reverse order but still emit it in the right order when we flush.
-    const parentSegment = $unwrap(task.blockedSegment);
+    const parentSegment = $unwrap(
+      task.blockedSegment,
+      'packages/react-server/src/ReactFizzServer.rs:2611:68',
+    );
     if (parentSegment.children.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:2612:51',
+      );
     }
     const {length: childIndex} = parentSegment.children;
     if (parentSegment.chunks.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:2613:53',
+      );
     }
     const {length: insertionIndex} = parentSegment.chunks;
     for (let n = 0; n < totalChildren; n++) {
@@ -1990,7 +2058,11 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
         revealOrder === 'unstable_legacy-backwards'
           ? (((totalChildren - 1) >>> 0) - n) >>> 0
           : n;
-      const node = $index(rows, i);
+      const node = $index(
+        rows,
+        i,
+        'packages/react-server/src/ReactFizzServer.rs:2620:24',
+      );
       const row = createSuspenseListRow(previousSuspenseListRow);
       task.row = row;
       previousSuspenseListRow = row;
@@ -2006,9 +2078,16 @@ function renderSuspenseListRows(request, task, keyPath, rows, revealOrder) {
       );
       // Insert in the beginning of the sequence, which will insert before any previous rows.
       if (parentSegment.children.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:2645:18',
+        );
       }
-      $insertAt(parentSegment.children, childIndex, newSegment);
+      $insertAt(
+        parentSegment.children,
+        childIndex,
+        newSegment,
+        'packages/react-server/src/ReactFizzServer.rs:2646:18',
+      );
       task.blockedSegment = newSegment;
       if (__DEV__) {
         warnForMissingKey(request, task, node);
@@ -2187,7 +2266,13 @@ function renderSuspenseList(request, task, keyPath, props) {
     task.row = newRow;
     // This will cause boundaries to block on this row, but there's nothing to
     // unblock them. We'll use the partial flushing pass to unblock them.
-    $cellReplace($borrowMut($fieldCell(newRow, 'boundaries', true)), []);
+    $cellReplace(
+      $borrowMut(
+        $fieldCell(newRow, 'boundaries', true),
+        'packages/react-server/src/ReactFizzServer.rs:2854:28',
+      ),
+      [],
+    );
     newRow.together = true;
     task.keyPath = keyPath;
     renderNodeDestructive(request, task, children, -1);
@@ -2222,7 +2307,7 @@ function renderPreamble(request, task, blockedSegment, node) {
     false,
   );
   if (blockedSegment.preambleChildren.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:2905:10');
   }
   blockedSegment.preambleChildren.push(preambleSegment);
   task.blockedSegment = preambleSegment;
@@ -2328,7 +2413,10 @@ function renderWithHooks(request, task, keyPath, component, props, secondArg) {
     prevThenableState,
   );
   const result = __DEV__
-    ? $unwrap(callComponentInDEV)(component, props, secondArg)
+    ? $unwrap(
+        callComponentInDEV,
+        'packages/react-server/src/ReactFizzServer.rs:3150:82',
+      )(component, props, secondArg)
     : component(props, secondArg);
   return finishHooks(component, props, result, secondArg);
 }
@@ -2343,7 +2431,10 @@ function finishClassComponent(
 ) {
   const instanceOfClass = instance;
   const nextChildren = __DEV__
-    ? $unwrap(callRenderInDEV)(instanceOfClass)
+    ? $unwrap(
+        callRenderInDEV,
+        'packages/react-server/src/ReactFizzServer.rs:3169:73',
+      )(instanceOfClass)
     : instanceOfClass.render();
   if (request.aborted) {
     // eslint-disable-next-line no-throw-literal
@@ -2725,7 +2816,10 @@ function renderLazyComponent(
 ) {
   let component;
   if (__DEV__) {
-    component = $unwrap(callLazyInitInDEV)(lazyComponent);
+    component = $unwrap(
+      callLazyInitInDEV,
+      'packages/react-server/src/ReactFizzServer.rs:3639:82',
+    )(lazyComponent);
   } else {
     const payload = lazyComponent._payload;
     const init = lazyComponent._init;
@@ -2931,7 +3025,10 @@ function renderElement(request, task, keyPath, type, props, ref) {
         task.keyPath = prevKeyPath;
         return;
       }
-      throw new Error('ReactDOMServer does not yet support scope components.');
+      throw $panic(
+        'ReactDOMServer does not yet support scope components.',
+        'packages/react-server/src/ReactFizzServer.rs:3856:13',
+      );
     // $FlowFixMe[invalid-compare]
     case REACT_SUSPENSE_TYPE:
       renderSuspenseBoundary(request, task, keyPath, props);
@@ -2986,6 +3083,7 @@ function renderElement(request, task, keyPath, type, props, ref) {
     `Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: ${
       type == null ? String(type) : typeof type
     }.${info}`,
+    'packages/react-server/src/ReactFizzServer.rs:3923:5',
   );
 }
 
@@ -3082,13 +3180,21 @@ function replayElement(
   // We're replaying. Find the path to follow.
   const replayNodes = replay.nodes;
   let i = 0;
-  while (i < $borrow(replayNodes).length) {
+  while (
+    i <
+    $borrow(replayNodes, 'packages/react-server/src/ReactFizzServer.rs:4010:28')
+      .length
+  ) {
     // Flow doesn't support refinement on tuples so we do it manually here.
     if (replayNodes.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:4012:33',
+      );
     }
     if (replayNodes[i].borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:4012:45',
+      );
     }
     const node = cloneReplayNode(replayNodes[i]);
     const nodeKey = node[1];
@@ -3103,6 +3209,7 @@ function replayElement(
       if (name != null && name !== nodeName) {
         throw $stringPanic(
           `Expected the resume to render <${String(nodeName)}> in this slot but instead it rendered <${name}>. The tree doesn't match so React will fallback to client rendering.`,
+          'packages/react-server/src/ReactFizzServer.rs:4026:21',
         );
       }
       const currentNode = task.node;
@@ -3116,12 +3223,16 @@ function replayElement(
         renderElement(request, task, keyPath, type, props, ref);
         if (
           childReplay.pendingTasks === 1 &&
-          $borrow(childReplay.nodes).length !== 0
+          $borrow(
+            childReplay.nodes,
+            'packages/react-server/src/ReactFizzServer.rs:4042:48',
+          ).length !== 0
         ) {
           // TODO check remaining slots
-          throw new Error(
+          throw $panic(
             "Couldn't find all resumable slots by key/index during replaying. " +
               "The tree doesn't match so React will fallback to client rendering.",
+            'packages/react-server/src/ReactFizzServer.rs:4045:25',
           );
         }
         childReplay.pendingTasks--;
@@ -3144,10 +3255,16 @@ function replayElement(
           } else {
             // We finished rendering this node, so now we can consume this slot.
             if (replayNodes.borrows) {
-              $alreadyBorrowed();
+              $alreadyBorrowed(
+                'packages/react-server/src/ReactFizzServer.rs:4070:42',
+              );
             }
             if (i >= replayNodes.length) {
-              $removeOutOfBounds(replayNodes, i);
+              $removeOutOfBounds(
+                replayNodes,
+                i,
+                'packages/react-server/src/ReactFizzServer.rs:4070:55',
+              );
             }
             replayNodes.splice(i, 1);
           }
@@ -3182,6 +3299,7 @@ function replayElement(
           `Expected the resume to render <${expectedType}> in this slot but instead it rendered <${
             getComponentNameFromType(type) || 'Unknown'
           }>. The tree doesn't match so React will fallback to client rendering.`,
+          'packages/react-server/src/ReactFizzServer.rs:4112:21',
         );
       }
       // Matched a replayable path.
@@ -3192,7 +3310,9 @@ function replayElement(
         fallbackSlots = null;
       } else {
         if (fallback.borrows < 0) {
-          $alreadyMutablyBorrowed();
+          $alreadyMutablyBorrowed(
+            'packages/react-server/src/ReactFizzServer.rs:4123:56',
+          );
         }
         const [, , nodes, slots] = fallback;
         fallbackNodes = nodes;
@@ -3213,10 +3333,14 @@ function replayElement(
     // We finished rendering this node, so now we can consume this
     // slot. This must happen after in case we rerender this task.
     if (replayNodes.borrows) {
-      $alreadyBorrowed();
+      $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:4145:22');
     }
     if (i >= replayNodes.length) {
-      $removeOutOfBounds(replayNodes, i);
+      $removeOutOfBounds(
+        replayNodes,
+        i,
+        'packages/react-server/src/ReactFizzServer.rs:4145:35',
+      );
     }
     replayNodes.splice(i, 1);
     return;
@@ -3360,13 +3484,19 @@ function retryNode(request, task) {
 
   // Handle object types
   if (typeof node === 'object') {
-    const node$1 = $unwrap(node);
+    const node$1 = $unwrap(
+      node,
+      'packages/react-server/src/ReactFizzServer.rs:4331:25',
+    );
     switch (node$1.$$typeof) {
       case REACT_ELEMENT_TYPE: {
         const element = node$1;
         const type = element.type;
         const key = element.key;
-        const props = $unwrap(element.props);
+        const props = $unwrap(
+          element.props,
+          'packages/react-server/src/ReactFizzServer.rs:4337:55',
+        );
 
         // TODO: We should get the ref off the props object right before using
         // it.
@@ -3430,15 +3560,19 @@ function retryNode(request, task) {
         return;
       }
       case REACT_PORTAL_TYPE:
-        throw new Error(
+        throw $panic(
           'Portals are not currently supported by the server renderer. ' +
             'Render them conditionally so that they only appear on the client render.',
+          'packages/react-server/src/ReactFizzServer.rs:4410:17',
         );
       case REACT_LAZY_TYPE: {
         const lazyNode = node$1;
         let resolvedNode;
         if (__DEV__) {
-          resolvedNode = $unwrap(callLazyInitInDEV)(lazyNode);
+          resolvedNode = $unwrap(
+            callLazyInitInDEV,
+            'packages/react-server/src/ReactFizzServer.rs:4419:77',
+          )(lazyNode);
         } else {
           const payload = lazyNode._payload;
           const init = lazyNode._init;
@@ -3602,6 +3736,7 @@ function retryNode(request, task) {
           ? 'object with keys {' + Object.keys(node$1).join(', ') + '}'
           : childString
       }). If you meant to render a collection of children, use an array instead.`,
+      'packages/react-server/src/ReactFizzServer.rs:4596:9',
     );
   }
 
@@ -3651,19 +3786,28 @@ function retryNode(request, task) {
 function replayFragment(request, task, children, childIndex) {
   // If we're supposed follow this array, we'd expect to see a ReplayNode matching
   // this fragment.
-  const replay = $unwrap(task.replay);
+  const replay = $unwrap(
+    task.replay,
+    'packages/react-server/src/ReactFizzServer.rs:4656:47',
+  );
   const replayNodes = replay.nodes;
   let j = 0;
   while (true) {
     if (replayNodes.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:4659:28',
+      );
     }
     if (j < replayNodes.length) {
       if (replayNodes.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:4660:33',
+        );
       }
       if (replayNodes[j].borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:4660:45',
+        );
       }
       const node = cloneReplayNode(replayNodes[j]);
       const [, nodeKey, childNodes, childSlots] = node;
@@ -3682,11 +3826,15 @@ function replayFragment(request, task, children, childIndex) {
         renderChildrenArray(request, task, children, -1);
         if (
           childReplay.pendingTasks === 1 &&
-          $borrow(childReplay.nodes).length !== 0
+          $borrow(
+            childReplay.nodes,
+            'packages/react-server/src/ReactFizzServer.rs:4682:79',
+          ).length !== 0
         ) {
-          throw new Error(
+          throw $panic(
             "Couldn't find all resumable slots by key/index during replaying. " +
               "The tree doesn't match so React will fallback to client rendering.",
+            'packages/react-server/src/ReactFizzServer.rs:4683:17',
           );
         }
         childReplay.pendingTasks--;
@@ -3727,10 +3875,16 @@ function replayFragment(request, task, children, childIndex) {
       // We finished rendering this node, so now we can consume this
       // slot. This must happen after in case we rerender this task.
       if (replayNodes.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:4732:22',
+        );
       }
       if (j >= replayNodes.length) {
-        $removeOutOfBounds(replayNodes, j);
+        $removeOutOfBounds(
+          replayNodes,
+          j,
+          'packages/react-server/src/ReactFizzServer.rs:4732:35',
+        );
       }
       replayNodes.splice(j, 1);
     }
@@ -3757,9 +3911,10 @@ function warnForMissingKey(request, task, child) {
     }
 
     if (typeof store !== 'object') {
-      throw new Error(
+      throw $panic(
         'React Component in warnForMissingKey should have a _store. ' +
           'This error is likely caused by a bug in React. Please file an issue.',
+        'packages/react-server/src/ReactFizzServer.rs:4759:13',
       );
     }
 
@@ -3936,15 +4091,17 @@ function trackPostponedBoundary(request, trackedPostpones, boundary) {
 
   const tracked = boundary.tracked;
   if (tracked == null) {
-    throw new Error(
+    throw $panic(
       'It should not be possible to postpone at the root. This is a bug in React.',
+      'packages/react-server/src/ReactFizzServer.rs:4965:9',
     );
   }
 
   const boundaryKeyPath = tracked.contentKeyPath;
   if (boundaryKeyPath == null) {
-    throw new Error(
+    throw $panic(
       'It should not be possible to postpone at the root. This is a bug in React.',
+      'packages/react-server/src/ReactFizzServer.rs:4969:9',
     );
   }
 
@@ -3967,7 +4124,7 @@ function trackPostponedBoundary(request, trackedPostpones, boundary) {
   } else {
     // Upgrade to ReplaySuspenseBoundary.
     if (boundaryNode.borrows) {
-      $alreadyBorrowed();
+      $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:5005:46');
     }
     const [name, key, children, slots] = boundaryNode;
     $assign(boundaryNode, [
@@ -4027,7 +4184,11 @@ function trackPostpone(request, trackedPostpones, task, segment) {
             segment.id = nextSegmentId(request);
           }
         }
-        const borrowMut = $borrowMut(boundaryNode, true);
+        const borrowMut = $borrowMut(
+          boundaryNode,
+          'packages/react-server/src/ReactFizzServer.rs:5070:37',
+          true,
+        );
         // We postponed directly inside the Suspense boundary so we mark this for resuming.
         const slots = {
           get value() {
@@ -4069,7 +4230,11 @@ function trackPostpone(request, trackedPostpones, task, segment) {
         const resumableNode = [keyPath[1], keyPath[2], [], segment.id];
         addToReplayParent(resumableNode, keyPath[0], trackedPostpones);
       } else {
-        const borrowMut = $borrowMut(resumableNode, true);
+        const borrowMut = $borrowMut(
+          resumableNode,
+          'packages/react-server/src/ReactFizzServer.rs:5119:50',
+          true,
+        );
         const slots = {
           get value() {
             return borrowMut[3];
@@ -4090,9 +4255,10 @@ function trackPostpone(request, trackedPostpones, task, segment) {
         slots = {};
         trackedPostpones.rootSlots = slots;
       } else if (typeof slots$1 === 'number') {
-        throw new Error(
+        throw $panic(
           'It should not be possible to postpone both at the root of an element ' +
             'as well as a slot below. This is a bug in React.',
+          'packages/react-server/src/ReactFizzServer.rs:5138:25',
         );
       } else {
         slots = slots$1;
@@ -4107,7 +4273,9 @@ function trackPostpone(request, trackedPostpones, task, segment) {
         addToReplayParent(resumableNode, keyPath[0], trackedPostpones);
       } else {
         if (resumableNode.borrows) {
-          $alreadyBorrowed();
+          $alreadyBorrowed(
+            'packages/react-server/src/ReactFizzServer.rs:5170:65',
+          );
         }
         const resumableSlots = {
           get value() {
@@ -4122,9 +4290,10 @@ function trackPostpone(request, trackedPostpones, task, segment) {
           slots = {};
           resumableSlots.value = slots;
         } else if (typeof slots$1 === 'number') {
-          throw new Error(
+          throw $panic(
             'It should not be possible to postpone both at the root of an element ' +
               'as well as a slot below. This is a bug in React.',
+            'packages/react-server/src/ReactFizzServer.rs:5187:33',
           );
         } else {
           slots = slots$1;
@@ -4159,7 +4328,7 @@ function untrackBoundary(request, boundary) {
   // Downgrade to plain ReplayNode since we won't replay through it.
   // $FlowFixMe[cannot-write]: We intentionally downgrade this to the other tuple.
   if (boundaryNode.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:5225:34');
   }
   const [name, key] = boundaryNode;
   // Remove any resumable slots.
@@ -4179,7 +4348,10 @@ function spawnNewSuspendedReplayTask(request, task, thenableState) {
   return createReplayTask(
     request,
     thenableState,
-    $unwrap(task.replay),
+    $unwrap(
+      task.replay,
+      'packages/react-server/src/ReactFizzServer.rs:5254:38',
+    ),
     task.node,
     task.childIndex,
     blockedBoundary,
@@ -4198,9 +4370,14 @@ function spawnNewSuspendedReplayTask(request, task, thenableState) {
 
 function spawnNewSuspendedRenderTask(request, task, thenableState) {
   // Something suspended, we'll need to create a new segment and resolve it later.
-  const segment = $unwrap(task.blockedSegment);
+  const segment = $unwrap(
+    task.blockedSegment,
+    'packages/react-server/src/ReactFizzServer.rs:5281:57',
+  );
   if (segment.chunks.borrows < 0) {
-    $alreadyMutablyBorrowed();
+    $alreadyMutablyBorrowed(
+      'packages/react-server/src/ReactFizzServer.rs:5282:42',
+    );
   }
   const {length: insertionIndex} = segment.chunks;
   const newSegment = createPendingSegment(
@@ -4214,7 +4391,7 @@ function spawnNewSuspendedRenderTask(request, task, thenableState) {
     true,
   );
   if (segment.children.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:5293:22');
   }
   segment.children.push(newSegment);
   // Reset lastPushedText for current Segment since the new Segment "consumed" it
@@ -4262,7 +4439,7 @@ function postponeNewSuspendedRenderTask(request, task, thenableState) {
   }
   const abortSet = postponedTask.abortSet;
   if (abortSet.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:5342:15');
   }
   abortSet.delete(postponedTask);
   if (__DEV__) {
@@ -4395,11 +4572,15 @@ function renderNode(request, task, node, childIndex) {
   } else {
     // Render
     if (segment.children.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:5486:52',
+      );
     }
     const {length: childrenLength} = segment.children;
     if (segment.chunks.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:5487:47',
+      );
     }
     const {length: chunkLength} = segment.chunks;
     try {
@@ -4411,11 +4592,15 @@ function renderNode(request, task, node, childIndex) {
 
       // Reset the write pointers to where we started.
       if (segment.children.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:5496:30',
+        );
       }
       $truncate(segment.children, childrenLength);
       if (segment.chunks.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:5497:28',
+        );
       }
       $truncate(segment.chunks, chunkLength);
 
@@ -4738,7 +4923,11 @@ function abortRemainingReplayNodes(
   errorInfo,
   aborted,
 ) {
-  const borrow = $borrow(nodes, true);
+  const borrow = $borrow(
+    nodes,
+    'packages/react-server/src/ReactFizzServer.rs:5856:23',
+    true,
+  );
   let iter;
   try {
     iter = $iter(borrow);
@@ -4760,7 +4949,11 @@ function abortRemainingReplayNodes(
     }
     let boundaryNode;
     try {
-      boundaryNode = $borrow(node, true);
+      boundaryNode = $borrow(
+        node,
+        'packages/react-server/src/ReactFizzServer.rs:5857:22',
+        true,
+      );
     } catch (error) {
       $unborrow(borrow);
       throw error;
@@ -4802,15 +4995,19 @@ function abortRemainingReplayNodes(
     $unborrow(boundaryNode);
   }
   // Empty the set, since we've cleared it now.
-  $borrowMut(nodes).length = 0;
+  $borrowMut(
+    nodes,
+    'packages/react-server/src/ReactFizzServer.rs:5884:11',
+  ).length = 0;
 
   if (slots !== null) {
     // We had something still to resume in the parent boundary. We must trigger
     // the error on the parent boundary since it's not able to complete.
     if (boundary == null) {
-      throw new Error(
+      throw $panic(
         'We should not have any resumable nodes in the shell. ' +
           'This is a bug in React.',
+        'packages/react-server/src/ReactFizzServer.rs:5891:17',
       );
     }
     if (boundary.status !== CLIENT_RENDERED) {
@@ -4885,7 +5082,11 @@ function abortTask(task, request) {
   }
 
   if (boundary != null) {
-    const borrow = $borrow(boundary.fallbackAbortableTasks, true);
+    const borrow = $borrow(
+      boundary.fallbackAbortableTasks,
+      'packages/react-server/src/ReactFizzServer.rs:5978:64',
+      true,
+    );
     try {
       for (const fallbackTask of borrow) {
         abortTask(fallbackTask, request);
@@ -4952,7 +5153,13 @@ function finishAbortedTask(task, request, error) {
       // we should be able to recover by client rendering all the root boundaries in
       // the ReplaySet.
       replay.pendingTasks--;
-      if (replay.pendingTasks === 0 && $borrow(replay.nodes).length !== 0) {
+      if (
+        replay.pendingTasks === 0 &&
+        $borrow(
+          replay.nodes,
+          'packages/react-server/src/ReactFizzServer.rs:6055:71',
+        ).length !== 0
+      ) {
         const errorDigest = logRecoverableError(request, error, errorInfo);
         abortRemainingReplayNodes(
           request,
@@ -4982,7 +5189,11 @@ function finishAbortedTask(task, request, error) {
         trackPostpone(request, trackedPostpones, task, segment);
         // If this boundary was still pending then we haven't already cancelled its fallbacks.
         // We'll need to abort the fallbacks, which will also error that parent boundary.
-        const borrow = $borrow(boundary.fallbackAbortableTasks, true);
+        const borrow = $borrow(
+          boundary.fallbackAbortableTasks,
+          'packages/react-server/src/ReactFizzServer.rs:6091:76',
+          true,
+        );
         try {
           for (const fallbackTask of borrow) {
             finishAbortedTask(fallbackTask, request, error);
@@ -4991,7 +5202,9 @@ function finishAbortedTask(task, request, error) {
           $unborrow(borrow);
         }
         if (boundary.fallbackAbortableTasks.borrows) {
-          $alreadyBorrowed();
+          $alreadyBorrowed(
+            'packages/react-server/src/ReactFizzServer.rs:6094:55',
+          );
         }
         boundary.fallbackAbortableTasks.clear();
         const row = task.row;
@@ -5029,7 +5242,11 @@ function finishAbortedTask(task, request, error) {
 
     // If this boundary was still pending then we haven't already cancelled its fallbacks.
     // We'll need to abort the fallbacks, which will also error that parent boundary.
-    const value = $borrow(boundary.fallbackAbortableTasks, true);
+    const value = $borrow(
+      boundary.fallbackAbortableTasks,
+      'packages/react-server/src/ReactFizzServer.rs:6132:68',
+      true,
+    );
     try {
       for (const fallbackTask of value) {
         finishAbortedTask(fallbackTask, request, error);
@@ -5038,7 +5255,7 @@ function finishAbortedTask(task, request, error) {
       $unborrow(value);
     }
     if (boundary.fallbackAbortableTasks.borrows) {
-      $alreadyBorrowed();
+      $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:6135:47');
     }
     boundary.fallbackAbortableTasks.clear();
   }
@@ -5076,8 +5293,9 @@ function finishAbortedTaskDEV(task, request, error) {
   } else {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'finishAbortedTaskDEV should never be called in production mode. This is a bug in React.',
+      'packages/react-server/src/ReactFizzServer.rs:6177:9',
     );
   }
 }
@@ -5101,8 +5319,9 @@ function abortTaskDEV(task, request) {
   } else {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'abortTaskDEV should never be called in production mode. This is a bug in React.',
+      'packages/react-server/src/ReactFizzServer.rs:6201:9',
     );
   }
 }
@@ -5118,7 +5337,7 @@ function abortUnwoundTask(task, request) {
   }
   const abortSet = task.abortSet;
   if (abortSet.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:6215:15');
   }
   abortSet.delete(task);
   if (__DEV__) {
@@ -5194,18 +5413,27 @@ function completeAll(request) {
 
 function queueCompletedSegment(boundary, segment) {
   if (segment.children.borrows < 0) {
-    $alreadyMutablyBorrowed();
+    $alreadyMutablyBorrowed(
+      'packages/react-server/src/ReactFizzServer.rs:6307:41',
+    );
   }
   const children = segment.children;
   if (segment.chunks.borrows < 0) {
-    $alreadyMutablyBorrowed();
+    $alreadyMutablyBorrowed(
+      'packages/react-server/src/ReactFizzServer.rs:6308:25',
+    );
   }
   const onlyChild =
     segment.chunks.length === 0 &&
     children.length === 1 &&
     children[0].boundary == null &&
-    $index(children, 0).id === -1
-      ? $index(children, 0)
+    $index(children, 0, 'packages/react-server/src/ReactFizzServer.rs:6311:24')
+      .id === -1
+      ? $index(
+          children,
+          0,
+          'packages/react-server/src/ReactFizzServer.rs:6312:41',
+        )
       : undefined;
   if (onlyChild != null) {
     // This is an empty segment. There's nothing to write, so we can instead transfer the ID
@@ -5222,7 +5450,7 @@ function queueCompletedSegment(boundary, segment) {
   } else {
     const completedSegments = boundary.completedSegments;
     if (completedSegments.borrows) {
-      $alreadyBorrowed();
+      $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:6327:28');
     }
     completedSegments.push(segment);
   }
@@ -5234,7 +5462,11 @@ function finishedSegment(request, boundary, segment) {
     // Count the bytes of all the chunks of this segment.
     const chunks = segment.chunks;
     let segmentByteSize = 0;
-    const borrow = $borrow(chunks, true);
+    const borrow = $borrow(
+      chunks,
+      'packages/react-server/src/ReactFizzServer.rs:6337:30',
+      true,
+    );
     try {
       for (let i = 0; i < borrow.length; i++) {
         const chunk = borrow[i];
@@ -5265,8 +5497,9 @@ function finishedTask(request, boundary, row, segment) {
   if (boundary == null) {
     if (segment != null && segment.parentFlushed) {
       if (request.completedRootSegment != null) {
-        throw new Error(
+        throw $panic(
           'There can only be one root segment. This is a bug in React.',
+          'packages/react-server/src/ReactFizzServer.rs:6375:21',
         );
       }
 
@@ -5324,7 +5557,11 @@ function finishedTask(request, boundary, row, segment) {
           // fan-outs so a nested finishedTask can't observe 0 and call completeAll
           // before this outer call reaches its own zero check.
           request.allPendingTasks++;
-          const borrow = $borrow(boundary.fallbackAbortableTasks, true);
+          const borrow = $borrow(
+            boundary.fallbackAbortableTasks,
+            'packages/react-server/src/ReactFizzServer.rs:6449:80',
+            true,
+          );
           try {
             for (const fallbackTask of borrow) {
               abortTaskSoft(request, fallbackTask);
@@ -5333,7 +5570,9 @@ function finishedTask(request, boundary, row, segment) {
             $unborrow(borrow);
           }
           if (boundary.fallbackAbortableTasks.borrows) {
-            $alreadyBorrowed();
+            $alreadyBorrowed(
+              'packages/react-server/src/ReactFizzServer.rs:6452:59',
+            );
           }
           boundary.fallbackAbortableTasks.clear();
           if (boundaryRow != null) {
@@ -5390,7 +5629,9 @@ function finishedTask(request, boundary, row, segment) {
           queueCompletedSegment(boundary, segment);
           const completedSegments = boundary.completedSegments;
           if (completedSegments.borrows < 0) {
-            $alreadyMutablyBorrowed();
+            $alreadyMutablyBorrowed(
+              'packages/react-server/src/ReactFizzServer.rs:6521:47',
+            );
           }
           if (completedSegments.length === 1) {
             // This is the first time since we last flushed that we completed anything.
@@ -5451,11 +5692,15 @@ function retryRenderTask(request, task, segment) {
   }
 
   if (segment.children.borrows < 0) {
-    $alreadyMutablyBorrowed();
+    $alreadyMutablyBorrowed(
+      'packages/react-server/src/ReactFizzServer.rs:6586:44',
+    );
   }
   const {length: childrenLength} = segment.children;
   if (segment.chunks.borrows < 0) {
-    $alreadyMutablyBorrowed();
+    $alreadyMutablyBorrowed(
+      'packages/react-server/src/ReactFizzServer.rs:6587:39',
+    );
   }
   const {length: chunkLength} = segment.chunks;
   // Used to detect forward progress if we hit a stack overflow below.
@@ -5473,7 +5718,7 @@ function retryRenderTask(request, task, segment) {
     );
 
     if (task.abortSet.borrows) {
-      $alreadyBorrowed();
+      $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:6602:33');
     }
     task.abortSet.delete(task);
     segment.status = COMPLETED;
@@ -5491,11 +5736,15 @@ function retryRenderTask(request, task, segment) {
 
       // Reset the write pointers to where we started.
       if (segment.children.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:6620:30',
+        );
       }
       $truncate(segment.children, childrenLength);
       if (segment.chunks.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:6621:28',
+        );
       }
       $truncate(segment.chunks, chunkLength);
 
@@ -5558,7 +5807,9 @@ function retryRenderTask(request, task, segment) {
       const componentStack = task.componentStack;
       const errorInfo = getThrownInfo(componentStack);
       if (task.abortSet.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:6684:37',
+        );
       }
       task.abortSet.delete(task);
 
@@ -5586,7 +5837,10 @@ function retryRenderTask(request, task, segment) {
 }
 
 function retryReplayTask(request, task) {
-  const replay = $unwrap(task.replay);
+  const replay = $unwrap(
+    task.replay,
+    'packages/react-server/src/ReactFizzServer.rs:6709:47',
+  );
   if (replay.pendingTasks === 0) {
     // There are no pending tasks working on this set, so we must have aborted.
     return;
@@ -5618,16 +5872,23 @@ function retryReplayTask(request, task) {
       retryNode(request, task);
     }
 
-    if (replay.pendingTasks === 1 && $borrow(replay.nodes).length !== 0) {
-      throw new Error(
+    if (
+      replay.pendingTasks === 1 &&
+      $borrow(
+        replay.nodes,
+        'packages/react-server/src/ReactFizzServer.rs:6746:63',
+      ).length !== 0
+    ) {
+      throw $panic(
         "Couldn't find all resumable slots by key/index during replaying. " +
           "The tree doesn't match so React will fallback to client rendering.",
+        'packages/react-server/src/ReactFizzServer.rs:6747:13',
       );
     }
     replay.pendingTasks--;
 
     if (task.abortSet.borrows) {
-      $alreadyBorrowed();
+      $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:6754:33');
     }
     task.abortSet.delete(task);
     const blockedBoundary = task.blockedBoundary;
@@ -5698,7 +5959,9 @@ function retryReplayTask(request, task) {
       }
       replay.pendingTasks--;
       if (task.abortSet.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:6823:37',
+        );
       }
       task.abortSet.delete(task);
       const componentStack = task.componentStack;
@@ -5765,7 +6028,7 @@ export function performWork(request) {
         retryTask(request, task);
         i++;
       }
-      $drain(pingedTasks, 0, i);
+      $drain(pingedTasks, 0, $stdSites.vecDrain[0], i);
       const destination = request.destination;
       if (destination != null) {
         flushCompletedQueues(request, destination);
@@ -5818,13 +6081,19 @@ function preparePreambleFromSubtree(
   collectedPreambleSegments,
 ) {
   if (segment.preambleChildren.borrows < 0) {
-    $alreadyMutablyBorrowed();
+    $alreadyMutablyBorrowed(
+      'packages/react-server/src/ReactFizzServer.rs:7226:35',
+    );
   }
   if (segment.preambleChildren.length !== 0) {
     collectedPreambleSegments.push(segment.preambleChildren);
   }
   let pendingPreambles = false;
-  const borrow = $borrow(segment.children, true);
+  const borrow = $borrow(
+    segment.children,
+    'packages/react-server/src/ReactFizzServer.rs:7230:42',
+    true,
+  );
   try {
     for (let i = 0; i < borrow.length; i++) {
       const nextSegment = borrow[i];
@@ -5871,13 +6140,16 @@ function preparePreambleFromSegment(
     // the request since it may contribute to the preamble
     request.byteSize += boundary.byteSize;
     if (boundary.completedSegments.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:7266:75',
+      );
     }
     const [boundaryRootSegment] = boundary.completedSegments;
     if (boundaryRootSegment == null) {
       // Using the same error from flushSegment to avoid making a new one since conceptually the problem is still the same
-      throw new Error(
+      throw $panic(
         'A previously unvisited boundary must have exactly one root segment. This is a bug in React.',
+        'packages/react-server/src/ReactFizzServer.rs:7269:17',
       );
     }
     return preparePreambleFromSubtree(
@@ -5951,9 +6223,17 @@ function flushPreamble(
   );
   for (let i = 0; i < preambleSegments.length; i++) {
     const segments = preambleSegments[i];
-    for (let j = 0; j < $borrow(segments).length; j++) {
+    for (
+      let j = 0;
+      j <
+      $borrow(segments, 'packages/react-server/src/ReactFizzServer.rs:7347:28')
+        .length;
+      j++
+    ) {
       if (segments.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:7348:47',
+        );
       }
       const segment = segments[j];
       flushSegment(request, destination, segment);
@@ -5983,26 +6263,48 @@ function flushSubtree(request, destination, segment, hoistableState) {
     case COMPLETED: {
       segment.status = FLUSHED;
       let r = true;
-      const chunks = $borrow(segment.chunks, true);
+      const chunks = $borrow(
+        segment.chunks,
+        'packages/react-server/src/ReactFizzServer.rs:7380:41',
+        true,
+      );
       let chunkIdx = 0;
 
       let result;
       try {
-        const children = $borrow(segment.children, true);
+        const children = $borrow(
+          segment.children,
+          'packages/react-server/src/ReactFizzServer.rs:7382:45',
+          true,
+        );
         try {
           const iter = children.values();
           let nextChild;
           while ((nextChild = iter.next().value) != null) {
             // Write all the chunks up until the next child.
             while (chunkIdx < nextChild.index) {
-              writeChunk(destination, $index(chunks, chunkIdx));
+              writeChunk(
+                destination,
+                $index(
+                  chunks,
+                  chunkIdx,
+                  'packages/react-server/src/ReactFizzServer.rs:7387:52',
+                ),
+              );
               chunkIdx = (chunkIdx + 1) >>> 0;
             }
             r = flushSegment(request, destination, nextChild, hoistableState);
           }
           // Finally just write all the remaining chunks
           while ((chunkIdx + 1) >>> 0 < chunks.length) {
-            writeChunk(destination, $index(chunks, chunkIdx));
+            writeChunk(
+              destination,
+              $index(
+                chunks,
+                chunkIdx,
+                'packages/react-server/src/ReactFizzServer.rs:7394:48',
+              ),
+            );
             chunkIdx = (chunkIdx + 1) >>> 0;
           }
           if (chunkIdx < chunks.length) {
@@ -6020,8 +6322,9 @@ function flushSubtree(request, destination, segment, hoistableState) {
     case ABORTED:
       return true;
     default:
-      throw new Error(
+      throw $panic(
         'Aborted, errored or already flushed boundaries should not be flushed again. This is a bug in React.',
+        'packages/react-server/src/ReactFizzServer.rs:7404:13',
       );
   }
 }
@@ -6124,7 +6427,9 @@ function flushSegment(request, destination, segment, hoistableState) {
     }
 
     if (boundary.completedSegments.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:7485:41',
+      );
     }
     if (boundary.completedSegments.length !== 0) {
       // If this is at least partially complete, we can queue it to be partially emitted early.
@@ -6204,16 +6509,21 @@ function flushSegment(request, destination, segment, hoistableState) {
     const completedSegments = boundary.completedSegments;
 
     if (completedSegments.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:7570:31',
+      );
     }
     if (completedSegments.length !== 1) {
-      throw new Error(
+      throw $panic(
         'A previously unvisited boundary must have exactly one root segment. This is a bug in React.',
+        'packages/react-server/src/ReactFizzServer.rs:7571:13',
       );
     }
 
     if (completedSegments.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:7576:61',
+      );
     }
     const contentSegment = completedSegments[0];
     flushSegment(request, destination, contentSegment, hoistableState);
@@ -6301,14 +6611,27 @@ function flushSegmentContainer(request, destination, segment, hoistableState) {
 function flushCompletedBoundary(request, destination, boundary) {
   flushedByteSize = boundary.byteSize; // Start counting bytes
   const completedSegments = boundary.completedSegments;
-  for (let i = 0; i < $borrow(completedSegments).length; i++) {
+  for (
+    let i = 0;
+    i <
+    $borrow(
+      completedSegments,
+      'packages/react-server/src/ReactFizzServer.rs:7642:34',
+    ).length;
+    i++
+  ) {
     if (completedSegments.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:7643:53',
+      );
     }
     const segment = completedSegments[i];
     flushPartiallyCompletedSegment(request, destination, boundary, segment);
   }
-  $borrowMut(completedSegments).length = 0;
+  $borrowMut(
+    completedSegments,
+    'packages/react-server/src/ReactFizzServer.rs:7647:24',
+  ).length = 0;
 
   const row = boundary.row;
   if (row != null && isEligibleForOutlining(request, boundary)) {
@@ -6338,9 +6661,17 @@ function flushPartialBoundary(request, destination, boundary) {
   flushedByteSize = boundary.byteSize; // Start counting bytes
   const completedSegments = boundary.completedSegments;
   let i = 0;
-  while (i < $borrow(completedSegments).length) {
+  while (
+    i <
+    $borrow(
+      completedSegments,
+      'packages/react-server/src/ReactFizzServer.rs:7679:34',
+    ).length
+  ) {
     if (completedSegments.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:7680:53',
+      );
     }
     const segment = completedSegments[i];
     if (
@@ -6348,9 +6679,11 @@ function flushPartialBoundary(request, destination, boundary) {
     ) {
       i++;
       if (completedSegments.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:7683:32',
+        );
       }
-      $drain(completedSegments, 0, i);
+      $drain(completedSegments, 0, $stdSites.vecDrain[0], i);
       // Only write as much as the buffer wants. Something higher priority
       // might want to write later.
       return false;
@@ -6358,9 +6691,9 @@ function flushPartialBoundary(request, destination, boundary) {
     i++;
   }
   if (completedSegments.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:7690:24');
   }
-  $drain(completedSegments, 0, i);
+  $drain(completedSegments, 0, $stdSites.vecDrain[0], i);
 
   const row = boundary.row;
   if (row != null && row.together && boundary.pendingTasks === 1) {
@@ -6404,8 +6737,9 @@ function flushPartiallyCompletedSegment(
     segment.id = rootSegmentId;
 
     if (rootSegmentId === -1) {
-      throw new Error(
+      throw $panic(
         'A root segment ID must have been assigned by now. This is a bug in React.',
+        'packages/react-server/src/ReactFizzServer.rs:7733:13',
       );
     }
 
@@ -6491,7 +6825,9 @@ function flushCompletedQueues(request, destination) {
       ) {
         function holds(trackedPostpones) {
           if (trackedPostpones.rootNodes.borrows < 0) {
-            $alreadyMutablyBorrowed();
+            $alreadyMutablyBorrowed(
+              'packages/react-server/src/ReactFizzServer.rs:7840:58',
+            );
           }
           return (
             trackedPostpones.rootNodes.length === 0 &&
@@ -6522,12 +6858,12 @@ function flushCompletedQueues(request, destination) {
       if (!flushClientRenderedBoundary(request, destination, boundary)) {
         request.destination = null;
         i++;
-        $drain(clientRenderedBoundaries, 0, i);
+        $drain(clientRenderedBoundaries, 0, $stdSites.vecDrain[0], i);
         return;
       }
       i++;
     }
-    $drain(clientRenderedBoundaries, 0, i);
+    $drain(clientRenderedBoundaries, 0, $stdSites.vecDrain[0], i);
 
     // Next we emit any complete boundaries. It's better to favor boundaries
     // that are completely done since we can actually show them, than it is to emit
@@ -6539,12 +6875,12 @@ function flushCompletedQueues(request, destination) {
       if (!flushCompletedBoundary(request, destination, boundary)) {
         request.destination = null;
         i++;
-        $drain(completedBoundaries, 0, i);
+        $drain(completedBoundaries, 0, $stdSites.vecDrain[0], i);
         return;
       }
       i++;
     }
-    $drain(completedBoundaries, 0, i);
+    $drain(completedBoundaries, 0, $stdSites.vecDrain[0], i);
 
     // Allow anything written so far to flush to the underlying sink before
     // we continue with lower priorities.
@@ -6563,12 +6899,12 @@ function flushCompletedQueues(request, destination) {
       if (!flushPartialBoundary(request, destination, boundary)) {
         request.destination = null;
         i++;
-        $drain(partialBoundaries, 0, i);
+        $drain(partialBoundaries, 0, $stdSites.vecDrain[0], i);
         return;
       }
       i++;
     }
-    $drain(partialBoundaries, 0, i);
+    $drain(partialBoundaries, 0, $stdSites.vecDrain[0], i);
     flushingPartialBoundaries = false;
 
     // Next we check the completed boundaries again. This may have had
@@ -6582,12 +6918,12 @@ function flushCompletedQueues(request, destination) {
       if (!flushCompletedBoundary(request, destination, boundary)) {
         request.destination = null;
         i++;
-        $drain(largeBoundaries, 0, i);
+        $drain(largeBoundaries, 0, $stdSites.vecDrain[0], i);
         return;
       }
       i++;
     }
-    $drain(largeBoundaries, 0, i);
+    $drain(largeBoundaries, 0, $stdSites.vecDrain[0], i);
   });
   flushingPartialBoundaries = false;
   const postponedState = request.postponedState;
@@ -6615,7 +6951,13 @@ function flushCompletedQueues(request, destination) {
     writePostamble(destination, request.resumableState);
     completeWriting(destination);
     flushBuffered(destination);
-    if (__DEV__ && $borrow(request.abortableTasks).size !== 0) {
+    if (
+      __DEV__ &&
+      $borrow(
+        request.abortableTasks,
+        'packages/react-server/src/ReactFizzServer.rs:7957:48',
+      ).size !== 0
+    ) {
       console.error(
         'There was still abortable task at the root when we closed. This is a bug in React.',
       );
@@ -6771,12 +7113,18 @@ export function stopFlowing(request) {
 function finishAbort(request, abortableTasks) {
   try {
     if (abortableTasks.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:8114:29',
+      );
     }
     if (abortableTasks.size !== 0) {
       const error = request.fatalError;
       if (__DEV__) {
-        const borrow = $borrow(abortableTasks, true);
+        const borrow = $borrow(
+          abortableTasks,
+          'packages/react-server/src/ReactFizzServer.rs:8117:45',
+          true,
+        );
         try {
           for (const task of borrow) {
             finishAbortedTaskDEV(task, request, error);
@@ -6785,7 +7133,11 @@ function finishAbort(request, abortableTasks) {
           $unborrow(borrow);
         }
       } else {
-        const borrow = $borrow(abortableTasks, true);
+        const borrow = $borrow(
+          abortableTasks,
+          'packages/react-server/src/ReactFizzServer.rs:8121:45',
+          true,
+        );
         try {
           for (const task of borrow) {
             finishAbortedTask(task, request, error);
@@ -6795,7 +7147,9 @@ function finishAbort(request, abortableTasks) {
         }
       }
       if (abortableTasks.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:8125:29',
+        );
       }
       abortableTasks.clear();
     }
@@ -6885,7 +7239,11 @@ export function abort(request, reason) {
   request.fatalError = error;
   const abortableTasks = request.abortableTasks;
   if (__DEV__) {
-    const borrow = $borrow(abortableTasks, true);
+    const borrow = $borrow(
+      abortableTasks,
+      'packages/react-server/src/ReactFizzServer.rs:8220:37',
+      true,
+    );
     try {
       for (const task of borrow) {
         abortTaskDEV(task, request);
@@ -6894,7 +7252,11 @@ export function abort(request, reason) {
       $unborrow(borrow);
     }
   } else {
-    const borrow = $borrow(abortableTasks, true);
+    const borrow = $borrow(
+      abortableTasks,
+      'packages/react-server/src/ReactFizzServer.rs:8224:37',
+      true,
+    );
     try {
       for (const task of borrow) {
         abortTask(task, request);
@@ -6928,7 +7290,7 @@ export function getRenderState(request) {
 function addToReplayParent(node, parentKeyPath, trackedPostpones) {
   if (parentKeyPath == null) {
     if (trackedPostpones.rootNodes.borrows) {
-      $alreadyBorrowed();
+      $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:8261:18');
     }
     trackedPostpones.rootNodes.push(node);
   } else {
@@ -6939,11 +7301,17 @@ function addToReplayParent(node, parentKeyPath, trackedPostpones) {
       workingMap.set(parentKeyPath, parentNode);
       addToReplayParent(parentNode, parentKeyPath[0], trackedPostpones);
     }
-    const borrow = $borrow(parentNode, true);
+    const borrow = $borrow(
+      parentNode,
+      'packages/react-server/src/ReactFizzServer.rs:8289:31',
+      true,
+    );
     const children = borrow[2];
     try {
       if (children.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-server/src/ReactFizzServer.rs:8290:22',
+        );
       }
       children.push(node);
     } finally {
@@ -6957,7 +7325,9 @@ export function getPostponedState(request) {
   const trackedPostpones = request.trackedPostpones;
   function keep(trackedPostpones) {
     if (trackedPostpones.rootNodes.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:8309:40',
+      );
     }
     return (
       trackedPostpones.rootNodes.length !== 0 ||

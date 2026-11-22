@@ -34,6 +34,7 @@ import {
   $catchable,
   $cleanup,
   $index,
+  $panic,
   $stringPanic,
   $unwrap,
 } from '@rust-js/std';
@@ -374,6 +375,7 @@ function loadServerReference(response, metaData, parentObject, key) {
         if (boundArgs.length > MAX_BOUND_ARGS) {
           throw $stringPanic(
             `Server Function has too many bound arguments. Received ${boundArgs.length} but the limit is ${MAX_BOUND_ARGS}.`,
+            'packages/react-server/src/ReactFlightReplyServer.rs:614:25',
           );
         }
         boundArgs.unshift(null); // this
@@ -478,8 +480,9 @@ function loadServerObjectReference(response, metaData, parentObject, key) {
       // Objects can appear under "then", but a function here would turn
       // the containing object into a thenable during reply decoding.
       if (typeof value !== 'object' || value === null) {
-        throw new Error(
+        throw $panic(
           'Expected a Server Reference to an object to resolve to an object.',
+          'packages/react-server/src/ReactFlightReplyServer.rs:758:21',
         );
       }
     } catch (error) {
@@ -599,8 +602,9 @@ function bumpArrayCount(arrayContext, slots, response) {
     exceeded = newCount > 0;
   }
   if (exceeded && arrayContext.fork) {
-    throw new Error(
+    throw $panic(
       'Maximum array nesting exceeded. Large nested arrays can be dangerous. Try adding intermediate objects.',
+      'packages/react-server/src/ReactFlightReplyServer.rs:905:9',
     );
   }
 }
@@ -609,7 +613,10 @@ let initializingHandler = null;
 
 function initializeModelChunk(chunk) {
   if (chunk.status !== 'resolved_model') {
-    throw new Error('internal error: entered unreachable code');
+    throw $panic(
+      'internal error: entered unreachable code',
+      'packages/react-server/src/ReactFlightReplyServer.rs:962:14',
+    );
   }
   const response = chunk.reason[RESPONSE_SYMBOL];
   const id = chunk.reason.id;
@@ -821,7 +828,10 @@ function fulfillReference(response, reference, value, arrayRoot) {
         }
         continue;
       }
-      throw new Error('Invalid reference.');
+      throw $panic(
+        'Invalid reference.',
+        'packages/react-server/src/ReactFlightReplyServer.rs:1171:17',
+      );
     }
 
     resolvedValue = map(response, value$1, parentObject, key);
@@ -958,7 +968,14 @@ function getOutlinedModel(
   map,
 ) {
   const path = reference.split(':');
-  const id = parseInt($index(path, 0), 16);
+  const id = parseInt(
+    $index(
+      path,
+      0,
+      'packages/react-server/src/ReactFlightReplyServer.rs:1331:33',
+    ),
+    16,
+  );
   const chunk = getChunk(response, id);
   if (chunk.status === 'resolved_model') {
     initializeModelChunk(chunk);
@@ -975,6 +992,7 @@ function getOutlinedModel(
         throw $stringPanic(
           'Expected an initialized chunk but got an initialized stream chunk instead. ' +
             'This payload may have been submitted by an older version of React.',
+          'packages/react-server/src/ReactFlightReplyServer.rs:1346:17',
         );
       }
       arrayRoot = arrayRootOrController;
@@ -1037,7 +1055,10 @@ function getOutlinedModel(
         }
         continue;
       }
-      throw new Error('Invalid reference.');
+      throw $panic(
+        'Invalid reference.',
+        'packages/react-server/src/ReactFlightReplyServer.rs:1409:17',
+      );
     }
     const chunkValue = map(response, value, parentObject, key);
 
@@ -1070,7 +1091,10 @@ function getOutlinedModel(
   if (chunk.status === 'pending') {
     // If we don't have the referenced chunk yet, then this must be a forward reference,
     // which is not allowed.
-    throw new Error('Invalid forward reference.');
+    throw $panic(
+      'Invalid forward reference.',
+      'packages/react-server/src/ReactFlightReplyServer.rs:1443:9',
+    );
   }
   // This is an error. Instead of erroring directly, we're going to encode this on
   // an initialization handler.
@@ -1113,10 +1137,16 @@ function isServerReferenceObject(response, value) {
 
 function createMap(response, model, parentObject, key) {
   if (!isArray(model) || isServerReferenceObject(response, model)) {
-    throw new Error('Invalid Map initializer.');
+    throw $panic(
+      'Invalid Map initializer.',
+      'packages/react-server/src/ReactFlightReplyServer.rs:1495:9',
+    );
   }
   if (model.$$consumed === true) {
-    throw new Error('Already initialized Map.');
+    throw $panic(
+      'Already initialized Map.',
+      'packages/react-server/src/ReactFlightReplyServer.rs:1498:9',
+    );
   }
   // This needs to come first to prevent the model from being consumed again in case of a cyclic reference.
   model.$$consumed = true;
@@ -1127,10 +1157,16 @@ function createMap(response, model, parentObject, key) {
 
 function createSet(response, model, parentObject, key) {
   if (!isArray(model) || isServerReferenceObject(response, model)) {
-    throw new Error('Invalid Set initializer.');
+    throw $panic(
+      'Invalid Set initializer.',
+      'packages/react-server/src/ReactFlightReplyServer.rs:1514:9',
+    );
   }
   if (model.$$consumed === true) {
-    throw new Error('Already initialized Set.');
+    throw $panic(
+      'Already initialized Set.',
+      'packages/react-server/src/ReactFlightReplyServer.rs:1517:9',
+    );
   }
   // This needs to come first to prevent the model from being consumed again in case of a cyclic reference.
   model.$$consumed = true;
@@ -1141,10 +1177,16 @@ function createSet(response, model, parentObject, key) {
 
 function extractIterator(response, model, parentObject, key) {
   if (!isArray(model) || isServerReferenceObject(response, model)) {
-    throw new Error('Invalid Iterator initializer.');
+    throw $panic(
+      'Invalid Iterator initializer.',
+      'packages/react-server/src/ReactFlightReplyServer.rs:1533:9',
+    );
   }
   if (model.$$consumed === true) {
-    throw new Error('Already initialized Iterator.');
+    throw $panic(
+      'Already initialized Iterator.',
+      'packages/react-server/src/ReactFlightReplyServer.rs:1536:9',
+    );
   }
   // This needs to come first to prevent the model from being consumed again in case of a cyclic reference.
   model.$$consumed = true;
@@ -1181,7 +1223,10 @@ function parseTypedArray(
   const key = prefix + id.toString();
   const chunks = response._chunks;
   if (chunks.has(id)) {
-    throw new Error('Already initialized typed array.');
+    throw $panic(
+      'Already initialized typed array.',
+      'packages/react-server/src/ReactFlightReplyServer.rs:1579:9',
+    );
   }
   chunks.set(
     id,
@@ -1321,7 +1366,10 @@ function parseReadableStream(
   const id = parseInt(reference.slice(2), 16);
   const chunks = response._chunks;
   if (chunks.has(id)) {
-    throw new Error('Already initialized stream.');
+    throw $panic(
+      'Already initialized stream.',
+      'packages/react-server/src/ReactFlightReplyServer.rs:1751:9',
+    );
   }
 
   let controller;
@@ -1361,7 +1409,10 @@ function parseReadableStream(
       if (byteController != null) {
         byteController.error(error);
       } else {
-        $unwrap(controller).error(error);
+        $unwrap(
+          controller,
+          'packages/react-server/src/ReactFlightReplyServer.rs:1804:46',
+        ).error(error);
       }
     } else {
       // We shouldn't get any more enqueues after this so we can set it back to null.
@@ -1370,7 +1421,10 @@ function parseReadableStream(
         if (byteController != null) {
           byteController.error(error);
         } else {
-          $unwrap(controller).error(error);
+          $unwrap(
+            controller,
+            'packages/react-server/src/ReactFlightReplyServer.rs:1814:54',
+          ).error(error);
         }
       });
     }
@@ -1384,7 +1438,10 @@ function parseReadableStream(
       const view = value;
       byteController.enqueue(view);
     } else {
-      $unwrap(controller).enqueue(value);
+      $unwrap(
+        controller,
+        'packages/react-server/src/ReactFlightReplyServer.rs:1841:22',
+      ).enqueue(value);
     }
   };
   const flightController = {
@@ -1431,7 +1488,10 @@ function parseReadableStream(
         if (byteController != null) {
           byteController.close();
         } else {
-          $unwrap(controller).close();
+          $unwrap(
+            controller,
+            'packages/react-server/src/ReactFlightReplyServer.rs:1915:50',
+          ).close();
         }
       } else {
         // We shouldn't get any more enqueues after this so we can set it back to null.
@@ -1440,7 +1500,10 @@ function parseReadableStream(
           if (byteController != null) {
             byteController.close();
           } else {
-            $unwrap(controller).close();
+            $unwrap(
+              controller,
+              'packages/react-server/src/ReactFlightReplyServer.rs:1925:58',
+            ).close();
           }
         });
       }
@@ -1476,7 +1539,10 @@ function parseAsyncIterable(
   const id = parseInt(reference.slice(2), 16);
   const chunks = response._chunks;
   if (chunks.has(id)) {
-    throw new Error('Already initialized stream.');
+    throw $panic(
+      'Already initialized stream.',
+      'packages/react-server/src/ReactFlightReplyServer.rs:1996:9',
+    );
   }
 
   const buffer = [];
@@ -1488,7 +1554,11 @@ function parseAsyncIterable(
         const chunk = createResolvedIteratorResultChunk(response, value, false);
         buffer.push(chunk);
       } else {
-        const chunk = $index(buffer, nextWriteIndex);
+        const chunk = $index(
+          buffer,
+          nextWriteIndex,
+          'packages/react-server/src/ReactFlightReplyServer.rs:2012:59',
+        );
         resolveIteratorResultChunk(response, chunk, value, false);
       }
       nextWriteIndex = (nextWriteIndex + 1) >>> 0;
@@ -1502,13 +1572,21 @@ function parseAsyncIterable(
         const chunk = createResolvedIteratorResultChunk(response, value, true);
         buffer.push(chunk);
       } else {
-        const chunk = $index(buffer, nextWriteIndex);
+        const chunk = $index(
+          buffer,
+          nextWriteIndex,
+          'packages/react-server/src/ReactFlightReplyServer.rs:2032:59',
+        );
         resolveIteratorResultChunk(response, chunk, value, true);
       }
       nextWriteIndex = (nextWriteIndex + 1) >>> 0;
       while (nextWriteIndex < buffer.length) {
         // In generators, any extra reads from the iterator have the value undefined.
-        const chunk = $index(buffer, nextWriteIndex);
+        const chunk = $index(
+          buffer,
+          nextWriteIndex,
+          'packages/react-server/src/ReactFlightReplyServer.rs:2038:59',
+        );
         nextWriteIndex = (nextWriteIndex + 1) >>> 0;
         resolveIteratorResultChunk(response, chunk, '"$undefined"', true);
       }
@@ -1523,7 +1601,11 @@ function parseAsyncIterable(
         buffer.push(chunk);
       }
       while (nextWriteIndex < buffer.length) {
-        const chunk = $index(buffer, nextWriteIndex);
+        const chunk = $index(
+          buffer,
+          nextWriteIndex,
+          'packages/react-server/src/ReactFlightReplyServer.rs:2059:59',
+        );
         nextWriteIndex = (nextWriteIndex + 1) >>> 0;
         triggerErrorOnChunk(response, chunk, error);
       }
@@ -1534,8 +1616,9 @@ function parseAsyncIterable(
       let nextReadIndex = 0;
       return new FlightIterator(arg => {
         if (arg !== undefined) {
-          throw new Error(
+          throw $panic(
             'Values cannot be passed to next() of AsyncIterables passed to Client Components.',
+            'packages/react-server/src/ReactFlightReplyServer.rs:2078:25',
           );
         }
         if (nextReadIndex === buffer.length) {
@@ -1557,7 +1640,11 @@ function parseAsyncIterable(
           const chunk = createPendingChunk(response);
           buffer.push(chunk);
         }
-        const chunk = $index(buffer, nextReadIndex);
+        const chunk = $index(
+          buffer,
+          nextReadIndex,
+          'packages/react-server/src/ReactFlightReplyServer.rs:2100:59',
+        );
         nextReadIndex = (nextReadIndex + 1) >>> 0;
         return chunk;
       });
@@ -1621,6 +1708,7 @@ function parseModelString(response, obj, key, value, reference, arrayRoot) {
             'Could not reference an opaque temporary reference. ' +
               'This is likely due to misconfiguring the temporaryReferences options ' +
               'on the server.',
+            'packages/react-server/src/ReactFlightReplyServer.rs:2169:21',
           );
         }
         const temporaryReferences = response._temporaryReferences;
@@ -1683,6 +1771,7 @@ function parseModelString(response, obj, key, value, reference, arrayRoot) {
         if (bigIntStr.length > MAX_BIGINT_DIGITS) {
           throw $stringPanic(
             `BigInt is too large. Received ${bigIntStr.length} digits but the limit is ${MAX_BIGINT_DIGITS}.`,
+            'packages/react-server/src/ReactFlightReplyServer.rs:2241:21',
           );
         }
         if (arrayRoot != null) {
@@ -1829,7 +1918,10 @@ function parseModelString(response, obj, key, value, reference, arrayRoot) {
         // it before referencing it. It should be a Blob.
         const backingEntry = getBackingBlob(response._formData, blobKey);
         if (!(backingEntry instanceof Blob)) {
-          throw new Error('Referenced Blob is not a Blob.');
+          throw $panic(
+            'Referenced Blob is not a Blob.',
+            'packages/react-server/src/ReactFlightReplyServer.rs:2410:21',
+          );
         }
         return backingEntry;
       }
@@ -1967,7 +2059,10 @@ function createFileFromHandle(handle) {
   // GAP rd483: upstream's `scratch.get('file') as any`.
   const file = scratch.get('file');
   if (file === null || typeof file === 'string') {
-    throw new Error('internal error: entered unreachable code');
+    throw $panic(
+      'internal error: entered unreachable code',
+      'packages/react-server/src/ReactFlightReplyServer.rs:2604:52',
+    );
   }
   return file;
 }

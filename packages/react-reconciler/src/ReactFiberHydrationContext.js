@@ -60,7 +60,7 @@ import {getHostContext, getRootHostContainer} from './ReactFiberHostContext.js';
 import {describeDiff} from './ReactFiberHydrationDiffs.js';
 
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
-import {$alreadyBorrowed, $index} from '@rust-js/std';
+import {$alreadyBorrowed, $index, $panic} from '@rust-js/std';
 
 // The deepest Fiber on the stack involved in a hydration context.
 // This may have been an insertion or a hydration.
@@ -95,8 +95,9 @@ function buildHydrationDiffNode(fiber, distanceFromLeaf) {
     };
     const diffRoot = hydrationDiffRootDEV;
     if (diffRoot.fiber !== fiber) {
-      throw new Error(
+      throw $panic(
         'Saw multiple hydration diff roots in a pass. This is a bug in React.',
+        'packages/react-reconciler/src/ReactFiberHydrationContext.rs:402:13',
       );
     } else if (diffRoot.distanceFromLeaf > distanceFromLeaf) {
       diffRoot.distanceFromLeaf = distanceFromLeaf;
@@ -225,7 +226,9 @@ function warnNonHydratedInstance(fiber, rejectedCandidate) {
       const description =
         describeHydratableInstanceForDevWarnings(rejectedCandidate);
       if (diffNode.serverTail.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-reconciler/src/ReactFiberHydrationContext.rs:529:35',
+        );
       }
       diffNode.serverTail.push(description);
     }
@@ -516,9 +519,10 @@ export function tryToClaimNextHydratableFormMarkerInstance(fiber) {
 // ReactFiberConfig's `HostContext`.
 export function prepareToHydrateHostInstance(fiber, hostContext) {
   if (!supportsHydration) {
-    throw new Error(
+    throw $panic(
       'Expected prepareToHydrateHostInstance() to never be called. ' +
         'This error is likely caused by a bug in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberHydrationContext.rs:830:9',
     );
   }
 
@@ -537,9 +541,10 @@ export function prepareToHydrateHostInstance(fiber, hostContext) {
 
 export function prepareToHydrateHostTextInstance(fiber) {
   if (!supportsHydration) {
-    throw new Error(
+    throw $panic(
       'Expected prepareToHydrateHostTextInstance() to never be called. ' +
         'This error is likely caused by a bug in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberHydrationContext.rs:851:9',
     );
   }
 
@@ -596,18 +601,20 @@ export function prepareToHydrateHostTextInstance(fiber) {
 
 export function prepareToHydrateHostActivityInstance(fiber) {
   if (!supportsHydration) {
-    throw new Error(
+    throw $panic(
       'Expected prepareToHydrateHostActivityInstance() to never be called. ' +
         'This error is likely caused by a bug in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberHydrationContext.rs:906:9',
     );
   }
   const activityState = fiber.memoizedState;
   const activityInstance = activityState?.dehydrated;
 
   if (activityInstance == null) {
-    throw new Error(
+    throw $panic(
       'Expected to have a hydrated activity instance. ' +
         'This error is likely caused by a bug in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberHydrationContext.rs:915:9',
     );
   }
 
@@ -616,9 +623,10 @@ export function prepareToHydrateHostActivityInstance(fiber) {
 
 export function prepareToHydrateHostSuspenseInstance(fiber) {
   if (!supportsHydration) {
-    throw new Error(
+    throw $panic(
       'Expected prepareToHydrateHostSuspenseInstance() to never be called. ' +
         'This error is likely caused by a bug in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberHydrationContext.rs:926:9',
     );
   }
 
@@ -627,9 +635,10 @@ export function prepareToHydrateHostSuspenseInstance(fiber) {
     suspenseState != null ? suspenseState.dehydrated : null;
 
   if (suspenseInstance == null) {
-    throw new Error(
+    throw $panic(
       'Expected to have a hydrated suspense instance. ' +
         'This error is likely caused by a bug in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberHydrationContext.rs:936:9',
     );
   }
 
@@ -642,9 +651,10 @@ function skipPastDehydratedActivityInstance(fiber) {
   const activityInstance = activityState?.dehydrated;
 
   if (activityInstance == null) {
-    throw new Error(
+    throw $panic(
       'Expected to have a hydrated suspense instance. ' +
         'This error is likely caused by a bug in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberHydrationContext.rs:952:9',
     );
   }
 
@@ -654,9 +664,10 @@ function skipPastDehydratedActivityInstance(fiber) {
 // ReactFiberConfig's `HydratableInstance`.
 function skipPastDehydratedSuspenseInstance(fiber) {
   if (!supportsHydration) {
-    throw new Error(
+    throw $panic(
       'Expected skipPastDehydratedSuspenseInstance() to never be called. ' +
         'This error is likely caused by a bug in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberHydrationContext.rs:965:9',
     );
   }
   const suspenseState = fiber.memoizedState;
@@ -664,9 +675,10 @@ function skipPastDehydratedSuspenseInstance(fiber) {
     suspenseState != null ? suspenseState.dehydrated : null;
 
   if (suspenseInstance == null) {
-    throw new Error(
+    throw $panic(
       'Expected to have a hydrated suspense instance. ' +
         'This error is likely caused by a bug in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberHydrationContext.rs:974:9',
     );
   }
 
@@ -778,7 +790,9 @@ function warnIfUnhydratedTailNodes(fiber) {
       const isSuspense =
         typeof description !== 'string' && description.type === 'Suspense';
       if (diffNode.serverTail.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-reconciler/src/ReactFiberHydrationContext.rs:1096:35',
+        );
       }
       diffNode.serverTail.push(description);
       if (isSuspense) {
@@ -878,7 +892,11 @@ export function emitPendingHydrationWarnings() {
       // Should be good enough since most warnings only have a single error.
       let diffOwner = diffRoot;
       while (diffOwner.children.length !== 0) {
-        const child = $index(diffOwner.children, 0);
+        const child = $index(
+          diffOwner.children,
+          0,
+          'packages/react-reconciler/src/ReactFiberHydrationContext.rs:1195:68',
+        );
         diffOwner = child;
       }
 

@@ -79,7 +79,12 @@ export function insertBefore(parentInstance, child, beforeChild) {
   const beforeIndex =
     $position(children, c => c === beforeChild) ??
     Math.max(children.length - 1, 0);
-  $insertAt(children, beforeIndex, child);
+  $insertAt(
+    children,
+    beforeIndex,
+    child,
+    'packages/react-test-renderer/src/ReactFiberConfigTestHost.rs:204:14',
+  );
 }
 
 export function removeChild(parentInstance, child) {

@@ -61,11 +61,35 @@ function murmurhash3_32_gc(key, seed) {
 
   while (i < bytes) {
     let k1 =
-      (((((($index(key, i) & 0xff) | (($index(key, i + 1) & 0xff) << 8)) >>>
+      (((((($index(
+        key,
+        i,
+        'packages/react-server/src/createFastHashJS.rs:61:35',
+      ) &
+        0xff) |
+        (($index(
+          key,
+          i + 1,
+          'packages/react-server/src/createFastHashJS.rs:62:29',
+        ) &
+          0xff) <<
+          8)) >>>
         0) |
-        (($index(key, i + 2) & 0xff) << 16)) >>>
+        (($index(
+          key,
+          i + 2,
+          'packages/react-server/src/createFastHashJS.rs:63:29',
+        ) &
+          0xff) <<
+          16)) >>>
         0) |
-        (($index(key, i + 3) & 0xff) << 24)) >>>
+        (($index(
+          key,
+          i + 3,
+          'packages/react-server/src/createFastHashJS.rs:64:29',
+        ) &
+          0xff) <<
+          24)) >>>
       0;
     i += 4;
 
@@ -83,12 +107,34 @@ function murmurhash3_32_gc(key, seed) {
 
   if (remainder > 0) {
     if (remainder === 3) {
-      k1 = (k1 ^ (($index(key, i + 2) & 0xff) << 16)) >>> 0;
+      k1 =
+        (k1 ^
+          (($index(
+            key,
+            i + 2,
+            'packages/react-server/src/createFastHashJS.rs:81:32',
+          ) &
+            0xff) <<
+            16)) >>>
+        0;
     }
     if (remainder >= 2) {
-      k1 = (k1 ^ (($index(key, i + 1) & 0xff) << 8)) >>> 0;
+      k1 =
+        (k1 ^
+          (($index(
+            key,
+            i + 1,
+            'packages/react-server/src/createFastHashJS.rs:84:32',
+          ) &
+            0xff) <<
+            8)) >>>
+        0;
     }
-    k1 = (k1 ^ ($index(key, i) & 0xff)) >>> 0;
+    k1 =
+      (k1 ^
+        ($index(key, i, 'packages/react-server/src/createFastHashJS.rs:86:28') &
+          0xff)) >>>
+      0;
 
     k1 = Math.imul(k1, c1) >>> 0;
     k1 = ((k1 << 15) | (k1 >>> 17)) >>> 0;

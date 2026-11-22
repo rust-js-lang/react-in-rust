@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$panic} from '@rust-js/std';
+
 export function scheduleMicrotask(callback) {
   // TODO: Consider unifying this with the FB Flight stream config and
   // adopting its microtask scheduling implementation.
@@ -49,13 +51,19 @@ export function stringToPrecomputedChunk(content) {
 }
 
 export function typedArrayToBinaryChunk(content) {
-  throw new Error('Not implemented.');
+  throw $panic(
+    'Not implemented.',
+    'packages/react-server/src/ReactServerStreamConfigFB.rs:67:5',
+  );
 }
 
 export const byteLengthOfChunk = null;
 
 export function byteLengthOfBinaryChunk(chunk) {
-  throw new Error('Not implemented.');
+  throw $panic(
+    'Not implemented.',
+    'packages/react-server/src/ReactServerStreamConfigFB.rs:76:5',
+  );
 }
 
 export function closeWithError(destination, error) {
@@ -67,6 +75,9 @@ export function closeWithError(destination, error) {
 export {createFastHashJS as createFastHash} from './createFastHashJS.js';
 
 export function readAsDataURL(blob) {
-  throw new Error('Not implemented.');
+  throw $panic(
+    'Not implemented.',
+    'packages/react-server/src/ReactServerStreamConfigFB.rs:89:5',
+  );
 }
 //# sourceMappingURL=ReactServerStreamConfigFB.js.map

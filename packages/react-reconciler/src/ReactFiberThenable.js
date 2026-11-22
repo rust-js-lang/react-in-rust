@@ -20,6 +20,7 @@ import {
   $borrow,
   $catchable,
   $fieldCell,
+  $panic,
   $unborrow,
   $unwrap,
 } from '@rust-js/std';
@@ -198,10 +199,11 @@ export function trackUsedThenable(
       // React would still have a Component stack but that could only be used
       // as an approximation.
       if (rejectedError == null && !('reason' in thenable)) {
-        throw new Error(
+        throw $panic(
           'A rejected Promise was passed to React without a `reason` property. ' +
             'React threw a generic error from where the Promise was used to assist in identifying the problematic Promise. ' +
             "Make sure that instrumented Promises correctly set the `reason` property when setting `status` to `'rejected'`.",
+          'packages/react-reconciler/src/ReactFiberThenable.rs:257:17',
         );
       }
 
@@ -234,12 +236,13 @@ export function trackUsedThenable(
           // TODO: Remove this error in a future release. Other ways of handling
           // this case include forcing a concurrent render, or putting the whole
           // root into offscreen mode.
-          throw new Error(
+          throw $panic(
             'An unknown Component is an async Client Component. ' +
               'Only Server Components can be async at the moment. ' +
               'This error is often caused by accidentally ' +
               "adding `'use client'` to a module that was originally written " +
               'for the server.',
+            'packages/react-reconciler/src/ReactFiberThenable.rs:294:21',
           );
         }
 
@@ -314,7 +317,10 @@ export function suspendCommit() {
 export function resolveLazy(lazyType) {
   try {
     if (__DEV__) {
-      return $unwrap(callLazyInitInDEV)(lazyType);
+      return $unwrap(
+        callLazyInitInDEV,
+        'packages/react-reconciler/src/ReactFiberThenable.rs:377:69',
+      )(lazyType);
     }
     const payload = lazyType._payload;
     const init = lazyType._init;
@@ -347,9 +353,10 @@ export function getSuspendedThenable() {
   const thenable = suspendedThenable;
   suspendedThenable = null;
   if (thenable == null) {
-    throw new Error(
+    throw $panic(
       'Expected a suspended thenable. This is a bug in React. Please file ' +
         'an issue.',
+      'packages/react-reconciler/src/ReactFiberThenable.rs:420:9',
     );
   }
   if (__DEV__) {
@@ -381,10 +388,11 @@ export function checkIfUseWrappedInAsyncCatch(rejectedReason) {
     rejectedReason === SuspenseException ||
     rejectedReason === SuspenseActionException
   ) {
-    throw new Error(
+    throw $panic(
       'Hooks are not supported inside an async component. This ' +
         "error is often caused by accidentally adding `'use client'` " +
         'to a module that was originally written for the server.',
+      'packages/react-reconciler/src/ReactFiberThenable.rs:454:9',
     );
   }
 }
@@ -394,10 +402,18 @@ function areSameKeyPath(a, b) {
     return true;
   }
   if (a.tag === b.tag && a.type === b.type) {
-    const value = $borrow($fieldCell(a, 'key'), true);
+    const value = $borrow(
+      $fieldCell(a, 'key'),
+      'packages/react-reconciler/src/ReactFiberThenable.rs:468:19',
+      true,
+    );
     let borrow;
     try {
-      borrow = $borrow($fieldCell(b, 'key'), true);
+      borrow = $borrow(
+        $fieldCell(b, 'key'),
+        'packages/react-reconciler/src/ReactFiberThenable.rs:468:38',
+        true,
+      );
     } catch (error) {
       $unborrow(value);
       throw error;

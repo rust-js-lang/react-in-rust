@@ -42,6 +42,7 @@ import {
   $catchable,
   $cleanup,
   $live,
+  $stdSites,
   $unwindsOn,
   $withBorrow,
   $withBorrowMut,
@@ -108,6 +109,7 @@ function advanceTimers(currentTime) {
         }
       }
     },
+    $stdSites.localKeyWithBorrowMut[0],
     true,
   );
 }
@@ -124,6 +126,7 @@ function handleTimeout(currentTime) {
       const startTime = $withBorrow(
         timerQueue,
         timerQueue => peek(timerQueue)?.startTime,
+        $stdSites.localKeyWithBorrow[0],
         true,
       );
       if (startTime != null) {
@@ -318,6 +321,7 @@ function workLoop(initialTime) {
     const startTime = $withBorrow(
       timerQueue,
       timerQueue => peek(timerQueue)?.startTime,
+      $stdSites.localKeyWithBorrow[0],
       true,
     );
     if (startTime != null) {
@@ -453,10 +457,20 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
   if (startTime > currentTime) {
     // This is a delayed task.
     newTask.sortIndex = startTime;
-    $withBorrowMut(timerQueue, timerQueue => push(timerQueue, newTask), true);
+    $withBorrowMut(
+      timerQueue,
+      timerQueue => push(timerQueue, newTask),
+      $stdSites.localKeyWithBorrowMut[0],
+      true,
+    );
     if (
       peek(taskQueue) == null &&
-      $withBorrow(timerQueue, timerQueue => peek(timerQueue) === newTask, true)
+      $withBorrow(
+        timerQueue,
+        timerQueue => peek(timerQueue) === newTask,
+        $stdSites.localKeyWithBorrow[0],
+        true,
+      )
     ) {
       // All tasks are delayed, and this is the task with the earliest delay.
       if (isHostTimeoutScheduled) {

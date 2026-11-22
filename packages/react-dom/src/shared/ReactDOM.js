@@ -9,6 +9,7 @@ export {default as version} from 'shared/ReactVersion';
 
 import {isValidContainer} from 'react-dom-bindings/src/client/ReactDOMContainer';
 import {createPortal as createPortalImpl} from 'react-reconciler/src/ReactPortal';
+import {$panic} from '@rust-js/std';
 
 export {flushSync} from './ReactDOMFlushSync.js';
 
@@ -56,7 +57,10 @@ export function createPortal(
   key,
 ) {
   if (!isValidContainer(container)) {
-    throw new Error('Target container is not a DOM element.');
+    throw $panic(
+      'Target container is not a DOM element.',
+      'packages/react-dom/src/shared/ReactDOM.rs:66:9',
+    );
   }
 
   // TODO: pass ReactDOM portal implementation as third argument

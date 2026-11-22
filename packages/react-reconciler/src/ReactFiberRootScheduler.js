@@ -365,7 +365,10 @@ function startDefaultTransitionIndicatorIfNeeded() {
           const onDefaultTransitionIndicator =
             current.onDefaultTransitionIndicator;
           const pendingIndicator =
-            $unwrap(onDefaultTransitionIndicator)() ?? noop;
+            $unwrap(
+              onDefaultTransitionIndicator,
+              'packages/react-reconciler/src/ReactFiberRootScheduler.rs:397:53',
+            )() ?? noop;
           current.pendingIndicator = pendingIndicator;
         } catch (x) {
           $catchable(x);

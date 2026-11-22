@@ -170,7 +170,10 @@ export function setIsStrictModeForDevtools(newIsStrictMode) {
     // We're in a test because Scheduler.log only exists
     // in SchedulerMock. To reduce the noise in strict mode tests,
     // suppress warnings and disable scheduler yielding during the double render
-    $unwrap(unstable_setDisableYieldValue)(newIsStrictMode);
+    $unwrap(
+      unstable_setDisableYieldValue,
+      'packages/react-reconciler/src/ReactFiberDevToolsHook.rs:435:37',
+    )(newIsStrictMode);
   }
 
   const injectedHook$1 = injectedHook;

@@ -93,7 +93,10 @@ const classComponentUpdater = {
     if (internals.queue === null) {
       warnNoop(inst, 'setState');
     } else {
-      $unwrap(internals.queue).push(payload);
+      $unwrap(
+        internals.queue,
+        'packages/react-server/src/ReactFizzClassComponent.rs:141:51',
+      ).push(payload);
       if (__DEV__ && callback != null) {
         warnOnInvalidCallback(callback);
       }
@@ -562,9 +565,19 @@ function processUpdateQueue(
     if (oldReplace && queue.length === 1) {
       inst.state = queue[0];
     } else {
-      let nextState = oldReplace ? $index(queue, 0) : inst.state;
+      let nextState = oldReplace
+        ? $index(
+            queue,
+            0,
+            'packages/react-server/src/ReactFizzClassComponent.rs:763:26',
+          )
+        : inst.state;
       let dontMutate = true;
-      for (const partial of $slice(queue, oldReplace ? 1 : 0)) {
+      for (const partial of $slice(
+        queue,
+        oldReplace ? 1 : 0,
+        'packages/react-server/src/ReactFizzClassComponent.rs:768:39',
+      )) {
         let partialState;
         if (typeof partial === 'function') {
           partialState = partial.call(
@@ -581,7 +594,13 @@ function processUpdateQueue(
             dontMutate = false;
             nextState = assign({}, nextState, partialState);
           } else {
-            assign($unwrap(nextState), partialState);
+            assign(
+              $unwrap(
+                nextState,
+                'packages/react-server/src/ReactFizzClassComponent.rs:791:43',
+              ),
+              partialState,
+            );
           }
         }
       }

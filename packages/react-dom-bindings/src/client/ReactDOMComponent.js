@@ -82,6 +82,7 @@ import {
 import {
   $catchUnwind,
   $catchable,
+  $panic,
   $stringPanic,
   $toLowercase,
   $unwrap,
@@ -102,7 +103,10 @@ function validatePropertiesInDevelopment(type, props) {
     validateInputProperties(type, props);
     validateUnknownProperties(type, props, {
       registrationNameDependencies,
-      possibleRegistrationNames: $unwrap(possibleRegistrationNames),
+      possibleRegistrationNames: $unwrap(
+        possibleRegistrationNames,
+        'packages/react-dom-bindings/src/client/ReactDOMComponent.rs:86:85',
+      ),
     });
     if (
       props.contentEditable &&
@@ -638,13 +642,15 @@ function setProp(domElement, tag, key, value, props, prevValue) {
             '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
               'Please visit https://react.dev/link/dangerously-set-inner-html ' +
               'for more information.',
+            'packages/react-dom-bindings/src/client/ReactDOMComponent.rs:663:21',
           );
         }
         const nextHtml = value.__html;
         if (nextHtml != null) {
           if (props.children != null) {
-            throw new Error(
+            throw $panic(
               'Can only set one of `children` or `props.dangerouslySetInnerHTML`.',
+              'packages/react-dom-bindings/src/client/ReactDOMComponent.rs:675:25',
             );
           }
           const lastHtml = prevValue?.__html;
@@ -970,13 +976,15 @@ function setPropOnCustomElement(domElement, tag, key, value, props, prevValue) {
             '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
               'Please visit https://react.dev/link/dangerously-set-inner-html ' +
               'for more information.',
+            'packages/react-dom-bindings/src/client/ReactDOMComponent.rs:974:21',
           );
         }
         const nextHtml = value.__html;
         if (nextHtml != null) {
           if (props.children != null) {
-            throw new Error(
+            throw $panic(
               'Can only set one of `children` or `props.dangerouslySetInnerHTML`.',
+              'packages/react-dom-bindings/src/client/ReactDOMComponent.rs:986:25',
             );
           }
           const lastHtml = prevValue?.__html;
@@ -1098,6 +1106,7 @@ export function setInitialProperties(domElement, tag, props) {
             // TODO: Can we make this a DEV warning to avoid this deny list?
             throw $stringPanic(
               `${tag} is a void element tag and must neither have \`children\` nor use \`dangerouslySetInnerHTML\`.`,
+              'packages/react-dom-bindings/src/client/ReactDOMComponent.rs:1099:25',
             );
           default:
             // defaultChecked and defaultValue are ignored by setProp
@@ -1159,6 +1168,7 @@ export function setInitialProperties(domElement, tag, props) {
             if (propValue != null) {
               throw $stringPanic(
                 `${tag} is a void element tag and must neither have \`children\` nor use \`dangerouslySetInnerHTML\`.`,
+                'packages/react-dom-bindings/src/client/ReactDOMComponent.rs:1160:29',
               );
             }
             break;
@@ -1256,8 +1266,9 @@ export function setInitialProperties(domElement, tag, props) {
           case 'dangerouslySetInnerHTML':
             if (propValue != null) {
               // TODO: Do we really need a special error message for this. It's also pretty blunt.
-              throw new Error(
+              throw $panic(
                 '`dangerouslySetInnerHTML` does not make sense on <textarea>.',
+                'packages/react-dom-bindings/src/client/ReactDOMComponent.rs:1255:29',
               );
             }
             break;
@@ -1360,6 +1371,7 @@ export function setInitialProperties(domElement, tag, props) {
             // TODO: Can we make this a DEV warning to avoid this deny list?
             throw $stringPanic(
               `${tag} is a void element tag and must neither have \`children\` nor use \`dangerouslySetInnerHTML\`.`,
+              'packages/react-dom-bindings/src/client/ReactDOMComponent.rs:1349:25',
             );
           default:
             // defaultChecked and defaultValue are ignored by setProp
@@ -1505,6 +1517,7 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
               if (nextProp != null) {
                 throw $stringPanic(
                   `${tag} is a void element tag and must neither have \`children\` nor use \`dangerouslySetInnerHTML\`.`,
+                  'packages/react-dom-bindings/src/client/ReactDOMComponent.rs:1518:33',
                 );
               }
               break;
@@ -1700,8 +1713,9 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
             case 'dangerouslySetInnerHTML':
               if (nextProp != null) {
                 // TODO: Do we really need a special error message for this. It's also pretty blunt.
-                throw new Error(
+                throw $panic(
                   '`dangerouslySetInnerHTML` does not make sense on <textarea>.',
+                  'packages/react-dom-bindings/src/client/ReactDOMComponent.rs:1725:33',
                 );
               }
               break;
@@ -1803,6 +1817,7 @@ export function updateProperties(domElement, tag, lastProps, nextProps) {
                 // TODO: Can we make this a DEV warning to avoid this deny list?
                 throw $stringPanic(
                   `${tag} is a void element tag and must neither have \`children\` nor use \`dangerouslySetInnerHTML\`.`,
+                  'packages/react-dom-bindings/src/client/ReactDOMComponent.rs:1840:33',
                 );
               }
               break;

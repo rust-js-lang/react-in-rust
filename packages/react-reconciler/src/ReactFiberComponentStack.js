@@ -118,7 +118,10 @@ export function getOwnerStackByFiberInDev(workInProgress) {
     if (workInProgress.tag === HostText) {
       // Text nodes never have an owner/stack because they're not created through JSX.
       // We use the parent since text nodes are always created through a host parent.
-      const parent = $unwrap(workInProgress.return);
+      const parent = $unwrap(
+        workInProgress.return,
+        'packages/react-reconciler/src/ReactFiberComponentStack.rs:133:69',
+      );
       workInProgress = parent;
     }
 

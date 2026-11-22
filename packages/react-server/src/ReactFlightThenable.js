@@ -12,6 +12,7 @@
 // instead of "Wakeable". Or some other more appropriate name.
 
 import noop from 'shared/noop';
+import {$panic} from '@rust-js/std';
 
 // An error that is thrown (e.g. by `use`) to trigger Suspense. If we
 // detect this is caught by userspace, we'll log a warning in development.
@@ -75,10 +76,11 @@ export function trackUsedThenable(thenableState, thenable, index) {
       // React would still have a Component stack but that could only be used
       // as an approximation.
       if (rejectedError == null && !('reason' in thenable)) {
-        throw new Error(
+        throw $panic(
           'A rejected Promise was passed to React without a `reason` property. ' +
             'React threw a generic error from where the Promise was used to assist in identifying the problematic Promise. ' +
             "Make sure that instrumented Promises correctly set the `reason` property when setting `status` to `'rejected'`.",
+          'packages/react-server/src/ReactFlightThenable.rs:102:17',
         );
       }
 
@@ -143,9 +145,10 @@ export function getSuspendedThenable() {
   const thenable = suspendedThenable;
   suspendedThenable = null;
   if (thenable == null) {
-    throw new Error(
+    throw $panic(
       'Expected a suspended thenable. This is a bug in React. Please file ' +
         'an issue.',
+      'packages/react-server/src/ReactFlightThenable.rs:171:9',
     );
   }
   return thenable;

@@ -95,7 +95,16 @@ function validateProperty(tagName, name, value, eventRegistry) {
     }
 
     // Let the ARIA attribute hook validate ARIA attributes
-    if ($unwrap(rARIA).test(name) || $unwrap(rARIACamel).test(name)) {
+    if (
+      $unwrap(
+        rARIA,
+        'packages/react-dom-bindings/src/shared/ReactDOMUnknownPropertyHook.rs:141:40',
+      ).test(name) ||
+      $unwrap(
+        rARIACamel,
+        'packages/react-dom-bindings/src/shared/ReactDOMUnknownPropertyHook.rs:142:62',
+      ).test(name)
+    ) {
       return true;
     }
 

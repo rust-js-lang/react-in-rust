@@ -37,8 +37,14 @@ export function getOffsets(outerNode) {
   // https://bugzilla.mozilla.org/show_bug.cgi?id=208427
   try {
     /* eslint-disable ft-flow/no-unused-expressions */
-    $unwrap(anchorNode).nodeType;
-    $unwrap(focusNode).nodeType;
+    $unwrap(
+      anchorNode,
+      'packages/react-dom-bindings/src/client/ReactDOMSelection.rs:58:21',
+    ).nodeType;
+    $unwrap(
+      focusNode,
+      'packages/react-dom-bindings/src/client/ReactDOMSelection.rs:59:20',
+    ).nodeType;
     /* eslint-enable ft-flow/no-unused-expressions */
   } catch (error) {
     $catchable(error);
@@ -94,7 +100,10 @@ export function getModernOffsetsFromPoints(
       }
 
       if (node.nodeType === TEXT_NODE) {
-        length += $unwrap(node.nodeValue).length;
+        length += $unwrap(
+          node.nodeValue,
+          'packages/react-dom-bindings/src/client/ReactDOMSelection.rs:110:75',
+        ).length;
       }
 
       const next = node.firstChild;
@@ -130,7 +139,10 @@ export function getModernOffsetsFromPoints(
       if ((next = node.nextSibling) !== null) {
         break;
       }
-      node = $unwrap(parentNode);
+      node = $unwrap(
+        parentNode,
+        'packages/react-dom-bindings/src/client/ReactDOMSelection.rs:144:32',
+      );
       parentNode = node.parentNode;
     }
 
@@ -173,8 +185,14 @@ export function setOffsets(node, offsets) {
     return;
   }
 
-  const selection = $unwrap(win.getSelection());
-  const length = $unwrap(node.textContent).length;
+  const selection = $unwrap(
+    win.getSelection(),
+    'packages/react-dom-bindings/src/client/ReactDOMSelection.rs:185:41',
+  );
+  const length = $unwrap(
+    node.textContent,
+    'packages/react-dom-bindings/src/client/ReactDOMSelection.rs:186:68',
+  ).length;
   let start = Math.min(offsets.start ?? 0, length);
   let end;
   if (offsets.end == null) {

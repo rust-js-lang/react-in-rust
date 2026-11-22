@@ -217,7 +217,11 @@ export function createWorkInProgress(current, pendingProps) {
     // node that we're free to reuse. This is lazily created to avoid allocating
     // extra objects for things that are never updated. It also allow us to
     // reclaim the extra memory if needed.
-    const borrow = $borrow($fieldCell(current, 'key'), true);
+    const borrow = $borrow(
+      $fieldCell(current, 'key'),
+      'packages/react-reconciler/src/ReactFiber.rs:273:35',
+      true,
+    );
     const key = borrow.value;
     $unborrow(borrow);
     workInProgress = createFiber(current.tag, pendingProps, key, current.mode);
@@ -252,10 +256,20 @@ export function createWorkInProgress(current, pendingProps) {
     if (enableOptimisticKey) {
       // For optimistic keys, the Fibers can have different keys if one is optimistic
       // and the other one is filled in.
-      const borrow = $borrow($fieldCell(current, 'key'), true);
+      const borrow = $borrow(
+        $fieldCell(current, 'key'),
+        'packages/react-reconciler/src/ReactFiber.rs:314:39',
+        true,
+      );
       const key = borrow.value;
       $unborrow(borrow);
-      $cellReplace($borrowMut($fieldCell(workInProgress, 'key')), key);
+      $cellReplace(
+        $borrowMut(
+          $fieldCell(workInProgress, 'key'),
+          'packages/react-reconciler/src/ReactFiber.rs:315:38',
+        ),
+        key,
+      );
     }
 
     if (enableProfilerTimer) {
@@ -380,10 +394,20 @@ export function resetWorkInProgress(workInProgress, renderLanes) {
     if (enableOptimisticKey) {
       // For optimistic keys, the Fibers can have different keys if one is optimistic
       // and the other one is filled in.
-      const borrow = $borrow($fieldCell(current, 'key'), true);
+      const borrow = $borrow(
+        $fieldCell(current, 'key'),
+        'packages/react-reconciler/src/ReactFiber.rs:482:39',
+        true,
+      );
       const key = borrow.value;
       $unborrow(borrow);
-      $cellReplace($borrowMut($fieldCell(workInProgress, 'key')), key);
+      $cellReplace(
+        $borrowMut(
+          $fieldCell(workInProgress, 'key'),
+          'packages/react-reconciler/src/ReactFiber.rs:483:38',
+        ),
+        key,
+      );
     }
 
     // Clone the dependencies object. This is mutated during the render phase, so

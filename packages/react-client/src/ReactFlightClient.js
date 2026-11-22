@@ -90,10 +90,12 @@ import {
   $fieldCell,
   $index,
   $live,
+  $panic,
   $removeOutOfBounds,
   $resize,
   $slice,
   $splice,
+  $stdSites,
   $stringPanic,
   $toLowercase,
   $truncate,
@@ -138,7 +140,10 @@ function ReactPromise(status, value, reason) {
   this.value = value;
   this.reason = reason;
   if (enableProfilerTimer && enableComponentPerformanceTrack) {
-    $borrowMut($fieldCell(this, '_children')).value = [];
+    $borrowMut(
+      $fieldCell(this, '_children'),
+      'packages/react-client/src/ReactFlightClient.rs:363:30',
+    ).value = [];
   }
   if (__DEV__) {
     this._debugChunk = null;
@@ -249,8 +254,9 @@ function unwrapWeakResponse(weakResponse) {
     const response = weakResponse.weak.deref();
     if (response == null) {
       // eslint-disable-next-line react-internal/prod-error-codes
-      throw new Error(
+      throw $panic(
         'We did not expect to receive new data after GC:ing the response.',
+        'packages/react-client/src/ReactFlightClient.rs:599:13',
       );
     }
     return response;
@@ -262,7 +268,10 @@ function unwrapWeakResponse(weakResponse) {
 
 function getWeakResponse(response) {
   return __DEV__
-    ? $unwrap(response._weakResponse)
+    ? $unwrap(
+        response._weakResponse,
+        'packages/react-client/src/ReactFlightClient.rs:611:61',
+      )
     : // In prod we just use the real Response directly.
       response;
 }
@@ -321,7 +330,10 @@ function createPendingChunk(response) {
     const pendingChunks = response._pendingChunks ?? 0;
     response._pendingChunks = pendingChunks + 1;
     if (pendingChunks === 0) {
-      $unwrap(response._weakResponse).response = response;
+      $unwrap(
+        response._weakResponse,
+        'packages/react-client/src/ReactFlightClient.rs:677:18',
+      ).response = response;
       const pendingInitialRender = response._pendingInitialRender;
       if (pendingInitialRender != null) {
         clearTimeout(pendingInitialRender);
@@ -347,6 +359,7 @@ function releasePendingChunk(response, chunk) {
         // We're no longer waiting for any more chunks. We can release the strong reference
         // to the response. We'll regain it if we ask for any more data later on.
         response._weakResponse,
+        'packages/react-client/src/ReactFlightClient.rs:712:18',
       ).response = null;
       // Wait a short period to see if any more chunks get asked for. E.g. by a React render.
       // These chunks might discover more pending chunks.
@@ -395,9 +408,14 @@ function filterDebugInfo(response, value) {
   // but it doesn't need to be resolved before the end time.
   const relativeEndTime = debugEndTime - performance.timeOrigin;
   const debugInfo = [];
-  const valueDebugInfo = $unwrap(value._debugInfo);
+  const valueDebugInfo = $unwrap(
+    value._debugInfo,
+    'packages/react-client/src/ReactFlightClient.rs:772:74',
+  );
   if (valueDebugInfo.borrows < 0) {
-    $alreadyMutablyBorrowed();
+    $alreadyMutablyBorrowed(
+      'packages/react-client/src/ReactFlightClient.rs:773:35',
+    );
   }
   for (let i = 0; i < valueDebugInfo.length; i++) {
     const info = valueDebugInfo[i];
@@ -417,9 +435,12 @@ function pruneDebugInfoAfterError(response, chunk) {
   }
 
   const relativeEndTime = debugEndTime - performance.timeOrigin;
-  let debugInfo = $unwrap(chunk._debugInfo);
+  let debugInfo = $unwrap(
+    chunk._debugInfo,
+    'packages/react-client/src/ReactFlightClient.rs:790:68',
+  );
   if (debugInfo.borrows) {
-    $alreadyBorrowed();
+    $alreadyBorrowed('packages/react-client/src/ReactFlightClient.rs:791:37');
   }
   const end = debugInfo.length;
   for (let i = 0; i < end; i++) {
@@ -446,13 +467,21 @@ function moveDebugInfoFromChunkToInnerValue(chunk, value) {
       resolvedValue.$$typeof === REACT_ELEMENT_TYPE ||
       resolvedValue.$$typeof === REACT_LAZY_TYPE)
   ) {
-    const debugInfo = $borrowMut($unwrap(chunk._debugInfo)).splice(0);
+    const debugInfo = $borrowMut(
+      $unwrap(
+        chunk._debugInfo,
+        'packages/react-client/src/ReactFlightClient.rs:823:14',
+      ),
+      'packages/react-client/src/ReactFlightClient.rs:824:14',
+    ).splice(0);
     const valueDebugInfo = resolvedValue._debugInfo;
     if (isArray(valueDebugInfo)) {
       if (valueDebugInfo.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:831:30',
+        );
       }
-      $splice(valueDebugInfo, 0, 0, debugInfo);
+      $splice(valueDebugInfo, 0, 0, debugInfo, $stdSites.vecDrain[0]);
     } else if (!Object.isFrozen(resolvedValue)) {
       Object.defineProperty(resolvedValue, '_debugInfo', {
         configurable: false,
@@ -503,6 +532,7 @@ function rejectChunk(response, listeners, error) {
 function resolveBlockedCycle(resolvedChunk, reference) {
   const {value: referencedChunk} = $borrow(
     $fieldCell(reference.handler, 'chunk', true),
+    'packages/react-client/src/ReactFlightClient.rs:899:52',
   );
   if (referencedChunk == null) {
     return null;
@@ -569,7 +599,11 @@ function wakeChunkIfInitialized(
               );
               if (rejectionIdx !== -1) {
                 if (rejectionIdx >= rejectListeners.length) {
-                  $removeOutOfBounds(rejectListeners, rejectionIdx);
+                  $removeOutOfBounds(
+                    rejectListeners,
+                    rejectionIdx,
+                    'packages/react-client/src/ReactFlightClient.rs:955:50',
+                  );
                 }
                 rejectListeners.splice(rejectionIdx, 1);
               }
@@ -624,7 +658,10 @@ function wakeChunkIfInitialized(
 /** A stream chunk's controller, its `reason` once it's fulfilled. */
 function streamController(chunk) {
   if (chunk.status !== 'fulfilled' || chunk.reason == null) {
-    throw new Error('Expected a stream chunk.');
+    throw $panic(
+      'Expected a stream chunk.',
+      'packages/react-client/src/ReactFlightClient.rs:1009:14',
+    );
   }
   return chunk.reason;
 }
@@ -762,7 +799,10 @@ function createInitializedStreamChunk(response, value, controller) {
     const pendingChunks = response._pendingChunks ?? 0;
     response._pendingChunks = pendingChunks + 1;
     if (pendingChunks === 0) {
-      $unwrap(response._weakResponse).response = response;
+      $unwrap(
+        response._weakResponse,
+        'packages/react-client/src/ReactFlightClient.rs:1181:18',
+      ).response = response;
     }
   }
   // We use the reason field to stash the controller since we already have that
@@ -853,7 +893,13 @@ function resolveModuleChunk(response, chunk, value) {
     const debugInfo = getModuleDebugInfo(value);
     if (debugInfo !== null) {
       // Add to the live set if it was already initialized.
-      const borrowMut = $borrowMut($unwrap(resolvedChunk._debugInfo));
+      const borrowMut = $borrowMut(
+        $unwrap(
+          resolvedChunk._debugInfo,
+          'packages/react-client/src/ReactFlightClient.rs:1293:18',
+        ),
+        'packages/react-client/src/ReactFlightClient.rs:1294:18',
+      );
       for (let i = 0; i < debugInfo.length; i++) {
         borrowMut.push(debugInfo[i]);
       }
@@ -879,14 +925,19 @@ function initializeDebugChunk(response, chunk) {
   if (debugChunk == null) {
     return;
   }
-  const debugInfo = $unwrap(chunk._debugInfo);
+  const debugInfo = $unwrap(
+    chunk._debugInfo,
+    'packages/react-client/src/ReactFlightClient.rs:1415:68',
+  );
   const prevIsInitializingDebugInfo = isInitializingDebugInfo;
   isInitializingDebugInfo = true;
   try {
     if (debugChunk.status === 'resolved_model') {
       // Find the index of this debug info by walking the linked list.
       if (debugInfo.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:1426:38',
+        );
       }
       let {length: idx} = debugInfo;
       let c = debugChunk._debugChunk;
@@ -902,15 +953,26 @@ function initializeDebugChunk(response, chunk) {
       if (initializedChunk.status === 'fulfilled') {
         const entry = initializeDebugInfo(
           response,
-          $unwrap(initializedValue(initializedChunk)),
+          $unwrap(
+            initializedValue(initializedChunk),
+            'packages/react-client/src/ReactFlightClient.rs:1442:91',
+          ),
         );
         if (debugInfo.borrows) {
-          $alreadyBorrowed();
+          $alreadyBorrowed(
+            'packages/react-client/src/ReactFlightClient.rs:1443:49',
+          );
         }
         if (idx >= debugInfo.length) {
           $resize(debugInfo, (idx + 1) >>> 0, undefined, 4);
         }
-        debugInfo[$at(debugInfo, idx)] = entry;
+        debugInfo[
+          $at(
+            debugInfo,
+            idx,
+            'packages/react-client/src/ReactFlightClient.rs:1447:27',
+          )
+        ] = entry;
       } else if (
         initializedChunk.status === 'blocked' ||
         initializedChunk.status === 'pending' ||
@@ -961,7 +1023,10 @@ function initializeDebugChunk(response, chunk) {
 
 /** `initializeDebugInfo` as a reference's map. */
 function mapInitializeDebugInfo(response, model, parentObject, key) {
-  return initializeDebugInfo(response, $unwrap(model));
+  return initializeDebugInfo(
+    response,
+    $unwrap(model, 'packages/react-client/src/ReactFlightClient.rs:1500:48'),
+  );
 }
 
 function initializeModelChunk(chunk) {
@@ -969,8 +1034,9 @@ function initializeModelChunk(chunk) {
   initializingHandler = null;
   const prevChunk = initializingChunk;
   if (chunk.status !== 'resolved_model') {
-    throw new Error(
+    throw $panic(
       'internal error: entered unreachable code: a resolved model chunk',
+      'packages/react-client/src/ReactFlightClient.rs:1509:14',
     );
   }
   const {value: resolvedModel} = chunk;
@@ -1022,7 +1088,10 @@ function initializeModelChunk(chunk) {
         // `cyclicChunk`.
         handler.value = value;
         $cellReplace(
-          $borrowMut($fieldCell(handler, 'chunk', true)),
+          $borrowMut(
+            $fieldCell(handler, 'chunk', true),
+            'packages/react-client/src/ReactFlightClient.rs:1561:27',
+          ),
           cyclicChunk,
         );
       }
@@ -1073,7 +1142,11 @@ function initializeModelChunk(chunk) {
               );
               if (rejectionIdx !== -1) {
                 if (rejectionIdx >= rejectListeners.length) {
-                  $removeOutOfBounds(rejectListeners, rejectionIdx);
+                  $removeOutOfBounds(
+                    rejectListeners,
+                    rejectionIdx,
+                    'packages/react-client/src/ReactFlightClient.rs:1601:46',
+                  );
                 }
                 rejectListeners.splice(rejectionIdx, 1);
               }
@@ -1162,8 +1235,9 @@ function initializeModelChunk(chunk) {
 
 function initializeModuleChunk(chunk) {
   if (chunk.status !== 'resolved_module') {
-    throw new Error(
+    throw $panic(
       'internal error: entered unreachable code: a resolved module chunk',
+      'packages/react-client/src/ReactFlightClient.rs:1652:14',
     );
   }
   const module = chunk.value;
@@ -1193,7 +1267,10 @@ export function reportGlobalError(weakResponse, error) {
   const response = unwrapWeakResponse(weakResponse);
   response._closed = true;
   response._closedReason = error ?? null;
-  $unwrap(response._chunks).forEach(chunk => {
+  $unwrap(
+    response._chunks,
+    'packages/react-client/src/ReactFlightClient.rs:1681:28',
+  ).forEach(chunk => {
     // If this chunk was already resolved or errored, it won't
     // trigger an error but if it wasn't then we need to
     // because we won't be getting any new data to resolve it.
@@ -1211,12 +1288,16 @@ export function reportGlobalError(weakResponse, error) {
   if (__DEV__) {
     const {value: debugChannel} = $borrow(
       $fieldCell(response, '_debugChannel'),
+      'packages/react-client/src/ReactFlightClient.rs:1705:53',
     );
     if (debugChannel != null) {
       // If we don't have any more ways of reading data, we don't have to send
       // any more neither. So we close the writable side.
       closeDebugChannel(debugChannel);
-      $borrowMut($fieldCell(response, '_debugChannel')).value = undefined;
+      $borrowMut(
+        $fieldCell(response, '_debugChannel'),
+        'packages/react-client/src/ReactFlightClient.rs:1710:38',
+      ).value = undefined;
       // Make sure the debug channel is not closed a second time when the
       // Response gets GC:ed.
       if (debugChannelRegistry != null) {
@@ -1288,7 +1369,10 @@ function initializeElement(response, element, lazyNode) {
   if (owner == null) {
     element._owner = response._debugRootOwner;
   }
-  let env = $unwrap(response._rootEnvironmentName);
+  let env = $unwrap(
+    response._rootEnvironmentName,
+    'packages/react-client/src/ReactFlightClient.rs:1801:68',
+  );
   if (owner != null && owner.env != null) {
     // Interestingly we don't actually have the environment name of where
     // this JSX was created if it doesn't have an owner but if it does
@@ -1351,15 +1435,19 @@ function initializeElement(response, element, lazyNode) {
     const lazyDebugInfo = lazyNode._debugInfo;
     if (payload.status === 'fulfilled' && lazyDebugInfo) {
       if (lazyDebugInfo.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:1880:62',
+        );
       }
       const debugInfo = lazyDebugInfo.splice(0);
       const elementDebugInfo = element._debugInfo;
       if (elementDebugInfo) {
         if (elementDebugInfo.borrows) {
-          $alreadyBorrowed();
+          $alreadyBorrowed(
+            'packages/react-client/src/ReactFlightClient.rs:1886:36',
+          );
         }
-        $splice(elementDebugInfo, 0, 0, debugInfo);
+        $splice(elementDebugInfo, 0, 0, debugInfo, $stdSites.vecDrain[0]);
       } else {
         Object.defineProperty(element, '_debugInfo', {
           configurable: false,
@@ -1373,7 +1461,12 @@ function initializeElement(response, element, lazyNode) {
 
   // TODO: We should be freezing the element but currently, we might write into
   // _debugInfo later. We could move it into _store which remains mutable.
-  Object.freeze($unwrap(element.props));
+  Object.freeze(
+    $unwrap(
+      element.props,
+      'packages/react-client/src/ReactFlightClient.rs:1906:46',
+    ),
+  );
 }
 
 function createElement(
@@ -1416,12 +1509,19 @@ function createElement(
     // Unfortunately, _store is enumerable in jest matchers so for equality to
     // work, I need to keep it or make _store non-enumerable in the other file.
     element._store = {};
-    Object.defineProperty($unwrap(element._store), 'validated', {
-      configurable: false,
-      enumerable: false,
-      writable: true,
-      value: validated, // Whether the element has already been validated on the server.
-    });
+    Object.defineProperty(
+      $unwrap(
+        element._store,
+        'packages/react-client/src/ReactFlightClient.rs:1991:40',
+      ),
+      'validated',
+      {
+        configurable: false,
+        enumerable: false,
+        writable: true,
+        value: validated, // Whether the element has already been validated on the server.
+      },
+    );
     // debugInfo contains Server Component debug information.
     Object.defineProperty(element, '_debugInfo', {
       configurable: false,
@@ -1478,7 +1578,10 @@ function createElement(
       const blockedChunk = createBlockedChunk(response);
       handler.value = element;
       $cellReplace(
-        $borrowMut($fieldCell(handler, 'chunk', true)),
+        $borrowMut(
+          $fieldCell(handler, 'chunk', true),
+          'packages/react-client/src/ReactFlightClient.rs:2091:27',
+        ),
         blockedChunk,
       );
       const lazyNode = createLazyChunkWrapper(blockedChunk, validated);
@@ -1553,7 +1656,10 @@ function createLazyChunkWrapper(
 }
 
 function getChunk(response, id) {
-  const chunks = $unwrap(response._chunks);
+  const chunks = $unwrap(
+    response._chunks,
+    'packages/react-client/src/ReactFlightClient.rs:2183:41',
+  );
   let chunk = chunks.get(id);
   if (chunk == null) {
     let newChunk;
@@ -1578,7 +1684,10 @@ function getChunk(response, id) {
 // the row for a weak reference, so an unresolved weak chunk halts (stays
 // forever pending) instead of erroring when the stream closes.
 function getWeakChunk(response, id) {
-  const chunks = $unwrap(response._chunks);
+  const chunks = $unwrap(
+    response._chunks,
+    'packages/react-client/src/ReactFlightClient.rs:2209:41',
+  );
   let chunk = chunks.get(id);
   if (chunk == null) {
     const newChunk = response._closed
@@ -1627,7 +1736,10 @@ function initializeChunkIfUnblocked(response, handler) {
   if (handler.deps !== 0 || handler.errored) {
     return;
   }
-  const {value: chunk} = $borrow($fieldCell(handler, 'chunk', true));
+  const {value: chunk} = $borrow(
+    $fieldCell(handler, 'chunk', true),
+    'packages/react-client/src/ReactFlightClient.rs:2259:37',
+  );
   if (chunk == null) {
     return;
   }
@@ -1649,7 +1761,11 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
 
   try {
     let i = 1;
-    while (i < $borrow(path).length) {
+    while (
+      i <
+      $borrow(path, 'packages/react-client/src/ReactFlightClient.rs:2295:24')
+        .length
+    ) {
       while (
         typeof value === 'object' &&
         value != null &&
@@ -1660,7 +1776,11 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
         // e.g. to replace a blocked element. We must instead look for it inside.
         const referencedChunk = value._payload;
         if (
-          referencedChunk === $borrow($fieldCell(handler, 'chunk', true)).value
+          referencedChunk ===
+          $borrow(
+            $fieldCell(handler, 'chunk', true),
+            'packages/react-client/src/ReactFlightClient.rs:2307:22',
+          ).value
         ) {
           // This is a reference to the thing we're currently blocking. We can peak
           // inside of it to get the value.
@@ -1698,9 +1818,11 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
           // If we're not yet initialized we need to skip what we've already drilled
           // through and then wait for the next value to become available.
           if (path.borrows) {
-            $alreadyBorrowed();
+            $alreadyBorrowed(
+              'packages/react-client/src/ReactFlightClient.rs:2353:26',
+            );
           }
-          $drain(path, 0, i - 1);
+          $drain(path, 0, $stdSites.vecDrain[0], i - 1);
           // Add "listener" to our new chunk dependency.
           if (
             referencedChunk.status === 'blocked' ||
@@ -1735,19 +1857,34 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
         }
       }
       if (path.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:2387:29',
+        );
       }
-      const name = $index(path, i);
+      const name = $index(
+        path,
+        i,
+        'packages/react-client/src/ReactFlightClient.rs:2387:37',
+      );
       if (
         typeof value === 'object' &&
         value != null &&
-        hasOwnProperty.call($unwrap(value), name)
+        hasOwnProperty.call(
+          $unwrap(
+            value,
+            'packages/react-client/src/ReactFlightClient.rs:2391:74',
+          ),
+          name,
+        )
       ) {
         value = value[name];
         i++;
         continue;
       }
-      throw new Error('Invalid reference.');
+      throw $panic(
+        'Invalid reference.',
+        'packages/react-client/src/ReactFlightClient.rs:2395:17',
+      );
     }
 
     while (
@@ -1759,7 +1896,11 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
       // while it was blocked by other data. If it's no longer blocked, we can unwrap it.
       const referencedChunk = value._payload;
       if (
-        referencedChunk === $borrow($fieldCell(handler, 'chunk', true)).value
+        referencedChunk ===
+        $borrow(
+          $fieldCell(handler, 'chunk', true),
+          'packages/react-client/src/ReactFlightClient.rs:2410:18',
+        ).value
       ) {
         // This is a reference to the thing we're currently blocking. We can peak
         // inside of it to get the value.
@@ -1801,7 +1942,11 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
       switch (key) {
         case '3':
           if (__DEV__ && reference.isDebug !== true) {
-            const borrow = $borrow($fieldCell(handler, 'chunk', true), true);
+            const borrow = $borrow(
+              $fieldCell(handler, 'chunk', true),
+              'packages/react-client/src/ReactFlightClient.rs:2464:43',
+              true,
+            );
             try {
               transferReferencedDebugInfo(borrow.value, fulfilledChunk);
             } finally {
@@ -1824,7 +1969,11 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
           break;
         default:
           if (__DEV__ && reference.isDebug !== true) {
-            const borrow = $borrow($fieldCell(handler, 'chunk', true), true);
+            const borrow = $borrow(
+              $fieldCell(handler, 'chunk', true),
+              'packages/react-client/src/ReactFlightClient.rs:2485:43',
+              true,
+            );
             try {
               transferReferencedDebugInfo(borrow.value, fulfilledChunk);
             } finally {
@@ -1834,7 +1983,11 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
           break;
       }
     } else if (__DEV__ && reference.isDebug !== true) {
-      const borrow = $borrow($fieldCell(handler, 'chunk', true), true);
+      const borrow = $borrow(
+        $fieldCell(handler, 'chunk', true),
+        'packages/react-client/src/ReactFlightClient.rs:2492:58',
+        true,
+      );
       try {
         transferReferencedDebugInfo(borrow.value, fulfilledChunk);
       } finally {
@@ -1864,7 +2017,10 @@ function rejectReference(response, handler, error) {
   erroredHandler.errored = true;
   erroredHandler.value = null;
   erroredHandler.reason = error;
-  const {value: chunk} = $borrow($fieldCell(handler, 'chunk', true));
+  const {value: chunk} = $borrow(
+    $fieldCell(handler, 'chunk', true),
+    'packages/react-client/src/ReactFlightClient.rs:2525:31',
+  );
   if (chunk == null || chunk.status !== 'blocked') {
     return;
   }
@@ -1889,7 +2045,13 @@ function rejectReference(response, handler, error) {
     if (supportsCreateTask) {
       erroredComponent.debugTask = blockedValue._debugTask ?? null;
     }
-    $borrowMut($unwrap(chunk._debugInfo)).push(erroredComponent);
+    $borrowMut(
+      $unwrap(
+        chunk._debugInfo,
+        'packages/react-client/src/ReactFlightClient.rs:2569:14',
+      ),
+      'packages/react-client/src/ReactFlightClient.rs:2570:14',
+    ).push(erroredComponent);
   }
 
   triggerErrorOnChunk(response, chunk, error);
@@ -1905,7 +2067,11 @@ function waitForReference(
   isAwaitingDebugInfo, // DEV-only
 ) {
   if (__DEV__) {
-    const borrow = $borrow($fieldCell(response, '_debugChannel'), true);
+    const borrow = $borrow(
+      $fieldCell(response, '_debugChannel'),
+      'packages/react-client/src/ReactFlightClient.rs:2589:14',
+      true,
+    );
     let isNoneOr;
     try {
       isNoneOr = borrow.value == null || !borrow.value.hasReadable;
@@ -1984,7 +2150,10 @@ function waitForReference(
 }
 
 function loadServerReference(response, metaData, parentObject, key) {
-  metaData = $unwrap(metaData);
+  metaData = $unwrap(
+    metaData,
+    'packages/react-client/src/ReactFlightClient.rs:2658:31',
+  );
   if (key === 'then') {
     // This should never happen because we always serialize objects with then-functions
     // as "thenable" which reduces to a chunk with no other fields.
@@ -2000,7 +2169,10 @@ function loadServerReference(response, metaData, parentObject, key) {
     // we just return a proxy to it.
     return createBoundServerReference(
       metaData,
-      $unwrap(response._callServer),
+      $unwrap(
+        response._callServer,
+        'packages/react-client/src/ReactFlightClient.rs:2676:41',
+      ),
       response._encodeFormAction,
       __DEV__ ? response._debugFindSourceMapURL : undefined,
     );
@@ -2115,7 +2287,10 @@ function loadServerReference(response, metaData, parentObject, key) {
     erroredHandler.errored = true;
     erroredHandler.value = null;
     erroredHandler.reason = error;
-    const {value: chunk} = $borrow($fieldCell(handler, 'chunk', true));
+    const {value: chunk} = $borrow(
+      $fieldCell(handler, 'chunk', true),
+      'packages/react-client/src/ReactFlightClient.rs:2816:35',
+    );
     if (chunk == null || chunk.status !== 'blocked') {
       return;
     }
@@ -2140,13 +2315,22 @@ function loadServerReference(response, metaData, parentObject, key) {
       if (supportsCreateTask) {
         erroredComponent.debugTask = blockedValue._debugTask ?? null;
       }
-      $borrowMut($unwrap(chunk._debugInfo)).push(erroredComponent);
+      $borrowMut(
+        $unwrap(
+          chunk._debugInfo,
+          'packages/react-client/src/ReactFlightClient.rs:2860:18',
+        ),
+        'packages/react-client/src/ReactFlightClient.rs:2861:18',
+      ).push(erroredComponent);
     }
 
     triggerErrorOnChunk(response, chunk, error);
   }
 
-  $unwrap(promise).then(fulfill, reject);
+  $unwrap(
+    promise,
+    'packages/react-client/src/ReactFlightClient.rs:2868:13',
+  ).then(fulfill, reject);
 
   // Return a place holder value for now.
   return null;
@@ -2194,8 +2378,14 @@ function transferReferencedDebugInfo(receivingChunk, referencedChunk) {
     // the root is rendered as is.
     receivingChunk != null
   ) {
-    const referencedDebugInfo = $unwrap(referencedChunk._debugInfo);
-    const receivingDebugInfo = $unwrap(receivingChunk._debugInfo);
+    const referencedDebugInfo = $unwrap(
+      referencedChunk._debugInfo,
+      'packages/react-client/src/ReactFlightClient.rs:2923:74',
+    );
+    const receivingDebugInfo = $unwrap(
+      receivingChunk._debugInfo,
+      'packages/react-client/src/ReactFlightClient.rs:2925:73',
+    );
     // The receiving chunk takes each entry only once. A repeated entry
     // carries no information. An entry repeats in two ways:
     //
@@ -2212,9 +2402,19 @@ function transferReferencedDebugInfo(receivingChunk, referencedChunk) {
       receivingChunk._receivedDebugInfo = set;
       receivedDebugInfo = set;
     }
-    for (let i = 0; i < $borrow(referencedDebugInfo).length; i++) {
+    for (
+      let i = 0;
+      i <
+      $borrow(
+        referencedDebugInfo,
+        'packages/react-client/src/ReactFlightClient.rs:2942:45',
+      ).length;
+      i++
+    ) {
       if (referencedDebugInfo.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:2943:62',
+        );
       }
       const debugInfoEntry = referencedDebugInfo[i];
       if (debugInfoEntry.name != null) {
@@ -2223,7 +2423,9 @@ function transferReferencedDebugInfo(receivingChunk, referencedChunk) {
       } else if (!receivedDebugInfo.has(debugInfoEntry)) {
         receivedDebugInfo.add(debugInfoEntry);
         if (receivingDebugInfo.borrows) {
-          $alreadyBorrowed();
+          $alreadyBorrowed(
+            'packages/react-client/src/ReactFlightClient.rs:2952:42',
+          );
         }
         receivingDebugInfo.push(debugInfoEntry);
       }
@@ -2246,6 +2448,7 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
     if (initializingChunk$1 != null) {
       const {value: children} = $borrow(
         $fieldCell(initializingChunk$1, '_children'),
+        'packages/react-client/src/ReactFlightClient.rs:2985:82',
       );
       if (Array.isArray(children)) {
         children.push(chunk);
@@ -2263,7 +2466,9 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
   if (value) {
     let value = initializedValue(chunk);
     if (path.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-client/src/ReactFlightClient.rs:2997:29',
+      );
     }
     const {length: pathLen} = path;
     for (let i = 1; i < pathLen; i++) {
@@ -2286,7 +2491,11 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
             referencedChunk.status === 'pending' ||
             referencedChunk.status === 'pending_weak'
           ) {
-            const borrow = $borrow(path, true);
+            const borrow = $borrow(
+              path,
+              'packages/react-client/src/ReactFlightClient.rs:3033:51',
+              true,
+            );
             try {
               result = waitForReference(
                 referencedChunk,
@@ -2294,7 +2503,11 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
                 key,
                 response,
                 map,
-                $copyOf(borrow, i - 1),
+                $copyOf(
+                  borrow,
+                  i - 1,
+                  'packages/react-client/src/ReactFlightClient.rs:3033:59',
+                ),
                 isInitializingDebugInfo,
               );
             } finally {
@@ -2341,20 +2554,35 @@ function getOutlinedModel(response, reference, parentObject, key, map) {
         }
       }
       if (path.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:3077:29',
+        );
       }
-      const name = $index(path, i);
+      const name = $index(
+        path,
+        i,
+        'packages/react-client/src/ReactFlightClient.rs:3077:37',
+      );
       if (
         typeof value === 'object' &&
         value != null &&
         (getPrototypeOf(value) === ObjectPrototype ||
           getPrototypeOf(value) === ArrayPrototype) &&
-        hasOwnProperty.call($unwrap(value), name)
+        hasOwnProperty.call(
+          $unwrap(
+            value,
+            'packages/react-client/src/ReactFlightClient.rs:3088:74',
+          ),
+          name,
+        )
       ) {
         value = value[name];
         continue;
       } else {
-        throw new Error('Invalid reference.');
+        throw $panic(
+          'Invalid reference.',
+          'packages/react-client/src/ReactFlightClient.rs:3092:17',
+        );
       }
     }
 
@@ -2461,8 +2689,18 @@ function createSet(response, model, parentObject, key) {
 }
 
 function createBlob(response, model, parentObject, key) {
-  const parts = $slice(model, 1);
-  return new Blob(parts, {type: $index(model, 0)});
+  const parts = $slice(
+    model,
+    1,
+    'packages/react-client/src/ReactFlightClient.rs:3230:83',
+  );
+  return new Blob(parts, {
+    type: $index(
+      model,
+      0,
+      'packages/react-client/src/ReactFlightClient.rs:3235:49',
+    ),
+  });
 }
 
 function createFormData(response, model, parentObject, key) {
@@ -2601,6 +2839,7 @@ function parseModelString(response, parentObject, key, value) {
           if (initializingChunk$1 != null) {
             const {value: children} = $borrow(
               $fieldCell(initializingChunk$1, '_children'),
+              'packages/react-client/src/ReactFlightClient.rs:3436:56',
             );
             if (Array.isArray(children)) {
               children.push(chunk);
@@ -2620,6 +2859,7 @@ function parseModelString(response, parentObject, key, value) {
           if (initializingChunk$1 != null) {
             const {value: children} = $borrow(
               $fieldCell(initializingChunk$1, '_children'),
+              'packages/react-client/src/ReactFlightClient.rs:3452:56',
             );
             if (Array.isArray(children)) {
               children.push(chunk);
@@ -2638,6 +2878,7 @@ function parseModelString(response, parentObject, key, value) {
             if (initializingChunk$1 != null) {
               const {value: children} = $borrow(
                 $fieldCell(initializingChunk$1, '_children'),
+                'packages/react-client/src/ReactFlightClient.rs:3468:60',
               );
               if (Array.isArray(children)) {
                 children.push(chunk);
@@ -2682,6 +2923,7 @@ function parseModelString(response, parentObject, key, value) {
           throw $stringPanic(
             'Missing a temporary reference set but the RSC response returned a temporary reference. ' +
               'Pass a temporaryReference option with the set that was used with the reply.',
+            'packages/react-client/src/ReactFlightClient.rs:3513:21',
           );
         }
         return readTemporaryReference(temporaryReferences, reference);
@@ -2800,7 +3042,14 @@ function parseModelString(response, parentObject, key, value) {
                 const name = JSON.parse(
                   code.slice(idx + DESCRIPTOR.length - 1, code.length - 2),
                 );
-                Object.defineProperty($unwrap(fn), 'name', {value: name});
+                Object.defineProperty(
+                  $unwrap(
+                    fn,
+                    'packages/react-client/src/ReactFlightClient.rs:3640:42',
+                  ),
+                  'name',
+                  {value: name},
+                );
               }
             }
             return fn;
@@ -2811,7 +3060,11 @@ function parseModelString(response, parentObject, key, value) {
         // Fallthrough
         if ((tag === 'P' || tag === 'E' || tag === 'Y') && __DEV__) {
           if (value.length > 2) {
-            const borrow = $borrow($fieldCell(response, '_debugChannel'), true);
+            const borrow = $borrow(
+              $fieldCell(response, '_debugChannel'),
+              'packages/react-client/src/ReactFlightClient.rs:3663:30',
+              true,
+            );
             const debugChannelCallback =
               borrow.value != null ? borrow.value.callback : null;
             $unborrow(borrow);
@@ -2820,7 +3073,12 @@ function parseModelString(response, parentObject, key, value) {
                 // This is a deferred Promise.
                 const ref = value.slice(3); // We assume this doesn't have a path just id.
                 const id = parseInt(ref, 16);
-                if (!$unwrap(response._chunks).has(id)) {
+                if (
+                  !$unwrap(
+                    response._chunks,
+                    'packages/react-client/src/ReactFlightClient.rs:3671:60',
+                  ).has(id)
+                ) {
                   // We haven't seen this id before. Query the server to start sending it.
                   debugChannelCallback('P:' + ref);
                 }
@@ -2830,7 +3088,12 @@ function parseModelString(response, parentObject, key, value) {
               }
               const ref = value.slice(2); // We assume this doesn't have a path just id.
               const id = parseInt(ref, 16);
-              if (!$unwrap(response._chunks).has(id)) {
+              if (
+                !$unwrap(
+                  response._chunks,
+                  'packages/react-client/src/ReactFlightClient.rs:3681:56',
+                ).has(id)
+              ) {
                 // We haven't seen this id before. Query the server to start sending it.
                 debugChannelCallback('Q:' + ref);
               }
@@ -2903,6 +3166,7 @@ function missingCall(id, args) {
   throw $stringPanic(
     'Trying to call a function from "use server" but the callServer option ' +
       'was not implemented in your router runtime.',
+    'packages/react-client/src/ReactFlightClient.rs:3781:5',
   );
 }
 
@@ -2973,8 +3237,14 @@ export function createStreamState(
     debugValuePromise.value = streamDebugValue;
     streamState._debugInfo = {
       name: 'rsc stream',
-      start: $unwrap(response._debugStartTime),
-      end: $unwrap(response._debugStartTime), // will be updated once we finish a chunk
+      start: $unwrap(
+        response._debugStartTime,
+        'packages/react-client/src/ReactFlightClient.rs:4060:63',
+      ),
+      end: $unwrap(
+        response._debugStartTime,
+        'packages/react-client/src/ReactFlightClient.rs:4061:61',
+      ), // will be updated once we finish a chunk
       byteSize: 0, // will be updated as we resolve a data chunk
       value: debugValuePromise,
       owner: response._debugRootOwner ?? null,
@@ -2998,12 +3268,23 @@ const MIN_CHUNK_SIZE = 65536;
 
 function incrementChunkDebugInfo(streamState, chunkLength) {
   if (__DEV__) {
-    const debugInfo = $unwrap(streamState._debugInfo);
+    const debugInfo = $unwrap(
+      streamState._debugInfo,
+      'packages/react-client/src/ReactFlightClient.rs:4089:79',
+    );
     const endTime = performance.now();
     const previousEndTime = debugInfo.end;
-    const newByteLength = $unwrap(debugInfo.byteSize) + chunkLength;
+    const newByteLength =
+      $unwrap(
+        debugInfo.byteSize,
+        'packages/react-client/src/ReactFlightClient.rs:4092:58',
+      ) + chunkLength;
     if (
-      newByteLength > $unwrap(streamState._debugTargetChunkSize) ||
+      newByteLength >
+        $unwrap(
+          streamState._debugTargetChunkSize,
+          'packages/react-client/src/ReactFlightClient.rs:4093:74',
+        ) ||
       endTime > previousEndTime + 10
     ) {
       // This new chunk would overshoot the chunk size so therefore we treat it as its own new chunk
@@ -3042,7 +3323,9 @@ function addAsyncInfo(chunk, asyncInfo) {
     const valueDebugInfo = value._debugInfo;
     if (isArray(valueDebugInfo)) {
       if (valueDebugInfo.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:4137:30',
+        );
       }
       valueDebugInfo.push(asyncInfo);
     } else if (!Object.isFrozen(value)) {
@@ -3056,7 +3339,13 @@ function addAsyncInfo(chunk, asyncInfo) {
       });
     }
   } else {
-    $borrowMut($unwrap(chunk._debugInfo)).push(asyncInfo);
+    $borrowMut(
+      $unwrap(
+        chunk._debugInfo,
+        'packages/react-client/src/ReactFlightClient.rs:4159:14',
+      ),
+      'packages/react-client/src/ReactFlightClient.rs:4160:14',
+    ).push(asyncInfo);
   }
 }
 
@@ -3066,7 +3355,12 @@ function resolveChunkDebugInfo(response, streamState, chunk) {
   if (__DEV__ && response._debugIOStarted === true) {
     // Add the currently resolving chunk's debug info representing the stream
     // to the Promise that was waiting on the stream, or its underlying value.
-    const asyncInfo = {awaited: $unwrap(streamState._debugInfo)};
+    const asyncInfo = {
+      awaited: $unwrap(
+        streamState._debugInfo,
+        'packages/react-client/src/ReactFlightClient.rs:4176:75',
+      ),
+    };
     if (chunk.status === 'pending' || chunk.status === 'blocked') {
       const boundAddAsyncInfo = addAsyncInfoListener.bind(
         null,
@@ -3086,7 +3380,10 @@ function addAsyncInfoListener(chunk, asyncInfo, value) {
 }
 
 function resolveDebugHalt(response, id) {
-  const chunks = $unwrap(response._chunks);
+  const chunks = $unwrap(
+    response._chunks,
+    'packages/react-client/src/ReactFlightClient.rs:4213:41',
+  );
   let chunk = chunks.get(id);
   if (chunk === undefined) {
     chunk = createPendingChunk(response);
@@ -3103,7 +3400,10 @@ function resolveDebugHalt(response, id) {
 }
 
 function resolveModel(response, id, model, streamState) {
-  const chunks = $unwrap(response._chunks);
+  const chunks = $unwrap(
+    response._chunks,
+    'packages/react-client/src/ReactFlightClient.rs:4237:41',
+  );
   const chunk = chunks.get(id);
   if (chunk === undefined) {
     const newChunk = createResolvedModelChunk(response, model);
@@ -3120,7 +3420,10 @@ function resolveModel(response, id, model, streamState) {
 }
 
 function resolveText(response, id, text, streamState) {
-  const chunks = $unwrap(response._chunks);
+  const chunks = $unwrap(
+    response._chunks,
+    'packages/react-client/src/ReactFlightClient.rs:4257:41',
+  );
   const chunk = chunks.get(id);
   if (chunk !== undefined && chunk.status !== 'pending') {
     // If we get more data to an already resolved ID, we assume that it's
@@ -3140,7 +3443,10 @@ function resolveText(response, id, text, streamState) {
 }
 
 function resolveBuffer(response, id, buffer, streamState) {
-  const chunks = $unwrap(response._chunks);
+  const chunks = $unwrap(
+    response._chunks,
+    'packages/react-client/src/ReactFlightClient.rs:4284:41',
+  );
   const chunk = chunks.get(id);
   if (chunk !== undefined && chunk.status !== 'pending') {
     // If we get more data to an already resolved ID, we assume that it's
@@ -3160,7 +3466,10 @@ function resolveBuffer(response, id, buffer, streamState) {
 }
 
 function resolveModule(response, id, model, streamState) {
-  const chunks = $unwrap(response._chunks);
+  const chunks = $unwrap(
+    response._chunks,
+    'packages/react-client/src/ReactFlightClient.rs:4311:41',
+  );
   const chunk = chunks.get(id);
   const prevHandler = initializingHandler;
   initializingHandler = null;
@@ -3183,6 +3492,7 @@ function resolveModule(response, id, model, streamState) {
       throw $stringPanic(
         'A client reference was blocked on a row that has not been received yet. ' +
           'This is a bug in React.',
+        'packages/react-client/src/ReactFlightClient.rs:4320:13',
       );
     } catch (error) {
       $cleanup(() => {
@@ -3264,7 +3574,10 @@ function resolveModule(response, id, model, streamState) {
 }
 
 function resolveStream(response, id, stream, controller, streamState) {
-  const chunks = $unwrap(response._chunks);
+  const chunks = $unwrap(
+    response._chunks,
+    'packages/react-client/src/ReactFlightClient.rs:4401:41',
+  );
   const chunk = chunks.get(id);
   if (chunk === undefined) {
     const newChunk = createInitializedStreamChunk(response, stream, controller);
@@ -3327,7 +3640,10 @@ function resolveStream(response, id, stream, controller, streamState) {
           initializingHandler$1.reason = controller;
           try {
             $cellReplace(
-              $borrowMut($fieldCell(initializingHandler$1, 'chunk', true)),
+              $borrowMut(
+                $fieldCell(initializingHandler$1, 'chunk', true),
+                'packages/react-client/src/ReactFlightClient.rs:4456:26',
+              ),
               cyclicChunk,
             );
           } catch (error) {
@@ -3381,21 +3697,31 @@ function startReadableStream(response, id, type, streamState) {
   const flightController = {
     enqueueValue(value) {
       if (previousBlockedChunk.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:4497:61',
+        );
       }
       const {value: previous} = previousBlockedChunk;
       if (previous == null) {
-        $unwrap(controller).enqueue(value);
+        $unwrap(
+          controller,
+          'packages/react-client/src/ReactFlightClient.rs:4498:38',
+        ).enqueue(value);
         return;
       }
       // We're still waiting on a previous chunk so we can't enqueue quite yet.
       previousBlockedChunkRef(previous).then(() => {
-        $unwrap(controller).enqueue(value);
+        $unwrap(
+          controller,
+          'packages/react-client/src/ReactFlightClient.rs:4505:42',
+        ).enqueue(value);
       });
     },
     enqueueModel(json) {
       if (previousBlockedChunk.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:4515:55',
+        );
       }
       const {value: previous} = previousBlockedChunk;
       if (previous == null) {
@@ -3405,30 +3731,60 @@ function startReadableStream(response, id, type, streamState) {
         initializeModelChunk(chunk);
         const initializedChunk = chunk;
         if (initializedChunk.status === 'fulfilled') {
-          $unwrap(controller).enqueue(initializedValue(initializedChunk));
+          $unwrap(
+            controller,
+            'packages/react-client/src/ReactFlightClient.rs:4529:34',
+          ).enqueue(initializedValue(initializedChunk));
         } else {
           chunk.then(
-            v => $unwrap(controller).enqueue(v),
-            e => $unwrap(controller).error(e),
+            v =>
+              $unwrap(
+                controller,
+                'packages/react-client/src/ReactFlightClient.rs:4536:62',
+              ).enqueue(v),
+            e =>
+              $unwrap(
+                controller,
+                'packages/react-client/src/ReactFlightClient.rs:4539:61',
+              ).error(e),
           );
-          $borrowMut(previousBlockedChunk).value = chunk;
+          $borrowMut(
+            previousBlockedChunk,
+            'packages/react-client/src/ReactFlightClient.rs:4542:53',
+          ).value = chunk;
         }
       } else {
         // We're still waiting on a previous chunk so we can't enqueue quite yet.
         const chunk = createPendingChunk(response);
         chunk.then(
-          v => $unwrap(controller).enqueue(v),
-          e => $unwrap(controller).error(e),
+          v =>
+            $unwrap(
+              controller,
+              'packages/react-client/src/ReactFlightClient.rs:4552:58',
+            ).enqueue(v),
+          e =>
+            $unwrap(
+              controller,
+              'packages/react-client/src/ReactFlightClient.rs:4555:57',
+            ).error(e),
         );
-        $borrowMut(previousBlockedChunk).value = chunk;
+        $borrowMut(
+          previousBlockedChunk,
+          'packages/react-client/src/ReactFlightClient.rs:4558:49',
+        ).value = chunk;
         previous.then(() => {
           if (previousBlockedChunk.borrows < 0) {
-            $alreadyMutablyBorrowed();
+            $alreadyMutablyBorrowed(
+              'packages/react-client/src/ReactFlightClient.rs:4563:38',
+            );
           }
           if (previousBlockedChunk.value === chunk) {
             // We were still the last chunk so we can now clear the queue and return
             // to synchronous emitting.
-            $borrowMut(previousBlockedChunk).value = undefined;
+            $borrowMut(
+              previousBlockedChunk,
+              'packages/react-client/src/ReactFlightClient.rs:4569:61',
+            ).value = undefined;
           }
           resolveModelChunk(response, chunk, json);
         });
@@ -3440,15 +3796,25 @@ function startReadableStream(response, id, type, streamState) {
       }
       closed = true;
       if (previousBlockedChunk.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:4588:55',
+        );
       }
       if (previousBlockedChunk.value == null) {
-        $unwrap(controller).close();
+        $unwrap(
+          controller,
+          'packages/react-client/src/ReactFlightClient.rs:4590:46',
+        ).close();
       } else {
         const previous = previousBlockedChunk.value;
         previousBlockedChunk.value = undefined;
         // We shouldn't get any more enqueues after this so we can set it back to null.
-        previous.then(() => $unwrap(controller).close());
+        previous.then(() =>
+          $unwrap(
+            controller,
+            'packages/react-client/src/ReactFlightClient.rs:4595:68',
+          ).close(),
+        );
       }
     },
     error(error) {
@@ -3457,15 +3823,25 @@ function startReadableStream(response, id, type, streamState) {
       }
       closed = true;
       if (previousBlockedChunk.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:4611:55',
+        );
       }
       if (previousBlockedChunk.value == null) {
-        $unwrap(controller).error(error);
+        $unwrap(
+          controller,
+          'packages/react-client/src/ReactFlightClient.rs:4613:46',
+        ).error(error);
       } else {
         const previous = previousBlockedChunk.value;
         previousBlockedChunk.value = undefined;
         // We shouldn't get any more enqueues after this so we can set it back to null.
-        previous.then(() => $unwrap(controller).error(error));
+        previous.then(() =>
+          $unwrap(
+            controller,
+            'packages/react-client/src/ReactFlightClient.rs:4619:50',
+          ).error(error),
+        );
       }
     },
   };
@@ -3505,7 +3881,11 @@ function startAsyncIterable(response, id, iterator, streamState) {
         );
         buffer.push(chunk);
       } else {
-        const chunk = $index(buffer, nextWriteIndex);
+        const chunk = $index(
+          buffer,
+          nextWriteIndex,
+          'packages/react-client/src/ReactFlightClient.rs:4682:59',
+        );
         let resolveListeners;
         let rejectListeners;
         if (chunk.status === 'pending') {
@@ -3537,7 +3917,11 @@ function startAsyncIterable(response, id, iterator, streamState) {
         const chunk = createResolvedIteratorResultChunk(response, value, false);
         buffer.push(chunk);
       } else {
-        const chunk = $index(buffer, nextWriteIndex);
+        const chunk = $index(
+          buffer,
+          nextWriteIndex,
+          'packages/react-client/src/ReactFlightClient.rs:4713:59',
+        );
         resolveIteratorResultChunk(response, chunk, value, false);
       }
       nextWriteIndex = (nextWriteIndex + 1) >>> 0;
@@ -3551,13 +3935,21 @@ function startAsyncIterable(response, id, iterator, streamState) {
         const chunk = createResolvedIteratorResultChunk(response, value, true);
         buffer.push(chunk);
       } else {
-        const chunk = $index(buffer, nextWriteIndex);
+        const chunk = $index(
+          buffer,
+          nextWriteIndex,
+          'packages/react-client/src/ReactFlightClient.rs:4732:59',
+        );
         resolveIteratorResultChunk(response, chunk, value, true);
       }
       nextWriteIndex = (nextWriteIndex + 1) >>> 0;
       while (nextWriteIndex < buffer.length) {
         // In generators, any extra reads from the iterator have the value undefined.
-        const chunk = $index(buffer, nextWriteIndex);
+        const chunk = $index(
+          buffer,
+          nextWriteIndex,
+          'packages/react-client/src/ReactFlightClient.rs:4738:59',
+        );
         nextWriteIndex = (nextWriteIndex + 1) >>> 0;
         resolveIteratorResultChunk(response, chunk, '"$undefined"', true);
       }
@@ -3572,7 +3964,11 @@ function startAsyncIterable(response, id, iterator, streamState) {
         buffer.push(chunk);
       }
       while (nextWriteIndex < buffer.length) {
-        const chunk = $index(buffer, nextWriteIndex);
+        const chunk = $index(
+          buffer,
+          nextWriteIndex,
+          'packages/react-client/src/ReactFlightClient.rs:4763:59',
+        );
         nextWriteIndex = (nextWriteIndex + 1) >>> 0;
         triggerErrorOnChunk(response, chunk, error);
       }
@@ -3584,8 +3980,9 @@ function startAsyncIterable(response, id, iterator, streamState) {
     let nextReadIndex = 0;
     return createIterator(function (arg) {
       if (arg !== undefined) {
-        throw new Error(
+        throw $panic(
           'Values cannot be passed to next() of AsyncIterables passed to Client Components.',
+          'packages/react-client/src/ReactFlightClient.rs:4782:25',
         );
       }
       if (nextReadIndex === buffer.length) {
@@ -3595,7 +3992,11 @@ function startAsyncIterable(response, id, iterator, streamState) {
         const chunk = createPendingChunk(response);
         buffer.push(chunk);
       }
-      const chunk = $index(buffer, nextReadIndex);
+      const chunk = $index(
+        buffer,
+        nextReadIndex,
+        'packages/react-client/src/ReactFlightClient.rs:4799:59',
+      );
       nextReadIndex = (nextReadIndex + 1) >>> 0;
       return chunk;
     });
@@ -3614,7 +4015,10 @@ function startAsyncIterable(response, id, iterator, streamState) {
 }
 
 function stopStream(response, id, row) {
-  const chunks = $unwrap(response._chunks);
+  const chunks = $unwrap(
+    response._chunks,
+    'packages/react-client/src/ReactFlightClient.rs:4820:41',
+  );
   const chunk = chunks.get(id);
   if (chunk == null || chunk.status !== 'fulfilled') {
     // We didn't expect not to have an existing stream;
@@ -3629,6 +4033,7 @@ function stopStream(response, id, row) {
         // reference to the response. We'll regain it if we ask for any more data
         // later on.
         response._weakResponse,
+        'packages/react-client/src/ReactFlightClient.rs:4839:18',
       ).response = null;
     }
   }
@@ -3640,8 +4045,9 @@ function resolveErrorProd(response) {
   if (__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'resolveErrorProd should never be called in development mode. Use resolveErrorDev instead. This is a bug in React.',
+      'packages/react-client/src/ReactFlightClient.rs:4856:9',
     );
   }
   const error = new Error(
@@ -3662,8 +4068,9 @@ function resolveErrorDev(response, errorInfo) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'resolveErrorDev should never be called in production mode. Use resolveErrorProd instead. This is a bug in React.',
+      'packages/react-client/src/ReactFlightClient.rs:4884:9',
     );
   }
 
@@ -3727,7 +4134,10 @@ function resolveErrorDev(response, errorInfo) {
 }
 
 function resolveErrorModel(response, id, row, streamState) {
-  const chunks = $unwrap(response._chunks);
+  const chunks = $unwrap(
+    response._chunks,
+    'packages/react-client/src/ReactFlightClient.rs:4983:41',
+  );
   const chunk = chunks.get(id);
   const errorInfo = JSON.parse(row);
   const error = __DEV__
@@ -3843,7 +4253,10 @@ function ResponseInstance(
     setTimeout(markIOStarted.bind(this), 0);
     this._debugEndTime = debugEndTime ?? null;
     this._debugFindSourceMapURL = findSourceMapUrl;
-    $borrowMut($fieldCell(this, '_debugChannel')).value = debugChannel;
+    $borrowMut(
+      $fieldCell(this, '_debugChannel'),
+      'packages/react-client/src/ReactFlightClient.rs:3925:42',
+    ).value = debugChannel;
     this._blockedConsole = null;
     this._replayConsole = replayConsole;
     this._rootEnvironmentName = rootEnv;
@@ -3852,7 +4265,10 @@ function ResponseInstance(
         // We can't safely clean things up later, so we immediately close the
         // debug channel.
         closeDebugChannel(debugChannel);
-        $borrowMut($fieldCell(this, '_debugChannel')).value = undefined;
+        $borrowMut(
+          $fieldCell(this, '_debugChannel'),
+          'packages/react-client/src/ReactFlightClient.rs:3935:54',
+        ).value = undefined;
       } else {
         // When a Response gets GC:ed because nobody is referring to any of the
         // objects that lazily load from the Response anymore, then we can close
@@ -4058,7 +4474,10 @@ function buildFakeCallStack(
   innerCall,
 ) {
   let callStack = innerCall;
-  const fakeFunctionCache$1 = $unwrap(fakeFunctionCache);
+  const fakeFunctionCache$1 = $unwrap(
+    fakeFunctionCache,
+    'packages/react-client/src/ReactFlightClient.rs:5225:72',
+  );
   for (let i = 0; i < stack.length; i++) {
     const frame = stack[i];
     const frameKey =
@@ -4150,13 +4569,24 @@ function initializeFakeTask(response, debugInfo) {
   const useEnclosingLine = debugInfo.key === undefined;
 
   const stack = debugInfo.stack;
-  const rootEnvironmentName = $unwrap(response._rootEnvironmentName);
+  const rootEnvironmentName = $unwrap(
+    response._rootEnvironmentName,
+    'packages/react-client/src/ReactFlightClient.rs:5342:82',
+  );
   const env = envOf(debugInfo) ?? rootEnvironmentName;
   const owner = debugInfo.owner;
   const ownerEnv =
     owner == null ? rootEnvironmentName : (envOf(owner) ?? rootEnvironmentName);
   const ownerTask =
-    owner == null ? undefined : initializeFakeTask(response, $unwrap(owner));
+    owner == null
+      ? undefined
+      : initializeFakeTask(
+          response,
+          $unwrap(
+            owner,
+            'packages/react-client/src/ReactFlightClient.rs:5353:46',
+          ),
+        );
   // This is the boundary between two environments so we'll annotate the task name.
   // We assume that the stack frame of the entry into the new environment was done
   // from the old environment. So we use the owner's environment as the current.
@@ -4270,8 +4700,9 @@ function initializeDebugInfo(response, debugInfo) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'initializeDebugInfo should never be called in production mode. This is a bug in React.',
+      'packages/react-client/src/ReactFlightClient.rs:5514:9',
     );
   }
   if (debugInfo.stack !== undefined) {
@@ -4302,7 +4733,14 @@ function initializeDebugInfo(response, debugInfo) {
       // Adjust the time to the current environment's time space.
       // Since this might be a deduped object, we clone it to avoid
       // applying the adjustment twice.
-      return {time: time + $unwrap(response._timeOrigin)};
+      return {
+        time:
+          time +
+          $unwrap(
+            response._timeOrigin,
+            'packages/react-client/src/ReactFlightClient.rs:5556:54',
+          ),
+      };
     }
   }
   return debugInfo;
@@ -4330,7 +4768,11 @@ function resolveDebugModel(response, id, json) {
   parentChunk._debugChunk = debugChunk;
   initializeDebugChunk(response, parentChunk);
   if (__DEV__ && debugChunk.status === 'blocked') {
-    const borrow = $borrow($fieldCell(response, '_debugChannel'), true);
+    const borrow = $borrow(
+      $fieldCell(response, '_debugChannel'),
+      'packages/react-client/src/ReactFlightClient.rs:5592:14',
+      true,
+    );
     let isNoneOr;
     try {
       isNoneOr = borrow.value == null || !borrow.value.hasReadable;
@@ -4342,7 +4784,14 @@ function resolveDebugModel(response, id, json) {
       $unborrow(borrow);
       if (json[0] === '"' && json[1] === '$') {
         const path = json.slice(2, json.length - 1).split(':');
-        const outlinedId = parseInt($index(path, 0), 16);
+        const outlinedId = parseInt(
+          $index(
+            path,
+            0,
+            'packages/react-client/src/ReactFlightClient.rs:5602:46',
+          ),
+          16,
+        );
         const chunk = getChunk(response, outlinedId);
         if (chunk.status === 'pending') {
           // We expect the debug chunk to have been emitted earlier in the stream. It might be
@@ -4379,7 +4828,11 @@ const replayConsoleWithCallStack = {
     const owner = payload[2];
     const env = payload[3];
     const entry = payload;
-    const args = $copyOf(entry, 4);
+    const args = $copyOf(
+      entry,
+      4,
+      'packages/react-client/src/ReactFlightClient.rs:5669:60',
+    );
 
     // There really shouldn't be anything else on the stack atm.
     const prevStack = ReactSharedInternals.getCurrentStack;
@@ -4486,8 +4939,9 @@ function resolveConsoleEntry(response, json) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'resolveConsoleEntry should never be called in production mode. This is a bug in React.',
+      'packages/react-client/src/ReactFlightClient.rs:5730:9',
     );
   }
 
@@ -4505,12 +4959,21 @@ function resolveConsoleEntry(response, json) {
     if (initializedChunk.status === 'fulfilled') {
       replayConsoleWithCallStackInDEV(
         response,
-        $unwrap(initializedValue(initializedChunk)),
+        $unwrap(
+          initializedValue(initializedChunk),
+          'packages/react-client/src/ReactFlightClient.rs:5754:66',
+        ),
       );
     } else {
       chunk.then(
         v => {
-          replayConsoleWithCallStackInDEV(response, $unwrap(v));
+          replayConsoleWithCallStackInDEV(
+            response,
+            $unwrap(
+              v,
+              'packages/react-client/src/ReactFlightClient.rs:5761:39',
+            ),
+          );
         },
         e => {
           // Ignore console errors for now. Unnecessary noise.
@@ -4523,7 +4986,10 @@ function resolveConsoleEntry(response, json) {
     const chunk = createPendingChunk(response);
     chunk.then(
       v => {
-        replayConsoleWithCallStackInDEV(response, $unwrap(v));
+        replayConsoleWithCallStackInDEV(
+          response,
+          $unwrap(v, 'packages/react-client/src/ReactFlightClient.rs:5778:35'),
+        );
       },
       e => {
         // Ignore console errors for now. Unnecessary noise.
@@ -4548,12 +5014,18 @@ function initializeIOInfo(response, ioInfo) {
     initializeFakeStack(response, ioInfo);
   }
   // Adjust the time to the current environment's time space.
-  const timeOrigin = $unwrap(response._timeOrigin);
+  const timeOrigin = $unwrap(
+    response._timeOrigin,
+    'packages/react-client/src/ReactFlightClient.rs:5810:51',
+  );
   ioInfo.start += timeOrigin;
   ioInfo.end += timeOrigin;
 
   if (enableComponentPerformanceTrack && response._replayConsole === true) {
-    const env = $unwrap(response._rootEnvironmentName);
+    const env = $unwrap(
+      response._rootEnvironmentName,
+      'packages/react-client/src/ReactFlightClient.rs:5815:68',
+    );
     const promise = ioInfo.value;
     if (promise != null) {
       switch (promise.status) {
@@ -4581,7 +5053,10 @@ function initializeIOInfo(response, ioInfo) {
 }
 
 function resolveIOInfo(response, id, model) {
-  const chunks = $unwrap(response._chunks);
+  const chunks = $unwrap(
+    response._chunks,
+    'packages/react-client/src/ReactFlightClient.rs:5840:41',
+  );
   const prevIsInitializingDebugInfo = isInitializingDebugInfo;
   isInitializingDebugInfo = true;
   let chunk;
@@ -4687,7 +5162,10 @@ function logComponentInfo(
     // If this is the last component to render before this chunk rejected, then conceptually
     // this component errored. If this was a cancellation then it wasn't this component that
     // errored.
-    const rootEnv = $unwrap(response._rootEnvironmentName);
+    const rootEnv = $unwrap(
+      response._rootEnvironmentName,
+      'packages/react-client/src/ReactFlightClient.rs:5955:73',
+    );
     logComponentErrored(
       componentInfo,
       trackIdx,
@@ -4698,7 +5176,10 @@ function logComponentInfo(
       erroredReason(root),
     );
   } else {
-    const rootEnv = $unwrap(response._rootEnvironmentName);
+    const rootEnv = $unwrap(
+      response._rootEnvironmentName,
+      'packages/react-client/src/ReactFlightClient.rs:5966:73',
+    );
     logComponentRender(
       componentInfo,
       trackIdx,
@@ -4727,13 +5208,18 @@ function flushComponentPerformance(
 ) {
   if (!enableProfilerTimer || !enableComponentPerformanceTrack) {
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'flushComponentPerformance should never be called in production mode. This is a bug in React.',
+      'packages/react-client/src/ReactFlightClient.rs:5995:9',
     );
   }
   // Write performance.measure() entries for Server Components in tree order.
   // This must be done at the end to collect the end time from the whole tree.
-  const borrow = $borrow($fieldCell(root, '_children'), true);
+  const borrow = $borrow(
+    $fieldCell(root, '_children'),
+    'packages/react-client/src/ReactFlightClient.rs:6003:43',
+    true,
+  );
   const value = borrow.value;
   let children;
   try {
@@ -4752,7 +5238,10 @@ function flushComponentPerformance(
             // Log a placeholder for the deduped value under this child starting
             // from the end of the self time of the parent and spanning until the
             // the deduped end.
-            const rootEnv = $unwrap(response._rootEnvironmentName);
+            const rootEnv = $unwrap(
+              response._rootEnvironmentName,
+              'packages/react-client/src/ReactFlightClient.rs:6018:81',
+            );
             logDedupedComponentRender(
               component,
               trackIdx,
@@ -4781,7 +5270,13 @@ function flushComponentPerformance(
   if (__DEV__) {
     debugInfo = root._debugInfo;
     if (
-      $borrow($unwrap(debugInfo)).length === 0 &&
+      $borrow(
+        $unwrap(
+          debugInfo,
+          'packages/react-client/src/ReactFlightClient.rs:6040:32',
+        ),
+        'packages/react-client/src/ReactFlightClient.rs:6040:41',
+      ).length === 0 &&
       root.status === 'fulfilled'
     ) {
       const resolvedValue = resolveLazy(initializedValue(root));
@@ -4803,7 +5298,9 @@ function flushComponentPerformance(
   if (debugInfo != null) {
     let startTime = 0;
     if (debugInfo.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-client/src/ReactFlightClient.rs:6066:33',
+      );
     }
     for (let i = 0; i < debugInfo.length; i++) {
       const info = debugInfo[i];
@@ -4822,7 +5319,9 @@ function flushComponentPerformance(
       }
     }
     if (debugInfo.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-client/src/ReactFlightClient.rs:6080:33',
+      );
     }
     for (let i = debugInfo.length - 1; i >= 0; i--) {
       const info = debugInfo[i];
@@ -4839,7 +5338,10 @@ function flushComponentPerformance(
     endTime: -Infinity,
     component: null,
   };
-  $borrowMut($fieldCell(root, '_children')).value = result;
+  $borrowMut(
+    $fieldCell(root, '_children'),
+    'packages/react-client/src/ReactFlightClient.rs:6095:21',
+  ).value = result;
   let childrenEndTime = -Infinity;
   let childTrackIdx = trackIdx;
   let childTrackTime = trackTime;
@@ -4867,7 +5369,11 @@ function flushComponentPerformance(
   }
 
   if (debugInfo != null) {
-    const debugInfo$1 = $borrow(debugInfo, true);
+    const debugInfo$1 = $borrow(
+      debugInfo,
+      'packages/react-client/src/ReactFlightClient.rs:6121:37',
+      true,
+    );
     // Write debug info in reverse order (just like stack traces).
     let componentEndTime = 0;
     let isLastComponent = true;
@@ -4875,7 +5381,11 @@ function flushComponentPerformance(
     let endTimeIdx = -1;
     try {
       for (let i = debugInfo$1.length - 1; i >= 0; i--) {
-        const info = $index(debugInfo$1, i);
+        const info = $index(
+          debugInfo$1,
+          i,
+          'packages/react-client/src/ReactFlightClient.rs:6128:34',
+        );
         const time = timeOf(info);
         if (time == null) {
           continue;
@@ -4888,7 +5398,11 @@ function flushComponentPerformance(
           // Now that we know the start and end time, we can emit the entries between.
           // Skip awaits on client resources since they didn't block the server component.
           for (let j = endTimeIdx - 1; j > i; j--) {
-            const candidateInfo = $index(debugInfo$1, j);
+            const candidateInfo = $index(
+              debugInfo$1,
+              j,
+              'packages/react-client/src/ReactFlightClient.rs:6139:52',
+            );
             const awaited = candidateInfo.awaited;
             if (typeof candidateInfo.name === 'string') {
               if (componentEndTime > childrenEndTime) {
@@ -4914,7 +5428,10 @@ function flushComponentPerformance(
                 childrenEndTime = endTime;
               }
               const asyncInfo = candidateInfo;
-              const env = $unwrap(response._rootEnvironmentName);
+              const env = $unwrap(
+                response._rootEnvironmentName,
+                'packages/react-client/src/ReactFlightClient.rs:6172:84',
+              );
               const promise = asyncInfo.awaited.value;
               if (promise != null) {
                 switch (promise.status) {
@@ -4956,14 +5473,21 @@ function flushComponentPerformance(
           endTime = time; // If we don't find anything else the endTime is the start time.
           // Skip awaits on client resources since they didn't block the server component.
           for (let j = debugInfo$1.length - 1; j > i; j--) {
-            const candidateInfo = $index(debugInfo$1, j);
+            const candidateInfo = $index(
+              debugInfo$1,
+              j,
+              'packages/react-client/src/ReactFlightClient.rs:6210:52',
+            );
             const awaited = candidateInfo.awaited;
             if (typeof candidateInfo.name === 'string') {
               if (componentEndTime > childrenEndTime) {
                 childrenEndTime = componentEndTime;
               }
               const componentInfo = candidateInfo;
-              const env = $unwrap(response._rootEnvironmentName);
+              const env = $unwrap(
+                response._rootEnvironmentName,
+                'packages/react-client/src/ReactFlightClient.rs:6219:84',
+              );
               logComponentAborted(
                 componentInfo,
                 trackIdx,
@@ -4979,7 +5503,10 @@ function flushComponentPerformance(
             } else if (awaited && awaited.env != null) {
               // If we don't have an end time for an await, that means we aborted.
               const asyncInfo = candidateInfo;
-              const env = $unwrap(response._rootEnvironmentName);
+              const env = $unwrap(
+                response._rootEnvironmentName,
+                'packages/react-client/src/ReactFlightClient.rs:6240:84',
+              );
               if (asyncInfo.awaited.end > endTime) {
                 endTime = asyncInfo.awaited.end; // Take the end time of the I/O as the await end.
               }
@@ -5008,7 +5535,10 @@ function flushInitialRenderPerformance(response) {
     response._replayConsole === true
   ) {
     const rootChunk = getChunk(response, 0);
-    const {value: _16} = $borrow($fieldCell(rootChunk, '_children'));
+    const {value: _16} = $borrow(
+      $fieldCell(rootChunk, '_children'),
+      'packages/react-client/src/ReactFlightClient.rs:6265:44',
+    );
     if (Array.isArray(_16)) {
       markAllTracksInOrder();
       flushComponentPerformance(response, rootChunk, 0, -Infinity, -Infinity);
@@ -5142,7 +5672,10 @@ function processFullBinaryRow(response, streamState, id, tag, buffer, chunk) {
       return;
   }
 
-  const stringDecoder = $unwrap(response._stringDecoder);
+  const stringDecoder = $unwrap(
+    response._stringDecoder,
+    'packages/react-client/src/ReactFlightClient.rs:6348:57',
+  );
   let row = '';
   for (let i = 0; i < buffer.length; i++) {
     const part = buffer[i];
@@ -5198,6 +5731,7 @@ function processFullStringRow(response, streamState, id, tag, row) {
         'Failed to read a RSC payload created by a development version of React ' +
           'on the server while using a production version on the client. Always use ' +
           'matching versions on the server and the client.',
+        'packages/react-client/src/ReactFlightClient.rs:6401:13',
       );
     case 82 /* "R" */:
       startReadableStream(response, id, undefined, streamState);
@@ -5248,7 +5782,14 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
     let lastIdx = -1;
     switch (rowState) {
       case ROW_ID: {
-        const byte = $f64ToInt($unwrap(chunk[i]), -2147483648, 2147483647);
+        const byte = $f64ToInt(
+          $unwrap(
+            chunk[i],
+            'packages/react-client/src/ReactFlightClient.rs:6463:41',
+          ),
+          -2147483648,
+          2147483647,
+        );
         i++;
         if (byte === 58 /* ":" */) {
           // Finished the rowID, next we'll parse the tag.
@@ -5260,7 +5801,10 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
       }
       case ROW_TAG: {
         const resolvedRowTag = $f64ToInt(
-          $unwrap(chunk[i]),
+          $unwrap(
+            chunk[i],
+            'packages/react-client/src/ReactFlightClient.rs:6476:53',
+          ),
           -2147483648,
           2147483647,
         );
@@ -5301,7 +5845,14 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
         continue;
       }
       case ROW_LENGTH: {
-        const byte = $f64ToInt($unwrap(chunk[i]), -2147483648, 2147483647);
+        const byte = $f64ToInt(
+          $unwrap(
+            chunk[i],
+            'packages/react-client/src/ReactFlightClient.rs:6514:41',
+          ),
+          -2147483648,
+          2147483647,
+        );
         i++;
         if (byte === 44 /* "," */) {
           // Finished the rowLength, next we'll buffer up to that length.
@@ -5345,7 +5896,9 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
       } else {
         // Process all other row types.
         if (buffer.borrows < 0) {
-          $alreadyMutablyBorrowed();
+          $alreadyMutablyBorrowed(
+            'packages/react-client/src/ReactFlightClient.rs:6567:36',
+          );
         }
         const parts = buffer.slice();
         processFullBinaryRow(
@@ -5368,7 +5921,10 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
       rowTag = 0;
       rowId = 0;
       rowLength = 0;
-      $borrowMut(buffer).length = 0;
+      $borrowMut(
+        buffer,
+        'packages/react-client/src/ReactFlightClient.rs:6588:20',
+      ).length = 0;
     } else {
       // The rest of this row is in a future chunk.
       const length = chunk.byteLength - i;
@@ -5390,7 +5946,9 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
         // For other row types, stash the rest of the current chunk until we can
         // process the full row.
         if (buffer.borrows) {
-          $alreadyBorrowed();
+          $alreadyBorrowed(
+            'packages/react-client/src/ReactFlightClient.rs:6614:24',
+          );
         }
         buffer.push(remainingSlice);
         // Update how many bytes we're still waiting for. If we're looking for
@@ -5506,6 +6064,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
           throw $stringPanic(
             'Binary RSC chunks cannot be encoded as strings. ' +
               'This is a bug in the wiring of the React streams.',
+            'packages/react-client/src/ReactFlightClient.rs:6722:21',
           );
         }
         // For a large string by length, we don't know how many unicode characters
@@ -5517,6 +6076,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
             'String chunks need to be passed in their original shape. ' +
               'Not split into smaller string chunks. ' +
               'This is a bug in the wiring of the React streams.',
+            'packages/react-client/src/ReactFlightClient.rs:6735:21',
           );
         }
         lastIdx = chunkLength;
@@ -5525,7 +6085,9 @@ export function processStringChunk(weakResponse, streamState, chunk) {
     if (lastIdx > -1) {
       // We found the last chunk of the row
       if (buffer.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:6750:24',
+        );
       }
       if (buffer.length !== 0) {
         // If we had a buffer already, it means that this chunk was split up into
@@ -5534,6 +6096,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
           'String chunks need to be passed in their original shape. ' +
             'Not split into smaller string chunks. ' +
             'This is a bug in the wiring of the React streams.',
+          'packages/react-client/src/ReactFlightClient.rs:6753:17',
         );
       }
       const lastChunk = chunk.slice(i, lastIdx);
@@ -5548,7 +6111,10 @@ export function processStringChunk(weakResponse, streamState, chunk) {
       rowTag = 0;
       rowId = 0;
       rowLength = 0;
-      $borrowMut(buffer).length = 0;
+      $borrowMut(
+        buffer,
+        'packages/react-client/src/ReactFlightClient.rs:6774:20',
+      ).length = 0;
     } else if (chunkLength !== i) {
       // The rest of this row is in a future chunk. We only support passing the
       // string from chunks in their entirety. Not split up into smaller string chunks.
@@ -5558,6 +6124,7 @@ export function processStringChunk(weakResponse, streamState, chunk) {
         'String chunks need to be passed in their original shape. ' +
           'Not split into smaller string chunks. ' +
           'This is a bug in the wiring of the React streams.',
+        'packages/react-client/src/ReactFlightClient.rs:6780:13',
       );
     }
   }
@@ -5586,23 +6153,38 @@ function reviveModel(response, value, parentObject, key) {
   if (typeof value !== 'object' || value === null) {
     return value;
   }
-  value = $unwrap(value);
+  value = $unwrap(
+    value,
+    'packages/react-client/src/ReactFlightClient.rs:6824:23',
+  );
   if (isArray(value)) {
     const items = value;
     if (items.borrows < 0) {
-      $alreadyMutablyBorrowed();
+      $alreadyMutablyBorrowed(
+        'packages/react-client/src/ReactFlightClient.rs:6828:28',
+      );
     }
     const {length} = items;
     for (let i = 0; i < length; i++) {
       if (items.borrows < 0) {
-        $alreadyMutablyBorrowed();
+        $alreadyMutablyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:6830:30',
+        );
       }
-      const item = $index(items, i);
+      const item = $index(
+        items,
+        i,
+        'packages/react-client/src/ReactFlightClient.rs:6830:38',
+      );
       const revived = reviveModel(response, item, value, '' + i);
       if (items.borrows) {
-        $alreadyBorrowed();
+        $alreadyBorrowed(
+          'packages/react-client/src/ReactFlightClient.rs:6832:19',
+        );
       }
-      items[$at(items, i)] = revived;
+      items[
+        $at(items, i, 'packages/react-client/src/ReactFlightClient.rs:6832:31')
+      ] = revived;
     }
     if (value[0] === REACT_ELEMENT_TYPE) {
       // React element tuple
@@ -5641,7 +6223,10 @@ export function close(weakResponse) {
   if (response._allowPartialStream) {
     // For partial streams, we halt pending chunks instead of erroring them.
     response._closed = true;
-    $unwrap(response._chunks).forEach(chunk => {
+    $unwrap(
+      response._chunks,
+      'packages/react-client/src/ReactFlightClient.rs:6871:32',
+    ).forEach(chunk => {
       if (
         chunk.status === 'pending' ||
         (enableFlightWeakThenables && chunk.status === 'pending_weak')
@@ -5656,10 +6241,14 @@ export function close(weakResponse) {
     if (__DEV__) {
       const {value: debugChannel} = $borrow(
         $fieldCell(response, '_debugChannel'),
+        'packages/react-client/src/ReactFlightClient.rs:6890:57',
       );
       if (debugChannel != null) {
         closeDebugChannel(debugChannel);
-        $borrowMut($fieldCell(response, '_debugChannel')).value = undefined;
+        $borrowMut(
+          $fieldCell(response, '_debugChannel'),
+          'packages/react-client/src/ReactFlightClient.rs:6893:42',
+        ).value = undefined;
         if (debugChannelRegistry != null) {
           debugChannelRegistry.unregister(response);
         }

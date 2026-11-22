@@ -8,11 +8,14 @@
 // Renderers that don't support hydration
 // can re-export everything from this module.
 
+import {$panic} from '@rust-js/std';
+
 function shim() {
-  throw new Error(
+  throw $panic(
     'react-noop-renderer does not support hydration. ' +
       'This error is likely caused by a bug in React. ' +
       'Please file an issue.',
+    'packages/react-noop-renderer/src/ReactFiberConfigNoopHydration.rs:12:5',
   );
 }
 

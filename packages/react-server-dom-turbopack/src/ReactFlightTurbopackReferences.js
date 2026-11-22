@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$stringPanic} from '@rust-js/std';
+import {$panic, $stringPanic} from '@rust-js/std';
 
 const CLIENT_REFERENCE_TAG = Symbol.for('react.client.reference');
 const SERVER_REFERENCE_TAG = Symbol.for('react.server.reference');
@@ -176,8 +176,9 @@ const deepProxyHandlers = {
           // which will be serialized and executed on the client.
           return receiver;
         case 'then':
-          throw new Error(
+          throw $panic(
             'Cannot await or return from a thenable. You cannot await a client module from a server component.',
+            'packages/react-server-dom-turbopack/src/ReactFlightTurbopackReferences.rs:392:31',
           );
       }
     } else if (name === Symbol.toPrimitive) {
@@ -189,10 +190,14 @@ const deepProxyHandlers = {
     const expression = String(target.name) + '.' + String(name);
     throw $stringPanic(
       `Cannot access ${expression} on the server. You cannot dot into a client module from a server component. You can only pass the imported name through.`,
+      'packages/react-server-dom-turbopack/src/ReactFlightTurbopackReferences.rs:404:13',
     );
   },
   set() {
-    throw new Error('Cannot assign to a client module from a server module.');
+    throw $panic(
+      'Cannot assign to a client module from a server module.',
+      'packages/react-server-dom-turbopack/src/ReactFlightTurbopackReferences.rs:409:13',
+    );
   },
 };
 
@@ -231,6 +236,7 @@ function getReference(target, name) {
           function () {
             throw $stringPanic(
               `Attempted to call the default export of ${moduleId} from the server but it's on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.`,
+              'packages/react-server-dom-turbopack/src/ReactFlightTurbopackReferences.rs:447:29',
             );
           },
           target.$$id + '#',
@@ -284,8 +290,9 @@ function getReference(target, name) {
     return Object.prototype[Symbol.toStringTag];
   }
   if (typeof name !== 'string') {
-    throw new Error(
+    throw $panic(
       'Cannot read Symbol exports. Only named exports are supported on a client module imported on the server.',
+      'packages/react-server-dom-turbopack/src/ReactFlightTurbopackReferences.rs:509:9',
     );
   }
   let cachedReference = target[name];
@@ -295,6 +302,7 @@ function getReference(target, name) {
         // eslint-disable-next-line react-internal/safe-string-coercion
         throw $stringPanic(
           `Attempted to call ${name}() from the server but ${name} is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.`,
+          'packages/react-server-dom-turbopack/src/ReactFlightTurbopackReferences.rs:518:17',
         );
       },
       target.$$id + '#' + name,
@@ -331,7 +339,10 @@ const proxyHandlers = {
     return Promise.prototype;
   },
   set() {
-    throw new Error('Cannot assign to a client module from a server module.');
+    throw $panic(
+      'Cannot assign to a client module from a server module.',
+      'packages/react-server-dom-turbopack/src/ReactFlightTurbopackReferences.rs:579:13',
+    );
   },
 };
 

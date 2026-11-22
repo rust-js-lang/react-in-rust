@@ -70,7 +70,10 @@ function getActiveElementDeep(containerInfo) {
   let element = getActiveElement(win.document);
   while (element != null && element instanceof win.HTMLIFrameElement) {
     if (isSameOriginFrame(element)) {
-      win = $unwrap(element.contentWindow);
+      win = $unwrap(
+        element.contentWindow,
+        'packages/react-dom-bindings/src/client/ReactInputSelection.rs:83:18',
+      );
     } else {
       return element;
     }

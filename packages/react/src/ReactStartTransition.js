@@ -16,7 +16,7 @@ import {
 import reportGlobalError from 'shared/reportGlobalError';
 
 import noop from 'shared/noop';
-import {$catchUnwind, $catchable, $cleanup} from '@rust-js/std';
+import {$catchUnwind, $catchable, $cleanup, $panic} from '@rust-js/std';
 
 function releaseAsyncTransition() {
   if (__DEV__) {
@@ -112,16 +112,18 @@ export function startTransition(scope, options) {
 export function startGestureTransition(provider, scope, options) {
   if (!enableGestureTransition) {
     // eslint-disable-next-line react-internal/prod-error-codes
-    throw new Error(
+    throw $panic(
       'startGestureTransition should not be exported when the enableGestureTransition flag is off.',
+      'packages/react/src/ReactStartTransition.rs:267:9',
     );
   }
   if (provider == null) {
     // We enforce this at runtime even though the type also enforces it since we
     // use null as a signal internally so it would lead it to be treated as a
     // regular transition otherwise.
-    throw new Error(
+    throw $panic(
       'A Timeline is required as the first argument to startGestureTransition.',
+      'packages/react/src/ReactStartTransition.rs:275:9',
     );
   }
   const prevTransition = ReactSharedInternals.T;

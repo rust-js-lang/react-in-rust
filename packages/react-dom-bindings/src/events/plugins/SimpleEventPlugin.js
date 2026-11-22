@@ -42,7 +42,7 @@ import {
 import getEventCharCode from '../getEventCharCode.js';
 
 import {enableCreateEventHandleAPI} from 'shared/ReactFeatureFlags';
-import {$someGet, $someValue, $withBorrow} from '@rust-js/std';
+import {$someGet, $someValue, $stdSites, $withBorrow} from '@rust-js/std';
 
 export {registerSimpleEvents as registerEvents} from '../DOMEventProperties.js';
 
@@ -59,6 +59,7 @@ export function extractEvents(
     topLevelEventsToReactNames$1,
     topLevelEventsToReactNames =>
       $someGet(topLevelEventsToReactNames, domEventName),
+    $stdSites.localKeyWithBorrow[0],
     true,
   );
   if (withBorrow == null) {

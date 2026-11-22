@@ -19,7 +19,7 @@ import {
 } from './ReactWorkTags.js';
 
 import {Hydrating, NoFlags, Placement} from './ReactFiberFlags.js';
-import {$stringPanic} from '@rust-js/std';
+import {$panic, $stringPanic} from '@rust-js/std';
 
 export function getNearestMountedFiber(fiber) {
   let node = fiber;
@@ -96,7 +96,10 @@ export function getContainerFromFiber(fiber) {
 
 function assertIsMounted(fiber) {
   if (getNearestMountedFiber(fiber) !== fiber) {
-    throw new Error('Unable to find node on an unmounted component.');
+    throw $panic(
+      'Unable to find node on an unmounted component.',
+      'packages/react-reconciler/src/ReactFiberTreeReflection.rs:123:9',
+    );
   }
 }
 
@@ -107,7 +110,10 @@ export function findCurrentFiberUsingSlowPath(fiber) {
     const nearestMounted = getNearestMountedFiber(fiber);
 
     if (nearestMounted == null) {
-      throw new Error('Unable to find node on an unmounted component.');
+      throw $panic(
+        'Unable to find node on an unmounted component.',
+        'packages/react-reconciler/src/ReactFiberTreeReflection.rs:135:13',
+      );
     }
 
     if (nearestMounted !== fiber) {
@@ -159,7 +165,10 @@ export function findCurrentFiberUsingSlowPath(fiber) {
 
           // We should never have an alternate for any mounting node. So the only
           // way this could possibly happen is if this was unmounted, if at all.
-          throw new Error('Unable to find node on an unmounted component.');
+          throw $panic(
+            'Unable to find node on an unmounted component.',
+            'packages/react-reconciler/src/ReactFiberTreeReflection.rs:191:13',
+          );
         } else {
           if (a.return !== b.return) {
             // The return pointer of A and the return pointer of B point to different
@@ -214,6 +223,7 @@ export function findCurrentFiberUsingSlowPath(fiber) {
                 throw $stringPanic(
                   'Child was not found in either parent set. This indicates a bug ' +
                     'in React related to the return pointer. Please file an issue.',
+                  'packages/react-reconciler/src/ReactFiberTreeReflection.rs:244:21',
                 );
               }
             }
@@ -223,6 +233,7 @@ export function findCurrentFiberUsingSlowPath(fiber) {
             throw $stringPanic(
               "Return fibers should always be each others' alternates. " +
                 'This error is likely caused by a bug in React. Please file an issue.',
+              'packages/react-reconciler/src/ReactFiberTreeReflection.rs:256:13',
             );
           }
           continue;
@@ -243,7 +254,10 @@ export function findCurrentFiberUsingSlowPath(fiber) {
     }
     return alternate;
   }
-  throw new Error('Unable to find node on an unmounted component.');
+  throw $panic(
+    'Unable to find node on an unmounted component.',
+    'packages/react-reconciler/src/ReactFiberTreeReflection.rs:269:9',
+  );
 }
 
 export function findCurrentHostFiber(parent) {
@@ -535,7 +549,10 @@ export function getInstanceFromHostFiber(fiber) {
     case HostRoot:
       return fiber.stateNode.containerInfo;
     default:
-      throw new Error('Expected to find a host node. This is a bug in React.');
+      throw $panic(
+        'Expected to find a host node. This is a bug in React.',
+        'packages/react-reconciler/src/ReactFiberTreeReflection.rs:548:14',
+      );
   }
 }
 

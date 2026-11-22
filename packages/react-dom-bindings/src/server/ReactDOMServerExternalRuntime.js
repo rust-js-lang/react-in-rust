@@ -36,10 +36,12 @@ if (body !== null) {
   });
   // documentElement must already exist at this point
   domBodyObserver.observe(
-    $unwrap(document.documentElement, 'a loading document has its element'),
-    {
-      childList: true,
-    },
+    $unwrap(
+      document.documentElement,
+      'packages/react-dom-bindings/src/server/fizz-instruction-set/../ReactDOMServerExternalRuntime.rs:41:43',
+      'a loading document has its element',
+    ),
+    {childList: true},
   );
 }
 
@@ -82,7 +84,12 @@ function handleNode(node) {
     return;
   }
   const dataset = node.dataset;
-  const bid = () => $unwrap(dataset.bid, 'an instruction names its boundary');
+  const bid = () =>
+    $unwrap(
+      dataset.bid,
+      'packages/react-dom-bindings/src/server/fizz-instruction-set/../ReactDOMServerExternalRuntime.rs:99:14',
+      'an instruction names its boundary',
+    );
   if (dataset.rxi !== undefined) {
     window.$RX(bid(), dataset.dgst, dataset.msg, dataset.stck, dataset.cstck);
     node.remove();

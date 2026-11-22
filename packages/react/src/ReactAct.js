@@ -9,7 +9,15 @@ import ReactSharedInternals from './ReactSharedInternalsClient.js';
 import queueMacrotask from 'shared/enqueueTask';
 
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
-import {$at, $catchable, $drain, $live, $unwrap} from '@rust-js/std';
+import {
+  $at,
+  $catchable,
+  $drain,
+  $live,
+  $panic,
+  $stdSites,
+  $unwrap,
+} from '@rust-js/std';
 
 // `act` calls can be nested, so we track the depth. This represents the
 // number of `act` scopes on the stack.
@@ -37,7 +45,10 @@ export function act(callback) {
     //
     // If we're already inside an `act` scope, reuse the existing queue.
     const prevIsBatchingLegacy = !disableLegacyMode
-      ? $unwrap(ReactSharedInternals.isBatchingLegacy)
+      ? $unwrap(
+          ReactSharedInternals.isBatchingLegacy,
+          'packages/react/src/ReactAct.rs:60:65',
+        )
       : false;
     const prevActQueue = ReactSharedInternals.actQueue;
     const prevActScopeDepth = actScopeDepth;
@@ -66,7 +77,10 @@ export function act(callback) {
       result = callback();
       const didScheduleLegacyUpdate =
         !disableLegacyMode &&
-        $unwrap(ReactSharedInternals.didScheduleLegacyUpdate);
+        $unwrap(
+          ReactSharedInternals.didScheduleLegacyUpdate,
+          'packages/react/src/ReactAct.rs:108:26',
+        );
 
       // Replicate behavior of original `act` implementation in legacy mode,
       // which flushed updates immediately after the scope function exits, even
@@ -87,17 +101,31 @@ export function act(callback) {
       // one used to track `act` scopes. Why, you may be wondering? Because
       // that's how it worked before version 18. Yes, it's confusing! We should
       // delete legacy mode!!
-      $unwrap(ReactSharedInternals.thrownErrors).push(error);
+      $unwrap(
+        ReactSharedInternals.thrownErrors,
+        'packages/react/src/ReactAct.rs:141:22',
+      ).push(error);
     }
-    if ($unwrap(ReactSharedInternals.thrownErrors).length > 0) {
+    if (
+      $unwrap(
+        ReactSharedInternals.thrownErrors,
+        'packages/react/src/ReactAct.rs:154:18',
+      ).length > 0
+    ) {
       if (!disableLegacyMode) {
         ReactSharedInternals.isBatchingLegacy = prevIsBatchingLegacy;
       }
       popActScope(prevActQueue, prevActScopeDepth);
       const thrownError = aggregateErrors(
-        $unwrap(ReactSharedInternals.thrownErrors),
+        $unwrap(
+          ReactSharedInternals.thrownErrors,
+          'packages/react/src/ReactAct.rs:172:26',
+        ),
       );
-      $unwrap(ReactSharedInternals.thrownErrors).length = 0;
+      $unwrap(
+        ReactSharedInternals.thrownErrors,
+        'packages/react/src/ReactAct.rs:180:22',
+      ).length = 0;
       throw thrownError;
     }
 
@@ -150,13 +178,27 @@ export function act(callback) {
                   // `thenable` might not be a real promise, and `flushActQueue`
                   // might throw, so we need to wrap `flushActQueue` in a
                   // try/catch.
-                  $unwrap(ReactSharedInternals.thrownErrors).push(error);
+                  $unwrap(
+                    ReactSharedInternals.thrownErrors,
+                    'packages/react/src/ReactAct.rs:247:46',
+                  ).push(error);
                 }
-                if ($unwrap(ReactSharedInternals.thrownErrors).length > 0) {
+                if (
+                  $unwrap(
+                    ReactSharedInternals.thrownErrors,
+                    'packages/react/src/ReactAct.rs:260:42',
+                  ).length > 0
+                ) {
                   const thrownError = aggregateErrors(
-                    $unwrap(ReactSharedInternals.thrownErrors),
+                    $unwrap(
+                      ReactSharedInternals.thrownErrors,
+                      'packages/react/src/ReactAct.rs:271:54',
+                    ),
                   );
-                  $unwrap(ReactSharedInternals.thrownErrors).length = 0;
+                  $unwrap(
+                    ReactSharedInternals.thrownErrors,
+                    'packages/react/src/ReactAct.rs:279:46',
+                  ).length = 0;
                   reject(thrownError);
                 }
               } else {
@@ -165,11 +207,22 @@ export function act(callback) {
             },
             error => {
               popActScope(prevActQueue, prevActScopeDepth);
-              if ($unwrap(ReactSharedInternals.thrownErrors).length > 0) {
+              if (
+                $unwrap(
+                  ReactSharedInternals.thrownErrors,
+                  'packages/react/src/ReactAct.rs:295:38',
+                ).length > 0
+              ) {
                 const thrownError = aggregateErrors(
-                  $unwrap(ReactSharedInternals.thrownErrors),
+                  $unwrap(
+                    ReactSharedInternals.thrownErrors,
+                    'packages/react/src/ReactAct.rs:306:50',
+                  ),
                 );
-                $unwrap(ReactSharedInternals.thrownErrors).length = 0;
+                $unwrap(
+                  ReactSharedInternals.thrownErrors,
+                  'packages/react/src/ReactAct.rs:314:42',
+                ).length = 0;
                 reject(thrownError);
               } else {
                 reject(error);
@@ -226,11 +279,22 @@ export function act(callback) {
         ReactSharedInternals.actQueue = null;
       }
 
-      if ($unwrap(ReactSharedInternals.thrownErrors).length > 0) {
+      if (
+        $unwrap(
+          ReactSharedInternals.thrownErrors,
+          'packages/react/src/ReactAct.rs:381:22',
+        ).length > 0
+      ) {
         const thrownError = aggregateErrors(
-          $unwrap(ReactSharedInternals.thrownErrors),
+          $unwrap(
+            ReactSharedInternals.thrownErrors,
+            'packages/react/src/ReactAct.rs:391:30',
+          ),
         );
-        $unwrap(ReactSharedInternals.thrownErrors).length = 0;
+        $unwrap(
+          ReactSharedInternals.thrownErrors,
+          'packages/react/src/ReactAct.rs:399:26',
+        ).length = 0;
         throw thrownError;
       }
 
@@ -252,7 +316,10 @@ export function act(callback) {
       };
     }
   } else {
-    throw new Error('act(...) is not supported in production builds of React.');
+    throw $panic(
+      'act(...) is not supported in production builds of React.',
+      'packages/react/src/ReactAct.rs:427:9',
+    );
   }
 }
 
@@ -287,18 +354,32 @@ function recursivelyFlushAsyncActWork(returnValue, resolve, reject) {
         } catch (error) {
           $catchable(error);
           // Leave remaining tasks on the queue if something throws.
-          $unwrap(ReactSharedInternals.thrownErrors).push(error);
+          $unwrap(
+            ReactSharedInternals.thrownErrors,
+            'packages/react/src/ReactAct.rs:472:34',
+          ).push(error);
         }
       } else {
         // The queue is empty. We can finish.
         ReactSharedInternals.actQueue = null;
       }
     }
-    if ($unwrap(ReactSharedInternals.thrownErrors).length > 0) {
+    if (
+      $unwrap(
+        ReactSharedInternals.thrownErrors,
+        'packages/react/src/ReactAct.rs:493:18',
+      ).length > 0
+    ) {
       const thrownError = aggregateErrors(
-        $unwrap(ReactSharedInternals.thrownErrors),
+        $unwrap(
+          ReactSharedInternals.thrownErrors,
+          'packages/react/src/ReactAct.rs:503:26',
+        ),
       );
-      $unwrap(ReactSharedInternals.thrownErrors).length = 0;
+      $unwrap(
+        ReactSharedInternals.thrownErrors,
+        'packages/react/src/ReactAct.rs:511:22',
+      ).length = 0;
       reject(thrownError);
     } else {
       resolve(returnValue);
@@ -320,11 +401,17 @@ function flushActQueue(queue) {
           ReactSharedInternals.didUsePromise = false;
           const continuation = callback(false);
           if (continuation != null) {
-            if ($unwrap(ReactSharedInternals.didUsePromise)) {
+            if (
+              $unwrap(
+                ReactSharedInternals.didUsePromise,
+                'packages/react/src/ReactAct.rs:550:74',
+              )
+            ) {
               // The component just suspended. Yield to the main thread in
               // case the promise is already resolved. If so, it will ping in
               // a microtask and we can resume without unwinding the stack.
-              queue[$at(queue, i)] = callback;
+              queue[$at(queue, i, 'packages/react/src/ReactAct.rs:555:47')] =
+                callback;
               queue.splice(0, i);
               return;
             }
@@ -340,8 +427,11 @@ function flushActQueue(queue) {
     } catch (error) {
       $catchable(error);
       // If something throws, leave the remaining callbacks on the queue.
-      $drain(queue, 0, (i + 1) >>> 0);
-      $unwrap(ReactSharedInternals.thrownErrors).push(error);
+      $drain(queue, 0, $stdSites.vecDrain[0], (i + 1) >>> 0);
+      $unwrap(
+        ReactSharedInternals.thrownErrors,
+        'packages/react/src/ReactAct.rs:576:22',
+      ).push(error);
     } finally {
       if ($live()) {
         isFlushing = false;

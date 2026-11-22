@@ -286,6 +286,7 @@ import {
   $borrow,
   $cleanup,
   $fieldCell,
+  $panic,
   $shown,
   $stringPanic,
   $toLowercase,
@@ -492,7 +493,10 @@ function updateMemoComponent(
     workInProgress.child = child;
     return child;
   }
-  const currentChild = $unwrap(current.child); // This is always exactly one child
+  const currentChild = $unwrap(
+    current.child,
+    'packages/react-reconciler/src/ReactFiberBeginWork.rs:487:56',
+  ); // This is always exactly one child
   const hasScheduledUpdateOrContext = checkScheduledUpdateOrContext(
     current,
     renderLanes,
@@ -1100,8 +1104,9 @@ function updateDehydratedActivityComponent(
       // but now we suspended again. We should never arrive here because we should
       // not have pushed a suspense handler during that second pass and it should
       // instead have suspended above.
-      throw new Error(
+      throw $panic(
         'Client rendering an Activity suspended it again. This is a bug in React.',
+        'packages/react-reconciler/src/ReactFiberBeginWork.rs:1139:13',
       );
     }
   }
@@ -1170,7 +1175,10 @@ function updateActivityComponent(current, workInProgress, renderLanes) {
       );
     }
 
-    const currentChild = $unwrap(current.child);
+    const currentChild = $unwrap(
+      current.child,
+      'packages/react-reconciler/src/ReactFiberBeginWork.rs:1221:64',
+    );
 
     const nextChildren = nextProps.children;
     const nextMode = nextProps.mode;
@@ -1203,7 +1211,10 @@ function updateActivityComponent(current, workInProgress, renderLanes) {
 
 function updateCacheComponent(current, workInProgress, renderLanes) {
   prepareToReadContext(workInProgress, renderLanes);
-  const parentCache = $unwrap(readContext(CacheContext));
+  const parentCache = $unwrap(
+    readContext(CacheContext),
+    'packages/react-reconciler/src/ReactFiberBeginWork.rs:1263:57',
+  );
   if (current == null) {
     // Initial mount. Request a fresh cache from the pool.
     const freshCache = requestCacheFromPool(renderLanes);
@@ -1356,8 +1367,9 @@ function markRef(current, workInProgress) {
     }
   } else {
     if (typeof ref !== 'function' && typeof ref !== 'object') {
-      throw new Error(
+      throw $panic(
         'Expected ref to be a function, an object returned by React.createRef(), or undefined/null.',
+        'packages/react-reconciler/src/ReactFiberBeginWork.rs:1473:17',
       );
     }
     if (current == null || current.ref !== ref) {
@@ -1563,8 +1575,9 @@ function updateClassComponent(
         // Schedule the error boundary to re-render using updated state
         const root = getWorkInProgressRoot();
         if (root == null) {
-          throw new Error(
+          throw $panic(
             'Expected a work-in-progress root. This is a bug in React. Please file an issue.',
+            'packages/react-reconciler/src/ReactFiberBeginWork.rs:1734:21',
           );
         }
         const update = createClassErrorUpdate(lane);
@@ -1690,11 +1703,17 @@ function finishClassComponent(
       markComponentRenderStarted(workInProgress);
     }
     if (__DEV__) {
-      nextChildren = $unwrap(callRenderInDEV)(instance);
+      nextChildren = $unwrap(
+        callRenderInDEV,
+        'packages/react-reconciler/src/ReactFiberBeginWork.rs:1871:81',
+      )(instance);
       if (workInProgress.mode & StrictLegacyMode) {
         setIsStrictModeForDevtools(true);
         try {
-          $unwrap(callRenderInDEV)(instance);
+          $unwrap(
+            callRenderInDEV,
+            'packages/react-reconciler/src/ReactFiberBeginWork.rs:1875:81',
+          )(instance);
         } catch (error) {
           $cleanup(() => {
             setIsStrictModeForDevtools(false);
@@ -1763,7 +1782,10 @@ function updateHostRoot(current, workInProgress, renderLanes) {
   pushHostRootContext(workInProgress);
 
   if (current == null) {
-    throw new Error('Should have a current fiber. This is a bug in React.');
+    throw $panic(
+      'Should have a current fiber. This is a bug in React.',
+      'packages/react-reconciler/src/ReactFiberBeginWork.rs:1943:9',
+    );
   }
 
   const nextProps = workInProgress.pendingProps;
@@ -2099,6 +2121,7 @@ function mountLazyComponent(current, workInProgress, elementType, renderLanes) {
   // implementation detail.
   throw $stringPanic(
     `Element type is invalid. Received a promise that resolves to: ${$shown(loggedComponent)}. Lazy element type must resolve to a class or function.${hint}`,
+    'packages/react-reconciler/src/ReactFiberBeginWork.rs:2325:5',
   );
 }
 
@@ -2204,6 +2227,7 @@ function updateSuspenseOffscreenState(prevOffscreenState, renderLanes) {
       isPrimaryRenderer
         ? CacheContext._currentValue
         : CacheContext._currentValue2,
+      'packages/react-reconciler/src/ReactFiberBeginWork.rs:2461:14',
     );
     if (prevCachePool.parent !== parentCache) {
       // Detected a refresh in the parent. This overrides any previously
@@ -2350,7 +2374,10 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
         nextFallbackChildren,
         renderLanes,
       );
-      const primaryChildFragment = $unwrap(workInProgress.child);
+      const primaryChildFragment = $unwrap(
+        workInProgress.child,
+        'packages/react-reconciler/src/ReactFiberBeginWork.rs:2626:86',
+      );
       primaryChildFragment.memoizedState =
         mountSuspenseOffscreenState(renderLanes);
       primaryChildFragment.childLanes = getRemainingWorkInPrimaryTree(
@@ -2390,7 +2417,10 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
         nextFallbackChildren,
         renderLanes,
       );
-      const primaryChildFragment = $unwrap(workInProgress.child);
+      const primaryChildFragment = $unwrap(
+        workInProgress.child,
+        'packages/react-reconciler/src/ReactFiberBeginWork.rs:2685:86',
+      );
       primaryChildFragment.memoizedState =
         mountSuspenseOffscreenState(renderLanes);
       primaryChildFragment.childLanes = getRemainingWorkInPrimaryTree(
@@ -2453,8 +2483,14 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
         nextFallbackChildren,
         renderLanes,
       );
-      const primaryChildFragment = $unwrap(workInProgress.child);
-      const prevOffscreenState = $unwrap(current.child).memoizedState;
+      const primaryChildFragment = $unwrap(
+        workInProgress.child,
+        'packages/react-reconciler/src/ReactFiberBeginWork.rs:2757:86',
+      );
+      const prevOffscreenState = $unwrap(
+        current.child,
+        'packages/react-reconciler/src/ReactFiberBeginWork.rs:2764:30',
+      ).memoizedState;
       primaryChildFragment.memoizedState =
         prevOffscreenState == null
           ? mountSuspenseOffscreenState(renderLanes)
@@ -2628,7 +2664,10 @@ function updateSuspensePrimaryChildren(
   primaryChildren,
   renderLanes,
 ) {
-  const currentPrimaryChildFragment = $unwrap(current.child);
+  const currentPrimaryChildFragment = $unwrap(
+    current.child,
+    'packages/react-reconciler/src/ReactFiberBeginWork.rs:2983:73',
+  );
   const currentFallbackChildFragment = currentPrimaryChildFragment.sibling;
 
   const primaryChildFragment = updateWorkInProgressOffscreenFiber(
@@ -2666,7 +2705,10 @@ function updateSuspenseFallbackChildren(
   renderLanes,
 ) {
   const mode = workInProgress.mode;
-  const currentPrimaryChildFragment = $unwrap(current.child);
+  const currentPrimaryChildFragment = $unwrap(
+    current.child,
+    'packages/react-reconciler/src/ReactFiberBeginWork.rs:3033:73',
+  );
   const currentFallbackChildFragment = currentPrimaryChildFragment.sibling;
 
   const primaryChildProps = {
@@ -2688,7 +2730,10 @@ function updateSuspenseFallbackChildren(
     // only codepath.)
     workInProgress.child !== currentPrimaryChildFragment
   ) {
-    const progressedPrimaryFragment = $unwrap(workInProgress.child);
+    const progressedPrimaryFragment = $unwrap(
+      workInProgress.child,
+      'packages/react-reconciler/src/ReactFiberBeginWork.rs:3055:83',
+    );
     primaryChildFragment = progressedPrimaryFragment;
     primaryChildFragment.childLanes = NoLanes;
     primaryChildFragment.pendingProps = primaryChildProps;
@@ -3086,7 +3131,10 @@ function updateDehydratedSuspenseComponent(
         nextFallbackChildren,
         renderLanes,
       );
-      const primaryChildFragment = $unwrap(workInProgress.child);
+      const primaryChildFragment = $unwrap(
+        workInProgress.child,
+        'packages/react-reconciler/src/ReactFiberBeginWork.rs:3475:82',
+      );
       primaryChildFragment.memoizedState =
         mountSuspenseOffscreenState(renderLanes);
       primaryChildFragment.childLanes = getRemainingWorkInPrimaryTree(
@@ -3616,7 +3664,10 @@ function updateContextConsumer(current, workInProgress, renderLanes) {
   }
   let newChildren;
   if (__DEV__) {
-    newChildren = $unwrap(callComponentInDEV)(render, newValue);
+    newChildren = $unwrap(
+      callComponentInDEV,
+      'packages/react-reconciler/src/ReactFiberBeginWork.rs:4122:35',
+    )(render, newValue);
   } else {
     newChildren = render(newValue);
   }
@@ -3704,7 +3755,10 @@ function remountFiber(current, oldWorkInProgress, newWorkInProgress) {
     const returnFiber = oldWorkInProgress.return;
     if (returnFiber == null) {
       // eslint-disable-next-line react-internal/prod-error-codes
-      throw new Error('Cannot swap the root fiber.');
+      throw $panic(
+        'Cannot swap the root fiber.',
+        'packages/react-reconciler/src/ReactFiberBeginWork.rs:4233:13',
+      );
     }
 
     // Disconnect from the old current.
@@ -3730,13 +3784,19 @@ function remountFiber(current, oldWorkInProgress, newWorkInProgress) {
       let prevSibling = returnFiber.child;
       if (prevSibling == null) {
         // eslint-disable-next-line react-internal/prod-error-codes
-        throw new Error('Expected parent to have a child.');
+        throw $panic(
+          'Expected parent to have a child.',
+          'packages/react-reconciler/src/ReactFiberBeginWork.rs:4268:17',
+        );
       }
       while (prevSibling.sibling !== oldWorkInProgress) {
         const nextSibling = prevSibling.sibling;
         if (nextSibling == null) {
           // eslint-disable-next-line react-internal/prod-error-codes
-          throw new Error('Expected to find the previous sibling.');
+          throw $panic(
+            'Expected to find the previous sibling.',
+            'packages/react-reconciler/src/ReactFiberBeginWork.rs:4274:21',
+          );
         }
         prevSibling = nextSibling;
       }
@@ -3758,9 +3818,10 @@ function remountFiber(current, oldWorkInProgress, newWorkInProgress) {
     // Restart work from the new fiber.
     return newWorkInProgress;
   } else {
-    throw new Error(
+    throw $panic(
       'Did not expect this call in production. ' +
         'This is a bug in React. Please file an issue.',
+      'packages/react-reconciler/src/ReactFiberBeginWork.rs:4305:9',
     );
   }
 }
@@ -3895,7 +3956,10 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
           workInProgress,
           renderLanes,
         );
-        const primaryChildFragment = $unwrap(workInProgress.child);
+        const primaryChildFragment = $unwrap(
+          workInProgress.child,
+          'packages/react-reconciler/src/ReactFiberBeginWork.rs:4453:86',
+        );
         const primaryChildLanes = primaryChildFragment.childLanes;
         if (
           contextChanged ||
@@ -4047,7 +4111,11 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
 export function beginWork(current, workInProgress, renderLanes) {
   if (__DEV__ && workInProgress._debugNeedsRemount && current != null) {
     // This will restart the begin phase with a new fiber.
-    const borrow = $borrow($fieldCell(workInProgress, 'key'), true);
+    const borrow = $borrow(
+      $fieldCell(workInProgress, 'key'),
+      'packages/react-reconciler/src/ReactFiberBeginWork.rs:4611:40',
+      true,
+    );
     const key = borrow.value;
     $unborrow(borrow);
     const copiedFiber = createFiberFromTypeAndProps(
@@ -4310,6 +4378,7 @@ export function beginWork(current, workInProgress, renderLanes) {
 
   throw $stringPanic(
     `Unknown unit of work tag (${workInProgress.tag}). This error is likely caused by a bug in React. Please file an issue.`,
+    'packages/react-reconciler/src/ReactFiberBeginWork.rs:4849:5',
   );
 }
 

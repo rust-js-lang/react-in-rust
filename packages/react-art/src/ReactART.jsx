@@ -93,7 +93,11 @@ export class Surface extends Component {
     }
     // We synchronously flush updates coming from above so that they commit together
     // and so that refs resolve before the parent life cycles.
-    updateContainerSync(this.props.children, $unwrap(this._mountNode), this);
+    updateContainerSync(
+      this.props.children,
+      $unwrap(this._mountNode, 'packages/react-art/src/ReactART.rs:184:36'),
+      this
+    );
     flushSyncWork();
   }
 
@@ -101,23 +105,39 @@ export class Surface extends Component {
     const props = this.props;
 
     if (props.height !== prevProps.height || props.width !== prevProps.width) {
-      $unwrap(this._surface).resize(+props.width, +props.height);
+      $unwrap(
+        this._surface,
+        'packages/react-art/src/ReactART.rs:197:33'
+      ).resize(+props.width, +props.height);
     }
 
     // We synchronously flush updates coming from above so that they commit together
     // and so that refs resolve before the parent life cycles.
-    updateContainerSync(this.props.children, $unwrap(this._mountNode), this);
+    updateContainerSync(
+      this.props.children,
+      $unwrap(this._mountNode, 'packages/react-art/src/ReactART.rs:207:36'),
+      this
+    );
     flushSyncWork();
 
-    if ($unwrap(this._surface).render) {
-      $unwrap(this._surface).render();
+    if (
+      $unwrap(this._surface, 'packages/react-art/src/ReactART.rs:213:51').render
+    ) {
+      $unwrap(
+        this._surface,
+        'packages/react-art/src/ReactART.rs:214:33'
+      ).render();
     }
   }
 
   componentWillUnmount() {
     // We synchronously flush updates coming from above so that they commit together
     // and so that refs resolve before the parent life cycles.
-    updateContainerSync(null, $unwrap(this._mountNode), this);
+    updateContainerSync(
+      null,
+      $unwrap(this._mountNode, 'packages/react-art/src/ReactART.rs:223:36'),
+      this
+    );
     flushSyncWork();
   }
 

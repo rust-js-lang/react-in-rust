@@ -130,7 +130,12 @@ export function registerSimpleEvents() {
     const eventName = simpleEventPluginEvents[i];
     const domEventName = $toLowercase(eventName);
     const capitalizedEvent =
-      $toUppercase($unwrap(eventName[0])) + eventName.slice(1);
+      $toUppercase(
+        $unwrap(
+          eventName[0],
+          'packages/react-dom-bindings/src/events/DOMEventProperties.rs:135:70',
+        ),
+      ) + eventName.slice(1);
     registerSimpleEvent(domEventName, 'on' + capitalizedEvent);
   }
   // Special cases where event names don't match.
