@@ -110,6 +110,16 @@ export {
   isSingletonScope,
 } from 'react-reconciler/src/ReactFiberConfigWithNoSingletons';
 
+export type {
+  ActivityInstance,
+  SuspenseInstance,
+} from 'react-reconciler/src/ReactFiberConfigWithNoHydration';
+
+export type {
+  HoistableRoot,
+  Resource,
+} from 'react-reconciler/src/ReactFiberConfigWithNoResources';
+
 export const rendererPackageName: string;
 
 export const extraDevToolsConfig: unknown;

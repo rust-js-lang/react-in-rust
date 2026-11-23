@@ -18,6 +18,13 @@ export {
   encodeReply,
 } from './ReactFlightDOMClientEdge.js';
 
+export type {TemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
+
+export type {
+  DebugChannelOptions,
+  EncodeReplyOptions,
+} from './ReactFlightDOMClientEdge.js';
+
 export interface Options {
   nonce?: unknown;
   encodeFormAction?: EncodeFormActionCallback | undefined;

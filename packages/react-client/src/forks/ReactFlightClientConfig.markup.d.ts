@@ -17,6 +17,8 @@ export {bindToConsole} from 'react-client/src/ReactClientConsoleConfigPlain';
 
 export {checkEvalAvailabilityOnceDev} from 'react-client/src/ReactClientDebugConfigPlain';
 
+export type {StringDecoder} from 'react-markup/src/ReactMarkupLegacyClientStreamConfig.js';
+
 export const rendererPackageName: string;
 
 /**

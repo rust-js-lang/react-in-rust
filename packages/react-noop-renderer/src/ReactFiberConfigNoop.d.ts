@@ -143,6 +143,20 @@ export {
   cloneHiddenTextInstance,
 } from './ReactFiberConfigNoopNoPersistence.js';
 
+export type {
+  ActivityInstance,
+  SuspenseInstance,
+} from './ReactFiberConfigNoopHydration.js';
+
+export type {HoistableRoot, Resource} from './ReactFiberConfigNoopResources.js';
+
+export type {
+  InstanceMeasurement,
+  RunningViewTransition,
+  ViewTransitionInstance,
+  GestureTimeline,
+} from './ReactFiberConfigNoopNoMutation.js';
+
 export type HostContext = object;
 
 export interface TextInstance {
