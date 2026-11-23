@@ -9,7 +9,7 @@
 // a caller may give anything: `href` a string and `options` one of
 // ReactDOMTypes' options objects, by Flow's types.
 
-export function prefetchDNS(href?: unknown, ...args: unknown[]): void;
+export function prefetchDNS(href?: unknown, ...args: readonly unknown[]): void;
 
 export function preconnect(href?: unknown, options?: unknown): void;
 

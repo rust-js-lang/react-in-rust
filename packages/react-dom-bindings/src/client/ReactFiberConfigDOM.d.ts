@@ -785,7 +785,7 @@ export interface IntersectionObserverHandle {
 }
 
 export function setupIntersectionObserver(
-  targets: Instance[],
+  targets: readonly Instance[],
   callback: ObserveVisibleRectsCallback,
   options?: IntersectionObserverInit | null | undefined,
 ): IntersectionObserverHandle;

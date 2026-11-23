@@ -11,7 +11,7 @@ import type {ReactClientValue} from 'react-server/src/ReactFlightServer';
 export interface ServerReference {
   $$typeof: symbol;
   $$id: string;
-  $$bound: (ReactClientValue | null | undefined)[] | null;
+  $$bound: readonly (ReactClientValue | null | undefined)[] | null;
   $$location?: Error | undefined;
 }
 

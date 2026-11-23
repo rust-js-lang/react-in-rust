@@ -21,7 +21,7 @@ export interface DevToolsDetails {
   color: string;
   track?: string | undefined;
   trackGroup?: string | undefined;
-  properties: [string, string][];
+  properties: readonly [string, string][];
   tooltipText?: string | undefined;
 }
 

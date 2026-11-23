@@ -9,7 +9,7 @@ import type {ReactDebugInfo} from 'shared/ReactTypes';
 import type {ImportMetadata} from '../shared/ReactFlightImportMetadata.js';
 
 export type ServerManifest = {
-  [key: string]: string[];
+  [key: string]: readonly string[];
 };
 
 export type SSRModuleMap = null;

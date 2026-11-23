@@ -26,6 +26,6 @@ export interface DebugChannelOptions {
 }
 
 export function read(
-  source: Uint8Array<ArrayBuffer>[],
+  source: readonly Uint8Array<ArrayBuffer>[],
   options?: ReadOptions | null | undefined,
 ): ReactPromise;

@@ -5,11 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-export type Chunk = string | [string, string[], number[]];
+export type Chunk = string | [string, readonly string[], readonly number[]];
 
 export interface ImportManifestEntry {
   id: string;
-  chunks: Chunk[];
+  chunks: readonly Chunk[];
   name: string;
   async?: boolean | undefined;
 }
@@ -22,8 +22,8 @@ export const Async: 1;
 // This is the parsed shape of the wire format which is why it is
 // condensed to only the essentialy information
 export type ImportMetadata =
-  | [string, Chunk[], string, Async]
-  | [string, Chunk[], string];
+  | [string, readonly Chunk[], string, Async]
+  | [string, readonly Chunk[], string];
 
 export const ID: number;
 

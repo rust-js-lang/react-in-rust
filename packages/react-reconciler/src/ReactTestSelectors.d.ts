@@ -27,12 +27,12 @@ export function createTestNameSelector(id: string): Selector;
 
 export function findAllNodes(
   hostRoot: unknown,
-  selectors: Selector[],
+  selectors: readonly Selector[],
 ): unknown[];
 
 export function getFindAllNodesFailureDescription(
   hostRoot: unknown,
-  selectors: Selector[],
+  selectors: readonly Selector[],
 ): string | null;
 
 export interface BoundingRect {
@@ -44,10 +44,13 @@ export interface BoundingRect {
 
 export function findBoundingRects(
   hostRoot: unknown,
-  selectors: Selector[],
+  selectors: readonly Selector[],
 ): BoundingRect[];
 
-export function focusWithin(hostRoot: unknown, selectors: Selector[]): boolean;
+export function focusWithin(
+  hostRoot: unknown,
+  selectors: readonly Selector[],
+): boolean;
 
 export function onCommitRoot(): void;
 

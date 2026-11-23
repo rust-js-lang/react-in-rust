@@ -42,8 +42,11 @@ export interface HydrateRootOptions {
 
 declare class ReactDOMRoot {
   _internalRoot: FiberRoot | null;
-  render(children?: ReactNodeList | null | undefined, ...args: unknown[]): void;
-  unmount(...args: unknown[]): void;
+  render(
+    children?: ReactNodeList | null | undefined,
+    ...args: readonly unknown[]
+  ): void;
+  unmount(...args: readonly unknown[]): void;
 }
 
 export type {ReactDOMRoot};
@@ -56,8 +59,11 @@ export function createRoot(
 declare class ReactDOMHydrationRoot {
   _internalRoot: FiberRoot | null;
   unstable_scheduleHydration(target?: Node | null | undefined): void;
-  render(children?: ReactNodeList | null | undefined, ...args: unknown[]): void;
-  unmount(...args: unknown[]): void;
+  render(
+    children?: ReactNodeList | null | undefined,
+    ...args: readonly unknown[]
+  ): void;
+  unmount(...args: readonly unknown[]): void;
 }
 
 export type {ReactDOMHydrationRoot};

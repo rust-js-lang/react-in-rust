@@ -8,7 +8,7 @@
 // This is forked in server builds where the default stack frame may be source mapped.
 
 declare const DefaultPrepareStackTrace:
-  | ((value: unknown, value2: any[]) => string)
+  | ((value: unknown, value2: readonly any[]) => string)
   | null
   | undefined;
 

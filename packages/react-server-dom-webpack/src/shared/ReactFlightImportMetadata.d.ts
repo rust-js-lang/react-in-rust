@@ -14,7 +14,7 @@ export type ModuleId = string | number;
 export interface ImportManifestEntry {
   id: ModuleId;
   // chunks is a double indexed array of chunkId / chunkFilename pairs
-  chunks: string[];
+  chunks: readonly string[];
   name: string;
   async?: boolean | undefined;
 }
@@ -27,8 +27,8 @@ export const Async: 1;
 // This is the parsed shape of the wire format which is why it is
 // condensed to only the essentialy information
 export type ImportMetadata =
-  | [ModuleId, string[], string, Async]
-  | [ModuleId, string[], string];
+  | [ModuleId, readonly string[], string, Async]
+  | [ModuleId, readonly string[], string];
 
 export const ID: number;
 

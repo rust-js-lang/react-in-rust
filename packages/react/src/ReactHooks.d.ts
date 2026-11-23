@@ -64,33 +64,33 @@ export function useRef(initialValue?: unknown): RefObject;
 
 export function useEffect(
   create?: Create | null | undefined,
-  deps?: unknown[] | null | undefined,
+  deps?: readonly unknown[] | null | undefined,
 ): void;
 
 export function useInsertionEffect(
   create?: Create | null | undefined,
-  deps?: unknown[] | null | undefined,
+  deps?: readonly unknown[] | null | undefined,
 ): void;
 
 export function useLayoutEffect(
   create?: Create | null | undefined,
-  deps?: unknown[] | null | undefined,
+  deps?: readonly unknown[] | null | undefined,
 ): void;
 
 export function useCallback<T>(
   callback: T,
-  deps?: unknown[] | null | undefined,
+  deps?: readonly unknown[] | null | undefined,
 ): T;
 
 export function useMemo<T>(
   create: () => T,
-  deps?: unknown[] | null | undefined,
+  deps?: readonly unknown[] | null | undefined,
 ): T;
 
 export function useImperativeHandle(
   ref: Ref | null | undefined,
   create: () => unknown,
-  deps?: unknown[] | null | undefined,
+  deps?: readonly unknown[] | null | undefined,
 ): void;
 
 export function useDebugValue<T>(

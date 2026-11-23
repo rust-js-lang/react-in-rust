@@ -21,8 +21,8 @@ type BootstrapScript = string | BootstrapScriptDescriptor;
 export interface Options {
   identifierPrefix?: string | undefined;
   bootstrapScriptContent?: string | undefined;
-  bootstrapScripts?: BootstrapScript[] | undefined;
-  bootstrapModules?: BootstrapScript[] | undefined;
+  bootstrapScripts?: readonly BootstrapScript[] | undefined;
+  bootstrapModules?: readonly BootstrapScript[] | undefined;
   progressiveChunkSize?: number | undefined;
   onError: OnError;
   onBrowserBailout?: OnBrowserBailout | undefined;

@@ -9,7 +9,7 @@
 
 declare function prepareStackTrace(
   error: unknown,
-  structuredStackTrace: any[],
+  structuredStackTrace: readonly any[],
 ): string;
 
 export default prepareStackTrace;

@@ -28,8 +28,8 @@ export interface Options {
   identifierPrefix?: string | undefined;
   namespaceURI?: string | undefined;
   bootstrapScriptContent?: string | undefined;
-  bootstrapScripts?: BootstrapScript[] | undefined;
-  bootstrapModules?: BootstrapScript[] | undefined;
+  bootstrapScripts?: readonly BootstrapScript[] | undefined;
+  bootstrapModules?: readonly BootstrapScript[] | undefined;
   progressiveChunkSize?: number | undefined;
   signal?: AbortSignal | undefined;
   onError?: OnError | undefined;
@@ -54,8 +54,8 @@ export interface WebStreamsOptions {
   identifierPrefix?: string | undefined;
   namespaceURI?: string | undefined;
   bootstrapScriptContent?: string | undefined;
-  bootstrapScripts?: BootstrapScript[] | undefined;
-  bootstrapModules?: BootstrapScript[] | undefined;
+  bootstrapScripts?: readonly BootstrapScript[] | undefined;
+  bootstrapModules?: readonly BootstrapScript[] | undefined;
   progressiveChunkSize?: number | undefined;
   signal?: AbortSignal | undefined;
   onError?: OnError | undefined;

@@ -11,5 +11,5 @@
 
 export default function formatProdErrorMessage(
   code: number,
-  ...args: unknown[]
+  ...args: readonly unknown[]
 ): string;

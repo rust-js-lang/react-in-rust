@@ -7,6 +7,6 @@
 
 export function bindToConsole(
   methodName: string,
-  args: unknown[],
+  args: readonly unknown[],
   badgeName: string,
 ): Function;

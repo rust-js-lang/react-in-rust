@@ -11,12 +11,12 @@ export type ImportMetadata =
   | [
       string,
       string,
-      string[],
+      readonly string[],
       {
         [key: string]: string;
       },
     ]
-  | [string, string, string[]];
+  | [string, string, readonly string[]];
 
 export const ID: number;
 

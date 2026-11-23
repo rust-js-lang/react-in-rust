@@ -11,7 +11,7 @@ import type {ReactClientValue} from 'react-server/src/ReactFlightServer';
 export interface ServerReference {
   $$typeof: symbol;
   $$id: string;
-  $$bound: (ReactClientValue | null | undefined)[] | null;
+  $$bound: readonly (ReactClientValue | null | undefined)[] | null;
   $$location?: Error | undefined;
 }
 
@@ -23,7 +23,7 @@ export interface ClientReference {
   $$typeof: symbol;
   $$id: string;
   $$name: string;
-  $$bundles: string[];
+  $$bundles: readonly string[];
   // GAP rd595: declared `| undefined` alone, though it holds the `null`
   // createClientReference may be given.
   $$importMap?:
@@ -40,7 +40,7 @@ export function isServerReference(reference: unknown): boolean;
 export function createClientReference(
   id: string,
   exportName: string,
-  bundles: string[],
+  bundles: readonly string[],
   importMap?:
     | {
         [key: string]: string;

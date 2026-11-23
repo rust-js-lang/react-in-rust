@@ -25,7 +25,7 @@ export type ClientRenderBoundary = (
 export type CompleteBoundaryWithStyles = (
   value: string,
   value2: string,
-  value3: string[][],
+  value3: readonly string[][],
 ) => void;
 
 /** What reveals a batch of completed boundaries. */
@@ -61,5 +61,5 @@ export function listenToFormSubmissionsForReplaying(): void;
 export function completeBoundaryWithStyles(
   suspenseBoundaryId: string,
   contentId: string,
-  stylesheetDescriptors: string[][],
+  stylesheetDescriptors: readonly string[][],
 ): void;

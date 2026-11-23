@@ -65,7 +65,7 @@ export function jsxDEV(
 export function createElement(
   type?: unknown,
   config?: unknown,
-  ...children: unknown[]
+  ...children: readonly unknown[]
 ): ReactElement;
 
 export function cloneAndReplaceKey(
@@ -80,7 +80,7 @@ export function cloneAndReplaceKey(
 export function cloneElement(
   element?: unknown,
   config?: unknown,
-  ...children: unknown[]
+  ...children: readonly unknown[]
 ): ReactElement;
 
 /**

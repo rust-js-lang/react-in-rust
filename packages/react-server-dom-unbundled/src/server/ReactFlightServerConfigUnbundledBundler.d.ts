@@ -54,7 +54,7 @@ export function getServerReferenceId(
 export function getServerReferenceBoundArguments(
   config: ClientManifest,
   serverReference: ServerReference,
-): (ReactClientValue | null | undefined)[] | null;
+): readonly (ReactClientValue | null | undefined)[] | null;
 
 export function getServerReferenceLocation(
   config: ClientManifest,

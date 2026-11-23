@@ -146,8 +146,8 @@ export interface ResumableState {
   // of a prerender. On resume we will reinitialize the bootstrap scripts if necessary.
   // If we end up flushing the bootstrap scripts we void these on the resumable state
   bootstrapScriptContent?: string | undefined;
-  bootstrapScripts?: BootstrapScript[] | undefined;
-  bootstrapModules?: BootstrapScript[] | undefined;
+  bootstrapScripts?: readonly BootstrapScript[] | undefined;
+  bootstrapModules?: readonly BootstrapScript[] | undefined;
   // state for script streaming format, unused if using external runtime / data
   instructions: InstructionState;
   // postamble state
@@ -233,8 +233,8 @@ export function createResumableState(
   identifierPrefix?: string | null | undefined,
   externalRuntimeConfig?: BootstrapScript | null | undefined,
   bootstrapScriptContent?: string | null | undefined,
-  bootstrapScripts?: BootstrapScript[] | null | undefined,
-  bootstrapModules?: BootstrapScript[] | null | undefined,
+  bootstrapScripts?: readonly BootstrapScript[] | null | undefined,
+  bootstrapModules?: readonly BootstrapScript[] | null | undefined,
 ): ResumableState;
 
 export function resetResumableState(

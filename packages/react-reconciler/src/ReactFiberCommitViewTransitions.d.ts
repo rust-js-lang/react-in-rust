@@ -87,7 +87,7 @@ export function measureViewTransitionHostInstances(
   newName: string,
   oldName: string,
   className: string | null | undefined,
-  previousMeasurements: unknown[] | null,
+  previousMeasurements: readonly unknown[] | null,
   stopAtNestedViewTransitions: boolean,
 ): boolean;
 

@@ -330,7 +330,7 @@ export interface GestureOptionsRequired {
  */
 export type ViewTransitionCallback = (
   instance: ViewTransitionInstance,
-  value: string[],
+  value: readonly string[],
 ) => (() => void) | null | undefined;
 
 /**
@@ -341,7 +341,7 @@ export type ViewTransitionGestureCallback = (
   instance: ViewTransitionInstance,
   required: GestureOptionsRequired,
   instance2: ViewTransitionInstance,
-  value: string[],
+  value: readonly string[],
 ) => (() => void) | null | undefined;
 
 export interface ViewTransitionProps {

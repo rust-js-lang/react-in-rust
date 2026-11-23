@@ -31,8 +31,8 @@ export interface Options {
   namespaceURI?: string | undefined;
   nonce?: Nonce | undefined;
   bootstrapScriptContent?: string | undefined;
-  bootstrapScripts?: BootstrapScript[] | undefined;
-  bootstrapModules?: BootstrapScript[] | undefined;
+  bootstrapScripts?: readonly BootstrapScript[] | undefined;
+  bootstrapModules?: readonly BootstrapScript[] | undefined;
   progressiveChunkSize?: number | undefined;
   onShellReady?: (() => void) | undefined;
   onShellError?: OnFatal | undefined;
@@ -85,8 +85,8 @@ export interface WebStreamsOptions {
   namespaceURI?: string | undefined;
   nonce?: Nonce | undefined;
   bootstrapScriptContent?: string | undefined;
-  bootstrapScripts?: BootstrapScript[] | undefined;
-  bootstrapModules?: BootstrapScript[] | undefined;
+  bootstrapScripts?: readonly BootstrapScript[] | undefined;
+  bootstrapModules?: readonly BootstrapScript[] | undefined;
   progressiveChunkSize?: number | undefined;
   onError?: OnError | undefined;
   onBrowserBailout?: OnBrowserBailout | undefined;

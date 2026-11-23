@@ -49,7 +49,7 @@ export function commitPassiveMountEffects(
   root: FiberRoot,
   finishedWork: Fiber,
   committedLanes: Lanes,
-  committedTransitions: Transition[] | null,
+  committedTransitions: readonly Transition[] | null,
   renderEndTime: number,
 ): void;
 
@@ -57,7 +57,7 @@ export function reconnectPassiveEffects(
   finishedRoot: FiberRoot,
   finishedWork: Fiber,
   committedLanes: Lanes,
-  committedTransitions: Transition[] | null,
+  committedTransitions: readonly Transition[] | null,
   includeWorkInProgressEffects: boolean,
   endTime: number,
 ): void;

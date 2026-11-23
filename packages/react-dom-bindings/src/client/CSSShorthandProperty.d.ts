@@ -6,5 +6,5 @@
 // LICENSE file in the root directory of this source tree.
 
 export const shorthandToLonghand: {
-  [key: string]: string[];
+  [key: string]: readonly string[];
 };

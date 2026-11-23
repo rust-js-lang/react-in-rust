@@ -9,12 +9,14 @@ import type {FiberRoot} from './ReactInternalTypes.js';
 
 export function queueTransitionTypes(
   root: FiberRoot,
-  transitionTypes: string[],
+  transitionTypes: readonly string[],
 ): void;
 
 export let entangledTransitionTypes: string[] | null;
 
-export function entangleAsyncTransitionTypes(transitionTypes: string[]): void;
+export function entangleAsyncTransitionTypes(
+  transitionTypes: readonly string[],
+): void;
 
 export function clearEntangledAsyncTransitionTypes(): void;
 

@@ -17,7 +17,7 @@ import type {Fiber} from './ReactInternalTypes.js';
  */
 export interface DevToolsDetails {
   color: string;
-  properties: [string, string][] | null;
+  properties: readonly [string, string][] | null;
   tooltipText?: string | undefined;
   track: string;
   trackGroup?: string | undefined;
@@ -81,7 +81,7 @@ export function logComponentErrored(
   fiber: Fiber,
   startTime: number,
   endTime: number,
-  errors: CapturedValue<unknown>[],
+  errors: readonly CapturedValue<unknown>[],
 ): void;
 
 export function logComponentEffect(
@@ -89,7 +89,7 @@ export function logComponentEffect(
   startTime: number,
   endTime: number,
   selfTime: number,
-  errors?: CapturedValue<unknown>[] | null | undefined,
+  errors?: readonly CapturedValue<unknown>[] | null | undefined,
 ): void;
 
 export function logYieldTime(startTime: number, endTime: number): void;
@@ -212,7 +212,7 @@ export function logRecoveredRenderPhase(
   startTime: number,
   endTime: number,
   lanes: Lanes,
-  recoverableErrors: CapturedValue<unknown>[],
+  recoverableErrors: readonly CapturedValue<unknown>[],
   hydrationFailed: boolean,
   debugTask?:
     | {
@@ -272,7 +272,7 @@ export function logSuspendedViewTransitionPhase(
 export function logCommitErrored(
   startTime: number,
   endTime: number,
-  errors: CapturedValue<unknown>[],
+  errors: readonly CapturedValue<unknown>[],
   passive: boolean,
   debugTask?:
     | {
@@ -285,7 +285,7 @@ export function logCommitErrored(
 export function logCommitPhase(
   startTime: number,
   endTime: number,
-  errors: CapturedValue<unknown>[] | null | undefined,
+  errors: readonly CapturedValue<unknown>[] | null | undefined,
   abortedViewTransition: boolean,
   debugTask?:
     | {
@@ -344,7 +344,7 @@ export function logAnimatingPhase(
 export function logPassiveCommitPhase(
   startTime: number,
   endTime: number,
-  errors?: CapturedValue<unknown>[] | null | undefined,
+  errors?: readonly CapturedValue<unknown>[] | null | undefined,
   debugTask?:
     | {
         run<T>(f: () => T): T;

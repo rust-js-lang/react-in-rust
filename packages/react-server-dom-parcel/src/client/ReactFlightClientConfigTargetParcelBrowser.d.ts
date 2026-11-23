@@ -9,6 +9,6 @@ import type {ModuleLoading} from './ReactFlightClientConfigBundlerParcel.js';
 
 export function prepareDestinationWithChunks(
   moduleLoading: ModuleLoading,
-  bundles: string[],
+  bundles: readonly string[],
   nonce?: string | null | undefined,
 ): void;

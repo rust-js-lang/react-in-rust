@@ -236,13 +236,13 @@ export type OnTransitionProgress = (
   value: string,
   value2: number,
   value3: number,
-  value4: SuspenseInfo[],
+  value4: readonly SuspenseInfo[],
 ) => void;
 
 export type OnTransitionIncomplete = (
   value: string,
   value2: number,
-  value3: TransitionTracingDeletion[],
+  value3: readonly TransitionTracingDeletion[],
 ) => void;
 
 export type OnTransitionComplete = (
@@ -256,14 +256,14 @@ export type OnMarkerProgress = (
   value2: string,
   value3: number,
   value4: number,
-  value5: SuspenseInfo[],
+  value5: readonly SuspenseInfo[],
 ) => void;
 
 export type OnMarkerIncomplete = (
   value: string,
   value2: string,
   value3: number,
-  value4: TransitionTracingDeletion[],
+  value4: readonly TransitionTracingDeletion[],
 ) => void;
 
 export type OnMarkerComplete = (

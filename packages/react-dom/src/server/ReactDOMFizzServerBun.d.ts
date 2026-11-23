@@ -27,8 +27,8 @@ export interface Options {
   namespaceURI?: string | undefined;
   nonce?: Nonce | undefined;
   bootstrapScriptContent?: string | undefined;
-  bootstrapScripts?: BootstrapScript[] | undefined;
-  bootstrapModules?: BootstrapScript[] | undefined;
+  bootstrapScripts?: readonly BootstrapScript[] | undefined;
+  bootstrapModules?: readonly BootstrapScript[] | undefined;
   progressiveChunkSize?: number | undefined;
   signal?: AbortSignal | undefined;
   onError?: OnError | undefined;

@@ -16,6 +16,6 @@ export type ModuleLoading = ModuleLoadingOptions | null | undefined;
 
 export function prepareDestinationWithChunks(
   moduleLoading: ModuleLoadingOptions | null,
-  chunks: string[],
+  chunks: readonly string[],
   nonce?: string | null | undefined,
 ): void;
