@@ -14,7 +14,12 @@ import type {
 } from 'react-reconciler/src/ReactFiberHooks';
 import type {Dispatcher} from 'react-reconciler/src/ReactInternalTypes';
 import type {ReactRecoverable} from 'shared/ReactTypes';
-import type {RequestInstance, ResumableState, Task} from './ReactFizzServer.js';
+import type {
+  KeyNode,
+  RequestInstance,
+  ResumableState,
+  Task,
+} from './ReactFizzServer.js';
 import type {ThenableState} from './ReactFizzThenable.js';
 
 export function createRecoverableError(recoverable: ReactRecoverable): Error;
@@ -26,7 +31,7 @@ export function cloneRecoverableErrorAsFatal(recoverableError: Error): Error;
 export function prepareToUseHooks(
   request: RequestInstance,
   task: Task,
-  keyPath: any,
+  keyPath: KeyNode | null,
   componentIdentity: unknown,
   prevThenableState: ThenableState | null,
 ): void;

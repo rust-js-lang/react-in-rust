@@ -16,9 +16,11 @@ export {
   UserBlockingPriority as unstable_UserBlockingPriority,
 } from '../SchedulerPriorities.js';
 
+declare const $callbackNodeBrand: unique symbol;
+
 /** A scheduled callback's handle: the controller that aborts its task. */
 export interface CallbackNode {
-  _controller: TaskController;
+  readonly [$callbackNodeBrand]: never;
 }
 
 export const unstable_now: () => number;

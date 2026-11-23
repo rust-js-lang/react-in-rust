@@ -7,6 +7,8 @@
 
 import type {ReactAsyncInfo, ReactIOInfo} from 'shared/ReactTypes';
 
+declare const $payloadBrand: unique symbol;
+
 type Status = -1 | 0 | 1 | 2;
 
 /**
@@ -15,10 +17,7 @@ type Status = -1 | 0 | 1 | 2;
  * to or what it was rejected with.
  */
 export interface Payload {
-  _status: Status;
-  _result?: unknown;
-  // DEV-only
-  _ioInfo?: ReactIOInfo | undefined;
+  readonly [$payloadBrand]: never;
 }
 
 export interface LazyComponent {

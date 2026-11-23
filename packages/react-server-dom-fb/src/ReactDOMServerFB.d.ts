@@ -14,6 +14,8 @@ import type {
 import type {Destination} from 'react-server/src/ReactServerStreamConfigFB';
 import type {ReactNodeList} from 'shared/ReactTypes';
 
+declare const $streamBrand: unique symbol;
+
 type BootstrapScript = string | BootstrapScriptDescriptor;
 
 export interface Options {
@@ -28,8 +30,7 @@ export interface Options {
 }
 
 export interface Stream {
-  destination: Destination;
-  request: RequestInstance;
+  readonly [$streamBrand]: never;
 }
 
 export function renderToStream(

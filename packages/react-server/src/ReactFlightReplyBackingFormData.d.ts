@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+declare const $backingFormDataBrand: unique symbol;
+
 /**
  * Backing FormData indexes the entries of a reply payload so that no lookup
  * ever scans a live FormData instance. FormData.get/getAll/delete are linear
@@ -23,20 +25,7 @@
  *   exact field name.
  */
 export interface BackingFormData {
-  prefix: string;
-  // Entries whose key is in the `prefix + '_' + ...` namespace, in insertion
-  // order. The only structure the "$K" scan reads.
-  referencedEntries: [string, BackingEntryValue][] | null;
-  // Cursor for the "$K" scan; advances monotonically.
-  keyPointer: number;
-  // Field name -> string, for one-shot `prefix + <decimal id>` chunk fields.
-  stringChunks: Map<string, string> | null;
-  // Field name (`prefix + 'S' + <decimal id>`) -> buffered chunk strings, in
-  // arrival order. Only actual streams/async iterables allocate an array.
-  streamChunks: Map<string, string[]> | null;
-  // Field name -> outlined Blob/File. The client outlines each Blob under a
-  // fresh id, so keys don't repeat.
-  blobs: Map<string, Blob> | null;
+  readonly [$backingFormDataBrand]: never;
 }
 
 /** A `FormDataEntryValue` the store keeps: its text, or its file. */

@@ -22,6 +22,8 @@ export type {
   EncodeFormActionCallback,
 } from './ReactFlightReplyClient.js';
 
+declare const $responseHolderBrand: unique symbol;
+
 declare const RESPONSE_SYMBOL: unique symbol;
 
 /**
@@ -206,7 +208,7 @@ export function getRoot(weakResponse: WeakResponse): ReactPromise;
 
 /** A resolved model chunk's `reason`, `{[RESPONSE_SYMBOL]: response}`. */
 export interface ResponseHolder {
-  [RESPONSE_SYMBOL]: ResponseInstance;
+  readonly [$responseHolderBrand]: never;
 }
 
 /** An iterator result, `{done, value}`. */

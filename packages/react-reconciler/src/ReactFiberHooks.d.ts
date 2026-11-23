@@ -12,6 +12,10 @@ import type {Lane, Lanes} from './ReactFiberLane.js';
 import type {HookFlags} from './ReactHookEffectTags.js';
 import type {Dispatcher, Fiber, MemoCache} from './ReactInternalTypes.js';
 
+declare const $actionStateQueueNodeBrand: unique symbol;
+
+declare const $effectBrand: unique symbol;
+
 interface EffectInstance {
   destroy?: unknown;
 }
@@ -73,8 +77,8 @@ export interface Hook {
 export type Create = () => Destroy;
 
 export interface Effect {
+  readonly [$effectBrand]: never;
   tag: HookFlags;
-  inst: EffectInstance;
   create: Create;
   deps: Deps | null;
   next?: Effect | null | undefined;
@@ -157,22 +161,7 @@ export function resetHooksOnUnwind(workInProgress: Fiber): void;
 export type Action = Reducer;
 
 export interface ActionStateQueueNode {
-  payload?: unknown;
-  // This is the action implementation at the time it was dispatched.
-  action: Action;
-  // This is never null because it's part of a circular linked list.
-  next?: ActionStateQueueNode | null | undefined;
-  // Whether or not the action was dispatched as part of a transition. We use
-  // this to restore the transition context when the queued action is run. Once
-  // we're able to track parallel async actions, this should be updated to
-  // represent the specific transition instance the action is associated with.
-  isTransition: boolean;
-  // Implements the Thenable interface. We use it to suspend until the action
-  // finishes.
-  status: string;
-  value?: unknown;
-  reason?: unknown;
-  listeners: (() => void)[];
+  readonly [$actionStateQueueNodeBrand]: never;
   then(listener: () => void): void;
 }
 

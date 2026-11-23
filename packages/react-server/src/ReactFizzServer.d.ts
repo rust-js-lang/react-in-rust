@@ -12,8 +12,12 @@ import type {ContextNode} from './ReactFizzNewContext.js';
 import type {ThenableState} from './ReactFizzThenable.js';
 import type {TreeContext} from './ReactFizzTreeContext.js';
 
+declare const $postponedStateBrand: unique symbol;
+
+declare const $taskBrand: unique symbol;
+
 interface PostponedHoles {
-  workingMap: Map<any, ReplayNode>;
+  workingMap: Map<KeyNode, ReplayNode>;
   rootNodes: ReplayNodes;
   rootSlots: ResumeSlots;
 }
@@ -77,7 +81,7 @@ interface SuspenseListRow {
 }
 
 interface Tracked {
-  contentKeyPath: any;
+  contentKeyPath: KeyNode | null;
   fallbackNode: ReplayNode | null;
 }
 
@@ -108,6 +112,16 @@ export type ByteLengthOfChunk = (value: any) => number;
 /** A segment's chunks, which the config pushes to. */
 export type Chunks = any[];
 
+// Linked list representing the identity of a component given the component/tag name and key.
+// The name might be minified but we assume that it's going to be the same generated name. Typically
+// because it's just the same compiled output in practice.
+/** `[parent, name, key]`. */
+export type KeyNode = [
+  KeyNode | null | undefined,
+  string | null | undefined,
+  NodeKey,
+];
+
 /** A node's key in its parent: the key it was given, or its index. */
 export type NodeKey = string | number;
 
@@ -122,12 +136,30 @@ export type ResumeSlots =
       [key: string]: number;
     };
 
+/** `[name, key, children, slots]`. */
+export type ReplayElement = [
+  string | null | undefined,
+  NodeKey,
+  ReplayNode[],
+  ResumeSlots,
+];
+
+/** `[name, key, content, contentSlots, fallback, rootSegmentID]`. */
+export type ReplaySuspenseBoundary = [
+  string | null | undefined,
+  NodeKey,
+  ReplayNode[],
+  ResumeSlots,
+  ReplayNode | null | undefined,
+  number,
+];
+
 /**
  * A replay node, which trackPostponedBoundary grows in place to a
  * boundary's and untrackBoundary shrinks back: told apart by its length
  * (rust-js's ADR 1046).
  */
-export type ReplayNode = any;
+export type ReplayNode = ReplayElement | ReplaySuspenseBoundary;
 
 /** A list of replay nodes, which a replay set shares with its node. */
 export type ReplayNodes = ReplayNode[];
@@ -140,25 +172,9 @@ export type AbortSet = Set<Task>;
  * writes to none: its `replay` is `null` where it renders.
  */
 export interface Task {
-  replay: ReplaySet | null;
-  node?: ReactNodeList | undefined;
-  childIndex: number;
-  blockedBoundary: SuspenseBoundary | null;
-  blockedSegment: Segment | null;
-  blockedPreamble: PreambleState | null;
-  hoistableState: HoistableState | null;
-  abortSet: AbortSet;
-  keyPath: any;
-  formatContext: FormatContext;
-  context?: ContextNode | undefined;
+  readonly [$taskBrand]: never;
   treeContext: TreeContext;
-  row: SuspenseListRow | null;
   componentStack: ComponentStackNode | null;
-  thenableState: ThenableState | null;
-  // GAP rd493: upstream sets `legacyContext` only `if
-  // (!disableLegacyContext)` and `debugTask` only in DEV, to keep the
-  // object at 16 fields in production; a struct's fields are always set.
-  legacyContext: Context;
   debugTask: {
     run<T>(f: () => T): T;
   } | null;
@@ -365,12 +381,8 @@ export function getResumableState<S>(request: RequestInstance): S;
 export function getRenderState<R>(request: RequestInstance): R;
 
 export interface PostponedState {
-  nextSegmentId: number;
-  rootFormatContext: FormatContext;
-  progressiveChunkSize: number;
+  readonly [$postponedStateBrand]: never;
   resumableState: ResumableState;
-  replayNodes: ReplayNodes;
-  replaySlots: ResumeSlots;
 }
 
 // Returns the state of a postponed request or null if nothing was postponed.

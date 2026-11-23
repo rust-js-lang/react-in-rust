@@ -15,6 +15,8 @@ export {
   UserBlockingPriority as unstable_UserBlockingPriority,
 } from '../SchedulerPriorities.js';
 
+declare const $taskBrand: unique symbol;
+
 /**
  * A task's work: given whether it timed out, it does some, and gives
  * what's left of it, or nothing where it's done.
@@ -22,13 +24,8 @@ export {
 export type Callback = (value: boolean) => Callback | null | undefined;
 
 export interface Task {
+  readonly [$taskBrand]: never;
   id: number;
-  callback: Callback | null;
-  priorityLevel: PriorityLevel;
-  startTime: number;
-  expirationTime: number;
-  sortIndex: number;
-  isQueued?: boolean | undefined;
 }
 
 /** What `unstable_scheduleCallback` is given: how long to wait first. */

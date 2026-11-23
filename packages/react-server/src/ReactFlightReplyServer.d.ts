@@ -8,6 +8,8 @@
 import type {BackingFormData} from './ReactFlightReplyBackingFormData.js';
 import type {TemporaryReferenceSet} from './ReactFlightServerTemporaryReferences.js';
 
+declare const $flightStreamControllerBrand: unique symbol;
+
 type BlobPart =
   | ArrayBuffer
   | Int8Array<ArrayBuffer>
@@ -29,9 +31,7 @@ declare const RESPONSE_SYMBOL: unique symbol;
 
 /** What a stream's rows are given to. */
 export interface FlightStreamController {
-  enqueueModel: (value: string) => void;
-  close: (value: string) => void;
-  error: (error?: unknown) => void;
+  readonly [$flightStreamControllerBrand]: never;
 }
 
 export type JSONValue = unknown;

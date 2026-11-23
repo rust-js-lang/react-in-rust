@@ -8,13 +8,14 @@
 import type {LazyComponent} from 'react/src/ReactLazy';
 import type {Fiber} from './ReactInternalTypes.js';
 
+declare const $thenableStateBrand: unique symbol;
+
 /**
  * The thenables a component used, in the order it used them, and whether
  * it was warned of an uncached one (DEV only).
  */
 export interface ThenableState {
-  didWarnAboutUncachedPromise: boolean;
-  thenables: any[];
+  readonly [$thenableStateBrand]: never;
 }
 
 export const SuspenseException: Error;

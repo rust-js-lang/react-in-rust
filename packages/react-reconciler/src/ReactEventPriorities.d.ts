@@ -7,7 +7,11 @@
 
 import type {Lane, Lanes} from './ReactFiberLane.js';
 
-export type EventPriority = number;
+declare const $eventPriorityBrand: unique symbol;
+
+export interface EventPriority {
+  readonly [$eventPriorityBrand]: never;
+}
 
 export const NoEventPriority: EventPriority;
 
