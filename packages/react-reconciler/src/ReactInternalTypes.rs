@@ -317,11 +317,13 @@ impl Hash for Fiber {
 
 /// What an uncaught or a recoverable error is reported with.
 pub struct ErrorInfo {
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub component_stack: Option<String>,
 }
 
 /// What a caught error is reported with.
 pub struct CaughtErrorInfo {
+    #[cfg_attr(rust_js, rust_js::nullable, rust_js::optional)]
     pub component_stack: Option<String>,
     pub error_boundary: Option<&'static Unknown>,
 }

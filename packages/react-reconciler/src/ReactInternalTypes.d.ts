@@ -193,12 +193,12 @@ export interface Fiber {
 
 /** What an uncaught or a recoverable error is reported with. */
 export interface ErrorInfo {
-  componentStack?: string | undefined;
+  componentStack?: string | null | undefined;
 }
 
 /** What a caught error is reported with. */
 export interface CaughtErrorInfo {
-  componentStack?: string | undefined;
+  componentStack?: string | null | undefined;
   errorBoundary?: unknown;
 }
 

@@ -4839,7 +4839,7 @@ function flushGestureAnimations() {
 }
 
 function makeErrorInfo(componentStack) {
-  const errorInfo = {componentStack: componentStack ?? undefined};
+  const errorInfo = {componentStack};
   if (__DEV__) {
     Object.defineProperty(errorInfo, 'digest', {
       get() {
@@ -4913,7 +4913,7 @@ function flushPassiveEffects() {
   // flushPassiveEffectsImpl
   const root = $unwrap(
     pendingEffectsRoot,
-    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5171:63',
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5172:63',
   );
   // Cache and clear the remaining lanes flag; it must be reset since this
   // method can be called from various places, not always from completeRoot
@@ -4975,7 +4975,7 @@ function flushPassiveEffectsImpl() {
   pendingEffectsRoot = null;
   const root = $unwrap(
     old,
-    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5198:44',
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5199:44',
   ); // Clear for GC purposes.
   const lanes = pendingEffectsLanes;
   pendingEffectsStatus = NO_PENDING_EFFECTS;
@@ -4994,7 +4994,7 @@ function flushPassiveEffectsImpl() {
   if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
     throw $panic(
       'Cannot flush passive effects while already rendering.',
-      'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5214:9',
+      'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5215:9',
     );
   }
 
@@ -5087,7 +5087,7 @@ function flushPassiveEffectsImpl() {
           ),
           null,
         ),
-        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5298:61',
+        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5299:61',
       );
       currentEndTime = null;
       scheduleCallback(IdleSchedulerPriority, () => {
@@ -5432,7 +5432,7 @@ export function resolveRetryWakeable(boundaryFiber, wakeable) {
     default:
       throw $panic(
         'Pinged unknown suspense boundary type. This is probably a bug in React.',
-        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5675:13',
+        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5676:13',
       );
   }
 
@@ -5457,7 +5457,7 @@ function throwForcedInfiniteRenderLoopError(root, renderLanes) {
   }
   throw $panic(
     'Maximum update depth exceeded. This could be an infinite loop. This can happen when a component repeatedly calls setState during render phase or inside useLayoutEffect, causing infinite render loop. React limits the number of nested updates to prevent infinite loops.',
-    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5699:5',
+    'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5700:5',
   );
 }
 
@@ -5494,7 +5494,7 @@ export function throwIfInfiniteUpdateLoopDetected(
         } else {
           throw $panic(
             'Maximum update depth exceeded. This can happen when a component repeatedly calls setState inside componentWillUpdate or componentDidUpdate. React limits the number of nested updates to prevent infinite loops.',
-            'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5740:21',
+            'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5741:21',
           );
         }
       } else if (updateKind === NESTED_UPDATE_PHASE_SPAWN) {
@@ -5512,7 +5512,7 @@ export function throwIfInfiniteUpdateLoopDetected(
     } else {
       throw $panic(
         'Maximum update depth exceeded. This can happen when a component repeatedly calls setState inside componentWillUpdate or componentDidUpdate. React limits the number of nested updates to prevent infinite loops.',
-        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5763:13',
+        'packages/react-reconciler/src/ReactFiberWorkLoop.rs:5764:13',
       );
     }
   }

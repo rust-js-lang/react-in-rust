@@ -5063,6 +5063,7 @@ fn flush_gesture_animations() {
     ensure_root_is_scheduled(&root);
 }
 
+#[cfg_attr(rust_js, rust_js::nullable(component_stack))]
 fn make_error_info(component_stack: Option<String>) -> ErrorInfo {
     let error_info = ErrorInfo { component_stack };
     if __DEV__ {
