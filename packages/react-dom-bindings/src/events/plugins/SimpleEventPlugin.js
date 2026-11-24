@@ -29,7 +29,7 @@ import {
   ANIMATION_START,
   TRANSITION_END,
 } from '../DOMEventNames.js';
-import {topLevelEventsToReactNames as topLevelEventsToReactNames$1} from '../DOMEventProperties.js';
+import {topLevelEventsToReactNames} from '../DOMEventProperties.js';
 import {
   accumulateEventHandleNonManagedNodeListeners,
   accumulateSinglePhaseListeners,
@@ -42,7 +42,7 @@ import {
 import getEventCharCode from '../getEventCharCode.js';
 
 import {enableCreateEventHandleAPI} from 'shared/ReactFeatureFlags';
-import {$someGet, $someValue, $stdSites, $withBorrow} from '@rust-js/std';
+import {$someGet, $someValue} from '@rust-js/std';
 
 export {registerSimpleEvents as registerEvents} from '../DOMEventProperties.js';
 
@@ -55,13 +55,7 @@ export function extractEvents(
   eventSystemFlags,
   targetContainer,
 ) {
-  const withBorrow = $withBorrow(
-    topLevelEventsToReactNames$1,
-    topLevelEventsToReactNames =>
-      $someGet(topLevelEventsToReactNames, domEventName),
-    $stdSites.localKeyWithBorrow[0],
-    true,
-  );
+  const withBorrow = $someGet(topLevelEventsToReactNames, domEventName);
   if (withBorrow == null) {
     return;
   }
