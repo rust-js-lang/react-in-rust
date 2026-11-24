@@ -11,7 +11,7 @@ import hasOwnProperty from './hasOwnProperty.js';
 import {REACT_ELEMENT_TYPE} from './ReactSymbols.js';
 
 import getComponentNameFromType from './getComponentNameFromType.js';
-import {$unwrap} from '@rust-js/std';
+import {$repeatText, $unwrap} from '@rust-js/std';
 
 // Showing wider objects in the devtools is not useful.
 const OBJECT_WIDTH_LIMIT = 100;
@@ -68,7 +68,7 @@ export function addObjectToProperties(object, properties, indent, prefix) {
       addValueToProperties(key, value, properties, indent, prefix);
       if (addedProperties >= OBJECT_WIDTH_LIMIT) {
         properties.push([
-          `${prefix}${'\xa0\xa0'.repeat(indent)}Only ${OBJECT_WIDTH_LIMIT} properties are shown. React will not log more properties of this object.`,
+          `${prefix}${$repeatText('\xa0\xa0', indent)}Only ${OBJECT_WIDTH_LIMIT} properties are shown. React will not log more properties of this object.`,
           '',
         ]);
         break;
@@ -116,7 +116,7 @@ export function addValueToProperties(
             break;
           }
           properties.push([
-            prefix + '\xa0\xa0'.repeat(indent) + propertyName,
+            prefix + $repeatText('\xa0\xa0', indent) + propertyName,
             '<' + typeName,
           ]);
           if (key !== null) {
@@ -188,7 +188,7 @@ export function addValueToProperties(
             break;
           } else if (kind === 'Entries') {
             properties.push([
-              prefix + '\xa0\xa0'.repeat(indent) + propertyName,
+              prefix + $repeatText('\xa0\xa0', indent) + propertyName,
               '',
             ]);
             for (const entry of value.slice(0, OBJECT_WIDTH_LIMIT)) {
@@ -254,7 +254,7 @@ export function addValueToProperties(
             }
           }
           properties.push([
-            '\xa0\xa0'.repeat(indent) + propertyName,
+            $repeatText('\xa0\xa0', indent) + propertyName,
             'Promise',
           ]);
           return;
@@ -269,7 +269,7 @@ export function addValueToProperties(
           }
         }
         properties.push([
-          prefix + '\xa0\xa0'.repeat(indent) + propertyName,
+          prefix + $repeatText('\xa0\xa0', indent) + propertyName,
           objectName === 'Object' ? (indent < 3 ? '' : '…') : objectName,
         ]);
         if (indent < 3) {
@@ -307,7 +307,10 @@ export function addValueToProperties(
       desc = String(value);
       break;
   }
-  properties.push([prefix + '\xa0\xa0'.repeat(indent) + propertyName, desc]);
+  properties.push([
+    prefix + $repeatText('\xa0\xa0', indent) + propertyName,
+    desc,
+  ]);
 }
 
 const REMOVED = '-\xa0';
@@ -331,7 +334,7 @@ export function addObjectDiffToProperties(prev, next, properties, indent) {
     }
 
     if (!(key in next)) {
-      properties.push([REMOVED + '\xa0\xa0'.repeat(indent) + key, '…']);
+      properties.push([REMOVED + $repeatText('\xa0\xa0', indent) + key, '…']);
       isDeeplyEqual = false;
     }
     prevPropertiesChecked++;
@@ -449,7 +452,7 @@ export function addObjectDiffToProperties(prev, next, properties, indent) {
         isDeeplyEqual = false;
       }
     } else {
-      properties.push([ADDED + '\xa0\xa0'.repeat(indent) + key, '…']);
+      properties.push([ADDED + $repeatText('\xa0\xa0', indent) + key, '…']);
       isDeeplyEqual = false;
     }
 

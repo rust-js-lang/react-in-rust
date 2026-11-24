@@ -32,6 +32,7 @@ import {
   $borrow,
   $catchable,
   $index,
+  $repeatText,
   $toLowercase,
   $unborrow,
 } from '@rust-js/std';
@@ -62,15 +63,15 @@ function findNotableNode(node, indent) {
 }
 
 function indentation(indent) {
-  return '  ' + '  '.repeat(indent);
+  return '  ' + $repeatText('  ', indent);
 }
 
 function added(indent) {
-  return '+ ' + '  '.repeat(indent);
+  return '+ ' + $repeatText('  ', indent);
 }
 
 function removed(indent) {
-  return '- ' + '  '.repeat(indent);
+  return '- ' + $repeatText('  ', indent);
 }
 
 function describeFiberType(fiber) {

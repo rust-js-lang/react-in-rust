@@ -20,7 +20,7 @@ import isArray from './isArray.js';
 import getPrototypeOf from './getPrototypeOf.js';
 
 import {enableViewTransition} from './ReactFeatureFlags.js';
-import {$catchable} from '@rust-js/std';
+import {$catchable, $repeatText} from '@rust-js/std';
 
 // Used for DEV messages to keep track of which parent rendered some props,
 // in case they error.
@@ -303,7 +303,7 @@ export function describeObjectForErrorMessage(objectOrArray, expandedName) {
     return str;
   }
   if (start !== undefined && length > 0) {
-    const highlight = ' '.repeat(start) + '^'.repeat(length);
+    const highlight = $repeatText(' ', start) + $repeatText('^', length);
     return '\n  ' + str + '\n  ' + highlight;
   }
   return '\n  ' + str;

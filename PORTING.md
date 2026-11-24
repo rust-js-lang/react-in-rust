@@ -2141,6 +2141,15 @@ These forms are decided:
   a no-op: PureComponent reaches them through its prototype chain as
   before, and `Object.hasOwn(PureComponent.prototype, "setState")` is false.
   A call without `new` throws. 6 files, +0.06% of the port's JS.
+- **rp2487** (the user, 2026-11-24, rust-js #2487): a `str`'s `repeat(n)`
+  of a count rust-js can't bound reads `$repeatText(text, n)`, std's
+  capacity checks first, where upstream writes `text.repeat(n)`: past
+  `usize::MAX` bytes, or `isize::MAX`, it panics `capacity overflow` as
+  std's does, where JS's `repeat` threw its own `RangeError`. A constant
+  count, one a test bounds, or empty text stays `text.repeat(n)`.
+  createReactNoop's and ReactFiberHydrationDiffs' indents,
+  ReactPerformanceTrackProperties' `'\xa0\xa0'.repeat(indent)` and
+  ReactSerializationErrors' highlight: 4 files, 17 lines.
 
 ## Committing
 

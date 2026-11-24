@@ -38,6 +38,7 @@ import {
   $displayF64,
   $live,
   $panic,
+  $repeatText,
   $stringPanic,
   $toUppercase,
   $unwindsOn,
@@ -1440,7 +1441,7 @@ function createReactNoop(reconciler, useMutation) {
       function logHostInstances(log, children, depth) {
         for (let i = 0; i < children.length; i++) {
           const child = children[i];
-          const indent = '  '.repeat(depth);
+          const indent = $repeatText('  ', depth);
           if (!Array.isArray(child.children)) {
             log(indent + '- ' + child.text);
           } else if (child.text != null) {
@@ -1458,12 +1459,12 @@ function createReactNoop(reconciler, useMutation) {
       }
 
       function logUpdateQueue(log, updateQueue, depth) {
-        log('  '.repeat((depth + 1) >>> 0) + 'QUEUED UPDATES');
+        log($repeatText('  ', (depth + 1) >>> 0) + 'QUEUED UPDATES');
         const update = updateQueue.firstBaseUpdate;
         if (update != null) {
           while (true) {
             log(
-              '  '.repeat((depth + 1) >>> 0) + '~',
+              $repeatText('  ', (depth + 1) >>> 0) + '~',
               '[' + String(update.expirationTime) + ']',
             );
           }
@@ -1479,7 +1480,7 @@ function createReactNoop(reconciler, useMutation) {
           if (pendingUpdate != null) {
             do {
               log(
-                '  '.repeat((depth + 1) >>> 0) + '~',
+                $repeatText('  ', (depth + 1) >>> 0) + '~',
                 '[' + String(pendingUpdate.expirationTime) + ']',
               );
             } while (pendingUpdate !== firstPending);
@@ -1490,7 +1491,7 @@ function createReactNoop(reconciler, useMutation) {
       function logFiber(log, fiber, depth) {
         const type = fiber.type;
         const value =
-          '  '.repeat(depth) +
+          $repeatText('  ', depth) +
           // need to explicitly coerce Symbol to a string
           '- ';
         let tmp;
