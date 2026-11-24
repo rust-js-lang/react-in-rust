@@ -20,9 +20,88 @@
 // ecosystem is MurmurHash3, and almost all implementations I could find used
 // some version of the implementation by Gary Court inlined below.
 
-import {$encodeUtf16, $index} from '@rust-js/std';
+import {
+  $checkArray,
+  $checkBool,
+  $checkF64,
+  $checkI32,
+  $checkShape,
+  $checkStr,
+  $encodeUtf16,
+  $index,
+} from '@rust-js/std';
+
+const checkPostponedState = /* @__PURE__ */ $checkShape(
+  () => ({progressiveChunkSize: $checkF64}),
+  'react_server#e6a613c2ba24c354::react_fizz_server::PostponedState',
+  'a PostponedState',
+);
+
+const checkTask = /* @__PURE__ */ $checkShape(
+  () => ({}),
+  'react_server#e6a613c2ba24c354::react_fizz_server::Task',
+  'a Task',
+);
+
+const checkSegment = /* @__PURE__ */ $checkShape(() => ({
+  index: $checkF64,
+  children: (value, where, none) =>
+    $checkArray(value, where, none, checkSegment),
+  preambleChildren: (value, where, none) =>
+    $checkArray(value, where, none, checkSegment),
+}));
+
+const checkPreamble = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkSuspenseBoundary = /* @__PURE__ */ $checkShape(() => ({
+  completedSegments: (value, where, none) =>
+    $checkArray(value, where, none, checkSegment),
+  defer: $checkBool,
+  preamble: [checkPreamble, 'nullish'],
+}));
+
+const checkRequest = /* @__PURE__ */ $checkShape(() => ({
+  progressiveChunkSize: $checkF64,
+  pingedTasks: (value, where, none) =>
+    $checkArray(value, where, none, checkTask),
+  clientRenderedBoundaries: (value, where, none) =>
+    $checkArray(value, where, none, checkSuspenseBoundary),
+  completedBoundaries: (value, where, none) =>
+    $checkArray(value, where, none, checkSuspenseBoundary),
+  partialBoundaries: (value, where, none) =>
+    $checkArray(value, where, none, checkSuspenseBoundary),
+}));
+
+const checkBackingFormData = /* @__PURE__ */ $checkShape(
+  () => ({prefix: $checkStr}),
+  'react_server#e6a613c2ba24c354::react_flight_reply_backing_form_data::BackingFormData',
+  'a BackingFormData',
+);
+
+const checkResponse = /* @__PURE__ */ $checkShape(() => ({
+  _prefix: $checkStr,
+  _formData: checkBackingFormData,
+}));
+
+const checkTask$1 = /* @__PURE__ */ $checkShape(() => ({id: $checkF64}));
+const checkDeferredDebugStore = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkRequest$1 = /* @__PURE__ */ $checkShape(() => ({
+  type: $checkI32,
+  pingedTasks: (value, where, none) =>
+    $checkArray(value, where, none, checkTask$1),
+  identifierPrefix: $checkStr,
+  deferredDebugObjects: [checkDeferredDebugStore, 'nullish'],
+}));
+
+const checkDestination = /* @__PURE__ */ $checkShape(() => ({}));
 
 export function createFastHashJS(key) {
+  $checkStr(key, 'createFastHashJS(key)');
+  return createFastHashJS$(key);
+}
+
+export function createFastHashJS$(key) {
   return murmurhash3_32_gc(key, 0);
 }
 

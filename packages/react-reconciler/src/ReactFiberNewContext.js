@@ -14,7 +14,11 @@ import {
   SuspenseComponent,
 } from './ReactWorkTags.js';
 
-import {NoLanes, isSubsetOfLanes, mergeLanes} from './ReactFiberLane.js';
+import {
+  NoLanes,
+  isSubsetOfLanes$ as isSubsetOfLanes,
+  mergeLanes$ as mergeLanes,
+} from './ReactFiberLane.js';
 
 import {
   DidPropagateContext,

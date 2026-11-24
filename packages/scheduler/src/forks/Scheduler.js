@@ -39,7 +39,14 @@ import {
   stopLoggingProfilingEvents,
 } from '../SchedulerProfiling.js';
 import {
+  $brand,
   $catchable,
+  $checkCallback,
+  $checkF64,
+  $checkShape,
+  $checkU8,
+  $checkWhole,
+  $checks,
   $cleanup,
   $live,
   $stdSites,
@@ -57,6 +64,29 @@ if (typeof performance === 'object' && typeof performance.now === 'function') {
   const initialTime = localDateNow();
   getCurrentTime = () => localDateNow() - initialTime;
 }
+
+export {
+  IdlePriority as unstable_IdlePriority,
+  ImmediatePriority as unstable_ImmediatePriority,
+  LowPriority as unstable_LowPriority,
+  NormalPriority as unstable_NormalPriority,
+  UserBlockingPriority as unstable_UserBlockingPriority,
+};
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  delay: [$checkF64, 'nullish'],
+}));
+
+const checkTask = /* @__PURE__ */ $checkShape(
+  () => ({
+    id: $checkF64,
+    priorityLevel: $checkU8,
+    startTime: $checkF64,
+    expirationTime: $checkF64,
+  }),
+  'scheduler#115552e8200523c3::Task',
+  'a Task',
+);
 
 // Max 31 bit integer. The max integer size in V8 for 32-bit systems.
 // Math.pow(2, 30) - 1
@@ -332,6 +362,12 @@ function workLoop(initialTime) {
 }
 
 export function unstable_runWithPriority(priorityLevel, eventHandler) {
+  $checkU8(priorityLevel, 'unstable_runWithPriority(priorityLevel)');
+  $checkCallback(eventHandler, 'unstable_runWithPriority(eventHandler)');
+  return unstable_runWithPriority$(priorityLevel, eventHandler);
+}
+
+export function unstable_runWithPriority$(priorityLevel, eventHandler) {
   switch (priorityLevel) {
     case ImmediatePriority:
     case UserBlockingPriority:
@@ -359,6 +395,7 @@ export function unstable_runWithPriority(priorityLevel, eventHandler) {
 }
 
 export function unstable_next(eventHandler) {
+  $checkCallback(eventHandler, 'unstable_next(eventHandler)');
   const current = currentPriorityLevel;
   let priorityLevel;
   switch (current) {
@@ -389,6 +426,11 @@ export function unstable_next(eventHandler) {
 }
 
 export function unstable_wrapCallback(callback) {
+  $checkCallback(callback, 'unstable_wrapCallback(callback)');
+  return unstable_wrapCallback$(callback);
+}
+
+export function unstable_wrapCallback$(callback) {
   const parentPriorityLevel = currentPriorityLevel;
   return function (...args) {
     // This is a fork of runWithPriority, inlined for performance.
@@ -408,6 +450,17 @@ export function unstable_wrapCallback(callback) {
 }
 
 export function unstable_scheduleCallback(priorityLevel, callback, options) {
+  $checkU8(priorityLevel, 'unstable_scheduleCallback(priorityLevel)');
+  $checkWhole(
+    checkOptions,
+    options,
+    'unstable_scheduleCallback(options)',
+    'nullish',
+  );
+  return unstable_scheduleCallback$(priorityLevel, callback, options);
+}
+
+export function unstable_scheduleCallback$(priorityLevel, callback, options) {
   const currentTime = getCurrentTime();
 
   const delay = options?.delay;
@@ -441,7 +494,7 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
   const expirationTime = startTime + timeout;
 
   const id = taskIdCounter++;
-  const newTask = {
+  const newTask = $brand('scheduler#115552e8200523c3::Task', {
     id,
     callback,
     priorityLevel,
@@ -449,7 +502,7 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
     expirationTime,
     sortIndex: -1,
     isQueued: undefined,
-  };
+  });
   if (enableProfiling) {
     newTask.isQueued = false;
   }
@@ -501,6 +554,11 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
 }
 
 export function unstable_cancelCallback(task) {
+  $checks('unstable_cancelCallback(task)', task, checkTask);
+  return unstable_cancelCallback$(task);
+}
+
+export function unstable_cancelCallback$(task) {
   if (enableProfiling && task.isQueued) {
     const currentTime = getCurrentTime();
     markTaskCanceled(task, currentTime);
@@ -543,6 +601,11 @@ let frameInterval = frameYieldMs;
 let startTime = -1;
 
 export function unstable_forceFrameRate(fps) {
+  $checkF64(fps, 'unstable_forceFrameRate(fps)');
+  return unstable_forceFrameRate$(fps);
+}
+
+export function unstable_forceFrameRate$(fps) {
   if (!(0 <= fps && fps <= 125)) {
     console.error(
       'forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported',
@@ -659,14 +722,6 @@ function cancelHostTimeout() {
   }
   taskTimeoutId = undefined;
 }
-
-export {
-  IdlePriority as unstable_IdlePriority,
-  ImmediatePriority as unstable_ImmediatePriority,
-  LowPriority as unstable_LowPriority,
-  NormalPriority as unstable_NormalPriority,
-  UserBlockingPriority as unstable_UserBlockingPriority,
-};
 
 export const unstable_Profiling = enableProfiling
   ? {

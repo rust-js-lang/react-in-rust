@@ -14,7 +14,7 @@ import {
 } from 'react-client/src/ReactFlightClientConfig';
 
 import hasOwnProperty from 'shared/hasOwnProperty';
-import {$index, $stringPanic} from '@rust-js/std';
+import {$checkStr, $index, $stringPanic} from '@rust-js/std';
 
 // The reason this function needs to defined here in this file instead of just
 // being exported directly from the TurbopackDestination... file is because the
@@ -23,6 +23,7 @@ import {$index, $stringPanic} from '@rust-js/std';
 // though that risks it getting used in places it shouldn't be. This is unfortunate
 // but currently it seems to be the best option we have.
 export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
+  $checkStr(nonce, 'prepareDestinationForModule(nonce)', 'nullish');
   const chunks = metadata[1];
   nonce != null
     ? prepareDestinationWithChunks(moduleLoading, chunks, nonce)
@@ -62,6 +63,7 @@ export function resolveClientReference(bundlerConfig, metadata) {
 }
 
 export function resolveServerReference(bundlerConfig, id) {
+  $checkStr(id, 'resolveServerReference(id)');
   let name = '';
   let resolvedModuleData = bundlerConfig[id];
   if (resolvedModuleData != null) {

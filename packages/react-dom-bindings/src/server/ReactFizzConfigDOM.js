@@ -23,9 +23,9 @@ import {
 } from 'shared/ReactFeatureFlags';
 
 import {
-  flushResources,
-  getRenderState,
-  getResumableState,
+  flushResources$ as flushResources,
+  getRenderState$ as getRenderState,
+  getResumableState$ as getResumableState,
   resolveRequest,
 } from 'react-server/src/ReactFizzServer';
 
@@ -73,6 +73,14 @@ import {
 import {doctypeChunk as doctypeChunk$1} from 'react-server/src/ReactFizzConfig';
 import {
   $catchable,
+  $checkBool,
+  $checkF64,
+  $checkI32,
+  $checkResult,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $checks,
   $displayF64,
   $index,
   $panic,
@@ -180,6 +188,51 @@ const DEFAULT_HEADERS_CAPACITY_IN_UTF16_CODE_UNITS = 2000;
 
 const didWarnForNewBooleanPropsWithEmptyValue = {};
 
+const checkResumableState = /* @__PURE__ */ $checkShape(() => ({
+  idPrefix: $checkStr,
+  streamingFormat: $checkI32,
+}));
+
+const checkPreambleState = /* @__PURE__ */ $checkShape(() => ({}));
+const checkExternalRuntimeScript = /* @__PURE__ */ $checkShape(() => ({
+  src: $checkStr,
+}));
+const checkConnectResources = /* @__PURE__ */ $checkShape(() => ({}));
+const checkResets = /* @__PURE__ */ $checkShape(() => ({
+  connect: checkConnectResources,
+}));
+const checkPreloads = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkNonceOption = /* @__PURE__ */ $checkShape(() => ({
+  script: [$checkStr, 'nullish'],
+  style: [$checkStr, 'nullish'],
+}));
+
+const checkRenderState = /* @__PURE__ */ $checkShape(() => ({
+  preamble: checkPreambleState,
+  externalRuntimeScript: [checkExternalRuntimeScript, 'nullish'],
+  resets: checkResets,
+  preloads: checkPreloads,
+  nonce: checkNonceOption,
+}));
+
+const checkViewTransitionContext = /* @__PURE__ */ $checkShape(() => ({
+  update: $checkStr,
+  enter: $checkStr,
+  exit: $checkStr,
+  share: $checkStr,
+  parentEnter: $checkStr,
+  parentExit: $checkStr,
+  name: $checkStr,
+  autoName: $checkStr,
+}));
+
+const checkFormatContext = /* @__PURE__ */ $checkShape(() => ({
+  insertionMode: $checkI32,
+  tagScope: $checkI32,
+  viewTransition: [checkViewTransitionContext, 'nullish'],
+}));
+
 const PENDING = 0;
 const PRELOADED = 1;
 const PREAMBLE = 2;
@@ -247,6 +300,29 @@ function pushBootstrapScript(
 // if passed externalRuntimeConfig and the enableFizzExternalRuntime feature flag
 // is set, the server will send instructions via data attributes (instead of inline scripts)
 export function createRenderState(
+  resumableState,
+  nonce,
+  externalRuntimeConfig,
+  importMap,
+  onHeaders,
+  maxHeadersLength,
+) {
+  $checks(
+    'createRenderState(resumableState)',
+    resumableState,
+    checkResumableState,
+  );
+  return createRenderState$(
+    resumableState,
+    nonce,
+    externalRuntimeConfig,
+    importMap,
+    onHeaders,
+    maxHeadersLength,
+  );
+}
+
+export function createRenderState$(
   resumableState,
   nonce,
   externalRuntimeConfig,
@@ -489,10 +565,45 @@ export function createRenderState(
 }
 
 export function resumeRenderState(resumableState, nonce) {
-  return createRenderState(resumableState, nonce);
+  $checks(
+    'resumeRenderState(resumableState)',
+    resumableState,
+    checkResumableState,
+  );
+  return resumeRenderState$(resumableState, nonce);
+}
+
+export function resumeRenderState$(resumableState, nonce) {
+  return createRenderState$(resumableState, nonce);
 }
 
 export function createResumableState(
+  identifierPrefix,
+  externalRuntimeConfig,
+  bootstrapScriptContent,
+  bootstrapScripts,
+  bootstrapModules,
+) {
+  $checkStr(
+    identifierPrefix,
+    'createResumableState(identifierPrefix)',
+    'nullish',
+  );
+  $checkStr(
+    bootstrapScriptContent,
+    'createResumableState(bootstrapScriptContent)',
+    'nullish',
+  );
+  return createResumableState$(
+    identifierPrefix,
+    externalRuntimeConfig,
+    bootstrapScriptContent,
+    bootstrapScripts,
+    bootstrapModules,
+  );
+}
+
+export function createResumableState$(
   identifierPrefix,
   externalRuntimeConfig,
   bootstrapScriptContent,
@@ -535,6 +646,17 @@ export function createResumableState(
 }
 
 export function resetResumableState(resumableState, renderState) {
+  $checks(
+    'resetResumableState(resumableState, renderState)',
+    resumableState,
+    checkResumableState,
+    renderState,
+    checkRenderState,
+  );
+  return resetResumableState$(resumableState, renderState);
+}
+
+export function resetResumableState$(resumableState, renderState) {
   // Resets the resumable state based on what didn't manage to fully flush in the render state.
   // This currently assumes nothing was flushed.
   resumableState.nextFormID = 0;
@@ -552,6 +674,15 @@ export function resetResumableState(resumableState, renderState) {
 }
 
 export function completeResumableState(resumableState) {
+  $checks(
+    'completeResumableState(resumableState)',
+    resumableState,
+    checkResumableState,
+  );
+  return completeResumableState$(resumableState);
+}
+
+export function completeResumableState$(resumableState) {
   // This function is called when we have completed a prerender and there is a shell.
   resumableState.bootstrapScriptContent = undefined;
   resumableState.bootstrapScripts = undefined;
@@ -614,10 +745,20 @@ function createFormatContext(
 }
 
 export function canHavePreamble(formatContext) {
+  $checks('canHavePreamble(formatContext)', formatContext, checkFormatContext);
+  return canHavePreamble$(formatContext);
+}
+
+export function canHavePreamble$(formatContext) {
   return formatContext.insertionMode < HTML_MODE;
 }
 
 export function createRootFormatContext(namespaceURI) {
+  $checkStr(namespaceURI, 'createRootFormatContext(namespaceURI)', 'nullish');
+  return createRootFormatContext$(namespaceURI);
+}
+
+export function createRootFormatContext$(namespaceURI) {
   const insertionMode =
     namespaceURI === 'http://www.w3.org/2000/svg'
       ? SVG_MODE
@@ -628,6 +769,17 @@ export function createRootFormatContext(namespaceURI) {
 }
 
 export function getChildFormatContext(parentContext, type, props) {
+  $checks(
+    'getChildFormatContext(parentContext, type)',
+    parentContext,
+    checkFormatContext,
+    type,
+    $checkStr,
+  );
+  return getChildFormatContext$(parentContext, type, props);
+}
+
+export function getChildFormatContext$(parentContext, type, props) {
   const subtreeScope = parentContext.tagScope & SUBTREE_SCOPE;
   switch (type) {
     case 'noscript':
@@ -740,6 +892,20 @@ export function getSuspenseFallbackFormatContext(
   resumableState,
   parentContext,
 ) {
+  $checks(
+    'getSuspenseFallbackFormatContext(resumableState, parentContext)',
+    resumableState,
+    checkResumableState,
+    parentContext,
+    checkFormatContext,
+  );
+  return getSuspenseFallbackFormatContext$(resumableState, parentContext);
+}
+
+export function getSuspenseFallbackFormatContext$(
+  resumableState,
+  parentContext,
+) {
   if (parentContext.tagScope & UPDATE_SCOPE) {
     // If we're rendering a Suspense in fallback mode and that is inside a ViewTransition,
     // which hasn't disabled updates, then revealing it might animate the parent so we need
@@ -755,6 +921,20 @@ export function getSuspenseFallbackFormatContext(
 }
 
 export function getSuspenseContentFormatContext(resumableState, parentContext) {
+  $checks(
+    'getSuspenseContentFormatContext(resumableState, parentContext)',
+    resumableState,
+    checkResumableState,
+    parentContext,
+    checkFormatContext,
+  );
+  return getSuspenseContentFormatContext$(resumableState, parentContext);
+}
+
+export function getSuspenseContentFormatContext$(
+  resumableState,
+  parentContext,
+) {
   const viewTransition = getSuspenseViewTransition(
     parentContext.viewTransition,
   );
@@ -787,6 +967,54 @@ export function getViewTransitionFormatContext(
   hasParentExitHandler,
   name,
   autoName, // name or an autogenerated unique name
+) {
+  $checks(
+    'getViewTransitionFormatContext(resumableState, parentContext, hasParentEnterHandler, hasParentExitHandler, autoName)',
+    resumableState,
+    checkResumableState,
+    parentContext,
+    checkFormatContext,
+    hasParentEnterHandler,
+    $checkBool,
+    hasParentExitHandler,
+    $checkBool,
+    autoName,
+    $checkStr,
+  );
+  $checkStr(update, 'getViewTransitionFormatContext(update)', 'nullish');
+  $checkStr(enter, 'getViewTransitionFormatContext(enter)', 'nullish');
+  $checkStr(exit, 'getViewTransitionFormatContext(exit)', 'nullish');
+  $checkStr(share, 'getViewTransitionFormatContext(share)', 'nullish');
+  $checkStr(name, 'getViewTransitionFormatContext(name)', 'nullish');
+  return getViewTransitionFormatContext$(
+    resumableState,
+    parentContext,
+    update,
+    enter,
+    exit,
+    share,
+    parentEnter,
+    parentExit,
+    hasParentEnterHandler,
+    hasParentExitHandler,
+    name,
+    autoName,
+  );
+}
+
+export function getViewTransitionFormatContext$(
+  resumableState,
+  parentContext,
+  update,
+  enter,
+  exit,
+  share,
+  parentEnter,
+  parentExit,
+  hasParentEnterHandler,
+  hasParentExitHandler,
+  name,
+  autoName,
 ) {
   // We're entering a <ViewTransition>. Normalize props.
   update ??= 'auto';
@@ -899,10 +1127,32 @@ export function getViewTransitionFormatContext(
 }
 
 export function isPreambleContext(formatContext) {
+  $checks(
+    'isPreambleContext(formatContext)',
+    formatContext,
+    checkFormatContext,
+  );
+  return isPreambleContext$(formatContext);
+}
+
+export function isPreambleContext$(formatContext) {
   return formatContext.insertionMode === HTML_HEAD_MODE;
 }
 
 export function makeId(resumableState, treeId, localId) {
+  $checks(
+    'makeId(resumableState, treeId, localId)',
+    resumableState,
+    checkResumableState,
+    treeId,
+    $checkStr,
+    localId,
+    $checkF64,
+  );
+  return makeId$(resumableState, treeId, localId);
+}
+
+export function makeId$(resumableState, treeId, localId) {
   const idPrefix = resumableState.idPrefix;
 
   let id = '_' + idPrefix + 'R_' + treeId;
@@ -924,6 +1174,19 @@ function encodeHTMLTextNode(text) {
 const textSeparator = stringToPrecomputedChunk('<!-- -->');
 
 export function pushTextInstance(target, text, renderState, textEmbedded) {
+  $checks(
+    'pushTextInstance(text, renderState, textEmbedded)',
+    text,
+    $checkStr,
+    renderState,
+    checkRenderState,
+    textEmbedded,
+    $checkBool,
+  );
+  return pushTextInstance$(target, text, renderState, textEmbedded);
+}
+
+export function pushTextInstance$(target, text, renderState, textEmbedded) {
   if (text === '') {
     // Empty text doesn't have a DOM node representation and the hydration is aware of this.
     return textEmbedded;
@@ -938,6 +1201,24 @@ export function pushTextInstance(target, text, renderState, textEmbedded) {
 // Called when Fizz is done with a Segment. Currently the only purpose is to conditionally
 // emit a text separator when we don't know for sure it is safe to omit
 export function pushSegmentFinale(
+  target,
+  renderState,
+  lastPushedText,
+  textEmbedded,
+) {
+  $checks(
+    'pushSegmentFinale(renderState, lastPushedText, textEmbedded)',
+    renderState,
+    checkRenderState,
+    lastPushedText,
+    $checkBool,
+    textEmbedded,
+    $checkBool,
+  );
+  return pushSegmentFinale$(target, renderState, lastPushedText, textEmbedded);
+}
+
+export function pushSegmentFinale$(
   target,
   renderState,
   lastPushedText,
@@ -3812,8 +4093,58 @@ function startChunkForTag(tag) {
 }
 
 export const doctypeChunk = stringToPrecomputedChunk('<!DOCTYPE html>');
+const checkHoistableState = /* @__PURE__ */ $checkShape(() => ({}));
 
 export function pushStartInstance(
+  target,
+  type,
+  props,
+  resumableState,
+  renderState,
+  preambleState,
+  hoistableState,
+  formatContext,
+  textEmbedded,
+) {
+  $checks(
+    'pushStartInstance(type, resumableState, renderState, formatContext, textEmbedded)',
+    type,
+    $checkStr,
+    resumableState,
+    checkResumableState,
+    renderState,
+    checkRenderState,
+    formatContext,
+    checkFormatContext,
+    textEmbedded,
+    $checkBool,
+  );
+  $checkWhole(
+    checkPreambleState,
+    preambleState,
+    'pushStartInstance(preambleState)',
+    'nullish',
+  );
+  $checkWhole(
+    checkHoistableState,
+    hoistableState,
+    'pushStartInstance(hoistableState)',
+    'nullish',
+  );
+  return pushStartInstance$(
+    target,
+    type,
+    props,
+    resumableState,
+    renderState,
+    preambleState,
+    hoistableState,
+    formatContext,
+    textEmbedded,
+  );
+}
+
+export function pushStartInstance$(
   target,
   type,
   props,
@@ -4031,6 +4362,25 @@ export function pushEndInstance(
   resumableState,
   formatContext,
 ) {
+  $checks(
+    'pushEndInstance(type, resumableState, formatContext)',
+    type,
+    $checkStr,
+    resumableState,
+    checkResumableState,
+    formatContext,
+    checkFormatContext,
+  );
+  return pushEndInstance$(target, type, props, resumableState, formatContext);
+}
+
+export function pushEndInstance$(
+  target,
+  type,
+  props,
+  resumableState,
+  formatContext,
+) {
   switch (type) {
     // We expect title and script tags to always be pushed in a unit and never
     // return children. when we end up pushing the end tag we want to ensure
@@ -4085,6 +4435,17 @@ export function pushEndInstance(
 }
 
 export function hoistPreambleState(renderState, preambleState) {
+  $checks(
+    'hoistPreambleState(renderState, preambleState)',
+    renderState,
+    checkRenderState,
+    preambleState,
+    checkPreambleState,
+  );
+  return hoistPreambleState$(renderState, preambleState);
+}
+
+export function hoistPreambleState$(renderState, preambleState) {
   const rootPreamble = renderState.preamble;
   if (rootPreamble.htmlChunks == null) {
     const htmlChunks = preambleState.htmlChunks;
@@ -4114,6 +4475,17 @@ export function isPreambleReady(
   // as long as we have chunks for each of these tags.
   hasPendingPreambles,
 ) {
+  $checks(
+    'isPreambleReady(renderState, hasPendingPreambles)',
+    renderState,
+    checkRenderState,
+    hasPendingPreambles,
+    $checkBool,
+  );
+  return isPreambleReady$(renderState, hasPendingPreambles);
+}
+
+export function isPreambleReady$(renderState, hasPendingPreambles) {
   const preamble = renderState.preamble;
   // There are no remaining boundaries which might contain a preamble so
   // the preamble is as complete as it is going to get
@@ -4133,7 +4505,11 @@ function writeBootstrap(destination, renderState) {
   if (i < bootstrapChunks.length) {
     const lastChunk = bootstrapChunks[i];
     bootstrapChunks.length = 0;
-    return writeChunkAndReturn(destination, lastChunk);
+    return $checkResult(
+      writeChunkAndReturn(destination, lastChunk),
+      'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+      $checkBool,
+    );
   }
   return true;
 }
@@ -4157,10 +4533,37 @@ function writeShellTimeInstruction(destination, resumableState, renderState) {
   writeCompletedShellIdAttribute(destination, resumableState);
   writeChunk(destination, endOfStartTag);
   writeChunk(destination, shellTimeRuntimeScript);
-  return writeChunkAndReturn(destination, endInlineScript);
+  return $checkResult(
+    writeChunkAndReturn(destination, endInlineScript),
+    'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+    $checkBool,
+  );
 }
 
 export function writeCompletedRoot(
+  destination,
+  resumableState,
+  renderState,
+  isComplete,
+) {
+  $checks(
+    'writeCompletedRoot(resumableState, renderState, isComplete)',
+    resumableState,
+    checkResumableState,
+    renderState,
+    checkRenderState,
+    isComplete,
+    $checkBool,
+  );
+  return writeCompletedRoot$(
+    destination,
+    resumableState,
+    renderState,
+    isComplete,
+  );
+}
+
+export function writeCompletedRoot$(
   destination,
   resumableState,
   renderState,
@@ -4198,11 +4601,26 @@ const placeholder1 = stringToPrecomputedChunk('<template id="');
 const placeholder2 = stringToPrecomputedChunk('"></template>');
 
 export function writePlaceholder(destination, renderState, id) {
+  $checks(
+    'writePlaceholder(renderState, id)',
+    renderState,
+    checkRenderState,
+    id,
+    $checkF64,
+  );
+  return writePlaceholder$(destination, renderState, id);
+}
+
+export function writePlaceholder$(destination, renderState, id) {
   writeChunk(destination, placeholder1);
   writeChunk(destination, renderState.placeholderPrefix);
   const formattedID = stringToChunk(id.toString(16));
   writeChunk(destination, formattedID);
-  return writeChunkAndReturn(destination, placeholder2);
+  return $checkResult(
+    writeChunkAndReturn(destination, placeholder2),
+    'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+    $checkBool,
+  );
 }
 
 // Activity boundaries are encoded as comments.
@@ -4210,10 +4628,28 @@ const startActivityBoundary = stringToPrecomputedChunk('<!--&-->');
 const endActivityBoundary = stringToPrecomputedChunk('<!--/&-->');
 
 export function pushStartActivityBoundary(target, renderState) {
+  $checks(
+    'pushStartActivityBoundary(renderState)',
+    renderState,
+    checkRenderState,
+  );
+  return pushStartActivityBoundary$(target, renderState);
+}
+
+export function pushStartActivityBoundary$(target, renderState) {
   target.push(startActivityBoundary);
 }
 
 export function pushEndActivityBoundary(target, renderState) {
+  $checks(
+    'pushEndActivityBoundary(renderState)',
+    renderState,
+    checkRenderState,
+  );
+  return pushEndActivityBoundary$(target, renderState);
+}
+
+export function pushEndActivityBoundary$(target, renderState) {
   target.push(endActivityBoundary);
 }
 
@@ -4243,10 +4679,37 @@ const clientRenderedSuspenseBoundaryError2 =
   stringToPrecomputedChunk('></template>');
 
 export function writeStartCompletedSuspenseBoundary(destination, renderState) {
-  return writeChunkAndReturn(destination, startCompletedSuspenseBoundary);
+  $checks(
+    'writeStartCompletedSuspenseBoundary(renderState)',
+    renderState,
+    checkRenderState,
+  );
+  return writeStartCompletedSuspenseBoundary$(destination, renderState);
+}
+
+export function writeStartCompletedSuspenseBoundary$(destination, renderState) {
+  return $checkResult(
+    writeChunkAndReturn(destination, startCompletedSuspenseBoundary),
+    'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+    $checkBool,
+  );
 }
 
 export function writeStartPendingSuspenseBoundary(
+  destination,
+  renderState,
+  id,
+) {
+  $checks(
+    'writeStartPendingSuspenseBoundary(renderState)',
+    renderState,
+    checkRenderState,
+  );
+  $checkF64(id, 'writeStartPendingSuspenseBoundary(id)', 'nullish');
+  return writeStartPendingSuspenseBoundary$(destination, renderState, id);
+}
+
+export function writeStartPendingSuspenseBoundary$(
   destination,
   renderState,
   id,
@@ -4262,7 +4725,11 @@ export function writeStartPendingSuspenseBoundary(
 
   writeChunk(destination, renderState.boundaryPrefix);
   writeChunk(destination, stringToChunk(id.toString(16)));
-  return writeChunkAndReturn(destination, startPendingSuspenseBoundary2);
+  return $checkResult(
+    writeChunkAndReturn(destination, startPendingSuspenseBoundary2),
+    'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+    $checkBool,
+  );
 }
 
 /** An attribute of a client rendered boundary's error, `data-dgst` say. */
@@ -4280,7 +4747,54 @@ export function writeStartClientRenderedSuspenseBoundary(
   errorStack,
   errorComponentStack,
 ) {
-  writeChunkAndReturn(destination, startClientRenderedSuspenseBoundary);
+  $checks(
+    'writeStartClientRenderedSuspenseBoundary(renderState)',
+    renderState,
+    checkRenderState,
+  );
+  $checkStr(
+    errorDigest,
+    'writeStartClientRenderedSuspenseBoundary(errorDigest)',
+    'nullish',
+  );
+  $checkStr(
+    errorMessage,
+    'writeStartClientRenderedSuspenseBoundary(errorMessage)',
+    'nullish',
+  );
+  $checkStr(
+    errorStack,
+    'writeStartClientRenderedSuspenseBoundary(errorStack)',
+    'nullish',
+  );
+  $checkStr(
+    errorComponentStack,
+    'writeStartClientRenderedSuspenseBoundary(errorComponentStack)',
+    'nullish',
+  );
+  return writeStartClientRenderedSuspenseBoundary$(
+    destination,
+    renderState,
+    errorDigest,
+    errorMessage,
+    errorStack,
+    errorComponentStack,
+  );
+}
+
+export function writeStartClientRenderedSuspenseBoundary$(
+  destination,
+  renderState,
+  errorDigest,
+  errorMessage,
+  errorStack,
+  errorComponentStack,
+) {
+  $checkResult(
+    writeChunkAndReturn(destination, startClientRenderedSuspenseBoundary),
+    'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+    $checkBool,
+  );
   writeChunk(destination, clientRenderedSuspenseBoundaryError1);
   if (errorDigest != null) {
     writeErrorAttribute(
@@ -4312,22 +4826,68 @@ export function writeStartClientRenderedSuspenseBoundary(
       );
     }
   }
-  return writeChunkAndReturn(destination, clientRenderedSuspenseBoundaryError2);
+  return $checkResult(
+    writeChunkAndReturn(destination, clientRenderedSuspenseBoundaryError2),
+    'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+    $checkBool,
+  );
 }
 
 export function writeEndCompletedSuspenseBoundary(destination, renderState) {
-  return writeChunkAndReturn(destination, endSuspenseBoundary);
+  $checks(
+    'writeEndCompletedSuspenseBoundary(renderState)',
+    renderState,
+    checkRenderState,
+  );
+  return writeEndCompletedSuspenseBoundary$(destination, renderState);
+}
+
+export function writeEndCompletedSuspenseBoundary$(destination, renderState) {
+  return $checkResult(
+    writeChunkAndReturn(destination, endSuspenseBoundary),
+    'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+    $checkBool,
+  );
 }
 
 export function writeEndPendingSuspenseBoundary(destination, renderState) {
-  return writeChunkAndReturn(destination, endSuspenseBoundary);
+  $checks(
+    'writeEndPendingSuspenseBoundary(renderState)',
+    renderState,
+    checkRenderState,
+  );
+  return writeEndPendingSuspenseBoundary$(destination, renderState);
+}
+
+export function writeEndPendingSuspenseBoundary$(destination, renderState) {
+  return $checkResult(
+    writeChunkAndReturn(destination, endSuspenseBoundary),
+    'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+    $checkBool,
+  );
 }
 
 export function writeEndClientRenderedSuspenseBoundary(
   destination,
   renderState,
 ) {
-  return writeChunkAndReturn(destination, endSuspenseBoundary);
+  $checks(
+    'writeEndClientRenderedSuspenseBoundary(renderState)',
+    renderState,
+    checkRenderState,
+  );
+  return writeEndClientRenderedSuspenseBoundary$(destination, renderState);
+}
+
+export function writeEndClientRenderedSuspenseBoundary$(
+  destination,
+  renderState,
+) {
+  return $checkResult(
+    writeChunkAndReturn(destination, endSuspenseBoundary),
+    'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+    $checkBool,
+  );
 }
 
 const startSegmentHTML = stringToPrecomputedChunk('<div hidden id="');
@@ -4367,6 +4927,24 @@ const startSegmentColGroup2 = stringToPrecomputedChunk('">');
 const endSegmentColGroup = stringToPrecomputedChunk('</colgroup></table>');
 
 export function writeStartSegment(destination, renderState, formatContext, id) {
+  $checks(
+    'writeStartSegment(renderState, formatContext, id)',
+    renderState,
+    checkRenderState,
+    formatContext,
+    checkFormatContext,
+    id,
+    $checkF64,
+  );
+  return writeStartSegment$(destination, renderState, formatContext, id);
+}
+
+export function writeStartSegment$(
+  destination,
+  renderState,
+  formatContext,
+  id,
+) {
   let start;
   let end;
   if (
@@ -4410,10 +4988,19 @@ export function writeStartSegment(destination, renderState, formatContext, id) {
   writeChunk(destination, start);
   writeChunk(destination, renderState.segmentPrefix);
   writeChunk(destination, stringToChunk(id.toString(16)));
-  return writeChunkAndReturn(destination, end);
+  return $checkResult(
+    writeChunkAndReturn(destination, end),
+    'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+    $checkBool,
+  );
 }
 
 export function writeEndSegment(destination, formatContext) {
+  $checks('writeEndSegment(formatContext)', formatContext, checkFormatContext);
+  return writeEndSegment$(destination, formatContext);
+}
+
+export function writeEndSegment$(destination, formatContext) {
   let end;
   switch (formatContext.insertionMode) {
     case ROOT_HTML_MODE:
@@ -4446,7 +5033,11 @@ export function writeEndSegment(destination, formatContext) {
         'packages/react-dom-bindings/src/server/ReactFizzConfigDOM.rs:4980:14',
       );
   }
-  return writeChunkAndReturn(destination, end);
+  return $checkResult(
+    writeChunkAndReturn(destination, end),
+    'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+    $checkBool,
+  );
 }
 
 const completeSegmentScript1Full = stringToPrecomputedChunk(
@@ -4463,6 +5054,29 @@ const completeSegmentData2 = stringToPrecomputedChunk('" data-pid="');
 const completeSegmentDataEnd = dataElementQuotedEnd;
 
 export function writeCompletedSegmentInstruction(
+  destination,
+  resumableState,
+  renderState,
+  contentSegmentID,
+) {
+  $checks(
+    'writeCompletedSegmentInstruction(resumableState, renderState, contentSegmentID)',
+    resumableState,
+    checkResumableState,
+    renderState,
+    checkRenderState,
+    contentSegmentID,
+    $checkF64,
+  );
+  return writeCompletedSegmentInstruction$(
+    destination,
+    resumableState,
+    renderState,
+    contentSegmentID,
+  );
+}
+
+export function writeCompletedSegmentInstruction$(
   destination,
   resumableState,
   renderState,
@@ -4502,8 +5116,16 @@ export function writeCompletedSegmentInstruction(
   writeChunk(destination, formattedID);
 
   return scriptFormat
-    ? writeChunkAndReturn(destination, completeSegmentScriptEnd)
-    : writeChunkAndReturn(destination, completeSegmentDataEnd);
+    ? $checkResult(
+        writeChunkAndReturn(destination, completeSegmentScriptEnd),
+        'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+        $checkBool,
+      )
+    : $checkResult(
+        writeChunkAndReturn(destination, completeSegmentDataEnd),
+        'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+        $checkBool,
+      );
 }
 
 const completeBoundaryScriptFunctionOnly = stringToPrecomputedChunk(
@@ -4536,6 +5158,33 @@ const completeBoundaryData3a = stringToPrecomputedChunk('" data-sty="');
 const completeBoundaryDataEnd = dataElementQuotedEnd;
 
 export function writeCompletedBoundaryInstruction(
+  destination,
+  resumableState,
+  renderState,
+  id,
+  hoistableState,
+) {
+  $checks(
+    'writeCompletedBoundaryInstruction(resumableState, renderState, id, hoistableState)',
+    resumableState,
+    checkResumableState,
+    renderState,
+    checkRenderState,
+    id,
+    $checkF64,
+    hoistableState,
+    checkHoistableState,
+  );
+  return writeCompletedBoundaryInstruction$(
+    destination,
+    resumableState,
+    renderState,
+    id,
+    hoistableState,
+  );
+}
+
+export function writeCompletedBoundaryInstruction$(
   destination,
   resumableState,
   renderState,
@@ -4653,8 +5302,16 @@ export function writeCompletedBoundaryInstruction(
     writeChunk(destination, completeBoundaryScript3b);
   }
   const writeMore = scriptFormat
-    ? writeChunkAndReturn(destination, completeBoundaryScriptEnd)
-    : writeChunkAndReturn(destination, completeBoundaryDataEnd);
+    ? $checkResult(
+        writeChunkAndReturn(destination, completeBoundaryScriptEnd),
+        'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+        $checkBool,
+      )
+    : $checkResult(
+        writeChunkAndReturn(destination, completeBoundaryDataEnd),
+        'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+        $checkBool,
+      );
   return writeBootstrap(destination, renderState) && writeMore;
 }
 
@@ -4699,6 +5356,57 @@ function writeClientRenderError(destination, scriptFormat, data, text) {
 }
 
 export function writeClientRenderBoundaryInstruction(
+  destination,
+  resumableState,
+  renderState,
+  id,
+  errorDigest,
+  errorMessage,
+  errorStack,
+  errorComponentStack,
+) {
+  $checks(
+    'writeClientRenderBoundaryInstruction(resumableState, renderState, id)',
+    resumableState,
+    checkResumableState,
+    renderState,
+    checkRenderState,
+    id,
+    $checkF64,
+  );
+  $checkStr(
+    errorDigest,
+    'writeClientRenderBoundaryInstruction(errorDigest)',
+    'nullish',
+  );
+  $checkStr(
+    errorMessage,
+    'writeClientRenderBoundaryInstruction(errorMessage)',
+    'nullish',
+  );
+  $checkStr(
+    errorStack,
+    'writeClientRenderBoundaryInstruction(errorStack)',
+    'nullish',
+  );
+  $checkStr(
+    errorComponentStack,
+    'writeClientRenderBoundaryInstruction(errorComponentStack)',
+    'nullish',
+  );
+  return writeClientRenderBoundaryInstruction$(
+    destination,
+    resumableState,
+    renderState,
+    id,
+    errorDigest,
+    errorMessage,
+    errorStack,
+    errorComponentStack,
+  );
+}
+
+export function writeClientRenderBoundaryInstruction$(
   destination,
   resumableState,
   renderState,
@@ -4795,9 +5503,17 @@ export function writeClientRenderBoundaryInstruction(
 
   return scriptFormat
     ? // ></script>
-      writeChunkAndReturn(destination, clientRenderScriptEnd)
+      $checkResult(
+        writeChunkAndReturn(destination, clientRenderScriptEnd),
+        'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+        $checkBool,
+      )
     : // "></template>
-      writeChunkAndReturn(destination, clientRenderDataEnd);
+      $checkResult(
+        writeChunkAndReturn(destination, clientRenderDataEnd),
+        'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+        $checkBool,
+      );
 }
 
 const regexForJSStringsInInstructionScripts = new RegExp(
@@ -4902,9 +5618,10 @@ function flushStyleTagsLateForBoundary(destination, styleQueue) {
       const rule = rules[j];
       writeChunk(destination, rule);
     }
-    destinationHasCapacity = writeChunkAndReturn(
-      destination,
-      lateStyleTagTemplateClose,
+    destinationHasCapacity = $checkResult(
+      writeChunkAndReturn(destination, lateStyleTagTemplateClose),
+      'react-server/src/ReactServerStreamConfig#writeChunkAndReturn',
+      $checkBool,
     );
 
     // We wrote style tags for this boundary and we may need to emit a script
@@ -4930,6 +5647,21 @@ function hasStylesToHoist(stylesheet) {
 }
 
 export function writeHoistablesForBoundary(
+  destination,
+  hoistableState,
+  renderState,
+) {
+  $checks(
+    'writeHoistablesForBoundary(hoistableState, renderState)',
+    hoistableState,
+    checkHoistableState,
+    renderState,
+    checkRenderState,
+  );
+  return writeHoistablesForBoundary$(destination, hoistableState, renderState);
+}
+
+export function writeHoistablesForBoundary$(
   destination,
   hoistableState,
   renderState,
@@ -5127,6 +5859,29 @@ export function writePreambleStart(
   renderState,
   skipBlockingShell,
 ) {
+  $checks(
+    'writePreambleStart(resumableState, renderState, skipBlockingShell)',
+    resumableState,
+    checkResumableState,
+    renderState,
+    checkRenderState,
+    skipBlockingShell,
+    $checkBool,
+  );
+  return writePreambleStart$(
+    destination,
+    resumableState,
+    renderState,
+    skipBlockingShell,
+  );
+}
+
+export function writePreambleStart$(
+  destination,
+  resumableState,
+  renderState,
+  skipBlockingShell,
+) {
   // This function must be called exactly once on every request
   if (enableFizzExternalRuntime && renderState.externalRuntimeScript != null) {
     // If the root segment is incomplete due to suspended tasks
@@ -5254,6 +6009,11 @@ export function writePreambleStart(
 // in the future to be backpressure sensitive but that requires a larger refactor
 // of the flushing code in Fizz.
 export function writePreambleEnd(destination, renderState) {
+  $checks('writePreambleEnd(renderState)', renderState, checkRenderState);
+  return writePreambleEnd$(destination, renderState);
+}
+
+export function writePreambleEnd$(destination, renderState) {
   const preamble = renderState.preamble;
   if (preamble.htmlChunks != null || preamble.headChunks != null) {
     // we have an <html> but we inserted an implicit <head> tag. We need
@@ -5275,6 +6035,17 @@ export function writePreambleEnd(destination, renderState) {
 // in the future to be backpressure sensitive but that requires a larger refactor
 // of the flushing code in Fizz.
 export function writeHoistables(destination, resumableState, renderState) {
+  $checks(
+    'writeHoistables(resumableState, renderState)',
+    resumableState,
+    checkResumableState,
+    renderState,
+    checkRenderState,
+  );
+  return writeHoistables$(destination, resumableState, renderState);
+}
+
+export function writeHoistables$(destination, resumableState, renderState) {
   // Emit high priority Hoistables
 
   // We omit charsetChunks because we have already sent the shell and if it wasn't
@@ -5334,6 +6105,15 @@ export function writeHoistables(destination, resumableState, renderState) {
 }
 
 export function writePostamble(destination, resumableState) {
+  $checks(
+    'writePostamble(resumableState)',
+    resumableState,
+    checkResumableState,
+  );
+  return writePostamble$(destination, resumableState);
+}
+
+export function writePostamble$(destination, resumableState) {
   if (resumableState.hasBody) {
     writeChunk(destination, endChunkForTag('body'));
   }
@@ -6367,6 +7147,17 @@ function escapeStringForLinkHeaderQuotedParamValueContextReplacer(match) {
 }
 
 export function hoistHoistables(parentState, childState) {
+  $checks(
+    'hoistHoistables(parentState, childState)',
+    parentState,
+    checkHoistableState,
+    childState,
+    checkHoistableState,
+  );
+  return hoistHoistables$(parentState, childState);
+}
+
+export function hoistHoistables$(parentState, childState) {
   childState.styles.forEach(styleQueue => {
     parentState.styles.add(styleQueue);
   });
@@ -6384,6 +7175,17 @@ export function hoistHoistables(parentState, childState) {
 }
 
 export function hasSuspenseyContent(hoistableState, flushingInShell) {
+  $checks(
+    'hasSuspenseyContent(hoistableState, flushingInShell)',
+    hoistableState,
+    checkHoistableState,
+    flushingInShell,
+    $checkBool,
+  );
+  return hasSuspenseyContent$(hoistableState, flushingInShell);
+}
+
+export function hasSuspenseyContent$(hoistableState, flushingInShell) {
   if (flushingInShell) {
     // When flushing the shell, stylesheets with precedence are already emitted
     // in the <head> which blocks paint. There's no benefit to outlining for CSS
@@ -6403,6 +7205,19 @@ export function hasSuspenseyContent(hoistableState, flushingInShell) {
 // if this is called before the shell finishes rendering which usually will happen anytime
 // anything suspends in the shell.
 export function emitEarlyPreloads(renderState, resumableState, shellComplete) {
+  $checks(
+    'emitEarlyPreloads(renderState, resumableState, shellComplete)',
+    renderState,
+    checkRenderState,
+    resumableState,
+    checkResumableState,
+    shellComplete,
+    $checkBool,
+  );
+  return emitEarlyPreloads$(renderState, resumableState, shellComplete);
+}
+
+export function emitEarlyPreloads$(renderState, resumableState, shellComplete) {
   const onHeaders = renderState.onHeaders;
   if (onHeaders != null) {
     const headers = renderState.headers;

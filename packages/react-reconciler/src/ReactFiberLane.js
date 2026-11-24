@@ -27,6 +27,15 @@ import {
   $alreadyMutablyBorrowed,
   $at,
   $borrowMut,
+  $checkArray,
+  $checkBool,
+  $checkF64,
+  $checkI32,
+  $checkOption,
+  $checkShape,
+  $checkStr,
+  $checkU8,
+  $checks,
   $index,
   $iter,
   $next,
@@ -125,6 +134,11 @@ export const HydrationLanes =
 // This function is used for the experimental timeline (react-devtools-timeline)
 // It should be kept in sync with the Lanes values above.
 export function getLabelForLane(lane) {
+  $checkI32(lane, 'getLabelForLane(lane)');
+  return getLabelForLane$(lane);
+}
+
+export function getLabelForLane$(lane) {
   if (enableSchedulingProfiler) {
     if (lane & SyncHydrationLane) {
       return 'SyncHydrationLane';
@@ -172,6 +186,27 @@ export function getLabelForLane(lane) {
 }
 
 export const NoTimestamp = -1;
+const checkConcurrentUpdate = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkFiberRoot = /* @__PURE__ */ $checkShape(() => ({
+  tag: $checkU8,
+  expirationTimes: (value, where, none) =>
+    $checkArray(value, where, none, $checkF64),
+  hiddenUpdates: (value, where, none) =>
+    $checkArray(value, where, none, (value, where) =>
+      $checkOption(value, where, (value, where, none) =>
+        $checkArray(value, where, none, checkConcurrentUpdate),
+      ),
+    ),
+  entanglements: (value, where, none) =>
+    $checkArray(value, where, none, $checkI32),
+  identifierPrefix: $checkStr,
+}));
+
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
+const checkTransition = /* @__PURE__ */ $checkShape(() => ({
+  name: [$checkStr, 'nullish'],
+}));
 
 let nextTransitionUpdateLane = TransitionLane1;
 let nextTransitionDeferredLane = TransitionLane11;
@@ -182,7 +217,7 @@ function getHighestPriorityLanes(lanes) {
   if (pendingSyncLanes) {
     return pendingSyncLanes;
   }
-  switch (getHighestPriorityLane(lanes)) {
+  switch (getHighestPriorityLane$(lanes)) {
     case SyncHydrationLane:
       return SyncHydrationLane;
     case SyncLane:
@@ -209,7 +244,7 @@ function getHighestPriorityLanes(lanes) {
     case TransitionLane8:
     case TransitionLane9:
     case TransitionLane10:
-      return getHighestPriorityLane(lanes);
+      return getHighestPriorityLane$(lanes);
     case TransitionLane11:
     case TransitionLane12:
     case TransitionLane13:
@@ -244,6 +279,19 @@ function getHighestPriorityLanes(lanes) {
 }
 
 export function getNextLanes(root, wipLanes, rootHasPendingCommit) {
+  $checks(
+    'getNextLanes(root, wipLanes, rootHasPendingCommit)',
+    root,
+    checkFiberRoot,
+    wipLanes,
+    $checkI32,
+    rootHasPendingCommit,
+    $checkBool,
+  );
+  return getNextLanes$(root, wipLanes, rootHasPendingCommit);
+}
+
+export function getNextLanes$(root, wipLanes, rootHasPendingCommit) {
   // Early bailout if there's no pending work left.
   const pendingLanes = root.pendingLanes;
   if (pendingLanes === NoLanes) {
@@ -334,8 +382,8 @@ export function getNextLanes(root, wipLanes, rootHasPendingCommit) {
     // bother waiting until the root is complete.
     (wipLanes & suspendedLanes) === NoLanes
   ) {
-    const nextLane = getHighestPriorityLane(nextLanes);
-    const wipLane = getHighestPriorityLane(wipLanes);
+    const nextLane = getHighestPriorityLane$(nextLanes);
+    const wipLane = getHighestPriorityLane$(wipLanes);
     if (
       // Tests whether the next lane is equal or lower priority than the wip
       // one. This works because the bits decrease in priority as you go left.
@@ -354,6 +402,17 @@ export function getNextLanes(root, wipLanes, rootHasPendingCommit) {
 }
 
 export function getNextLanesToFlushSync(root, extraLanesToForceSync) {
+  $checks(
+    'getNextLanesToFlushSync(root, extraLanesToForceSync)',
+    root,
+    checkFiberRoot,
+    extraLanesToForceSync,
+    $checkI32,
+  );
+  return getNextLanesToFlushSync$(root, extraLanesToForceSync);
+}
+
+export function getNextLanesToFlushSync$(root, extraLanesToForceSync) {
   // Similar to getNextLanes, except instead of choosing the next lanes to work
   // on based on their priority, it selects all the lanes that have equal or
   // higher priority than those are given. That way they can be synchronously
@@ -400,6 +459,17 @@ export function getNextLanesToFlushSync(root, extraLanesToForceSync) {
 }
 
 export function checkIfRootIsPrerendering(root, renderLanes) {
+  $checks(
+    'checkIfRootIsPrerendering(root, renderLanes)',
+    root,
+    checkFiberRoot,
+    renderLanes,
+    $checkI32,
+  );
+  return checkIfRootIsPrerendering$(root, renderLanes);
+}
+
+export function checkIfRootIsPrerendering$(root, renderLanes) {
   const pendingLanes = root.pendingLanes;
   const suspendedLanes = root.suspendedLanes;
   const pingedLanes = root.pingedLanes;
@@ -412,6 +482,17 @@ export function checkIfRootIsPrerendering(root, renderLanes) {
 }
 
 export function getEntangledLanes(root, renderLanes) {
+  $checks(
+    'getEntangledLanes(root, renderLanes)',
+    root,
+    checkFiberRoot,
+    renderLanes,
+    $checkI32,
+  );
+  return getEntangledLanes$(root, renderLanes);
+}
+
+export function getEntangledLanes$(root, renderLanes) {
   let entangledLanes = renderLanes;
 
   if ((entangledLanes & InputContinuousLane) !== NoLanes) {
@@ -535,6 +616,17 @@ function computeExpirationTime(lane, currentTime) {
 }
 
 export function markStarvedLanesAsExpired(root, currentTime) {
+  $checks(
+    'markStarvedLanesAsExpired(root, currentTime)',
+    root,
+    checkFiberRoot,
+    currentTime,
+    $checkF64,
+  );
+  return markStarvedLanesAsExpired$(root, currentTime);
+}
+
+export function markStarvedLanesAsExpired$(root, currentTime) {
   // TODO: This gets called every time we yield. We can optimize by storing
   // the earliest expiration time on the root. Then use that to quickly bail out
   // of this function.
@@ -590,10 +682,29 @@ export function markStarvedLanesAsExpired(root, currentTime) {
 // This returns the highest priority pending lanes regardless of whether they
 // are suspended.
 export function getHighestPriorityPendingLanes(root) {
+  $checks('getHighestPriorityPendingLanes(root)', root, checkFiberRoot);
+  return getHighestPriorityPendingLanes$(root);
+}
+
+export function getHighestPriorityPendingLanes$(root) {
   return getHighestPriorityLanes(root.pendingLanes);
 }
 
 export function getLanesToRetrySynchronouslyOnError(
+  root,
+  originallyAttemptedLanes,
+) {
+  $checks(
+    'getLanesToRetrySynchronouslyOnError(root, originallyAttemptedLanes)',
+    root,
+    checkFiberRoot,
+    originallyAttemptedLanes,
+    $checkI32,
+  );
+  return getLanesToRetrySynchronouslyOnError$(root, originallyAttemptedLanes);
+}
+
+export function getLanesToRetrySynchronouslyOnError$(
   root,
   originallyAttemptedLanes,
 ) {
@@ -613,16 +724,36 @@ export function getLanesToRetrySynchronouslyOnError(
 }
 
 export function includesSyncLane(lanes) {
+  $checkI32(lanes, 'includesSyncLane(lanes)');
+  return includesSyncLane$(lanes);
+}
+
+export function includesSyncLane$(lanes) {
   return (lanes & (SyncLane | SyncHydrationLane)) !== NoLanes;
 }
 
 export function includesNonIdleWork(lanes) {
+  $checkI32(lanes, 'includesNonIdleWork(lanes)');
+  return includesNonIdleWork$(lanes);
+}
+
+export function includesNonIdleWork$(lanes) {
   return (lanes & NonIdleLanes) !== NoLanes;
 }
 export function includesOnlyRetries(lanes) {
+  $checkI32(lanes, 'includesOnlyRetries(lanes)');
+  return includesOnlyRetries$(lanes);
+}
+
+export function includesOnlyRetries$(lanes) {
   return (lanes & RetryLanes) === lanes;
 }
 export function includesOnlyNonUrgentLanes(lanes) {
+  $checkI32(lanes, 'includesOnlyNonUrgentLanes(lanes)');
+  return includesOnlyNonUrgentLanes$(lanes);
+}
+
+export function includesOnlyNonUrgentLanes$(lanes) {
   // TODO: Should hydration lanes be included here? This function is only
   // used in `updateDeferredValueImpl`.
   const UrgentLanes =
@@ -630,18 +761,38 @@ export function includesOnlyNonUrgentLanes(lanes) {
   return (lanes & UrgentLanes) === NoLanes;
 }
 export function includesOnlyTransitions(lanes) {
+  $checkI32(lanes, 'includesOnlyTransitions(lanes)');
+  return includesOnlyTransitions$(lanes);
+}
+
+export function includesOnlyTransitions$(lanes) {
   return (lanes & TransitionLanes) === lanes;
 }
 
 export function includesTransitionLane(lanes) {
+  $checkI32(lanes, 'includesTransitionLane(lanes)');
+  return includesTransitionLane$(lanes);
+}
+
+export function includesTransitionLane$(lanes) {
   return (lanes & TransitionLanes) !== NoLanes;
 }
 
 export function includesRetryLane(lanes) {
+  $checkI32(lanes, 'includesRetryLane(lanes)');
+  return includesRetryLane$(lanes);
+}
+
+export function includesRetryLane$(lanes) {
   return (lanes & RetryLanes) !== NoLanes;
 }
 
 export function includesIdleGroupLanes(lanes) {
+  $checkI32(lanes, 'includesIdleGroupLanes(lanes)');
+  return includesIdleGroupLanes$(lanes);
+}
+
+export function includesIdleGroupLanes$(lanes) {
   return (
     (lanes &
       (SelectiveHydrationLane |
@@ -654,32 +805,67 @@ export function includesIdleGroupLanes(lanes) {
 }
 
 export function includesOnlyHydrationLanes(lanes) {
+  $checkI32(lanes, 'includesOnlyHydrationLanes(lanes)');
+  return includesOnlyHydrationLanes$(lanes);
+}
+
+export function includesOnlyHydrationLanes$(lanes) {
   return (lanes & HydrationLanes) === lanes;
 }
 
 export function includesOnlyOffscreenLanes(lanes) {
+  $checkI32(lanes, 'includesOnlyOffscreenLanes(lanes)');
+  return includesOnlyOffscreenLanes$(lanes);
+}
+
+export function includesOnlyOffscreenLanes$(lanes) {
   return (lanes & OffscreenLane) === lanes;
 }
 
 export function includesOnlyHydrationOrOffscreenLanes(lanes) {
+  $checkI32(lanes, 'includesOnlyHydrationOrOffscreenLanes(lanes)');
+  return includesOnlyHydrationOrOffscreenLanes$(lanes);
+}
+
+export function includesOnlyHydrationOrOffscreenLanes$(lanes) {
   return (lanes & (HydrationLanes | OffscreenLane)) === lanes;
 }
 
 export function includesOnlyViewTransitionEligibleLanes(lanes) {
+  $checkI32(lanes, 'includesOnlyViewTransitionEligibleLanes(lanes)');
+  return includesOnlyViewTransitionEligibleLanes$(lanes);
+}
+
+export function includesOnlyViewTransitionEligibleLanes$(lanes) {
   return (lanes & (TransitionLanes | RetryLanes | IdleLane)) === lanes;
 }
 
 export function includesOnlySuspenseyCommitEligibleLanes(lanes) {
+  $checkI32(lanes, 'includesOnlySuspenseyCommitEligibleLanes(lanes)');
+  return includesOnlySuspenseyCommitEligibleLanes$(lanes);
+}
+
+export function includesOnlySuspenseyCommitEligibleLanes$(lanes) {
   return (
     (lanes & (TransitionLanes | RetryLanes | IdleLane | GestureLane)) === lanes
   );
 }
 
 export function includesLoadingIndicatorLanes(lanes) {
+  $checkI32(lanes, 'includesLoadingIndicatorLanes(lanes)');
+  return includesLoadingIndicatorLanes$(lanes);
+}
+
+export function includesLoadingIndicatorLanes$(lanes) {
   return (lanes & (SyncLane | DefaultLane)) !== NoLanes;
 }
 
 export function includesBlockingLane(lanes) {
+  $checkI32(lanes, 'includesBlockingLane(lanes)');
+  return includesBlockingLane$(lanes);
+}
+
+export function includesBlockingLane$(lanes) {
   const SyncDefaultLanes =
     SyncHydrationLane |
     SyncLane |
@@ -692,12 +878,28 @@ export function includesBlockingLane(lanes) {
 }
 
 export function includesExpiredLane(root, lanes) {
+  $checks(
+    'includesExpiredLane(root, lanes)',
+    root,
+    checkFiberRoot,
+    lanes,
+    $checkI32,
+  );
+  return includesExpiredLane$(root, lanes);
+}
+
+export function includesExpiredLane$(root, lanes) {
   // This is a separate check from includesBlockingLane because a lane can
   // expire after a render has already started.
   return (lanes & root.expiredLanes) !== NoLanes;
 }
 
 export function isBlockingLane(lane) {
+  $checkI32(lane, 'isBlockingLane(lane)');
+  return isBlockingLane$(lane);
+}
+
+export function isBlockingLane$(lane) {
   const SyncDefaultLanes =
     SyncHydrationLane |
     SyncLane |
@@ -710,10 +912,20 @@ export function isBlockingLane(lane) {
 }
 
 export function isTransitionLane(lane) {
+  $checkI32(lane, 'isTransitionLane(lane)');
+  return isTransitionLane$(lane);
+}
+
+export function isTransitionLane$(lane) {
   return (lane & TransitionLanes) !== NoLanes;
 }
 
 export function isGestureRender(lanes) {
+  $checkI32(lanes, 'isGestureRender(lanes)');
+  return isGestureRender$(lanes);
+}
+
+export function isGestureRender$(lanes) {
   if (!enableGestureTransition) {
     return false;
   }
@@ -752,6 +964,11 @@ export function claimNextRetryLane() {
 }
 
 export function getHighestPriorityLane(lanes) {
+  $checkI32(lanes, 'getHighestPriorityLane(lanes)');
+  return getHighestPriorityLane$(lanes);
+}
+
+export function getHighestPriorityLane$(lanes) {
   return lanes & -lanes;
 }
 
@@ -764,11 +981,16 @@ function getLanesOfEqualOrHigherPriority(lanes) {
 }
 
 export function pickArbitraryLane(lanes) {
+  $checkI32(lanes, 'pickArbitraryLane(lanes)');
+  return pickArbitraryLane$(lanes);
+}
+
+export function pickArbitraryLane$(lanes) {
   // This wrapper function gets inlined. Only exists so to communicate that it
   // doesn't matter which bit is selected; you can pick any bit without
   // affecting the algorithms where its used. Here I'm using
   // getHighestPriorityLane because it requires the fewest operations.
-  return getHighestPriorityLane(lanes);
+  return getHighestPriorityLane$(lanes);
 }
 
 function pickArbitraryLaneIndex(lanes) {
@@ -780,32 +1002,67 @@ function laneToIndex(lane) {
 }
 
 export function includesSomeLane(a, b) {
+  $checks('includesSomeLane(a, b)', a, $checkI32, b, $checkI32);
+  return includesSomeLane$(a, b);
+}
+
+export function includesSomeLane$(a, b) {
   return (a & b) !== NoLanes;
 }
 
 export function isSubsetOfLanes(set, subset) {
+  $checks('isSubsetOfLanes(set, subset)', set, $checkI32, subset, $checkI32);
+  return isSubsetOfLanes$(set, subset);
+}
+
+export function isSubsetOfLanes$(set, subset) {
   return (set & subset) === subset;
 }
 
 export function mergeLanes(a, b) {
+  $checks('mergeLanes(a, b)', a, $checkI32, b, $checkI32);
+  return mergeLanes$(a, b);
+}
+
+export function mergeLanes$(a, b) {
   return a | b;
 }
 
 export function removeLanes(set, subset) {
+  $checks('removeLanes(set, subset)', set, $checkI32, subset, $checkI32);
+  return removeLanes$(set, subset);
+}
+
+export function removeLanes$(set, subset) {
   return set & ~subset;
 }
 
 export function intersectLanes(a, b) {
+  $checks('intersectLanes(a, b)', a, $checkI32, b, $checkI32);
+  return intersectLanes$(a, b);
+}
+
+export function intersectLanes$(a, b) {
   return a & b;
 }
 
 // Seems redundant, but it changes the type from a single lane (used for
 // updates) to a group of lanes (used for flushing work).
 export function laneToLanes(lane) {
+  $checkI32(lane, 'laneToLanes(lane)');
+  return laneToLanes$(lane);
+}
+
+export function laneToLanes$(lane) {
   return lane;
 }
 
 export function higherPriorityLane(a, b) {
+  $checks('higherPriorityLane(a, b)', a, $checkI32, b, $checkI32);
+  return higherPriorityLane$(a, b);
+}
+
+export function higherPriorityLane$(a, b) {
   // This works because the bit ranges decrease in priority as you go left.
   return a !== NoLane && a < b ? a : b;
 }
@@ -821,6 +1078,17 @@ export function createLaneMap(initial) {
 }
 
 export function markRootUpdated(root, updateLane) {
+  $checks(
+    'markRootUpdated(root, updateLane)',
+    root,
+    checkFiberRoot,
+    updateLane,
+    $checkI32,
+  );
+  return markRootUpdated$(root, updateLane);
+}
+
+export function markRootUpdated$(root, updateLane) {
   root.pendingLanes |= updateLane;
   if (enableDefaultTransitionIndicator) {
     // Mark that this lane might need a loading indicator to be shown.
@@ -847,6 +1115,31 @@ export function markRootUpdated(root, updateLane) {
 }
 
 export function markRootSuspended(
+  root,
+  suspendedLanes,
+  spawnedLane,
+  didAttemptEntireTree,
+) {
+  $checks(
+    'markRootSuspended(root, suspendedLanes, spawnedLane, didAttemptEntireTree)',
+    root,
+    checkFiberRoot,
+    suspendedLanes,
+    $checkI32,
+    spawnedLane,
+    $checkI32,
+    didAttemptEntireTree,
+    $checkBool,
+  );
+  return markRootSuspended$(
+    root,
+    suspendedLanes,
+    spawnedLane,
+    didAttemptEntireTree,
+  );
+}
+
+export function markRootSuspended$(
   root,
   suspendedLanes,
   spawnedLane,
@@ -892,6 +1185,17 @@ export function markRootSuspended(
 }
 
 export function markRootPinged(root, pingedLanes) {
+  $checks(
+    'markRootPinged(root, pingedLanes)',
+    root,
+    checkFiberRoot,
+    pingedLanes,
+    $checkI32,
+  );
+  return markRootPinged$(root, pingedLanes);
+}
+
+export function markRootPinged$(root, pingedLanes) {
   root.pingedLanes |= root.suspendedLanes & pingedLanes;
   // The data that just resolved could have unblocked additional children, which
   // will also need to be prewarmed if something suspends again.
@@ -899,6 +1203,39 @@ export function markRootPinged(root, pingedLanes) {
 }
 
 export function markRootFinished(
+  root,
+  finishedLanes,
+  remainingLanes,
+  spawnedLane,
+  updatedLanes,
+  suspendedRetryLanes,
+) {
+  $checks(
+    'markRootFinished(root, finishedLanes, remainingLanes, spawnedLane, updatedLanes, suspendedRetryLanes)',
+    root,
+    checkFiberRoot,
+    finishedLanes,
+    $checkI32,
+    remainingLanes,
+    $checkI32,
+    spawnedLane,
+    $checkI32,
+    updatedLanes,
+    $checkI32,
+    suspendedRetryLanes,
+    $checkI32,
+  );
+  return markRootFinished$(
+    root,
+    finishedLanes,
+    remainingLanes,
+    spawnedLane,
+    updatedLanes,
+    suspendedRetryLanes,
+  );
+}
+
+export function markRootFinished$(
   root,
   finishedLanes,
   remainingLanes,
@@ -1179,6 +1516,17 @@ function markSpawnedDeferredLane(root, spawnedLane, entangledLanes) {
 }
 
 export function markRootEntangled(root, entangledLanes) {
+  $checks(
+    'markRootEntangled(root, entangledLanes)',
+    root,
+    checkFiberRoot,
+    entangledLanes,
+    $checkI32,
+  );
+  return markRootEntangled$(root, entangledLanes);
+}
+
+export function markRootEntangled$(root, entangledLanes) {
   // In addition to entangling each of the given lanes with each other, we also
   // have to consider _transitive_ entanglements. For each lane that is already
   // entangled with *any* of the given lanes, that lane is now transitively
@@ -1219,6 +1567,17 @@ export function markRootEntangled(root, entangledLanes) {
 }
 
 export function upgradePendingLanesToSync(root, lanesToUpgrade) {
+  $checks(
+    'upgradePendingLanesToSync(root, lanesToUpgrade)',
+    root,
+    checkFiberRoot,
+    lanesToUpgrade,
+    $checkI32,
+  );
+  return upgradePendingLanesToSync$(root, lanesToUpgrade);
+}
+
+export function upgradePendingLanesToSync$(root, lanesToUpgrade) {
   // Same as upgradePendingLaneToSync but accepts multiple lanes, so it's a
   // bit slower.
   root.pendingLanes |= SyncLane;
@@ -1245,6 +1604,19 @@ export function upgradePendingLanesToSync(root, lanesToUpgrade) {
 }
 
 export function markHiddenUpdate(root, update, lane) {
+  $checks(
+    'markHiddenUpdate(root, update, lane)',
+    root,
+    checkFiberRoot,
+    update,
+    checkConcurrentUpdate,
+    lane,
+    $checkI32,
+  );
+  return markHiddenUpdate$(root, update, lane);
+}
+
+export function markHiddenUpdate$(root, update, lane) {
   const index = laneToIndex(lane);
   const hiddenUpdates = $borrowMut(
     root.hiddenUpdates,
@@ -1270,7 +1642,18 @@ export function markHiddenUpdate(root, update, lane) {
 }
 
 export function getBumpedLaneForHydration(root, renderLanes) {
-  const renderLane = getHighestPriorityLane(renderLanes);
+  $checks(
+    'getBumpedLaneForHydration(root, renderLanes)',
+    root,
+    checkFiberRoot,
+    renderLanes,
+    $checkI32,
+  );
+  return getBumpedLaneForHydration$(root, renderLanes);
+}
+
+export function getBumpedLaneForHydration$(root, renderLanes) {
+  const renderLane = getHighestPriorityLane$(renderLanes);
   const bumpedLane =
     (renderLane & SyncUpdateLanes) !== NoLane
       ? // Unify sync lanes. We don't do this inside getBumpedLaneForHydrationByLane
@@ -1278,7 +1661,7 @@ export function getBumpedLaneForHydration(root, renderLanes) {
         // TODO: This is not coherent but that's beacuse the unification is not coherent.
         // We need to get merge these into an actual single lane.
         SyncHydrationLane
-      : getBumpedLaneForHydrationByLane(renderLane);
+      : getBumpedLaneForHydrationByLane$(renderLane);
   // Check if the lane we chose is suspended. If so, that indicates that we
   // already attempted and failed to hydrate at that level. Also check if we're
   // already rendering that lane, which is rare but could happen.
@@ -1291,6 +1674,11 @@ export function getBumpedLaneForHydration(root, renderLanes) {
 }
 
 export function getBumpedLaneForHydrationByLane(lane) {
+  $checkI32(lane, 'getBumpedLaneForHydrationByLane(lane)');
+  return getBumpedLaneForHydrationByLane$(lane);
+}
+
+export function getBumpedLaneForHydrationByLane$(lane) {
   switch (lane) {
     case SyncLane:
       return SyncHydrationLane;
@@ -1327,6 +1715,19 @@ export function getBumpedLaneForHydrationByLane(lane) {
 }
 
 export function addFiberToLanesMap(root, fiber, lanes) {
+  $checks(
+    'addFiberToLanesMap(root, fiber, lanes)',
+    root,
+    checkFiberRoot,
+    fiber,
+    checkFiber,
+    lanes,
+    $checkI32,
+  );
+  return addFiberToLanesMap$(root, fiber, lanes);
+}
+
+export function addFiberToLanesMap$(root, fiber, lanes) {
   if (!enableUpdaterTracking) {
     return;
   }
@@ -1350,6 +1751,17 @@ export function addFiberToLanesMap(root, fiber, lanes) {
 }
 
 export function movePendingFibersToMemoized(root, lanes) {
+  $checks(
+    'movePendingFibersToMemoized(root, lanes)',
+    root,
+    checkFiberRoot,
+    lanes,
+    $checkI32,
+  );
+  return movePendingFibersToMemoized$(root, lanes);
+}
+
+export function movePendingFibersToMemoized$(root, lanes) {
   if (!enableUpdaterTracking) {
     return;
   }
@@ -1382,6 +1794,19 @@ export function movePendingFibersToMemoized(root, lanes) {
 }
 
 export function addTransitionToLanesMap(root, transition, lane) {
+  $checks(
+    'addTransitionToLanesMap(root, transition, lane)',
+    root,
+    checkFiberRoot,
+    transition,
+    checkTransition,
+    lane,
+    $checkI32,
+  );
+  return addTransitionToLanesMap$(root, transition, lane);
+}
+
+export function addTransitionToLanesMap$(root, transition, lane) {
   if (enableTransitionTracing) {
     const transitionLanesMap = $borrowMut(
       root.transitionLanes,
@@ -1406,6 +1831,17 @@ export function addTransitionToLanesMap(root, transition, lane) {
 }
 
 export function getTransitionsForLanes(root, lanes) {
+  $checks(
+    'getTransitionsForLanes(root, lanes)',
+    root,
+    checkFiberRoot,
+    lanes,
+    $checkI32,
+  );
+  return getTransitionsForLanes$(root, lanes);
+}
+
+export function getTransitionsForLanes$(root, lanes) {
   if (!enableTransitionTracing) {
     return null;
   }
@@ -1441,6 +1877,17 @@ export function getTransitionsForLanes(root, lanes) {
 }
 
 export function clearTransitionsForLanes(root, lanes) {
+  $checks(
+    'clearTransitionsForLanes(root, lanes)',
+    root,
+    checkFiberRoot,
+    lanes,
+    $checkI32,
+  );
+  return clearTransitionsForLanes$(root, lanes);
+}
+
+export function clearTransitionsForLanes$(root, lanes) {
   if (!enableTransitionTracing) {
     return;
   }
@@ -1470,6 +1917,11 @@ export function clearTransitionsForLanes(root, lanes) {
 
 // Used to name the Performance Track
 export function getGroupNameOfHighestPriorityLane(lanes) {
+  $checkI32(lanes, 'getGroupNameOfHighestPriorityLane(lanes)');
+  return getGroupNameOfHighestPriorityLane$(lanes);
+}
+
+export function getGroupNameOfHighestPriorityLane$(lanes) {
   if (
     lanes &
     (SyncHydrationLane |

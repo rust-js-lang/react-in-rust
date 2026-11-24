@@ -10,7 +10,13 @@ import {isAsyncImport} from '../shared/ReactFlightImportMetadata.js';
 import {prepareDestinationWithChunks} from 'react-client/src/ReactFlightClientConfig';
 
 import hasOwnProperty from 'shared/hasOwnProperty';
-import {$stringPanic} from '@rust-js/std';
+import {
+  $checkBool,
+  $checkShape,
+  $checkStr,
+  $checks,
+  $stringPanic,
+} from '@rust-js/std';
 
 // The reason this function needs to defined here in this file instead of just
 // being exported directly from the WebpackDestination... file is because the
@@ -19,6 +25,7 @@ import {$stringPanic} from '@rust-js/std';
 // though that risks it getting used in places it shouldn't be. This is unfortunate
 // but currently it seems to be the best option we have.
 export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
+  $checkStr(nonce, 'prepareDestinationForModule(nonce)', 'nullish');
   const chunks = metadata[1];
   nonce != null
     ? prepareDestinationWithChunks(moduleLoading, chunks, nonce)
@@ -55,6 +62,7 @@ export function resolveClientReference(bundlerConfig, metadata) {
 }
 
 export function resolveServerReference(bundlerConfig, id) {
+  $checkStr(id, 'resolveServerReference(id)');
   const idx = id.lastIndexOf('#');
   const specifier = id.slice(0, idx);
   const name = id.slice(idx + 1);
@@ -66,7 +74,14 @@ export function resolveServerReference(bundlerConfig, id) {
 
 const asyncModuleCache = new Map();
 
+const checkClientReference = /* @__PURE__ */ $checkShape(() => ({
+  specifier: $checkStr,
+  name: $checkStr,
+  async: [$checkBool, 'nullish'],
+}));
+
 export function preloadModule(metadata) {
+  $checks('preloadModule(metadata)', metadata, checkClientReference);
   const existingPromise = asyncModuleCache.get(metadata.specifier);
   if (existingPromise != null) {
     if (existingPromise.status === 'fulfilled') {
@@ -103,6 +118,7 @@ export function preloadModule(metadata) {
 export function requireModule(metadata) {
   // We assume that preloadModule has been called before, which
   // should have added something to the module cache.
+  $checks('requireModule(metadata)', metadata, checkClientReference);
   const promise = asyncModuleCache.get(metadata.specifier);
   if (promise.status !== 'fulfilled') {
     throw promise.reason;
@@ -126,6 +142,7 @@ export function requireModule(metadata) {
 export function getModuleDebugInfo(metadata) {
   // We don't emit any debug info on the server since we assume the loading
   // of the bundle is insignificant on the server.
+  $checks('getModuleDebugInfo(metadata)', metadata, checkClientReference);
   return null;
 }
 //# sourceMappingURL=ReactFlightClientConfigBundlerNode.js.map

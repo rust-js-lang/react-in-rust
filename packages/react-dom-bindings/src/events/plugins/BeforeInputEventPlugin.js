@@ -19,6 +19,15 @@ import {
 } from '../SyntheticEvent.js';
 
 import {accumulateTwoPhaseListeners} from '../DOMPluginEventSystem.js';
+import {
+  $checkBool,
+  $checkBoxedOption,
+  $checkF64,
+  $checkI32,
+  $checkOption,
+  $checkShape,
+  $checkStr,
+} from '@rust-js/std';
 
 const END_KEYCODES = [9, 13, 27, 32]; // Tab, Return, Esc, Space
 const START_KEYCODE = 229;
@@ -45,6 +54,90 @@ const useFallbackCompositionData =
 const SPACEBAR_CODE = 32;
 
 const SPACEBAR_CHAR = String.fromCharCode(SPACEBAR_CODE);
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkOffsets = /* @__PURE__ */ $checkShape(() => ({
+  start: [$checkF64, 'nullish'],
+  end: (value, where) =>
+    $checkBoxedOption(value, where, (value, where) =>
+      $checkOption(value, where, $checkF64),
+    ),
+}));
+
+const checkProps = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkInstanceMeasurement = /* @__PURE__ */ $checkShape(() => ({
+  abs: $checkBool,
+  clip: $checkBool,
+  view: $checkBool,
+}));
+
+const checkSuspendedState = /* @__PURE__ */ $checkShape(() => ({}));
+const checkFragmentInstance = /* @__PURE__ */ $checkShape(() => ({}));
+const checkStylesheetState = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkResource = /* @__PURE__ */ $checkShape(() => ({
+  type: $checkStr,
+  state: [checkStylesheetState, 'nullish'],
+}));
+
+const checkDestination = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkResumableState = /* @__PURE__ */ $checkShape(() => ({
+  idPrefix: $checkStr,
+  streamingFormat: $checkI32,
+}));
+
+const checkViewTransitionContext = /* @__PURE__ */ $checkShape(() => ({
+  update: $checkStr,
+  enter: $checkStr,
+  exit: $checkStr,
+  share: $checkStr,
+  parentEnter: $checkStr,
+  parentExit: $checkStr,
+  name: $checkStr,
+  autoName: $checkStr,
+}));
+
+const checkFormatContext = /* @__PURE__ */ $checkShape(() => ({
+  insertionMode: $checkI32,
+  tagScope: $checkI32,
+  viewTransition: [checkViewTransitionContext, 'nullish'],
+}));
+
+const checkPreambleState = /* @__PURE__ */ $checkShape(() => ({}));
+const checkExternalRuntimeScript = /* @__PURE__ */ $checkShape(() => ({
+  src: $checkStr,
+}));
+const checkConnectResources = /* @__PURE__ */ $checkShape(() => ({}));
+const checkResets = /* @__PURE__ */ $checkShape(() => ({
+  connect: checkConnectResources,
+}));
+const checkPreloads = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkNonceOption = /* @__PURE__ */ $checkShape(() => ({
+  script: [$checkStr, 'nullish'],
+  style: [$checkStr, 'nullish'],
+}));
+
+const checkRenderState = /* @__PURE__ */ $checkShape(() => ({
+  preamble: checkPreambleState,
+  externalRuntimeScript: [checkExternalRuntimeScript, 'nullish'],
+  resets: checkResets,
+  preloads: checkPreloads,
+  nonce: checkNonceOption,
+}));
+
+const checkHoistableState = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkRenderState$1 = /* @__PURE__ */ $checkShape(() => ({
+  preamble: checkPreambleState,
+  externalRuntimeScript: [checkExternalRuntimeScript, 'nullish'],
+  resets: checkResets,
+  preloads: checkPreloads,
+  nonce: checkNonceOption,
+  generateStaticMarkup: $checkBool,
+}));
 
 export function registerEvents() {
   registerTwoPhaseEvent('onBeforeInput', [

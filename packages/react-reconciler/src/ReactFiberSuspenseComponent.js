@@ -13,6 +13,7 @@ import {
   isSuspenseInstanceFallback,
   isSuspenseInstancePending,
 } from './ReactFiberConfig.js';
+import {$checkBool, $checkResult} from '@rust-js/std';
 
 // shared/ReactTypes' `Wakeable`s.
 
@@ -25,8 +26,16 @@ export function findFirstSuspended(row) {
         const dehydrated = state.dehydrated;
         if (
           dehydrated == null ||
-          isSuspenseInstancePending(dehydrated) ||
-          isSuspenseInstanceFallback(dehydrated)
+          $checkResult(
+            isSuspenseInstancePending(dehydrated),
+            './src/ReactFiberConfig.js#isSuspenseInstancePending',
+            $checkBool,
+          ) ||
+          $checkResult(
+            isSuspenseInstanceFallback(dehydrated),
+            './src/ReactFiberConfig.js#isSuspenseInstanceFallback',
+            $checkBool,
+          )
         ) {
           return node;
         }

@@ -29,7 +29,9 @@ import {
   describeFunctionComponentFrame,
 } from 'shared/ReactComponentStackFrame';
 import {formatOwnerStack} from 'shared/ReactOwnerStackFrames';
-import {$catchable, $shown, $unwrap} from '@rust-js/std';
+import {$catchable, $checkShape, $checks, $shown, $unwrap} from '@rust-js/std';
+
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
 
 function describeFiber(fiber, childFiber) {
   switch (fiber.tag) {
@@ -68,6 +70,15 @@ function describeFiber(fiber, childFiber) {
 }
 
 export function getStackByFiberInDevAndProd(workInProgress) {
+  $checks(
+    'getStackByFiberInDevAndProd(workInProgress)',
+    workInProgress,
+    checkFiber,
+  );
+  return getStackByFiberInDevAndProd$(workInProgress);
+}
+
+export function getStackByFiberInDevAndProd$(workInProgress) {
   try {
     let info = '';
     let node = workInProgress;
@@ -109,6 +120,15 @@ function describeFunctionComponentFrameWithoutLineNumber(fn) {
 }
 
 export function getOwnerStackByFiberInDev(workInProgress) {
+  $checks(
+    'getOwnerStackByFiberInDev(workInProgress)',
+    workInProgress,
+    checkFiber,
+  );
+  return getOwnerStackByFiberInDev$(workInProgress);
+}
+
+export function getOwnerStackByFiberInDev$(workInProgress) {
   if (!__DEV__) {
     return '';
   }

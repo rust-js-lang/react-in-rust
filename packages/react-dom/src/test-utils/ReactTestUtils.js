@@ -6,10 +6,12 @@
 // LICENSE file in the root directory of this source tree.
 
 import * as IsomorphicReactPackage from 'react';
+import {$checkCallback} from '@rust-js/std';
 
 let didWarnAboutUsingAct = false;
 
 export function act(callback) {
+  $checkCallback(callback, 'act(callback)');
   if (!didWarnAboutUsingAct) {
     didWarnAboutUsingAct = true;
     console.error(

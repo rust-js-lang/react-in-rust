@@ -8,7 +8,7 @@
 import {REACT_LAZY_TYPE} from 'shared/ReactSymbols';
 
 import noop from 'shared/noop';
-import {$unwrap} from '@rust-js/std';
+import {$brand, $checkCallback, $unwrap} from '@rust-js/std';
 
 const Uninitialized = -1;
 const Pending = 0;
@@ -165,11 +165,19 @@ function lazyInitializer(payload) {
 }
 
 export function lazy(ctor) {
-  const payload = {
-    // We use these fields to store the result.
-    _status: Uninitialized,
-    _result: ctor,
-  };
+  $checkCallback(ctor, 'lazy(ctor)');
+  return lazy$(ctor);
+}
+
+export function lazy$(ctor) {
+  const payload = $brand(
+    'react_isomorphic#91e68045cf54257e::react_lazy::Payload',
+    {
+      // We use these fields to store the result.
+      _status: Uninitialized,
+      _result: ctor,
+    },
+  );
 
   const lazyType = {
     $$typeof: REACT_LAZY_TYPE,

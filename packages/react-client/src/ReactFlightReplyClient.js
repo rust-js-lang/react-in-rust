@@ -19,7 +19,7 @@ import {
   objectName,
 } from 'shared/ReactSerializationErrors';
 
-import {writeTemporaryReference} from './ReactFlightTemporaryReferences.js';
+import {writeTemporaryReference$ as writeTemporaryReference} from './ReactFlightTemporaryReferences.js';
 
 import isArray from 'shared/isArray';
 
@@ -35,6 +35,12 @@ import {
   $alreadyMutablyBorrowed,
   $borrowMut,
   $catchable,
+  $checkCallback,
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkTuple,
+  $checks,
   $getOrInit,
   $panic,
   $stringPanic,
@@ -140,6 +146,27 @@ function thrown(payload) {
 }
 
 export function processReply(
+  root,
+  formFieldPrefix,
+  temporaryReferences,
+  onResolve,
+  onReject,
+  signal,
+) {
+  $checkStr(formFieldPrefix, 'processReply(formFieldPrefix)');
+  $checkCallback(onResolve, 'processReply(onResolve)');
+  $checkCallback(onReject, 'processReply(onReject)');
+  return processReply$(
+    root,
+    formFieldPrefix,
+    temporaryReferences,
+    onResolve,
+    onReject,
+    signal,
+  );
+}
+
+export function processReply$(
   root,
   formFieldPrefix,
   temporaryReferences,
@@ -1029,7 +1056,7 @@ function encodeFormData(reference) {
     reject,
     'packages/react-client/src/ReactFlightReplyClient.rs:1340:55',
   );
-  processReply(
+  processReply$(
     reference,
     '',
     undefined,
@@ -1429,11 +1456,46 @@ function bind() {
   return newFn;
 }
 
+const checkBoundServerReferenceMetaData = /* @__PURE__ */ $checkShape(() => ({
+  name: [$checkStr, 'nullish'],
+  env: [$checkStr, 'nullish'],
+  location: [
+    (value, where, none) =>
+      $checkTuple(value, where, none, [
+        $checkStr,
+        $checkStr,
+        $checkF64,
+        $checkF64,
+      ]),
+    'nullish',
+  ],
+}));
+
 export function createBoundServerReference(
   metaData,
   callServer,
   encodeFormAction,
   findSourceMapUrl, // DEV-only
+) {
+  $checks(
+    'createBoundServerReference(metaData)',
+    metaData,
+    checkBoundServerReferenceMetaData,
+  );
+  $checkCallback(callServer, 'createBoundServerReference(callServer)');
+  return createBoundServerReference$(
+    metaData,
+    callServer,
+    encodeFormAction,
+    findSourceMapUrl,
+  );
+}
+
+export function createBoundServerReference$(
+  metaData,
+  callServer,
+  encodeFormAction,
+  findSourceMapUrl,
 ) {
   const id = metaData.id;
   const bound = metaData.bound;
@@ -1540,6 +1602,24 @@ export function createServerReference(
   callServer,
   encodeFormAction,
   findSourceMapUrl, // DEV-only
+  functionName,
+) {
+  $checkCallback(callServer, 'createServerReference(callServer)');
+  $checkStr(functionName, 'createServerReference(functionName)', 'nullish');
+  return createServerReference$(
+    id,
+    callServer,
+    encodeFormAction,
+    findSourceMapUrl,
+    functionName,
+  );
+}
+
+export function createServerReference$(
+  id,
+  callServer,
+  encodeFormAction,
+  findSourceMapUrl,
   functionName,
 ) {
   let action = function () {

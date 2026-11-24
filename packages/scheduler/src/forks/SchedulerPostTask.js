@@ -12,7 +12,18 @@ import {
   NormalPriority,
   UserBlockingPriority,
 } from '../SchedulerPriorities.js';
-import {$catchable, $live, $unwindsOn} from '@rust-js/std';
+import {
+  $brand,
+  $catchable,
+  $checkCallback,
+  $checkF64,
+  $checkShape,
+  $checkU8,
+  $checkWhole,
+  $checks,
+  $live,
+  $unwindsOn,
+} from '@rust-js/std';
 
 export {
   IdlePriority as unstable_IdlePriority,
@@ -32,6 +43,15 @@ const scheduler = globalThis.scheduler;
 const getCurrentTime = perf.now.bind(perf);
 
 export const unstable_now = getCurrentTime;
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  delay: [$checkF64, 'nullish'],
+}));
+
+const checkCallbackNode = /* @__PURE__ */ $checkShape(
+  () => ({}),
+  'scheduler#115552e8200523c3::scheduler_post_task::CallbackNode',
+  'a CallbackNode',
+);
 
 // Scheduler periodically yields in case there is other work on the main
 // thread, like user events. By default, it yields multiple times per frame.
@@ -53,6 +73,17 @@ export function unstable_requestPaint() {
 }
 
 export function unstable_scheduleCallback(priorityLevel, callback, options) {
+  $checkU8(priorityLevel, 'unstable_scheduleCallback(priorityLevel)');
+  $checkWhole(
+    checkOptions,
+    options,
+    'unstable_scheduleCallback(options)',
+    'nullish',
+  );
+  return unstable_scheduleCallback$(priorityLevel, callback, options);
+}
+
+export function unstable_scheduleCallback$(priorityLevel, callback, options) {
   let postTaskPriority;
   switch (priorityLevel) {
     case ImmediatePriority:
@@ -77,7 +108,12 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
     signal: controller.signal,
   };
 
-  const node = {_controller: controller};
+  const node = $brand(
+    'scheduler#115552e8200523c3::scheduler_post_task::CallbackNode',
+    {
+      _controller: controller,
+    },
+  );
 
   scheduler
     .postTask(() => {
@@ -146,11 +182,22 @@ function handleAbortError(error) {
 }
 
 export function unstable_cancelCallback(node) {
+  $checks('unstable_cancelCallback(node)', node, checkCallbackNode);
+  return unstable_cancelCallback$(node);
+}
+
+export function unstable_cancelCallback$(node) {
   const controller = node._controller;
   controller.abort();
 }
 
 export function unstable_runWithPriority(priorityLevel, callback) {
+  $checkU8(priorityLevel, 'unstable_runWithPriority(priorityLevel)');
+  $checkCallback(callback, 'unstable_runWithPriority(callback)');
+  return unstable_runWithPriority$(priorityLevel, callback);
+}
+
+export function unstable_runWithPriority$(priorityLevel, callback) {
   const restore = currentPriorityLevel_DEPRECATED;
   currentPriorityLevel_DEPRECATED = priorityLevel;
   try {
@@ -169,6 +216,7 @@ export function unstable_getCurrentPriorityLevel() {
 }
 
 export function unstable_next(callback) {
+  $checkCallback(callback, 'unstable_next(callback)');
   const current = currentPriorityLevel_DEPRECATED;
   let priorityLevel;
   switch (current) {
@@ -198,6 +246,7 @@ export function unstable_next(callback) {
 }
 
 export function unstable_wrapCallback(callback) {
+  $checkCallback(callback, 'unstable_wrapCallback(callback)');
   const parentPriorityLevel = currentPriorityLevel_DEPRECATED;
   return () => {
     const restore = currentPriorityLevel_DEPRECATED;

@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$panic, $stringPanic} from '@rust-js/std';
+import {$checkStr, $checks, $panic, $stringPanic} from '@rust-js/std';
 
 const CLIENT_REFERENCE_TAG = Symbol.for('react.client.reference');
 const SERVER_REFERENCE_TAG = Symbol.for('react.server.reference');
@@ -19,6 +19,13 @@ export function isServerReference(reference) {
 }
 
 export function registerClientReference(proxyImplementation, id, exportName) {
+  $checks(
+    'registerClientReference(id, exportName)',
+    id,
+    $checkStr,
+    exportName,
+    $checkStr,
+  );
   return registerClientReferenceImpl(
     proxyImplementation,
     id + '#' + exportName,
@@ -87,6 +94,7 @@ const serverReferenceToString = {
 };
 
 export function registerServerReference(reference, id, exportName) {
+  $checkStr(id, 'registerServerReference(id)');
   const typeof$ = {value: SERVER_REFERENCE_TAG};
   id = {
     value: exportName === null ? id : id + '#' + String(exportName),
@@ -327,6 +335,7 @@ const proxyHandlers = {
 };
 
 export function createClientModuleProxy(moduleId) {
+  $checkStr(moduleId, 'createClientModuleProxy(moduleId)');
   const clientReference = registerClientReferenceImpl(
     {},
     // Represents the whole Module object instead of a particular import.

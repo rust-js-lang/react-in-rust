@@ -36,7 +36,7 @@ import {
   enableUpdaterTracking,
 } from 'shared/ReactFeatureFlags';
 
-import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
+import {createCapturedValueAtFiber$ as createCapturedValueAtFiber} from './ReactCapturedValue.js';
 import {
   CaptureUpdate,
   ForceUpdate,
@@ -44,7 +44,7 @@ import {
   enqueueCapturedUpdate,
   enqueueUpdate,
 } from './ReactFiberClassUpdateQueue.js';
-import {markFailedErrorBoundaryForHotReloading} from './ReactFiberHotReloading.js';
+import {markFailedErrorBoundaryForHotReloading$ as markFailedErrorBoundaryForHotReloading} from './ReactFiberHotReloading.js';
 import {
   getShellBoundary,
   getSuspenseHandler,
@@ -67,9 +67,9 @@ import {logCaughtError, logUncaughtError} from './ReactFiberErrorLogger.js';
 import {isDevToolsPresent} from './ReactFiberDevToolsHook.js';
 import {
   SyncLane,
-  includesSomeLane,
-  mergeLanes,
-  pickArbitraryLane,
+  includesSomeLane$ as includesSomeLane,
+  mergeLanes$ as mergeLanes,
+  pickArbitraryLane$ as pickArbitraryLane,
 } from './ReactFiberLane.js';
 
 import {

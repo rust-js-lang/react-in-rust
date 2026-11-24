@@ -86,12 +86,12 @@ import {
   NoLane,
   NoLanes,
   OffscreenLane,
-  intersectLanes,
-  isSubsetOfLanes,
-  isTransitionLane,
-  markRootEntangled,
-  mergeLanes,
-  removeLanes,
+  intersectLanes$ as intersectLanes,
+  isSubsetOfLanes$ as isSubsetOfLanes,
+  isTransitionLane$ as isTransitionLane,
+  markRootEntangled$ as markRootEntangled,
+  mergeLanes$ as mergeLanes,
+  removeLanes$ as removeLanes,
 } from './ReactFiberLane.js';
 import {
   enterDisallowedContextReadInDEV,

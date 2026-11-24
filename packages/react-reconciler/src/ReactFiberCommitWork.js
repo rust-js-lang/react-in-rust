@@ -6,9 +6,10 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  includesLoadingIndicatorLanes,
-  includesOnlySuspenseyCommitEligibleLanes,
-  includesOnlyViewTransitionEligibleLanes,
+  clearTransitionsForLanes$ as clearTransitionsForLanes,
+  includesLoadingIndicatorLanes$ as includesLoadingIndicatorLanes,
+  includesOnlySuspenseyCommitEligibleLanes$ as includesOnlySuspenseyCommitEligibleLanes,
+  includesOnlyViewTransitionEligibleLanes$ as includesOnlyViewTransitionEligibleLanes,
 } from './ReactFiberLane.js';
 
 import {
@@ -175,12 +176,11 @@ import {
   Passive as HookPassive,
 } from './ReactHookEffectTags.js';
 
-import {doesFiberContain} from './ReactFiberTreeReflection.js';
+import {doesFiberContain$ as doesFiberContain} from './ReactFiberTreeReflection.js';
 
 import {isDevToolsPresent, onCommitUnmount} from './ReactFiberDevToolsHook.js';
 
 import {releaseCache, retainCache} from './ReactFiberCacheComponent.js';
-import {clearTransitionsForLanes} from './ReactFiberLane.js';
 import {
   OffscreenPassiveEffectsConnected,
   OffscreenVisible,
@@ -265,7 +265,15 @@ import {
   untrackNamedViewTransition,
 } from './ReactFiberDuplicateViewTransitions.js';
 import {markIndicatorHandled} from './ReactFiberRootScheduler.js';
-import {$catchable, $index, $panic, $stringPanic, $unwrap} from '@rust-js/std';
+import {
+  $catchable,
+  $checkBool,
+  $checkResult,
+  $index,
+  $panic,
+  $stringPanic,
+  $unwrap,
+} from '@rust-js/std';
 
 // shared/ReactTypes' `Wakeable`.
 
@@ -1342,7 +1350,13 @@ function commitDeletionEffects(root, returnFiber, deletedFiber) {
       switch (tag) {
         case HostSingleton:
           if (supportsSingletons) {
-            if (isSingletonScope(current.type)) {
+            if (
+              $checkResult(
+                isSingletonScope(current.type),
+                './src/ReactFiberConfig.js#isSingletonScope',
+                $checkBool,
+              )
+            ) {
               hostParent = current.stateNode;
               hostParentIsContainer = false;
               break findParent;
@@ -1461,7 +1475,13 @@ function commitDeletionEffectsOnFiber(
 
         const prevHostParent = hostParent;
         const prevHostParentIsContainer = hostParentIsContainer;
-        if (isSingletonScope(deletedFiber.type)) {
+        if (
+          $checkResult(
+            isSingletonScope(deletedFiber.type),
+            './src/ReactFiberConfig.js#isSingletonScope',
+            $checkBool,
+          )
+        ) {
           hostParent = deletedFiber.stateNode;
           hostParentIsContainer = false;
         }
@@ -4686,7 +4706,11 @@ function accumulateSuspenseyCommitOnFiber(
           // TODO: Allow sync lanes to suspend too with an opt-in.
           if (
             includesOnlySuspenseyCommitEligibleLanes(committedLanes) ||
-            maySuspendCommitInSyncRender(type, props)
+            $checkResult(
+              maySuspendCommitInSyncRender(type, props),
+              './src/ReactFiberConfig.js#maySuspendCommitInSyncRender',
+              $checkBool,
+            )
           ) {
             suspendInstance(suspendedState, instance, type, props);
           }
@@ -4706,7 +4730,11 @@ function accumulateSuspenseyCommitOnFiber(
         // TODO: Allow sync lanes to suspend too with an opt-in.
         if (
           includesOnlySuspenseyCommitEligibleLanes(committedLanes) ||
-          maySuspendCommitInSyncRender(type, props)
+          $checkResult(
+            maySuspendCommitInSyncRender(type, props),
+            './src/ReactFiberConfig.js#maySuspendCommitInSyncRender',
+            $checkBool,
+          )
         ) {
           suspendInstance(suspendedState, instance, type, props);
         }

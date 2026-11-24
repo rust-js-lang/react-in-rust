@@ -17,6 +17,7 @@ import {saveModule} from '../flight-modules.js';
 const textEncoder = new TextEncoder();
 
 import ReactFlightServer from 'react-server/flight';
+import {$checkF64, $checkShape, $checkStr, $checkWhole} from '@rust-js/std';
 
 // $FlowFixMe[prop-missing]
 // $FlowFixMe[incompatible-type]
@@ -62,7 +63,16 @@ const ReactNoopFlightServer = ReactFlightServer({
   },
 });
 
+const checkDebugChannel = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  debugChannel: [checkDebugChannel, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+}));
+
 export function render(model, options) {
+  $checkWhole(checkOptions, options, 'render(options)', 'nullish');
   const destination = [];
   const bundlerConfig = undefined;
   const request = ReactNoopFlightServer.createRequest(

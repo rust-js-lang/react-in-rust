@@ -8,27 +8,41 @@
 export {default as version} from 'shared/ReactVersion';
 
 import {
-  abort,
-  attachAbortSignal,
-  createRequest,
-  startFlowing,
-  startWork,
-  stopFlowing,
+  abort$ as abort,
+  attachAbortSignal$ as attachAbortSignal,
+  createRequest$ as createRequest,
+  startFlowing$ as startFlowing,
+  startWork$ as startWork,
+  stopFlowing$ as stopFlowing,
 } from 'react-server/src/ReactFizzServer';
 
 import {
-  createRenderState,
-  createResumableState,
-  createRootFormatContext,
+  createRenderState$ as createRenderState,
+  createResumableState$ as createResumableState,
+  createRootFormatContext$ as createRootFormatContext,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
+import {$checkF64, $checkShape, $checkStr, $checkWhole} from '@rust-js/std';
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  namespaceURI: [$checkStr, 'nullish'],
+  bootstrapScriptContent: [$checkStr, 'nullish'],
+  progressiveChunkSize: [$checkF64, 'nullish'],
+}));
 
 ensureCorrectIsomorphicReactVersion();
 
 // TODO: Move to sub-classing ReadableStream.
 
 export function renderToReadableStream(children, options) {
+  $checkWhole(
+    checkOptions,
+    options,
+    'renderToReadableStream(options)',
+    'nullish',
+  );
   return new Promise((resolve, reject) => {
     let onFatalError;
     let onAllReady;

@@ -18,11 +18,20 @@ import Template from 'webpack/lib/Template';
 import ModuleDependency from 'webpack/lib/dependencies/ModuleDependency';
 import NullDependency from 'webpack/lib/dependencies/NullDependency';
 import neoAsync from 'neo-async';
-import {$next, $panic, $stringPanic} from '@rust-js/std';
+import {
+  $checkCallback,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $next,
+  $panic,
+  $stringPanic,
+} from '@rust-js/std';
 
 export class ClientReferenceDependency extends ModuleDependency {
   constructor(request) {
     super(request);
+    $checkStr(request, 'ClientReferenceDependency.new(request)');
   }
   get type() {
     return 'client-reference';
@@ -37,6 +46,12 @@ export class ClientReferenceDependency extends ModuleDependency {
 const clientImportName = 'react-server-dom-webpack/client';
 const clientFileName = require.resolve('../client.browser.js');
 
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  chunkName: [$checkStr, 'nullish'],
+  clientManifestFilename: [$checkStr, 'nullish'],
+  serverConsumerManifestFilename: [$checkStr, 'nullish'],
+}));
+
 const PLUGIN_NAME = 'React Server Plugin';
 
 export default class ReactFlightWebpackPlugin {
@@ -46,6 +61,12 @@ export default class ReactFlightWebpackPlugin {
   serverConsumerManifestFilename;
 
   constructor(options) {
+    $checkWhole(
+      checkOptions,
+      options,
+      'ReactFlightWebpackPlugin.new(options)',
+      'nullish',
+    );
     if (options == null) {
       throw $stringPanic(
         `${PLUGIN_NAME}: You must specify the isServer option as a boolean.`,
@@ -376,6 +397,14 @@ export default class ReactFlightWebpackPlugin {
     contextModuleFactory,
     callback,
   ) {
+    $checkStr(
+      context,
+      'ReactFlightWebpackPlugin.resolveAllClientFiles(context)',
+    );
+    $checkCallback(
+      callback,
+      'ReactFlightWebpackPlugin.resolveAllClientFiles(callback)',
+    );
     function hasUseClientDirective(source) {
       if (!source.includes('use client')) {
         return false;

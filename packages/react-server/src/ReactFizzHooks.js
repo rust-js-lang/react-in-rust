@@ -30,7 +30,7 @@ import {
 
 import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
 
-import {getFormState} from './ReactFizzServer.js';
+import {getFormState$ as getFormState} from './ReactFizzServer.js';
 
 import noop from 'shared/noop';
 
@@ -561,15 +561,13 @@ function dispatchAction(componentIdentity, queue, action) {
       action,
       next: null,
     };
-    let renderPhaseUpdates$1 = renderPhaseUpdates;
-    if (renderPhaseUpdates$1 == null) {
-      renderPhaseUpdates$1 = new Map();
-      renderPhaseUpdates = renderPhaseUpdates$1;
+    if (renderPhaseUpdates == null) {
+      renderPhaseUpdates = new Map();
     }
-    const firstRenderPhaseUpdate = renderPhaseUpdates$1.get(queue);
+    const firstRenderPhaseUpdate = renderPhaseUpdates.get(queue);
     if (firstRenderPhaseUpdate === undefined) {
       // $FlowFixMe[incompatible-use] found when upgrading Flow
-      renderPhaseUpdates$1.set(queue, update);
+      renderPhaseUpdates.set(queue, update);
     } else {
       // Append the update to the end of the list.
       let lastRenderPhaseUpdate = firstRenderPhaseUpdate;

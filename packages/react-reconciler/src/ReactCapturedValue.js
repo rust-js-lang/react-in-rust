@@ -6,10 +6,17 @@
 // LICENSE file in the root directory of this source tree.
 
 import {getStackByFiberInDevAndProd} from './ReactFiberComponentStack.js';
+import {$checkShape, $checkStr, $checks} from '@rust-js/std';
 
 const CapturedStacks = new WeakMap();
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
 
 export function createCapturedValueAtFiber(value, source) {
+  $checks('createCapturedValueAtFiber(source)', source, checkFiber);
+  return createCapturedValueAtFiber$(value, source);
+}
+
+export function createCapturedValueAtFiber$(value, source) {
   // If the value is an error, call this function immediately after it is thrown
   // so the stack is accurate.
   if (typeof value === 'object' && value !== null) {
@@ -34,6 +41,11 @@ export function createCapturedValueAtFiber(value, source) {
 }
 
 export function createCapturedValueFromError(value, stack) {
+  $checkStr(stack, 'createCapturedValueFromError(stack)', 'null');
+  return createCapturedValueFromError$(value, stack);
+}
+
+export function createCapturedValueFromError$(value, stack) {
   const captured = {
     value,
     source: null,

@@ -5,16 +5,34 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$checkArray, $checkShape, $checkStr, $checks} from '@rust-js/std';
+
 export {
   isClientReference,
   isServerReference,
 } from '../ReactFlightParcelReferences.js';
 
+const checkClientReference = /* @__PURE__ */ $checkShape(() => ({
+  $$id: $checkStr,
+  $$name: $checkStr,
+  $$bundles: (value, where, none) => $checkArray(value, where, none, $checkStr),
+}));
+
+const checkServerReference = /* @__PURE__ */ $checkShape(() => ({
+  $$id: $checkStr,
+}));
+
 export function getClientReferenceKey(reference) {
+  $checks('getClientReferenceKey(reference)', reference, checkClientReference);
   return reference.$$id + '#' + reference.$$name;
 }
 
 export function resolveClientReferenceMetadata(config, clientReference) {
+  $checks(
+    'resolveClientReferenceMetadata(clientReference)',
+    clientReference,
+    checkClientReference,
+  );
   if (clientReference.$$importMap) {
     return [
       clientReference.$$id,
@@ -32,14 +50,29 @@ export function resolveClientReferenceMetadata(config, clientReference) {
 }
 
 export function getServerReferenceId(config, serverReference) {
+  $checks(
+    'getServerReferenceId(serverReference)',
+    serverReference,
+    checkServerReference,
+  );
   return serverReference.$$id;
 }
 
 export function getServerReferenceBoundArguments(config, serverReference) {
+  $checks(
+    'getServerReferenceBoundArguments(serverReference)',
+    serverReference,
+    checkServerReference,
+  );
   return serverReference.$$bound;
 }
 
 export function getServerReferenceLocation(config, serverReference) {
+  $checks(
+    'getServerReferenceLocation(serverReference)',
+    serverReference,
+    checkServerReference,
+  );
   return serverReference.$$location ?? undefined;
 }
 //# sourceMappingURL=ReactFlightServerConfigParcelBundler.js.map

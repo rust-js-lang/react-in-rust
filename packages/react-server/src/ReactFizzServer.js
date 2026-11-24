@@ -180,10 +180,17 @@ import {
   $assign,
   $borrow,
   $borrowMut,
+  $brand,
   $catchStackOverflow,
   $catchUnwind,
   $catchable,
   $cellReplace,
+  $checkArray,
+  $checkBool,
+  $checkF64,
+  $checkResult,
+  $checkShape,
+  $checks,
   $displayF64,
   $drain,
   $fieldCell,
@@ -294,7 +301,11 @@ function isEligibleForOutlining(request, boundary) {
   // outlining.
   return (
     (boundary.byteSize > 500 ||
-      hasSuspenseyContent(/* flushingInShell */ boundary.contentState, false) ||
+      $checkResult(
+        hasSuspenseyContent(/* flushingInShell */ boundary.contentState, false),
+        './src/ReactFizzConfig.js#hasSuspenseyContent',
+        $checkBool,
+      ) ||
       boundary.defer) &&
     // For boundaries that can possibly contribute to the preamble we don't want to outline
     // them regardless of their size since the fallbacks should only be emitted if we've
@@ -392,6 +403,41 @@ export function createRequest(
   onFatalError,
   formState,
 ) {
+  $checkF64(
+    progressiveChunkSize,
+    'createRequest(progressiveChunkSize)',
+    'nullish',
+  );
+  return createRequest$(
+    children,
+    resumableState,
+    renderState,
+    rootFormatContext,
+    progressiveChunkSize,
+    onError,
+    onBrowserBailout,
+    onAllReady,
+    onShellReady,
+    onShellError,
+    onFatalError,
+    formState,
+  );
+}
+
+export function createRequest$(
+  children,
+  resumableState,
+  renderState,
+  rootFormatContext,
+  progressiveChunkSize,
+  onError,
+  onBrowserBailout,
+  onAllReady,
+  onShellReady,
+  onShellError,
+  onFatalError,
+  formState,
+) {
   if (__DEV__) {
     resetOwnerStackLimit();
   }
@@ -459,7 +505,40 @@ export function createPrerenderRequest(
   onShellError,
   onFatalError,
 ) {
-  const request = createRequest(
+  $checkF64(
+    progressiveChunkSize,
+    'createPrerenderRequest(progressiveChunkSize)',
+    'nullish',
+  );
+  return createPrerenderRequest$(
+    children,
+    resumableState,
+    renderState,
+    rootFormatContext,
+    progressiveChunkSize,
+    onError,
+    onBrowserBailout,
+    onAllReady,
+    onShellReady,
+    onShellError,
+    onFatalError,
+  );
+}
+
+export function createPrerenderRequest$(
+  children,
+  resumableState,
+  renderState,
+  rootFormatContext,
+  progressiveChunkSize,
+  onError,
+  onBrowserBailout,
+  onAllReady,
+  onShellReady,
+  onShellError,
+  onFatalError,
+) {
+  const request = createRequest$(
     children,
     resumableState,
     renderState,
@@ -482,6 +561,31 @@ export function createPrerenderRequest(
 }
 
 export function resumeRequest(
+  children,
+  postponedState,
+  renderState,
+  onError,
+  onBrowserBailout,
+  onAllReady,
+  onShellReady,
+  onShellError,
+  onFatalError,
+) {
+  $checks('resumeRequest(postponedState)', postponedState, checkPostponedState);
+  return resumeRequest$(
+    children,
+    postponedState,
+    renderState,
+    onError,
+    onBrowserBailout,
+    onAllReady,
+    onShellReady,
+    onShellError,
+    onFatalError,
+  );
+}
+
+export function resumeRequest$(
   children,
   postponedState,
   renderState,
@@ -586,7 +690,36 @@ export function resumeAndPrerenderRequest(
   onShellError,
   onFatalError,
 ) {
-  const request = resumeRequest(
+  $checks(
+    'resumeAndPrerenderRequest(postponedState)',
+    postponedState,
+    checkPostponedState,
+  );
+  return resumeAndPrerenderRequest$(
+    children,
+    postponedState,
+    renderState,
+    onError,
+    onBrowserBailout,
+    onAllReady,
+    onShellReady,
+    onShellError,
+    onFatalError,
+  );
+}
+
+export function resumeAndPrerenderRequest$(
+  children,
+  postponedState,
+  renderState,
+  onError,
+  onBrowserBailout,
+  onAllReady,
+  onShellReady,
+  onShellError,
+  onFatalError,
+) {
+  const request = resumeRequest$(
     children,
     postponedState,
     renderState,
@@ -632,9 +765,9 @@ function pingTask(request, task) {
   if (request.pingedTasks.length === 1) {
     request.flushScheduled = request.destination != null;
     if (request.trackedPostpones != null || request.status === OPENING) {
-      scheduleMicrotask(() => performWork(request));
+      scheduleMicrotask(() => performWork$(request));
     } else {
-      scheduleWork(() => performWork(request));
+      scheduleWork(() => performWork$(request));
     }
   }
 }
@@ -749,25 +882,28 @@ function createRenderTask(
   if (row != null) {
     row.pendingTasks++;
   }
-  const task = {
-    replay: null,
-    node,
-    childIndex,
-    blockedBoundary: blockedBoundary ?? null,
-    blockedSegment,
-    blockedPreamble: blockedPreamble ?? null,
-    hoistableState: hoistableState ?? null,
-    abortSet,
-    keyPath: keyPath ?? null,
-    formatContext,
-    context,
-    treeContext,
-    row: row ?? null,
-    componentStack: componentStack ?? null,
-    thenableState: thenableState ?? null,
-    legacyContext: !disableLegacyContext ? legacyContext : emptyContextObject,
-    debugTask: (__DEV__ ? debugTask : undefined) ?? null,
-  };
+  const task = $brand(
+    'react_server#e6a613c2ba24c354::react_fizz_server::Task',
+    {
+      replay: null,
+      node,
+      childIndex,
+      blockedBoundary: blockedBoundary ?? null,
+      blockedSegment,
+      blockedPreamble: blockedPreamble ?? null,
+      hoistableState: hoistableState ?? null,
+      abortSet,
+      keyPath: keyPath ?? null,
+      formatContext,
+      context,
+      treeContext,
+      row: row ?? null,
+      componentStack: componentStack ?? null,
+      thenableState: thenableState ?? null,
+      legacyContext: !disableLegacyContext ? legacyContext : emptyContextObject,
+      debugTask: (__DEV__ ? debugTask : undefined) ?? null,
+    },
+  );
   if (abortSet.borrows) {
     $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:1192:15');
   }
@@ -803,25 +939,28 @@ function createReplayTask(
     row.pendingTasks++;
   }
   replay.pendingTasks++;
-  const task = {
-    replay,
-    node,
-    childIndex,
-    blockedBoundary: blockedBoundary ?? null,
-    blockedSegment: null,
-    blockedPreamble: null,
-    hoistableState: hoistableState ?? null,
-    abortSet,
-    keyPath: keyPath ?? null,
-    formatContext,
-    context,
-    treeContext,
-    row: row ?? null,
-    componentStack: componentStack ?? null,
-    thenableState: thenableState ?? null,
-    legacyContext: !disableLegacyContext ? legacyContext : emptyContextObject,
-    debugTask: (__DEV__ ? debugTask : undefined) ?? null,
-  };
+  const task = $brand(
+    'react_server#e6a613c2ba24c354::react_fizz_server::Task',
+    {
+      replay,
+      node,
+      childIndex,
+      blockedBoundary: blockedBoundary ?? null,
+      blockedSegment: null,
+      blockedPreamble: null,
+      hoistableState: hoistableState ?? null,
+      abortSet,
+      keyPath: keyPath ?? null,
+      formatContext,
+      context,
+      treeContext,
+      row: row ?? null,
+      componentStack: componentStack ?? null,
+      thenableState: thenableState ?? null,
+      legacyContext: !disableLegacyContext ? legacyContext : emptyContextObject,
+      debugTask: (__DEV__ ? debugTask : undefined) ?? null,
+    },
+  );
   if (abortSet.borrows) {
     $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:1253:15');
   }
@@ -1322,7 +1461,11 @@ function renderSuspenseBoundary(request, someTask, keyPath, props) {
   const defer = enableCPUSuspense && props.defer === true;
 
   const fallbackAbortSet = new Set();
-  const preamble = canHavePreamble(task.formatContext)
+  const preamble = $checkResult(
+    canHavePreamble(task.formatContext),
+    './src/ReactFizzConfig.js#canHavePreamble',
+    $checkBool,
+  )
     ? createPreamble()
     : undefined;
   const newBoundary = createSuspenseBoundary(
@@ -1647,7 +1790,13 @@ function replaySuspenseBoundary(
     request,
     prevRow,
     fallbackAbortSet,
-    canHavePreamble(task.formatContext) ? createPreamble() : undefined,
+    $checkResult(
+      canHavePreamble(task.formatContext),
+      './src/ReactFizzConfig.js#canHavePreamble',
+      $checkBool,
+    )
+      ? createPreamble()
+      : undefined,
     defer,
   );
   resumedBoundary.parentFlushed = true;
@@ -2371,7 +2520,13 @@ function renderHostElement(request, task, keyPath, type, props) {
 
     const newContext = getChildFormatContext(prevContext, type, props);
     task.formatContext = newContext;
-    if (isPreambleContext(newContext)) {
+    if (
+      $checkResult(
+        isPreambleContext(newContext),
+        './src/ReactFizzConfig.js#isPreambleContext',
+        $checkBool,
+      )
+    ) {
       // $FlowFixMe[incompatible-type]: Refined
       renderPreamble(request, task, segment, children);
     } else {
@@ -2533,6 +2688,42 @@ const didWarnAboutBadClass = {};
 const didWarnAboutContextTypes = {};
 const didWarnAboutContextTypeOnFunctionComponent = {};
 const didWarnAboutGetDerivedStateOnFunctionComponent = {};
+
+const checkTask = /* @__PURE__ */ $checkShape(
+  () => ({}),
+  'react_server#e6a613c2ba24c354::react_fizz_server::Task',
+  'a Task',
+);
+
+const checkSegment = /* @__PURE__ */ $checkShape(() => ({
+  index: $checkF64,
+  children: (value, where, none) =>
+    $checkArray(value, where, none, checkSegment),
+  preambleChildren: (value, where, none) =>
+    $checkArray(value, where, none, checkSegment),
+}));
+
+const checkPreamble = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkSuspenseBoundary = /* @__PURE__ */ $checkShape(() => ({
+  completedSegments: (value, where, none) =>
+    $checkArray(value, where, none, checkSegment),
+  defer: $checkBool,
+  preamble: [checkPreamble, 'nullish'],
+}));
+
+const checkRequest = /* @__PURE__ */ $checkShape(() => ({
+  progressiveChunkSize: $checkF64,
+  pingedTasks: (value, where, none) =>
+    $checkArray(value, where, none, checkTask),
+  clientRenderedBoundaries: (value, where, none) =>
+    $checkArray(value, where, none, checkSuspenseBoundary),
+  completedBoundaries: (value, where, none) =>
+    $checkArray(value, where, none, checkSuspenseBoundary),
+  partialBoundaries: (value, where, none) =>
+    $checkArray(value, where, none, checkSuspenseBoundary),
+}));
+
 let didWarnAboutReassigningProps = false;
 let didWarnAboutGenerators = false;
 let didWarnAboutMaps = false;
@@ -3745,11 +3936,15 @@ function retryNode(request, task) {
   if (typeof node === 'string') {
     const segment = task.blockedSegment;
     if (segment != null) {
-      segment.lastPushedText = pushTextInstance(
-        segment.chunks,
-        node,
-        request.renderState,
-        segment.lastPushedText,
+      segment.lastPushedText = $checkResult(
+        pushTextInstance(
+          segment.chunks,
+          node,
+          request.renderState,
+          segment.lastPushedText,
+        ),
+        './src/ReactFizzConfig.js#pushTextInstance',
+        $checkBool,
       );
     } else {
       // We assume a text node doesn't have a representation in the replay set,
@@ -3762,11 +3957,15 @@ function retryNode(request, task) {
     const segment = task.blockedSegment;
     if (segment != null) {
       const value = '' + node;
-      segment.lastPushedText = pushTextInstance(
-        segment.chunks,
-        value,
-        request.renderState,
-        segment.lastPushedText,
+      segment.lastPushedText = $checkResult(
+        pushTextInstance(
+          segment.chunks,
+          value,
+          request.renderState,
+          segment.lastPushedText,
+        ),
+        './src/ReactFizzConfig.js#pushTextInstance',
+        $checkBool,
       );
     } else {
       // We assume a text node doesn't have a representation in the replay set,
@@ -5999,6 +6198,11 @@ function retryReplayTask(request, task) {
 }
 
 export function performWork(request) {
+  $checks('performWork(request)', request, checkRequest);
+  return performWork$(request);
+}
+
+export function performWork$(request) {
   if (request.aborted || request.status > OPEN) {
     return;
   }
@@ -6199,7 +6403,13 @@ function preparePreamble(request) {
       completedRootSegment,
       collectedPreambleSegments,
     );
-    if (isPreambleReady(request.renderState, hasPendingPreambles)) {
+    if (
+      $checkResult(
+        isPreambleReady(request.renderState, hasPendingPreambles),
+        './src/ReactFizzConfig.js#isPreambleReady',
+        $checkBool,
+      )
+    ) {
       request.completedPreambleSegments = collectedPreambleSegments;
     } else {
       // We restore the original size since the preamble is not ready
@@ -6260,7 +6470,11 @@ function flushSubtree(request, destination, segment, hoistableState) {
       // When this segment finally completes it won't be embedded in text since it will flush separately
       segment.lastPushedText = false;
       segment.textEmbedded = false;
-      return writePlaceholder(destination, request.renderState, segmentId);
+      return $checkResult(
+        writePlaceholder(destination, request.renderState, segmentId),
+        './src/ReactFizzConfig.js#writePlaceholder',
+        $checkBool,
+      );
     }
     case COMPLETED: {
       segment.status = FLUSHED;
@@ -6310,7 +6524,11 @@ function flushSubtree(request, destination, segment, hoistableState) {
             chunkIdx = (chunkIdx + 1) >>> 0;
           }
           if (chunkIdx < chunks.length) {
-            r = writeChunkAndReturn(destination, chunks[chunkIdx]);
+            r = $checkResult(
+              writeChunkAndReturn(destination, chunks[chunkIdx]),
+              './src/ReactServerStreamConfig.js#writeChunkAndReturn',
+              $checkBool,
+            );
           }
           result = r;
         } finally {
@@ -6370,56 +6588,65 @@ function flushSegment(request, destination, segment, hoistableState) {
       const errorMessage = boundary.errorMessage;
       const errorStack = boundary.errorStack;
       const errorComponentStack = boundary.errorComponentStack;
-      errorComponentStack != null
-        ? writeStartClientRenderedSuspenseBoundary(
-            destination,
-            request.renderState,
-            errorDigest ?? undefined,
-            errorMessage ?? undefined,
-            errorStack ?? undefined,
-            errorComponentStack,
-          )
-        : errorStack != null
+      $checkResult(
+        errorComponentStack != null
           ? writeStartClientRenderedSuspenseBoundary(
               destination,
               request.renderState,
               errorDigest ?? undefined,
               errorMessage ?? undefined,
-              errorStack,
+              errorStack ?? undefined,
+              errorComponentStack,
             )
-          : errorMessage != null
+          : errorStack != null
             ? writeStartClientRenderedSuspenseBoundary(
                 destination,
                 request.renderState,
                 errorDigest ?? undefined,
-                errorMessage,
+                errorMessage ?? undefined,
+                errorStack,
               )
-            : errorDigest != null
+            : errorMessage != null
               ? writeStartClientRenderedSuspenseBoundary(
                   destination,
                   request.renderState,
-                  errorDigest,
+                  errorDigest ?? undefined,
+                  errorMessage,
                 )
-              : writeStartClientRenderedSuspenseBoundary(
-                  destination,
-                  request.renderState,
-                );
+              : errorDigest != null
+                ? writeStartClientRenderedSuspenseBoundary(
+                    destination,
+                    request.renderState,
+                    errorDigest,
+                  )
+                : writeStartClientRenderedSuspenseBoundary(
+                    destination,
+                    request.renderState,
+                  ),
+        './src/ReactFizzConfig.js#writeStartClientRenderedSuspenseBoundary',
+        $checkBool,
+      );
     } else {
-      writeStartClientRenderedSuspenseBoundary(
-        destination,
-        request.renderState,
-        errorDigest ?? undefined,
-        null,
-        null,
-        null,
+      $checkResult(
+        writeStartClientRenderedSuspenseBoundary(
+          destination,
+          request.renderState,
+          errorDigest ?? undefined,
+          null,
+          null,
+          null,
+        ),
+        './src/ReactFizzConfig.js#writeStartClientRenderedSuspenseBoundary',
+        $checkBool,
       );
     }
     // Flush the fallback.
     flushSubtree(request, destination, segment, hoistableState);
 
-    return writeEndClientRenderedSuspenseBoundary(
-      destination,
-      request.renderState,
+    return $checkResult(
+      writeEndClientRenderedSuspenseBoundary(destination, request.renderState),
+      './src/ReactFizzConfig.js#writeEndClientRenderedSuspenseBoundary',
+      $checkBool,
     );
   } else if (boundary.status !== COMPLETED) {
     if (boundary.status === PENDING) {
@@ -6441,7 +6668,11 @@ function flushSegment(request, destination, segment, hoistableState) {
     // This boundary is still loading. Emit a pending suspense boundary wrapper.
 
     const id = boundary.rootSegmentID;
-    writeStartPendingSuspenseBoundary(destination, request.renderState, id);
+    $checkResult(
+      writeStartPendingSuspenseBoundary(destination, request.renderState, id),
+      './src/ReactFizzConfig.js#writeStartPendingSuspenseBoundary',
+      $checkBool,
+    );
 
     if (hoistableState != null) {
       hoistHoistables(hoistableState, boundary.fallbackState);
@@ -6449,7 +6680,11 @@ function flushSegment(request, destination, segment, hoistableState) {
     // Flush the fallback.
     flushSubtree(request, destination, segment, hoistableState);
 
-    return writeEndPendingSuspenseBoundary(destination, request.renderState);
+    return $checkResult(
+      writeEndPendingSuspenseBoundary(destination, request.renderState),
+      './src/ReactFizzConfig.js#writeEndPendingSuspenseBoundary',
+      $checkBool,
+    );
   } else if (
     // We don't outline when we're emitting partially completed boundaries optimistically
     // because it doesn't make sense to outline something if its parent is going to be
@@ -6457,7 +6692,11 @@ function flushSegment(request, destination, segment, hoistableState) {
     !flushingPartialBoundaries &&
     isEligibleForOutlining(request, boundary) &&
     (flushedByteSize + boundary.byteSize > request.progressiveChunkSize ||
-      hasSuspenseyContent(boundary.contentState, flushingShell) ||
+      $checkResult(
+        hasSuspenseyContent(boundary.contentState, flushingShell),
+        './src/ReactFizzConfig.js#hasSuspenseyContent',
+        $checkBool,
+      ) ||
       boundary.defer)
   ) {
     // Inlining this boundary would make the current sequence being written too large
@@ -6473,10 +6712,14 @@ function flushSegment(request, destination, segment, hoistableState) {
 
     request.completedBoundaries.push(boundary);
     // Emit a pending rendered suspense boundary wrapper.
-    writeStartPendingSuspenseBoundary(
-      destination,
-      request.renderState,
-      boundary.rootSegmentID,
+    $checkResult(
+      writeStartPendingSuspenseBoundary(
+        destination,
+        request.renderState,
+        boundary.rootSegmentID,
+      ),
+      './src/ReactFizzConfig.js#writeStartPendingSuspenseBoundary',
+      $checkBool,
     );
 
     // While we are going to flush the fallback we are going to follow it up with
@@ -6487,7 +6730,11 @@ function flushSegment(request, destination, segment, hoistableState) {
     // Flush the fallback.
     flushSubtree(request, destination, segment, hoistableState);
 
-    return writeEndPendingSuspenseBoundary(destination, request.renderState);
+    return $checkResult(
+      writeEndPendingSuspenseBoundary(destination, request.renderState),
+      './src/ReactFizzConfig.js#writeEndPendingSuspenseBoundary',
+      $checkBool,
+    );
   } else {
     // We're inlining this boundary so its bytes get counted to the current running count.
     flushedByteSize += boundary.byteSize;
@@ -6506,7 +6753,11 @@ function flushSegment(request, destination, segment, hoistableState) {
     }
 
     // We can inline this boundary's content as a complete boundary.
-    writeStartCompletedSuspenseBoundary(destination, request.renderState);
+    $checkResult(
+      writeStartCompletedSuspenseBoundary(destination, request.renderState),
+      './src/ReactFizzConfig.js#writeStartCompletedSuspenseBoundary',
+      $checkBool,
+    );
 
     const completedSegments = boundary.completedSegments;
 
@@ -6530,7 +6781,11 @@ function flushSegment(request, destination, segment, hoistableState) {
     const contentSegment = completedSegments[0];
     flushSegment(request, destination, contentSegment, hoistableState);
 
-    return writeEndCompletedSuspenseBoundary(destination, request.renderState);
+    return $checkResult(
+      writeEndCompletedSuspenseBoundary(destination, request.renderState),
+      './src/ReactFizzConfig.js#writeEndCompletedSuspenseBoundary',
+      $checkBool,
+    );
   }
 }
 
@@ -6541,18 +6796,8 @@ function flushClientRenderedBoundary(request, destination, boundary) {
     const errorMessage = boundary.errorMessage;
     const errorStack = boundary.errorStack;
     const errorComponentStack = boundary.errorComponentStack;
-    return errorComponentStack != null
-      ? writeClientRenderBoundaryInstruction(
-          destination,
-          request.resumableState,
-          request.renderState,
-          boundary.rootSegmentID,
-          errorDigest ?? undefined,
-          errorMessage ?? undefined,
-          errorStack ?? undefined,
-          errorComponentStack,
-        )
-      : errorStack != null
+    return $checkResult(
+      errorComponentStack != null
         ? writeClientRenderBoundaryInstruction(
             destination,
             request.resumableState,
@@ -6560,54 +6805,80 @@ function flushClientRenderedBoundary(request, destination, boundary) {
             boundary.rootSegmentID,
             errorDigest ?? undefined,
             errorMessage ?? undefined,
-            errorStack,
+            errorStack ?? undefined,
+            errorComponentStack,
           )
-        : errorMessage != null
+        : errorStack != null
           ? writeClientRenderBoundaryInstruction(
               destination,
               request.resumableState,
               request.renderState,
               boundary.rootSegmentID,
               errorDigest ?? undefined,
-              errorMessage,
+              errorMessage ?? undefined,
+              errorStack,
             )
-          : errorDigest != null
+          : errorMessage != null
             ? writeClientRenderBoundaryInstruction(
                 destination,
                 request.resumableState,
                 request.renderState,
                 boundary.rootSegmentID,
-                errorDigest,
+                errorDigest ?? undefined,
+                errorMessage,
               )
-            : writeClientRenderBoundaryInstruction(
-                destination,
-                request.resumableState,
-                request.renderState,
-                boundary.rootSegmentID,
-              );
+            : errorDigest != null
+              ? writeClientRenderBoundaryInstruction(
+                  destination,
+                  request.resumableState,
+                  request.renderState,
+                  boundary.rootSegmentID,
+                  errorDigest,
+                )
+              : writeClientRenderBoundaryInstruction(
+                  destination,
+                  request.resumableState,
+                  request.renderState,
+                  boundary.rootSegmentID,
+                ),
+      './src/ReactFizzConfig.js#writeClientRenderBoundaryInstruction',
+      $checkBool,
+    );
   } else {
-    return writeClientRenderBoundaryInstruction(
-      destination,
-      request.resumableState,
-      request.renderState,
-      boundary.rootSegmentID,
-      errorDigest ?? undefined,
-      null,
-      null,
-      null,
+    return $checkResult(
+      writeClientRenderBoundaryInstruction(
+        destination,
+        request.resumableState,
+        request.renderState,
+        boundary.rootSegmentID,
+        errorDigest ?? undefined,
+        null,
+        null,
+        null,
+      ),
+      './src/ReactFizzConfig.js#writeClientRenderBoundaryInstruction',
+      $checkBool,
     );
   }
 }
 
 function flushSegmentContainer(request, destination, segment, hoistableState) {
-  writeStartSegment(
-    destination,
-    request.renderState,
-    segment.parentFormatContext,
-    segment.id,
+  $checkResult(
+    writeStartSegment(
+      destination,
+      request.renderState,
+      segment.parentFormatContext,
+      segment.id,
+    ),
+    './src/ReactFizzConfig.js#writeStartSegment',
+    $checkBool,
   );
   flushSegment(request, destination, segment, hoistableState);
-  return writeEndSegment(destination, segment.parentFormatContext);
+  return $checkResult(
+    writeEndSegment(destination, segment.parentFormatContext),
+    './src/ReactFizzConfig.js#writeEndSegment',
+    $checkBool,
+  );
 }
 
 function flushCompletedBoundary(request, destination, boundary) {
@@ -6645,17 +6916,25 @@ function flushCompletedBoundary(request, destination, boundary) {
     }
   }
 
-  writeHoistablesForBoundary(
-    destination,
-    boundary.contentState,
-    request.renderState,
+  $checkResult(
+    writeHoistablesForBoundary(
+      destination,
+      boundary.contentState,
+      request.renderState,
+    ),
+    './src/ReactFizzConfig.js#writeHoistablesForBoundary',
+    $checkBool,
   );
-  return writeCompletedBoundaryInstruction(
-    destination,
-    request.resumableState,
-    request.renderState,
-    boundary.rootSegmentID,
-    boundary.contentState,
+  return $checkResult(
+    writeCompletedBoundaryInstruction(
+      destination,
+      request.resumableState,
+      request.renderState,
+      boundary.rootSegmentID,
+      boundary.contentState,
+    ),
+    './src/ReactFizzConfig.js#writeCompletedBoundaryInstruction',
+    $checkBool,
   );
 }
 
@@ -6711,10 +6990,14 @@ function flushPartialBoundary(request, destination, boundary) {
     }
   }
 
-  return writeHoistablesForBoundary(
-    destination,
-    boundary.contentState,
-    request.renderState,
+  return $checkResult(
+    writeHoistablesForBoundary(
+      destination,
+      boundary.contentState,
+      request.renderState,
+    ),
+    './src/ReactFizzConfig.js#writeHoistablesForBoundary',
+    $checkBool,
   );
 }
 
@@ -6752,17 +7035,27 @@ function flushPartiallyCompletedSegment(
     return flushSegmentContainer(request, destination, segment, hoistableState);
   } else {
     flushSegmentContainer(request, destination, segment, hoistableState);
-    return writeCompletedSegmentInstruction(
-      destination,
-      request.resumableState,
-      request.renderState,
-      segmentId,
+    return $checkResult(
+      writeCompletedSegmentInstruction(
+        destination,
+        request.resumableState,
+        request.renderState,
+        segmentId,
+      ),
+      './src/ReactFizzConfig.js#writeCompletedSegmentInstruction',
+      $checkBool,
     );
   }
 }
 
 let flushingPartialBoundaries = false;
 let flushingShell = false;
+
+const checkPostponedState = /* @__PURE__ */ $checkShape(
+  () => ({progressiveChunkSize: $checkF64}),
+  'react_server#e6a613c2ba24c354::react_fizz_server::PostponedState',
+  'a PostponedState',
+);
 
 function newThrownInfo() {
   return {};
@@ -6841,11 +7134,15 @@ function flushCompletedQueues(request, destination) {
       } else {
         isComplete = false;
       }
-      writeCompletedRoot(
-        destination,
-        request.resumableState,
-        request.renderState,
-        isComplete,
+      $checkResult(
+        writeCompletedRoot(
+          destination,
+          request.resumableState,
+          request.renderState,
+          isComplete,
+        ),
+        './src/ReactFizzConfig.js#writeCompletedRoot',
+        $checkBool,
       );
     }
 
@@ -6970,7 +7267,7 @@ function flushCompletedQueues(request, destination) {
     close(destination);
     // We need to stop flowing now because we do not want any async contexts which might call
     // float methods to initiate any flushes after this point
-    stopFlowing(request);
+    stopFlowing$(request);
   } else {
     completeWriting(destination);
     flushBuffered(destination);
@@ -6982,6 +7279,11 @@ function flushCompletedQueues(request, destination) {
 }
 
 export function startWork(request) {
+  $checks('startWork(request)', request, checkRequest);
+  return startWork$(request);
+}
+
+export function startWork$(request) {
   // $FlowFixMe[constant-condition]
   if (isWorkLoopExternallyDriven) {
     return;
@@ -6991,10 +7293,10 @@ export function startWork(request) {
   // $FlowFixMe[constant-condition]
   if (supportsRequestStorage) {
     scheduleMicrotask(() => {
-      requestStorage.run(request, () => performWork(request));
+      requestStorage.run(request, () => performWork$(request));
     });
   } else {
-    scheduleMicrotask(() => performWork(request));
+    scheduleMicrotask(() => performWork$(request));
   }
   scheduleWork(() => {
     if (request.status === OPENING) {
@@ -7061,6 +7363,15 @@ function enqueueFlush(request) {
 // by moving the implementation into ReactServerStreamConfigNode and even then we may not be able to
 // eliminate all the wasted branching.
 export function prepareForStartFlowingIfBeforeAllReady(request) {
+  $checks(
+    'prepareForStartFlowingIfBeforeAllReady(request)',
+    request,
+    checkRequest,
+  );
+  return prepareForStartFlowingIfBeforeAllReady$(request);
+}
+
+export function prepareForStartFlowingIfBeforeAllReady$(request) {
   let shellComplete;
   if (request.trackedPostpones == null) {
     // Render Request, we define shell complete by the pending root tasks
@@ -7077,6 +7388,11 @@ export function prepareForStartFlowingIfBeforeAllReady(request) {
 }
 
 export function startFlowing(request, destination) {
+  $checks('startFlowing(request)', request, checkRequest);
+  return startFlowing$(request, destination);
+}
+
+export function startFlowing$(request, destination) {
   if (request.status === CLOSING) {
     request.status = CLOSED;
     let error = request.fatalError;
@@ -7109,6 +7425,11 @@ export function startFlowing(request, destination) {
 }
 
 export function stopFlowing(request) {
+  $checks('stopFlowing(request)', request, checkRequest);
+  return stopFlowing$(request);
+}
+
+export function stopFlowing$(request) {
   request.destination = null;
 }
 
@@ -7188,8 +7509,13 @@ function endRenderLifetime(request) {
 // A request whose stream is neither consumed nor cancelled never ends, so its
 // listener stays attached for as long as the caller's signal lives.
 export function attachAbortSignal(request, signal) {
+  $checks('attachAbortSignal(request)', request, checkRequest);
+  return attachAbortSignal$(request, signal);
+}
+
+export function attachAbortSignal$(request, signal) {
   if (signal.aborted) {
-    abort(request, signal.reason);
+    abort$(request, signal.reason);
     return;
   }
   const renderLifetimeController = new AbortController();
@@ -7197,7 +7523,7 @@ export function attachAbortSignal(request, signal) {
   signal.addEventListener(
     'abort',
     () => {
-      abort(request, signal.reason);
+      abort$(request, signal.reason);
     },
     {signal: renderLifetimeController.signal},
   );
@@ -7205,6 +7531,11 @@ export function attachAbortSignal(request, signal) {
 
 // This is called to early terminate a request. It puts all pending boundaries in client rendered state.
 export function abort(request, reason) {
+  $checks('abort(request)', request, checkRequest);
+  return abort$(request, reason);
+}
+
+export function abort$(request, reason) {
   if (
     request.aborted ||
     (request.status !== OPEN && request.status !== OPENING)
@@ -7274,18 +7605,38 @@ export function abort(request, reason) {
 }
 
 export function flushResources(request) {
+  $checks('flushResources(request)', request, checkRequest);
+  return flushResources$(request);
+}
+
+export function flushResources$(request) {
   enqueueFlush(request);
 }
 
 export function getFormState(request) {
+  $checks('getFormState(request)', request, checkRequest);
+  return getFormState$(request);
+}
+
+export function getFormState$(request) {
   return request.formState;
 }
 
 export function getResumableState(request) {
+  $checks('getResumableState(request)', request, checkRequest);
+  return getResumableState$(request);
+}
+
+export function getResumableState$(request) {
   return request.resumableState;
 }
 
 export function getRenderState(request) {
+  $checks('getRenderState(request)', request, checkRequest);
+  return getRenderState$(request);
+}
+
+export function getRenderState$(request) {
   return request.renderState;
 }
 
@@ -7324,6 +7675,11 @@ function addToReplayParent(node, parentKeyPath, trackedPostpones) {
 
 // Returns the state of a postponed request or null if nothing was postponed.
 export function getPostponedState(request) {
+  $checks('getPostponedState(request)', request, checkRequest);
+  return getPostponedState$(request);
+}
+
+export function getPostponedState$(request) {
   const trackedPostpones = request.trackedPostpones;
   function keep(trackedPostpones) {
     if (trackedPostpones.rootNodes.borrows < 0) {
@@ -7366,14 +7722,17 @@ export function getPostponedState(request) {
     replaySlots = trackedPostpones.rootSlots;
     nextSegmentId = request.nextSegmentId;
   }
-  const postponedState = {
-    nextSegmentId,
-    rootFormatContext: request.rootFormatContext,
-    progressiveChunkSize: request.progressiveChunkSize,
-    resumableState: request.resumableState,
-    replayNodes: trackedPostpones.rootNodes,
-    replaySlots,
-  };
+  const postponedState = $brand(
+    'react_server#e6a613c2ba24c354::react_fizz_server::PostponedState',
+    {
+      nextSegmentId,
+      rootFormatContext: request.rootFormatContext,
+      progressiveChunkSize: request.progressiveChunkSize,
+      resumableState: request.resumableState,
+      replayNodes: trackedPostpones.rootNodes,
+      replaySlots,
+    },
+  );
   if (hasFlushableShell) {
     // The prelude hasn't flushed yet — it's pull-driven and runs after this
     // (see completeAll -> onAllReady). Flushing the shell outlines completed

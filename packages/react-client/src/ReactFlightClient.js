@@ -30,12 +30,12 @@ import {
 } from './ReactFlightClientConfig.js';
 
 import {
-  createBoundServerReference,
+  createBoundServerReference$ as createBoundServerReference,
   createServerObjectReference,
   registerBoundServerReference,
 } from './ReactFlightReplyClient.js';
 
-import {readTemporaryReference} from './ReactFlightTemporaryReferences.js';
+import {readTemporaryReference$ as readTemporaryReference} from './ReactFlightTemporaryReferences.js';
 
 import {
   logComponentAborted,
@@ -80,9 +80,17 @@ import {
   $at,
   $borrow,
   $borrowMut,
+  $brand,
   $catchUnwind,
   $catchable,
   $cellReplace,
+  $checkBool,
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkTuple,
+  $checkWhole,
+  $checks,
   $cleanup,
   $copyOf,
   $drain,
@@ -289,6 +297,23 @@ const debugChannelRegistry =
     ? new FinalizationRegistry(closeDebugChannel)
     : null;
 
+const checkWeakResponse = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkBoundServerReferenceMetaData = /* @__PURE__ */ $checkShape(() => ({
+  name: [$checkStr, 'nullish'],
+  env: [$checkStr, 'nullish'],
+  location: [
+    (value, where, none) =>
+      $checkTuple(value, where, none, [
+        $checkStr,
+        $checkStr,
+        $checkF64,
+        $checkF64,
+      ]),
+    'nullish',
+  ],
+}));
+
 function readChunk(chunk) {
   // If we have resolved content, we try to initialize it first which
   // might put us back into one of the other states.
@@ -320,6 +345,11 @@ function readChunk(chunk) {
 }
 
 export function getRoot(weakResponse) {
+  $checks('getRoot(weakResponse)', weakResponse, checkWeakResponse);
+  return getRoot$(weakResponse);
+}
+
+export function getRoot$(weakResponse) {
   const response = unwrapWeakResponse(weakResponse);
   return getChunk(response, 0);
 }
@@ -762,9 +792,16 @@ function triggerErrorOnChunk(response, chunk, error) {
 }
 
 function createResolvedModelChunk(response, value) {
-  return new ReactPromise('resolved_model', value, {
-    [RESPONSE_SYMBOL]: response,
-  });
+  return new ReactPromise(
+    'resolved_model',
+    value,
+    $brand(
+      'react_client#51905ff63ca7a901::react_flight_client::ResponseHolder',
+      {
+        [RESPONSE_SYMBOL]: response,
+      },
+    ),
+  );
 }
 
 /** A value of an object literal, `null` for none. */
@@ -814,9 +851,16 @@ function createResolvedIteratorResultChunk(response, value, done) {
   // To reuse code as much code as possible we add the wrapper element as part of the JSON.
   const iteratorResultJson =
     (done ? '{"done":true,"value":' : '{"done":false,"value":') + value + '}';
-  return new ReactPromise('resolved_model', iteratorResultJson, {
-    [RESPONSE_SYMBOL]: response,
-  });
+  return new ReactPromise(
+    'resolved_model',
+    iteratorResultJson,
+    $brand(
+      'react_client#51905ff63ca7a901::react_flight_client::ResponseHolder',
+      {
+        [RESPONSE_SYMBOL]: response,
+      },
+    ),
+  );
 }
 
 function resolveIteratorResultChunk(response, chunk, value, done) {
@@ -849,7 +893,10 @@ function resolveModelChunk(response, chunk, value) {
   const resolvedChunk = chunk;
   resolvedChunk.status = 'resolved_model';
   resolvedChunk.value = value;
-  resolvedChunk.reason = {[RESPONSE_SYMBOL]: response};
+  resolvedChunk.reason = $brand(
+    'react_client#51905ff63ca7a901::react_flight_client::ResponseHolder',
+    {[RESPONSE_SYMBOL]: response},
+  );
   if (resolveListeners != null) {
     // This is unfortunate that we're reading this eagerly if
     // we already have listeners attached since they might no
@@ -1260,6 +1307,11 @@ function initializeModuleChunk(chunk) {
 // Report that any missing chunks in the model is now going to throw this
 // error upon read. Also notify any pending promises.
 export function reportGlobalError(weakResponse, error) {
+  $checks('reportGlobalError(weakResponse)', weakResponse, checkWeakResponse);
+  return reportGlobalError$(weakResponse, error);
+}
+
+export function reportGlobalError$(weakResponse, error) {
   if (hasGCedResponse(weakResponse)) {
     // Ignore close signal if we are not awaiting any more pending chunks.
     return;
@@ -3175,6 +3227,10 @@ function markIOStarted() {
   this._debugIOStarted = true;
 }
 
+const checkDebugChannel = /* @__PURE__ */ $checkShape(() => ({
+  hasReadable: $checkBool,
+}));
+
 export function createResponse(
   bundlerConfig,
   serverReferenceConfig,
@@ -3190,6 +3246,57 @@ export function createResponse(
   debugStartTime, // DEV-only
   debugEndTime, // DEV-only
   debugChannel, // DEV-only
+) {
+  $checkStr(nonce, 'createResponse(nonce)', 'nullish');
+  $checks(
+    'createResponse(allowPartialStream, replayConsole)',
+    allowPartialStream,
+    $checkBool,
+    replayConsole,
+    $checkBool,
+  );
+  $checkStr(environmentName, 'createResponse(environmentName)', 'nullish');
+  $checkF64(debugStartTime, 'createResponse(debugStartTime)', 'nullish');
+  $checkF64(debugEndTime, 'createResponse(debugEndTime)', 'nullish');
+  $checkWhole(
+    checkDebugChannel,
+    debugChannel,
+    'createResponse(debugChannel)',
+    'nullish',
+  );
+  return createResponse$(
+    bundlerConfig,
+    serverReferenceConfig,
+    moduleLoading,
+    callServer,
+    encodeFormAction,
+    nonce,
+    temporaryReferences,
+    allowPartialStream,
+    findSourceMapUrl,
+    replayConsole,
+    environmentName,
+    debugStartTime,
+    debugEndTime,
+    debugChannel,
+  );
+}
+
+export function createResponse$(
+  bundlerConfig,
+  serverReferenceConfig,
+  moduleLoading,
+  callServer,
+  encodeFormAction,
+  nonce,
+  temporaryReferences,
+  allowPartialStream,
+  findSourceMapUrl,
+  replayConsole,
+  environmentName,
+  debugStartTime,
+  debugEndTime,
+  debugChannel,
 ) {
   if (__DEV__) {
     // We use eval to create fake function stacks which includes Component stacks.
@@ -3223,6 +3330,11 @@ export function createStreamState(
   weakResponse, // DEV-only
   streamDebugValue, // DEV-only
 ) {
+  $checks('createStreamState(weakResponse)', weakResponse, checkWeakResponse);
+  return createStreamState$(weakResponse, streamDebugValue);
+}
+
+export function createStreamState$(weakResponse, streamDebugValue) {
   const streamState = {
     _rowState: 0,
     _rowID: 0,
@@ -4937,6 +5049,8 @@ const replayConsoleWithCallStackInDEV = __DEV__
     )
   : null;
 
+const checkStreamState = /* @__PURE__ */ $checkShape(() => ({}));
+
 function resolveConsoleEntry(response, json) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
@@ -5767,6 +5881,17 @@ function processFullStringRow(response, streamState, id, tag, row) {
 }
 
 export function processBinaryChunk(weakResponse, streamState, chunk) {
+  $checks(
+    'processBinaryChunk(weakResponse, streamState)',
+    weakResponse,
+    checkWeakResponse,
+    streamState,
+    checkStreamState,
+  );
+  return processBinaryChunk$(weakResponse, streamState, chunk);
+}
+
+export function processBinaryChunk$(weakResponse, streamState, chunk) {
   if (hasGCedResponse(weakResponse)) {
     // Ignore more chunks if we've already GC:ed all listeners.
     return;
@@ -5970,6 +6095,19 @@ export function processBinaryChunk(weakResponse, streamState, chunk) {
 }
 
 export function processStringChunk(weakResponse, streamState, chunk) {
+  $checks(
+    'processStringChunk(weakResponse, streamState, chunk)',
+    weakResponse,
+    checkWeakResponse,
+    streamState,
+    checkStreamState,
+    chunk,
+    $checkStr,
+  );
+  return processStringChunk$(weakResponse, streamState, chunk);
+}
+
+export function processStringChunk$(weakResponse, streamState, chunk) {
   if (hasGCedResponse(weakResponse)) {
     // Ignore more chunks if we've already GC:ed all listeners.
     return;
@@ -6213,6 +6351,11 @@ function reviveModel(response, value, parentObject, key) {
 }
 
 export function close(weakResponse) {
+  $checks('close(weakResponse)', weakResponse, checkWeakResponse);
+  return close$(weakResponse);
+}
+
+export function close$(weakResponse) {
   // In case there are any remaining unresolved chunks, they won't be resolved
   // now. So we either error or halt them depending on whether partial streams
   // are allowed.
@@ -6257,7 +6400,7 @@ export function close(weakResponse) {
       }
     }
   } else {
-    reportGlobalError(weakResponse, new Error('Connection closed.'));
+    reportGlobalError$(weakResponse, new Error('Connection closed.'));
   }
 }
 

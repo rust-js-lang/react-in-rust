@@ -10,6 +10,7 @@
 import {preload, preloadModule} from './ReactDOMFlightServerHostDispatcher.js';
 
 import {getCrossOriginString} from '../shared/crossOriginStrings.js';
+import {$checkI32, $checkStr, $checks} from '@rust-js/std';
 
 export function createHints() {
   return new Set();
@@ -131,6 +132,17 @@ function processLink(props, formatContext) {
 }
 
 export function getChildFormatContext(parentContext, type, props) {
+  $checks(
+    'getChildFormatContext(parentContext, type)',
+    parentContext,
+    $checkI32,
+    type,
+    $checkStr,
+  );
+  return getChildFormatContext$(parentContext, type, props);
+}
+
+export function getChildFormatContext$(parentContext, type, props) {
   switch (type) {
     case 'img':
       processImg(props, parentContext);

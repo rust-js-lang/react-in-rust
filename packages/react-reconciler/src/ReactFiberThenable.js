@@ -18,6 +18,7 @@ import noop from 'shared/noop';
 import {HostRoot} from './ReactWorkTags.js';
 import {
   $borrow,
+  $brand,
   $catchable,
   $fieldCell,
   $panic,
@@ -69,10 +70,13 @@ export const noopSuspenseyCommitThenable = {
 export function createThenableState() {
   // The ThenableState is created the first time a component suspends. If it
   // suspends again, we'll reuse the same state.
-  return {
-    didWarnAboutUncachedPromise: false,
-    thenables: [],
-  };
+  return $brand(
+    'react_reconciler#b3ac5f81fa5c3bb4::react_fiber_thenable::ThenableState',
+    {
+      didWarnAboutUncachedPromise: false,
+      thenables: [],
+    },
+  );
 }
 
 export function isThenableResolved(thenable) {

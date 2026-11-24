@@ -12,9 +12,15 @@ import {
   enableViewTransition,
 } from 'shared/ReactFeatureFlags';
 
-import {startTransition} from './ReactStartTransition.js';
+import {startTransition$ as startTransition} from './ReactStartTransition.js';
+import {$checkStr} from '@rust-js/std';
 
 export function addTransitionType(type) {
+  $checkStr(type, 'addTransitionType(type)');
+  return addTransitionType$(type);
+}
+
+export function addTransitionType$(type) {
   if (enableViewTransition) {
     const transition = ReactSharedInternals.T;
     if (transition !== null) {
@@ -41,7 +47,7 @@ export function addTransitionType(type) {
         }
       }
       startTransition(() => {
-        addTransitionType(type);
+        addTransitionType$(type);
       });
     }
   }

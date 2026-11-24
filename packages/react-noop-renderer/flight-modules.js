@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$checkStr} from '@rust-js/std';
+
 // This file is used as temporary storage for modules generated in Flight tests.
 let moduleIdx = 0;
 const modules = new Map();
@@ -18,6 +20,11 @@ export function saveModule(render) {
 }
 
 export function readModule(idx) {
+  $checkStr(idx, 'readModule(idx)');
+  return readModule$(idx);
+}
+
+export function readModule$(idx) {
   return modules.get(idx);
 }
 //# sourceMappingURL=flight-modules.js.map

@@ -6,7 +6,14 @@
 // LICENSE file in the root directory of this source tree.
 
 import {prepareDestinationForModuleImpl} from 'react-client/src/ReactFlightClientConfig';
-import {$catchable, $panic} from '@rust-js/std';
+import {
+  $catchable,
+  $checkShape,
+  $checkStr,
+  $checkTuple,
+  $checks,
+  $panic,
+} from '@rust-js/std';
 
 // The reason this function needs to defined here in this file instead of just
 // being exported directly from the WebpackDestination... file is because the
@@ -15,12 +22,27 @@ import {$catchable, $panic} from '@rust-js/std';
 // though that risks it getting used in places it shouldn't be. This is unfortunate
 // but currently it seems to be the best option we have.
 export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
+  $checkStr(nonce, 'prepareDestinationForModule(nonce)', 'nullish');
+  $checks(
+    'prepareDestinationForModule(metadata)',
+    metadata,
+    (value, where, none) =>
+      $checkTuple(value, where, none, [$checkStr, $checkStr]),
+  );
   nonce != null
     ? prepareDestinationForModuleImpl(moduleLoading, metadata[0], nonce)
     : prepareDestinationForModuleImpl(moduleLoading, metadata[0]);
 }
 
 export function resolveClientReference(bundlerConfig, metadata) {
+  $checks(
+    'resolveClientReference(bundlerConfig, metadata)',
+    bundlerConfig,
+    $checkStr,
+    metadata,
+    (value, where, none) =>
+      $checkTuple(value, where, none, [$checkStr, $checkStr]),
+  );
   const baseUrl = bundlerConfig;
   return {
     specifier: baseUrl + metadata[0],
@@ -29,6 +51,13 @@ export function resolveClientReference(bundlerConfig, metadata) {
 }
 
 export function resolveServerReference(config, id) {
+  $checks(
+    'resolveServerReference(config, id)',
+    config,
+    $checkStr,
+    id,
+    $checkStr,
+  );
   const baseUrl = config;
   const idx = id.lastIndexOf('#');
   const exportName = id.slice(idx + 1);
@@ -47,7 +76,13 @@ export function resolveServerReference(config, id) {
 
 const asyncModuleCache = new Map();
 
+const checkClientReference = /* @__PURE__ */ $checkShape(() => ({
+  specifier: $checkStr,
+  name: $checkStr,
+}));
+
 export function preloadModule(metadata) {
+  $checks('preloadModule(metadata)', metadata, checkClientReference);
   const existingPromise = asyncModuleCache.get(metadata.specifier);
   if (existingPromise != null) {
     if (existingPromise.status === 'fulfilled') {
@@ -77,6 +112,7 @@ export function preloadModule(metadata) {
 export function requireModule(metadata) {
   // We assume that preloadModule has been called before, which
   // should have added something to the module cache.
+  $checks('requireModule(metadata)', metadata, checkClientReference);
   const promise = asyncModuleCache.get(metadata.specifier);
   if (promise.status !== 'fulfilled') {
     throw promise.reason;
@@ -89,6 +125,7 @@ export function requireModule(metadata) {
 const moduleIOInfoCache = __DEV__ ? new Map() : null;
 
 export function getModuleDebugInfo(metadata) {
+  $checks('getModuleDebugInfo(metadata)', metadata, checkClientReference);
   if (!__DEV__) {
     return null;
   }

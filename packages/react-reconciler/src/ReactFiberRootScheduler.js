@@ -21,14 +21,14 @@ import {
   NoLane,
   NoLanes,
   SyncLane,
-  checkIfRootIsPrerendering,
+  checkIfRootIsPrerendering$ as checkIfRootIsPrerendering,
   claimNextTransitionUpdateLane,
-  getHighestPriorityLane,
-  getNextLanes,
-  getNextLanesToFlushSync,
-  includesSyncLane,
-  isGestureRender,
-  markStarvedLanesAsExpired,
+  getHighestPriorityLane$ as getHighestPriorityLane,
+  getNextLanes$ as getNextLanes,
+  getNextLanesToFlushSync$ as getNextLanesToFlushSync,
+  includesSyncLane$ as includesSyncLane,
+  isGestureRender$ as isGestureRender,
+  markStarvedLanesAsExpired$ as markStarvedLanesAsExpired,
 } from './ReactFiberLane.js';
 import {
   CommitContext,
@@ -61,7 +61,7 @@ import {
   DefaultEventPriority,
   DiscreteEventPriority,
   IdleEventPriority,
-  lanesToEventPriority,
+  lanesToEventPriority$,
 } from './ReactEventPriorities.js';
 
 import {
@@ -90,7 +90,7 @@ import {
   retainIsomorphicIndicator,
   startIsomorphicDefaultIndicatorIfNeeded,
 } from './ReactFiberAsyncAction.js';
-import {$catchable, $unwrap} from '@rust-js/std';
+import {$catchable, $checkBool, $checkResult, $unwrap} from '@rust-js/std';
 
 // A linked list of all the roots with pending work. In an idiomatic app,
 // there's only a single root, but we do support multi root apps, hence this
@@ -259,7 +259,13 @@ function processRootScheduleInMicrotask() {
 
   let syncTransitionLanes = NoLanes;
   if (currentEventTransitionLane !== NoLane) {
-    if (shouldAttemptEagerTransition()) {
+    if (
+      $checkResult(
+        shouldAttemptEagerTransition(),
+        './src/ReactFiberConfig.js#shouldAttemptEagerTransition',
+        $checkBool,
+      )
+    ) {
       // A transition was scheduled during an event, but we're going to try to
       // render it synchronously anyway. We do this during a popstate event to
       // preserve the scroll position of the previous page.
@@ -476,16 +482,19 @@ function scheduleTaskForRootDuringMicrotask(root, currentTime) {
       cancelCallback(existingCallbackNode);
     }
 
-    const value = lanesToEventPriority(nextLanes);
+    const lanesToEventPriority = lanesToEventPriority$(nextLanes);
     let schedulerPriorityLevel;
-    if (value === DiscreteEventPriority || value === ContinuousEventPriority) {
+    if (
+      lanesToEventPriority === DiscreteEventPriority ||
+      lanesToEventPriority === ContinuousEventPriority
+    ) {
       // Scheduler does have an "ImmediatePriority", but now that we use
       // microtasks for sync work we no longer use that. Any sync work that
       // reaches this path is meant to be time sliced.
       schedulerPriorityLevel = UserBlockingSchedulerPriority;
-    } else if (value === DefaultEventPriority) {
+    } else if (lanesToEventPriority === DefaultEventPriority) {
       schedulerPriorityLevel = NormalSchedulerPriority;
-    } else if (value === IdleEventPriority) {
+    } else if (lanesToEventPriority === IdleEventPriority) {
       schedulerPriorityLevel = IdleSchedulerPriority;
     } else {
       schedulerPriorityLevel = NormalSchedulerPriority;

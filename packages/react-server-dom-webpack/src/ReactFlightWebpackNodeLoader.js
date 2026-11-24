@@ -11,6 +11,10 @@ import * as acorn from 'acorn-loose';
 import {
   $KeySet,
   $chars,
+  $checkArray,
+  $checkShape,
+  $checkStr,
+  $checks,
   $index,
   $panic,
   $rev,
@@ -23,10 +27,43 @@ let warnedAboutConditionsFlag = false;
 // GAP rd694: `let stashedGetSource;` and `== null` of a `Cell<Option<..>>`, where upstream writes `= null`.
 let stashedGetSource;
 let stashedResolve;
+const checkResolveContext = /* @__PURE__ */ $checkShape(() => ({
+  conditions: (value, where, none) =>
+    $checkArray(value, where, none, $checkStr),
+  parentURL: [$checkStr, 'nullish'],
+}));
+
+const checkGetSourceContext = /* @__PURE__ */ $checkShape(() => ({
+  format: $checkStr,
+}));
+
+const checkTransformSourceContext = /* @__PURE__ */ $checkShape(() => ({
+  format: $checkStr,
+  url: $checkStr,
+}));
+
+const checkImportAttributes = /* @__PURE__ */ $checkShape(() => ({
+  type: [$checkStr, 'nullish'],
+}));
+
+const checkLoadContext = /* @__PURE__ */ $checkShape(() => ({
+  conditions: (value, where, none) =>
+    $checkArray(value, where, none, $checkStr),
+  format: [$checkStr, 'nullish'],
+  importAssertions: [checkImportAttributes, 'nullish'],
+  importAttributes: [checkImportAttributes, 'nullish'],
+}));
 
 // GAP rd695: an async fn's `.d.ts` result is `any`.
 export async function resolve(specifier, context, defaultResolve) {
   // We stash this in case we end up needing to resolve export * statements later.
+  $checks(
+    'resolve(specifier, context)',
+    specifier,
+    $checkStr,
+    context,
+    checkResolveContext,
+  );
   stashedResolve = defaultResolve;
 
   if (!context.conditions.includes('react-server')) {
@@ -50,6 +87,13 @@ export async function resolve(specifier, context, defaultResolve) {
 
 export async function getSource(url, context, defaultGetSource) {
   // We stash this in case we end up needing to resolve export * statements later.
+  $checks(
+    'getSource(url, context)',
+    url,
+    $checkStr,
+    context,
+    checkGetSourceContext,
+  );
   stashedGetSource = defaultGetSource;
   return await defaultGetSource(url, context, defaultGetSource);
 }
@@ -689,6 +733,7 @@ async function transformModuleIfNeeded(source, url, loader) {
 }
 
 export async function transformSource(source, context, defaultTransformSource) {
+  $checks('transformSource(context)', context, checkTransformSourceContext);
   const transformed = await defaultTransformSource(
     source,
     context,
@@ -712,6 +757,7 @@ export async function transformSource(source, context, defaultTransformSource) {
 }
 
 export async function load(url, context, defaultLoad) {
+  $checks('load(url, context)', url, $checkStr, context, checkLoadContext);
   const result = await defaultLoad(url, context, defaultLoad);
   if (result.format === 'module') {
     if (typeof result.source !== 'string') {

@@ -137,6 +137,16 @@ import {
   $catchUnwind,
   $catchable,
   $cellReplace,
+  $checkArray,
+  $checkBool,
+  $checkCallback,
+  $checkF64,
+  $checkI32,
+  $checkResult,
+  $checkShape,
+  $checkStr,
+  $checkTuple,
+  $checks,
   $drain,
   $f64ToInt,
   $fieldCell,
@@ -158,6 +168,16 @@ import {
 
 // DEV-only set containing internal objects that should not be limited and turned into getters.
 const doNotLimit$1 = __DEV__ ? new WeakSet() : undefined;
+const checkTask = /* @__PURE__ */ $checkShape(() => ({id: $checkF64}));
+const checkDeferredDebugStore = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkRequest = /* @__PURE__ */ $checkShape(() => ({
+  type: $checkI32,
+  pingedTasks: (value, where, none) =>
+    $checkArray(value, where, none, checkTask),
+  identifierPrefix: $checkStr,
+  deferredDebugObjects: [checkDeferredDebugStore, 'nullish'],
+}));
 
 function defaultFilterStackFrame(
   filename,
@@ -371,6 +391,28 @@ function isPromiseAwaitInternal(url, functionName) {
 }
 
 export function isAwaitInUserspace(request, stack) {
+  $checks(
+    'isAwaitInUserspace(request, stack)',
+    request,
+    checkRequest,
+    stack,
+    (value, where, none) =>
+      $checkArray(value, where, none, (value, where, none) =>
+        $checkTuple(value, where, none, [
+          $checkStr,
+          $checkStr,
+          $checkF64,
+          $checkF64,
+          $checkF64,
+          $checkF64,
+          $checkBool,
+        ]),
+      ),
+  );
+  return isAwaitInUserspace$(request, stack);
+}
+
+export function isAwaitInUserspace$(request, stack) {
   let firstFrame = 0;
   while (
     stack.length > firstFrame &&
@@ -741,6 +783,33 @@ export function createRequest(
   filterStackFrame, // DEV-only
   keepDebugAlive, // DEV-only
 ) {
+  $checkStr(identifierPrefix, 'createRequest(identifierPrefix)', 'nullish');
+  $checkF64(debugStartTime, 'createRequest(debugStartTime)', 'nullish');
+  $checkBool(keepDebugAlive, 'createRequest(keepDebugAlive)');
+  return createRequest$(
+    model,
+    bundlerConfig,
+    onError,
+    identifierPrefix,
+    temporaryReferences,
+    debugStartTime,
+    environmentName,
+    filterStackFrame,
+    keepDebugAlive,
+  );
+}
+
+export function createRequest$(
+  model,
+  bundlerConfig,
+  onError,
+  identifierPrefix,
+  temporaryReferences,
+  debugStartTime,
+  environmentName,
+  filterStackFrame,
+  keepDebugAlive,
+) {
   if (__DEV__) {
     resetOwnerStackLimit();
   }
@@ -774,6 +843,47 @@ export function createPrerenderRequest(
   environmentName, // DEV-only
   filterStackFrame, // DEV-only
   keepDebugAlive, // DEV-only
+) {
+  $checkCallback(onAllReady, 'createPrerenderRequest(onAllReady)');
+  $checkCallback(onFatalError, 'createPrerenderRequest(onFatalError)');
+  $checkStr(
+    identifierPrefix,
+    'createPrerenderRequest(identifierPrefix)',
+    'nullish',
+  );
+  $checkF64(
+    debugStartTime,
+    'createPrerenderRequest(debugStartTime)',
+    'nullish',
+  );
+  $checkBool(keepDebugAlive, 'createPrerenderRequest(keepDebugAlive)');
+  return createPrerenderRequest$(
+    model,
+    bundlerConfig,
+    onAllReady,
+    onFatalError,
+    onError,
+    identifierPrefix,
+    temporaryReferences,
+    debugStartTime,
+    environmentName,
+    filterStackFrame,
+    keepDebugAlive,
+  );
+}
+
+export function createPrerenderRequest$(
+  model,
+  bundlerConfig,
+  onAllReady,
+  onFatalError,
+  onError,
+  identifierPrefix,
+  temporaryReferences,
+  debugStartTime,
+  environmentName,
+  filterStackFrame,
+  keepDebugAlive,
 ) {
   if (__DEV__) {
     resetOwnerStackLimit();
@@ -1549,15 +1659,30 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
 }
 
 export function emitHint(request, code, model) {
+  $checks('emitHint(request, code)', request, checkRequest, code, $checkStr);
+  return emitHint$(request, code, model);
+}
+
+export function emitHint$(request, code, model) {
   emitHintChunk(request, code, model);
   enqueueFlush(request);
 }
 
 export function getHints(request) {
+  $checks('getHints(request)', request, checkRequest);
+  return getHints$(request);
+}
+
+export function getHints$(request) {
   return request.hints;
 }
 
 export function getCache(request) {
+  $checks('getCache(request)', request, checkRequest);
+  return getCache$(request);
+}
+
+export function getCache$(request) {
   return request.cache;
 }
 
@@ -1660,7 +1785,11 @@ function processServerComponentReturnValue(request, task, component, result) {
   if (
     result == null ||
     typeof result !== 'object' ||
-    isClientReference(result)
+    $checkResult(
+      isClientReference(result),
+      './src/ReactFlightServerConfig.js#isClientReference',
+      $checkBool,
+    )
   ) {
     return result;
   }
@@ -1900,7 +2029,11 @@ function renderFunctionComponent(
       // $FlowFixMe[invalid-compare]
       result != null &&
       typeof result.then === 'function' &&
-      !isClientReference(result)
+      !$checkResult(
+        isClientReference(result),
+        './src/ReactFlightServerConfig.js#isClientReference',
+        $checkBool,
+      )
     ) {
       const thenable = result;
       thenable.then(voidHandler, voidHandler);
@@ -2390,7 +2523,11 @@ function renderElement(
   }
   if (
     typeof type === 'function' &&
-    !isClientReference(type) &&
+    !$checkResult(
+      isClientReference(type),
+      './src/ReactFlightServerConfig.js#isClientReference',
+      $checkBool,
+    ) &&
     !isOpaqueTemporaryReference(type)
   ) {
     // This is a Server Component.
@@ -2432,7 +2569,14 @@ function renderElement(
     return json;
   } else {
     const object = typeof type === 'object' && type !== null ? type : undefined;
-    if (object != null && !isClientReference(object)) {
+    if (
+      object != null &&
+      !$checkResult(
+        isClientReference(object),
+        './src/ReactFlightServerConfig.js#isClientReference',
+        $checkBool,
+      )
+    ) {
       const type = object;
       switch (type.$$typeof) {
         case REACT_LAZY_TYPE: {
@@ -2723,7 +2867,10 @@ function visitAsyncNodeImpl(
             // then this gets I/O ignored, which is what we want because it means it was likely
             // just part of a previous component's rendering.
             match = ioNode;
-            if (node.stack != null && isAwaitInUserspace(request, node.stack)) {
+            if (
+              node.stack != null &&
+              isAwaitInUserspace$(request, node.stack)
+            ) {
               // This await happened earlier but it was done in user space. This is the first time
               // that user space saw the value of the I/O. We know we'll emit the I/O eventually
               // but if we do it now we can override the promise value of the I/O entry to the
@@ -2736,7 +2883,7 @@ function visitAsyncNodeImpl(
             }
           } else if (
             node.stack == null ||
-            !isAwaitInUserspace(request, node.stack)
+            !isAwaitInUserspace$(request, node.stack)
           ) {
             // If this await was fully filtered out, then it was inside third party code
             // such as in an external library. We return the I/O node and try another await.
@@ -2989,7 +3136,14 @@ function resolveModel(request, task, parent, parentPropertyName, value) {
     typeof value === 'object' &&
     value !== null &&
     // Registered objects are opaque, including objects with a toJSON method.
-    !(enableFlightObjectReferences && isServerReference(value))
+    !(
+      enableFlightObjectReferences &&
+      $checkResult(
+        isServerReference(value),
+        './src/ReactFlightServerConfig.js#isServerReference',
+        $checkBool,
+      )
+    )
   ) {
     // $FlowFixMe[method-unbinding]
     const toJson = value.toJSON;
@@ -4114,7 +4268,13 @@ function renderModelDestructive(
 
     const objectValue = value;
 
-    if (isClientReference(objectValue)) {
+    if (
+      $checkResult(
+        isClientReference(objectValue),
+        './src/ReactFlightServerConfig.js#isClientReference',
+        $checkBool,
+      )
+    ) {
       return serializeClientReference(
         request,
         parent,
@@ -4123,7 +4283,14 @@ function renderModelDestructive(
       );
     }
 
-    if (enableFlightObjectReferences && isServerReference(objectValue)) {
+    if (
+      enableFlightObjectReferences &&
+      $checkResult(
+        isServerReference(objectValue),
+        './src/ReactFlightServerConfig.js#isServerReference',
+        $checkBool,
+      )
+    ) {
       // An object registered as a Server Reference. This must be checked
       // before the thenable case below so that a reference that happens to
       // be a Promise is serialized by reference instead of being awaited.
@@ -4441,7 +4608,13 @@ function renderModelDestructive(
 
   if (typeof value === 'function') {
     const functionValue = value;
-    if (isClientReference(functionValue)) {
+    if (
+      $checkResult(
+        isClientReference(functionValue),
+        './src/ReactFlightServerConfig.js#isClientReference',
+        $checkBool,
+      )
+    ) {
       return serializeClientReference(
         request,
         parent,
@@ -4449,7 +4622,13 @@ function renderModelDestructive(
         functionValue,
       );
     }
-    if (isServerReference(functionValue)) {
+    if (
+      $checkResult(
+        isServerReference(functionValue),
+        './src/ReactFlightServerConfig.js#isServerReference',
+        $checkBool,
+      )
+    ) {
       return serializeServerReference(request, functionValue);
     }
     if (request.temporaryReferences != null) {
@@ -5321,7 +5500,11 @@ function emitTypedArrayChunk(request, id, tag, typedArray, debug) {
   }
   // TODO: Convert to little endian if that's not the server default.
   const binaryChunk = typedArrayToBinaryChunk(typedArray);
-  const binaryLength = byteLengthOfBinaryChunk(binaryChunk);
+  const binaryLength = $checkResult(
+    byteLengthOfBinaryChunk(binaryChunk),
+    './src/ReactServerStreamConfig.js#byteLengthOfBinaryChunk',
+    $checkF64,
+  );
   const row = id.toString(16) + ':' + tag + binaryLength.toString(16) + ',';
   const headerChunk = stringToChunk(row);
   // Push a NEXT_TWO_CHUNKS_ARE_ATOMIC sentinel before the header so that
@@ -5424,7 +5607,13 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
   }
 
   if (value != null && typeof value === 'object' && value !== null) {
-    if (isClientReference(value)) {
+    if (
+      $checkResult(
+        isClientReference(value),
+        './src/ReactFlightServerConfig.js#isClientReference',
+        $checkBool,
+      )
+    ) {
       // We actually have this value on the client so we could import it.
       // This might be confusing though because on the Server it won't actually
       // be this value, so if you're debugging client references maybe you'd be
@@ -5843,7 +6032,13 @@ function renderDebugModel(request, counter, parent, parentPropertyName, value) {
     case 'undefined':
       return serializeUndefined();
     case 'function': {
-      if (isClientReference(value)) {
+      if (
+        $checkResult(
+          isClientReference(value),
+          './src/ReactFlightServerConfig.js#isClientReference',
+          $checkBool,
+        )
+      ) {
         return serializeDebugClientReference(
           request,
           parent,
@@ -6380,7 +6575,11 @@ function emitChunk(request, task, value) {
     enableFlightObjectReferences &&
     typeof value === 'object' &&
     value !== null &&
-    isServerReference(value)
+    $checkResult(
+      isServerReference(value),
+      './src/ReactFlightServerConfig.js#isServerReference',
+      $checkBool,
+    )
   ) {
     // Streamed values reach this function before model serialization. Keep
     // registered binary objects opaque instead of emitting their bytes.
@@ -6828,7 +7027,11 @@ function flushCompletedChunks(request) {
           i,
           'packages/react-server/src/ReactFlightServer.rs:8307:52',
         );
-        const keepWriting = writeChunkAndReturn(destination, chunk);
+        const keepWriting = $checkResult(
+          writeChunkAndReturn(destination, chunk),
+          './src/ReactServerStreamConfig.js#writeChunkAndReturn',
+          $checkBool,
+        );
         if (!keepWriting) {
           request.destination = null;
           i++;
@@ -6843,7 +7046,11 @@ function flushCompletedChunks(request) {
       i = 0;
       while (i < hintChunks.length) {
         const chunk = hintChunks[i];
-        const keepWriting = writeChunkAndReturn(destination, chunk);
+        const keepWriting = $checkResult(
+          writeChunkAndReturn(destination, chunk),
+          './src/ReactServerStreamConfig.js#writeChunkAndReturn',
+          $checkBool,
+        );
         if (!keepWriting) {
           request.destination = null;
           i++;
@@ -6880,11 +7087,19 @@ function flushCompletedChunks(request) {
               i + 2,
               'packages/react-server/src/ReactFlightServer.rs:8350:66',
             );
-            keepWriting = writeChunkAndReturn(destination, contentChunk);
+            keepWriting = $checkResult(
+              writeChunkAndReturn(destination, contentChunk),
+              './src/ReactServerStreamConfig.js#writeChunkAndReturn',
+              $checkBool,
+            );
             i += 2;
           } else {
             request.pendingDebugChunks--;
-            keepWriting = writeChunkAndReturn(destination, item);
+            keepWriting = $checkResult(
+              writeChunkAndReturn(destination, item),
+              './src/ReactServerStreamConfig.js#writeChunkAndReturn',
+              $checkBool,
+            );
           }
           if (!keepWriting) {
             request.destination = null;
@@ -6921,11 +7136,19 @@ function flushCompletedChunks(request) {
             i + 2,
             'packages/react-server/src/ReactFlightServer.rs:8384:64',
           );
-          keepWriting = writeChunkAndReturn(destination, contentChunk);
+          keepWriting = $checkResult(
+            writeChunkAndReturn(destination, contentChunk),
+            './src/ReactServerStreamConfig.js#writeChunkAndReturn',
+            $checkBool,
+          );
           i += 2;
         } else {
           request.pendingChunks--;
-          keepWriting = writeChunkAndReturn(destination, item);
+          keepWriting = $checkResult(
+            writeChunkAndReturn(destination, item),
+            './src/ReactServerStreamConfig.js#writeChunkAndReturn',
+            $checkBool,
+          );
         }
         if (!keepWriting) {
           request.destination = null;
@@ -6948,7 +7171,11 @@ function flushCompletedChunks(request) {
           i,
           'packages/react-server/src/ReactFlightServer.rs:8411:50',
         );
-        const keepWriting = writeChunkAndReturn(destination, chunk);
+        const keepWriting = $checkResult(
+          writeChunkAndReturn(destination, chunk),
+          './src/ReactServerStreamConfig.js#writeChunkAndReturn',
+          $checkBool,
+        );
         if (!keepWriting) {
           request.destination = null;
           i++;
@@ -7032,6 +7259,11 @@ function flushCompletedChunks(request) {
 }
 
 export function startWork(request) {
+  $checks('startWork(request)', request, checkRequest);
+  return startWork$(request);
+}
+
+export function startWork$(request) {
   request.flushScheduled = request.destination != null;
   // $FlowFixMe[constant-condition]
   if (supportsRequestStorage) {
@@ -7076,6 +7308,11 @@ function callOnAllReadyIfReady(request) {
 }
 
 export function startFlowing(request, destination) {
+  $checks('startFlowing(request)', request, checkRequest);
+  return startFlowing$(request, destination);
+}
+
+export function startFlowing$(request, destination) {
   if (request.status === CLOSING) {
     request.status = CLOSED;
     closeWithError(destination, request.fatalError);
@@ -7101,6 +7338,11 @@ export function startFlowing(request, destination) {
 }
 
 export function startFlowingDebug(request, debugDestination) {
+  $checks('startFlowingDebug(request)', request, checkRequest);
+  return startFlowingDebug$(request, debugDestination);
+}
+
+export function startFlowingDebug$(request, debugDestination) {
   if (request.status === CLOSING) {
     request.status = CLOSED;
     closeWithError(debugDestination, request.fatalError);
@@ -7126,6 +7368,11 @@ export function startFlowingDebug(request, debugDestination) {
 }
 
 export function stopFlowing(request) {
+  $checks('stopFlowing(request)', request, checkRequest);
+  return stopFlowing$(request);
+}
+
+export function stopFlowing$(request) {
   request.destination = null;
 }
 
@@ -7186,21 +7433,31 @@ function finishAbort(request, abortedTasks, errorId) {
 // A request whose stream is neither consumed nor cancelled never ends, so its
 // listener stays attached for as long as the caller's signal lives.
 export function attachAbortSignal(request, signal) {
+  $checks('attachAbortSignal(request)', request, checkRequest);
+  return attachAbortSignal$(request, signal);
+}
+
+export function attachAbortSignal$(request, signal) {
   if (signal.aborted) {
-    abort(request, signal.reason);
+    abort$(request, signal.reason);
     return;
   }
   const cacheSignal = request.cacheController.signal;
   signal.addEventListener(
     'abort',
     () => {
-      abort(request, signal.reason);
+      abort$(request, signal.reason);
     },
     {signal: cacheSignal},
   );
 }
 
 export function abort(request, reason) {
+  $checks('abort(request)', request, checkRequest);
+  return abort$(request, reason);
+}
+
+export function abort$(request, reason) {
   // We define any status below OPEN as OPEN equivalent
   if (request.status > OPEN) {
     return;
@@ -7268,6 +7525,17 @@ function fromHex(str) {
 }
 
 export function resolveDebugMessage(request, message) {
+  $checks(
+    'resolveDebugMessage(request, message)',
+    request,
+    checkRequest,
+    message,
+    $checkStr,
+  );
+  return resolveDebugMessage$(request, message);
+}
+
+export function resolveDebugMessage$(request, message) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes
@@ -7283,7 +7551,7 @@ export function resolveDebugMessage(request, message) {
     );
   }
   if (message === '') {
-    closeDebugChannel(request);
+    closeDebugChannel$(request);
     return;
   }
   // This function lets the client ask for more data lazily through the debug channel.
@@ -7342,6 +7610,11 @@ export function resolveDebugMessage(request, message) {
 }
 
 export function closeDebugChannel(request) {
+  $checks('closeDebugChannel(request)', request, checkRequest);
+  return closeDebugChannel$(request);
+}
+
+export function closeDebugChannel$(request) {
   if (!__DEV__) {
     // These errors should never make it into a build so we don't need to encode them in codes.json
     // eslint-disable-next-line react-internal/prod-error-codes

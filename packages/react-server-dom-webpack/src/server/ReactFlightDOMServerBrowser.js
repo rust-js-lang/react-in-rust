@@ -6,32 +6,26 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  abort,
-  attachAbortSignal,
-  closeDebugChannel,
-  createPrerenderRequest,
-  createRequest,
-  resolveDebugMessage,
-  startFlowing,
-  startFlowingDebug,
-  startWork,
-  stopFlowing,
+  abort$ as abort$$1,
+  attachAbortSignal$ as attachAbortSignal$$1,
+  closeDebugChannel$ as closeDebugChannel,
+  createPrerenderRequest$ as createPrerenderRequest$$1,
+  createRequest$ as createRequest$$1,
+  resolveDebugMessage$ as resolveDebugMessage,
+  startFlowing$ as startFlowing$$1,
+  startFlowingDebug$ as startFlowingDebug,
+  startWork$ as startWork$$1,
+  stopFlowing$ as stopFlowing$$1,
 } from 'react-server/src/ReactFlightServer';
 
 import {
-  close,
-  createResponse,
-  getRoot,
+  close$ as close$$1,
+  createResponse$ as createResponse$$1,
+  getRoot$ as getRoot$$1,
 } from 'react-server/src/ReactFlightReplyServer';
 
 import * as ReactFlightActionServer from 'react-server/src/ReactFlightActionServer';
 export {decodeFormState} from 'react-server/src/ReactFlightActionServer';
-
-export function decodeAction(body, serverManifest) {
-  return (
-    ReactFlightActionServer.decodeAction(body, serverManifest) ?? undefined
-  );
-}
 
 export {
   createClientModuleProxy,
@@ -40,17 +34,39 @@ export {
 } from '../ReactFlightWebpackReferences.js';
 
 import {
-  createStringDecoder,
+  createStringDecoder$ as createStringDecoder$$1,
   readFinalStringChunk,
   readPartialStringChunk,
 } from 'react-client/src/ReactFlightClientStreamConfigWeb';
-import {$unwrap} from '@rust-js/std';
+import {
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $unwrap,
+} from '@rust-js/std';
 
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
+const checkDebugChannel = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  debugChannel: [checkDebugChannel, 'nullish'],
+  identifierPrefix: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+}));
+
+const checkDecodeReplyOptions = /* @__PURE__ */ $checkShape(() => ({}));
+
+export function decodeAction(body, serverManifest) {
+  return (
+    ReactFlightActionServer.decodeAction(body, serverManifest) ?? undefined
+  );
+}
+
 function startReadingFromDebugChannelReadableStream(request, stream) {
   const reader = stream.getReader();
-  const stringDecoder = createStringDecoder();
+  const stringDecoder = createStringDecoder$$1();
   let stringBuffer = '';
 
   function progress({done, value}) {
@@ -75,7 +91,7 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
   }
 
   function error(e) {
-    abort(
+    abort$$1(
       request,
       new Error('Lost connection to the Debug Channel.', {cause: e}),
     );
@@ -85,13 +101,19 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
 }
 
 export function renderToReadableStream(model, webpackMap, options) {
+  $checkWhole(
+    checkOptions,
+    options,
+    'renderToReadableStream(options)',
+    'nullish',
+  );
   const debugChannelReadable = __DEV__
     ? options?.debugChannel?.readable
     : undefined;
   const debugChannelWritable = __DEV__
     ? options?.debugChannel?.writable
     : undefined;
-  const request = createRequest(
+  const request = createRequest$$1(
     model,
     webpackMap,
     options?.onError,
@@ -104,7 +126,7 @@ export function renderToReadableStream(model, webpackMap, options) {
   );
   const signal = options?.signal;
   if (signal != null) {
-    attachAbortSignal(request, signal);
+    attachAbortSignal$$1(request, signal);
   }
   if (debugChannelWritable != null) {
     const debugStream = new ReadableStream(
@@ -127,14 +149,14 @@ export function renderToReadableStream(model, webpackMap, options) {
     {
       type: 'bytes',
       start(controller) {
-        startWork(request);
+        startWork$$1(request);
       },
       pull(controller) {
-        startFlowing(request, controller);
+        startFlowing$$1(request, controller);
       },
       cancel(reason) {
-        stopFlowing(request);
-        abort(request, reason);
+        stopFlowing$$1(request);
+        abort$$1(request, reason);
       },
     },
     // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -144,6 +166,7 @@ export function renderToReadableStream(model, webpackMap, options) {
 }
 
 export function prerender(model, webpackMap, options) {
+  $checkWhole(checkOptions, options, 'prerender(options)', 'nullish');
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
     let request;
@@ -156,11 +179,11 @@ export function prerender(model, webpackMap, options) {
         {
           type: 'bytes',
           pull(controller) {
-            startFlowing(request$1, controller);
+            startFlowing$$1(request$1, controller);
           },
           cancel(reason) {
-            stopFlowing(request$1);
-            abort(request$1, reason);
+            stopFlowing$$1(request$1);
+            abort$$1(request$1, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -169,7 +192,7 @@ export function prerender(model, webpackMap, options) {
       );
       resolve({prelude: stream});
     }
-    request = createPrerenderRequest(
+    request = createPrerenderRequest$$1(
       model,
       webpackMap,
       onAllReady,
@@ -184,13 +207,19 @@ export function prerender(model, webpackMap, options) {
     );
     const signal = options?.signal;
     if (signal != null) {
-      attachAbortSignal(request, signal);
+      attachAbortSignal$$1(request, signal);
     }
-    startWork(request);
+    startWork$$1(request);
   });
 }
 
 export function decodeReply(body, webpackMap, options) {
+  $checkWhole(
+    checkDecodeReplyOptions,
+    options,
+    'decodeReply(options)',
+    'nullish',
+  );
   let body$1;
   if (typeof body === 'string') {
     const form = new FormData();
@@ -199,15 +228,15 @@ export function decodeReply(body, webpackMap, options) {
   } else {
     body$1 = body;
   }
-  const response = createResponse(
+  const response = createResponse$$1(
     webpackMap,
     '',
     options?.temporaryReferences,
     body$1,
     options?.arraySizeLimit,
   );
-  const root = getRoot(response);
-  close(response);
+  const root = getRoot$$1(response);
+  close$$1(response);
   return root;
 }
 //# sourceMappingURL=ReactFlightDOMServerBrowser.js.map

@@ -7,8 +7,8 @@
 
 import {allNativeEvents} from '../events/EventRegistry.js';
 import {
-  addEventHandleToTarget,
-  doesTargetHaveEventHandle,
+  addEventHandleToTarget$ as addEventHandleToTarget,
+  doesTargetHaveEventHandle$ as doesTargetHaveEventHandle,
   getEventHandlerListeners,
   setEventHandlerListeners,
 } from './ReactDOMComponentTree.js';

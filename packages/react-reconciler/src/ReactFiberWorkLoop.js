@@ -159,44 +159,44 @@ import {
   SyncLane,
   SyncUpdateLanes,
   UpdateLanes,
-  addFiberToLanesMap,
-  addTransitionToLanesMap,
-  checkIfRootIsPrerendering,
+  addFiberToLanesMap$ as addFiberToLanesMap,
+  addTransitionToLanesMap$ as addTransitionToLanesMap,
+  checkIfRootIsPrerendering$ as checkIfRootIsPrerendering,
   claimNextRetryLane,
   claimNextTransitionDeferredLane,
-  getEntangledLanes,
-  getLanesToRetrySynchronouslyOnError,
-  getNextLanes,
-  getTransitionsForLanes,
-  includesBlockingLane,
-  includesExpiredLane,
-  includesIdleGroupLanes,
-  includesNonIdleWork,
-  includesOnlyRetries,
-  includesOnlyTransitions,
-  includesOnlyViewTransitionEligibleLanes,
-  includesRetryLane,
-  includesSomeLane,
-  includesSyncLane,
-  includesTransitionLane,
-  isGestureRender,
-  isSubsetOfLanes,
-  markRootFinished,
-  markRootPinged as _markRootPinged,
-  markRootSuspended as _markRootSuspended,
-  markRootUpdated as _markRootUpdated,
-  mergeLanes,
-  movePendingFibersToMemoized,
-  pickArbitraryLane,
-  removeLanes,
-  upgradePendingLanesToSync,
+  getEntangledLanes$ as getEntangledLanes,
+  getLanesToRetrySynchronouslyOnError$ as getLanesToRetrySynchronouslyOnError,
+  getNextLanes$ as getNextLanes,
+  getTransitionsForLanes$ as getTransitionsForLanes,
+  includesBlockingLane$ as includesBlockingLane,
+  includesExpiredLane$ as includesExpiredLane,
+  includesIdleGroupLanes$ as includesIdleGroupLanes,
+  includesNonIdleWork$ as includesNonIdleWork,
+  includesOnlyRetries$ as includesOnlyRetries,
+  includesOnlyTransitions$ as includesOnlyTransitions,
+  includesOnlyViewTransitionEligibleLanes$ as includesOnlyViewTransitionEligibleLanes,
+  includesRetryLane$ as includesRetryLane,
+  includesSomeLane$ as includesSomeLane,
+  includesSyncLane$ as includesSyncLane,
+  includesTransitionLane$ as includesTransitionLane,
+  isGestureRender$ as isGestureRender,
+  isSubsetOfLanes$ as isSubsetOfLanes,
+  markRootFinished$ as markRootFinished,
+  markRootPinged$ as _markRootPinged,
+  markRootSuspended$ as _markRootSuspended,
+  markRootUpdated$ as _markRootUpdated,
+  mergeLanes$ as mergeLanes,
+  movePendingFibersToMemoized$ as movePendingFibersToMemoized,
+  pickArbitraryLane$ as pickArbitraryLane,
+  removeLanes$ as removeLanes,
+  upgradePendingLanesToSync$ as upgradePendingLanesToSync,
 } from './ReactFiberLane.js';
 
 import {
   DefaultEventPriority,
   DiscreteEventPriority,
   eventPriorityToLane,
-  lanesToEventPriority,
+  lanesToEventPriority$ as lanesToEventPriority,
   lowerEventPriority,
 } from './ReactEventPriorities.js';
 import {requestCurrentTransition} from './ReactFiberTransition.js';
@@ -256,7 +256,7 @@ import {
 
 import {DefaultAsyncDispatcher} from './ReactFiberAsyncDispatcher.js';
 
-import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
+import {createCapturedValueAtFiber$ as createCapturedValueAtFiber} from './ReactCapturedValue.js';
 import {
   enqueueConcurrentRenderForLane,
   finishQueueingConcurrentUpdates,
@@ -407,6 +407,8 @@ import {
   $borrowMut,
   $catchable,
   $cellReplace,
+  $checkBool,
+  $checkResult,
   $cleanup,
   $nullableCell,
   $panic,
@@ -3014,8 +3016,16 @@ function renderRootConcurrent(root, lanes) {
                     const props = hostFiber.pendingProps;
                     const isReady =
                       resource != null
-                        ? preloadResource(resource)
-                        : preloadInstance(hostFiber.stateNode, type, props);
+                        ? $checkResult(
+                            preloadResource(resource),
+                            './src/ReactFiberConfig.js#preloadResource',
+                            $checkBool,
+                          )
+                        : $checkResult(
+                            preloadInstance(hostFiber.stateNode, type, props),
+                            './src/ReactFiberConfig.js#preloadInstance',
+                            $checkBool,
+                          );
                     if (isReady) {
                       // The data resolved. Resume the work loop as if nothing
                       // suspended. Unlike when a user component suspends, we don't

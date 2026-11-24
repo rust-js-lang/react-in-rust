@@ -48,9 +48,9 @@ import {
   createWorkInProgress,
   resetWorkInProgress,
 } from './ReactFiber.js';
-import {isCompatibleFamilyForHotReloading} from './ReactFiberHotReloading.js';
+import {isCompatibleFamilyForHotReloading$ as isCompatibleFamilyForHotReloading} from './ReactFiberHotReloading.js';
 import {getIsHydrating} from './ReactFiberHydrationContext.js';
-import {pushTreeFork} from './ReactFiberTreeContext.js';
+import {pushTreeFork$ as pushTreeFork} from './ReactFiberTreeContext.js';
 
 import {
   SuspenseActionException,

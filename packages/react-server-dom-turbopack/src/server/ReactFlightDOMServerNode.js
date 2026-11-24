@@ -10,38 +10,32 @@ import {Readable} from 'stream';
 import noop from 'shared/noop';
 
 import {
-  abort,
-  attachAbortSignal,
-  closeDebugChannel,
-  createPrerenderRequest,
-  createRequest,
-  resolveDebugMessage,
-  startFlowing,
-  startFlowingDebug,
-  startWork,
-  stopFlowing,
+  abort$ as abort$$1,
+  attachAbortSignal$ as attachAbortSignal$$1,
+  closeDebugChannel$ as closeDebugChannel,
+  createPrerenderRequest$ as createPrerenderRequest$$1,
+  createRequest$ as createRequest$$1,
+  resolveDebugMessage$ as resolveDebugMessage,
+  startFlowing$ as startFlowing$$1,
+  startFlowingDebug$ as startFlowingDebug,
+  startWork$ as startWork$$1,
+  stopFlowing$ as stopFlowing$$1,
 } from 'react-server/src/ReactFlightServer';
 
 import {
-  close,
-  createResponse,
-  getRoot,
-  reportGlobalError,
-  resolveField,
-  resolveFile,
-  resolveFileChunk,
-  resolveFileComplete,
-  resolveFileInfo,
+  close$ as close$$1,
+  createResponse$ as createResponse$$1,
+  getRoot$ as getRoot$$1,
+  reportGlobalError$ as reportGlobalError$$1,
+  resolveField$ as resolveField,
+  resolveFile$ as resolveFile,
+  resolveFileChunk$ as resolveFileChunk,
+  resolveFileComplete$ as resolveFileComplete,
+  resolveFileInfo$ as resolveFileInfo,
 } from 'react-server/src/ReactFlightReplyServer';
 
 import * as ReactFlightActionServer from 'react-server/src/ReactFlightActionServer';
 export {decodeFormState} from 'react-server/src/ReactFlightActionServer';
-
-export function decodeAction(body, serverManifest) {
-  return (
-    ReactFlightActionServer.decodeAction(body, serverManifest) ?? undefined
-  );
-}
 
 export {
   createClientModuleProxy,
@@ -51,7 +45,7 @@ export {
 } from '../ReactFlightTurbopackReferences.js';
 
 import {
-  createStringDecoder,
+  createStringDecoder$ as createStringDecoder,
   readFinalStringChunk,
   readPartialStringChunk,
 } from 'react-client/src/ReactFlightClientStreamConfigNode';
@@ -61,6 +55,10 @@ import {
   $borrow,
   $borrowMut,
   $catchable,
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
   $fieldCell,
   $index,
   $panic,
@@ -71,16 +69,42 @@ import {
 
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+}));
+
+const checkWebStreamsDebugChannel = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkWebStreamsOptions = /* @__PURE__ */ $checkShape(() => ({
+  debugChannel: [checkWebStreamsDebugChannel, 'nullish'],
+  identifierPrefix: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+}));
+
+const checkPrerenderOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+}));
+
+const checkDecodeReplyOptions = /* @__PURE__ */ $checkShape(() => ({}));
+
+export function decodeAction(body, serverManifest) {
+  return (
+    ReactFlightActionServer.decodeAction(body, serverManifest) ?? undefined
+  );
+}
+
 function createDrainHandler(destination, request) {
   return () => {
-    startFlowing(request, destination);
+    startFlowing$$1(request, destination);
   };
 }
 
 function createCancelHandler(request, reason) {
   return () => {
-    stopFlowing(request);
-    abort(request, new Error(reason));
+    stopFlowing$$1(request);
+    abort$$1(request, new Error(reason));
   };
 }
 
@@ -111,7 +135,7 @@ function startReadingFromDebugChannelReadable(request, stream) {
   }
 
   function onError(error) {
-    abort(
+    abort$$1(
       request,
       new Error('Lost connection to the Debug Channel.', {cause: error}),
     );
@@ -151,6 +175,12 @@ function startReadingFromDebugChannelReadable(request, stream) {
 }
 
 export function renderToPipeableStream(model, turbopackMap, options) {
+  $checkWhole(
+    checkOptions,
+    options,
+    'renderToPipeableStream(options)',
+    'nullish',
+  );
   const debugChannel = __DEV__ ? options?.debugChannel : undefined;
   const debugChannelReadable =
     __DEV__ &&
@@ -173,7 +203,7 @@ export function renderToPipeableStream(model, turbopackMap, options) {
   } else {
     debugChannelWritable = undefined;
   }
-  const request = createRequest(
+  const request = createRequest$$1(
     model,
     turbopackMap,
     options?.onError,
@@ -185,7 +215,7 @@ export function renderToPipeableStream(model, turbopackMap, options) {
     debugChannelReadable !== undefined,
   );
   let hasStartedFlowing = false;
-  startWork(request);
+  startWork$$1(request);
   if (debugChannelWritable !== undefined) {
     startFlowingDebug(request, debugChannelWritable);
   }
@@ -201,7 +231,7 @@ export function renderToPipeableStream(model, turbopackMap, options) {
         );
       }
       hasStartedFlowing = true;
-      startFlowing(request, destination);
+      startFlowing$$1(request, destination);
       destination.on('drain', createDrainHandler(destination, request));
       const onError = createCancelHandler(
         request,
@@ -220,7 +250,7 @@ export function renderToPipeableStream(model, turbopackMap, options) {
       return destination;
     },
     abort(reason) {
-      abort(request, reason);
+      abort$$1(request, reason);
     },
   };
 }
@@ -298,7 +328,7 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
   }
 
   function error(e) {
-    abort(
+    abort$$1(
       request,
       new Error('Lost connection to the Debug Channel.', {cause: e}),
     );
@@ -308,13 +338,19 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
 }
 
 export function renderToReadableStream(model, turbopackMap, options) {
+  $checkWhole(
+    checkWebStreamsOptions,
+    options,
+    'renderToReadableStream(options)',
+    'nullish',
+  );
   const debugChannelReadable = __DEV__
     ? options?.debugChannel?.readable
     : undefined;
   const debugChannelWritable = __DEV__
     ? options?.debugChannel?.writable
     : undefined;
-  const request = createRequest(
+  const request = createRequest$$1(
     model,
     turbopackMap,
     options?.onError,
@@ -327,7 +363,7 @@ export function renderToReadableStream(model, turbopackMap, options) {
   );
   const signal = options?.signal;
   if (signal != null) {
-    attachAbortSignal(request, signal);
+    attachAbortSignal$$1(request, signal);
   }
   if (debugChannelWritable != null) {
     let debugWritable;
@@ -363,10 +399,10 @@ export function renderToReadableStream(model, turbopackMap, options) {
       type: 'bytes',
       start(controller) {
         writable = createFakeWritableFromReadableStreamController(controller);
-        startWork(request);
+        startWork$$1(request);
       },
       pull(controller) {
-        startFlowing(
+        startFlowing$$1(
           request,
           $unwrap(
             writable,
@@ -375,8 +411,8 @@ export function renderToReadableStream(model, turbopackMap, options) {
         );
       },
       cancel(reason) {
-        stopFlowing(request);
-        abort(request, reason);
+        stopFlowing$$1(request);
+        abort$$1(request, reason);
       },
     },
     // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -402,6 +438,12 @@ function createFakeWritableFromNodeReadable(readable) {
 }
 
 export function prerenderToNodeStream(model, turbopackMap, options) {
+  $checkWhole(
+    checkPrerenderOptions,
+    options,
+    'prerenderToNodeStream(options)',
+    'nullish',
+  );
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
     let request;
@@ -413,7 +455,7 @@ export function prerenderToNodeStream(model, turbopackMap, options) {
       let writable;
       const readable = new Readable({
         read() {
-          startFlowing(
+          startFlowing$$1(
             request$1,
             $unwrap(
               writable,
@@ -426,7 +468,7 @@ export function prerenderToNodeStream(model, turbopackMap, options) {
       resolve({prelude: readable});
     }
 
-    request = createPrerenderRequest(
+    request = createPrerenderRequest$$1(
       model,
       turbopackMap,
       onAllReady,
@@ -441,13 +483,14 @@ export function prerenderToNodeStream(model, turbopackMap, options) {
     );
     const signal = options?.signal;
     if (signal != null) {
-      attachAbortSignal(request, signal);
+      attachAbortSignal$$1(request, signal);
     }
-    startWork(request);
+    startWork$$1(request);
   });
 }
 
 export function prerender(model, turbopackMap, options) {
+  $checkWhole(checkPrerenderOptions, options, 'prerender(options)', 'nullish');
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
     let request;
@@ -465,7 +508,7 @@ export function prerender(model, turbopackMap, options) {
               createFakeWritableFromReadableStreamController(controller);
           },
           pull(controller) {
-            startFlowing(
+            startFlowing$$1(
               request$1,
               $unwrap(
                 writable,
@@ -474,8 +517,8 @@ export function prerender(model, turbopackMap, options) {
             );
           },
           cancel(reason) {
-            stopFlowing(request$1);
-            abort(request$1, reason);
+            stopFlowing$$1(request$1);
+            abort$$1(request$1, reason);
           },
         },
         // $FlowFixMe[prop-missing] size() methods are not allowed on byte streams.
@@ -484,7 +527,7 @@ export function prerender(model, turbopackMap, options) {
       );
       resolve({prelude: stream});
     }
-    request = createPrerenderRequest(
+    request = createPrerenderRequest$$1(
       model,
       turbopackMap,
       onAllReady,
@@ -499,14 +542,20 @@ export function prerender(model, turbopackMap, options) {
     );
     const signal = options?.signal;
     if (signal != null) {
-      attachAbortSignal(request, signal);
+      attachAbortSignal$$1(request, signal);
     }
-    startWork(request);
+    startWork$$1(request);
   });
 }
 
 export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
-  const response = createResponse(
+  $checkWhole(
+    checkDecodeReplyOptions,
+    options,
+    'decodeReplyFromBusboy(options)',
+    'nullish',
+  );
+  const response = createResponse$$1(
     turbopackMap,
     '',
     options?.temporaryReferences,
@@ -574,7 +623,7 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
     tail$1 = undefined;
     if (bodyFinished && !closed) {
       closed = true;
-      close(response);
+      close$$1(response);
     }
   }
 
@@ -654,23 +703,29 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
     if (!closed) {
       // Invariant: busboy delays 'finish' until every file's 'end' event has
       // fired, so the flush above should always close the response.
-      reportGlobalError(
+      reportGlobalError$$1(
         response,
         new Error('Reply finished with incomplete file part.'),
       );
     }
   });
   busboyStream.on('error', err => {
-    reportGlobalError(
+    reportGlobalError$$1(
       response,
       // $FlowFixMe[incompatible-type] types Error and mixed are incompatible
       err,
     );
   });
-  return getRoot(response);
+  return getRoot$$1(response);
 }
 
 export function decodeReply(body, turbopackMap, options) {
+  $checkWhole(
+    checkDecodeReplyOptions,
+    options,
+    'decodeReply(options)',
+    'nullish',
+  );
   let body$1;
   if (typeof body === 'string') {
     const form = new FormData();
@@ -679,22 +734,28 @@ export function decodeReply(body, turbopackMap, options) {
   } else {
     body$1 = body;
   }
-  const response = createResponse(
+  const response = createResponse$$1(
     turbopackMap,
     '',
     options?.temporaryReferences,
     body$1,
     options?.arraySizeLimit,
   );
-  const root = getRoot(response);
-  close(response);
+  const root = getRoot$$1(response);
+  close$$1(response);
   return root;
 }
 
 export function decodeReplyFromAsyncIterable(iterable, turbopackMap, options) {
+  $checkWhole(
+    checkDecodeReplyOptions,
+    options,
+    'decodeReplyFromAsyncIterable(options)',
+    'nullish',
+  );
   const iterator = iterable[Symbol.asyncIterator]();
 
-  const response = createResponse(
+  const response = createResponse$$1(
     turbopackMap,
     '',
     options?.temporaryReferences,
@@ -704,7 +765,7 @@ export function decodeReplyFromAsyncIterable(iterable, turbopackMap, options) {
 
   function progress(entry) {
     if (entry.done) {
-      close(response);
+      close$$1(response);
     } else {
       const name = entry.value[0];
       const value = entry.value[1];
@@ -718,7 +779,7 @@ export function decodeReplyFromAsyncIterable(iterable, turbopackMap, options) {
   }
 
   function error(reason) {
-    reportGlobalError(response, reason);
+    reportGlobalError$$1(response, reason);
     if (typeof iterator.throw === 'function') {
       // The iterator protocol doesn't necessarily include this but a generator do.
       // $FlowFixMe[prop-missing] should be able to pass mixed
@@ -728,6 +789,6 @@ export function decodeReplyFromAsyncIterable(iterable, turbopackMap, options) {
 
   iterator.next().then(progress, error);
 
-  return getRoot(response);
+  return getRoot$$1(response);
 }
 //# sourceMappingURL=ReactFlightDOMServerNode.js.map

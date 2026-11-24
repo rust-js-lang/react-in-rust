@@ -19,9 +19,22 @@ import {
 } from './ReactWorkTags.js';
 
 import {Hydrating, NoFlags, Placement} from './ReactFiberFlags.js';
-import {$panic, $stringPanic} from '@rust-js/std';
+import {
+  $checkBool,
+  $checkCallback,
+  $checkOption,
+  $checkShape,
+  $checks,
+  $panic,
+  $stringPanic,
+} from '@rust-js/std';
 
 export function getNearestMountedFiber(fiber) {
+  $checks('getNearestMountedFiber(fiber)', fiber, checkFiber);
+  return getNearestMountedFiber$(fiber);
+}
+
+export function getNearestMountedFiber$(fiber) {
   let node = fiber;
   let nearestMounted = fiber;
   // If there is no alternate, this might be a new tree that isn't inserted
@@ -56,6 +69,11 @@ export function getNearestMountedFiber(fiber) {
 
 // ReactFiberConfig's `SuspenseInstance`.
 export function getSuspenseInstanceFromFiber(fiber) {
+  $checks('getSuspenseInstanceFromFiber(fiber)', fiber, checkFiber);
+  return getSuspenseInstanceFromFiber$(fiber);
+}
+
+export function getSuspenseInstanceFromFiber$(fiber) {
   if (fiber.tag === SuspenseComponent) {
     let suspenseState = fiber.memoizedState;
     if (suspenseState == null) {
@@ -73,6 +91,11 @@ export function getSuspenseInstanceFromFiber(fiber) {
 
 // ReactFiberConfig's `ActivityInstance`.
 export function getActivityInstanceFromFiber(fiber) {
+  $checks('getActivityInstanceFromFiber(fiber)', fiber, checkFiber);
+  return getActivityInstanceFromFiber$(fiber);
+}
+
+export function getActivityInstanceFromFiber$(fiber) {
   if (fiber.tag === ActivityComponent) {
     let activityState = fiber.memoizedState;
     if (activityState == null) {
@@ -91,11 +114,16 @@ export function getActivityInstanceFromFiber(fiber) {
 
 // ReactFiberConfig's `Container`.
 export function getContainerFromFiber(fiber) {
+  $checks('getContainerFromFiber(fiber)', fiber, checkFiber);
+  return getContainerFromFiber$(fiber);
+}
+
+export function getContainerFromFiber$(fiber) {
   return fiber.tag === HostRoot ? fiber.stateNode.containerInfo : null;
 }
 
 function assertIsMounted(fiber) {
-  if (getNearestMountedFiber(fiber) !== fiber) {
+  if (getNearestMountedFiber$(fiber) !== fiber) {
     throw $panic(
       'Unable to find node on an unmounted component.',
       'packages/react-reconciler/src/ReactFiberTreeReflection.rs:123:9',
@@ -104,10 +132,15 @@ function assertIsMounted(fiber) {
 }
 
 export function findCurrentFiberUsingSlowPath(fiber) {
+  $checks('findCurrentFiberUsingSlowPath(fiber)', fiber, checkFiber);
+  return findCurrentFiberUsingSlowPath$(fiber);
+}
+
+export function findCurrentFiberUsingSlowPath$(fiber) {
   const alternate = fiber.alternate;
   if (alternate == null) {
     // If there is no alternate, then we only need to check if it is mounted.
-    const nearestMounted = getNearestMountedFiber(fiber);
+    const nearestMounted = getNearestMountedFiber$(fiber);
 
     if (nearestMounted == null) {
       throw $panic(
@@ -261,7 +294,12 @@ export function findCurrentFiberUsingSlowPath(fiber) {
 }
 
 export function findCurrentHostFiber(parent) {
-  const currentParent = findCurrentFiberUsingSlowPath(parent);
+  $checks('findCurrentHostFiber(parent)', parent, checkFiber);
+  return findCurrentHostFiber$(parent);
+}
+
+export function findCurrentHostFiber$(parent) {
+  const currentParent = findCurrentFiberUsingSlowPath$(parent);
   return currentParent != null ? findCurrentHostFiberImpl(currentParent) : null;
 }
 
@@ -290,7 +328,12 @@ function findCurrentHostFiberImpl(node) {
 }
 
 export function findCurrentHostFiberWithNoPortals(parent) {
-  const currentParent = findCurrentFiberUsingSlowPath(parent);
+  $checks('findCurrentHostFiberWithNoPortals(parent)', parent, checkFiber);
+  return findCurrentHostFiberWithNoPortals$(parent);
+}
+
+export function findCurrentHostFiberWithNoPortals$(parent) {
+  const currentParent = findCurrentFiberUsingSlowPath$(parent);
   return currentParent != null
     ? findCurrentHostFiberWithNoPortalsImpl(currentParent)
     : null;
@@ -323,6 +366,11 @@ function findCurrentHostFiberWithNoPortalsImpl(node) {
 }
 
 export function isFiberSuspenseAndTimedOut(fiber) {
+  $checks('isFiberSuspenseAndTimedOut(fiber)', fiber, checkFiber);
+  return isFiberSuspenseAndTimedOut$(fiber);
+}
+
+export function isFiberSuspenseAndTimedOut$(fiber) {
   const memoizedState = fiber.memoizedState;
   return (
     fiber.tag === SuspenseComponent &&
@@ -332,6 +380,17 @@ export function isFiberSuspenseAndTimedOut(fiber) {
 }
 
 export function doesFiberContain(parentFiber, childFiber) {
+  $checks(
+    'doesFiberContain(parentFiber, childFiber)',
+    parentFiber,
+    checkFiber,
+    childFiber,
+    checkFiber,
+  );
+  return doesFiberContain$(parentFiber, childFiber);
+}
+
+export function doesFiberContain$(parentFiber, childFiber) {
   let node = childFiber;
   const parentFiberAlternate = parentFiber.alternate;
   while (node != null) {
@@ -350,11 +409,57 @@ export function traverseFragmentInstancesAndTextInstances(
   b,
   c,
 ) {
+  $checks(
+    'traverseFragmentInstancesAndTextInstances(fragmentFiber)',
+    fragmentFiber,
+    checkFiber,
+  );
+  fn = $checkCallback(
+    fn,
+    'traverseFragmentInstancesAndTextInstances(fn)',
+    $checkBool,
+  );
+  return traverseFragmentInstancesAndTextInstances$(fragmentFiber, fn, a, b, c);
+}
+
+export function traverseFragmentInstancesAndTextInstances$(
+  fragmentFiber,
+  fn,
+  a,
+  b,
+  c,
+) {
   const child = fragmentFiber.child;
   traverseVisibleInstancesAndTextInstances(child, false, fn, a, b, c);
 }
 
 export function traverseFragmentInstancesAndTextInstancesDeeply(
+  fragmentFiber,
+  fn,
+  a,
+  b,
+  c,
+) {
+  $checks(
+    'traverseFragmentInstancesAndTextInstancesDeeply(fragmentFiber)',
+    fragmentFiber,
+    checkFiber,
+  );
+  fn = $checkCallback(
+    fn,
+    'traverseFragmentInstancesAndTextInstancesDeeply(fn)',
+    $checkBool,
+  );
+  return traverseFragmentInstancesAndTextInstancesDeeply$(
+    fragmentFiber,
+    fn,
+    a,
+    b,
+    c,
+  );
+}
+
+export function traverseFragmentInstancesAndTextInstancesDeeply$(
   fragmentFiber,
   fn,
   a,
@@ -408,6 +513,15 @@ function traverseVisibleInstancesAndTextInstances(
 }
 
 export function getFragmentParentInstanceOrContainerFiber(fiber) {
+  $checks(
+    'getFragmentParentInstanceOrContainerFiber(fiber)',
+    fiber,
+    checkFiber,
+  );
+  return getFragmentParentInstanceOrContainerFiber$(fiber);
+}
+
+export function getFragmentParentInstanceOrContainerFiber$(fiber) {
   let parent = fiber.return;
   while (parent != null) {
     if (
@@ -425,6 +539,11 @@ export function getFragmentParentInstanceOrContainerFiber(fiber) {
 
 // ReactFiberConfig's `Container`.
 export function getFragmentRootContainerInfo(fiber) {
+  $checks('getFragmentRootContainerInfo(fiber)', fiber, checkFiber);
+  return getFragmentRootContainerInfo$(fiber);
+}
+
+export function getFragmentRootContainerInfo$(fiber) {
   let parent = fiber.return;
   while (parent != null) {
     if (parent.tag === HostRoot) {
@@ -436,6 +555,11 @@ export function getFragmentRootContainerInfo(fiber) {
 }
 
 export function fiberIsPortaledIntoHost(fiber) {
+  $checks('fiberIsPortaledIntoHost(fiber)', fiber, checkFiber);
+  return fiberIsPortaledIntoHost$(fiber);
+}
+
+export function fiberIsPortaledIntoHost$(fiber) {
   let foundPortalParent = false;
   let parent = fiber.return;
   while (parent != null) {
@@ -456,6 +580,11 @@ export function fiberIsPortaledIntoHost(fiber) {
 
 // ReactFiberConfig's `Container`: a portal's `containerInfo`.
 export function getFragmentPortalContainerInfo(fiber) {
+  $checks('getFragmentPortalContainerInfo(fiber)', fiber, checkFiber);
+  return getFragmentPortalContainerInfo$(fiber);
+}
+
+export function getFragmentPortalContainerInfo$(fiber) {
   let parent = fiber.return;
   while (parent != null) {
     if (parent.tag === HostPortal) {
@@ -474,8 +603,17 @@ export function getFragmentPortalContainerInfo(fiber) {
 }
 
 export function getFragmentInstanceOrTextInstanceSiblings(fiber) {
+  $checks(
+    'getFragmentInstanceOrTextInstanceSiblings(fiber)',
+    fiber,
+    checkFiber,
+  );
+  return getFragmentInstanceOrTextInstanceSiblings$(fiber);
+}
+
+export function getFragmentInstanceOrTextInstanceSiblings$(fiber) {
   const result = [null, null];
-  const parentHostFiber = getFragmentParentInstanceOrContainerFiber(fiber);
+  const parentHostFiber = getFragmentParentInstanceOrContainerFiber$(fiber);
   if (parentHostFiber == null) {
     return result;
   }
@@ -541,6 +679,11 @@ function findFragmentInstanceOrTextInstanceSiblings(
 
 // ReactFiberConfig's `Instance | TextInstance | Container`.
 export function getInstanceFromHostFiber(fiber) {
+  $checks('getInstanceFromHostFiber(fiber)', fiber, checkFiber);
+  return getInstanceFromHostFiber$(fiber);
+}
+
+export function getInstanceFromHostFiber$(fiber) {
   switch (fiber.tag) {
     case HostComponent:
     case HostSingleton:
@@ -558,6 +701,7 @@ export function getInstanceFromHostFiber(fiber) {
 
 let searchTarget = null;
 let searchBoundary = null;
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
 
 function pushSearchTarget(target) {
   searchTarget = target;
@@ -576,6 +720,15 @@ function popSearchBoundary() {
 }
 
 export function getNextSiblingInstanceOrTextInstanceFiber(fiber) {
+  $checks(
+    'getNextSiblingInstanceOrTextInstanceFiber(fiber)',
+    fiber,
+    checkFiber,
+  );
+  return getNextSiblingInstanceOrTextInstanceFiber$(fiber);
+}
+
+export function getNextSiblingInstanceOrTextInstanceFiber$(fiber) {
   let sibling = fiber.sibling;
   traverseVisibleInstancesAndTextInstances(sibling, false, findNextSibling);
   sibling = popSearchTarget();
@@ -589,6 +742,17 @@ function findNextSibling(child) {
 }
 
 export function isFiberContainedByFragment(fiber, fragmentFiber) {
+  $checks(
+    'isFiberContainedByFragment(fiber, fragmentFiber)',
+    fiber,
+    checkFiber,
+    fragmentFiber,
+    checkFiber,
+  );
+  return isFiberContainedByFragment$(fiber, fragmentFiber);
+}
+
+export function isFiberContainedByFragment$(fiber, fragmentFiber) {
   let current = fiber;
   while (current != null) {
     if (
@@ -603,9 +767,20 @@ export function isFiberContainedByFragment(fiber, fragmentFiber) {
 }
 
 export function isFragmentContainedByFiber(fragmentFiber, otherFiber) {
+  $checks(
+    'isFragmentContainedByFiber(fragmentFiber, otherFiber)',
+    fragmentFiber,
+    checkFiber,
+    otherFiber,
+    checkFiber,
+  );
+  return isFragmentContainedByFiber$(fragmentFiber, otherFiber);
+}
+
+export function isFragmentContainedByFiber$(fragmentFiber, otherFiber) {
   let current = fragmentFiber;
   const fiberHostParent =
-    getFragmentParentInstanceOrContainerFiber(fragmentFiber);
+    getFragmentParentInstanceOrContainerFiber$(fragmentFiber);
   while (current != null) {
     if (
       (current.tag === HostComponent ||
@@ -621,7 +796,18 @@ export function isFragmentContainedByFiber(fragmentFiber, otherFiber) {
 }
 
 export function isFiberPreceding(fiber, otherFiber) {
-  const commonAncestor = getLowestCommonAncestor(
+  $checks(
+    'isFiberPreceding(fiber, otherFiber)',
+    fiber,
+    checkFiber,
+    otherFiber,
+    checkFiber,
+  );
+  return isFiberPreceding$(fiber, otherFiber);
+}
+
+export function isFiberPreceding$(fiber, otherFiber) {
+  const commonAncestor = getLowestCommonAncestor$(
     fiber,
     otherFiber,
     getParentForFragmentAncestors,
@@ -653,7 +839,18 @@ function isFiberPrecedingCheck(child, target, boundary) {
 }
 
 export function isFiberFollowing(fiber, otherFiber) {
-  const commonAncestor = getLowestCommonAncestor(
+  $checks(
+    'isFiberFollowing(fiber, otherFiber)',
+    fiber,
+    checkFiber,
+    otherFiber,
+    checkFiber,
+  );
+  return isFiberFollowing$(fiber, otherFiber);
+}
+
+export function isFiberFollowing$(fiber, otherFiber) {
+  const commonAncestor = getLowestCommonAncestor$(
     fiber,
     otherFiber,
     getParentForFragmentAncestors,
@@ -715,6 +912,22 @@ function getParentForFragmentAncestors(inst) {
  * different trees.
  */
 export function getLowestCommonAncestor(instA, instB, getParent) {
+  $checks(
+    'getLowestCommonAncestor(instA, instB)',
+    instA,
+    checkFiber,
+    instB,
+    checkFiber,
+  );
+  getParent = $checkCallback(
+    getParent,
+    'getLowestCommonAncestor(getParent)',
+    (value, where) => $checkOption(value, where, checkFiber),
+  );
+  return getLowestCommonAncestor$(instA, instB, getParent);
+}
+
+export function getLowestCommonAncestor$(instA, instB, getParent) {
   let nodeA = instA;
   let nodeB = instB;
   let depthA = 0;

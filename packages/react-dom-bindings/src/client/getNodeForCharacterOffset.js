@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {TEXT_NODE} from './HTMLNodeType.js';
+import {$checkF64} from '@rust-js/std';
 
 /**
  * Given any node return the first leaf node without children.
@@ -46,6 +47,11 @@ function getSiblingNode(node) {
  * @return {?object}
  */
 function getNodeForCharacterOffset(root, offset) {
+  $checkF64(offset, 'getNodeForCharacterOffset(offset)');
+  return getNodeForCharacterOffset$(root, offset);
+}
+
+export function getNodeForCharacterOffset$(root, offset) {
   let node = getLeafNode(root);
   let nodeStart = 0;
 

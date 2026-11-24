@@ -14,7 +14,7 @@ import shallowEqual from 'shared/shallowEqual';
 
 import {registerTwoPhaseEvent} from '../EventRegistry.js';
 import getActiveElement from '../../client/getActiveElement.js';
-import {getNodeFromInstance} from '../../client/ReactDOMComponentTree.js';
+import {getNodeFromInstance$ as getNodeFromInstance} from '../../client/ReactDOMComponentTree.js';
 import {hasSelectionCapabilities} from '../../client/ReactInputSelection.js';
 
 import {DOCUMENT_NODE} from '../../client/HTMLNodeType.js';

@@ -25,6 +25,8 @@ import {
   supportsTestSelectors,
 } from './ReactFiberConfig.js';
 import {
+  $checkBool,
+  $checkResult,
   $index,
   $panic,
   $stdSites,
@@ -127,7 +129,13 @@ function matchSelector(fiber, selector) {
         tag === HostSingleton
       ) {
         const node = fiber.stateNode;
-        if (matchAccessibilityRole(node, selector.value)) {
+        if (
+          $checkResult(
+            matchAccessibilityRole(node, selector.value),
+            './src/ReactFiberConfig.js#matchAccessibilityRole',
+            $checkBool,
+          )
+        ) {
           return true;
         }
       }
@@ -207,7 +215,11 @@ function findPaths(root, selectors) {
       (tag === HostComponent ||
         tag === HostHoistable ||
         tag === HostSingleton) &&
-      isHiddenSubtree(fiber)
+      $checkResult(
+        isHiddenSubtree(fiber),
+        './src/ReactFiberConfig.js#isHiddenSubtree',
+        $checkBool,
+      )
     ) {
       continue;
     } else {
@@ -245,7 +257,11 @@ function hasMatchingPaths(root, selectors) {
       (tag === HostComponent ||
         tag === HostHoistable ||
         tag === HostSingleton) &&
-      isHiddenSubtree(fiber)
+      $checkResult(
+        isHiddenSubtree(fiber),
+        './src/ReactFiberConfig.js#isHiddenSubtree',
+        $checkBool,
+      )
     ) {
       continue;
     } else {
@@ -292,7 +308,13 @@ export function findAllNodes(hostRoot, selectors) {
       tag === HostHoistable ||
       tag === HostSingleton
     ) {
-      if (isHiddenSubtree(node)) {
+      if (
+        $checkResult(
+          isHiddenSubtree(node),
+          './src/ReactFiberConfig.js#isHiddenSubtree',
+          $checkBool,
+        )
+      ) {
         continue;
       }
       instanceRoots.push(node.stateNode);
@@ -338,7 +360,11 @@ export function getFindAllNodesFailureDescription(hostRoot, selectors) {
       (tag === HostComponent ||
         tag === HostHoistable ||
         tag === HostSingleton) &&
-      isHiddenSubtree(fiber)
+      $checkResult(
+        isHiddenSubtree(fiber),
+        './src/ReactFiberConfig.js#isHiddenSubtree',
+        $checkBool,
+      )
     ) {
       continue;
     } else if (matchSelector(fiber, selector)) {
@@ -488,7 +514,13 @@ export function focusWithin(hostRoot, selectors) {
     const fiber = stack[index];
     index++;
     const tag = fiber.tag;
-    if (isHiddenSubtree(fiber)) {
+    if (
+      $checkResult(
+        isHiddenSubtree(fiber),
+        './src/ReactFiberConfig.js#isHiddenSubtree',
+        $checkBool,
+      )
+    ) {
       continue;
     }
     if (
@@ -497,7 +529,13 @@ export function focusWithin(hostRoot, selectors) {
       tag === HostSingleton
     ) {
       const node = fiber.stateNode;
-      if (setFocusIfFocusable(node)) {
+      if (
+        $checkResult(
+          setFocusIfFocusable(node),
+          './src/ReactFiberConfig.js#setFocusIfFocusable',
+          $checkBool,
+        )
+      ) {
         return true;
       }
     }

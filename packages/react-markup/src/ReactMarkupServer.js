@@ -12,35 +12,44 @@ import ReactSharedInternalsServer from 'react-server/src/ReactSharedInternalsSer
 import ReactSharedInternalsClient from 'shared/ReactSharedInternals';
 
 import {
-  abort as abortFlight,
-  attachAbortSignal as attachFlightAbortSignal,
-  createRequest as createFlightRequest,
-  startFlowing as startFlightFlowing,
-  startWork as startFlightWork,
+  abort$ as abort$$1,
+  attachAbortSignal$ as attachAbortSignal$$1,
+  createRequest$ as createRequest$$1,
+  startFlowing$ as startFlowing$$1,
+  startWork$ as startWork$$1,
 } from 'react-server/src/ReactFlightServer';
 
 import {
-  close as closeFlight,
-  createResponse as createFlightResponse,
-  createStreamState as createFlightStreamState,
-  getRoot as getFlightRoot,
-  processStringChunk as processFlightStringChunk,
+  close$ as close,
+  createResponse$ as createResponse,
+  createStreamState$ as createStreamState,
+  getRoot$ as getRoot,
+  processStringChunk$ as processStringChunk,
 } from 'react-client/src/ReactFlightClient';
 
 import {
-  abort as abortFizz,
-  attachAbortSignal as attachFizzAbortSignal,
-  createRequest as createFizzRequest,
-  startFlowing as startFizzFlowing,
-  startWork as startFizzWork,
+  abort$ as abort,
+  attachAbortSignal$ as attachAbortSignal,
+  createRequest$ as createRequest,
+  startFlowing$ as startFlowing,
+  startWork$ as startWork,
 } from 'react-server/src/ReactFizzServer';
-
 import {
-  createRenderState,
-  createResumableState,
-  createRootFormatContext,
-} from './ReactFizzConfigMarkup.js';
-import {$cleanup, $panic} from '@rust-js/std';
+  createRenderState$ as createRenderState,
+  createResumableState$ as createResumableState,
+  createRootFormatContext$ as createRootFormatContext,
+} from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
+import {
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $cleanup,
+  $panic,
+} from '@rust-js/std';
+
+const checkMarkupOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+}));
 
 // This is the intersection of ReactNodeList and ReactClientValue minus
 // Client/ServerReferences.
@@ -53,8 +62,14 @@ function noServerCallOrFormAction(id, args) {
 }
 
 export function experimental_renderToHTML(children, options) {
+  $checkWhole(
+    checkMarkupOptions,
+    options,
+    'experimental_renderToHTML(options)',
+    'nullish',
+  );
   return new Promise((resolve, reject) => {
-    const flightResponse = createFlightResponse(
+    const flightResponse = createResponse(
       null,
       null,
       null,
@@ -66,7 +81,7 @@ export function experimental_renderToHTML(children, options) {
       undefined,
       false,
     );
-    const streamState = createFlightStreamState(flightResponse);
+    const streamState = createStreamState(flightResponse);
     let stashErrorIdx = 1;
     const stashedErrors = new Map();
 
@@ -121,7 +136,7 @@ export function experimental_renderToHTML(children, options) {
         }
       }
     }
-    const flightRequest = createFlightRequest(
+    const flightRequest = createRequest$$1(
       // $FlowFixMe[incompatible-type]: This should be a subtype but not everything is typed covariant.
       children,
       null,
@@ -134,8 +149,8 @@ export function experimental_renderToHTML(children, options) {
       false,
     );
     const resumableState = createResumableState(options?.identifierPrefix);
-    const root = getFlightRoot(flightResponse);
-    const fizzRequest = createFizzRequest(
+    const root = getRoot(flightResponse);
+    const fizzRequest = createRequest(
       // $FlowFixMe[incompatible-type]: Thenables as children are supported.
       root,
       resumableState,
@@ -147,14 +162,14 @@ export function experimental_renderToHTML(children, options) {
     const flightDestination = {
       push(chunk) {
         if (chunk != null) {
-          processFlightStringChunk(flightResponse, streamState, chunk);
+          processStringChunk(flightResponse, streamState, chunk);
         } else {
-          closeFlight(flightResponse);
+          close(flightResponse);
         }
         return true;
       },
       destroy(error) {
-        abortFizz(fizzRequest, error);
+        abort(fizzRequest, error);
         reject(error);
       },
     };
@@ -172,20 +187,20 @@ export function experimental_renderToHTML(children, options) {
       },
       // $FlowFixMe[missing-local-annot]
       destroy(error) {
-        abortFlight(flightRequest, error);
+        abort$$1(flightRequest, error);
         reject(error);
       },
     };
 
     const signal = options?.signal;
     if (signal != null) {
-      attachFlightAbortSignal(flightRequest, signal);
-      attachFizzAbortSignal(fizzRequest, signal);
+      attachAbortSignal$$1(flightRequest, signal);
+      attachAbortSignal(fizzRequest, signal);
     }
-    startFlightWork(flightRequest);
-    startFlightFlowing(flightRequest, flightDestination);
-    startFizzWork(fizzRequest);
-    startFizzFlowing(fizzRequest, fizzDestination);
+    startWork$$1(flightRequest);
+    startFlowing$$1(flightRequest, flightDestination);
+    startWork(fizzRequest);
+    startFlowing(fizzRequest, fizzDestination);
   });
 }
 //# sourceMappingURL=ReactMarkupServer.js.map

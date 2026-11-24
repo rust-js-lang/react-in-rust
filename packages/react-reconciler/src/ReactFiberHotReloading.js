@@ -29,10 +29,39 @@ import {
   REACT_LAZY_TYPE,
   REACT_MEMO_TYPE,
 } from 'shared/ReactSymbols';
-import {$panic} from '@rust-js/std';
+import {
+  $checkArray,
+  $checkF64,
+  $checkI32,
+  $checkOption,
+  $checkShape,
+  $checkStr,
+  $checkU8,
+  $checks,
+  $panic,
+} from '@rust-js/std';
 
 let resolveFamily = null;
 let failedBoundaries = null;
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
+const checkConcurrentUpdate = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkFiberRoot = /* @__PURE__ */ $checkShape(() => ({
+  tag: $checkU8,
+  expirationTimes: (value, where, none) =>
+    $checkArray(value, where, none, $checkF64),
+  hiddenUpdates: (value, where, none) =>
+    $checkArray(value, where, none, (value, where) =>
+      $checkOption(value, where, (value, where, none) =>
+        $checkArray(value, where, none, checkConcurrentUpdate),
+      ),
+    ),
+  entanglements: (value, where, none) =>
+    $checkArray(value, where, none, $checkI32),
+  identifierPrefix: $checkStr,
+}));
+
+const checkRefreshUpdate = /* @__PURE__ */ $checkShape(() => ({}));
 
 export function setRefreshHandler(handler) {
   if (__DEV__) {
@@ -59,6 +88,11 @@ export function resolveTypeForHotReloading(type) {
 
 // shared/ReactElementType's `ReactElement`.
 export function isCompatibleFamilyForHotReloading(fiber, element) {
+  $checks('isCompatibleFamilyForHotReloading(fiber)', fiber, checkFiber);
+  return isCompatibleFamilyForHotReloading$(fiber, element);
+}
+
+export function isCompatibleFamilyForHotReloading$(fiber, element) {
   if (__DEV__) {
     const resolve = resolveFamily;
     if (resolve == null) {
@@ -132,6 +166,11 @@ export function isCompatibleFamilyForHotReloading(fiber, element) {
 }
 
 export function markFailedErrorBoundaryForHotReloading(fiber) {
+  $checks('markFailedErrorBoundaryForHotReloading(fiber)', fiber, checkFiber);
+  return markFailedErrorBoundaryForHotReloading$(fiber);
+}
+
+export function markFailedErrorBoundaryForHotReloading$(fiber) {
   if (__DEV__) {
     if (resolveFamily == null) {
       // Hot reloading is disabled.
@@ -146,6 +185,17 @@ export function markFailedErrorBoundaryForHotReloading(fiber) {
 }
 
 export function scheduleRefresh(root, update) {
+  $checks(
+    'scheduleRefresh(root, update)',
+    root,
+    checkFiberRoot,
+    update,
+    checkRefreshUpdate,
+  );
+  return scheduleRefresh$(root, update);
+}
+
+export function scheduleRefresh$(root, update) {
   if (__DEV__) {
     if (resolveFamily == null) {
       // Hot reloading is disabled.
@@ -164,6 +214,11 @@ export function scheduleRefresh(root, update) {
 }
 
 export function scheduleRoot(root, element) {
+  $checks('scheduleRoot(root)', root, checkFiberRoot);
+  return scheduleRoot$(root, element);
+}
+
+export function scheduleRoot$(root, element) {
   if (__DEV__) {
     if (root.context !== emptyContextObject) {
       // Super edge case: root has a legacy _renderSubtree context

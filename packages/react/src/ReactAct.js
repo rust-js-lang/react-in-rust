@@ -12,6 +12,7 @@ import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 import {
   $at,
   $catchable,
+  $checkCallback,
   $drain,
   $live,
   $panic,
@@ -34,6 +35,11 @@ function aggregateErrors(errors) {
 }
 
 export function act(callback) {
+  $checkCallback(callback, 'act(callback)');
+  return act$(callback);
+}
+
+export function act$(callback) {
   if (__DEV__) {
     // When ReactSharedInternals.actQueue is not null, it signals to React that
     // we're currently inside an `act` scope. React will push all its tasks to

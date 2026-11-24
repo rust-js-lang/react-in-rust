@@ -6,18 +6,39 @@
 // LICENSE file in the root directory of this source tree.
 
 import {Async} from '../shared/ReactFlightImportMetadata.js';
-import {$stringPanic} from '@rust-js/std';
+import {
+  $checkBool,
+  $checkShape,
+  $checkStr,
+  $checks,
+  $stringPanic,
+} from '@rust-js/std';
 
 export {
   isClientReference,
   isServerReference,
 } from '../ReactFlightTurbopackReferences.js';
 
+const checkClientReference = /* @__PURE__ */ $checkShape(() => ({
+  $$id: $checkStr,
+  $$async: $checkBool,
+}));
+
+const checkServerReference = /* @__PURE__ */ $checkShape(() => ({
+  $$id: $checkStr,
+}));
+
 export function getClientReferenceKey(reference) {
+  $checks('getClientReferenceKey(reference)', reference, checkClientReference);
   return reference.$$async ? reference.$$id + '#async' : reference.$$id;
 }
 
 export function resolveClientReferenceMetadata(config, clientReference) {
+  $checks(
+    'resolveClientReferenceMetadata(clientReference)',
+    clientReference,
+    checkClientReference,
+  );
   const modulePath = clientReference.$$id;
   let name = '';
   let resolvedModuleData = config[modulePath];
@@ -53,14 +74,29 @@ export function resolveClientReferenceMetadata(config, clientReference) {
 }
 
 export function getServerReferenceId(config, serverReference) {
+  $checks(
+    'getServerReferenceId(serverReference)',
+    serverReference,
+    checkServerReference,
+  );
   return serverReference.$$id;
 }
 
 export function getServerReferenceBoundArguments(config, serverReference) {
+  $checks(
+    'getServerReferenceBoundArguments(serverReference)',
+    serverReference,
+    checkServerReference,
+  );
   return serverReference.$$bound;
 }
 
 export function getServerReferenceLocation(config, serverReference) {
+  $checks(
+    'getServerReferenceLocation(serverReference)',
+    serverReference,
+    checkServerReference,
+  );
   return serverReference.$$location ?? undefined;
 }
 //# sourceMappingURL=ReactFlightServerConfigTurbopackBundler.js.map

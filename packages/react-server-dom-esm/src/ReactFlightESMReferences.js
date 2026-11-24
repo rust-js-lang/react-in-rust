@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$checkStr, $checks} from '@rust-js/std';
+
 const CLIENT_REFERENCE_TAG = Symbol.for('react.client.reference');
 const SERVER_REFERENCE_TAG = Symbol.for('react.server.reference');
 
@@ -17,6 +19,13 @@ export function isServerReference(reference) {
 }
 
 export function registerClientReference(proxyImplementation, id, exportName) {
+  $checks(
+    'registerClientReference(id, exportName)',
+    id,
+    $checkStr,
+    exportName,
+    $checkStr,
+  );
   return Object.defineProperties(proxyImplementation, {
     $$typeof: {value: CLIENT_REFERENCE_TAG},
     $$id: {value: id + '#' + exportName},
@@ -76,6 +85,13 @@ const serverReferenceToString = {
 };
 
 export function registerServerReference(reference, id, exportName) {
+  $checks(
+    'registerServerReference(id, exportName)',
+    id,
+    $checkStr,
+    exportName,
+    $checkStr,
+  );
   const typeof$ = {value: SERVER_REFERENCE_TAG};
   id = {
     value: id + '#' + exportName,

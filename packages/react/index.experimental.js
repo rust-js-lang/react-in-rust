@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {useOptimistic} from './src/ReactClient.js';
+import {$checkF64, $checkObject, $checkShape, $checkStr} from '@rust-js/std';
 export {
   Activity,
   Activity as unstable_Activity,
@@ -57,6 +58,20 @@ export {
   useSyncExternalStore,
   useTransition,
 } from './src/ReactClient.js';
+
+const checkStartTransitionOptions = /* @__PURE__ */ $checkShape(() => ({
+  name: [$checkStr, 'nullish'],
+}));
+
+const checkGestureTransitionOptions = /* @__PURE__ */ $checkShape(() => ({
+  rangeStart: [$checkF64, 'nullish'],
+  rangeEnd: [$checkF64, 'nullish'],
+  name: [$checkStr, 'nullish'],
+}));
+
+function checkReactContext(value, T) {
+  $checkObject(value);
+}
 
 export function experimental_useOptimistic(passthrough, reducer) {
   if (__DEV__) {

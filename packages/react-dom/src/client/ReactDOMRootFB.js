@@ -6,8 +6,8 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  createRoot as createRootImpl,
-  hydrateRoot as hydrateRootImpl,
+  createRoot$ as createRootImpl,
+  hydrateRoot$ as hydrateRootImpl,
 } from './ReactDOMRoot.js';
 
 import {listenToAllSupportedEvents} from 'react-dom-bindings/src/events/DOMPluginEventSystem';
@@ -19,7 +19,7 @@ import {
 import {
   getInstanceFromNode,
   isContainerMarkedAsRoot,
-  markContainerAsRoot,
+  markContainerAsRoot$ as markContainerAsRoot,
   unmarkContainerAsRoot,
 } from 'react-dom-bindings/src/client/ReactDOMComponentTree';
 import {isValidContainer} from 'react-dom-bindings/src/client/ReactDOMContainer';
@@ -53,7 +53,7 @@ import {
 import assign from 'shared/assign';
 
 import noop from 'shared/noop';
-import {$panic, $unwrap} from '@rust-js/std';
+import {$checkBool, $checkResult, $panic, $unwrap} from '@rust-js/std';
 
 // Provided by www
 const ReactFiberErrorDialogWWW = require('ReactFiberErrorDialog');
@@ -67,11 +67,16 @@ if (typeof ReactFiberErrorDialogWWW.showErrorDialog !== 'function') {
 
 function wwwOnUncaughtError(error, errorInfo) {
   const componentStack = errorInfo.componentStack ?? '';
-  const logError = ReactFiberErrorDialogWWW.showErrorDialog({
-    errorBoundary: null,
-    error,
-    componentStack,
-  });
+  const logError = $checkResult(
+    ReactFiberErrorDialogWWW.showErrorDialog({
+      errorBoundary: null,
+      error,
+      componentStack,
+    }),
+    'showErrorDialog',
+    $checkBool,
+    'nullish',
+  );
 
   // Allow injected showErrorDialog() to prevent default console.error logging.
   // This enables renderers like ReactNative to better manage redbox behavior.
@@ -85,11 +90,16 @@ function wwwOnUncaughtError(error, errorInfo) {
 function wwwOnCaughtError(error, errorInfo) {
   const errorBoundary = errorInfo.errorBoundary;
   const componentStack = errorInfo.componentStack ?? '';
-  const logError = ReactFiberErrorDialogWWW.showErrorDialog({
-    errorBoundary,
-    error,
-    componentStack,
-  });
+  const logError = $checkResult(
+    ReactFiberErrorDialogWWW.showErrorDialog({
+      errorBoundary,
+      error,
+      componentStack,
+    }),
+    'showErrorDialog',
+    $checkBool,
+    'nullish',
+  );
 
   // Allow injected showErrorDialog() to prevent default console.error logging.
   // This enables renderers like ReactNative to better manage redbox behavior.

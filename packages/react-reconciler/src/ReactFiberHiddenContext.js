@@ -12,7 +12,7 @@ import {
   setEntangledRenderLanes,
 } from './ReactFiberWorkLoop.js';
 
-import {NoLanes, mergeLanes} from './ReactFiberLane.js';
+import {NoLanes, mergeLanes$ as mergeLanes} from './ReactFiberLane.js';
 
 // TODO: Remove `renderLanes` context in favor of hidden context
 

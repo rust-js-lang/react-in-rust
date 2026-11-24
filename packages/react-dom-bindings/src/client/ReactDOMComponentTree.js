@@ -21,7 +21,7 @@ import {
   enableInternalInstanceMap,
   enableScopeAPI,
 } from 'shared/ReactFeatureFlags';
-import {$panic} from '@rust-js/std';
+import {$checkCallback, $checkShape, $checks, $panic} from '@rust-js/std';
 
 const randomKey = Math.random().toString(36).slice(2);
 const internalInstanceKey = '__reactFiber$' + randomKey;
@@ -38,6 +38,7 @@ const internalLoadPendingKey = '__reactLoad$' + randomKey;
 const PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map;
 const internalInstanceMap = new PossiblyWeakMap();
 const internalPropsMap = new PossiblyWeakMap();
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
 
 export function detachDeletedInstance(node) {
   // Don't delete the event listener set. The native event listeners it tracks
@@ -63,6 +64,11 @@ export function detachDeletedInstance(node) {
 }
 
 export function precacheFiberNode(hostInst, node) {
+  $checks('precacheFiberNode(hostInst)', hostInst, checkFiber);
+  return precacheFiberNode$(hostInst, node);
+}
+
+export function precacheFiberNode$(hostInst, node) {
   if (enableInternalInstanceMap) {
     internalInstanceMap.set(node, hostInst);
     if (__DEV__) {
@@ -74,6 +80,11 @@ export function precacheFiberNode(hostInst, node) {
 }
 
 export function markContainerAsRoot(hostRoot, node) {
+  $checks('markContainerAsRoot(hostRoot)', hostRoot, checkFiber);
+  return markContainerAsRoot$(hostRoot, node);
+}
+
+export function markContainerAsRoot$(hostRoot, node) {
   node[internalContainerInstanceKey] = hostRoot;
 }
 
@@ -206,6 +217,11 @@ export function getInstanceFromNode(node) {
  * DOM node.
  */
 export function getNodeFromInstance(inst) {
+  $checks('getNodeFromInstance(inst)', inst, checkFiber);
+  return getNodeFromInstance$(inst);
+}
+
+export function getNodeFromInstance$(inst) {
   const tag = inst.tag;
   if (
     tag === HostComponent ||
@@ -270,6 +286,11 @@ export function getEventHandlerListeners(scope) {
 }
 
 export function addEventHandleToTarget(target, eventHandle) {
+  $checkCallback(eventHandle, 'addEventHandleToTarget(eventHandle)');
+  return addEventHandleToTarget$(target, eventHandle);
+}
+
+export function addEventHandleToTarget$(target, eventHandle) {
   let eventHandles = target[internalEventHandlesSetKey];
   if (eventHandles == null) {
     const eventHandles$1 = new Set();
@@ -280,6 +301,11 @@ export function addEventHandleToTarget(target, eventHandle) {
 }
 
 export function doesTargetHaveEventHandle(target, eventHandle) {
+  $checkCallback(eventHandle, 'doesTargetHaveEventHandle(eventHandle)');
+  return doesTargetHaveEventHandle$(target, eventHandle);
+}
+
+export function doesTargetHaveEventHandle$(target, eventHandle) {
   const eventHandles = target[internalEventHandlesSetKey];
   if (eventHandles == null) {
     return false;

@@ -10,10 +10,18 @@ import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {getOwnerStackByFiberInDev} from './ReactFiberComponentStack.js';
 
 import {getComponentNameFromOwner} from './getComponentNameFromFiber.js';
-import {$cleanup, $panic} from '@rust-js/std';
+import {
+  $checkBool,
+  $checkCallback,
+  $checkShape,
+  $checkWhole,
+  $cleanup,
+  $panic,
+} from '@rust-js/std';
 
 export let current = null;
 export let isRendering = false;
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
 
 export function getCurrentFiberOwnerNameInDevOrNull() {
   if (__DEV__) {
@@ -51,9 +59,23 @@ export function runWithFiberInDEV(
   arg3,
   arg4,
 ) {
+  $checkWhole(checkFiber, fiber, 'runWithFiberInDEV(fiber)', 'null');
+  $checkCallback(callback, 'runWithFiberInDEV(callback)');
+  return runWithFiberInDEV$(fiber, callback, arg0, arg1, arg2, arg3, arg4);
+}
+
+export function runWithFiberInDEV$(
+  fiber,
+  callback,
+  arg0,
+  arg1,
+  arg2,
+  arg3,
+  arg4,
+) {
   if (__DEV__) {
     const previousFiber = current;
-    setCurrentFiber(fiber);
+    setCurrentFiber$(fiber);
     const _restore = [previousFiber];
     let result;
     if (fiber !== null && fiber._debugTask != null) {
@@ -64,13 +86,13 @@ export function runWithFiberInDEV(
         $cleanup(() => {
           const old = _restore[0];
           _restore[0] = undefined;
-          setCurrentFiber(old);
+          setCurrentFiber$(old);
         }, error);
         throw error;
       }
       const old = _restore[0];
       _restore[0] = undefined;
-      setCurrentFiber(old);
+      setCurrentFiber$(old);
       return result;
     }
     try {
@@ -79,12 +101,12 @@ export function runWithFiberInDEV(
       $cleanup(() => {
         const old = _restore[0];
         _restore[0] = undefined;
-        setCurrentFiber(old);
+        setCurrentFiber$(old);
       }, error);
       throw error;
     }
     const old = _restore[0];
-    setCurrentFiber(old);
+    setCurrentFiber$(old);
     return result;
   }
   // These errors should never make it into a build so we don't need to encode them in codes.json
@@ -104,6 +126,11 @@ export function resetCurrentFiber() {
 }
 
 export function setCurrentFiber(fiber) {
+  $checkWhole(checkFiber, fiber, 'setCurrentFiber(fiber)', 'nullish');
+  return setCurrentFiber$(fiber);
+}
+
+export function setCurrentFiber$(fiber) {
   if (__DEV__) {
     ReactSharedInternals.getCurrentStack =
       fiber == null ? null : getCurrentFiberStackInDev;
@@ -113,6 +140,11 @@ export function setCurrentFiber(fiber) {
 }
 
 export function setIsRendering(rendering) {
+  $checkBool(rendering, 'setIsRendering(rendering)');
+  return setIsRendering$(rendering);
+}
+
+export function setIsRendering$(rendering) {
   if (__DEV__) {
     isRendering = rendering;
   }

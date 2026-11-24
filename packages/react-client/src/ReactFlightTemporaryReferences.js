@@ -5,15 +5,27 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$checkStr} from '@rust-js/std';
+
 export function createTemporaryReferenceSet() {
   return new Map();
 }
 
 export function writeTemporaryReference(set, reference, object) {
+  $checkStr(reference, 'writeTemporaryReference(reference)');
+  return writeTemporaryReference$(set, reference, object);
+}
+
+export function writeTemporaryReference$(set, reference, object) {
   set.set(reference, object);
 }
 
 export function readTemporaryReference(set, reference) {
+  $checkStr(reference, 'readTemporaryReference(reference)');
+  return readTemporaryReference$(set, reference);
+}
+
+export function readTemporaryReference$(set, reference) {
   return set.get(reference);
 }
 //# sourceMappingURL=ReactFlightTemporaryReferences.js.map

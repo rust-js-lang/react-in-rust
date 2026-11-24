@@ -13,7 +13,13 @@ import {
 import {createThenableState, trackUsedThenable} from './ReactFlightThenable.js';
 
 import {isClientReference} from './ReactFlightServerConfig.js';
-import {$panic, $roomFor, $stringPanic} from '@rust-js/std';
+import {
+  $checkBool,
+  $checkResult,
+  $panic,
+  $roomFor,
+  $stringPanic,
+} from '@rust-js/std';
 
 let currentRequest = null;
 let thenableIndexCounter = 0;
@@ -145,7 +151,13 @@ function use(usable) {
     }
   }
 
-  if (isClientReference(usable)) {
+  if (
+    $checkResult(
+      isClientReference(usable),
+      './src/ReactFlightServerConfig.js#isClientReference',
+      $checkBool,
+    )
+  ) {
     const value = usable.value;
     if (value != null && value.$$typeof === REACT_CONTEXT_TYPE) {
       // Show a more specific message since it's a common mistake.

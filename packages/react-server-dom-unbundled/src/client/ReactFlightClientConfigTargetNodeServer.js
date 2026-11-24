@@ -6,6 +6,17 @@
 // LICENSE file in the root directory of this source tree.
 
 import {preinitScriptForSSR} from 'react-client/src/ReactFlightClientConfig';
+import {
+  $checkArray,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $checks,
+} from '@rust-js/std';
+
+const checkModuleLoadingOptions = /* @__PURE__ */ $checkShape(() => ({
+  prefix: $checkStr,
+}));
 
 export function prepareDestinationWithChunks(
   moduleLoading,
@@ -13,6 +24,18 @@ export function prepareDestinationWithChunks(
   chunks,
   nonce,
 ) {
+  $checkWhole(
+    checkModuleLoadingOptions,
+    moduleLoading,
+    'prepareDestinationWithChunks(moduleLoading)',
+    'null',
+  );
+  $checks(
+    'prepareDestinationWithChunks(chunks)',
+    chunks,
+    (value, where, none) => $checkArray(value, where, none, $checkStr),
+  );
+  $checkStr(nonce, 'prepareDestinationWithChunks(nonce)', 'nullish');
   if (moduleLoading !== null) {
     for (let i = 1; i < chunks.length; i += 2) {
       const href = moduleLoading.prefix + chunks[i];

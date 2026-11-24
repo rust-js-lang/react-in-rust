@@ -5,7 +5,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {isRendering, setIsRendering} from './ReactCurrentFiber.js';
+import {
+  isRendering,
+  setIsRendering$ as setIsRendering,
+} from './ReactCurrentFiber.js';
 import {captureCommitPhaseError} from './ReactFiberWorkLoop.js';
 import {$catchable, $live, $unwindsOn} from '@rust-js/std';
 

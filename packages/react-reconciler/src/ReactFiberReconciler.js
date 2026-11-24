@@ -8,8 +8,8 @@
 import {LegacyRoot} from './ReactRootTags.js';
 
 import {
-  findCurrentHostFiber,
-  findCurrentHostFiberWithNoPortals,
+  findCurrentHostFiber$ as findCurrentHostFiber,
+  findCurrentHostFiberWithNoPortals$ as findCurrentHostFiberWithNoPortals,
 } from './ReactFiberTreeReflection.js';
 import {get as getInstance} from 'shared/ReactInstanceMap';
 
@@ -90,9 +90,10 @@ import {
   SelectiveHydrationLane,
   SyncLane,
   claimNextRetryLane,
-  getBumpedLaneForHydrationByLane,
-  getHighestPriorityPendingLanes,
-  higherPriorityLane,
+  getBumpedLaneForHydrationByLane$ as getBumpedLaneForHydrationByLane,
+  getHighestPriorityPendingLanes$ as getHighestPriorityPendingLanes,
+  getLabelForLane$ as getLabelForLane,
+  higherPriorityLane$ as higherPriorityLane,
 } from './ReactFiberLane.js';
 
 import {
@@ -123,10 +124,26 @@ export {
   defaultOnRecoverableError,
   defaultOnUncaughtError,
 } from './ReactFiberErrorLogger.js';
-import {TotalLanes, getLabelForLane} from './ReactFiberLane.js';
+import {TotalLanes} from './ReactFiberLane.js';
 
 import {registerDefaultIndicator} from './ReactFiberAsyncAction.js';
-import {$index, $panic, $stringPanic, $unwrap} from '@rust-js/std';
+import {
+  $checkArray,
+  $checkBool,
+  $checkCallback,
+  $checkF64,
+  $checkI32,
+  $checkOption,
+  $checkShape,
+  $checkStr,
+  $checkU8,
+  $checkWhole,
+  $checks,
+  $index,
+  $panic,
+  $stringPanic,
+  $unwrap,
+} from '@rust-js/std';
 
 let didWarnAboutNestedUpdates;
 let didWarnAboutFindNodeInStrictMode;
@@ -178,6 +195,10 @@ export function findHostInstance(component) {
 }
 
 export function findHostInstanceWithWarning(component, methodName) {
+  $checkStr(
+    methodName,
+    'ReactFiberReconciler.findHostInstanceWithWarning(methodName)',
+  );
   if (__DEV__) {
     const fiber = getInstance(component);
     if (fiber == null) {
@@ -257,6 +278,48 @@ export function createContainer(
   onDefaultTransitionIndicator,
   transitionCallbacks,
 ) {
+  $checks(
+    'ReactFiberReconciler.createContainer(tag, isStrictMode, identifierPrefix)',
+    tag,
+    $checkU8,
+    isStrictMode,
+    $checkBool,
+    identifierPrefix,
+    $checkStr,
+  );
+  $checkWhole(
+    checkSuspenseHydrationCallbacks,
+    hydrationCallbacks,
+    'ReactFiberReconciler.createContainer(hydrationCallbacks)',
+    'null',
+  );
+  $checkBool(
+    concurrentUpdatesByDefaultOverride,
+    'ReactFiberReconciler.createContainer(concurrentUpdatesByDefaultOverride)',
+    'nullish',
+  );
+  $checkCallback(
+    onUncaughtError,
+    'ReactFiberReconciler.createContainer(onUncaughtError)',
+  );
+  $checkCallback(
+    onCaughtError,
+    'ReactFiberReconciler.createContainer(onCaughtError)',
+  );
+  $checkCallback(
+    onRecoverableError,
+    'ReactFiberReconciler.createContainer(onRecoverableError)',
+  );
+  $checkCallback(
+    onDefaultTransitionIndicator,
+    'ReactFiberReconciler.createContainer(onDefaultTransitionIndicator)',
+  );
+  $checkWhole(
+    checkTransitionTracingCallbacks,
+    transitionCallbacks,
+    'ReactFiberReconciler.createContainer(transitionCallbacks)',
+    'null',
+  );
   const hydrate = false;
   const initialChildren = null;
   const root = createFiberRoot(
@@ -294,6 +357,48 @@ export function createHydrationContainer(
   transitionCallbacks,
   formState,
 ) {
+  $checks(
+    'ReactFiberReconciler.createHydrationContainer(tag, isStrictMode, identifierPrefix)',
+    tag,
+    $checkU8,
+    isStrictMode,
+    $checkBool,
+    identifierPrefix,
+    $checkStr,
+  );
+  $checkWhole(
+    checkSuspenseHydrationCallbacks,
+    hydrationCallbacks,
+    'ReactFiberReconciler.createHydrationContainer(hydrationCallbacks)',
+    'null',
+  );
+  $checkBool(
+    concurrentUpdatesByDefaultOverride,
+    'ReactFiberReconciler.createHydrationContainer(concurrentUpdatesByDefaultOverride)',
+    'nullish',
+  );
+  $checkCallback(
+    onUncaughtError,
+    'ReactFiberReconciler.createHydrationContainer(onUncaughtError)',
+  );
+  $checkCallback(
+    onCaughtError,
+    'ReactFiberReconciler.createHydrationContainer(onCaughtError)',
+  );
+  $checkCallback(
+    onRecoverableError,
+    'ReactFiberReconciler.createHydrationContainer(onRecoverableError)',
+  );
+  $checkCallback(
+    onDefaultTransitionIndicator,
+    'ReactFiberReconciler.createHydrationContainer(onDefaultTransitionIndicator)',
+  );
+  $checkWhole(
+    checkTransitionTracingCallbacks,
+    transitionCallbacks,
+    'ReactFiberReconciler.createHydrationContainer(transitionCallbacks)',
+    'null',
+  );
   const hydrate = true;
   const root = createFiberRoot(
     containerInfo,
@@ -335,6 +440,11 @@ export function createHydrationContainer(
 }
 
 export function updateContainer(element, container, parentComponent, callback) {
+  $checks(
+    'ReactFiberReconciler.updateContainer(container)',
+    container,
+    checkFiberRoot,
+  );
   const current = container.current;
   const lane = requestUpdateLane(current);
   updateContainerImpl(
@@ -354,6 +464,11 @@ export function updateContainerSync(
   parentComponent,
   callback,
 ) {
+  $checks(
+    'ReactFiberReconciler.updateContainerSync(container)',
+    container,
+    checkFiberRoot,
+  );
   if (!disableLegacyMode && container.tag === LegacyRoot) {
     flushPendingEffects();
   }
@@ -433,6 +548,11 @@ function updateContainerImpl(
 
 // A class component's instance, or ReactFiberConfig's `PublicInstance`, if any.
 export function getPublicRootInstance(container) {
+  $checks(
+    'ReactFiberReconciler.getPublicRootInstance(container)',
+    container,
+    checkFiberRoot,
+  );
   const containerFiber = container.current;
   const child = containerFiber.child;
   if (child == null) {
@@ -448,6 +568,11 @@ export function getPublicRootInstance(container) {
 }
 
 export function attemptSynchronousHydration(fiber) {
+  $checks(
+    'ReactFiberReconciler.attemptSynchronousHydration(fiber)',
+    fiber,
+    checkFiber,
+  );
   switch (fiber.tag) {
     case HostRoot: {
       const root = fiber.stateNode;
@@ -496,6 +621,11 @@ function markRetryLaneIfNotHydrated(fiber, retryLane) {
 }
 
 export function attemptContinuousHydration(fiber) {
+  $checks(
+    'ReactFiberReconciler.attemptContinuousHydration(fiber)',
+    fiber,
+    checkFiber,
+  );
   if (fiber.tag !== SuspenseComponent && fiber.tag !== ActivityComponent) {
     // We ignore HostRoots here because we can't increase
     // their priority and they should not suspend on I/O,
@@ -512,6 +642,11 @@ export function attemptContinuousHydration(fiber) {
 }
 
 export function attemptHydrationAtCurrentPriority(fiber) {
+  $checks(
+    'ReactFiberReconciler.attemptHydrationAtCurrentPriority(fiber)',
+    fiber,
+    checkFiber,
+  );
   if (fiber.tag !== SuspenseComponent && fiber.tag !== ActivityComponent) {
     // We ignore HostRoots here because we can't increase
     // their priority other than synchronously flush it.
@@ -528,6 +663,11 @@ export function attemptHydrationAtCurrentPriority(fiber) {
 
 // ReactFiberConfig's `PublicInstance`, if any.
 export function findHostInstanceWithNoPortals(fiber) {
+  $checks(
+    'ReactFiberReconciler.findHostInstanceWithNoPortals(fiber)',
+    fiber,
+    checkFiber,
+  );
   const hostFiber = findCurrentHostFiberWithNoPortals(fiber);
   if (hostFiber == null) {
     return null;
@@ -538,10 +678,36 @@ export function findHostInstanceWithNoPortals(fiber) {
 let shouldErrorImpl = fiber => null;
 
 export function shouldError(fiber) {
+  $checks('ReactFiberReconciler.shouldError(fiber)', fiber, checkFiber);
   return shouldErrorImpl(fiber) ?? null;
 }
 
-export let shouldSuspend = fiber => false;
+let shouldSuspendImpl = fiber => false;
+const checkSuspenseHydrationCallbacks = /* @__PURE__ */ $checkShape(() => ({}));
+const checkTransitionTracingCallbacks = /* @__PURE__ */ $checkShape(() => ({}));
+const checkConcurrentUpdate = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkFiberRoot = /* @__PURE__ */ $checkShape(() => ({
+  tag: $checkU8,
+  expirationTimes: (value, where, none) =>
+    $checkArray(value, where, none, $checkF64),
+  hiddenUpdates: (value, where, none) =>
+    $checkArray(value, where, none, (value, where) =>
+      $checkOption(value, where, (value, where, none) =>
+        $checkArray(value, where, none, checkConcurrentUpdate),
+      ),
+    ),
+  entanglements: (value, where, none) =>
+    $checkArray(value, where, none, $checkI32),
+  identifierPrefix: $checkStr,
+}));
+
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
+
+export function shouldSuspend(fiber) {
+  $checks('ReactFiberReconciler.shouldSuspend(fiber)', fiber, checkFiber);
+  return shouldSuspendImpl(fiber);
+}
 
 let overrideHookState = null;
 let overrideHookStateDeletePath = null;
@@ -720,7 +886,7 @@ if (__DEV__) {
   };
 
   setSuspenseHandler = newShouldSuspendImpl => {
-    shouldSuspend = newShouldSuspendImpl;
+    shouldSuspendImpl = newShouldSuspendImpl;
   };
 }
 

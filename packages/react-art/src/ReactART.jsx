@@ -24,7 +24,7 @@ import FastNoSideEffects from 'art/modes/fast-noSideEffects';
 import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 
 import {TYPES, childrenAsString} from './ReactARTInternals.js';
-import {$unwrap} from '@rust-js/std';
+import {$checkShape, $checks, $unwrap} from '@rust-js/std';
 
 function defaultOnDefaultTransitionIndicator() {
   // Noop
@@ -173,6 +173,7 @@ export class Text extends Component {
     super(props);
     // We allow reading these props. Ideally we could expose the Text node as
     // ref directly.
+    $checks('Text.new(props)', props, checkTextProps);
     ['height', 'width', 'x', 'y'].forEach(key => {
       Object.defineProperty(this, key, {get: () => this._text?.[key]});
     });
@@ -192,6 +193,12 @@ export class Text extends Component {
   }
 }
 
+export {default as Transform} from 'art/core/transform';
+
+export {default as version} from 'shared/ReactVersion';
+
+const checkTextProps = /* @__PURE__ */ $checkShape(() => ({}));
+
 injectIntoDevTools();
 
 /* API */
@@ -200,7 +207,4 @@ export const ClippingRectangle = TYPES.CLIPPING_RECTANGLE;
 export const Group = TYPES.GROUP;
 export const Shape = TYPES.SHAPE;
 export const Path = Mode.Path;
-export {default as Transform} from 'art/core/transform';
-
-export {default as version} from 'shared/ReactVersion';
 //# sourceMappingURL=ReactART.jsx.map

@@ -6,14 +6,14 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  abort,
-  createRequest,
-  startFlowing,
-  startWork,
+  abort$ as abort,
+  createRequest$ as createRequest,
+  startFlowing$ as startFlowing,
+  startWork$ as startWork,
 } from 'react-server/src/ReactFizzServer';
 
 import {
-  createRenderState,
+  createRenderState$ as createRenderState$$1,
   createResumableState,
   createRootFormatContext,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOMLegacy';
@@ -57,7 +57,7 @@ export function renderToStringImpl(
   const request = createRequest(
     children,
     resumableState,
-    createRenderState(resumableState, generateStaticMarkup),
+    createRenderState$$1(resumableState, generateStaticMarkup),
     createRootFormatContext(),
     Infinity,
     onError,

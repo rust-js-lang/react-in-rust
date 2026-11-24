@@ -34,6 +34,8 @@ import {disableLegacyMode} from 'shared/ReactFeatureFlags';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 import ReactVersion from 'shared/ReactVersion';
 import {
+  $checkF64,
+  $checkResult,
   $cleanup,
   $displayF64,
   $live,
@@ -554,7 +556,11 @@ function createReactNoop(reconciler, useMutation) {
     detachDeletedInstance() {},
 
     requestPostPaintCallback(callback) {
-      const endTime = Scheduler.unstable_now();
+      const endTime = $checkResult(
+        Scheduler.unstable_now(),
+        'scheduler/unstable_mock#* as Scheduler.unstable_now',
+        $checkF64,
+      );
       callback(endTime);
     },
 

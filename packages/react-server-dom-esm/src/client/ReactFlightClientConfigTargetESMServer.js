@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import {preinitModuleForSSR} from 'react-client/src/ReactFlightClientConfig';
+import {$checkStr} from '@rust-js/std';
 
 export function prepareDestinationForModuleImpl(
   moduleLoading,
@@ -13,6 +14,8 @@ export function prepareDestinationForModuleImpl(
   mod,
   nonce,
 ) {
+  $checkStr(mod, 'prepareDestinationForModuleImpl(mod)');
+  $checkStr(nonce, 'prepareDestinationForModuleImpl(nonce)', 'nullish');
   if (typeof moduleLoading === 'string') {
     const href = moduleLoading + mod;
     nonce != null

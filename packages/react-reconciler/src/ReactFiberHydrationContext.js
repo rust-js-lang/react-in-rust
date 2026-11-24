@@ -13,7 +13,7 @@ import {
   SuspenseComponent,
 } from './ReactWorkTags.js';
 
-import {createCapturedValueAtFiber} from './ReactCapturedValue.js';
+import {createCapturedValueAtFiber$ as createCapturedValueAtFiber} from './ReactCapturedValue.js';
 
 import {createFiberFromDehydratedFragment} from './ReactFiber.js';
 
@@ -52,7 +52,7 @@ import {
 import {OffscreenLane} from './ReactFiberLane.js';
 import {
   getSuspendedTreeContext,
-  restoreSuspendedTreeContext,
+  restoreSuspendedTreeContext$ as restoreSuspendedTreeContext,
 } from './ReactFiberTreeContext.js';
 import {queueRecoverableErrors} from './ReactFiberWorkLoop.js';
 
@@ -60,7 +60,13 @@ import {getHostContext, getRootHostContainer} from './ReactFiberHostContext.js';
 import {describeDiff} from './ReactFiberHydrationDiffs.js';
 
 import {runWithFiberInDEV} from './ReactCurrentFiber.js';
-import {$alreadyBorrowed, $index, $panic} from '@rust-js/std';
+import {
+  $alreadyBorrowed,
+  $checkBool,
+  $checkResult,
+  $index,
+  $panic,
+} from '@rust-js/std';
 
 // The deepest Fiber on the stack involved in a hydration context.
 // This may have been an insertion or a hydration.
@@ -427,10 +433,14 @@ export function tryToClaimNextHydratableInstance(fiber) {
 
   // Validate that this is ok to render here before any mismatches.
   const currentHostContext = getHostContext();
-  const shouldKeepWarning = validateHydratableInstance(
-    fiber.type,
-    fiber.pendingProps,
-    currentHostContext,
+  const shouldKeepWarning = $checkResult(
+    validateHydratableInstance(
+      fiber.type,
+      fiber.pendingProps,
+      currentHostContext,
+    ),
+    './src/ReactFiberConfig.js#validateHydratableInstance',
+    $checkBool,
   );
 
   const nextInstance = nextHydratableInstance;
@@ -453,9 +463,10 @@ export function tryToClaimNextHydratableTextInstance(fiber) {
 
   // Validate that this is ok to render here before any mismatches.
   const currentHostContext = getHostContext();
-  const shouldKeepWarning = validateHydratableTextInstance(
-    text,
-    currentHostContext,
+  const shouldKeepWarning = $checkResult(
+    validateHydratableTextInstance(text, currentHostContext),
+    './src/ReactFiberConfig.js#validateHydratableTextInstance',
+    $checkBool,
   );
 
   const nextInstance = nextHydratableInstance;
@@ -507,7 +518,11 @@ export function tryToClaimNextHydratableFormMarkerInstance(fiber) {
       // to hydrateRoot.
       // TODO: As an optimization, Fizz should only emit these markers if form
       // state is passed at the root.
-      return isFormStateMarkerMatching(markerInstance);
+      return $checkResult(
+        isFormStateMarkerMatching(markerInstance),
+        './src/ReactFiberConfig.js#isFormStateMarkerMatching',
+        $checkBool,
+      );
     }
   }
   // Should have found a marker instance. Throw an error to trigger client
@@ -527,12 +542,16 @@ export function prepareToHydrateHostInstance(fiber, hostContext) {
   }
 
   const instance = fiber.stateNode;
-  const didHydrate = hydrateInstance(
-    instance,
-    fiber.type,
-    fiber.memoizedProps,
-    hostContext,
-    fiber,
+  const didHydrate = $checkResult(
+    hydrateInstance(
+      instance,
+      fiber.type,
+      fiber.memoizedProps,
+      hostContext,
+      fiber,
+    ),
+    './src/ReactFiberConfig.js#hydrateInstance',
+    $checkBool,
   );
   if (!didHydrate) {
     throwOnHydrationMismatch(fiber, true);
@@ -588,11 +607,10 @@ export function prepareToHydrateHostTextInstance(fiber) {
     }
   }
 
-  const didHydrate = hydrateTextInstance(
-    textInstance,
-    textContent,
-    fiber,
-    parentProps,
+  const didHydrate = $checkResult(
+    hydrateTextInstance(textInstance, textContent, fiber, parentProps),
+    './src/ReactFiberConfig.js#hydrateTextInstance',
+    $checkBool,
   );
   if (!didHydrate) {
     throwOnHydrationMismatch(fiber, true);
@@ -733,8 +751,16 @@ export function popHydrationState(fiber) {
       tag !== HostSingleton &&
       !(
         tag === HostComponent &&
-        (!shouldDeleteUnhydratedTailInstances(fiber.type) ||
-          shouldSetTextContent(fiber.type, fiber.memoizedProps))
+        (!$checkResult(
+          shouldDeleteUnhydratedTailInstances(fiber.type),
+          './src/ReactFiberConfig.js#shouldDeleteUnhydratedTailInstances',
+          $checkBool,
+        ) ||
+          $checkResult(
+            shouldSetTextContent(fiber.type, fiber.memoizedProps),
+            './src/ReactFiberConfig.js#shouldSetTextContent',
+            $checkBool,
+          ))
       )
     ) {
       const nextInstance = nextHydratableInstance;
@@ -751,8 +777,16 @@ export function popHydrationState(fiber) {
     if (
       tag !== HostRoot &&
       (tag !== HostComponent ||
-        (shouldDeleteUnhydratedTailInstances(fiber.type) &&
-          !shouldSetTextContent(fiber.type, fiber.memoizedProps)))
+        ($checkResult(
+          shouldDeleteUnhydratedTailInstances(fiber.type),
+          './src/ReactFiberConfig.js#shouldDeleteUnhydratedTailInstances',
+          $checkBool,
+        ) &&
+          !$checkResult(
+            shouldSetTextContent(fiber.type, fiber.memoizedProps),
+            './src/ReactFiberConfig.js#shouldSetTextContent',
+            $checkBool,
+          )))
     ) {
       const nextInstance = nextHydratableInstance;
       if (nextInstance != null) {

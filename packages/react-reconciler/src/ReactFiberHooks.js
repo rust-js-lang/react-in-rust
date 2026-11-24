@@ -44,16 +44,16 @@ import {
   OffscreenLane,
   SyncLane,
   UpdateLanes,
-  includesBlockingLane,
-  includesOnlyNonUrgentLanes,
-  includesSomeLane,
-  intersectLanes,
-  isGestureRender,
-  isSubsetOfLanes,
-  isTransitionLane,
-  markRootEntangled,
-  mergeLanes,
-  removeLanes,
+  includesBlockingLane$ as includesBlockingLane,
+  includesOnlyNonUrgentLanes$ as includesOnlyNonUrgentLanes,
+  includesSomeLane$ as includesSomeLane,
+  intersectLanes$ as intersectLanes,
+  isGestureRender$ as isGestureRender,
+  isSubsetOfLanes$ as isSubsetOfLanes,
+  isTransitionLane$ as isTransitionLane,
+  markRootEntangled$ as markRootEntangled,
+  mergeLanes$ as mergeLanes,
+  removeLanes$ as removeLanes,
 } from './ReactFiberLane.js';
 
 import {
@@ -152,6 +152,7 @@ import {callComponentInDEV} from './ReactFiberCallUserSpace.js';
 
 import {scheduleGesture} from './ReactFiberGestureScheduler.js';
 import {
+  $brand,
   $catchUnwind,
   $catchable,
   $cleanup,
@@ -2040,18 +2041,21 @@ function dispatchActionState(
     return;
   }
 
-  const actionNode = {
-    payload,
-    action: currentAction,
-    next: null, // circular
-    isTransition: true,
+  const actionNode = $brand(
+    'react_reconciler#b3ac5f81fa5c3bb4::react_fiber_hooks::ActionStateQueueNode',
+    {
+      payload,
+      action: currentAction,
+      next: null, // circular
+      isTransition: true,
 
-    status: 'pending',
-    value: null,
-    reason: null,
-    listeners: [],
-    then,
-  };
+      status: 'pending',
+      value: null,
+      reason: null,
+      listeners: [],
+      then,
+    },
+  );
 
   // Check if we're inside a transition. If so, we'll need to restore the
   // transition context when the action is run.
@@ -2529,14 +2533,17 @@ function rerenderActionState(action, initialState, permalink) {
 }
 
 function pushSimpleEffect(tag, inst, create, deps) {
-  const effect = {
-    tag,
-    create,
-    deps: deps ?? null,
-    inst,
-    // Circular
-    next: null,
-  };
+  const effect = $brand(
+    'react_reconciler#b3ac5f81fa5c3bb4::react_fiber_hooks::Effect',
+    {
+      tag,
+      create,
+      deps: deps ?? null,
+      inst,
+      // Circular
+      next: null,
+    },
+  );
   return pushEffectImpl(effect);
 }
 

@@ -16,7 +16,27 @@ import {
 import reportGlobalError from 'shared/reportGlobalError';
 
 import noop from 'shared/noop';
-import {$catchUnwind, $catchable, $cleanup, $panic} from '@rust-js/std';
+import {
+  $catchUnwind,
+  $catchable,
+  $checkCallback,
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $cleanup,
+  $panic,
+} from '@rust-js/std';
+
+const checkStartTransitionOptions = /* @__PURE__ */ $checkShape(() => ({
+  name: [$checkStr, 'nullish'],
+}));
+
+const checkGestureTransitionOptions = /* @__PURE__ */ $checkShape(() => ({
+  rangeStart: [$checkF64, 'nullish'],
+  rangeEnd: [$checkF64, 'nullish'],
+  name: [$checkStr, 'nullish'],
+}));
 
 function releaseAsyncTransition() {
   if (__DEV__) {
@@ -25,6 +45,17 @@ function releaseAsyncTransition() {
 }
 
 export function startTransition(scope, options) {
+  $checkCallback(scope, 'startTransition(scope)');
+  $checkWhole(
+    checkStartTransitionOptions,
+    options,
+    'startTransition(options)',
+    'nullish',
+  );
+  return startTransition$(scope, options);
+}
+
+export function startTransition$(scope, options) {
   const prevTransition = ReactSharedInternals.T;
   const currentTransition = {};
   if (enableViewTransition) {
@@ -110,6 +141,17 @@ export function startTransition(scope, options) {
 }
 
 export function startGestureTransition(provider, scope, options) {
+  $checkCallback(scope, 'startGestureTransition(scope)');
+  $checkWhole(
+    checkGestureTransitionOptions,
+    options,
+    'startGestureTransition(options)',
+    'nullish',
+  );
+  return startGestureTransition$(provider, scope, options);
+}
+
+export function startGestureTransition$(provider, scope, options) {
   if (!enableGestureTransition) {
     // eslint-disable-next-line react-internal/prod-error-codes
     throw $panic(

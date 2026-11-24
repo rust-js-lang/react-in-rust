@@ -13,7 +13,10 @@ import {
   UNRESOLVED_PROMISE_NODE,
 } from './ReactFlightAsyncSequence.js';
 import {resolveOwner} from './flight/ReactFlightCurrentOwner.js';
-import {isAwaitInUserspace, resolveRequest} from './ReactFlightServer.js';
+import {
+  isAwaitInUserspace$ as isAwaitInUserspace,
+  resolveRequest,
+} from './ReactFlightServer.js';
 import {AsyncResource, createHook, executionAsyncId} from 'async_hooks';
 
 import {parseStackTracePrivate} from './ReactFlightServerConfig.js';

@@ -45,6 +45,42 @@ import {
 } from './ReactWorkTags.js';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
 import {REACT_STRICT_MODE_TYPE} from 'shared/ReactSymbols';
+import {
+  $checkArray,
+  $checkF64,
+  $checkI32,
+  $checkOption,
+  $checkShape,
+  $checkStr,
+  $checkU8,
+} from '@rust-js/std';
+
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkErrorInfo = /* @__PURE__ */ $checkShape(() => ({
+  componentStack: [$checkStr, 'nullish'],
+}));
+
+const checkCaughtErrorInfo = /* @__PURE__ */ $checkShape(() => ({
+  componentStack: [$checkStr, 'nullish'],
+}));
+
+const checkConcurrentUpdate = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkFiberRoot = /* @__PURE__ */ $checkShape(() => ({
+  tag: $checkU8,
+  expirationTimes: (value, where, none) =>
+    $checkArray(value, where, none, $checkF64),
+  hiddenUpdates: (value, where, none) =>
+    $checkArray(value, where, none, (value, where) =>
+      $checkOption(value, where, (value, where, none) =>
+        $checkArray(value, where, none, checkConcurrentUpdate),
+      ),
+    ),
+  entanglements: (value, where, none) =>
+    $checkArray(value, where, none, $checkI32),
+  identifierPrefix: $checkStr,
+}));
 
 // Keep in sync with shared/getComponentNameFromType
 function getWrappedName(outerType, innerType, wrapperName) {

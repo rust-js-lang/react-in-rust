@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$checkStr} from '@rust-js/std';
+
 // Keep in sync with ReactClientConsoleConfig
 const badgeFormat = '%c%s%c';
 // Same badge styling as DevTools.
@@ -22,6 +24,11 @@ const padLength = 1;
 // returns the name in the badge. This is used when a FlightClient replays inside
 // a FlightServer and we capture those replays.
 export function unbadgeConsole(methodName, args) {
+  $checkStr(methodName, 'unbadgeConsole(methodName)');
+  return unbadgeConsole$(methodName, args);
+}
+
+export function unbadgeConsole$(methodName, args) {
   let offset = 0;
   switch (methodName) {
     case 'dir':

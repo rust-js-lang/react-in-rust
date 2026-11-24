@@ -5,13 +5,29 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$panic} from '@rust-js/std';
+import {
+  $checkCallback,
+  $checkShape,
+  $checkStr,
+  $checks,
+  $panic,
+} from '@rust-js/std';
 
 export function scheduleWork(callback) {
+  $checkCallback(callback, 'scheduleWork(callback)');
+  return scheduleWork$(callback);
+}
+
+export function scheduleWork$(callback) {
   callback();
 }
 
 export function scheduleMicrotask(callback) {
+  $checkCallback(callback, 'scheduleMicrotask(callback)');
+  return scheduleMicrotask$(callback);
+}
+
+export function scheduleMicrotask$(callback) {
   // While this defies the method name the legacy builds have special
   // overrides that make work scheduling sync. At the moment scheduleMicrotask
   // isn't used by any legacy APIs so this is somewhat academic but if they
@@ -19,29 +35,81 @@ export function scheduleMicrotask(callback) {
   callback();
 }
 
-export function flushBuffered(destination) {}
+export function flushBuffered(destination) {
+  $checks('flushBuffered(destination)', destination, checkDestination);
+  return flushBuffered$(destination);
+}
 
-export function beginWriting(destination) {}
+export function flushBuffered$(destination) {}
+
+export function beginWriting(destination) {
+  $checks('beginWriting(destination)', destination, checkDestination);
+  return beginWriting$(destination);
+}
+
+export function beginWriting$(destination) {}
 
 export function writeChunk(destination, chunk) {
-  writeChunkAndReturn(destination, chunk);
+  $checks(
+    'writeChunk(destination, chunk)',
+    destination,
+    checkDestination,
+    chunk,
+    $checkStr,
+  );
+  return writeChunk$(destination, chunk);
+}
+
+export function writeChunk$(destination, chunk) {
+  writeChunkAndReturn$(destination, chunk);
 }
 
 export function writeChunkAndReturn(destination, chunk) {
+  $checks(
+    'writeChunkAndReturn(destination, chunk)',
+    destination,
+    checkDestination,
+    chunk,
+    $checkStr,
+  );
+  return writeChunkAndReturn$(destination, chunk);
+}
+
+export function writeChunkAndReturn$(destination, chunk) {
   return destination.push(chunk);
 }
 
-export function completeWriting(destination) {}
+export function completeWriting(destination) {
+  $checks('completeWriting(destination)', destination, checkDestination);
+  return completeWriting$(destination);
+}
+
+export function completeWriting$(destination) {}
 
 export function close(destination) {
+  $checks('close(destination)', destination, checkDestination);
+  return close$(destination);
+}
+
+export function close$(destination) {
   destination.push(null);
 }
 
 export function stringToChunk(content) {
+  $checkStr(content, 'stringToChunk(content)');
+  return stringToChunk$(content);
+}
+
+export function stringToChunk$(content) {
   return content;
 }
 
 export function stringToPrecomputedChunk(content) {
+  $checkStr(content, 'stringToPrecomputedChunk(content)');
+  return stringToPrecomputedChunk$(content);
+}
+
+export function stringToPrecomputedChunk$(content) {
   return content;
 }
 
@@ -54,7 +122,16 @@ export function typedArrayToBinaryChunk(content) {
 
 export const byteLengthOfChunk = null;
 
+export {createFastHashJS as createFastHash} from 'react-server/src/createFastHashJS';
+
+const checkDestination = /* @__PURE__ */ $checkShape(() => ({}));
+
 export function byteLengthOfBinaryChunk(chunk) {
+  $checkStr(chunk, 'byteLengthOfBinaryChunk(chunk)');
+  return byteLengthOfBinaryChunk$(chunk);
+}
+
+export function byteLengthOfBinaryChunk$(chunk) {
   throw $panic(
     'Not implemented.',
     'packages/react-dom-bindings/src/server/ReactDOMLegacyServerStreamConfig.rs:80:5',
@@ -62,10 +139,13 @@ export function byteLengthOfBinaryChunk(chunk) {
 }
 
 export function closeWithError(destination, error) {
-  (0, destination.destroy)(error);
+  $checks('closeWithError(destination)', destination, checkDestination);
+  return closeWithError$(destination, error);
 }
 
-export {createFastHashJS as createFastHash} from 'react-server/src/createFastHashJS';
+export function closeWithError$(destination, error) {
+  (0, destination.destroy)(error);
+}
 
 export function readAsDataURL(blob) {
   return blob.arrayBuffer().then(arrayBuffer => {

@@ -47,7 +47,7 @@ import {
   enableViewTransitionForPersistenceMode,
   enableViewTransitionParentEnterExit,
 } from 'shared/ReactFeatureFlags';
-import {$index, $panic, $unwrap} from '@rust-js/std';
+import {$checkBool, $checkResult, $index, $panic, $unwrap} from '@rust-js/std';
 
 export let shouldStartViewTransition = false;
 
@@ -181,12 +181,22 @@ function applyViewTransitionToHostInstancesRecursive(
       if (collectMeasurements !== null) {
         const measurement = measureInstance(instance);
         collectMeasurements.push(measurement);
-        if (wasInstanceInViewport(measurement)) {
+        if (
+          $checkResult(
+            wasInstanceInViewport(measurement),
+            './src/ReactFiberConfig.js#wasInstanceInViewport',
+            $checkBool,
+          )
+        ) {
           inViewport = true;
         }
       } else if (
         !inViewport &&
-        wasInstanceInViewport(measureInstance(instance))
+        $checkResult(
+          wasInstanceInViewport(measureInstance(instance)),
+          './src/ReactFiberConfig.js#wasInstanceInViewport',
+          $checkBool,
+        )
       ) {
         inViewport = true;
       }
@@ -910,8 +920,16 @@ function measureViewTransitionHostInstancesRecursive(
         );
         const nextMeasurement = measureInstance(instance);
         if (
-          wasInstanceInViewport(previousMeasurement) ||
-          wasInstanceInViewport(nextMeasurement)
+          $checkResult(
+            wasInstanceInViewport(previousMeasurement),
+            './src/ReactFiberConfig.js#wasInstanceInViewport',
+            $checkBool,
+          ) ||
+          $checkResult(
+            wasInstanceInViewport(nextMeasurement),
+            './src/ReactFiberConfig.js#wasInstanceInViewport',
+            $checkBool,
+          )
         ) {
           // If either the old or new state was within the viewport we have to animate this.
           // But if it turns out that none of them were we'll be able to skip it.
@@ -919,11 +937,21 @@ function measureViewTransitionHostInstancesRecursive(
         }
         if (
           (parentViewTransition.flags & Update) === NoFlags &&
-          hasInstanceChanged(previousMeasurement, nextMeasurement)
+          $checkResult(
+            hasInstanceChanged(previousMeasurement, nextMeasurement),
+            './src/ReactFiberConfig.js#hasInstanceChanged',
+            $checkBool,
+          )
         ) {
           parentViewTransition.flags |= Update;
         }
-        if (hasInstanceAffectedParent(previousMeasurement, nextMeasurement)) {
+        if (
+          $checkResult(
+            hasInstanceAffectedParent(previousMeasurement, nextMeasurement),
+            './src/ReactFiberConfig.js#hasInstanceAffectedParent',
+            $checkBool,
+          )
+        ) {
           // If this instance size within its parent has changed it might have caused the
           // parent to relayout which needs a cross fade.
           parentViewTransition.flags |= AffectedParentLayout;

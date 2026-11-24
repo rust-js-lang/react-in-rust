@@ -11,7 +11,7 @@ import {setSrcObject} from './ReactDOMSrcObject.js';
 
 import {getCurrentRootHostContainer} from 'react-reconciler/src/ReactFiberHostContext';
 
-import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
+import {runWithFiberInDEV$ as runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
 
 import hasOwnProperty from 'shared/hasOwnProperty';
 
@@ -38,25 +38,25 @@ import {
   isOwnedInstance,
   markNodeAsHoistable,
   markNodeAsPendingLoad,
-  precacheFiberNode,
+  precacheFiberNode$ as precacheFiberNode,
   updateFiberProps,
 } from './ReactDOMComponentTree.js';
 import {
-  fiberIsPortaledIntoHost,
-  getFragmentInstanceOrTextInstanceSiblings,
-  getFragmentParentInstanceOrContainerFiber,
-  getFragmentPortalContainerInfo,
-  getFragmentRootContainerInfo,
-  getInstanceFromHostFiber,
-  isFiberContainedByFragment,
-  isFiberFollowing,
-  isFiberPreceding,
-  isFragmentContainedByFiber,
-  traverseFragmentInstancesAndTextInstances,
-  traverseFragmentInstancesAndTextInstancesDeeply,
+  fiberIsPortaledIntoHost$ as fiberIsPortaledIntoHost,
+  getFragmentInstanceOrTextInstanceSiblings$ as getFragmentInstanceOrTextInstanceSiblings,
+  getFragmentParentInstanceOrContainerFiber$ as getFragmentParentInstanceOrContainerFiber,
+  getFragmentPortalContainerInfo$ as getFragmentPortalContainerInfo,
+  getFragmentRootContainerInfo$ as getFragmentRootContainerInfo,
+  getInstanceFromHostFiber$ as getInstanceFromHostFiber,
+  isFiberContainedByFragment$ as isFiberContainedByFragment,
+  isFiberFollowing$ as isFiberFollowing,
+  isFiberPreceding$ as isFiberPreceding,
+  isFragmentContainedByFiber$ as isFragmentContainedByFiber,
+  traverseFragmentInstancesAndTextInstances$ as traverseFragmentInstancesAndTextInstances,
+  traverseFragmentInstancesAndTextInstancesDeeply$ as traverseFragmentInstancesAndTextInstancesDeeply,
 } from 'react-reconciler/src/ReactFiberTreeReflection';
 
-import {compareDocumentPositionForEmptyFragment} from 'shared/ReactDOMFragmentRefShared';
+import {compareDocumentPositionForEmptyFragment$ as compareDocumentPositionForEmptyFragment} from 'shared/ReactDOMFragmentRefShared';
 
 export {detachDeletedInstance};
 
@@ -149,6 +149,14 @@ import {
   $borrow,
   $borrowMut,
   $catchable,
+  $checkArray,
+  $checkBool,
+  $checkCallback,
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $checks,
   $cleanup,
   $extend,
   $index,
@@ -298,6 +306,11 @@ function getChildHostContextProd(parentNamespace, type) {
 }
 
 export function getChildHostContext(parentHostContext, type) {
+  $checkStr(type, 'getChildHostContext(type)');
+  return getChildHostContext$(parentHostContext, type);
+}
+
+export function getChildHostContext$(parentHostContext, type) {
   if (__DEV__) {
     const parentHostContextDev = parentHostContext;
     const context = getChildHostContextProd(parentHostContextDev.context, type);
@@ -336,6 +349,15 @@ export function prepareForCommit(containerInfo) {
 }
 
 export function beforeActiveInstanceBlur(internalInstanceHandle) {
+  $checks(
+    'beforeActiveInstanceBlur(internalInstanceHandle)',
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return beforeActiveInstanceBlur$(internalInstanceHandle);
+}
+
+export function beforeActiveInstanceBlur$(internalInstanceHandle) {
   if (enableCreateEventHandleAPI) {
     ReactBrowserEventEmitterSetEnabled(true);
     dispatchBeforeDetachedBlur(
@@ -382,6 +404,29 @@ export function resetAfterCommit(containerInfo) {
 }
 
 export function createHoistableInstance(
+  type,
+  props,
+  rootContainerInstance,
+  internalInstanceHandle,
+) {
+  $checks(
+    'createHoistableInstance(type, props, internalInstanceHandle)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return createHoistableInstance$(
+    type,
+    props,
+    rootContainerInstance,
+    internalInstanceHandle,
+  );
+}
+
+export function createHoistableInstance$(
   type,
   props,
   rootContainerInstance,
@@ -455,6 +500,31 @@ warnedUnknownTags.dialog = true;
 warnedUnknownTags.webview = true;
 
 export function createInstance(
+  type,
+  props,
+  rootContainerInstance,
+  hostContext,
+  internalInstanceHandle,
+) {
+  $checks(
+    'createInstance(type, props, internalInstanceHandle)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return createInstance$(
+    type,
+    props,
+    rootContainerInstance,
+    hostContext,
+    internalInstanceHandle,
+  );
+}
+
+export function createInstance$(
   type,
   props,
   rootContainerInstance,
@@ -589,6 +659,11 @@ export function createInstance(
 let didWarnForClone = false;
 
 export function cloneMutableInstance(instance, keepChildren) {
+  $checkBool(keepChildren, 'cloneMutableInstance(keepChildren)');
+  return cloneMutableInstance$(instance, keepChildren);
+}
+
+export function cloneMutableInstance$(instance, keepChildren) {
   if (__DEV__) {
     // Warn for problematic
     const tagName = instance.tagName;
@@ -613,6 +688,17 @@ export function appendInitialChild(parentInstance, child) {
 }
 
 export function finalizeInitialChildren(domElement, type, props, hostContext) {
+  $checks(
+    'finalizeInitialChildren(type, props)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+  );
+  return finalizeInitialChildren$(domElement, type, props, hostContext);
+}
+
+export function finalizeInitialChildren$(domElement, type, props, hostContext) {
   setInitialProperties(domElement, type, props);
   switch (type) {
     case 'button':
@@ -628,6 +714,22 @@ export function finalizeInitialChildren(domElement, type, props, hostContext) {
 }
 
 export function finalizeHydratedChildren(domElement, type, props, hostContext) {
+  $checks(
+    'finalizeHydratedChildren(type, props)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+  );
+  return finalizeHydratedChildren$(domElement, type, props, hostContext);
+}
+
+export function finalizeHydratedChildren$(
+  domElement,
+  type,
+  props,
+  hostContext,
+) {
   // TOOD: Consider unifying this with hydrateInstance.
   if (!enableHydrationChangeEvent) {
     return false;
@@ -641,6 +743,17 @@ export function finalizeHydratedChildren(domElement, type, props, hostContext) {
 }
 
 export function shouldSetTextContent(type, props) {
+  $checks(
+    'shouldSetTextContent(type, props)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+  );
+  return shouldSetTextContent$(type, props);
+}
+
+export function shouldSetTextContent$(type, props) {
   if (type !== 'textarea') {
     if (type !== 'noscript') {
       const children = props.children;
@@ -662,6 +775,27 @@ export function shouldSetTextContent(type, props) {
 }
 
 export function createTextInstance(
+  text,
+  rootContainerInstance,
+  hostContext,
+  internalInstanceHandle,
+) {
+  $checks(
+    'createTextInstance(text, internalInstanceHandle)',
+    text,
+    $checkStr,
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return createTextInstance$(
+    text,
+    rootContainerInstance,
+    hostContext,
+    internalInstanceHandle,
+  );
+}
+
+export function createTextInstance$(
   text,
   rootContainerInstance,
   hostContext,
@@ -774,6 +908,15 @@ export function preparePortalMount(portalInstance) {
 }
 
 export function prepareScopeUpdate(scopeInstance, internalInstanceHandle) {
+  $checks(
+    'prepareScopeUpdate(internalInstanceHandle)',
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return prepareScopeUpdate$(scopeInstance, internalInstanceHandle);
+}
+
+export function prepareScopeUpdate$(scopeInstance, internalInstanceHandle) {
   if (enableScopeAPI) {
     precacheFiberNode(internalInstanceHandle, scopeInstance);
   }
@@ -820,6 +963,24 @@ function handleErrorInNextTick(error) {
 export const supportsMutation = true;
 
 export function commitMount(
+  domElement,
+  type,
+  newProps,
+  internalInstanceHandle,
+) {
+  $checks(
+    'commitMount(type, newProps, internalInstanceHandle)',
+    type,
+    $checkStr,
+    newProps,
+    checkProps,
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return commitMount$(domElement, type, newProps, internalInstanceHandle);
+}
+
+export function commitMount$(
   domElement,
   type,
   newProps,
@@ -885,6 +1046,29 @@ export function commitHydratedInstance(
   props,
   internalInstanceHandle,
 ) {
+  $checks(
+    'commitHydratedInstance(type, props, internalInstanceHandle)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return commitHydratedInstance$(
+    domElement,
+    type,
+    props,
+    internalInstanceHandle,
+  );
+}
+
+export function commitHydratedInstance$(
+  domElement,
+  type,
+  props,
+  internalInstanceHandle,
+) {
   if (!enableHydrationChangeEvent) {
     return;
   }
@@ -927,6 +1111,33 @@ export function commitUpdate(
   newProps,
   internalInstanceHandle,
 ) {
+  $checks(
+    'commitUpdate(type, oldProps, newProps, internalInstanceHandle)',
+    type,
+    $checkStr,
+    oldProps,
+    checkProps,
+    newProps,
+    checkProps,
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return commitUpdate$(
+    domElement,
+    type,
+    oldProps,
+    newProps,
+    internalInstanceHandle,
+  );
+}
+
+export function commitUpdate$(
+  domElement,
+  type,
+  oldProps,
+  newProps,
+  internalInstanceHandle,
+) {
   // Diff and update the properties.
   updateProperties(domElement, type, oldProps, newProps);
 
@@ -940,6 +1151,17 @@ export function resetTextContent(domElement) {
 }
 
 export function commitTextUpdate(textInstance, oldText, newText) {
+  $checks(
+    'commitTextUpdate(oldText, newText)',
+    oldText,
+    $checkStr,
+    newText,
+    $checkStr,
+  );
+  return commitTextUpdate$(textInstance, oldText, newText);
+}
+
+export function commitTextUpdate$(textInstance, oldText, newText) {
   textInstance.nodeValue = newText;
 }
 
@@ -948,6 +1170,15 @@ const supportsMoveBefore =
   enableMoveBefore &&
   typeof window !== 'undefined' &&
   typeof window.Element.prototype.moveBefore === 'function';
+
+const checkInstanceMeasurement = /* @__PURE__ */ $checkShape(() => ({
+  abs: $checkBool,
+  clip: $checkBool,
+  view: $checkBool,
+}));
+
+const checkSuspendedState = /* @__PURE__ */ $checkShape(() => ({}));
+const checkFragmentInstance = /* @__PURE__ */ $checkShape(() => ({}));
 
 export function appendChild(parentInstance, child) {
   if (supportsMoveBefore && child.parentNode !== null) {
@@ -1093,6 +1324,11 @@ export function insertInContainerBefore(container, child, beforeChild) {
 }
 
 export function isSingletonScope(type) {
+  $checkStr(type, 'isSingletonScope(type)');
+  return isSingletonScope$(type);
+}
+
+export function isSingletonScope$(type) {
   return type === 'head';
 }
 
@@ -1346,6 +1582,11 @@ export function unhideDehydratedBoundary(dehydratedInstance) {
 }
 
 export function unhideInstance(instance, props) {
+  $checks('unhideInstance(props)', props, checkProps);
+  return unhideInstance$(instance, props);
+}
+
+export function unhideInstance$(instance, props) {
   const styleProp = props[STYLE];
   const display =
     styleProp != null && styleProp.hasOwnProperty('display')
@@ -1360,6 +1601,11 @@ export function unhideInstance(instance, props) {
 }
 
 export function unhideTextInstance(textInstance, text) {
+  $checkStr(text, 'unhideTextInstance(text)');
+  return unhideTextInstance$(textInstance, text);
+}
+
+export function unhideTextInstance$(textInstance, text) {
   textInstance.nodeValue = text;
 }
 
@@ -1429,6 +1675,12 @@ function countClientRects(rects) {
 }
 
 export function applyViewTransitionName(instance, name, className) {
+  $checkStr(name, 'applyViewTransitionName(name)');
+  $checkStr(className, 'applyViewTransitionName(className)', 'nullish');
+  return applyViewTransitionName$(instance, name, className);
+}
+
+export function applyViewTransitionName$(instance, name, className) {
   // If the name isn't valid CSS identifier, base64 encode the name instead.
   // This doesn't let you select it in custom CSS selectors but it does work in current
   // browsers.
@@ -1471,6 +1723,11 @@ export function applyViewTransitionName(instance, name, className) {
 }
 
 export function restoreViewTransitionName(instance, props) {
+  $checks('restoreViewTransitionName(props)', props, checkProps);
+  return restoreViewTransitionName$(instance, props);
+}
+
+export function restoreViewTransitionName$(instance, props) {
   const style = instance.style;
   const styleProp = props[STYLE];
   let viewTransitionName;
@@ -1542,9 +1799,20 @@ export function restoreViewTransitionName(instance, props) {
 }
 
 export function cancelViewTransitionName(instance, oldName, props) {
+  $checks(
+    'cancelViewTransitionName(oldName, props)',
+    oldName,
+    $checkStr,
+    props,
+    checkProps,
+  );
+  return cancelViewTransitionName$(instance, oldName, props);
+}
+
+export function cancelViewTransitionName$(instance, oldName, props) {
   // To cancel the "new" state and paint this instance as part of the parent, all we have to do
   // is remove the view-transition-name before we exit startViewTransition.
-  restoreViewTransitionName(instance, props);
+  restoreViewTransitionName$(instance, props);
   // There isn't a way to cancel an "old" state but what we can do is hide it by animating it.
   // Since it is already removed from the old state of the parent, this technique only works
   // if the parent also isn't transitioning. Therefore we should only cancel the root most
@@ -1949,10 +2217,30 @@ export function measureClonedInstance(instance) {
 }
 
 export function wasInstanceInViewport(measurement) {
+  $checks(
+    'wasInstanceInViewport(measurement)',
+    measurement,
+    checkInstanceMeasurement,
+  );
+  return wasInstanceInViewport$(measurement);
+}
+
+export function wasInstanceInViewport$(measurement) {
   return measurement.view;
 }
 
 export function hasInstanceChanged(oldMeasurement, newMeasurement) {
+  $checks(
+    'hasInstanceChanged(oldMeasurement, newMeasurement)',
+    oldMeasurement,
+    checkInstanceMeasurement,
+    newMeasurement,
+    checkInstanceMeasurement,
+  );
+  return hasInstanceChanged$(oldMeasurement, newMeasurement);
+}
+
+export function hasInstanceChanged$(oldMeasurement, newMeasurement) {
   // Note: This is not guaranteed from the same instance in the case that the Instance of the
   // ViewTransition swaps out but it's still the same ViewTransition instance.
   if (newMeasurement.clip) {
@@ -1971,6 +2259,17 @@ export function hasInstanceChanged(oldMeasurement, newMeasurement) {
 }
 
 export function hasInstanceAffectedParent(oldMeasurement, newMeasurement) {
+  $checks(
+    'hasInstanceAffectedParent(oldMeasurement, newMeasurement)',
+    oldMeasurement,
+    checkInstanceMeasurement,
+    newMeasurement,
+    checkInstanceMeasurement,
+  );
+  return hasInstanceAffectedParent$(oldMeasurement, newMeasurement);
+}
+
+export function hasInstanceAffectedParent$(oldMeasurement, newMeasurement) {
   // Note: This is not guaranteed from the same instance in the case that the Instance of the
   // ViewTransition swaps out but it's still the same ViewTransition instance.
   // If the instance has resized, it might have affected the parent layout.
@@ -2077,6 +2376,60 @@ export function startViewTransition(
   errorCallback,
   blockedCallback, // Profiling-only
   finishedAnimation, // Profiling-only
+) {
+  $checkWhole(
+    checkSuspendedState,
+    suspendedState,
+    'startViewTransition(suspendedState)',
+    'nullish',
+  );
+  $checkWhole(
+    (value, where, none) => $checkArray(value, where, none, $checkStr),
+    transitionTypes,
+    'startViewTransition(transitionTypes)',
+    'nullish',
+  );
+  $checkCallback(mutationCallback, 'startViewTransition(mutationCallback)');
+  $checkCallback(layoutCallback, 'startViewTransition(layoutCallback)');
+  $checkCallback(
+    afterMutationCallback,
+    'startViewTransition(afterMutationCallback)',
+  );
+  $checkCallback(
+    spawnedWorkCallback,
+    'startViewTransition(spawnedWorkCallback)',
+  );
+  $checkCallback(passiveCallback, 'startViewTransition(passiveCallback)');
+  $checkCallback(errorCallback, 'startViewTransition(errorCallback)');
+  $checkCallback(blockedCallback, 'startViewTransition(blockedCallback)');
+  $checkCallback(finishedAnimation, 'startViewTransition(finishedAnimation)');
+  return startViewTransition$(
+    suspendedState,
+    rootContainer,
+    transitionTypes,
+    mutationCallback,
+    layoutCallback,
+    afterMutationCallback,
+    spawnedWorkCallback,
+    passiveCallback,
+    errorCallback,
+    blockedCallback,
+    finishedAnimation,
+  );
+}
+
+export function startViewTransition$(
+  suspendedState,
+  rootContainer,
+  transitionTypes,
+  mutationCallback,
+  layoutCallback,
+  afterMutationCallback,
+  spawnedWorkCallback,
+  passiveCallback,
+  errorCallback,
+  blockedCallback,
+  finishedAnimation,
 ) {
   const ownerDocument =
     rootContainer.nodeType === DOCUMENT_NODE
@@ -2584,6 +2937,58 @@ export function startGestureTransition(
   errorCallback,
   finishedAnimation, // Profiling-only
 ) {
+  $checkWhole(
+    checkSuspendedState,
+    suspendedState,
+    'startGestureTransition(suspendedState)',
+    'nullish',
+  );
+  $checks(
+    'startGestureTransition(rangeStart, rangeEnd)',
+    rangeStart,
+    $checkF64,
+    rangeEnd,
+    $checkF64,
+  );
+  $checkWhole(
+    (value, where, none) => $checkArray(value, where, none, $checkStr),
+    transitionTypes,
+    'startGestureTransition(transitionTypes)',
+    'nullish',
+  );
+  $checkCallback(mutationCallback, 'startGestureTransition(mutationCallback)');
+  $checkCallback(animateCallback, 'startGestureTransition(animateCallback)');
+  $checkCallback(errorCallback, 'startGestureTransition(errorCallback)');
+  $checkCallback(
+    finishedAnimation,
+    'startGestureTransition(finishedAnimation)',
+  );
+  return startGestureTransition$(
+    suspendedState,
+    rootContainer,
+    timeline,
+    rangeStart,
+    rangeEnd,
+    transitionTypes,
+    mutationCallback,
+    animateCallback,
+    errorCallback,
+    finishedAnimation,
+  );
+}
+
+export function startGestureTransition$(
+  suspendedState,
+  rootContainer,
+  timeline,
+  rangeStart,
+  rangeEnd,
+  transitionTypes,
+  mutationCallback,
+  animateCallback,
+  errorCallback,
+  finishedAnimation,
+) {
   const ownerDocument =
     rootContainer.nodeType === DOCUMENT_NODE
       ? rootContainer
@@ -2917,6 +3322,11 @@ export function stopViewTransition(transition) {
 }
 
 export function addViewTransitionFinishedListener(transition, callback) {
+  $checkCallback(callback, 'addViewTransitionFinishedListener(callback)');
+  return addViewTransitionFinishedListener$(transition, callback);
+}
+
+export function addViewTransitionFinishedListener$(transition, callback) {
   transition.finished.finally(callback);
 }
 
@@ -2982,6 +3392,11 @@ export class ViewTransitionPseudoElement {
 }
 
 export function createViewTransitionInstance(name) {
+  $checkStr(name, 'createViewTransitionInstance(name)');
+  return createViewTransitionInstance$(name);
+}
+
+export function createViewTransitionInstance$(name) {
   return {
     name,
     group: new ViewTransitionPseudoElement('group', name),
@@ -3015,6 +3430,7 @@ export class FragmentInstance {
   }
 
   addEventListener(type, listener, optionsOrUseCapture) {
+    $checkStr(type, 'FragmentInstance.addEventListener(type)');
     let signal = null;
     let cleanup = null;
     if (
@@ -3104,6 +3520,7 @@ export class FragmentInstance {
   }
 
   removeEventListener(type, listener, optionsOrUseCapture) {
+    $checkStr(type, 'FragmentInstance.removeEventListener(type)');
     const listeners = this._eventListeners;
     if (listeners == null) {
       return;
@@ -3790,7 +4207,7 @@ function schedulePendingIntersectionUnobserve(
     // Unobserving in this commit would cancel the record IntersectionObserver
     // delivers for the now disconnected target. Wait until after paint so the
     // exit fires first, then drop the observer's strong ref to the node.
-    requestPostPaintCallback(() => {
+    requestPostPaintCallback$(() => {
       intersectionUnobserveScheduled = false;
       const pending = $borrowMut(
         pendingIntersectionUnobserves,
@@ -3912,6 +4329,11 @@ function addFragmentHandleToInstance(instance, fragmentInstance) {
 }
 
 export function createFragmentInstance(fragmentFiber) {
+  $checks('createFragmentInstance(fragmentFiber)', fragmentFiber, checkFiber);
+  return createFragmentInstance$(fragmentFiber);
+}
+
+export function createFragmentInstance$(fragmentFiber) {
   const fragmentInstance = new FragmentInstance(fragmentFiber);
   traverseFragmentInstancesAndTextInstances(
     fragmentFiber,
@@ -3922,10 +4344,33 @@ export function createFragmentInstance(fragmentFiber) {
 }
 
 export function updateFragmentInstanceFiber(fragmentFiber, instance) {
+  $checks(
+    'updateFragmentInstanceFiber(fragmentFiber, instance)',
+    fragmentFiber,
+    checkFiber,
+    instance,
+    checkFragmentInstance,
+  );
+  return updateFragmentInstanceFiber$(fragmentFiber, instance);
+}
+
+export function updateFragmentInstanceFiber$(fragmentFiber, instance) {
   instance._fragmentFiber = fragmentFiber;
 }
 
 export function commitNewChildToFragmentInstance(
+  childInstance,
+  fragmentInstance,
+) {
+  $checks(
+    'commitNewChildToFragmentInstance(fragmentInstance)',
+    fragmentInstance,
+    checkFragmentInstance,
+  );
+  return commitNewChildToFragmentInstance$(childInstance, fragmentInstance);
+}
+
+export function commitNewChildToFragmentInstance$(
   childInstance,
   fragmentInstance,
 ) {
@@ -3970,6 +4415,18 @@ export function commitNewChildToFragmentInstance(
 }
 
 export function deleteChildFromFragmentInstance(
+  childInstance,
+  fragmentInstance,
+) {
+  $checks(
+    'deleteChildFromFragmentInstance(fragmentInstance)',
+    fragmentInstance,
+    checkFragmentInstance,
+  );
+  return deleteChildFromFragmentInstance$(childInstance, fragmentInstance);
+}
+
+export function deleteChildFromFragmentInstance$(
   childInstance,
   fragmentInstance,
 ) {
@@ -4113,6 +4570,17 @@ function clearHead(head) {
 // HostSingletons. The reason we need it here is we only want to make this binding on commit
 // because only one fiber can own the instance at a time and render can fail/restart
 export function bindInstance(instance, props, internalInstanceHandle) {
+  $checks(
+    'bindInstance(props, internalInstanceHandle)',
+    props,
+    checkProps,
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return bindInstance$(instance, props, internalInstanceHandle);
+}
+
+export function bindInstance$(instance, props, internalInstanceHandle) {
   precacheFiberNode(internalInstanceHandle, instance);
   updateFiberProps(instance, props);
 }
@@ -4124,6 +4592,19 @@ export function bindInstance(instance, props, internalInstanceHandle) {
 export const supportsHydration = true;
 
 export function canHydrateInstance(instance, type, props, inRootOrSingleton) {
+  $checks(
+    'canHydrateInstance(type, props, inRootOrSingleton)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+    inRootOrSingleton,
+    $checkBool,
+  );
+  return canHydrateInstance$(instance, type, props, inRootOrSingleton);
+}
+
+export function canHydrateInstance$(instance, type, props, inRootOrSingleton) {
   while (instance.nodeType === ELEMENT_NODE) {
     const element = instance;
     const anyProps = props;
@@ -4259,6 +4740,17 @@ export function canHydrateInstance(instance, type, props, inRootOrSingleton) {
 }
 
 export function canHydrateTextInstance(instance, text, inRootOrSingleton) {
+  $checks(
+    'canHydrateTextInstance(text, inRootOrSingleton)',
+    text,
+    $checkStr,
+    inRootOrSingleton,
+    $checkBool,
+  );
+  return canHydrateTextInstance$(instance, text, inRootOrSingleton);
+}
+
+export function canHydrateTextInstance$(instance, text, inRootOrSingleton) {
   // Empty strings are not parsed by HTML so there won't be a correct match here.
   if (text === '') {
     return null;
@@ -4308,6 +4800,14 @@ function canHydrateHydrationBoundary(instance, inRootOrSingleton) {
 }
 
 export function canHydrateActivityInstance(instance, inRootOrSingleton) {
+  $checkBool(
+    inRootOrSingleton,
+    'canHydrateActivityInstance(inRootOrSingleton)',
+  );
+  return canHydrateActivityInstance$(instance, inRootOrSingleton);
+}
+
+export function canHydrateActivityInstance$(instance, inRootOrSingleton) {
   const hydratableInstance = canHydrateHydrationBoundary(
     instance,
     inRootOrSingleton,
@@ -4322,6 +4822,14 @@ export function canHydrateActivityInstance(instance, inRootOrSingleton) {
 }
 
 export function canHydrateSuspenseInstance(instance, inRootOrSingleton) {
+  $checkBool(
+    inRootOrSingleton,
+    'canHydrateSuspenseInstance(inRootOrSingleton)',
+  );
+  return canHydrateSuspenseInstance$(instance, inRootOrSingleton);
+}
+
+export function canHydrateSuspenseInstance$(instance, inRootOrSingleton) {
   const hydratableInstance = canHydrateHydrationBoundary(
     instance,
     inRootOrSingleton,
@@ -4376,6 +4884,11 @@ export function getSuspenseInstanceFallbackErrorDetails(instance) {
 }
 
 export function registerSuspenseInstanceRetry(instance, callback) {
+  $checkCallback(callback, 'registerSuspenseInstanceRetry(callback)');
+  return registerSuspenseInstanceRetry$(instance, callback);
+}
+
+export function registerSuspenseInstanceRetry$(instance, callback) {
   const ownerDocument = instance.ownerDocument;
   if (instance.data === SUSPENSE_QUEUED_START_DATA) {
     // The Fizz runtime has already queued this boundary for reveal. We wait for it
@@ -4411,6 +4924,11 @@ export function registerSuspenseInstanceRetry(instance, callback) {
 }
 
 export function canHydrateFormStateMarker(instance, inRootOrSingleton) {
+  $checkBool(inRootOrSingleton, 'canHydrateFormStateMarker(inRootOrSingleton)');
+  return canHydrateFormStateMarker$(instance, inRootOrSingleton);
+}
+
+export function canHydrateFormStateMarker$(instance, inRootOrSingleton) {
   while (instance.nodeType !== COMMENT_NODE) {
     if (!inRootOrSingleton) {
       return null;
@@ -4511,7 +5029,20 @@ export function getFirstHydratableChildWithinSingleton(
   singletonInstance,
   currentHydratableInstance,
 ) {
-  if (isSingletonScope(type)) {
+  $checkStr(type, 'getFirstHydratableChildWithinSingleton(type)');
+  return getFirstHydratableChildWithinSingleton$(
+    type,
+    singletonInstance,
+    currentHydratableInstance,
+  );
+}
+
+export function getFirstHydratableChildWithinSingleton$(
+  type,
+  singletonInstance,
+  currentHydratableInstance,
+) {
+  if (isSingletonScope$(type)) {
     previousHydratableOnEnteringScopedSingleton =
       currentHydratableInstance ?? null;
     return getNextHydratable(singletonInstance.firstChild);
@@ -4524,7 +5055,18 @@ export function getNextHydratableSiblingAfterSingleton(
   type,
   currentHydratableInstance,
 ) {
-  if (isSingletonScope(type)) {
+  $checkStr(type, 'getNextHydratableSiblingAfterSingleton(type)');
+  return getNextHydratableSiblingAfterSingleton$(
+    type,
+    currentHydratableInstance,
+  );
+}
+
+export function getNextHydratableSiblingAfterSingleton$(
+  type,
+  currentHydratableInstance,
+) {
+  if (isSingletonScope$(type)) {
     const previousHydratableInstance =
       previousHydratableOnEnteringScopedSingleton;
     previousHydratableOnEnteringScopedSingleton = null;
@@ -4559,6 +5101,17 @@ export function describeHydratableInstanceForDevWarnings(instance) {
 }
 
 export function validateHydratableInstance(type, props, hostContext) {
+  $checks(
+    'validateHydratableInstance(type, props)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+  );
+  return validateHydratableInstance$(type, props, hostContext);
+}
+
+export function validateHydratableInstance$(type, props, hostContext) {
   if (__DEV__) {
     // TODO: take namespace into account when validating.
     const hostContextDev = hostContext;
@@ -4568,6 +5121,31 @@ export function validateHydratableInstance(type, props, hostContext) {
 }
 
 export function hydrateInstance(
+  instance,
+  type,
+  props,
+  hostContext,
+  internalInstanceHandle,
+) {
+  $checks(
+    'hydrateInstance(type, props, internalInstanceHandle)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return hydrateInstance$(
+    instance,
+    type,
+    props,
+    hostContext,
+    internalInstanceHandle,
+  );
+}
+
+export function hydrateInstance$(
   instance,
   type,
   props,
@@ -4589,10 +5167,31 @@ export function diffHydratedPropsForDevWarnings(
   props,
   hostContext,
 ) {
+  $checks(
+    'diffHydratedPropsForDevWarnings(type, props)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+  );
+  return diffHydratedPropsForDevWarnings$(instance, type, props, hostContext);
+}
+
+export function diffHydratedPropsForDevWarnings$(
+  instance,
+  type,
+  props,
+  hostContext,
+) {
   return diffHydratedProperties(instance, type, props, hostContext) ?? null;
 }
 
 export function validateHydratableTextInstance(text, hostContext) {
+  $checkStr(text, 'validateHydratableTextInstance(text)');
+  return validateHydratableTextInstance$(text, hostContext);
+}
+
+export function validateHydratableTextInstance$(text, hostContext) {
   if (__DEV__) {
     const hostContextDev = hostContext;
     const ancestor = $unwrap(
@@ -4619,6 +5218,33 @@ export function hydrateTextInstance(
   internalInstanceHandle,
   parentInstanceProps,
 ) {
+  $checks(
+    'hydrateTextInstance(text, internalInstanceHandle)',
+    text,
+    $checkStr,
+    internalInstanceHandle,
+    checkFiber,
+  );
+  $checkWhole(
+    checkProps,
+    parentInstanceProps,
+    'hydrateTextInstance(parentInstanceProps)',
+    'nullish',
+  );
+  return hydrateTextInstance$(
+    textInstance,
+    text,
+    internalInstanceHandle,
+    parentInstanceProps,
+  );
+}
+
+export function hydrateTextInstance$(
+  textInstance,
+  text,
+  internalInstanceHandle,
+  parentInstanceProps,
+) {
   precacheFiberNode(internalInstanceHandle, textInstance);
 
   return hydrateText(textInstance, text, parentInstanceProps);
@@ -4626,6 +5252,21 @@ export function hydrateTextInstance(
 
 // Returns the server text if it differs from the client.
 export function diffHydratedTextForDevWarnings(
+  textInstance,
+  text,
+  parentProps,
+) {
+  $checkStr(text, 'diffHydratedTextForDevWarnings(text)');
+  $checkWhole(
+    checkProps,
+    parentProps,
+    'diffHydratedTextForDevWarnings(parentProps)',
+    'nullish',
+  );
+  return diffHydratedTextForDevWarnings$(textInstance, text, parentProps);
+}
+
+export function diffHydratedTextForDevWarnings$(
   textInstance,
   text,
   parentProps,
@@ -4640,10 +5281,34 @@ export function hydrateActivityInstance(
   activityInstance,
   internalInstanceHandle,
 ) {
+  $checks(
+    'hydrateActivityInstance(internalInstanceHandle)',
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return hydrateActivityInstance$(activityInstance, internalInstanceHandle);
+}
+
+export function hydrateActivityInstance$(
+  activityInstance,
+  internalInstanceHandle,
+) {
   precacheFiberNode(internalInstanceHandle, activityInstance);
 }
 
 export function hydrateSuspenseInstance(
+  suspenseInstance,
+  internalInstanceHandle,
+) {
+  $checks(
+    'hydrateSuspenseInstance(internalInstanceHandle)',
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return hydrateSuspenseInstance$(suspenseInstance, internalInstanceHandle);
+}
+
+export function hydrateSuspenseInstance$(
   suspenseInstance,
   internalInstanceHandle,
 ) {
@@ -4748,6 +5413,11 @@ export function flushHydrationEvents() {
 }
 
 export function shouldDeleteUnhydratedTailInstances(parentType) {
+  $checkStr(parentType, 'shouldDeleteUnhydratedTailInstances(parentType)');
+  return shouldDeleteUnhydratedTailInstances$(parentType);
+}
+
+export function shouldDeleteUnhydratedTailInstances$(parentType) {
   return parentType !== 'form' && parentType !== 'button';
 }
 
@@ -4785,6 +5455,11 @@ export function getBoundingRect(node) {
 }
 
 export function matchAccessibilityRole(node, role) {
+  $checkStr(role, 'matchAccessibilityRole(role)');
+  return matchAccessibilityRole$(node, role);
+}
+
+export function matchAccessibilityRole$(node, role) {
   if (hasRole(node, role)) {
     return true;
   }
@@ -4793,6 +5468,11 @@ export function matchAccessibilityRole(node, role) {
 }
 
 export function getTextContent(fiber) {
+  $checks('getTextContent(fiber)', fiber, checkFiber);
+  return getTextContent$(fiber);
+}
+
+export function getTextContent$(fiber) {
   switch (fiber.tag) {
     case HostHoistable:
     case HostSingleton:
@@ -4818,6 +5498,11 @@ export function getTextContent(fiber) {
 }
 
 export function isHiddenSubtree(fiber) {
+  $checks('isHiddenSubtree(fiber)', fiber, checkFiber);
+  return isHiddenSubtree$(fiber);
+}
+
+export function isHiddenSubtree$(fiber) {
   return fiber.tag === HostComponent && fiber.memoizedProps.hidden === true;
 }
 
@@ -4864,6 +5549,11 @@ export function setFocusIfFocusable(node, focusOptions) {
 }
 
 export function setupIntersectionObserver(targets, callback, options) {
+  $checkCallback(callback, 'setupIntersectionObserver(callback)');
+  return setupIntersectionObserver$(targets, callback, options);
+}
+
+export function setupIntersectionObserver$(targets, callback, options) {
   const rectRatioCache = new Map();
   targets.forEach(target => {
     rectRatioCache.set(target, {
@@ -4918,6 +5608,11 @@ export function setupIntersectionObserver(targets, callback, options) {
 }
 
 export function requestPostPaintCallback(callback) {
+  $checkCallback(callback, 'requestPostPaintCallback(callback)');
+  return requestPostPaintCallback$(callback);
+}
+
+export function requestPostPaintCallback$(callback) {
   $unwrap(
     localRequestAnimationFrame,
     'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:5428:54',
@@ -4936,10 +5631,40 @@ export function requestPostPaintCallback(callback) {
 export const supportsSingletons = true;
 
 export function isHostSingletonType(type) {
+  $checkStr(type, 'isHostSingletonType(type)');
+  return isHostSingletonType$(type);
+}
+
+export function isHostSingletonType$(type) {
   return type === 'html' || type === 'head' || type === 'body';
 }
 
 export function resolveSingletonInstance(
+  type,
+  props,
+  rootContainerInstance,
+  hostContext,
+  validateDomNestingDev,
+) {
+  $checks(
+    'resolveSingletonInstance(type, props, validateDomNestingDev)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+    validateDomNestingDev,
+    $checkBool,
+  );
+  return resolveSingletonInstance$(
+    type,
+    props,
+    rootContainerInstance,
+    hostContext,
+    validateDomNestingDev,
+  );
+}
+
+export function resolveSingletonInstance$(
   type,
   props,
   rootContainerInstance,
@@ -5006,6 +5731,29 @@ export function acquireSingletonInstance(
   instance,
   internalInstanceHandle,
 ) {
+  $checks(
+    'acquireSingletonInstance(type, props, internalInstanceHandle)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return acquireSingletonInstance$(
+    type,
+    props,
+    instance,
+    internalInstanceHandle,
+  );
+}
+
+export function acquireSingletonInstance$(
+  type,
+  props,
+  instance,
+  internalInstanceHandle,
+) {
   if (__DEV__) {
     if (
       // If this instance is the container then it is invalid to acquire it as a singleton however
@@ -5051,6 +5799,17 @@ export function acquireSingletonInstance(
 }
 
 export function releaseSingletonInstance(instance, type, props) {
+  $checks(
+    'releaseSingletonInstance(type, props)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+  );
+  return releaseSingletonInstance$(instance, type, props);
+}
+
+export function releaseSingletonInstance$(instance, type, props) {
   // Remove the attributes and property-backed state owned by this Fiber.
   clearSingletonProperties(instance, type, props);
 
@@ -5189,6 +5948,13 @@ ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */ = {
   S: preinitStyle,
   M: preinitModuleScript,
 };
+
+const checkStylesheetState = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkResource = /* @__PURE__ */ $checkShape(() => ({
+  type: $checkStr,
+  state: [checkStylesheetState, 'nullish'],
+}));
 
 function getGlobalDocument() {
   return globalDocument;
@@ -5555,6 +6321,22 @@ function preinitModuleScript(src, options) {
 
 // This function is called in begin work and we should always have a currentDocument set
 export function getResource(type, currentProps, pendingProps, currentResource) {
+  $checkStr(type, 'getResource(type)');
+  $checkWhole(
+    checkResource,
+    currentResource,
+    'getResource(currentResource)',
+    'nullish',
+  );
+  return getResource$(type, currentProps, pendingProps, currentResource);
+}
+
+export function getResource$(
+  type,
+  currentProps,
+  pendingProps,
+  currentResource,
+) {
   const resourceRoot = getCurrentResourceRoot();
   if (resourceRoot == null) {
     throw $panic(
@@ -5856,6 +6638,11 @@ function getScriptSelectorFromKey(key) {
 }
 
 export function acquireResource(hoistableRoot, resource, props) {
+  $checks('acquireResource(resource)', resource, checkResource);
+  return acquireResource$(hoistableRoot, resource, props);
+}
+
+export function acquireResource$(hoistableRoot, resource, props) {
   resource.count++;
   if (resource.instance == null) {
     switch (resource.type) {
@@ -6020,6 +6807,11 @@ export function acquireResource(hoistableRoot, resource, props) {
 }
 
 export function releaseResource(resource) {
+  $checks('releaseResource(resource)', resource, checkResource);
+  return releaseResource$(resource);
+}
+
+export function releaseResource$(resource) {
   resource.count--;
 }
 
@@ -6072,6 +6864,22 @@ function adoptPreloadPropsForScript(scriptProps, preloadProps) {
 let tagCaches = null;
 
 export function hydrateHoistable(
+  hoistableRoot,
+  type,
+  props,
+  internalInstanceHandle,
+) {
+  $checks(
+    'hydrateHoistable(type, internalInstanceHandle)',
+    type,
+    $checkStr,
+    internalInstanceHandle,
+    checkFiber,
+  );
+  return hydrateHoistable$(hoistableRoot, type, props, internalInstanceHandle);
+}
+
+export function hydrateHoistable$(
   hoistableRoot,
   type,
   props,
@@ -6264,6 +7072,11 @@ function getHydratableHoistableCache(type, keyAttribute, ownerDocument) {
 }
 
 export function mountHoistable(hoistableRoot, type, instance) {
+  $checkStr(type, 'mountHoistable(type)');
+  return mountHoistable$(hoistableRoot, type, instance);
+}
+
+export function mountHoistable$(hoistableRoot, type, instance) {
   const ownerDocument = getDocumentFromRoot(hoistableRoot);
   $unwrap(
     ownerDocument.head,
@@ -6279,6 +7092,11 @@ export function unmountHoistable(instance) {
 }
 
 export function isHostHoistableType(type, props, hostContext) {
+  $checkStr(type, 'isHostHoistableType(type)');
+  return isHostHoistableType$(type, props, hostContext);
+}
+
+export function isHostHoistableType$(type, props, hostContext) {
   let outsideHostContainerContext = false;
   let hostContextProd;
   if (__DEV__) {
@@ -6443,6 +7261,11 @@ export function isHostHoistableType(type, props, hostContext) {
 }
 
 export function maySuspendCommit(type, props) {
+  $checks('maySuspendCommit(type, props)', type, $checkStr, props, checkProps);
+  return maySuspendCommit$(type, props);
+}
+
+export function maySuspendCommit$(type, props) {
   if (!enableSuspenseyImages && !enableViewTransition) {
     return false;
   }
@@ -6458,18 +7281,47 @@ export function maySuspendCommit(type, props) {
 }
 
 export function maySuspendCommitOnUpdate(type, oldProps, newProps) {
+  $checks(
+    'maySuspendCommitOnUpdate(type, oldProps, newProps)',
+    type,
+    $checkStr,
+    oldProps,
+    checkProps,
+    newProps,
+    checkProps,
+  );
+  return maySuspendCommitOnUpdate$(type, oldProps, newProps);
+}
+
+export function maySuspendCommitOnUpdate$(type, oldProps, newProps) {
   return (
-    maySuspendCommit(type, newProps) &&
+    maySuspendCommit$(type, newProps) &&
     (newProps.src !== oldProps.src || newProps.srcSet !== oldProps.srcSet)
   );
 }
 
 export function maySuspendCommitInSyncRender(type, props) {
+  $checks(
+    'maySuspendCommitInSyncRender(type, props)',
+    type,
+    $checkStr,
+    props,
+    checkProps,
+  );
+  return maySuspendCommitInSyncRender$(type, props);
+}
+
+export function maySuspendCommitInSyncRender$(type, props) {
   // TODO: Allow sync lanes to suspend too with an opt-in.
   return false;
 }
 
 export function mayResourceSuspendCommit(resource) {
+  $checks('mayResourceSuspendCommit(resource)', resource, checkResource);
+  return mayResourceSuspendCommit$(resource);
+}
+
+export function mayResourceSuspendCommit$(resource) {
   return (
     resource.type === 'stylesheet' &&
     ($unwrap(
@@ -6482,6 +7334,11 @@ export function mayResourceSuspendCommit(resource) {
 }
 
 export function preloadInstance(instance, type, props) {
+  $checks('preloadInstance(type, props)', type, $checkStr, props, checkProps);
+  return preloadInstance$(instance, type, props);
+}
+
+export function preloadInstance$(instance, type, props) {
   // We don't need to preload Suspensey images because the browser will
   // load them early once we set the src.
   // If we return true here, we'll still get a suspendInstance call in the
@@ -6491,6 +7348,11 @@ export function preloadInstance(instance, type, props) {
 }
 
 export function preloadResource(resource) {
+  $checks('preloadResource(resource)', resource, checkResource);
+  return preloadResource$(resource);
+}
+
+export function preloadResource$(resource) {
   if (
     resource.type === 'stylesheet' &&
     ($unwrap(
@@ -6536,6 +7398,19 @@ function estimateImageBytes(instance) {
 }
 
 export function suspendInstance(state, instance, type, props) {
+  $checks(
+    'suspendInstance(state, type, props)',
+    state,
+    checkSuspendedState,
+    type,
+    $checkStr,
+    props,
+    checkProps,
+  );
+  return suspendInstance$(state, instance, type, props);
+}
+
+export function suspendInstance$(state, instance, type, props) {
   if (!enableSuspenseyImages && !enableViewTransition) {
     return;
   }
@@ -6561,6 +7436,17 @@ export function suspendInstance(state, instance, type, props) {
 }
 
 export function suspendResource(state, hoistableRoot, resource, props) {
+  $checks(
+    'suspendResource(state, resource)',
+    state,
+    checkSuspendedState,
+    resource,
+    checkResource,
+  );
+  return suspendResource$(state, hoistableRoot, resource, props);
+}
+
+export function suspendResource$(state, hoistableRoot, resource, props) {
   if (resource.type === 'stylesheet') {
     const media = props.media;
     if (typeof media === 'string') {
@@ -6665,6 +7551,11 @@ export function suspendResource(state, hoistableRoot, resource, props) {
 }
 
 export function suspendOnActiveViewTransition(state, rootContainer) {
+  $checks('suspendOnActiveViewTransition(state)', state, checkSuspendedState);
+  return suspendOnActiveViewTransition$(state, rootContainer);
+}
+
+export function suspendOnActiveViewTransition$(state, rootContainer) {
   const ownerDocument =
     rootContainer.nodeType === DOCUMENT_NODE
       ? rootContainer
@@ -6692,6 +7583,17 @@ const SUSPENSEY_IMAGE_TIME_ESTIMATE = 500;
 let estimatedBytesWithinLimit = 0;
 
 export function waitForCommitToBeReady(state, timeoutOffset) {
+  $checks(
+    'waitForCommitToBeReady(state, timeoutOffset)',
+    state,
+    checkSuspendedState,
+    timeoutOffset,
+    $checkF64,
+  );
+  return waitForCommitToBeReady$(state, timeoutOffset);
+}
+
+export function waitForCommitToBeReady$(state, timeoutOffset) {
   const stylesheets = state.stylesheets;
   if (stylesheets != null && state.count === 0) {
     // We are not currently blocked but we have not inserted all stylesheets.
@@ -6763,6 +7665,11 @@ export function waitForCommitToBeReady(state, timeoutOffset) {
 }
 
 export function getSuspendedCommitReason(state, rootContainer) {
+  $checks('getSuspendedCommitReason(state)', state, checkSuspendedState);
+  return getSuspendedCommitReason$(state, rootContainer);
+}
+
+export function getSuspendedCommitReason$(state, rootContainer) {
   if (state.waitingForViewTransition) {
     return 'Waiting for the previous Animation';
   }
@@ -6819,6 +7726,9 @@ function onUnsuspendImg() {
   this.imgCount--;
   checkIfFullyUnsuspended(this);
 }
+
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
+const checkProps = /* @__PURE__ */ $checkShape(() => ({}));
 
 function insertSuspendedStylesheets(state, resources) {
   // We need to clear this out so we don't try to reinsert after the stylesheets have loaded

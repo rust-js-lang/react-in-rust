@@ -5,6 +5,8 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$brand} from '@rust-js/std';
+
 export function appendBackingEntry(backingStore, value, key) {
   const prefix = backingStore.prefix;
   if (!key.startsWith(prefix)) {
@@ -47,14 +49,17 @@ export function appendBackingEntry(backingStore, value, key) {
 }
 
 export function createBackingFormData(formData, prefix) {
-  const backingStore = {
-    prefix,
-    referencedEntries: null,
-    keyPointer: 0,
-    stringChunks: null,
-    streamChunks: null,
-    blobs: null,
-  };
+  const backingStore = $brand(
+    'react_server#e6a613c2ba24c354::react_flight_reply_backing_form_data::BackingFormData',
+    {
+      prefix,
+      referencedEntries: null,
+      keyPointer: 0,
+      stringChunks: null,
+      streamChunks: null,
+      blobs: null,
+    },
+  );
   // $FlowFixMe[prop-missing]
   formData.forEach((value, key) => {
     appendBackingEntry(backingStore, value, key);

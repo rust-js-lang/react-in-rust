@@ -5,9 +5,32 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$catchable, $panic, $toLowercase, $unwrap} from '@rust-js/std';
+import {
+  $catchable,
+  $checkBool,
+  $checkShape,
+  $checkStr,
+  $panic,
+  $toLowercase,
+  $unwrap,
+} from '@rust-js/std';
+
+const checkTransitionTracingCallbacks = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkCreateRootOptions = /* @__PURE__ */ $checkShape(() => ({
+  unstable_strictMode: [$checkBool, 'nullish'],
+  unstable_transitionCallbacks: [checkTransitionTracingCallbacks, 'nullish'],
+  identifierPrefix: [$checkStr, 'nullish'],
+}));
+
+const checkHydrateRootOptions = /* @__PURE__ */ $checkShape(() => ({
+  unstable_strictMode: [$checkBool, 'nullish'],
+  unstable_transitionCallbacks: [checkTransitionTracingCallbacks, 'nullish'],
+  identifierPrefix: [$checkStr, 'nullish'],
+}));
 
 export async function insertNodesAndExecuteScripts(source, target, CSPnonce) {
+  $checkStr(CSPnonce, 'insertNodesAndExecuteScripts(CSPnonce)', 'nullish');
   const ownerDocument = target.ownerDocument ?? target;
 
   // We need to remove the script content for any scripts that would not run based on CSP
@@ -125,6 +148,11 @@ export function mergeOptions(options, defaultOptions) {
 }
 
 export function stripExternalRuntimeInNodes(nodes, externalRuntimeSrc) {
+  $checkStr(
+    externalRuntimeSrc,
+    'stripExternalRuntimeInNodes(externalRuntimeSrc)',
+    'nullish',
+  );
   nodes = Array.isArray(nodes) ? nodes : Array.from(nodes);
   if (externalRuntimeSrc == null) {
     return nodes;
