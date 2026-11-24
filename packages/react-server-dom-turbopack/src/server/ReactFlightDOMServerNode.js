@@ -563,13 +563,13 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
         error != null ? value.destroy(error) : value.destroy();
         return;
       }
-      const value = $borrow(
+      const next = $borrow(
         $fieldCell(current, 'next'),
         'packages/react-server-dom-turbopack/src/server/ReactFlightDOMServerNode.rs:808:52',
         true,
       );
-      head = value.value;
-      $unborrow(value);
+      head = next.value;
+      $unborrow(next);
     }
     tail$1 = undefined;
     if (bodyFinished && !closed) {

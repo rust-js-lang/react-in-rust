@@ -1190,11 +1190,11 @@ function initializeModelChunk(chunk) {
     $catchable(thrown$1);
     const erroredChunk = chunk;
     let reason;
-    let borrowMut;
+    let state;
     const error = $unwound(thrown$1);
     try {
       reason = thrown(error);
-      borrowMut = {
+      state = {
         get value() {
           return erroredChunk;
         },
@@ -1220,7 +1220,7 @@ function initializeModelChunk(chunk) {
       }, error);
       throw error;
     }
-    borrowMut.value = {
+    state.value = {
       status: 'rejected',
       reason,
     };
@@ -1942,15 +1942,15 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
       switch (key) {
         case '3':
           if (__DEV__ && reference.isDebug !== true) {
-            const borrow = $borrow(
+            const chunk = $borrow(
               $fieldCell(handler, 'chunk', true),
               'packages/react-client/src/ReactFlightClient.rs:2464:43',
               true,
             );
             try {
-              transferReferencedDebugInfo(borrow.value, fulfilledChunk);
+              transferReferencedDebugInfo(chunk.value, fulfilledChunk);
             } finally {
-              $unborrow(borrow);
+              $unborrow(chunk);
             }
           }
           handlerValue.props = mappedValue;
@@ -1969,29 +1969,29 @@ function fulfillReference(response, reference, value, fulfilledChunk) {
           break;
         default:
           if (__DEV__ && reference.isDebug !== true) {
-            const borrow = $borrow(
+            const chunk = $borrow(
               $fieldCell(handler, 'chunk', true),
               'packages/react-client/src/ReactFlightClient.rs:2485:43',
               true,
             );
             try {
-              transferReferencedDebugInfo(borrow.value, fulfilledChunk);
+              transferReferencedDebugInfo(chunk.value, fulfilledChunk);
             } finally {
-              $unborrow(borrow);
+              $unborrow(chunk);
             }
           }
           break;
       }
     } else if (__DEV__ && reference.isDebug !== true) {
-      const borrow = $borrow(
+      const chunk = $borrow(
         $fieldCell(handler, 'chunk', true),
         'packages/react-client/src/ReactFlightClient.rs:2492:58',
         true,
       );
       try {
-        transferReferencedDebugInfo(borrow.value, fulfilledChunk);
+        transferReferencedDebugInfo(chunk.value, fulfilledChunk);
       } finally {
-        $unborrow(borrow);
+        $unborrow(chunk);
       }
     }
   } catch (thrown$1) {
@@ -2067,20 +2067,21 @@ function waitForReference(
   isAwaitingDebugInfo, // DEV-only
 ) {
   if (__DEV__) {
-    const borrow = $borrow(
+    const _debugChannel = $borrow(
       $fieldCell(response, '_debugChannel'),
       'packages/react-client/src/ReactFlightClient.rs:2589:14',
       true,
     );
     let isNoneOr;
     try {
-      isNoneOr = borrow.value == null || !borrow.value.hasReadable;
+      isNoneOr =
+        _debugChannel.value == null || !_debugChannel.value.hasReadable;
     } catch (error) {
-      $unborrow(borrow);
+      $unborrow(_debugChannel);
       throw error;
     }
     if (isNoneOr) {
-      $unborrow(borrow);
+      $unborrow(_debugChannel);
       if (
         referencedChunk.status === 'pending' &&
         parentObject[0] === REACT_ELEMENT_TYPE &&
@@ -2095,7 +2096,7 @@ function waitForReference(
         return null;
       }
     } else {
-      $unborrow(borrow);
+      $unborrow(_debugChannel);
     }
   }
 
@@ -3060,14 +3061,14 @@ function parseModelString(response, parentObject, key, value) {
         // Fallthrough
         if ((tag === 'P' || tag === 'E' || tag === 'Y') && __DEV__) {
           if (value.length > 2) {
-            const borrow = $borrow(
+            const _debugChannel = $borrow(
               $fieldCell(response, '_debugChannel'),
               'packages/react-client/src/ReactFlightClient.rs:3663:30',
               true,
             );
             const debugChannelCallback =
-              borrow.value != null ? borrow.value.callback : null;
-            $unborrow(borrow);
+              _debugChannel.value != null ? _debugChannel.value.callback : null;
+            $unborrow(_debugChannel);
             if (debugChannelCallback != null) {
               if (value[2] === '@') {
                 // This is a deferred Promise.
@@ -4768,20 +4769,21 @@ function resolveDebugModel(response, id, json) {
   parentChunk._debugChunk = debugChunk;
   initializeDebugChunk(response, parentChunk);
   if (__DEV__ && debugChunk.status === 'blocked') {
-    const borrow = $borrow(
+    const _debugChannel = $borrow(
       $fieldCell(response, '_debugChannel'),
       'packages/react-client/src/ReactFlightClient.rs:5592:14',
       true,
     );
     let isNoneOr;
     try {
-      isNoneOr = borrow.value == null || !borrow.value.hasReadable;
+      isNoneOr =
+        _debugChannel.value == null || !_debugChannel.value.hasReadable;
     } catch (error) {
-      $unborrow(borrow);
+      $unborrow(_debugChannel);
       throw error;
     }
     if (isNoneOr) {
-      $unborrow(borrow);
+      $unborrow(_debugChannel);
       if (json[0] === '"' && json[1] === '$') {
         const path = json.slice(2, json.length - 1).split(':');
         const outlinedId = parseInt(
@@ -4803,7 +4805,7 @@ function resolveDebugModel(response, id, json) {
         }
       }
     } else {
-      $unborrow(borrow);
+      $unborrow(_debugChannel);
     }
   }
 }
@@ -5215,12 +5217,12 @@ function flushComponentPerformance(
   }
   // Write performance.measure() entries for Server Components in tree order.
   // This must be done at the end to collect the end time from the whole tree.
-  const borrow = $borrow(
+  const _children = $borrow(
     $fieldCell(root, '_children'),
     'packages/react-client/src/ReactFlightClient.rs:6003:43',
     true,
   );
-  const value = borrow.value;
+  const value = _children.value;
   let children;
   try {
     if (value != null) {
@@ -5261,7 +5263,7 @@ function flushComponentPerformance(
       children = [];
     }
   } finally {
-    $unborrow(borrow);
+    $unborrow(_children);
   }
 
   // First find the start time of the first component to know if it was running

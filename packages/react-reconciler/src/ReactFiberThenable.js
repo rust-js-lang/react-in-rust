@@ -402,28 +402,28 @@ function areSameKeyPath(a, b) {
     return true;
   }
   if (a.tag === b.tag && a.type === b.type) {
-    const value = $borrow(
+    const borrow = $borrow(
       $fieldCell(a, 'key'),
       'packages/react-reconciler/src/ReactFiberThenable.rs:468:19',
       true,
     );
-    let borrow;
+    let key;
     try {
-      borrow = $borrow(
+      key = $borrow(
         $fieldCell(b, 'key'),
         'packages/react-reconciler/src/ReactFiberThenable.rs:468:38',
         true,
       );
     } catch (error) {
-      $unborrow(value);
+      $unborrow(borrow);
       throw error;
     }
-    if ((value.value ?? null) !== (borrow.value ?? null)) {
+    if ((borrow.value ?? null) !== (key.value ?? null)) {
+      $unborrow(key);
       $unborrow(borrow);
-      $unborrow(value);
     } else {
+      $unborrow(key);
       $unborrow(borrow);
-      $unborrow(value);
       if (a.index === b.index) {
         if (a.tag === HostRoot && a.stateNode !== b.stateNode) {
           // These are both roots but they're different roots so they're not in the same tree.

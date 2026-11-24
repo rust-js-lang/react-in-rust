@@ -6091,14 +6091,14 @@ function preparePreambleFromSubtree(
     collectedPreambleSegments.push(segment.preambleChildren);
   }
   let pendingPreambles = false;
-  const borrow = $borrow(
+  const children = $borrow(
     segment.children,
     'packages/react-server/src/ReactFizzServer.rs:7230:42',
     true,
   );
   try {
-    for (let i = 0; i < borrow.length; i++) {
-      const nextSegment = borrow[i];
+    for (let i = 0; i < children.length; i++) {
+      const nextSegment = children[i];
       pendingPreambles =
         preparePreambleFromSegment(
           request,
@@ -6107,7 +6107,7 @@ function preparePreambleFromSubtree(
         ) || pendingPreambles;
     }
   } finally {
-    $unborrow(borrow);
+    $unborrow(children);
   }
   return pendingPreambles;
 }

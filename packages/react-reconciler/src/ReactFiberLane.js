@@ -1162,10 +1162,10 @@ function markSpawnedDeferredLane(root, spawnedLane, entangledLanes) {
   if (root.entanglements.borrows) {
     $alreadyBorrowed('packages/react-reconciler/src/ReactFiberLane.rs:1019:24');
   }
-  const borrowMut = root.entanglements;
-  borrowMut[
+  const entanglements = root.entanglements;
+  entanglements[
     $at(
-      borrowMut,
+      entanglements,
       spawnedLaneIndex,
       'packages/react-reconciler/src/ReactFiberLane.rs:1019:36',
     )
@@ -1232,10 +1232,10 @@ export function upgradePendingLanesToSync(root, lanesToUpgrade) {
         'packages/react-reconciler/src/ReactFiberLane.rs:1070:28',
       );
     }
-    const borrowMut = root.entanglements;
-    borrowMut[
+    const entanglements = root.entanglements;
+    entanglements[
       $at(
-        borrowMut,
+        entanglements,
         SyncLaneIndex,
         'packages/react-reconciler/src/ReactFiberLane.rs:1070:40',
       )

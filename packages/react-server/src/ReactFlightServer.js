@@ -1957,13 +1957,13 @@ function renderFunctionComponent(
   }
 
   // Track this element's key on the Server Component on the keyPath context..
-  const borrow = $borrow(
+  const keyPath = $borrow(
     $fieldCell(task, 'keyPath', true),
     'packages/react-server/src/ReactFlightServer.rs:2730:39',
     true,
   );
-  const prevKeyPath = borrow.value;
-  $unborrow(borrow);
+  const prevKeyPath = keyPath.value;
+  $unborrow(keyPath);
   const prevImplicitSlot = task.implicitSlot;
   if (key != null) {
     // Append the key to the path. Technically a null key should really add the child
@@ -2095,16 +2095,16 @@ function renderFragment(request, task, children) {
     }
   }
 
-  const borrow = $borrow(
+  const keyPath = $borrow(
     $fieldCell(task, 'keyPath', true),
     'packages/react-server/src/ReactFlightServer.rs:2873:43',
     true,
   );
   try {
-    if (borrow.value != null) {
+    if (keyPath.value != null) {
       // We have a Server Component that specifies a key but we're now splitting
       // the tree using a fragment.
-      const fragment = keyedFragment(borrow.value, children);
+      const fragment = keyedFragment(keyPath.value, children);
       const implicitSlot = task.implicitSlot;
       let result;
       if (!implicitSlot) {
@@ -2126,7 +2126,7 @@ function renderFragment(request, task, children) {
       return [fragment];
     }
   } finally {
-    $unborrow(borrow);
+    $unborrow(keyPath);
   }
   // Since we're yielding here, that implicitly resets the keyPath context on the
   // way up. Which is what we want since we've consumed it. If this changes to
@@ -2155,16 +2155,16 @@ function renderFragment(request, task, children) {
 }
 
 function renderAsyncFragment(request, task, children, getAsyncIterator) {
-  const borrow = $borrow(
+  const keyPath = $borrow(
     $fieldCell(task, 'keyPath', true),
     'packages/react-server/src/ReactFlightServer.rs:2929:43',
     true,
   );
   try {
-    if (borrow.value != null) {
+    if (keyPath.value != null) {
       // We have a Server Component that specifies a key but we're now splitting
       // the tree using a fragment.
-      const fragment = keyedFragment(borrow.value, children);
+      const fragment = keyedFragment(keyPath.value, children);
       const implicitSlot = task.implicitSlot;
       let result;
       if (!implicitSlot) {
@@ -2186,7 +2186,7 @@ function renderAsyncFragment(request, task, children, getAsyncIterator) {
       return [fragment];
     }
   } finally {
-    $unborrow(borrow);
+    $unborrow(keyPath);
   }
 
   // Since we're yielding here, that implicitly resets the keyPath context on the
@@ -3753,13 +3753,13 @@ function renderModel(request, task, parent, key, value) {
   // First time we're serializing the key, we should add it to the size.
   serializedSize += key.length;
 
-  const borrow = $borrow(
+  const keyPath = $borrow(
     $fieldCell(task, 'keyPath', true),
     'packages/react-server/src/ReactFlightServer.rs:4809:39',
     true,
   );
-  const prevKeyPath = borrow.value;
-  $unborrow(borrow);
+  const prevKeyPath = keyPath.value;
+  $unborrow(keyPath);
   const prevImplicitSlot = task.implicitSlot;
   try {
     return renderModelDestructive(request, task, parent, key, value);
@@ -3811,7 +3811,7 @@ function renderModel(request, task, parent, key, value) {
     ) {
       // Something suspended, we'll need to create a new task and resolve it later.
       const value = task.model;
-      const value$1 = $borrow(
+      const borrow = $borrow(
         $fieldCell(task, 'keyPath', true),
         'packages/react-server/src/ReactFlightServer.rs:4864:27',
         true,
@@ -3820,24 +3820,24 @@ function renderModel(request, task, parent, key, value) {
       const formatContext = task.formatContext;
       const get = enableProfilerTimer ? task.time : 0;
       const unknown = __DEV__ ? task.debugOwner : null;
-      const value$2 = __DEV__ ? task.debugStack : null;
-      const value$3 = __DEV__ ? task.debugTask : null;
+      const value$1 = __DEV__ ? task.debugStack : null;
+      const value$2 = __DEV__ ? task.debugTask : null;
       let newTask;
       try {
         newTask = createTask(
           request,
           value,
-          value$1.value,
+          borrow.value,
           implicitSlot,
           formatContext,
           request.abortableTasks,
           get,
           unknown,
+          value$1,
           value$2,
-          value$3,
         );
       } finally {
-        $unborrow(value$1);
+        $unborrow(borrow);
       }
       const [resolve, reject] = pingOf(request, newTask);
       const thenable = x;

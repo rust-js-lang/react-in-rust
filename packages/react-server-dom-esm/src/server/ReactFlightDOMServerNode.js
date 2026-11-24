@@ -359,13 +359,13 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
         error != null ? value.destroy(error) : value.destroy();
         return;
       }
-      const value = $borrow(
+      const next = $borrow(
         $fieldCell(current, 'next'),
         'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:499:52',
         true,
       );
-      head = value.value;
-      $unborrow(value);
+      head = next.value;
+      $unborrow(next);
     }
     tail$1 = undefined;
     if (bodyFinished && !closed) {
