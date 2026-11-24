@@ -14,29 +14,31 @@ import {popProvider, pushProvider} from './ReactFiberNewContext.js';
 import * as Scheduler from 'scheduler';
 import {$index} from '@rust-js/std';
 
-function AbortControllerShim() {
-  const listeners = [];
-  const signal = {
-    aborted: false,
-    addEventListener(type, listener) {
-      listeners.push(listener);
-    },
-  };
-  this.signal = signal;
-  this.abort = () => {
-    signal.aborted = true;
-    // As forEach does: the listeners there when it starts, each
-    // called with no borrow held, so one may add another.
-    const count = listeners.length;
-    for (let index = 0; index < count; index++) {
-      const listener = $index(
-        listeners,
-        index,
-        'packages/react-reconciler/src/ReactFiberCacheComponent.rs:72:65',
-      );
-      listener();
-    }
-  };
+class AbortControllerShim {
+  constructor() {
+    const listeners = [];
+    const signal = {
+      aborted: false,
+      addEventListener(type, listener) {
+        listeners.push(listener);
+      },
+    };
+    this.signal = signal;
+    this.abort = () => {
+      signal.aborted = true;
+      // As forEach does: the listeners there when it starts, each
+      // called with no borrow held, so one may add another.
+      const count = listeners.length;
+      for (let index = 0; index < count; index++) {
+        const listener = $index(
+          listeners,
+          index,
+          'packages/react-reconciler/src/ReactFiberCacheComponent.rs:72:65',
+        );
+        listener();
+      }
+    };
+  }
 }
 
 // In environments without AbortController (e.g. tests)

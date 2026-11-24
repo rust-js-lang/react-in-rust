@@ -38,12 +38,11 @@ import {defaultOnDefaultTransitionIndicator} from './ReactDOMDefaultTransitionIn
 import {ConcurrentRoot} from 'react-reconciler/src/ReactRootTags';
 import {$panic} from '@rust-js/std';
 
-function ReactDOMRoot(internalRoot) {
-  this._internalRoot = internalRoot;
-}
-
-ReactDOMHydrationRoot.prototype.render = ReactDOMRoot.prototype.render =
-  function (children, ...args) {
+export class ReactDOMRoot {
+  constructor(internalRoot) {
+    this._internalRoot = internalRoot;
+  }
+  render(children, ...args) {
     const root = this._internalRoot;
     if (root == null) {
       throw $panic(
@@ -72,10 +71,8 @@ ReactDOMHydrationRoot.prototype.render = ReactDOMRoot.prototype.render =
       }
     }
     updateContainer(children, root);
-  };
-
-ReactDOMHydrationRoot.prototype.unmount = ReactDOMRoot.prototype.unmount =
-  function (...args) {
+  }
+  unmount(...args) {
     if (__DEV__ && typeof args[0] === 'function') {
       console.error(
         'does not support a callback argument. ' +
@@ -97,7 +94,8 @@ ReactDOMHydrationRoot.prototype.unmount = ReactDOMRoot.prototype.unmount =
       flushSyncWork();
       unmarkContainerAsRoot(container);
     }
-  };
+  }
+}
 
 export function createRoot(
   // An `Element`, a `Document` or a `DocumentFragment`.
@@ -193,11 +191,67 @@ export function createRoot(
   return new ReactDOMRoot(root);
 }
 
-function ReactDOMHydrationRoot(internalRoot) {
-  this._internalRoot = internalRoot;
-}
+export class ReactDOMHydrationRoot {
+  constructor(internalRoot) {
+    this._internalRoot = internalRoot;
+  }
 
-ReactDOMHydrationRoot.prototype.unstable_scheduleHydration = scheduleHydration;
+  unstable_scheduleHydration(target) {
+    scheduleHydration(target);
+  }
+  render(children, ...args) {
+    const root = this._internalRoot;
+    if (root == null) {
+      throw $panic(
+        'Cannot update an unmounted root.',
+        'packages/react-dom/src/client/ReactDOMRoot.rs:51:13',
+      );
+    }
+    if (__DEV__) {
+      const second = args[0];
+      if (typeof second === 'function') {
+        console.error(
+          'does not support the second callback argument. ' +
+            'To execute a side effect after rendering, declare it in a component body with useEffect().',
+        );
+      } else if (isValidContainer(second)) {
+        console.error(
+          'You passed a container to the second argument of root.render(...). ' +
+            "You don't need to pass it again since you already passed it to create the root.",
+        );
+      } else if (second !== undefined) {
+        console.error(
+          'You passed a second argument to root.render(...) but it only accepts ' +
+            'one argument.',
+        );
+      }
+    }
+    updateContainer(children, root);
+  }
+  unmount(...args) {
+    if (__DEV__ && typeof args[0] === 'function') {
+      console.error(
+        'does not support a callback argument. ' +
+          'To execute a side effect after rendering, declare it in a component body with useEffect().',
+      );
+    }
+    const root = this._internalRoot;
+    if (root != null) {
+      this._internalRoot = null;
+      const container = root.containerInfo;
+      if (__DEV__ && isAlreadyRendering()) {
+        console.error(
+          'Attempted to synchronously unmount a root while React was already ' +
+            'rendering. React cannot finish unmounting the root until the ' +
+            'current render has completed, which may lead to a race condition.',
+        );
+      }
+      updateContainerSync(null, root);
+      flushSyncWork();
+      unmarkContainerAsRoot(container);
+    }
+  }
+}
 
 function scheduleHydration(target) {
   if (target) {

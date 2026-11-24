@@ -2925,59 +2925,61 @@ export function addViewTransitionFinishedListener(transition, callback) {
  * `::view-transition-group(name)` and its kin: animated, and asked for
  * its animations and style, as an element is.
  */
-function ViewTransitionPseudoElement(pseudo, name) {
-  // TODO: Get the owner document from the root container.
-  this._scope = $unwrap(
-    document.documentElement,
-    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3128:50',
-  );
-  this._selector = '::view-transition-' + pseudo + '(' + name + ')';
-}
-
-ViewTransitionPseudoElement.prototype.animate = function (keyframes, options) {
-  const opts =
-    typeof options === 'number'
-      ? {duration: options}
-      : Object.assign(
-          // $FlowFixMe[prop-missing]
-          // $FlowFixMe[incompatible-type]
-          {},
-          options,
-        );
-  opts.pseudoElement = this._selector;
-  // TODO: Handle multiple child instances.
-  return this._scope.animate(keyframes != null ? keyframes : null, opts);
-};
-
-ViewTransitionPseudoElement.prototype.getAnimations = function (options) {
-  const scope = this._scope;
-  const selector = this._selector;
-  const animations = scope.getAnimations(
-    // $FlowFixMe[prop-missing]
-    // $FlowFixMe[incompatible-type]
-    {subtree: true},
-  );
-  const result = [];
-  for (let i = 0; i < animations.length; i++) {
-    const animation = animations[i];
-    const effect = animation.effect;
-    // TODO: Handle multiple child instances.
-    if (
-      effect != null &&
-      effect.target === scope &&
-      effect.pseudoElement === selector
-    ) {
-      result.push(animation);
-    }
+export class ViewTransitionPseudoElement {
+  constructor(pseudo, name) {
+    // TODO: Get the owner document from the root container.
+    this._scope = $unwrap(
+      document.documentElement,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3128:50',
+    );
+    this._selector = '::view-transition-' + pseudo + '(' + name + ')';
   }
-  return result;
-};
 
-ViewTransitionPseudoElement.prototype.getComputedStyle = function () {
-  const scope = this._scope;
-  const selector = this._selector;
-  return getComputedStyle(scope, selector);
-};
+  animate(keyframes, options) {
+    const opts =
+      typeof options === 'number'
+        ? {duration: options}
+        : Object.assign(
+            // $FlowFixMe[prop-missing]
+            // $FlowFixMe[incompatible-type]
+            {},
+            options,
+          );
+    opts.pseudoElement = this._selector;
+    // TODO: Handle multiple child instances.
+    return this._scope.animate(keyframes != null ? keyframes : null, opts);
+  }
+
+  getAnimations(options) {
+    const scope = this._scope;
+    const selector = this._selector;
+    const animations = scope.getAnimations(
+      // $FlowFixMe[prop-missing]
+      // $FlowFixMe[incompatible-type]
+      {subtree: true},
+    );
+    const result = [];
+    for (let i = 0; i < animations.length; i++) {
+      const animation = animations[i];
+      const effect = animation.effect;
+      // TODO: Handle multiple child instances.
+      if (
+        effect != null &&
+        effect.target === scope &&
+        effect.pseudoElement === selector
+      ) {
+        result.push(animation);
+      }
+    }
+    return result;
+  }
+
+  getComputedStyle() {
+    const scope = this._scope;
+    const selector = this._selector;
+    return getComputedStyle(scope, selector);
+  }
+}
 
 export function createViewTransitionInstance(name) {
   return {
@@ -3005,592 +3007,590 @@ export function getCurrentGestureOffset(timeline) {
  * A Fragment's ref: the host children it holds, as one element-like
  * handle that is focused, observed and measured as they are.
  */
-function FragmentInstance(fragmentFiber) {
-  this._fragmentFiber = fragmentFiber;
-  this._eventListeners = null;
-  this._observers = null;
-}
+export class FragmentInstance {
+  constructor(fragmentFiber) {
+    this._fragmentFiber = fragmentFiber;
+    this._eventListeners = null;
+    this._observers = null;
+  }
 
-FragmentInstance.prototype.addEventListener = function (
-  type,
-  listener,
-  optionsOrUseCapture,
-) {
-  let signal = null;
-  let cleanup = null;
-  if (optionsOrUseCapture != null && typeof optionsOrUseCapture === 'object') {
-    signal = optionsOrUseCapture.signal;
-    if (signal != null && signal.aborted) {
-      return;
+  addEventListener(type, listener, optionsOrUseCapture) {
+    let signal = null;
+    let cleanup = null;
+    if (
+      optionsOrUseCapture != null &&
+      typeof optionsOrUseCapture === 'object'
+    ) {
+      signal = optionsOrUseCapture.signal;
+      if (signal != null && signal.aborted) {
+        return;
+      }
     }
-  }
 
-  this._eventListeners ??= [];
-  const listeners = this._eventListeners;
-  // Element.addEventListener will only apply uniquely new event listeners by default. Since we
-  // need to collect the listeners to apply to appended children, we track them ourselves and use
-  // custom equality check for the options.
-  const borrow = $borrow(
-    listeners,
-    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3331:24',
-    true,
-  );
-  let isNewEventListener;
-  try {
-    isNewEventListener =
-      indexOfEventListener(borrow, type, listener, optionsOrUseCapture) == null;
-  } finally {
-    $unborrow(borrow);
-  }
-  if (isNewEventListener) {
-    const fragmentInstance = this;
-    let attachedListener = listener;
-    if (isOnceOption(optionsOrUseCapture)) {
-      // once is fragment-scoped: the first fire on any child removes this
-      // listener from the fragment and every host child.
-      attachedListener = function (event) {
-        fragmentInstance.removeEventListener(
-          type,
-          listener,
-          optionsOrUseCapture,
-        );
-        if (typeof listener === 'function') {
-          listener.call(this, event);
-        } else {
-          listener.handleEvent(event);
+    this._eventListeners ??= [];
+    const listeners = this._eventListeners;
+    // Element.addEventListener will only apply uniquely new event listeners by default. Since we
+    // need to collect the listeners to apply to appended children, we track them ourselves and use
+    // custom equality check for the options.
+    const borrow = $borrow(
+      listeners,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3331:24',
+      true,
+    );
+    let isNewEventListener;
+    try {
+      isNewEventListener =
+        indexOfEventListener(borrow, type, listener, optionsOrUseCapture) ==
+        null;
+    } finally {
+      $unborrow(borrow);
+    }
+    if (isNewEventListener) {
+      const fragmentInstance = this;
+      let attachedListener = listener;
+      if (isOnceOption(optionsOrUseCapture)) {
+        // once is fragment-scoped: the first fire on any child removes this
+        // listener from the fragment and every host child.
+        attachedListener = function (event) {
+          fragmentInstance.removeEventListener(
+            type,
+            listener,
+            optionsOrUseCapture,
+          );
+          if (typeof listener === 'function') {
+            listener.call(this, event);
+          } else {
+            listener.handleEvent(event);
+          }
+        };
+      }
+      if (signal != null) {
+        function onAbort() {
+          fragmentInstance.removeEventListener(
+            type,
+            listener,
+            optionsOrUseCapture,
+          );
         }
-      };
-    }
-    if (signal != null) {
-      function onAbort() {
-        fragmentInstance.removeEventListener(
-          type,
-          listener,
-          optionsOrUseCapture,
+        signal.addEventListener('abort', onAbort, {once: true});
+        // $FlowFixMe[method-unbinding]
+        cleanup = () => {
+          signal.removeEventListener('abort', onAbort);
+        };
+      }
+      const attachOptions = getAttachOptions(optionsOrUseCapture);
+      if (listeners.borrows) {
+        $alreadyBorrowed(
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3390:23',
         );
       }
-      signal.addEventListener('abort', onAbort, {once: true});
-      // $FlowFixMe[method-unbinding]
-      cleanup = () => {
-        signal.removeEventListener('abort', onAbort);
-      };
-    }
-    const attachOptions = getAttachOptions(optionsOrUseCapture);
-    if (listeners.borrows) {
-      $alreadyBorrowed(
-        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3390:23',
+      listeners.push({
+        type,
+        listener,
+        optionsOrUseCapture: optionsOrUseCapture ?? undefined,
+        attachedListener,
+        cleanup,
+      });
+      const fragmentFiber = this._fragmentFiber;
+      traverseFragmentInstancesAndTextInstances(
+        fragmentFiber,
+        addEventListenerToChild,
+        type,
+        attachedListener,
+        attachOptions,
       );
     }
-    listeners.push({
-      type,
-      listener,
-      optionsOrUseCapture: optionsOrUseCapture ?? undefined,
-      attachedListener,
-      cleanup,
-    });
-    const fragmentFiber = this._fragmentFiber;
-    traverseFragmentInstancesAndTextInstances(
-      fragmentFiber,
-      addEventListenerToChild,
-      type,
-      attachedListener,
-      attachOptions,
-    );
+    this._eventListeners = listeners;
   }
-  this._eventListeners = listeners;
-};
 
-FragmentInstance.prototype.removeEventListener = function (
-  type,
-  listener,
-  optionsOrUseCapture,
-) {
-  const listeners = this._eventListeners;
-  if (listeners == null) {
-    return;
-  }
-  const borrow = $borrow(
-    listeners,
-    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3419:24',
-    true,
-  );
-  let index;
-  try {
-    index = indexOfEventListener(borrow, type, listener, optionsOrUseCapture);
-  } catch (error) {
-    $unborrow(borrow);
-    throw error;
-  }
-  if (index != null) {
-    $unborrow(borrow);
-    if (listeners.borrows < 0) {
-      $alreadyMutablyBorrowed(
-        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3426:43',
-      );
+  removeEventListener(type, listener, optionsOrUseCapture) {
+    const listeners = this._eventListeners;
+    if (listeners == null) {
+      return;
     }
-    const stored = $index(
+    const borrow = $borrow(
       listeners,
-      index,
-      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3426:51',
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3419:24',
+      true,
     );
-    const {
-      attachedListener,
-      optionsOrUseCapture: storedOptions,
-      cleanup,
-    } = stored;
-    const attachOptions = getAttachOptions(storedOptions);
-    const fragmentFiber = this._fragmentFiber;
-    traverseFragmentInstancesAndTextInstances(
-      fragmentFiber,
-      removeEventListenerFromChild,
-      type,
-      attachedListener,
-      attachOptions,
-    );
-    if (listeners.borrows) {
-      $alreadyBorrowed(
-        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3442:19',
-      );
+    let index;
+    try {
+      index = indexOfEventListener(borrow, type, listener, optionsOrUseCapture);
+    } catch (error) {
+      $unborrow(borrow);
+      throw error;
     }
-    if (index >= listeners.length) {
-      $removeOutOfBounds(
+    if (index != null) {
+      $unborrow(borrow);
+      if (listeners.borrows < 0) {
+        $alreadyMutablyBorrowed(
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3426:43',
+        );
+      }
+      const stored = $index(
         listeners,
         index,
-        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3442:32',
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3426:51',
       );
-    }
-    listeners.splice(index, 1);
-    if (cleanup != null) {
-      cleanup();
-    }
-    return;
-  }
-  $unborrow(borrow);
-};
-
-FragmentInstance.prototype.dispatchEvent = function (event) {
-  const fragmentFiber = this._fragmentFiber;
-  const parentHostFiber =
-    getFragmentParentInstanceOrContainerFiber(fragmentFiber);
-  if (parentHostFiber == null) {
-    return true;
-  }
-  const parentHostInstance = getInstanceFromHostFiber(parentHostFiber);
-  const eventListeners = this._eventListeners;
-  function holds(eventListeners) {
-    if (eventListeners.borrows < 0) {
-      $alreadyMutablyBorrowed(
-        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3460:61',
+      const {
+        attachedListener,
+        optionsOrUseCapture: storedOptions,
+        cleanup,
+      } = stored;
+      const attachOptions = getAttachOptions(storedOptions);
+      const fragmentFiber = this._fragmentFiber;
+      traverseFragmentInstancesAndTextInstances(
+        fragmentFiber,
+        removeEventListenerFromChild,
+        type,
+        attachedListener,
+        attachOptions,
       );
-    }
-    return eventListeners.length !== 0;
-  }
-  if ((eventListeners != null && holds(eventListeners)) || !event.bubbles) {
-    // The temporary node stands in for the fragment's position so that its own
-    // listeners fire before the event propagates to the parent. A Document can
-    // only hold comments and processing instructions alongside its
-    // documentElement, so a Text node would be an invalid child there.
-    const temp =
-      parentHostInstance.nodeType === DOCUMENT_NODE
-        ? parentHostInstance.createComment('')
-        : document.createTextNode('');
-    if (eventListeners != null) {
-      for (
-        let i = 0;
-        i <
-        $borrow(
-          eventListeners,
-          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3474:43',
-        ).length;
-        i++
-      ) {
-        if (eventListeners.borrows < 0) {
-          $alreadyMutablyBorrowed(
-            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3475:61',
-          );
-        }
-        const stored = eventListeners[i];
-        const {type, attachedListener, optionsOrUseCapture} = stored;
-        temp.addEventListener(
-          type,
-          attachedListener,
-          getAttachOptions(optionsOrUseCapture) ?? undefined,
+      if (listeners.borrows) {
+        $alreadyBorrowed(
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3442:19',
         );
       }
-    }
-    parentHostInstance.appendChild(temp);
-    const cancelable = temp.dispatchEvent(event);
-    if (eventListeners != null) {
-      for (
-        let i = 0;
-        i <
-        $borrow(
-          eventListeners,
-          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3496:43',
-        ).length;
-        i++
-      ) {
-        if (eventListeners.borrows < 0) {
-          $alreadyMutablyBorrowed(
-            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3497:61',
-          );
-        }
-        const stored = eventListeners[i];
-        const {type, attachedListener, optionsOrUseCapture} = stored;
-        temp.removeEventListener(
-          type,
-          attachedListener,
-          getAttachOptions(optionsOrUseCapture) ?? undefined,
+      if (index >= listeners.length) {
+        $removeOutOfBounds(
+          listeners,
+          index,
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3442:32',
         );
       }
-    }
-    parentHostInstance.removeChild(temp);
-    return cancelable;
-  } else {
-    return parentHostInstance.dispatchEvent(event);
-  }
-};
-
-FragmentInstance.prototype.focus = function (focusOptions) {
-  const fragmentFiber = this._fragmentFiber;
-  traverseFragmentInstancesAndTextInstancesDeeply(
-    fragmentFiber,
-    setFocusOnFiberIfFocusable,
-    focusOptions,
-  );
-};
-
-FragmentInstance.prototype.focusLast = function (focusOptions) {
-  const children = [];
-  const fragmentFiber = this._fragmentFiber;
-  traverseFragmentInstancesAndTextInstancesDeeply(
-    fragmentFiber,
-    collectChildren,
-    children,
-  );
-  const borrow = $borrow(
-    children,
-    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3542:31',
-    true,
-  );
-  try {
-    for (let i = borrow.length - 1; i >= 0; i--) {
-      const child = borrow[i];
-      if (setFocusOnFiberIfFocusable(child, focusOptions)) {
-        break;
+      listeners.splice(index, 1);
+      if (cleanup != null) {
+        cleanup();
       }
+      return;
     }
-  } finally {
     $unborrow(borrow);
   }
-};
 
-FragmentInstance.prototype.blur = function () {
-  const fragmentFiber = this._fragmentFiber;
-  const parentHostFiber =
-    getFragmentParentInstanceOrContainerFiber(fragmentFiber);
-  if (parentHostFiber == null) {
-    return;
-  }
-  const parentInstanceOrContainer = getInstanceFromHostFiber(parentHostFiber);
-  // Instance is included in the Container type for DOM.
-  const ownerDocument = getOwnerDocumentFromRootContainer(
-    parentInstanceOrContainer,
-  );
-  const activeElement = ownerDocument.activeElement;
-  if (activeElement === null) {
-    return;
-  }
-  traverseFragmentInstancesAndTextInstances(
-    fragmentFiber,
-    blurActiveElementWithinFragment,
-    activeElement,
-  );
-};
-
-FragmentInstance.prototype.observeUsing = function (observer) {
-  const fragmentFiber = this._fragmentFiber;
-  if (__DEV__) {
-    let hasText = false;
-    let hasElement = false;
-    traverseFragmentInstancesAndTextInstances(fragmentFiber, child => {
-      if (child.tag === HostText) {
-        hasText = true;
-        return false;
-      }
-      // Stop traversal, found element
-      hasElement = true;
+  dispatchEvent(event) {
+    const fragmentFiber = this._fragmentFiber;
+    const parentHostFiber =
+      getFragmentParentInstanceOrContainerFiber(fragmentFiber);
+    if (parentHostFiber == null) {
       return true;
-    });
-    if (hasText && !hasElement) {
+    }
+    const parentHostInstance = getInstanceFromHostFiber(parentHostFiber);
+    const eventListeners = this._eventListeners;
+    function holds(eventListeners) {
+      if (eventListeners.borrows < 0) {
+        $alreadyMutablyBorrowed(
+          'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3460:61',
+        );
+      }
+      return eventListeners.length !== 0;
+    }
+    if ((eventListeners != null && holds(eventListeners)) || !event.bubbles) {
+      // The temporary node stands in for the fragment's position so that its own
+      // listeners fire before the event propagates to the parent. A Document can
+      // only hold comments and processing instructions alongside its
+      // documentElement, so a Text node would be an invalid child there.
+      const temp =
+        parentHostInstance.nodeType === DOCUMENT_NODE
+          ? parentHostInstance.createComment('')
+          : document.createTextNode('');
+      if (eventListeners != null) {
+        for (
+          let i = 0;
+          i <
+          $borrow(
+            eventListeners,
+            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3474:43',
+          ).length;
+          i++
+        ) {
+          if (eventListeners.borrows < 0) {
+            $alreadyMutablyBorrowed(
+              'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3475:61',
+            );
+          }
+          const stored = eventListeners[i];
+          const {type, attachedListener, optionsOrUseCapture} = stored;
+          temp.addEventListener(
+            type,
+            attachedListener,
+            getAttachOptions(optionsOrUseCapture) ?? undefined,
+          );
+        }
+      }
+      parentHostInstance.appendChild(temp);
+      const cancelable = temp.dispatchEvent(event);
+      if (eventListeners != null) {
+        for (
+          let i = 0;
+          i <
+          $borrow(
+            eventListeners,
+            'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3496:43',
+          ).length;
+          i++
+        ) {
+          if (eventListeners.borrows < 0) {
+            $alreadyMutablyBorrowed(
+              'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3497:61',
+            );
+          }
+          const stored = eventListeners[i];
+          const {type, attachedListener, optionsOrUseCapture} = stored;
+          temp.removeEventListener(
+            type,
+            attachedListener,
+            getAttachOptions(optionsOrUseCapture) ?? undefined,
+          );
+        }
+      }
+      parentHostInstance.removeChild(temp);
+      return cancelable;
+    } else {
+      return parentHostInstance.dispatchEvent(event);
+    }
+  }
+
+  focus(focusOptions) {
+    const fragmentFiber = this._fragmentFiber;
+    traverseFragmentInstancesAndTextInstancesDeeply(
+      fragmentFiber,
+      setFocusOnFiberIfFocusable,
+      focusOptions,
+    );
+  }
+
+  focusLast(focusOptions) {
+    const children = [];
+    const fragmentFiber = this._fragmentFiber;
+    traverseFragmentInstancesAndTextInstancesDeeply(
+      fragmentFiber,
+      collectChildren,
+      children,
+    );
+    const borrow = $borrow(
+      children,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3542:31',
+      true,
+    );
+    try {
+      for (let i = borrow.length - 1; i >= 0; i--) {
+        const child = borrow[i];
+        if (setFocusOnFiberIfFocusable(child, focusOptions)) {
+          break;
+        }
+      }
+    } finally {
+      $unborrow(borrow);
+    }
+  }
+
+  blur() {
+    const fragmentFiber = this._fragmentFiber;
+    const parentHostFiber =
+      getFragmentParentInstanceOrContainerFiber(fragmentFiber);
+    if (parentHostFiber == null) {
+      return;
+    }
+    const parentInstanceOrContainer = getInstanceFromHostFiber(parentHostFiber);
+    // Instance is included in the Container type for DOM.
+    const ownerDocument = getOwnerDocumentFromRootContainer(
+      parentInstanceOrContainer,
+    );
+    const activeElement = ownerDocument.activeElement;
+    if (activeElement === null) {
+      return;
+    }
+    traverseFragmentInstancesAndTextInstances(
+      fragmentFiber,
+      blurActiveElementWithinFragment,
+      activeElement,
+    );
+  }
+
+  observeUsing(observer) {
+    const fragmentFiber = this._fragmentFiber;
+    if (__DEV__) {
+      let hasText = false;
+      let hasElement = false;
+      traverseFragmentInstancesAndTextInstances(fragmentFiber, child => {
+        if (child.tag === HostText) {
+          hasText = true;
+          return false;
+        }
+        // Stop traversal, found element
+        hasElement = true;
+        return true;
+      });
+      if (hasText && !hasElement) {
+        console.error(
+          'observeUsing() was called on a FragmentInstance with only text children. ' +
+            'Observers do not work on text nodes.',
+        );
+      }
+    }
+    this._observers ??= new Set();
+    $unwrap(
+      this._observers,
+      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3603:30',
+    ).add(observer);
+    traverseFragmentInstancesAndTextInstances(
+      fragmentFiber,
+      observeChild,
+      observer,
+    );
+  }
+
+  unobserveUsing(observer) {
+    const fragmentFiber = this._fragmentFiber;
+    const observers = this._observers;
+    if (observers != null && observers.has(observer)) {
+      observers.delete(observer);
+      traverseFragmentInstancesAndTextInstances(
+        fragmentFiber,
+        unobserveChild,
+        observer,
+      );
+      unobservePendingChildren(this, observer);
+    } else if (__DEV__) {
       console.error(
-        'observeUsing() was called on a FragmentInstance with only text children. ' +
-          'Observers do not work on text nodes.',
+        'You are calling unobserveUsing() with an observer that is not being observed with this fragment ' +
+          'instance. First attach the observer with observeUsing()',
       );
     }
   }
-  this._observers ??= new Set();
-  $unwrap(
-    this._observers,
-    'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3603:30',
-  ).add(observer);
-  traverseFragmentInstancesAndTextInstances(
-    fragmentFiber,
-    observeChild,
-    observer,
-  );
-};
 
-FragmentInstance.prototype.unobserveUsing = function (observer) {
-  const fragmentFiber = this._fragmentFiber;
-  const observers = this._observers;
-  if (observers != null && observers.has(observer)) {
-    observers.delete(observer);
+  getClientRects() {
+    const rects = [];
+    const fragmentFiber = this._fragmentFiber;
     traverseFragmentInstancesAndTextInstances(
       fragmentFiber,
-      unobserveChild,
-      observer,
+      collectClientRects,
+      rects,
     );
-    unobservePendingChildren(this, observer);
-  } else if (__DEV__) {
-    console.error(
-      'You are calling unobserveUsing() with an observer that is not being observed with this fragment ' +
-        'instance. First attach the observer with observeUsing()',
-    );
+    return rects;
   }
-};
 
-FragmentInstance.prototype.getClientRects = function () {
-  const rects = [];
-  const fragmentFiber = this._fragmentFiber;
-  traverseFragmentInstancesAndTextInstances(
-    fragmentFiber,
-    collectClientRects,
-    rects,
-  );
-  return rects;
-};
-
-FragmentInstance.prototype.getRootNode = function (getRootNodeOptions) {
-  const fragmentFiber = this._fragmentFiber;
-  const parentHostFiber =
-    getFragmentParentInstanceOrContainerFiber(fragmentFiber);
-  if (parentHostFiber == null) {
-    return this;
-  }
-  const parentHostInstance = getInstanceFromHostFiber(parentHostFiber);
-  // $FlowFixMe[incompatible-type] Flow expects Node
-  const rootNode = parentHostInstance.getRootNode(
-    getRootNodeOptions ?? undefined,
-  );
-  return rootNode;
-};
-
-FragmentInstance.prototype.compareDocumentPosition = function (otherNode) {
-  const fragmentFiber = this._fragmentFiber;
-  const parentHostFiber =
-    getFragmentParentInstanceOrContainerFiber(fragmentFiber);
-  if (parentHostFiber == null) {
-    return Node.DOCUMENT_POSITION_DISCONNECTED;
-  }
-  const children = [];
-  traverseFragmentInstancesAndTextInstances(
-    fragmentFiber,
-    collectChildren,
-    children,
-  );
-  const parentHostInstance = getInstanceFromHostFiber(parentHostFiber);
-
-  if (children.length === 0) {
-    // Match non-empty CDP: when portaled, position against the portal
-    // container rather than the React host parent.
-    let emptyParentHostInstance = parentHostInstance;
-    if (fiberIsPortaledIntoHost(fragmentFiber)) {
-      const portalContainer = getFragmentPortalContainerInfo(fragmentFiber);
-      if (portalContainer != null) {
-        emptyParentHostInstance = portalContainer;
-      }
+  getRootNode(getRootNodeOptions) {
+    const fragmentFiber = this._fragmentFiber;
+    const parentHostFiber =
+      getFragmentParentInstanceOrContainerFiber(fragmentFiber);
+    if (parentHostFiber == null) {
+      return this;
     }
-    return compareDocumentPositionForEmptyFragment(
+    const parentHostInstance = getInstanceFromHostFiber(parentHostFiber);
+    // $FlowFixMe[incompatible-type] Flow expects Node
+    const rootNode = parentHostInstance.getRootNode(
+      getRootNodeOptions ?? undefined,
+    );
+    return rootNode;
+  }
+
+  compareDocumentPosition(otherNode) {
+    const fragmentFiber = this._fragmentFiber;
+    const parentHostFiber =
+      getFragmentParentInstanceOrContainerFiber(fragmentFiber);
+    if (parentHostFiber == null) {
+      return Node.DOCUMENT_POSITION_DISCONNECTED;
+    }
+    const children = [];
+    traverseFragmentInstancesAndTextInstances(
       fragmentFiber,
-      emptyParentHostInstance,
-      otherNode,
-      getInstanceFromHostFiber,
-    );
-  }
-
-  const firstNode = getInstanceFromHostFiber(children[0]);
-  const lastNode = getInstanceFromHostFiber(children[children.length - 1]);
-
-  // If the fragment has been portaled into another host instance, we need to
-  // our best guess is to use the parent of the child instance, rather than
-  // the fiber tree host parent.
-  const parentHostInstanceFromDom = fiberIsPortaledIntoHost(fragmentFiber)
-    ? firstNode.parentElement
-    : parentHostInstance;
-
-  if (parentHostInstanceFromDom == null) {
-    return Node.DOCUMENT_POSITION_DISCONNECTED;
-  }
-
-  // Check if first and last node are actually in the expected document position
-  // before relying on them as source of truth for other contained nodes
-  const firstNodeIsContained =
-    (parentHostInstanceFromDom.compareDocumentPosition(firstNode) &
-      Node.DOCUMENT_POSITION_CONTAINED_BY) >>>
-      0 !==
-    0;
-  const lastNodeIsContained =
-    (parentHostInstanceFromDom.compareDocumentPosition(lastNode) &
-      Node.DOCUMENT_POSITION_CONTAINED_BY) >>>
-      0 !==
-    0;
-  const firstResult = firstNode.compareDocumentPosition(otherNode);
-  const lastResult = lastNode.compareDocumentPosition(otherNode);
-
-  const otherNodeIsFirstOrLastChild =
-    (firstNodeIsContained && firstNode === otherNode) ||
-    (lastNodeIsContained && lastNode === otherNode);
-  const otherNodeIsFirstOrLastChildDisconnected =
-    (!firstNodeIsContained && firstNode === otherNode) ||
-    (!lastNodeIsContained && lastNode === otherNode);
-  const otherNodeIsWithinFirstOrLastChild =
-    (firstResult & Node.DOCUMENT_POSITION_CONTAINED_BY) >>> 0 !== 0 ||
-    (lastResult & Node.DOCUMENT_POSITION_CONTAINED_BY) >>> 0 !== 0;
-  const otherNodeIsBetweenFirstAndLastChildren =
-    firstNodeIsContained &&
-    lastNodeIsContained &&
-    (firstResult & Node.DOCUMENT_POSITION_FOLLOWING) >>> 0 !== 0 &&
-    (lastResult & Node.DOCUMENT_POSITION_PRECEDING) >>> 0 !== 0;
-
-  let result;
-  if (
-    otherNodeIsFirstOrLastChild ||
-    otherNodeIsWithinFirstOrLastChild ||
-    otherNodeIsBetweenFirstAndLastChildren
-  ) {
-    result = Node.DOCUMENT_POSITION_CONTAINED_BY;
-  } else {
-    result = otherNodeIsFirstOrLastChildDisconnected
-      ? // otherNode has been portaled into another container
-        Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
-      : firstResult;
-  }
-
-  if (
-    result & Node.DOCUMENT_POSITION_DISCONNECTED ||
-    result & Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
-  ) {
-    return result;
-  }
-
-  // Now that we have the result from the DOM API, we double check it matches
-  // the state of the React tree. If it doesn't, we have a case of portaled or
-  // otherwise injected elements and we return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC.
-  const documentPositionMatchesFiberPosition =
-    validateDocumentPositionWithFiberTree(
-      result,
-      fragmentFiber,
-      children[0],
-      children[children.length - 1],
-      otherNode,
-    );
-  if (documentPositionMatchesFiberPosition) {
-    return result;
-  }
-  return Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
-};
-
-FragmentInstance.prototype.scrollIntoView = function (alignToTop) {
-  if (typeof alignToTop === 'object') {
-    throw $panic(
-      'FragmentInstance.scrollIntoView() does not support ' +
-        'scrollIntoViewOptions. Use the alignToTop boolean instead.',
-      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3794:13',
-    );
-  }
-  // First, get the children nodes
-  const children = [];
-  const fragmentFiber = this._fragmentFiber;
-  traverseFragmentInstancesAndTextInstances(
-    fragmentFiber,
-    collectChildren,
-    children,
-  );
-
-  const resolvedAlignToTop = alignToTop !== false;
-
-  // `element.scrollIntoView(alignToTop)` of what JS gave, which WebIDL makes a boolean.
-  const align = alignToTop != null ? !!alignToTop : undefined;
-
-  // If there are no children, we can use the parent and siblings to determine a position
-  if (children.length === 0) {
-    const hostSiblings =
-      getFragmentInstanceOrTextInstanceSiblings(fragmentFiber);
-    const targetFiber = resolvedAlignToTop
-      ? (hostSiblings[1] ??
-        hostSiblings[0] ??
-        getFragmentParentInstanceOrContainerFiber(fragmentFiber))
-      : (hostSiblings[0] ?? hostSiblings[1]);
-
-    if (targetFiber == null) {
-      return;
-    }
-    // For text node siblings, use Range API to scroll to their position
-    if (targetFiber.tag === HostText) {
-      const textNode = getInstanceFromHostFiber(targetFiber);
-      scrollTextNodeIntoView(textNode, resolvedAlignToTop);
-      return;
-    }
-    const target = getInstanceFromHostFiber(targetFiber);
-    // If the parent host fiber is a HostRoot, the target is a Container
-    // which is not necessarily an Element with a scrollIntoView method.
-    if (target.nodeType === DOCUMENT_NODE) {
-      // A Document is always in view.
-    } else if (target.nodeType === DOCUMENT_FRAGMENT_NODE) {
-      const fragment = target;
-      // ShadowRoot always has a host: https://dom.spec.whatwg.org/#ref-for-concept-documentfragment-host%E2%91%A5
-      // A generic DocumentFragment doesn't implement this property but conceptually
-      // host is a nullable Element: https://dom.spec.whatwg.org/#concept-documentfragment-host
-      const host = 'host' in fragment ? fragment.host : undefined;
-      if (host !== undefined) {
-        // The ShadowRoot's host element marks the position where the
-        // fragment's content would appear.
-        host.scrollIntoView(align ?? undefined);
-      } else if (__DEV__) {
-        console.warn(
-          'You are attempting to scroll a FragmentInstance that is only ' +
-            'mounted inside a detached DocumentFragment. No scroll was ' +
-            'performed.',
-        );
-      }
-      return;
-    } else {
-      // Narrowed down to Element by nodeType check above, but Flow doesn't know that.
-      const element = target;
-      element.scrollIntoView(align ?? undefined);
-    }
-  }
-
-  let i = resolvedAlignToTop ? children.length - 1 : 0;
-  while (i !== (resolvedAlignToTop ? -1 : children.length)) {
-    const child = $index(
+      collectChildren,
       children,
-      i >>> 0,
-      'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3895:34',
     );
-    // For text nodes, use Range API to scroll to their position
-    if (child.tag === HostText) {
-      const textNode = getInstanceFromHostFiber(child);
-      scrollTextNodeIntoView(textNode, resolvedAlignToTop);
-      i = (i + (resolvedAlignToTop ? -1 : 1)) | 0;
-      continue;
+    const parentHostInstance = getInstanceFromHostFiber(parentHostFiber);
+
+    if (children.length === 0) {
+      // Match non-empty CDP: when portaled, position against the portal
+      // container rather than the React host parent.
+      let emptyParentHostInstance = parentHostInstance;
+      if (fiberIsPortaledIntoHost(fragmentFiber)) {
+        const portalContainer = getFragmentPortalContainerInfo(fragmentFiber);
+        if (portalContainer != null) {
+          emptyParentHostInstance = portalContainer;
+        }
+      }
+      return compareDocumentPositionForEmptyFragment(
+        fragmentFiber,
+        emptyParentHostInstance,
+        otherNode,
+        getInstanceFromHostFiber,
+      );
     }
-    const instance = getInstanceFromHostFiber(child);
-    instance.scrollIntoView(align ?? undefined);
-    i = (i + (resolvedAlignToTop ? -1 : 1)) | 0;
+
+    const firstNode = getInstanceFromHostFiber(children[0]);
+    const lastNode = getInstanceFromHostFiber(children[children.length - 1]);
+
+    // If the fragment has been portaled into another host instance, we need to
+    // our best guess is to use the parent of the child instance, rather than
+    // the fiber tree host parent.
+    const parentHostInstanceFromDom = fiberIsPortaledIntoHost(fragmentFiber)
+      ? firstNode.parentElement
+      : parentHostInstance;
+
+    if (parentHostInstanceFromDom == null) {
+      return Node.DOCUMENT_POSITION_DISCONNECTED;
+    }
+
+    // Check if first and last node are actually in the expected document position
+    // before relying on them as source of truth for other contained nodes
+    const firstNodeIsContained =
+      (parentHostInstanceFromDom.compareDocumentPosition(firstNode) &
+        Node.DOCUMENT_POSITION_CONTAINED_BY) >>>
+        0 !==
+      0;
+    const lastNodeIsContained =
+      (parentHostInstanceFromDom.compareDocumentPosition(lastNode) &
+        Node.DOCUMENT_POSITION_CONTAINED_BY) >>>
+        0 !==
+      0;
+    const firstResult = firstNode.compareDocumentPosition(otherNode);
+    const lastResult = lastNode.compareDocumentPosition(otherNode);
+
+    const otherNodeIsFirstOrLastChild =
+      (firstNodeIsContained && firstNode === otherNode) ||
+      (lastNodeIsContained && lastNode === otherNode);
+    const otherNodeIsFirstOrLastChildDisconnected =
+      (!firstNodeIsContained && firstNode === otherNode) ||
+      (!lastNodeIsContained && lastNode === otherNode);
+    const otherNodeIsWithinFirstOrLastChild =
+      (firstResult & Node.DOCUMENT_POSITION_CONTAINED_BY) >>> 0 !== 0 ||
+      (lastResult & Node.DOCUMENT_POSITION_CONTAINED_BY) >>> 0 !== 0;
+    const otherNodeIsBetweenFirstAndLastChildren =
+      firstNodeIsContained &&
+      lastNodeIsContained &&
+      (firstResult & Node.DOCUMENT_POSITION_FOLLOWING) >>> 0 !== 0 &&
+      (lastResult & Node.DOCUMENT_POSITION_PRECEDING) >>> 0 !== 0;
+
+    let result;
+    if (
+      otherNodeIsFirstOrLastChild ||
+      otherNodeIsWithinFirstOrLastChild ||
+      otherNodeIsBetweenFirstAndLastChildren
+    ) {
+      result = Node.DOCUMENT_POSITION_CONTAINED_BY;
+    } else {
+      result = otherNodeIsFirstOrLastChildDisconnected
+        ? // otherNode has been portaled into another container
+          Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+        : firstResult;
+    }
+
+    if (
+      result & Node.DOCUMENT_POSITION_DISCONNECTED ||
+      result & Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+    ) {
+      return result;
+    }
+
+    // Now that we have the result from the DOM API, we double check it matches
+    // the state of the React tree. If it doesn't, we have a case of portaled or
+    // otherwise injected elements and we return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC.
+    const documentPositionMatchesFiberPosition =
+      validateDocumentPositionWithFiberTree(
+        result,
+        fragmentFiber,
+        children[0],
+        children[children.length - 1],
+        otherNode,
+      );
+    if (documentPositionMatchesFiberPosition) {
+      return result;
+    }
+    return Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
   }
-};
+
+  scrollIntoView(alignToTop) {
+    if (typeof alignToTop === 'object') {
+      throw $panic(
+        'FragmentInstance.scrollIntoView() does not support ' +
+          'scrollIntoViewOptions. Use the alignToTop boolean instead.',
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3794:13',
+      );
+    }
+    // First, get the children nodes
+    const children = [];
+    const fragmentFiber = this._fragmentFiber;
+    traverseFragmentInstancesAndTextInstances(
+      fragmentFiber,
+      collectChildren,
+      children,
+    );
+
+    const resolvedAlignToTop = alignToTop !== false;
+
+    // `element.scrollIntoView(alignToTop)` of what JS gave, which WebIDL makes a boolean.
+    const align = alignToTop != null ? !!alignToTop : undefined;
+
+    // If there are no children, we can use the parent and siblings to determine a position
+    if (children.length === 0) {
+      const hostSiblings =
+        getFragmentInstanceOrTextInstanceSiblings(fragmentFiber);
+      const targetFiber = resolvedAlignToTop
+        ? (hostSiblings[1] ??
+          hostSiblings[0] ??
+          getFragmentParentInstanceOrContainerFiber(fragmentFiber))
+        : (hostSiblings[0] ?? hostSiblings[1]);
+
+      if (targetFiber == null) {
+        return;
+      }
+      // For text node siblings, use Range API to scroll to their position
+      if (targetFiber.tag === HostText) {
+        const textNode = getInstanceFromHostFiber(targetFiber);
+        scrollTextNodeIntoView(textNode, resolvedAlignToTop);
+        return;
+      }
+      const target = getInstanceFromHostFiber(targetFiber);
+      // If the parent host fiber is a HostRoot, the target is a Container
+      // which is not necessarily an Element with a scrollIntoView method.
+      if (target.nodeType === DOCUMENT_NODE) {
+        // A Document is always in view.
+      } else if (target.nodeType === DOCUMENT_FRAGMENT_NODE) {
+        const fragment = target;
+        // ShadowRoot always has a host: https://dom.spec.whatwg.org/#ref-for-concept-documentfragment-host%E2%91%A5
+        // A generic DocumentFragment doesn't implement this property but conceptually
+        // host is a nullable Element: https://dom.spec.whatwg.org/#concept-documentfragment-host
+        const host = 'host' in fragment ? fragment.host : undefined;
+        if (host !== undefined) {
+          // The ShadowRoot's host element marks the position where the
+          // fragment's content would appear.
+          host.scrollIntoView(align ?? undefined);
+        } else if (__DEV__) {
+          console.warn(
+            'You are attempting to scroll a FragmentInstance that is only ' +
+              'mounted inside a detached DocumentFragment. No scroll was ' +
+              'performed.',
+          );
+        }
+        return;
+      } else {
+        // Narrowed down to Element by nodeType check above, but Flow doesn't know that.
+        const element = target;
+        element.scrollIntoView(align ?? undefined);
+      }
+    }
+
+    let i = resolvedAlignToTop ? children.length - 1 : 0;
+    while (i !== (resolvedAlignToTop ? -1 : children.length)) {
+      const child = $index(
+        children,
+        i >>> 0,
+        'packages/react-dom-bindings/src/client/ReactFiberConfigDOM.rs:3895:34',
+      );
+      // For text nodes, use Range API to scroll to their position
+      if (child.tag === HostText) {
+        const textNode = getInstanceFromHostFiber(child);
+        scrollTextNodeIntoView(textNode, resolvedAlignToTop);
+        i = (i + (resolvedAlignToTop ? -1 : 1)) | 0;
+        continue;
+      }
+      const instance = getInstanceFromHostFiber(child);
+      instance.scrollIntoView(align ?? undefined);
+      i = (i + (resolvedAlignToTop ? -1 : 1)) | 0;
+    }
+  }
+}
 
 function addEventListenerToChild(child, type, listener, optionsOrUseCapture) {
   const instance = getInstanceFromHostFiber(child);

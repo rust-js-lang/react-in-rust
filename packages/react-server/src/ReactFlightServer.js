@@ -592,140 +592,142 @@ function defaultErrorHandler(error) {
   // Don't transform to our wrapper
 }
 
-function RequestInstance(
-  type,
-  model,
-  bundlerConfig,
-  onError,
-  onAllReady,
-  onFatalError,
-  identifierPrefix,
-  temporaryReferences,
-  debugStartTime, // Profiling-only
-  environmentName, // DEV-only
-  filterStackFrame, // DEV-only
-  keepDebugAlive, // DEV-only
-) {
-  const a = ReactSharedInternals.A;
-  if (a != null && a !== DefaultAsyncDispatcher) {
-    throw $panic(
-      'Currently React only supports one RSC renderer at a time.',
-      'packages/react-server/src/ReactFlightServer.rs:1082:21',
-    );
-  }
-  ReactSharedInternals.A = DefaultAsyncDispatcher;
-  if (__DEV__) {
-    // Unlike Fizz or Fiber, we don't reset this and just keep it on permanently.
-    // This lets it act more like the AsyncDispatcher so that we can get the
-    // stack asynchronously too.
-    ReactSharedInternals.getCurrentStack = getCurrentStackInDEV;
-  }
-
-  const abortSet = new Set();
-  const pingedTasks = [];
-  // Safety: a `RequestCleanupQueue` is its array, which the taint registry
-  // holds as long as the request runs.
-  const cleanupQueue = [];
-  if (enableTaint) {
-    if (TaintRegistryPendingRequests != null) {
-      if (TaintRegistryPendingRequests.borrows) {
-        $alreadyBorrowed(
-          'packages/react-server/src/ReactFlightServer.rs:1109:38',
-        );
-      }
-      TaintRegistryPendingRequests.add(cleanupQueue);
-    }
-  }
-  const hints = createHints();
-  this.type = type;
-  this.status = OPENING;
-  this.flushScheduled = false;
-  this.fatalError = null;
-  this.destination = null;
-  this.bundlerConfig = bundlerConfig;
-  this.cache = new Map();
-  this.cacheController = new AbortController();
-  this.nextChunkId = 0;
-  this.pendingChunks = 0;
-  this.hints = hints;
-  this.abortableTasks = abortSet;
-  this.pingedTasks = pingedTasks;
-  this.completedImportChunks = [];
-  this.completedHintChunks = [];
-  this.completedRegularChunks = [];
-  this.completedErrorChunks = [];
-  this.writtenSymbols = new Map();
-  this.writtenClientReferences = new Map();
-  this.writtenServerReferences = new Map();
-  this.writtenObjects = new WeakMap();
-  this.writtenImportStrings = new Map();
-  this.writtenImportStringsSize = 0;
-  this.temporaryReferences = temporaryReferences ?? undefined;
-  this.identifierPrefix = identifierPrefix ?? '';
-  this.identifierCount = 1;
-  this.taintCleanupQueue = cleanupQueue;
-  this.onError = onError ?? defaultErrorHandler;
-  this.onAllReady = onAllReady;
-  this.onFatalError = onFatalError;
-
-  this.timeOrigin = 0;
-  this.abortTime = 0;
-
-  this.pendingDebugChunks = 0;
-  this.completedDebugChunks = [];
-  this.debugDestination = null;
-  this.environmentName =
-    environmentName == null
-      ? () => 'Server'
-      : typeof environmentName === 'string'
-        ? () => environmentName
-        : environmentName;
-  this.filterStackFrame = filterStackFrame ?? defaultFilterStackFrame;
-  this.didWarnForKey = null;
-  this.writtenDebugObjects = new WeakMap();
-  this.deferredDebugObjects = keepDebugAlive
-    ? {
-        retained: new Map(),
-        existing: new Map(),
-      }
-    : null;
-
-  let timeOrigin;
-  if (enableProfilerTimer) {
-    // We start by serializing the time origin. Any future timestamps will be
-    // emitted relatively to this origin. Instead of using performance.timeOrigin
-    // as this origin, we use the timestamp at the start of the request.
-    // This avoids leaking unnecessary information like how long the server has
-    // been running and allows for more compact representation of each timestamp.
-    // The time origin is stored as an offset in the time space of this environment.
-    if (debugStartTime != null) {
-      // We expect `startTime` to be an absolute timestamp, so relativize it to match the other case.
-      // $FlowFixMe[prop-missing]
-      timeOrigin = debugStartTime - performance.timeOrigin;
-    } else {
-      timeOrigin = performance.now();
-    }
-    this.timeOrigin = timeOrigin;
-    // $FlowFixMe[prop-missing]
-    emitTimeOriginChunk(this, timeOrigin + performance.timeOrigin);
-    this.abortTime = -0;
-  } else {
-    timeOrigin = 0;
-  }
-
-  const rootTask = createTask(
-    this,
+export class RequestInstance {
+  constructor(
+    type,
     model,
-    undefined,
-    false,
-    createRootFormatContext(),
-    abortSet,
-    timeOrigin,
-    null,
-    null,
-    null,
-  );
-  this.pingedTasks.push(rootTask);
+    bundlerConfig,
+    onError,
+    onAllReady,
+    onFatalError,
+    identifierPrefix,
+    temporaryReferences,
+    debugStartTime, // Profiling-only
+    environmentName, // DEV-only
+    filterStackFrame, // DEV-only
+    keepDebugAlive, // DEV-only
+  ) {
+    const a = ReactSharedInternals.A;
+    if (a != null && a !== DefaultAsyncDispatcher) {
+      throw $panic(
+        'Currently React only supports one RSC renderer at a time.',
+        'packages/react-server/src/ReactFlightServer.rs:1082:21',
+      );
+    }
+    ReactSharedInternals.A = DefaultAsyncDispatcher;
+    if (__DEV__) {
+      // Unlike Fizz or Fiber, we don't reset this and just keep it on permanently.
+      // This lets it act more like the AsyncDispatcher so that we can get the
+      // stack asynchronously too.
+      ReactSharedInternals.getCurrentStack = getCurrentStackInDEV;
+    }
+
+    const abortSet = new Set();
+    const pingedTasks = [];
+    // Safety: a `RequestCleanupQueue` is its array, which the taint registry
+    // holds as long as the request runs.
+    const cleanupQueue = [];
+    if (enableTaint) {
+      if (TaintRegistryPendingRequests != null) {
+        if (TaintRegistryPendingRequests.borrows) {
+          $alreadyBorrowed(
+            'packages/react-server/src/ReactFlightServer.rs:1109:38',
+          );
+        }
+        TaintRegistryPendingRequests.add(cleanupQueue);
+      }
+    }
+    const hints = createHints();
+    this.type = type;
+    this.status = OPENING;
+    this.flushScheduled = false;
+    this.fatalError = null;
+    this.destination = null;
+    this.bundlerConfig = bundlerConfig;
+    this.cache = new Map();
+    this.cacheController = new AbortController();
+    this.nextChunkId = 0;
+    this.pendingChunks = 0;
+    this.hints = hints;
+    this.abortableTasks = abortSet;
+    this.pingedTasks = pingedTasks;
+    this.completedImportChunks = [];
+    this.completedHintChunks = [];
+    this.completedRegularChunks = [];
+    this.completedErrorChunks = [];
+    this.writtenSymbols = new Map();
+    this.writtenClientReferences = new Map();
+    this.writtenServerReferences = new Map();
+    this.writtenObjects = new WeakMap();
+    this.writtenImportStrings = new Map();
+    this.writtenImportStringsSize = 0;
+    this.temporaryReferences = temporaryReferences ?? undefined;
+    this.identifierPrefix = identifierPrefix ?? '';
+    this.identifierCount = 1;
+    this.taintCleanupQueue = cleanupQueue;
+    this.onError = onError ?? defaultErrorHandler;
+    this.onAllReady = onAllReady;
+    this.onFatalError = onFatalError;
+
+    this.timeOrigin = 0;
+    this.abortTime = 0;
+
+    this.pendingDebugChunks = 0;
+    this.completedDebugChunks = [];
+    this.debugDestination = null;
+    this.environmentName =
+      environmentName == null
+        ? () => 'Server'
+        : typeof environmentName === 'string'
+          ? () => environmentName
+          : environmentName;
+    this.filterStackFrame = filterStackFrame ?? defaultFilterStackFrame;
+    this.didWarnForKey = null;
+    this.writtenDebugObjects = new WeakMap();
+    this.deferredDebugObjects = keepDebugAlive
+      ? {
+          retained: new Map(),
+          existing: new Map(),
+        }
+      : null;
+
+    let timeOrigin;
+    if (enableProfilerTimer) {
+      // We start by serializing the time origin. Any future timestamps will be
+      // emitted relatively to this origin. Instead of using performance.timeOrigin
+      // as this origin, we use the timestamp at the start of the request.
+      // This avoids leaking unnecessary information like how long the server has
+      // been running and allows for more compact representation of each timestamp.
+      // The time origin is stored as an offset in the time space of this environment.
+      if (debugStartTime != null) {
+        // We expect `startTime` to be an absolute timestamp, so relativize it to match the other case.
+        // $FlowFixMe[prop-missing]
+        timeOrigin = debugStartTime - performance.timeOrigin;
+      } else {
+        timeOrigin = performance.now();
+      }
+      this.timeOrigin = timeOrigin;
+      // $FlowFixMe[prop-missing]
+      emitTimeOriginChunk(this, timeOrigin + performance.timeOrigin);
+      this.abortTime = -0;
+    } else {
+      timeOrigin = 0;
+    }
+
+    const rootTask = createTask(
+      this,
+      model,
+      undefined,
+      false,
+      createRootFormatContext(),
+      abortSet,
+      timeOrigin,
+      null,
+      null,
+      null,
+    );
+    this.pingedTasks.push(rootTask);
+  }
 }
 
 export function createRequest(

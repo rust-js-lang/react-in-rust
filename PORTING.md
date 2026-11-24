@@ -2126,6 +2126,22 @@ These forms are decided:
   each an `export` alone: no other line of the port changes, and no
   declaration names them.
 
+- **es-class** (the user, 2026-11-24, rust-js #2495): every `#[rust_js::class]`
+  is an ES `class`, `export class ReactDOMRoot { constructor(..) { .. }
+  render(..) { .. } }`, where upstream writes a constructor function and its
+  prototype's assignments, so a bundler drops a class nothing uses. Not of
+  a class whose prototype the program replaces, a constructor function as
+  upstream's: ComponentDummy, PureComponent, both ReactPromises and
+  FlightIterator. Its constants are getters in its body, `get
+  isReactComponent() { return {}; }`. A trait of classes' provided method
+  is each class's own copy: ReactDOMHydrationRoot's `render` and `unmount`
+  are its own, where upstream assigns one function to both prototypes. An
+  ES class's members aren't enumerable, so ReactBaseClasses'
+  `Object.assign(pureComponentPrototype, Component.prototype)` copies none,
+  a no-op: PureComponent reaches them through its prototype chain as
+  before, and `Object.hasOwn(PureComponent.prototype, "setState")` is false.
+  A call without `new` throws. 6 files, +0.06% of the port's JS.
+
 ## Committing
 
 - **Commit only your own paths.** Another session may be working in the
