@@ -216,6 +216,7 @@ pub fn lazy(ctor: &'static dyn Fn() -> &'static Thenable) -> LazyComponent {
         // can only contain ReactComponentInfo and not a Fiber. It's unusual to
         // create a lazy inside an owner though since they should be in module scope.
         let owner = None;
+        let error = js::error::new(Some("react-stack-top-frame"), None);
         let io_info = Rc::new(ReactIOInfo {
             name: Cell::new("lazy"),
             start: Cell::new(-1.0),
@@ -225,7 +226,7 @@ pub fn lazy(ctor: &'static dyn Fn() -> &'static Thenable) -> LazyComponent {
             env: None,
             owner,
             stack: None,
-            debug_stack: Cell::new(Some(js::error::new(Some("react-stack-top-frame"), None))),
+            debug_stack: Cell::new(Some(error)),
             // eslint-disable-next-line react-internal/no-production-logging
             debug_task: Cell::new(console::create_task().map(|create_task| create_task("lazy()"))),
         });
