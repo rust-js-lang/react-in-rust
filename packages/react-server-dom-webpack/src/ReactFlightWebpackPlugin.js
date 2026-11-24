@@ -79,9 +79,11 @@ export default class ReactFlightWebpackPlugin {
       typeof options.clientReferences === 'object' &&
       !Array.isArray(options.clientReferences)
     ) {
-      clientReferences = [options.clientReferences];
+      clientReferences = [{...options.clientReferences}];
     } else {
-      clientReferences = options.clientReferences.slice();
+      clientReferences = options.clientReferences.map(item =>
+        typeof item === 'object' ? {...item} : item,
+      );
     }
     let chunkName;
     if (options.chunkName != null) {
