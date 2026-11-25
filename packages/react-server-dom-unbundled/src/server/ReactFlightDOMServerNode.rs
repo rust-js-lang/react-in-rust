@@ -776,10 +776,9 @@ struct BusboyReading {
 
 // GAP rd590: a `RefCell` borrow held across another crate's call, the
 // file's handle given to resolveFileComplete and resolveFileChunk, is
-// counted, `$borrow(current.file, true)` in a `try`/`finally`, and so is
-// each borrow of a cell of a struct that holds its own kind,
-// `$fieldCell(current, 'next')`; the queued fields are copied out,
-// `current.queuedFields.slice()`, so no borrow of them is held.
+// counted, `$borrow(current.file, true)` in a `try`/`finally`; the queued
+// fields are copied out, `current.queuedFields.slice()`, so no borrow of
+// them is held.
 impl BusboyReading {
     fn flush(&self) {
         loop {

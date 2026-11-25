@@ -54,7 +54,6 @@ import {
   $borrow,
   $borrowMut,
   $catchable,
-  $fieldCell,
   $index,
   $panic,
   $toLowercase,
@@ -359,13 +358,7 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
         error != null ? value.destroy(error) : value.destroy();
         return;
       }
-      const next = $borrow(
-        $fieldCell(current, 'next'),
-        'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:499:52',
-        true,
-      );
-      head = next.value;
-      $unborrow(next);
+      head = current.next;
     }
     tail$1 = undefined;
     if (bodyFinished && !closed) {
@@ -411,10 +404,7 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
     };
     const tail = tail$1;
     if (tail != null) {
-      $borrowMut(
-        $fieldCell(tail, 'next'),
-        'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:587:32',
-      ).value = pendingFile;
+      tail.next = pendingFile;
     } else {
       head = pendingFile;
     }

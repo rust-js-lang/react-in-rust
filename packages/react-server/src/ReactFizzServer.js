@@ -4186,22 +4186,21 @@ function trackPostpone(request, trackedPostpones, task, segment) {
             segment.id = nextSegmentId(request);
           }
         }
-        const borrowMut = $borrowMut(
-          boundaryNode,
-          'packages/react-server/src/ReactFizzServer.rs:5070:37',
-          true,
-        );
+        if (boundaryNode.borrows) {
+          $alreadyBorrowed(
+            'packages/react-server/src/ReactFizzServer.rs:5070:37',
+          );
+        }
         // We postponed directly inside the Suspense boundary so we mark this for resuming.
         const slots = {
           get value() {
-            return borrowMut[3];
+            return boundaryNode[3];
           },
-          set value(newValue) {
-            borrowMut[3] = newValue;
+          set value(value) {
+            boundaryNode[3] = value;
           },
         };
         slots.value = segment.id;
-        $unborrow(borrowMut);
         return;
       }
     }
@@ -4232,21 +4231,20 @@ function trackPostpone(request, trackedPostpones, task, segment) {
         const resumableNode = [keyPath[1], keyPath[2], [], segment.id];
         addToReplayParent(resumableNode, keyPath[0], trackedPostpones);
       } else {
-        const borrowMut = $borrowMut(
-          resumableNode,
-          'packages/react-server/src/ReactFizzServer.rs:5119:50',
-          true,
-        );
+        if (resumableNode.borrows) {
+          $alreadyBorrowed(
+            'packages/react-server/src/ReactFizzServer.rs:5119:50',
+          );
+        }
         const slots = {
           get value() {
-            return borrowMut[3];
+            return resumableNode[3];
           },
-          set value(newValue) {
-            borrowMut[3] = newValue;
+          set value(value) {
+            resumableNode[3] = value;
           },
         };
         slots.value = segment.id;
-        $unborrow(borrowMut);
       }
     }
   } else {
@@ -7303,22 +7301,16 @@ function addToReplayParent(node, parentKeyPath, trackedPostpones) {
       workingMap.set(parentKeyPath, parentNode);
       addToReplayParent(parentNode, parentKeyPath[0], trackedPostpones);
     }
-    const borrow = $borrow(
-      parentNode,
-      'packages/react-server/src/ReactFizzServer.rs:8289:31',
-      true,
-    );
-    const children = borrow[2];
-    try {
-      if (children.borrows) {
-        $alreadyBorrowed(
-          'packages/react-server/src/ReactFizzServer.rs:8290:22',
-        );
-      }
-      children.push(node);
-    } finally {
-      $unborrow(borrow);
+    if (parentNode.borrows < 0) {
+      $alreadyMutablyBorrowed(
+        'packages/react-server/src/ReactFizzServer.rs:8289:31',
+      );
     }
+    const [, , children] = parentNode;
+    if (children.borrows) {
+      $alreadyBorrowed('packages/react-server/src/ReactFizzServer.rs:8290:22');
+    }
+    children.push(node);
   }
 }
 
