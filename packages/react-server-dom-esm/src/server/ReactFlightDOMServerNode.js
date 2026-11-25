@@ -326,7 +326,7 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
         const name = current.name;
         const borrow = $borrow(
           current.file,
-          'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:487:84',
+          'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:486:84',
           true,
         );
         try {
@@ -347,7 +347,7 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
               $index(
                 queuedFields,
                 i + 1,
-                'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:491:88',
+                'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:490:88',
               ),
             );
           }
@@ -413,7 +413,7 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
       try {
         const borrowMut = $borrowMut(
           fileHandle,
-          'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:599:50',
+          'packages/react-server-dom-esm/src/server/ReactFlightDOMServerNode.rs:598:50',
           true,
         );
         try {

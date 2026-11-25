@@ -529,7 +529,7 @@ export function decodeReplyFromBusboy(busboyStream, webpackMap, options) {
         const name = current.name;
         const borrow = $borrow(
           current.file,
-          'packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.rs:795:84',
+          'packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.rs:794:84',
           true,
         );
         try {
@@ -550,7 +550,7 @@ export function decodeReplyFromBusboy(busboyStream, webpackMap, options) {
               $index(
                 queuedFields,
                 i + 1,
-                'packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.rs:799:88',
+                'packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.rs:798:88',
               ),
             );
           }
@@ -616,7 +616,7 @@ export function decodeReplyFromBusboy(busboyStream, webpackMap, options) {
       try {
         const borrowMut = $borrowMut(
           fileHandle,
-          'packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.rs:907:50',
+          'packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.rs:906:50',
           true,
         );
         try {

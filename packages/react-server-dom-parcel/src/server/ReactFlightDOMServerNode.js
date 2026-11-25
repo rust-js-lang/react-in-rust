@@ -537,7 +537,7 @@ export function decodeReplyFromBusboy(busboyStream, options) {
         const name = current.name;
         const borrow = $borrow(
           current.file,
-          'packages/react-server-dom-parcel/src/server/ReactFlightDOMServerNode.rs:788:84',
+          'packages/react-server-dom-parcel/src/server/ReactFlightDOMServerNode.rs:787:84',
           true,
         );
         try {
@@ -558,7 +558,7 @@ export function decodeReplyFromBusboy(busboyStream, options) {
               $index(
                 queuedFields,
                 i + 1,
-                'packages/react-server-dom-parcel/src/server/ReactFlightDOMServerNode.rs:792:88',
+                'packages/react-server-dom-parcel/src/server/ReactFlightDOMServerNode.rs:791:88',
               ),
             );
           }
@@ -624,7 +624,7 @@ export function decodeReplyFromBusboy(busboyStream, options) {
       try {
         const borrowMut = $borrowMut(
           fileHandle,
-          'packages/react-server-dom-parcel/src/server/ReactFlightDOMServerNode.rs:899:50',
+          'packages/react-server-dom-parcel/src/server/ReactFlightDOMServerNode.rs:898:50',
           true,
         );
         try {
@@ -745,7 +745,7 @@ export function loadServerAction(id) {
       if (typeof fn !== 'function') {
         throw $panic(
           'Server actions must be functions',
-          'packages/react-server-dom-parcel/src/server/ReactFlightDOMServerNode.rs:1080:17',
+          'packages/react-server-dom-parcel/src/server/ReactFlightDOMServerNode.rs:1079:17',
         );
       }
       return fn;
