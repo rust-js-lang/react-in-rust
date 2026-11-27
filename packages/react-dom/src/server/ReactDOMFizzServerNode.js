@@ -6,29 +6,60 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  abort,
-  attachAbortSignal,
-  createRequest,
-  prepareForStartFlowingIfBeforeAllReady,
-  resumeRequest,
-  startFlowing,
-  startWork,
-  stopFlowing,
+  abort$ as abort,
+  attachAbortSignal$ as attachAbortSignal,
+  createRequest$ as createRequest,
+  prepareForStartFlowingIfBeforeAllReady$ as prepareForStartFlowingIfBeforeAllReady,
+  resumeRequest$ as resumeRequest,
+  startFlowing$ as startFlowing,
+  startWork$ as startWork,
+  stopFlowing$ as stopFlowing,
 } from 'react-server/src/ReactFizzServer';
 
 import {
-  createRenderState,
-  createResumableState,
-  createRootFormatContext,
-  resumeRenderState,
+  createRenderState$ as createRenderState,
+  createResumableState$ as createResumableState,
+  createRootFormatContext$ as createRootFormatContext,
+  resumeRenderState$ as resumeRenderState,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 
 import {textEncoder} from 'react-server/src/ReactServerStreamConfigNode';
 
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
-import {$panic, $unwrap} from '@rust-js/std';
+import {
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $checks,
+  $panic,
+  $unwrap,
+} from '@rust-js/std';
 
 export {default as version} from 'shared/ReactVersion';
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  namespaceURI: [$checkStr, 'nullish'],
+  bootstrapScriptContent: [$checkStr, 'nullish'],
+  progressiveChunkSize: [$checkF64, 'nullish'],
+}));
+
+const checkWebStreamsOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  namespaceURI: [$checkStr, 'nullish'],
+  bootstrapScriptContent: [$checkStr, 'nullish'],
+  progressiveChunkSize: [$checkF64, 'nullish'],
+}));
+
+const checkPostponedState = /* @__PURE__ */ $checkShape(
+  () => ({progressiveChunkSize: $checkF64}),
+  'react_server#7e2989a65442a9f6::react_fizz_server::PostponedState',
+  'a PostponedState',
+);
+
+const checkResumeOptions = /* @__PURE__ */ $checkShape(() => ({}));
+const checkWebStreamsResumeOptions = /* @__PURE__ */ $checkShape(() => ({}));
 
 ensureCorrectIsomorphicReactVersion();
 
@@ -78,6 +109,12 @@ function createRequestImpl(children, options) {
 }
 
 export function renderToPipeableStream(children, options) {
+  $checkWhole(
+    checkOptions,
+    options,
+    'renderToPipeableStream(options)',
+    'nullish',
+  );
   const request = createRequestImpl(children, options);
   let hasStartedFlowing = false;
   startWork(request);
@@ -140,6 +177,12 @@ function createFakeWritableFromReadableStreamController(controller) {
 // TODO: Move to sub-classing ReadableStream.
 
 export function renderToReadableStream(children, options) {
+  $checkWhole(
+    checkWebStreamsOptions,
+    options,
+    'renderToReadableStream(options)',
+    'nullish',
+  );
   return new Promise((resolve, reject) => {
     let onFatalError;
     let onAllReady;
@@ -248,6 +291,17 @@ function resumeRequestImpl(children, postponedState, options) {
 }
 
 export function resumeToPipeableStream(children, postponedState, options) {
+  $checks(
+    'resumeToPipeableStream(postponedState)',
+    postponedState,
+    checkPostponedState,
+  );
+  $checkWhole(
+    checkResumeOptions,
+    options,
+    'resumeToPipeableStream(options)',
+    'nullish',
+  );
   const request = resumeRequestImpl(children, postponedState, options);
   let hasStartedFlowing = false;
   startWork(request);
@@ -282,6 +336,13 @@ export function resumeToPipeableStream(children, postponedState, options) {
 }
 
 export function resume(children, postponedState, options) {
+  $checks('resume(postponedState)', postponedState, checkPostponedState);
+  $checkWhole(
+    checkWebStreamsResumeOptions,
+    options,
+    'resume(options)',
+    'nullish',
+  );
   return new Promise((resolve, reject) => {
     let onFatalError;
     let onAllReady;

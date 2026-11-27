@@ -9,8 +9,8 @@ import {
   GestureLane,
   NoLane,
   NoLanes,
-  markRootEntangled,
-  markRootFinished,
+  markRootEntangled$ as markRootEntangled,
+  markRootFinished$ as markRootFinished,
 } from './ReactFiberLane.js';
 import {
   ensureRootIsScheduled,
@@ -23,6 +23,7 @@ import {
 } from './ReactFiberConfig.js';
 
 import {pingGestureRoot, restartGestureRoot} from './ReactFiberWorkLoop.js';
+import {$checkF64, $checkResult} from '@rust-js/std';
 
 // This type keeps track of any scheduled or active gestures.
 
@@ -69,7 +70,12 @@ export function startScheduledGesture(
   transitionTypes,
 ) {
   const rangeStart =
-    gestureOptions?.rangeStart ?? getCurrentGestureOffset(gestureTimeline);
+    gestureOptions?.rangeStart ??
+    $checkResult(
+      getCurrentGestureOffset(gestureTimeline),
+      './src/ReactFiberConfig.js#getCurrentGestureOffset',
+      $checkF64,
+    );
   const rangeEnd = gestureOptions?.rangeEnd ?? (rangeStart < 50 ? 100 : 0);
   let prev = root.pendingGestures;
   while (prev != null) {
@@ -116,7 +122,11 @@ export function cancelScheduledGesture(root, gesture) {
     // If the end state is closer to the end than the beginning then we commit into the
     // end state before reverting back (or applying a new Transition).
     // Otherwise we just revert back and don't commit.
-    const finalOffset = getCurrentGestureOffset(gesture.provider);
+    const finalOffset = $checkResult(
+      getCurrentGestureOffset(gesture.provider),
+      './src/ReactFiberConfig.js#getCurrentGestureOffset',
+      $checkF64,
+    );
     const rangeStart = gesture.rangeStart;
     const rangeEnd = gesture.rangeEnd;
     const shouldCommit =

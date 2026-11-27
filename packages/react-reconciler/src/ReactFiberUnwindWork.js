@@ -47,7 +47,7 @@ import {popProvider} from './ReactFiberNewContext.js';
 import {popCacheProvider} from './ReactFiberCacheComponent.js';
 import {transferActualDuration} from './ReactProfilerTimer.js';
 
-import {popTreeContext} from './ReactFiberTreeContext.js';
+import {popTreeContext$ as popTreeContext} from './ReactFiberTreeContext.js';
 
 import {popRootTransition, popTransition} from './ReactFiberTransition.js';
 

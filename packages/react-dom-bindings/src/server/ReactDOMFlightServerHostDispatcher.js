@@ -6,8 +6,8 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  emitHint,
-  getHints,
+  emitHint$ as emitHint,
+  getHints$ as getHints,
   resolveRequest,
 } from 'react-server/src/ReactFlightServer';
 

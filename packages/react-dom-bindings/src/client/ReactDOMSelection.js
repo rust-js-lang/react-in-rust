@@ -5,9 +5,27 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import getNodeForCharacterOffset from './getNodeForCharacterOffset.js';
+import {getNodeForCharacterOffset$ as getNodeForCharacterOffset} from './getNodeForCharacterOffset.js';
 import {TEXT_NODE} from './HTMLNodeType.js';
-import {$catchable, $some, $someValue, $unwrap} from '@rust-js/std';
+import {
+  $catchable,
+  $checkBoxedOption,
+  $checkF64,
+  $checkOption,
+  $checkShape,
+  $checks,
+  $some,
+  $someValue,
+  $unwrap,
+} from '@rust-js/std';
+
+const checkOffsets = /* @__PURE__ */ $checkShape(() => ({
+  start: [$checkF64, 'nullish'],
+  end: (value, where) =>
+    $checkBoxedOption(value, where, (value, where) =>
+      $checkOption(value, where, $checkF64),
+    ),
+}));
 
 /**
  * @param {DOMElement} outerNode
@@ -51,7 +69,7 @@ export function getOffsets(outerNode) {
     return null;
   }
 
-  return getModernOffsetsFromPoints(
+  return getModernOffsetsFromPoints$(
     outerNode,
     anchorNode,
     anchorOffset,
@@ -70,6 +88,29 @@ export function getOffsets(outerNode) {
  * Exported only for testing.
  */
 export function getModernOffsetsFromPoints(
+  outerNode,
+  anchorNode,
+  anchorOffset,
+  focusNode,
+  focusOffset,
+) {
+  $checks(
+    'getModernOffsetsFromPoints(anchorOffset, focusOffset)',
+    anchorOffset,
+    $checkF64,
+    focusOffset,
+    $checkF64,
+  );
+  return getModernOffsetsFromPoints$(
+    outerNode,
+    anchorNode,
+    anchorOffset,
+    focusNode,
+    focusOffset,
+  );
+}
+
+export function getModernOffsetsFromPoints$(
   outerNode,
   anchorNode,
   anchorOffset,
@@ -175,6 +216,11 @@ export function getModernOffsetsFromPoints(
  * @param {object} offsets
  */
 export function setOffsets(node, offsets) {
+  $checks('setOffsets(offsets)', offsets, checkOffsets);
+  return setOffsets$(node, offsets);
+}
+
+export function setOffsets$(node, offsets) {
   const doc = node.ownerDocument ?? document;
   const win = doc.defaultView ?? window;
 

@@ -6,21 +6,31 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  attachAbortSignal as attachFizzAbortSignal,
-  createRequest as createFizzRequest,
-  startFlowing as startFizzFlowing,
-  startWork as startFizzWork,
+  attachAbortSignal$ as attachFizzAbortSignal,
+  createRequest$ as createFizzRequest,
+  startFlowing$ as startFizzFlowing,
+  startWork$ as startFizzWork,
 } from 'react-server/src/ReactFizzServer';
-
 import {
-  createRenderState,
-  createResumableState,
-  createRootFormatContext,
-} from './ReactFizzConfigMarkup.js';
+  createRenderState$ as createRenderState,
+  createResumableState$ as createResumableState,
+  createRootFormatContext$ as createRootFormatContext,
+} from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
+import {$checkShape, $checkStr, $checkWhole} from '@rust-js/std';
 
 export {default as version} from 'shared/ReactVersion';
 
+const checkMarkupOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+}));
+
 export function experimental_renderToHTML(children, options) {
+  $checkWhole(
+    checkMarkupOptions,
+    options,
+    'experimental_renderToHTML(options)',
+    'nullish',
+  );
   return new Promise((resolve, reject) => {
     let buffer = '';
     const fizzDestination = {

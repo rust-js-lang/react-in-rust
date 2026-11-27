@@ -6,30 +6,53 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  abort,
-  attachAbortSignal,
-  createPrerenderRequest,
-  getPostponedState,
-  resumeAndPrerenderRequest,
-  startFlowing,
-  startWork,
-  stopFlowing,
+  abort$ as abort,
+  attachAbortSignal$ as attachAbortSignal,
+  createPrerenderRequest$ as createPrerenderRequest,
+  getPostponedState$ as getPostponedState,
+  resumeAndPrerenderRequest$ as resumeAndPrerenderRequest,
+  startFlowing$ as startFlowing,
+  startWork$ as startWork,
+  stopFlowing$ as stopFlowing,
 } from 'react-server/src/ReactFizzServer';
 
 import {
-  createRenderState,
-  createResumableState,
-  createRootFormatContext,
-  resumeRenderState,
+  createRenderState$ as createRenderState,
+  createResumableState$ as createResumableState,
+  createRootFormatContext$ as createRootFormatContext,
+  resumeRenderState$ as resumeRenderState,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
+import {
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $checks,
+} from '@rust-js/std';
 
 export {default as version} from 'shared/ReactVersion';
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  namespaceURI: [$checkStr, 'nullish'],
+  bootstrapScriptContent: [$checkStr, 'nullish'],
+  progressiveChunkSize: [$checkF64, 'nullish'],
+}));
+
+const checkPostponedState = /* @__PURE__ */ $checkShape(
+  () => ({progressiveChunkSize: $checkF64}),
+  'react_server#7e2989a65442a9f6::react_fizz_server::PostponedState',
+  'a PostponedState',
+);
+
+const checkResumeOptions = /* @__PURE__ */ $checkShape(() => ({}));
 
 ensureCorrectIsomorphicReactVersion();
 
 export function prerender(children, options) {
+  $checkWhole(checkOptions, options, 'prerender(options)', 'nullish');
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
 
@@ -101,6 +124,17 @@ export function prerender(children, options) {
 }
 
 export function resumeAndPrerender(children, postponedState, options) {
+  $checks(
+    'resumeAndPrerender(postponedState)',
+    postponedState,
+    checkPostponedState,
+  );
+  $checkWhole(
+    checkResumeOptions,
+    options,
+    'resumeAndPrerender(options)',
+    'nullish',
+  );
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
 

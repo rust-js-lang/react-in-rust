@@ -5,7 +5,11 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {getHighestPriorityLane, includesNonIdleWork} from './ReactFiberLane.js';
+import {
+  getHighestPriorityLane$ as getHighestPriorityLane,
+  includesNonIdleWork$ as includesNonIdleWork,
+} from './ReactFiberLane.js';
+import {$checkI32} from '@rust-js/std';
 
 export const NoEventPriority = 0;
 export const DiscreteEventPriority = 2;
@@ -30,6 +34,11 @@ export function eventPriorityToLane(updatePriority) {
 }
 
 export function lanesToEventPriority(lanes) {
+  $checkI32(lanes, 'lanesToEventPriority(lanes)');
+  return lanesToEventPriority$(lanes);
+}
+
+export function lanesToEventPriority$(lanes) {
   const lane = getHighestPriorityLane(lanes);
   if (!isHigherEventPriority(DiscreteEventPriority, lane)) {
     return DiscreteEventPriority;

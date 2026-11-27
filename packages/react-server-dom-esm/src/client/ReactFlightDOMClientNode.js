@@ -6,19 +6,35 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  close,
-  createResponse,
-  createStreamState,
-  getRoot,
-  processBinaryChunk,
-  processStringChunk,
-  reportGlobalError,
+  close$ as close,
+  createResponse$ as createResponse,
+  createStreamState$ as createStreamState,
+  getRoot$ as getRoot,
+  processBinaryChunk$ as processBinaryChunk,
+  processStringChunk$ as processStringChunk,
+  reportGlobalError$ as reportGlobalError,
 } from 'react-client/src/ReactFlightClient';
 
-import {createServerReference as createServerReferenceImpl} from 'react-client/src/ReactFlightReplyClient';
-import {$stringPanic} from '@rust-js/std';
+import {createServerReference$ as createServerReferenceImpl} from 'react-client/src/ReactFlightReplyClient';
+import {
+  $checkBool,
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $checks,
+  $stringPanic,
+} from '@rust-js/std';
 
 export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  unstable_allowPartialStream: [$checkBool, 'nullish'],
+  replayConsoleLogs: [$checkBool, 'nullish'],
+  environmentName: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+  endTime: [$checkF64, 'nullish'],
+}));
 
 function noServerCall(id, args) {
   throw $stringPanic(
@@ -56,6 +72,19 @@ export function createFromNodeStream(
   moduleBaseURL,
   options,
 ) {
+  $checks(
+    'createFromNodeStream(moduleRootPath, moduleBaseURL)',
+    moduleRootPath,
+    $checkStr,
+    moduleBaseURL,
+    $checkStr,
+  );
+  $checkWhole(
+    checkOptions,
+    options,
+    'createFromNodeStream(options)',
+    'nullish',
+  );
   const debugChannel =
     __DEV__ && options != null && options.debugChannel != null
       ? {

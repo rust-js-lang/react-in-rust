@@ -6,20 +6,55 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  abort,
-  createRequest,
-  performWork,
-  startFlowing,
-  startWork,
+  abort$ as abort,
+  createRequest$ as createRequest,
+  performWork$ as performWork,
+  startFlowing$ as startFlowing,
+  startWork$ as startWork,
 } from 'react-server/src/ReactFizzServer';
 
 import {
-  createRenderState,
-  createResumableState,
-  createRootFormatContext,
+  createRenderState$ as createRenderState,
+  createResumableState$ as createResumableState,
+  createRootFormatContext$ as createRootFormatContext,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
+import {
+  $brand,
+  $checkArray,
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checks,
+} from '@rust-js/std';
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  bootstrapScriptContent: [$checkStr, 'nullish'],
+  progressiveChunkSize: [$checkF64, 'nullish'],
+}));
+
+const checkDestination = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkTask = /* @__PURE__ */ $checkShape(
+  () => ({}),
+  'react_server#7e2989a65442a9f6::react_fizz_server::Task',
+  'a Task',
+);
+
+const checkRequest = /* @__PURE__ */ $checkShape(() => ({
+  progressiveChunkSize: $checkF64,
+  pingedTasks: (value, where, none) =>
+    $checkArray(value, where, none, checkTask),
+}));
+
+const checkStream = /* @__PURE__ */ $checkShape(
+  () => ({destination: checkDestination, request: checkRequest}),
+  'react_server_dom_fb#5262d0509fcbd618::react_dom_server_fb::Stream',
+  'a Stream',
+);
 
 export function renderToStream(children, options) {
+  $checks('renderToStream(options)', options, checkOptions);
   const destination = {
     buffer: '',
     done: false,
@@ -50,17 +85,22 @@ export function renderToStream(children, options) {
   if (destination.fatal) {
     throw destination.error;
   }
-  return {
-    destination,
-    request,
-  };
+  return $brand(
+    'react_server_dom_fb#5262d0509fcbd618::react_dom_server_fb::Stream',
+    {
+      destination,
+      request,
+    },
+  );
 }
 
 export function abortStream(stream, reason) {
+  $checks('abortStream(stream)', stream, checkStream);
   abort(stream.request, reason);
 }
 
 export function renderNextChunk(stream) {
+  $checks('renderNextChunk(stream)', stream, checkStream);
   const {request, destination} = stream;
   performWork(request);
   startFlowing(request, destination);
@@ -75,11 +115,13 @@ export function renderNextChunk(stream) {
 }
 
 export function hasFinished(stream) {
+  $checks('hasFinished(stream)', stream, checkStream);
   return stream.destination.done;
 }
 
 export function debug(stream) {
   // convert to any to silence flow errors from opaque type
+  $checks('debug(stream)', stream, checkStream);
   const request = stream.request;
   return {
     pendingRootTasks: request.pendingRootTasks,

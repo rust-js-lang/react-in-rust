@@ -5,7 +5,10 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
+import {$checkStr} from '@rust-js/std';
+
 export function prepareDestinationForModuleImpl(moduleLoading, chunks, nonce) {
+  $checkStr(nonce, 'prepareDestinationForModuleImpl(nonce)', 'nullish');
   // In the browser we don't need to prepare our destination since the browser is the Destination
 }
 //# sourceMappingURL=ReactFlightClientConfigTargetESMBrowser.js.map

@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree.
 
 import hasOwnProperty from 'shared/hasOwnProperty';
-import {$stringPanic, $unwrap} from '@rust-js/std';
+import {$checkCallback, $checkStr, $stringPanic, $unwrap} from '@rust-js/std';
 
 const supportsArrayBufferDetached = hasOwnProperty.call(
   ArrayBuffer.prototype,
@@ -34,6 +34,11 @@ export const scheduleMicrotask =
       };
 
 export function scheduleWork(callback) {
+  $checkCallback(callback, 'scheduleWork(callback)');
+  return scheduleWork$(callback);
+}
+
+export function scheduleWork$(callback) {
   setTimeout(callback, 0);
 }
 
@@ -164,10 +169,20 @@ export function close(destination) {
 const textEncoder = new TextEncoder();
 
 export function stringToChunk(content) {
+  $checkStr(content, 'stringToChunk(content)');
+  return stringToChunk$(content);
+}
+
+export function stringToChunk$(content) {
   return textEncoder.encode(content);
 }
 
 export function stringToPrecomputedChunk(content) {
+  $checkStr(content, 'stringToPrecomputedChunk(content)');
+  return stringToPrecomputedChunk$(content);
+}
+
+export function stringToPrecomputedChunk$(content) {
   const precomputedChunk = textEncoder.encode(content);
 
   if (__DEV__ && precomputedChunk.byteLength > VIEW_SIZE) {

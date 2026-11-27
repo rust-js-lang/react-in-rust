@@ -7,14 +7,14 @@
 
 import {
   unstable_NormalPriority as NormalPriority,
-  unstable_scheduleCallback as scheduleCallback,
+  unstable_scheduleCallback$ as scheduleCallback,
 } from 'scheduler';
 
 import {
-  getActivityInstanceFromFiber,
-  getContainerFromFiber,
-  getNearestMountedFiber,
-  getSuspenseInstanceFromFiber,
+  getActivityInstanceFromFiber$ as getActivityInstanceFromFiber,
+  getContainerFromFiber$ as getContainerFromFiber,
+  getNearestMountedFiber$ as getNearestMountedFiber,
+  getSuspenseInstanceFromFiber$ as getSuspenseInstanceFromFiber,
 } from 'react-reconciler/src/ReactFiberTreeReflection';
 
 import {

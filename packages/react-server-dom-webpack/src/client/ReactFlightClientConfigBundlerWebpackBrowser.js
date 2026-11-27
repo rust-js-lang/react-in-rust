@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$catchable} from '@rust-js/std';
+import {$catchable, $checkStr, $checks} from '@rust-js/std';
 
 const chunkMap = new Map();
 
@@ -23,6 +23,13 @@ __webpack_require__.u = chunkId => {
 };
 
 export function loadChunk(chunkId, filename) {
+  $checks(
+    'loadChunk(chunkId, filename)',
+    chunkId,
+    $checkStr,
+    filename,
+    $checkStr,
+  );
   chunkMap.set(chunkId, filename);
   return __webpack_chunk_load__(chunkId);
 }
@@ -31,6 +38,13 @@ export function loadChunk(chunkId, filename) {
 const chunkIOInfoCache = __DEV__ ? new Map() : null;
 
 export function addChunkDebugInfo(target, chunkId, filename) {
+  $checks(
+    'addChunkDebugInfo(chunkId, filename)',
+    chunkId,
+    $checkStr,
+    filename,
+    $checkStr,
+  );
   if (!__DEV__) {
     return;
   }

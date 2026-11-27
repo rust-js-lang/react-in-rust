@@ -14,13 +14,26 @@ import reportGlobalError from 'shared/reportGlobalError';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 
 import {bindToConsole} from './ReactFiberConfig.js';
-import {$catchable} from '@rust-js/std';
+import {$catchable, $checkShape, $checkStr, $checks} from '@rust-js/std';
 
 // Side-channel since I'm not sure we want to make this part of the public API
 let componentName = null;
 let errorBoundaryName = null;
 
+const checkErrorInfo = /* @__PURE__ */ $checkShape(() => ({
+  componentStack: [$checkStr, 'nullish'],
+}));
+
+const checkCaughtErrorInfo = /* @__PURE__ */ $checkShape(() => ({
+  componentStack: [$checkStr, 'nullish'],
+}));
+
 export function defaultOnUncaughtError(error, errorInfo) {
+  $checks('defaultOnUncaughtError(errorInfo)', errorInfo, checkErrorInfo);
+  return defaultOnUncaughtError$(error, errorInfo);
+}
+
+export function defaultOnUncaughtError$(error, errorInfo) {
   // Overriding this can silence these warnings e.g. for tests.
   // See https://github.com/react/react/pull/13384
 
@@ -47,6 +60,11 @@ export function defaultOnUncaughtError(error, errorInfo) {
 }
 
 export function defaultOnCaughtError(error, errorInfo) {
+  $checks('defaultOnCaughtError(errorInfo)', errorInfo, checkCaughtErrorInfo);
+  return defaultOnCaughtError$(error, errorInfo);
+}
+
+export function defaultOnCaughtError$(error, errorInfo) {
   // Overriding this can silence these warnings e.g. for tests.
   // See https://github.com/react/react/pull/13384
 
@@ -94,6 +112,11 @@ export function defaultOnCaughtError(error, errorInfo) {
 }
 
 export function defaultOnRecoverableError(error, errorInfo) {
+  $checks('defaultOnRecoverableError(errorInfo)', errorInfo, checkErrorInfo);
+  return defaultOnRecoverableError$(error, errorInfo);
+}
+
+export function defaultOnRecoverableError$(error, errorInfo) {
   reportGlobalError(error);
 }
 

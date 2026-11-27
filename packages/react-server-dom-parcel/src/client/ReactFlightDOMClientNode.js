@@ -6,17 +6,32 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  close,
-  createResponse,
-  createStreamState,
-  getRoot,
-  processBinaryChunk,
-  processStringChunk,
-  reportGlobalError,
+  close$ as close,
+  createResponse$ as createResponse,
+  createStreamState$ as createStreamState,
+  getRoot$ as getRoot,
+  processBinaryChunk$ as processBinaryChunk,
+  processStringChunk$ as processStringChunk,
+  reportGlobalError$ as reportGlobalError,
 } from 'react-client/src/ReactFlightClient';
-import {$stringPanic} from '@rust-js/std';
+import {
+  $checkBool,
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $stringPanic,
+} from '@rust-js/std';
 
 export * from './ReactFlightDOMClientEdge.js';
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  unstable_allowPartialStream: [$checkBool, 'nullish'],
+  replayConsoleLogs: [$checkBool, 'nullish'],
+  environmentName: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+  endTime: [$checkF64, 'nullish'],
+}));
 
 function findSourceMapURL(filename, environmentName) {
   const devServer = parcelRequire.meta.devServer;
@@ -56,6 +71,12 @@ function startReadingFromStream(response, stream, onEnd) {
 }
 
 export function createFromNodeStream(stream, options) {
+  $checkWhole(
+    checkOptions,
+    options,
+    'createFromNodeStream(options)',
+    'nullish',
+  );
   const debugChannel =
     __DEV__ && options != null && options.debugChannel != null
       ? {

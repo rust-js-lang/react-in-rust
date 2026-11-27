@@ -9,7 +9,6 @@ export {default as version} from 'shared/ReactVersion';
 
 import {isValidContainer} from 'react-dom-bindings/src/client/ReactDOMContainer';
 import {createPortal as createPortalImpl} from 'react-reconciler/src/ReactPortal';
-import {$panic} from '@rust-js/std';
 
 export {flushSync} from './ReactDOMFlushSync.js';
 
@@ -21,9 +20,10 @@ export {
   preload,
   preloadModule,
 } from './ReactDOMFloat.js';
+import {useFormState} from 'react-dom-bindings/src/shared/ReactDOMFormActions';
+import {$checkCallback, $checkStr, $panic} from '@rust-js/std';
 export {
   requestFormReset,
-  useFormState,
   useFormStatus,
 } from 'react-dom-bindings/src/shared/ReactDOMFormActions';
 
@@ -47,6 +47,7 @@ if (
 
 export function unstable_batchedUpdates(fn, a) {
   // batchedUpdates is now just a passthrough noop
+  $checkCallback(fn, 'unstable_batchedUpdates(fn)');
   return fn(a);
 }
 
@@ -66,4 +67,12 @@ export function createPortal(
   // TODO: pass ReactDOM portal implementation as third argument
   return createPortalImpl(children, container, null, key);
 }
+
+function useFormState$1(action, initialState, permalink) {
+  $checkCallback(action, 'useFormState(action)');
+  $checkStr(permalink, 'useFormState(permalink)', 'nullish');
+  return useFormState(action, initialState, permalink);
+}
+
+export {useFormState$1 as useFormState};
 //# sourceMappingURL=ReactDOM.js.map

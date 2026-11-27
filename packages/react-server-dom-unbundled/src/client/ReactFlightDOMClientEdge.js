@@ -6,21 +6,45 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  close,
-  createResponse,
-  createStreamState,
-  getRoot,
-  processBinaryChunk,
-  reportGlobalError,
+  close$ as close,
+  createResponse$ as createResponse,
+  createStreamState$ as createStreamState,
+  getRoot$ as getRoot,
+  processBinaryChunk$ as processBinaryChunk,
+  reportGlobalError$ as reportGlobalError,
 } from 'react-client/src/ReactFlightClient';
 import {
-  createServerReference as createServerReferenceImpl,
-  processReply,
+  createServerReference$ as createServerReferenceImpl,
+  processReply$ as processReply,
 } from 'react-client/src/ReactFlightReplyClient';
-import {$stringPanic, $unwrap} from '@rust-js/std';
+import {
+  $checkBool,
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $checks,
+  $stringPanic,
+  $unwrap,
+} from '@rust-js/std';
 
 export {registerServerReference} from 'react-client/src/ReactFlightReplyClient';
 export {createTemporaryReferenceSet} from 'react-client/src/ReactFlightTemporaryReferences';
+
+const checkServerConsumerManifest = /* @__PURE__ */ $checkShape(() => ({}));
+const checkDebugChannelOptions = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  serverConsumerManifest: checkServerConsumerManifest,
+  unstable_allowPartialStream: [$checkBool, 'nullish'],
+  replayConsoleLogs: [$checkBool, 'nullish'],
+  environmentName: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+  endTime: [$checkF64, 'nullish'],
+  debugChannel: [checkDebugChannelOptions, 'nullish'],
+}));
+
+const checkEncodeReplyOptions = /* @__PURE__ */ $checkShape(() => ({}));
 
 function noServerCall(id, args) {
   throw $stringPanic(
@@ -98,6 +122,7 @@ function startReadingFromStream(response, stream, onDone, debugValue) {
 }
 
 export function createFromReadableStream(stream, options) {
+  $checks('createFromReadableStream(options)', options, checkOptions);
   const response = createResponseFromOptions(options);
 
   if (__DEV__ && options.debugChannel?.readable != null) {
@@ -124,6 +149,7 @@ export function createFromReadableStream(stream, options) {
 }
 
 export function createFromFetch(promiseForResponse, options) {
+  $checks('createFromFetch(options)', options, checkOptions);
   const response = createResponseFromOptions(options);
   promiseForResponse.then(
     r => {
@@ -154,6 +180,12 @@ export function encodeReply(
   value,
   options,
 ) /* We don't use URLSearchParams yet but maybe */ {
+  $checkWhole(
+    checkEncodeReplyOptions,
+    options,
+    'encodeReply(options)',
+    'nullish',
+  );
   return new Promise((resolve, reject) => {
     processReply(
       value,

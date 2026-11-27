@@ -8,31 +8,31 @@
 import {
   preloadModule,
   requireModule,
-  resolveServerReference,
+  resolveServerReference$ as resolveServerReference,
 } from '../client/ReactFlightClientConfigBundlerParcel.js';
 
 import noop from 'shared/noop';
 
 import {
-  abort,
-  attachAbortSignal,
-  closeDebugChannel,
-  createPrerenderRequest,
-  createRequest,
-  resolveDebugMessage,
-  startFlowing,
-  startFlowingDebug,
-  startWork,
-  stopFlowing,
+  abort$ as abort,
+  attachAbortSignal$ as attachAbortSignal,
+  closeDebugChannel$ as closeDebugChannel,
+  createPrerenderRequest$ as createPrerenderRequest,
+  createRequest$ as createRequest,
+  resolveDebugMessage$ as resolveDebugMessage,
+  startFlowing$ as startFlowing,
+  startFlowingDebug$ as startFlowingDebug,
+  startWork$ as startWork,
+  stopFlowing$ as stopFlowing,
 } from 'react-server/src/ReactFlightServer';
 
 import {
-  close,
-  createResponse,
-  getRoot,
-  reportGlobalError,
-  resolveField,
-  resolveFile,
+  close$ as close,
+  createResponse$ as createResponse,
+  getRoot$ as getRoot,
+  reportGlobalError$ as reportGlobalError,
+  resolveField$ as resolveField,
+  resolveFile$ as resolveFile,
 } from 'react-server/src/ReactFlightReplyServer';
 
 import {
@@ -46,13 +46,28 @@ export {
 } from '../ReactFlightParcelReferences.js';
 
 import {
-  createStringDecoder,
+  createStringDecoder$ as createStringDecoder,
   readFinalStringChunk,
   readPartialStringChunk,
 } from 'react-client/src/ReactFlightClientStreamConfigWeb';
-import {$panic, $unwrap} from '@rust-js/std';
+import {
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $panic,
+  $unwrap,
+} from '@rust-js/std';
 
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
+
+const checkDebugChannel = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  debugChannel: [checkDebugChannel, 'nullish'],
+  identifierPrefix: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+}));
 
 function startReadingFromDebugChannelReadableStream(request, stream) {
   const reader = stream.getReader();
@@ -91,6 +106,12 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
 }
 
 export function renderToReadableStream(model, options) {
+  $checkWhole(
+    checkOptions,
+    options,
+    'renderToReadableStream(options)',
+    'nullish',
+  );
   const debugChannelReadable = __DEV__
     ? options?.debugChannel?.readable
     : undefined;
@@ -150,6 +171,7 @@ export function renderToReadableStream(model, options) {
 }
 
 export function prerender(model, options) {
+  $checkWhole(checkOptions, options, 'prerender(options)', 'nullish');
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
     let request;
@@ -197,6 +219,10 @@ export function prerender(model, options) {
 }
 
 let serverManifest = {};
+const checkDecodeReplyOptions = /* @__PURE__ */ $checkShape(() => ({}));
+const checkDecodeReplyFromAsyncIterableOptions = /* @__PURE__ */ $checkShape(
+  () => ({}),
+);
 
 export function registerServerActions(manifest) {
   // This function is called by the bundler to register the manifest.
@@ -204,6 +230,12 @@ export function registerServerActions(manifest) {
 }
 
 export function decodeReply(body, options) {
+  $checkWhole(
+    checkDecodeReplyOptions,
+    options,
+    'decodeReply(options)',
+    'nullish',
+  );
   let body$1;
   if (typeof body === 'string') {
     const form = new FormData();
@@ -225,6 +257,12 @@ export function decodeReply(body, options) {
 }
 
 export function decodeReplyFromAsyncIterable(iterable, options) {
+  $checkWhole(
+    checkDecodeReplyFromAsyncIterableOptions,
+    options,
+    'decodeReplyFromAsyncIterable(options)',
+    'nullish',
+  );
   const iterator = iterable[Symbol.asyncIterator]();
 
   const response = createResponse(
@@ -271,6 +309,7 @@ export function decodeFormState(actionResult, body) {
 }
 
 export function loadServerAction(id) {
+  $checkStr(id, 'loadServerAction(id)');
   const reference = resolveServerReference(serverManifest, id);
   return Promise.resolve(reference)
     .then(() => preloadModule(reference))

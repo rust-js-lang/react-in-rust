@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$cleanup} from '@rust-js/std';
+import {$checkU32, $cleanup} from '@rust-js/std';
 
 let framesToSkip = 0;
 let collectedStackTrace = null;
@@ -144,6 +144,11 @@ const stackTraceCache = __DEV__ ? new WeakMap() : null;
 // This version is only used when React fully owns the Error object and there's no risk of it having
 // been already initialized and no risky that anyone else will initialize it later.
 export function parseStackTracePrivate(error, skipFrames) {
+  $checkU32(skipFrames, 'parseStackTracePrivate(skipFrames)');
+  return parseStackTracePrivate$(error, skipFrames);
+}
+
+export function parseStackTracePrivate$(error, skipFrames) {
   collectedStackTrace = null;
   framesToSkip = skipFrames;
   const previousPrepare = Error.prepareStackTrace;
@@ -167,6 +172,11 @@ export function parseStackTracePrivate(error, skipFrames) {
 }
 
 export function parseStackTrace(error, skipFrames) {
+  $checkU32(skipFrames, 'parseStackTrace(skipFrames)');
+  return parseStackTrace$(error, skipFrames);
+}
+
+export function parseStackTrace$(error, skipFrames) {
   // We can only get structured data out of error objects once. So we cache the information
   // so we can get it again each time. It also helps performance when the same error is
   // referenced more than once.

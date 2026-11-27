@@ -6,8 +6,18 @@
 // LICENSE file in the root directory of this source tree.
 
 import {TextDecoder} from 'util';
+import {$checkBool} from '@rust-js/std';
 
 export function createStringDecoder(preserveByteOrderMark) {
+  $checkBool(
+    preserveByteOrderMark,
+    'createStringDecoder(preserveByteOrderMark)',
+    'nullish',
+  );
+  return createStringDecoder$(preserveByteOrderMark);
+}
+
+export function createStringDecoder$(preserveByteOrderMark) {
   return new TextDecoder('utf-8', {ignoreBOM: preserveByteOrderMark ?? false});
 }
 

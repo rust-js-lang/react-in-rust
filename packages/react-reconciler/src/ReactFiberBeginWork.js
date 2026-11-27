@@ -91,7 +91,7 @@ import {
   REACT_MEMO_TYPE,
 } from 'shared/ReactSymbols';
 
-import {setCurrentFiber} from './ReactCurrentFiber.js';
+import {setCurrentFiber$ as setCurrentFiber} from './ReactCurrentFiber.js';
 import {resolveTypeForHotReloading} from './ReactFiberHotReloading.js';
 
 import {
@@ -113,13 +113,13 @@ import {
   NoLanes,
   OffscreenLane,
   SomeRetryLane,
-  getBumpedLaneForHydration,
-  includesOnlyRetries,
-  includesSomeLane,
-  laneToLanes,
-  mergeLanes,
-  pickArbitraryLane,
-  removeLanes,
+  getBumpedLaneForHydration$ as getBumpedLaneForHydration,
+  includesOnlyRetries$ as includesOnlyRetries,
+  includesSomeLane$ as includesSomeLane,
+  laneToLanes$ as laneToLanes,
+  mergeLanes$ as mergeLanes,
+  pickArbitraryLane$ as pickArbitraryLane,
+  removeLanes$ as removeLanes,
 } from './ReactFiberLane.js';
 import {
   ConcurrentMode,
@@ -246,8 +246,8 @@ import {enqueueConcurrentRenderForLane} from './ReactFiberConcurrentUpdates.js';
 import {CacheContext, pushCacheProvider} from './ReactFiberCacheComponent.js';
 
 import {
-  createCapturedValueAtFiber,
-  createCapturedValueFromError,
+  createCapturedValueAtFiber$ as createCapturedValueAtFiber,
+  createCapturedValueFromError$ as createCapturedValueFromError,
 } from './ReactCapturedValue.js';
 import {OffscreenVisible} from './ReactFiberOffscreenComponent.js';
 import {
@@ -255,10 +255,10 @@ import {
   initializeClassErrorUpdate,
 } from './ReactFiberThrow.js';
 import {
-  getForksAtLevel,
-  isForkedChild,
-  pushMaterializedTreeId,
-  pushTreeId,
+  getForksAtLevel$ as getForksAtLevel,
+  isForkedChild$ as isForkedChild,
+  pushMaterializedTreeId$ as pushMaterializedTreeId,
+  pushTreeId$ as pushTreeId,
 } from './ReactFiberTreeContext.js';
 
 import {
@@ -284,6 +284,8 @@ import {
 import {resolveLazy} from './ReactFiberThenable.js';
 import {
   $borrow,
+  $checkBool,
+  $checkResult,
   $cleanup,
   $fieldCell,
   $panic,
@@ -1922,7 +1924,11 @@ function updateHostComponent(current, workInProgress, renderLanes) {
   const prevProps = current != null ? current.memoizedProps : null;
 
   let nextChildren = nextProps.children;
-  const isDirectTextChild = shouldSetTextContent(type, nextProps);
+  const isDirectTextChild = $checkResult(
+    shouldSetTextContent(type, nextProps),
+    './src/ReactFiberConfig.js#shouldSetTextContent',
+    $checkBool,
+  );
 
   if (isDirectTextChild) {
     // We special case a direct text child of a host node. This is a common
@@ -1930,7 +1936,14 @@ function updateHostComponent(current, workInProgress, renderLanes) {
     // this in the host environment that also has access to this prop. That
     // avoids allocating another HostText fiber and traversing it.
     nextChildren = null;
-  } else if (prevProps != null && shouldSetTextContent(type, prevProps)) {
+  } else if (
+    prevProps != null &&
+    $checkResult(
+      shouldSetTextContent(type, prevProps),
+      './src/ReactFiberConfig.js#shouldSetTextContent',
+      $checkBool,
+    )
+  ) {
     // If we're switching from a direct text child to a normal child, or to
     // empty, we need to schedule the text content to be reset.
     workInProgress.flags |= ContentReset;
@@ -2880,7 +2893,13 @@ function mountDehydratedSuspenseComponent(
 ) {
   // During the first pass, we'll bail out and not drill into the children.
   // Instead, we'll leave the content in place and try to hydrate it later.
-  if (isSuspenseInstanceFallback(suspenseInstance)) {
+  if (
+    $checkResult(
+      isSuspenseInstanceFallback(suspenseInstance),
+      './src/ReactFiberConfig.js#isSuspenseInstanceFallback',
+      $checkBool,
+    )
+  ) {
     // This is a client-only boundary. Since we won't get any content from the server
     // for this, we need to schedule that at a higher priority based on when it would
     // have timed out. In theory we could render it in this pass but it would have the
@@ -2921,7 +2940,13 @@ function updateDehydratedSuspenseComponent(
       markRenderDerivedCause(workInProgress);
     }
 
-    if (isSuspenseInstanceFallback(suspenseInstance)) {
+    if (
+      $checkResult(
+        isSuspenseInstanceFallback(suspenseInstance),
+        './src/ReactFiberConfig.js#isSuspenseInstanceFallback',
+        $checkBool,
+      )
+    ) {
       // This boundary is in a permanent fallback state. In this case, we'll never
       // get an update and we'll never be able to hydrate the final content. Let's just try the
       // client side render instead.
@@ -3039,7 +3064,13 @@ function updateDehydratedSuspenseComponent(
       // outside a transition.
       //
       // This path should only happen if the hydration lane already suspended.
-      if (isSuspenseInstancePending(suspenseInstance)) {
+      if (
+        $checkResult(
+          isSuspenseInstancePending(suspenseInstance),
+          './src/ReactFiberConfig.js#isSuspenseInstancePending',
+          $checkBool,
+        )
+      ) {
         // This is a dehydrated suspense instance. We don't need to suspend
         // because we're already showing a fallback.
         // TODO: The Fizz runtime might still stream in completed HTML, out-of-
@@ -3053,7 +3084,13 @@ function updateDehydratedSuspenseComponent(
         workInProgress,
         renderLanes,
       );
-    } else if (isSuspenseInstancePending(suspenseInstance)) {
+    } else if (
+      $checkResult(
+        isSuspenseInstancePending(suspenseInstance),
+        './src/ReactFiberConfig.js#isSuspenseInstancePending',
+        $checkBool,
+      )
+    ) {
       // This component is still pending more data from the server, so we can't hydrate its
       // content. We treat it as if this component suspended itself. It might seem as if
       // we could just try to render it client-side instead. However, this will perform a

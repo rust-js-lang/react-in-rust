@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$catchable} from '@rust-js/std';
+import {$catchable, $checkStr} from '@rust-js/std';
 
 export function loadChunk(filename) {
   return __turbopack_load_by_url__(filename);
@@ -15,6 +15,7 @@ export function loadChunk(filename) {
 const chunkIOInfoCache = __DEV__ ? new Map() : null;
 
 export function addChunkDebugInfo(target, filename) {
+  $checkStr(filename, 'addChunkDebugInfo(filename)');
   if (!__DEV__) {
     return;
   }

@@ -13,7 +13,18 @@ import {
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import {enableProfilerTimer} from 'shared/ReactFeatureFlags';
-import {$insertAt, $position} from '@rust-js/std';
+import {
+  $checkArray,
+  $checkBool,
+  $checkCallback,
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $checks,
+  $insertAt,
+  $position,
+} from '@rust-js/std';
 
 // TODO: Consider exporting the react-native version.
 export {default as rendererVersion} from 'shared/ReactVersion';
@@ -31,6 +42,13 @@ export * from 'react-reconciler/src/ReactFiberConfigWithNoSingletons';
 
 const NO_CONTEXT = {};
 const nodeToInstanceMap = new WeakMap();
+const checkContainer = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkInstance = /* @__PURE__ */ $checkShape(() => ({
+  rootContainerInstance: checkContainer,
+}));
+
+const checkTextInstance = /* @__PURE__ */ $checkShape(() => ({}));
 
 if (__DEV__) {
   Object.freeze(NO_CONTEXT);
@@ -100,23 +118,32 @@ export function removeChild(parentInstance, child) {
 }
 
 export function clearContainer(container) {
+  $checks('clearContainer(container)', container, checkContainer);
   container.children.length = 0;
 }
 
 export function getRootHostContext(rootContainerInstance) {
+  $checks(
+    'getRootHostContext(rootContainerInstance)',
+    rootContainerInstance,
+    checkContainer,
+  );
   return NO_CONTEXT;
 }
 
 export function getChildHostContext(parentHostContext, type) {
+  $checkStr(type, 'getChildHostContext(type)');
   return NO_CONTEXT;
 }
 
 export function prepareForCommit(containerInfo) {
   // noop
+  $checks('prepareForCommit(containerInfo)', containerInfo, checkContainer);
   return null;
 }
 
 export function resetAfterCommit(containerInfo) {
+  $checks('resetAfterCommit(containerInfo)', containerInfo, checkContainer);
   // noop
 }
 
@@ -127,6 +154,13 @@ export function createInstance(
   hostContext,
   internalInstanceHandle,
 ) {
+  $checks(
+    'createInstance(type, rootContainerInstance)',
+    type,
+    $checkStr,
+    rootContainerInstance,
+    checkContainer,
+  );
   return {
     type,
     props,
@@ -139,6 +173,13 @@ export function createInstance(
 }
 
 export function cloneMutableInstance(instance, keepChildren) {
+  $checks(
+    'cloneMutableInstance(instance, keepChildren)',
+    instance,
+    checkInstance,
+    keepChildren,
+    $checkBool,
+  );
   return {
     type: instance.type,
     props: instance.props,
@@ -151,6 +192,7 @@ export function cloneMutableInstance(instance, keepChildren) {
 }
 
 export function appendInitialChild(parentInstance, child) {
+  $checks('appendInitialChild(parentInstance)', parentInstance, checkInstance);
   const children = parentInstance.children;
   const index = children.indexOf(child);
   if (index !== -1) {
@@ -166,10 +208,20 @@ export function finalizeInitialChildren(
   rootContainerInstance,
   hostContext,
 ) {
+  $checks(
+    'finalizeInitialChildren(testElement, type, rootContainerInstance)',
+    testElement,
+    checkInstance,
+    type,
+    $checkStr,
+    rootContainerInstance,
+    checkContainer,
+  );
   return false;
 }
 
 export function shouldSetTextContent(type, props) {
+  $checkStr(type, 'shouldSetTextContent(type)');
   return false;
 }
 
@@ -179,6 +231,13 @@ export function createTextInstance(
   hostContext,
   internalInstanceHandle,
 ) {
+  $checks(
+    'createTextInstance(text, rootContainerInstance)',
+    text,
+    $checkStr,
+    rootContainerInstance,
+    checkContainer,
+  );
   return {
     text,
     isHidden: false,
@@ -187,6 +246,11 @@ export function createTextInstance(
 }
 
 export function cloneMutableTextInstance(textInstance) {
+  $checks(
+    'cloneMutableTextInstance(textInstance)',
+    textInstance,
+    checkTextInstance,
+  );
   return {
     text: textInstance.text,
     isHidden: textInstance.isHidden,
@@ -243,19 +307,43 @@ export function commitUpdate(
   newProps,
   internalInstanceHandle,
 ) {
+  $checks(
+    'commitUpdate(instance, type)',
+    instance,
+    checkInstance,
+    type,
+    $checkStr,
+  );
   instance.type = type;
   instance.props = newProps;
 }
 
 export function commitMount(instance, type, newProps, internalInstanceHandle) {
+  $checks(
+    'commitMount(instance, type)',
+    instance,
+    checkInstance,
+    type,
+    $checkStr,
+  );
   // noop
 }
 
 export function commitTextUpdate(textInstance, oldText, newText) {
+  $checks(
+    'commitTextUpdate(textInstance, oldText, newText)',
+    textInstance,
+    checkTextInstance,
+    oldText,
+    $checkStr,
+    newText,
+    $checkStr,
+  );
   textInstance.text = newText;
 }
 
 export function resetTextContent(testElement) {
+  $checks('resetTextContent(testElement)', testElement, checkInstance);
   // noop
 }
 
@@ -264,42 +352,83 @@ export const insertInContainerBefore = insertBefore;
 export const removeChildFromContainer = removeChild;
 
 export function hideInstance(instance) {
+  $checks('hideInstance(instance)', instance, checkInstance);
   instance.isHidden = true;
 }
 
 export function hideTextInstance(textInstance) {
+  $checks('hideTextInstance(textInstance)', textInstance, checkTextInstance);
   textInstance.isHidden = true;
 }
 
 export function unhideInstance(instance, props) {
+  $checks('unhideInstance(instance)', instance, checkInstance);
   instance.isHidden = false;
 }
 
 export function unhideTextInstance(textInstance, text) {
+  $checks(
+    'unhideTextInstance(textInstance, text)',
+    textInstance,
+    checkTextInstance,
+    text,
+    $checkStr,
+  );
   textInstance.isHidden = false;
 }
 
 export function applyViewTransitionName(instance, name, className) {
+  $checks(
+    'applyViewTransitionName(instance, name)',
+    instance,
+    checkInstance,
+    name,
+    $checkStr,
+  );
+  $checkStr(className, 'applyViewTransitionName(className)', 'nullish');
   // Noop
 }
 
 export function restoreViewTransitionName(instance, props) {
+  $checks('restoreViewTransitionName(instance)', instance, checkInstance);
   // Noop
 }
 
 export function cancelViewTransitionName(instance, name, props) {
+  $checks(
+    'cancelViewTransitionName(instance, name)',
+    instance,
+    checkInstance,
+    name,
+    $checkStr,
+  );
   // Noop
 }
 
 export function cancelRootViewTransitionName(rootContainer) {
+  $checks(
+    'cancelRootViewTransitionName(rootContainer)',
+    rootContainer,
+    checkContainer,
+  );
   // Noop
 }
 
 export function restoreRootViewTransitionName(rootContainer) {
+  $checks(
+    'restoreRootViewTransitionName(rootContainer)',
+    rootContainer,
+    checkContainer,
+  );
   // Noop
 }
 
 export function cloneRootViewTransitionContainer(rootContainer) {
+  $checks(
+    'cloneRootViewTransitionContainer(rootContainer)',
+    rootContainer,
+    checkContainer,
+  );
   return {
     type: 'ROOT',
     props: {},
@@ -312,14 +441,23 @@ export function cloneRootViewTransitionContainer(rootContainer) {
 }
 
 export function removeRootViewTransitionClone(rootContainer, clone) {
+  $checks(
+    'removeRootViewTransitionClone(rootContainer, clone)',
+    rootContainer,
+    checkContainer,
+    clone,
+    checkInstance,
+  );
   // Noop since it was never inserted anywhere.
 }
 
 export function measureInstance(instance) {
+  $checks('measureInstance(instance)', instance, checkInstance);
   return null;
 }
 
 export function measureClonedInstance(instance) {
+  $checks('measureClonedInstance(instance)', instance, checkInstance);
   return null;
 }
 
@@ -348,6 +486,27 @@ export function startViewTransition(
   blockedCallback, // Profiling-only
   finishedAnimation, // Profiling-only
 ) {
+  $checks('startViewTransition(rootContainer)', rootContainer, checkContainer);
+  $checkWhole(
+    (value, where, none) => $checkArray(value, where, none, $checkStr),
+    transitionTypes,
+    'startViewTransition(transitionTypes)',
+    'nullish',
+  );
+  $checkCallback(mutationCallback, 'startViewTransition(mutationCallback)');
+  $checkCallback(layoutCallback, 'startViewTransition(layoutCallback)');
+  $checkCallback(
+    afterMutationCallback,
+    'startViewTransition(afterMutationCallback)',
+  );
+  $checkCallback(
+    spawnedWorkCallback,
+    'startViewTransition(spawnedWorkCallback)',
+  );
+  $checkCallback(passiveCallback, 'startViewTransition(passiveCallback)');
+  $checkCallback(errorCallback, 'startViewTransition(errorCallback)');
+  $checkCallback(blockedCallback, 'startViewTransition(blockedCallback)');
+  $checkCallback(finishedAnimation, 'startViewTransition(finishedAnimation)');
   mutationCallback();
   layoutCallback();
   // Skip afterMutationCallback(). We don't need it since we're not animating.
@@ -368,6 +527,28 @@ export function startGestureTransition(
   errorCallback,
   finishedAnimation, // Profiling-only
 ) {
+  $checks(
+    'startGestureTransition(rootContainer, rangeStart, rangeEnd)',
+    rootContainer,
+    checkContainer,
+    rangeStart,
+    $checkF64,
+    rangeEnd,
+    $checkF64,
+  );
+  $checkWhole(
+    (value, where, none) => $checkArray(value, where, none, $checkStr),
+    transitionTypes,
+    'startGestureTransition(transitionTypes)',
+    'nullish',
+  );
+  $checkCallback(mutationCallback, 'startGestureTransition(mutationCallback)');
+  $checkCallback(animateCallback, 'startGestureTransition(animateCallback)');
+  $checkCallback(errorCallback, 'startGestureTransition(errorCallback)');
+  $checkCallback(
+    finishedAnimation,
+    'startGestureTransition(finishedAnimation)',
+  );
   mutationCallback();
   animateCallback();
   if (enableProfilerTimer) {
@@ -379,10 +560,12 @@ export function startGestureTransition(
 export function stopViewTransition(transition) {}
 
 export function addViewTransitionFinishedListener(transition, callback) {
+  $checkCallback(callback, 'addViewTransitionFinishedListener(callback)');
   callback();
 }
 
 export function createViewTransitionInstance(name) {
+  $checkStr(name, 'createViewTransitionInstance(name)');
   return null;
 }
 
@@ -395,10 +578,12 @@ export function updateFragmentInstanceFiber(fragmentFiber, instance) {
 }
 
 export function commitNewChildToFragmentInstance(child, fragmentInstance) {
+  $checks('commitNewChildToFragmentInstance(child)', child, checkInstance);
   // noop
 }
 
 export function deleteChildFromFragmentInstance(child, fragmentInstance) {
+  $checks('deleteChildFromFragmentInstance(child)', child, checkInstance);
   // Noop
 }
 
@@ -423,6 +608,7 @@ export function afterActiveInstanceBlur() {
 }
 
 export function preparePortalMount(portalInstance) {
+  $checks('preparePortalMount(portalInstance)', portalInstance, checkContainer);
   // noop
 }
 
@@ -435,6 +621,7 @@ export function getInstanceFromScope(scopeInstance) {
 }
 
 export function detachDeletedInstance(node) {
+  $checks('detachDeletedInstance(node)', node, checkInstance);
   // noop
 }
 
@@ -443,23 +630,34 @@ export function logRecoverableError(error) {
 }
 
 export function requestPostPaintCallback(callback) {
+  $checkCallback(callback, 'requestPostPaintCallback(callback)');
   // noop
 }
 
 export function maySuspendCommit(type, props) {
+  $checkStr(type, 'maySuspendCommit(type)');
   return false;
 }
 
 export function maySuspendCommitOnUpdate(type, oldProps, newProps) {
+  $checkStr(type, 'maySuspendCommitOnUpdate(type)');
   return false;
 }
 
 export function maySuspendCommitInSyncRender(type, props) {
+  $checkStr(type, 'maySuspendCommitInSyncRender(type)');
   return false;
 }
 
 export function preloadInstance(instance, type, props) {
   // Return true to indicate it's already loaded
+  $checks(
+    'preloadInstance(instance, type)',
+    instance,
+    checkInstance,
+    type,
+    $checkStr,
+  );
   return true;
 }
 
@@ -467,15 +665,35 @@ export function startSuspendingCommit() {
   return null;
 }
 
-export function suspendInstance(state, instance, type, props) {}
+export function suspendInstance(state, instance, type, props) {
+  $checks(
+    'suspendInstance(instance, type)',
+    instance,
+    checkInstance,
+    type,
+    $checkStr,
+  );
+}
 
-export function suspendOnActiveViewTransition(state, container) {}
+export function suspendOnActiveViewTransition(state, container) {
+  $checks(
+    'suspendOnActiveViewTransition(container)',
+    container,
+    checkContainer,
+  );
+}
 
 export function waitForCommitToBeReady(state, timeoutOffset) {
+  $checkF64(timeoutOffset, 'waitForCommitToBeReady(timeoutOffset)');
   return null;
 }
 
 export function getSuspendedCommitReason(state, rootContainer) {
+  $checks(
+    'getSuspendedCommitReason(rootContainer)',
+    rootContainer,
+    checkContainer,
+  );
   return null;
 }
 
@@ -490,5 +708,7 @@ export const HostTransitionContext = {
   _threadCount: 0,
 };
 
-export function resetFormInstance(form) {}
+export function resetFormInstance(form) {
+  $checks('resetFormInstance(form)', form, checkInstance);
+}
 //# sourceMappingURL=ReactFiberConfigTestHost.js.map

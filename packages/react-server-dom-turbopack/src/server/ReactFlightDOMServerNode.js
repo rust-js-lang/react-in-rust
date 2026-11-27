@@ -10,32 +10,52 @@ import {Readable} from 'stream';
 import noop from 'shared/noop';
 
 import {
-  abort,
-  attachAbortSignal,
-  closeDebugChannel,
-  createPrerenderRequest,
-  createRequest,
-  resolveDebugMessage,
-  startFlowing,
-  startFlowingDebug,
-  startWork,
-  stopFlowing,
+  abort$ as abort,
+  attachAbortSignal$ as attachAbortSignal,
+  closeDebugChannel$ as closeDebugChannel,
+  createPrerenderRequest$ as createPrerenderRequest,
+  createRequest$ as createRequest,
+  resolveDebugMessage$ as resolveDebugMessage,
+  startFlowing$ as startFlowing,
+  startFlowingDebug$ as startFlowingDebug,
+  startWork$ as startWork,
+  stopFlowing$ as stopFlowing,
 } from 'react-server/src/ReactFlightServer';
 
 import {
-  close,
-  createResponse,
-  getRoot,
-  reportGlobalError,
-  resolveField,
-  resolveFile,
-  resolveFileChunk,
-  resolveFileComplete,
-  resolveFileInfo,
+  close$ as close,
+  createResponse$ as createResponse,
+  getRoot$ as getRoot,
+  reportGlobalError$ as reportGlobalError,
+  resolveField$ as resolveField,
+  resolveFile$ as resolveFile,
+  resolveFileChunk$ as resolveFileChunk,
+  resolveFileComplete$ as resolveFileComplete,
+  resolveFileInfo$ as resolveFileInfo,
 } from 'react-server/src/ReactFlightReplyServer';
 
 import * as ReactFlightActionServer from 'react-server/src/ReactFlightActionServer';
 export {decodeFormState} from 'react-server/src/ReactFlightActionServer';
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+}));
+
+const checkWebStreamsDebugChannel = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkWebStreamsOptions = /* @__PURE__ */ $checkShape(() => ({
+  debugChannel: [checkWebStreamsDebugChannel, 'nullish'],
+  identifierPrefix: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+}));
+
+const checkPrerenderOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+}));
+
+const checkDecodeReplyOptions = /* @__PURE__ */ $checkShape(() => ({}));
 
 export function decodeAction(body, serverManifest) {
   return (
@@ -51,7 +71,7 @@ export {
 } from '../ReactFlightTurbopackReferences.js';
 
 import {
-  createStringDecoder,
+  createStringDecoder$ as createStringDecoder,
   readFinalStringChunk,
   readPartialStringChunk,
 } from 'react-client/src/ReactFlightClientStreamConfigNode';
@@ -61,6 +81,10 @@ import {
   $borrow,
   $borrowMut,
   $catchable,
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
   $index,
   $panic,
   $toLowercase,
@@ -150,6 +174,12 @@ function startReadingFromDebugChannelReadable(request, stream) {
 }
 
 export function renderToPipeableStream(model, turbopackMap, options) {
+  $checkWhole(
+    checkOptions,
+    options,
+    'renderToPipeableStream(options)',
+    'nullish',
+  );
   const debugChannel = __DEV__ ? options?.debugChannel : undefined;
   const debugChannelReadable =
     __DEV__ &&
@@ -307,6 +337,12 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
 }
 
 export function renderToReadableStream(model, turbopackMap, options) {
+  $checkWhole(
+    checkWebStreamsOptions,
+    options,
+    'renderToReadableStream(options)',
+    'nullish',
+  );
   const debugChannelReadable = __DEV__
     ? options?.debugChannel?.readable
     : undefined;
@@ -401,6 +437,12 @@ function createFakeWritableFromNodeReadable(readable) {
 }
 
 export function prerenderToNodeStream(model, turbopackMap, options) {
+  $checkWhole(
+    checkPrerenderOptions,
+    options,
+    'prerenderToNodeStream(options)',
+    'nullish',
+  );
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
     let request;
@@ -447,6 +489,7 @@ export function prerenderToNodeStream(model, turbopackMap, options) {
 }
 
 export function prerender(model, turbopackMap, options) {
+  $checkWhole(checkPrerenderOptions, options, 'prerender(options)', 'nullish');
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
     let request;
@@ -505,6 +548,12 @@ export function prerender(model, turbopackMap, options) {
 }
 
 export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
+  $checkWhole(
+    checkDecodeReplyOptions,
+    options,
+    'decodeReplyFromBusboy(options)',
+    'nullish',
+  );
   const response = createResponse(
     turbopackMap,
     '',
@@ -661,6 +710,12 @@ export function decodeReplyFromBusboy(busboyStream, turbopackMap, options) {
 }
 
 export function decodeReply(body, turbopackMap, options) {
+  $checkWhole(
+    checkDecodeReplyOptions,
+    options,
+    'decodeReply(options)',
+    'nullish',
+  );
   let body$1;
   if (typeof body === 'string') {
     const form = new FormData();
@@ -682,6 +737,12 @@ export function decodeReply(body, turbopackMap, options) {
 }
 
 export function decodeReplyFromAsyncIterable(iterable, turbopackMap, options) {
+  $checkWhole(
+    checkDecodeReplyOptions,
+    options,
+    'decodeReplyFromAsyncIterable(options)',
+    'nullish',
+  );
   const iterator = iterable[Symbol.asyncIterator]();
 
   const response = createResponse(

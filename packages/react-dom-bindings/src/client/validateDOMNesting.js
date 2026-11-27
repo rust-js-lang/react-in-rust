@@ -7,7 +7,7 @@
 
 import {
   current,
-  runWithFiberInDEV,
+  runWithFiberInDEV$ as runWithFiberInDEV,
 } from 'react-reconciler/src/ReactCurrentFiber';
 import {
   HostComponent,

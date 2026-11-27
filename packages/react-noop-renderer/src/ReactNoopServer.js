@@ -32,7 +32,16 @@ function write(destination, buffer) {
 }
 
 import ReactFizzServer from 'react-server';
-import {$index, $panic, $splice, $stdSites} from '@rust-js/std';
+import {
+  $brand,
+  $checkF64,
+  $checkShape,
+  $checkWhole,
+  $index,
+  $panic,
+  $splice,
+  $stdSites,
+} from '@rust-js/std';
 
 // $FlowFixMe[prop-missing]
 // $FlowFixMe[incompatible-type]
@@ -82,12 +91,15 @@ const ReactNoopServer = ReactFizzServer({
     return false;
   },
   pushStartInstance(target, type, props) {
-    const instance = {
-      type,
-      children: [],
-      prop: props.prop,
-      hidden: false,
-    };
+    const instance = $brand(
+      'react_noop_renderer#6c0e9597630c905c::react_noop_server::Instance',
+      {
+        type,
+        children: [],
+        prop: props.prop,
+        hidden: false,
+      },
+    );
     target.push(Buffer.from(JSON.stringify(instance), 'utf8'));
     return props.children;
   },
@@ -275,7 +287,12 @@ const ReactNoopServer = ReactFizzServer({
   },
 });
 
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  progressiveChunkSize: [$checkF64, 'nullish'],
+}));
+
 export function render(children, options) {
+  $checkWhole(checkOptions, options, 'render(options)', 'nullish');
   const progressiveChunkSize = options?.progressiveChunkSize;
   const onError = options?.onError;
   const onBrowserBailout = options?.onBrowserBailout;

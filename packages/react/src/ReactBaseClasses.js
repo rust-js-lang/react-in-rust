@@ -7,9 +7,11 @@
 
 import ReactNoopUpdateQueue from './ReactNoopUpdateQueue.js';
 import assign from 'shared/assign';
-import {$panic} from '@rust-js/std';
+import {$checkShape, $checkWhole, $panic} from '@rust-js/std';
 
 const emptyObject = {};
+const checkUpdater = /* @__PURE__ */ $checkShape(() => ({}));
+
 if (__DEV__) {
   Object.freeze(emptyObject);
 }
@@ -17,6 +19,7 @@ if (__DEV__) {
 /** Base class helpers for the updating state of a component. */
 export class Component {
   constructor(props, context, updater) {
+    $checkWhole(checkUpdater, updater, 'Component.new(updater)', 'nullish');
     this.props = props;
     this.context = context;
     // If a component has string refs, we will assign a different object later.
@@ -135,6 +138,7 @@ ComponentDummy.prototype = Component.prototype;
 
 /** Convenience component with default shallow equality check for sCU. */
 export function PureComponent(props, context, updater) {
+  $checkWhole(checkUpdater, updater, 'PureComponent.new(updater)', 'nullish');
   this.props = props;
   this.context = context;
   // If a component has string refs, we will assign a different object later.

@@ -16,7 +16,7 @@ import {
 
 import {
   isContainerMarkedAsRoot,
-  markContainerAsRoot,
+  markContainerAsRoot$ as markContainerAsRoot,
   unmarkContainerAsRoot,
 } from 'react-dom-bindings/src/client/ReactDOMComponentTree';
 
@@ -36,7 +36,13 @@ import {
 
 import {defaultOnDefaultTransitionIndicator} from './ReactDOMDefaultTransitionIndicator.js';
 import {ConcurrentRoot} from 'react-reconciler/src/ReactRootTags';
-import {$panic} from '@rust-js/std';
+import {
+  $checkBool,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $panic,
+} from '@rust-js/std';
 
 export class ReactDOMRoot {
   constructor(internalRoot) {
@@ -102,6 +108,16 @@ export function createRoot(
   container,
   options,
 ) {
+  $checkWhole(
+    checkCreateRootOptions,
+    options,
+    'createRoot(options)',
+    'nullish',
+  );
+  return createRoot$(container, options);
+}
+
+export function createRoot$(container, options) {
   if (!isValidContainer(container)) {
     throw $panic(
       'Target container is not a DOM element.',
@@ -253,6 +269,20 @@ export class ReactDOMHydrationRoot {
   }
 }
 
+const checkTransitionTracingCallbacks = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkCreateRootOptions = /* @__PURE__ */ $checkShape(() => ({
+  unstable_strictMode: [$checkBool, 'nullish'],
+  unstable_transitionCallbacks: [checkTransitionTracingCallbacks, 'nullish'],
+  identifierPrefix: [$checkStr, 'nullish'],
+}));
+
+const checkHydrateRootOptions = /* @__PURE__ */ $checkShape(() => ({
+  unstable_strictMode: [$checkBool, 'nullish'],
+  unstable_transitionCallbacks: [checkTransitionTracingCallbacks, 'nullish'],
+  identifierPrefix: [$checkStr, 'nullish'],
+}));
+
 function scheduleHydration(target) {
   if (target) {
     queueExplicitHydrationTarget(target);
@@ -265,6 +295,16 @@ export function hydrateRoot(
   initialChildren,
   options,
 ) {
+  $checkWhole(
+    checkHydrateRootOptions,
+    options,
+    'hydrateRoot(options)',
+    'nullish',
+  );
+  return hydrateRoot$(container, initialChildren, options);
+}
+
+export function hydrateRoot$(container, initialChildren, options) {
   if (!isValidContainer(container)) {
     throw $panic(
       'Target container is not a DOM element.',

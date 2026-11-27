@@ -12,35 +12,44 @@ import ReactSharedInternalsServer from 'react-server/src/ReactSharedInternalsSer
 import ReactSharedInternalsClient from 'shared/ReactSharedInternals';
 
 import {
-  abort as abortFlight,
-  attachAbortSignal as attachFlightAbortSignal,
-  createRequest as createFlightRequest,
-  startFlowing as startFlightFlowing,
-  startWork as startFlightWork,
+  abort$ as abortFlight,
+  attachAbortSignal$ as attachFlightAbortSignal,
+  createRequest$ as createFlightRequest,
+  startFlowing$ as startFlightFlowing,
+  startWork$ as startFlightWork,
 } from 'react-server/src/ReactFlightServer';
 
 import {
-  close as closeFlight,
-  createResponse as createFlightResponse,
-  createStreamState as createFlightStreamState,
-  getRoot as getFlightRoot,
-  processStringChunk as processFlightStringChunk,
+  close$ as closeFlight,
+  createResponse$ as createFlightResponse,
+  createStreamState$ as createFlightStreamState,
+  getRoot$ as getFlightRoot,
+  processStringChunk$ as processFlightStringChunk,
 } from 'react-client/src/ReactFlightClient';
 
 import {
-  abort as abortFizz,
-  attachAbortSignal as attachFizzAbortSignal,
-  createRequest as createFizzRequest,
-  startFlowing as startFizzFlowing,
-  startWork as startFizzWork,
+  abort$ as abortFizz,
+  attachAbortSignal$ as attachFizzAbortSignal,
+  createRequest$ as createFizzRequest,
+  startFlowing$ as startFizzFlowing,
+  startWork$ as startFizzWork,
 } from 'react-server/src/ReactFizzServer';
-
 import {
-  createRenderState,
-  createResumableState,
-  createRootFormatContext,
-} from './ReactFizzConfigMarkup.js';
-import {$cleanup, $panic} from '@rust-js/std';
+  createRenderState$ as createRenderState,
+  createResumableState$ as createResumableState,
+  createRootFormatContext$ as createRootFormatContext,
+} from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
+import {
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $cleanup,
+  $panic,
+} from '@rust-js/std';
+
+const checkMarkupOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+}));
 
 // This is the intersection of ReactNodeList and ReactClientValue minus
 // Client/ServerReferences.
@@ -53,6 +62,12 @@ function noServerCallOrFormAction(id, args) {
 }
 
 export function experimental_renderToHTML(children, options) {
+  $checkWhole(
+    checkMarkupOptions,
+    options,
+    'experimental_renderToHTML(options)',
+    'nullish',
+  );
   return new Promise((resolve, reject) => {
     const flightResponse = createFlightResponse(
       null,

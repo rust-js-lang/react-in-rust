@@ -31,7 +31,7 @@ export {browser} from '../shared/ReactDOMBrowser.js';
 import {
   getFiberCurrentPropsFromNode,
   getInstanceFromNode,
-  getNodeFromInstance,
+  getNodeFromInstance$ as getNodeFromInstance,
 } from 'react-dom-bindings/src/client/ReactDOMComponentTree';
 import {
   enqueueStateRestore,

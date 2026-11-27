@@ -14,8 +14,8 @@ import {
 import {
   NoLane,
   NoLanes,
-  markHiddenUpdate,
-  mergeLanes,
+  markHiddenUpdate$ as markHiddenUpdate,
+  mergeLanes$ as mergeLanes,
 } from './ReactFiberLane.js';
 
 import {Hydrating, NoFlags, Placement} from './ReactFiberFlags.js';

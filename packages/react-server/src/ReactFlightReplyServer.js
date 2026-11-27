@@ -12,8 +12,8 @@ import {enableFlightObjectReferences} from 'shared/ReactFeatureFlags';
 import {ASYNC_ITERATOR} from 'shared/ReactSymbols';
 
 import {
-  createTemporaryReference,
-  registerTemporaryReference,
+  createTemporaryReference$ as createTemporaryReference,
+  registerTemporaryReference$ as registerTemporaryReference,
 } from './ReactFlightServerTemporaryReferences.js';
 
 import {
@@ -31,7 +31,11 @@ import {
   getStreamChunks,
 } from './ReactFlightReplyBackingFormData.js';
 import {
+  $brand,
   $catchable,
+  $checkShape,
+  $checkStr,
+  $checks,
   $cleanup,
   $index,
   $panic,
@@ -126,7 +130,28 @@ Object.defineProperty(ReactPromise.prototype, 'then', {
 const ObjectPrototype = Object.prototype;
 const ArrayPrototype = Array.prototype;
 
+const checkBackingFormData = /* @__PURE__ */ $checkShape(
+  () => ({prefix: $checkStr}),
+  'react_server#7e2989a65442a9f6::react_flight_reply_backing_form_data::BackingFormData',
+  'a BackingFormData',
+);
+
+const checkResponse = /* @__PURE__ */ $checkShape(() => ({
+  _prefix: $checkStr,
+  _formData: checkBackingFormData,
+}));
+
+const checkFileHandle = /* @__PURE__ */ $checkShape(() => ({
+  filename: [$checkStr, 'nullish'],
+  mime: $checkStr,
+}));
+
 export function getRoot(response) {
+  $checks('getRoot(response)', response, checkResponse);
+  return getRoot$(response);
+}
+
+export function getRoot$(response) {
   return getChunk(response, 0);
 }
 
@@ -720,6 +745,11 @@ function initializeModelChunk(chunk) {
 // Report that any missing chunks in the model is now going to throw this
 // error upon read. Also notify any pending promises.
 export function reportGlobalError(response, error) {
+  $checks('reportGlobalError(response)', response, checkResponse);
+  return reportGlobalError$(response, error);
+}
+
+export function reportGlobalError$(response, error) {
   response._closed = true;
   response._closedReason = error;
   response._chunks.forEach(chunk => {
@@ -1444,72 +1474,75 @@ function parseReadableStream(
       ).enqueue(value);
     }
   };
-  const flightController = {
-    enqueueModel(json) {
-      const blockedChunk = previousBlockedChunk;
-      if (blockedChunk == null) {
-        // If we're not blocked on any other chunks, we can try to eagerly initialize
-        // this as a fast-path to avoid awaiting them.
-        const chunk = createResolvedModelChunk(response, json, -1);
-        initializeModelChunk(chunk);
-        const initializedChunk = chunk;
-        if (initializedChunk.status === 'fulfilled') {
-          const value =
-            initializedChunk.status === 'fulfilled'
-              ? initializedChunk.value
-              : undefined;
-          enqueue(value);
+  const flightController = $brand(
+    'react_server#7e2989a65442a9f6::react_flight_reply_server::FlightStreamController',
+    {
+      enqueueModel(json) {
+        const blockedChunk = previousBlockedChunk;
+        if (blockedChunk == null) {
+          // If we're not blocked on any other chunks, we can try to eagerly initialize
+          // this as a fast-path to avoid awaiting them.
+          const chunk = createResolvedModelChunk(response, json, -1);
+          initializeModelChunk(chunk);
+          const initializedChunk = chunk;
+          if (initializedChunk.status === 'fulfilled') {
+            const value =
+              initializedChunk.status === 'fulfilled'
+                ? initializedChunk.value
+                : undefined;
+            enqueue(value);
+          } else {
+            chunk.then(enqueue, error);
+            previousBlockedChunk = chunk;
+          }
         } else {
+          // We're still waiting on a previous chunk so we can't enqueue quite yet.
+          const chunk = createPendingChunk(response);
           chunk.then(enqueue, error);
           previousBlockedChunk = chunk;
+          blockedChunk.then(() => {
+            if (previousBlockedChunk === chunk) {
+              // We were still the last chunk so we can now clear the queue and return
+              // to synchronous emitting.
+              previousBlockedChunk = undefined;
+            }
+            resolveModelChunk(response, chunk, json, -1);
+          });
         }
-      } else {
-        // We're still waiting on a previous chunk so we can't enqueue quite yet.
-        const chunk = createPendingChunk(response);
-        chunk.then(enqueue, error);
-        previousBlockedChunk = chunk;
-        blockedChunk.then(() => {
-          if (previousBlockedChunk === chunk) {
-            // We were still the last chunk so we can now clear the queue and return
-            // to synchronous emitting.
-            previousBlockedChunk = undefined;
-          }
-          resolveModelChunk(response, chunk, json, -1);
-        });
-      }
-    },
-    close(json) {
-      if (closed) {
-        return;
-      }
-      closed = true;
-      const blockedChunk = previousBlockedChunk;
-      if (blockedChunk == null) {
-        if (byteController != null) {
-          byteController.close();
-        } else {
-          $unwrap(
-            controller,
-            'packages/react-server/src/ReactFlightReplyServer.rs:1915:50',
-          ).close();
+      },
+      close(json) {
+        if (closed) {
+          return;
         }
-      } else {
-        // We shouldn't get any more enqueues after this so we can set it back to null.
-        previousBlockedChunk = undefined;
-        blockedChunk.then(() => {
+        closed = true;
+        const blockedChunk = previousBlockedChunk;
+        if (blockedChunk == null) {
           if (byteController != null) {
             byteController.close();
           } else {
             $unwrap(
               controller,
-              'packages/react-server/src/ReactFlightReplyServer.rs:1925:58',
+              'packages/react-server/src/ReactFlightReplyServer.rs:1915:50',
             ).close();
           }
-        });
-      }
+        } else {
+          // We shouldn't get any more enqueues after this so we can set it back to null.
+          previousBlockedChunk = undefined;
+          blockedChunk.then(() => {
+            if (byteController != null) {
+              byteController.close();
+            } else {
+              $unwrap(
+                controller,
+                'packages/react-server/src/ReactFlightReplyServer.rs:1925:58',
+              ).close();
+            }
+          });
+        }
+      },
+      error,
     },
-    error,
-  };
+  );
   resolveStream(response, id, stream, flightController);
   return stream;
 }
@@ -1548,69 +1581,80 @@ function parseAsyncIterable(
   const buffer = [];
   let closed = false;
   let nextWriteIndex = 0;
-  const flightController = {
-    enqueueModel(value) {
-      if (nextWriteIndex === buffer.length) {
-        const chunk = createResolvedIteratorResultChunk(response, value, false);
-        buffer.push(chunk);
-      } else {
-        const chunk = $index(
-          buffer,
-          nextWriteIndex,
-          'packages/react-server/src/ReactFlightReplyServer.rs:2012:59',
-        );
-        resolveIteratorResultChunk(response, chunk, value, false);
-      }
-      nextWriteIndex = (nextWriteIndex + 1) >>> 0;
-    },
-    close(value) {
-      if (closed) {
-        return;
-      }
-      closed = true;
-      if (nextWriteIndex === buffer.length) {
-        const chunk = createResolvedIteratorResultChunk(response, value, true);
-        buffer.push(chunk);
-      } else {
-        const chunk = $index(
-          buffer,
-          nextWriteIndex,
-          'packages/react-server/src/ReactFlightReplyServer.rs:2032:59',
-        );
-        resolveIteratorResultChunk(response, chunk, value, true);
-      }
-      nextWriteIndex = (nextWriteIndex + 1) >>> 0;
-      while (nextWriteIndex < buffer.length) {
-        // In generators, any extra reads from the iterator have the value undefined.
-        const chunk = $index(
-          buffer,
-          nextWriteIndex,
-          'packages/react-server/src/ReactFlightReplyServer.rs:2038:59',
-        );
+  const flightController = $brand(
+    'react_server#7e2989a65442a9f6::react_flight_reply_server::FlightStreamController',
+    {
+      enqueueModel(value) {
+        if (nextWriteIndex === buffer.length) {
+          const chunk = createResolvedIteratorResultChunk(
+            response,
+            value,
+            false,
+          );
+          buffer.push(chunk);
+        } else {
+          const chunk = $index(
+            buffer,
+            nextWriteIndex,
+            'packages/react-server/src/ReactFlightReplyServer.rs:2012:59',
+          );
+          resolveIteratorResultChunk(response, chunk, value, false);
+        }
         nextWriteIndex = (nextWriteIndex + 1) >>> 0;
-        resolveIteratorResultChunk(response, chunk, '"$undefined"', true);
-      }
-    },
-    error(error) {
-      if (closed) {
-        return;
-      }
-      closed = true;
-      if (nextWriteIndex === buffer.length) {
-        const chunk = createPendingChunk(response);
-        buffer.push(chunk);
-      }
-      while (nextWriteIndex < buffer.length) {
-        const chunk = $index(
-          buffer,
-          nextWriteIndex,
-          'packages/react-server/src/ReactFlightReplyServer.rs:2059:59',
-        );
+      },
+      close(value) {
+        if (closed) {
+          return;
+        }
+        closed = true;
+        if (nextWriteIndex === buffer.length) {
+          const chunk = createResolvedIteratorResultChunk(
+            response,
+            value,
+            true,
+          );
+          buffer.push(chunk);
+        } else {
+          const chunk = $index(
+            buffer,
+            nextWriteIndex,
+            'packages/react-server/src/ReactFlightReplyServer.rs:2032:59',
+          );
+          resolveIteratorResultChunk(response, chunk, value, true);
+        }
         nextWriteIndex = (nextWriteIndex + 1) >>> 0;
-        triggerErrorOnChunk(response, chunk, error);
-      }
+        while (nextWriteIndex < buffer.length) {
+          // In generators, any extra reads from the iterator have the value undefined.
+          const chunk = $index(
+            buffer,
+            nextWriteIndex,
+            'packages/react-server/src/ReactFlightReplyServer.rs:2038:59',
+          );
+          nextWriteIndex = (nextWriteIndex + 1) >>> 0;
+          resolveIteratorResultChunk(response, chunk, '"$undefined"', true);
+        }
+      },
+      error(error) {
+        if (closed) {
+          return;
+        }
+        closed = true;
+        if (nextWriteIndex === buffer.length) {
+          const chunk = createPendingChunk(response);
+          buffer.push(chunk);
+        }
+        while (nextWriteIndex < buffer.length) {
+          const chunk = $index(
+            buffer,
+            nextWriteIndex,
+            'packages/react-server/src/ReactFlightReplyServer.rs:2059:59',
+          );
+          nextWriteIndex = (nextWriteIndex + 1) >>> 0;
+          triggerErrorOnChunk(response, chunk, error);
+        }
+      },
     },
-  };
+  );
   const iterable = {
     [ASYNC_ITERATOR]() {
       let nextReadIndex = 0;
@@ -1961,6 +2005,23 @@ export function createResponse(
   backingFormData,
   arraySizeLimit,
 ) {
+  $checkStr(formFieldPrefix, 'createResponse(formFieldPrefix)');
+  return createResponse$(
+    bundlerConfig,
+    formFieldPrefix,
+    temporaryReferences,
+    backingFormData,
+    arraySizeLimit,
+  );
+}
+
+export function createResponse$(
+  bundlerConfig,
+  formFieldPrefix,
+  temporaryReferences,
+  backingFormData,
+  arraySizeLimit,
+) {
   // Upstream's default parameters, `backingFormData?: FormData = new
   // FormData()` and `arraySizeLimit?: number = DEFAULT_MAX_ARRAY_NESTING`,
   // default `undefined` alone: a `null` is kept.
@@ -1988,6 +2049,19 @@ export function createResponse(
 }
 
 export function resolveField(response, key, value) {
+  $checks(
+    'resolveField(response, key, value)',
+    response,
+    checkResponse,
+    key,
+    $checkStr,
+    value,
+    $checkStr,
+  );
+  return resolveField$(response, key, value);
+}
+
+export function resolveField$(response, key, value) {
   const prefix = response._prefix;
   if (key.startsWith(prefix)) {
     const chunks = response._chunks;
@@ -2018,11 +2092,36 @@ export function resolveField(response, key, value) {
 }
 
 export function resolveFile(response, key, file) {
+  $checks(
+    'resolveFile(response, key)',
+    response,
+    checkResponse,
+    key,
+    $checkStr,
+  );
+  return resolveFile$(response, key, file);
+}
+
+export function resolveFile$(response, key, file) {
   // Add this field to the backing store.
   appendBackingEntry(response._formData, file, key);
 }
 
 export function resolveFileInfo(response, key, filename, mime) {
+  $checks(
+    'resolveFileInfo(response, key, mime)',
+    response,
+    checkResponse,
+    key,
+    $checkStr,
+    mime,
+    $checkStr,
+  );
+  $checkStr(filename, 'resolveFileInfo(filename)', 'nullish');
+  return resolveFileInfo$(response, key, filename, mime);
+}
+
+export function resolveFileInfo$(response, key, filename, mime) {
   return {
     chunks: [],
     filename: filename ?? undefined,
@@ -2031,6 +2130,17 @@ export function resolveFileInfo(response, key, filename, mime) {
 }
 
 export function resolveFileChunk(response, handle, chunk) {
+  $checks(
+    'resolveFileChunk(response, handle)',
+    response,
+    checkResponse,
+    handle,
+    checkFileHandle,
+  );
+  return resolveFileChunk$(response, handle, chunk);
+}
+
+export function resolveFileChunk$(response, handle, chunk) {
   handle.chunks.push(chunk);
 }
 
@@ -2068,16 +2178,34 @@ function createFileFromHandle(handle) {
 }
 
 export function resolveFileComplete(response, key, handle) {
+  $checks(
+    'resolveFileComplete(response, key, handle)',
+    response,
+    checkResponse,
+    key,
+    $checkStr,
+    handle,
+    checkFileHandle,
+  );
+  return resolveFileComplete$(response, key, handle);
+}
+
+export function resolveFileComplete$(response, key, handle) {
   // Add this file to the backing store.
   appendBackingEntry(response._formData, createFileFromHandle(handle), key);
 }
 
 export function close(response) {
+  $checks('close(response)', response, checkResponse);
+  return close$(response);
+}
+
+export function close$(response) {
   // In case there are any remaining unresolved chunks, they won't
   // be resolved now. So we need to issue an error to those.
   // Ideally we should be able to early bail out if we kept a
   // ref count of pending chunks.
-  reportGlobalError(response, new Error('Connection closed.'));
+  reportGlobalError$(response, new Error('Connection closed.'));
 }
 
 export {

@@ -8,35 +8,56 @@
 import {Readable} from 'stream';
 
 import {
-  abort,
-  attachAbortSignal,
-  closeDebugChannel,
-  createPrerenderRequest,
-  createRequest,
-  resolveDebugMessage,
-  startFlowing,
-  startFlowingDebug,
-  startWork,
-  stopFlowing,
+  abort$ as abort,
+  attachAbortSignal$ as attachAbortSignal,
+  closeDebugChannel$ as closeDebugChannel,
+  createPrerenderRequest$ as createPrerenderRequest,
+  createRequest$ as createRequest,
+  resolveDebugMessage$ as resolveDebugMessage,
+  startFlowing$ as startFlowing,
+  startFlowingDebug$ as startFlowingDebug,
+  startWork$ as startWork,
+  stopFlowing$ as stopFlowing,
 } from 'react-server/src/ReactFlightServer';
 
 import {
-  close,
-  createResponse,
-  getRoot,
-  reportGlobalError,
-  resolveField,
-  resolveFileChunk,
-  resolveFileComplete,
-  resolveFileInfo,
+  close$ as close,
+  createResponse$ as createResponse,
+  getRoot$ as getRoot,
+  reportGlobalError$ as reportGlobalError,
+  resolveField$ as resolveField,
+  resolveFileChunk$ as resolveFileChunk,
+  resolveFileComplete$ as resolveFileComplete,
+  resolveFileInfo$ as resolveFileInfo,
 } from 'react-server/src/ReactFlightReplyServer';
 
 import * as ReactFlightActionServer from 'react-server/src/ReactFlightActionServer';
-export {decodeFormState} from 'react-server/src/ReactFlightActionServer';
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+}));
+
+const checkPrerenderOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+}));
+
+const checkDecodeReplyOptions = /* @__PURE__ */ $checkShape(() => ({}));
 
 export function decodeAction(body, serverManifest) {
+  $checkStr(serverManifest, 'decodeAction(serverManifest)');
   return (
     ReactFlightActionServer.decodeAction(body, serverManifest) ?? undefined
+  );
+}
+
+export function decodeFormState(actionResult, body, serverManifest) {
+  $checkStr(serverManifest, 'decodeFormState(serverManifest)');
+  return ReactFlightActionServer.decodeFormState(
+    actionResult,
+    body,
+    serverManifest,
   );
 }
 
@@ -46,7 +67,7 @@ export {
 } from '../ReactFlightESMReferences.js';
 
 import {
-  createStringDecoder,
+  createStringDecoder$ as createStringDecoder,
   readFinalStringChunk,
   readPartialStringChunk,
 } from 'react-client/src/ReactFlightClientStreamConfigNode';
@@ -54,6 +75,10 @@ import {
   $borrow,
   $borrowMut,
   $catchable,
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
   $index,
   $panic,
   $toLowercase,
@@ -143,6 +168,13 @@ function startReadingFromDebugChannelReadable(request, stream) {
 }
 
 export function renderToPipeableStream(model, moduleBasePath, options) {
+  $checkStr(moduleBasePath, 'renderToPipeableStream(moduleBasePath)');
+  $checkWhole(
+    checkOptions,
+    options,
+    'renderToPipeableStream(options)',
+    'nullish',
+  );
   const debugChannel = __DEV__ ? options?.debugChannel : undefined;
   const debugChannelReadable =
     __DEV__ &&
@@ -255,6 +287,13 @@ function createFakeWritable(readable) {
 }
 
 export function prerenderToNodeStream(model, moduleBasePath, options) {
+  $checkStr(moduleBasePath, 'prerenderToNodeStream(moduleBasePath)');
+  $checkWhole(
+    checkPrerenderOptions,
+    options,
+    'prerenderToNodeStream(options)',
+    'nullish',
+  );
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
     let request;
@@ -301,6 +340,13 @@ export function prerenderToNodeStream(model, moduleBasePath, options) {
 }
 
 export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
+  $checkStr(moduleBasePath, 'decodeReplyFromBusboy(moduleBasePath)');
+  $checkWhole(
+    checkDecodeReplyOptions,
+    options,
+    'decodeReplyFromBusboy(options)',
+    'nullish',
+  );
   const response = createResponse(
     moduleBasePath,
     '',
@@ -457,6 +503,13 @@ export function decodeReplyFromBusboy(busboyStream, moduleBasePath, options) {
 }
 
 export function decodeReply(body, moduleBasePath, options) {
+  $checkStr(moduleBasePath, 'decodeReply(moduleBasePath)');
+  $checkWhole(
+    checkDecodeReplyOptions,
+    options,
+    'decodeReply(options)',
+    'nullish',
+  );
   let body$1;
   if (typeof body === 'string') {
     const form = new FormData();

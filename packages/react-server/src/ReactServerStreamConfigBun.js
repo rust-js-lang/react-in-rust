@@ -7,7 +7,14 @@
 
 /* global Bun */
 
+import {$checkCallback, $checkStr} from '@rust-js/std';
+
 export function scheduleWork(callback) {
+  $checkCallback(callback, 'scheduleWork(callback)');
+  return scheduleWork$(callback);
+}
+
+export function scheduleWork$(callback) {
   setTimeout(callback, 0);
 }
 
@@ -45,10 +52,20 @@ export function close(destination) {
 }
 
 export function stringToChunk(content) {
+  $checkStr(content, 'stringToChunk(content)');
+  return stringToChunk$(content);
+}
+
+export function stringToChunk$(content) {
   return content;
 }
 
 export function stringToPrecomputedChunk(content) {
+  $checkStr(content, 'stringToPrecomputedChunk(content)');
+  return stringToPrecomputedChunk$(content);
+}
+
+export function stringToPrecomputedChunk$(content) {
   return content;
 }
 
@@ -58,6 +75,11 @@ export function typedArrayToBinaryChunk(content) {
 }
 
 export function byteLengthOfChunk(chunk) {
+  $checkStr(chunk, 'byteLengthOfChunk(chunk)');
+  return byteLengthOfChunk$(chunk);
+}
+
+export function byteLengthOfChunk$(chunk) {
   return Buffer.byteLength(chunk, 'utf8');
 }
 
@@ -92,6 +114,11 @@ export function closeWithError(destination, error) {
 }
 
 export function createFastHash(input) {
+  $checkStr(input, 'createFastHash(input)');
+  return createFastHash$(input);
+}
+
+export function createFastHash$(input) {
   return Bun.hash(input);
 }
 

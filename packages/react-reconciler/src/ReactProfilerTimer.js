@@ -7,11 +7,11 @@
 
 import {
   NoLanes,
-  includesBlockingLane,
-  includesTransitionLane,
-  isBlockingLane,
-  isGestureRender,
-  isTransitionLane,
+  includesBlockingLane$ as includesBlockingLane,
+  includesTransitionLane$ as includesTransitionLane,
+  isBlockingLane$ as isBlockingLane,
+  isGestureRender$ as isGestureRender,
+  isTransitionLane$ as isTransitionLane,
 } from './ReactFiberLane.js';
 
 import {resolveEventTimeStamp, resolveEventType} from './ReactFiberConfig.js';
@@ -29,6 +29,7 @@ import {isAlreadyRendering} from './ReactFiberWorkLoop.js';
 // Intentionally not named imports because Rollup would use dynamic dispatch for
 // CommonJS interop named imports.
 import * as Scheduler from 'scheduler';
+import {$checkF64, $checkResult} from '@rust-js/std';
 
 function noTask(name) {
   return null;
@@ -125,7 +126,11 @@ export function startUpdateTimerByLane(lane, method, fiber) {
       if (__DEV__ && fiber !== null) {
         gestureUpdateComponentName = getComponentNameFromFiber(fiber);
       }
-      const newEventTime = resolveEventTimeStamp();
+      const newEventTime = $checkResult(
+        resolveEventTimeStamp(),
+        './src/ReactFiberConfig.js#resolveEventTimeStamp',
+        $checkF64,
+      );
       const newEventType = resolveEventType();
       if (
         newEventTime !== gestureEventRepeatTime ||
@@ -148,7 +153,11 @@ export function startUpdateTimerByLane(lane, method, fiber) {
         componentEffectSpawnedUpdate = true;
         blockingUpdateType = SPAWNED_UPDATE;
       }
-      const newEventTime = resolveEventTimeStamp();
+      const newEventTime = $checkResult(
+        resolveEventTimeStamp(),
+        './src/ReactFiberConfig.js#resolveEventTimeStamp',
+        $checkF64,
+      );
       const newEventType = resolveEventType();
       if (
         newEventTime !== blockingEventRepeatTime ||
@@ -172,7 +181,11 @@ export function startUpdateTimerByLane(lane, method, fiber) {
       transitionUpdateComponentName = getComponentNameFromFiber(fiber);
     }
     if (transitionStartTime < 0) {
-      const newEventTime = resolveEventTimeStamp();
+      const newEventTime = $checkResult(
+        resolveEventTimeStamp(),
+        './src/ReactFiberConfig.js#resolveEventTimeStamp',
+        $checkF64,
+      );
       const newEventType = resolveEventType();
       if (
         newEventTime !== transitionEventRepeatTime ||
@@ -198,7 +211,11 @@ export function startHostActionTimer(fiber) {
     if (isAlreadyRendering()) {
       blockingUpdateType = SPAWNED_UPDATE;
     }
-    const newEventTime = resolveEventTimeStamp();
+    const newEventTime = $checkResult(
+      resolveEventTimeStamp(),
+      './src/ReactFiberConfig.js#resolveEventTimeStamp',
+      $checkF64,
+    );
     const newEventType = resolveEventType();
     if (
       newEventTime !== blockingEventRepeatTime ||
@@ -218,7 +235,11 @@ export function startHostActionTimer(fiber) {
     transitionUpdateTime = now();
     transitionUpdateTask = __DEV__ ? (fiber._debugTask ?? null) : null;
     if (transitionStartTime < 0) {
-      const newEventTime = resolveEventTimeStamp();
+      const newEventTime = $checkResult(
+        resolveEventTimeStamp(),
+        './src/ReactFiberConfig.js#resolveEventTimeStamp',
+        $checkF64,
+      );
       const newEventType = resolveEventType();
       if (
         newEventTime !== transitionEventRepeatTime ||
@@ -291,7 +312,11 @@ export function startAsyncTransitionTimer() {
   }
   if (transitionStartTime < 0 && transitionUpdateTime < 0) {
     transitionStartTime = now();
-    const newEventTime = resolveEventTimeStamp();
+    const newEventTime = $checkResult(
+      resolveEventTimeStamp(),
+      './src/ReactFiberConfig.js#resolveEventTimeStamp',
+      $checkF64,
+    );
     const newEventType = resolveEventType();
     if (
       newEventTime !== transitionEventRepeatTime ||

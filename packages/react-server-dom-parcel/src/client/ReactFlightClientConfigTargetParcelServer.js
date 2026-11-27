@@ -6,8 +6,15 @@
 // LICENSE file in the root directory of this source tree.
 
 import {preinitModuleForSSR} from 'react-client/src/ReactFlightClientConfig';
+import {$checkArray, $checkStr, $checks} from '@rust-js/std';
 
 export function prepareDestinationWithChunks(moduleLoading, bundles, nonce) {
+  $checks(
+    'prepareDestinationWithChunks(bundles)',
+    bundles,
+    (value, where, none) => $checkArray(value, where, none, $checkStr),
+  );
+  $checkStr(nonce, 'prepareDestinationWithChunks(nonce)', 'nullish');
   for (let i = 0; i < bundles.length; i++) {
     const bundle = bundles[i];
     const href = parcelRequire.meta.publicUrl + bundle;

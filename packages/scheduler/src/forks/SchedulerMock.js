@@ -29,7 +29,15 @@ import {
   stopLoggingProfilingEvents,
 } from '../SchedulerProfiling.js';
 import {
+  $brand,
   $catchable,
+  $checkBool,
+  $checkCallback,
+  $checkF64,
+  $checkShape,
+  $checkU8,
+  $checkWhole,
+  $checks,
   $cleanup,
   $live,
   $panic,
@@ -81,8 +89,27 @@ let needsPaint = false;
 let shouldYieldForPaint = false;
 
 let disableYieldValue = false;
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  delay: [$checkF64, 'nullish'],
+}));
+
+const checkTask = /* @__PURE__ */ $checkShape(
+  () => ({
+    id: $checkF64,
+    priorityLevel: $checkU8,
+    startTime: $checkF64,
+    expirationTime: $checkF64,
+  }),
+  'scheduler#8f27efda716cde96::Task',
+  'a Task',
+);
 
 export function unstable_setDisableYieldValue(newValue) {
+  $checkBool(newValue, 'unstable_setDisableYieldValue(newValue)');
+  return unstable_setDisableYieldValue$(newValue);
+}
+
+export function unstable_setDisableYieldValue$(newValue) {
   disableYieldValue = newValue;
 }
 
@@ -338,6 +365,12 @@ function workLoop(hasTimeRemaining, initialTime) {
 }
 
 export function unstable_runWithPriority(priorityLevel, eventHandler) {
+  $checkU8(priorityLevel, 'unstable_runWithPriority(priorityLevel)');
+  $checkCallback(eventHandler, 'unstable_runWithPriority(eventHandler)');
+  return unstable_runWithPriority$(priorityLevel, eventHandler);
+}
+
+export function unstable_runWithPriority$(priorityLevel, eventHandler) {
   switch (priorityLevel) {
     case ImmediatePriority:
     case UserBlockingPriority:
@@ -365,6 +398,7 @@ export function unstable_runWithPriority(priorityLevel, eventHandler) {
 }
 
 export function unstable_next(eventHandler) {
+  $checkCallback(eventHandler, 'unstable_next(eventHandler)');
   const current = currentPriorityLevel;
   let priorityLevel;
   switch (current) {
@@ -395,6 +429,11 @@ export function unstable_next(eventHandler) {
 }
 
 export function unstable_wrapCallback(callback) {
+  $checkCallback(callback, 'unstable_wrapCallback(callback)');
+  return unstable_wrapCallback$(callback);
+}
+
+export function unstable_wrapCallback$(callback) {
   const parentPriorityLevel = currentPriorityLevel;
   return function (...args) {
     // This is a fork of runWithPriority, inlined for performance.
@@ -414,6 +453,17 @@ export function unstable_wrapCallback(callback) {
 }
 
 export function unstable_scheduleCallback(priorityLevel, callback, options) {
+  $checkU8(priorityLevel, 'unstable_scheduleCallback(priorityLevel)');
+  $checkWhole(
+    checkOptions,
+    options,
+    'unstable_scheduleCallback(options)',
+    'nullish',
+  );
+  return unstable_scheduleCallback$(priorityLevel, callback, options);
+}
+
+export function unstable_scheduleCallback$(priorityLevel, callback, options) {
   const currentTime = getCurrentTime();
 
   const delay = options?.delay;
@@ -442,7 +492,7 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
   const expirationTime = startTime + timeout;
 
   const id = taskIdCounter++;
-  const newTask = {
+  const newTask = $brand('scheduler#8f27efda716cde96::Task', {
     id,
     callback,
     priorityLevel,
@@ -450,7 +500,7 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
     expirationTime,
     sortIndex: -1,
     isQueued: undefined,
-  };
+  });
   if (enableProfiling) {
     newTask.isQueued = false;
   }
@@ -502,6 +552,11 @@ export function unstable_scheduleCallback(priorityLevel, callback, options) {
 }
 
 export function unstable_cancelCallback(task) {
+  $checks('unstable_cancelCallback(task)', task, checkTask);
+  return unstable_cancelCallback$(task);
+}
+
+export function unstable_cancelCallback$(task) {
   if (enableProfiling && task.isQueued) {
     const currentTime = getCurrentTime();
     markTaskCanceled(task, currentTime);
@@ -575,6 +630,11 @@ export function reset() {
 
 // Should only be used via an assertion helper that inspects the yielded values.
 export function unstable_flushNumberOfYields(count) {
+  $checkF64(count, 'unstable_flushNumberOfYields(count)');
+  return unstable_flushNumberOfYields$(count);
+}
+
+export function unstable_flushNumberOfYields$(count) {
   if (isFlushing) {
     throw $panic(
       'Already flushing work.',
@@ -738,6 +798,11 @@ export function log(value) {
 }
 
 export function unstable_advanceTime(ms) {
+  $checkF64(ms, 'unstable_advanceTime(ms)');
+  return unstable_advanceTime$(ms);
+}
+
+export function unstable_advanceTime$(ms) {
   // eslint-disable-next-line react-internal/no-production-logging
   if (console.log.name === 'disabledLog' || disableYieldValue) {
     // If console.log has been patched, we assume we're in render

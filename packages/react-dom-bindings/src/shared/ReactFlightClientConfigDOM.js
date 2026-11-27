@@ -11,8 +11,14 @@
 import ReactDOMSharedInternals from 'shared/ReactDOMSharedInternals';
 
 import {getCrossOriginString} from './crossOriginStrings.js';
+import {$checkStr} from '@rust-js/std';
 
 export function dispatchHint(code, model) {
+  $checkStr(code, 'dispatchHint(code)');
+  return dispatchHint$(code, model);
+}
+
+export function dispatchHint$(code, model) {
   const dispatcher = ReactDOMSharedInternals.d; /* ReactDOMCurrentDispatcher */
   switch (code) {
     case 'D': {
@@ -92,6 +98,13 @@ function refineModel(code, model) {
 }
 
 export function preinitModuleForSSR(href, nonce, crossOrigin) {
+  $checkStr(href, 'preinitModuleForSSR(href)');
+  $checkStr(nonce, 'preinitModuleForSSR(nonce)', 'nullish');
+  $checkStr(crossOrigin, 'preinitModuleForSSR(crossOrigin)', 'nullish');
+  return preinitModuleForSSR$(href, nonce, crossOrigin);
+}
+
+export function preinitModuleForSSR$(href, nonce, crossOrigin) {
   ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */
     .M(/* preinitModuleScript */ href, {
       crossOrigin: getCrossOriginString(crossOrigin),
@@ -100,6 +113,13 @@ export function preinitModuleForSSR(href, nonce, crossOrigin) {
 }
 
 export function preinitScriptForSSR(href, nonce, crossOrigin) {
+  $checkStr(href, 'preinitScriptForSSR(href)');
+  $checkStr(nonce, 'preinitScriptForSSR(nonce)', 'nullish');
+  $checkStr(crossOrigin, 'preinitScriptForSSR(crossOrigin)', 'nullish');
+  return preinitScriptForSSR$(href, nonce, crossOrigin);
+}
+
+export function preinitScriptForSSR$(href, nonce, crossOrigin) {
   ReactDOMSharedInternals.d /* ReactDOMCurrentDispatcher */
     .X(/* preinitScript */ href, {
       crossOrigin: getCrossOriginString(crossOrigin),

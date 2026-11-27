@@ -10,10 +10,10 @@
 // and for testing semantics of reconciliation separate from the host
 // environment.
 
-import {readModule} from '../flight-modules.js';
+import {readModule$ as readModule} from '../flight-modules.js';
 
 import ReactFlightClient from 'react-client/flight';
-import {$panic} from '@rust-js/std';
+import {$checkBool, $checkShape, $checkWhole, $panic} from '@rust-js/std';
 
 const decoderOptions = {stream: true};
 
@@ -45,7 +45,15 @@ const {createResponse, createStreamState, processBinaryChunk, close, getRoot} =
     checkEvalAvailabilityOnceDev,
   });
 
+const checkDebugChannelOptions = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkReadOptions = /* @__PURE__ */ $checkShape(() => ({
+  debugChannel: [checkDebugChannelOptions, 'nullish'],
+  close: [$checkBool, 'nullish'],
+}));
+
 export function read(source, options) {
+  $checkWhole(checkReadOptions, options, 'read(options)', 'nullish');
   const response = createResponse(
     source,
     null,

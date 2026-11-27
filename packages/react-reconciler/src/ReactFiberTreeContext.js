@@ -62,7 +62,14 @@ import {getIsHydrating} from './ReactFiberHydrationContext.js';
 
 import {clz32} from './clz32.js';
 import {Forked, NoFlags} from './ReactFiberFlags.js';
-import {$pad, $unwrap} from '@rust-js/std';
+import {
+  $checkI32,
+  $checkShape,
+  $checkStr,
+  $checks,
+  $pad,
+  $unwrap,
+} from '@rust-js/std';
 
 // A pushed id: its tree context's id, overflow and provider.
 
@@ -77,14 +84,31 @@ let treeForkCount = 0;
 const idStack = [];
 let treeContextProvider = null;
 let treeContextId = 1;
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkTreeContext = /* @__PURE__ */ $checkShape(() => ({
+  id: $checkI32,
+  overflow: $checkStr,
+}));
+
 let treeContextOverflow = '';
 
 export function isForkedChild(workInProgress) {
+  $checks('isForkedChild(workInProgress)', workInProgress, checkFiber);
+  return isForkedChild$(workInProgress);
+}
+
+export function isForkedChild$(workInProgress) {
   warnIfNotHydrating();
   return (workInProgress.flags & Forked) !== NoFlags;
 }
 
 export function getForksAtLevel(workInProgress) {
+  $checks('getForksAtLevel(workInProgress)', workInProgress, checkFiber);
+  return getForksAtLevel$(workInProgress);
+}
+
+export function getForksAtLevel$(workInProgress) {
   warnIfNotHydrating();
   return treeForkCount;
 }
@@ -97,6 +121,17 @@ export function getTreeId() {
 }
 
 export function pushTreeFork(workInProgress, totalChildren) {
+  $checks(
+    'pushTreeFork(workInProgress, totalChildren)',
+    workInProgress,
+    checkFiber,
+    totalChildren,
+    $checkI32,
+  );
+  return pushTreeFork$(workInProgress, totalChildren);
+}
+
+export function pushTreeFork$(workInProgress, totalChildren) {
   // This is called right after we reconcile an array (or iterator) of child
   // fibers, because that's the only place where we know how many children in
   // the whole set without doing extra work later, or storing addtional
@@ -121,6 +156,19 @@ export function pushTreeFork(workInProgress, totalChildren) {
 }
 
 export function pushTreeId(workInProgress, totalChildren, index) {
+  $checks(
+    'pushTreeId(workInProgress, totalChildren, index)',
+    workInProgress,
+    checkFiber,
+    totalChildren,
+    $checkI32,
+    index,
+    $checkI32,
+  );
+  return pushTreeId$(workInProgress, totalChildren, index);
+}
+
+export function pushTreeId$(workInProgress, totalChildren, index) {
   warnIfNotHydrating();
 
   idStack.push([treeContextId, treeContextOverflow, treeContextProvider]);
@@ -194,6 +242,11 @@ export function pushTreeId(workInProgress, totalChildren, index) {
 }
 
 export function pushMaterializedTreeId(workInProgress) {
+  $checks('pushMaterializedTreeId(workInProgress)', workInProgress, checkFiber);
+  return pushMaterializedTreeId$(workInProgress);
+}
+
+export function pushMaterializedTreeId$(workInProgress) {
   warnIfNotHydrating();
 
   // This component materialized an id. This will affect any ids that appear
@@ -202,8 +255,8 @@ export function pushMaterializedTreeId(workInProgress) {
   if (returnFiber != null) {
     const numberOfForks = 1;
     const slotIndex = 0;
-    pushTreeFork(workInProgress, numberOfForks);
-    pushTreeId(workInProgress, numberOfForks, slotIndex);
+    pushTreeFork$(workInProgress, numberOfForks);
+    pushTreeId$(workInProgress, numberOfForks, slotIndex);
   }
 }
 
@@ -216,6 +269,11 @@ function getLeadingBit(id) {
 }
 
 export function popTreeContext(workInProgress) {
+  $checks('popTreeContext(workInProgress)', workInProgress, checkFiber);
+  return popTreeContext$(workInProgress);
+}
+
+export function popTreeContext$(workInProgress) {
   // Restore the previous values.
 
   // This is a bit more complicated than other context-like modules in Fiber
@@ -256,6 +314,17 @@ export function getSuspendedTreeContext() {
 }
 
 export function restoreSuspendedTreeContext(workInProgress, suspendedContext) {
+  $checks(
+    'restoreSuspendedTreeContext(workInProgress, suspendedContext)',
+    workInProgress,
+    checkFiber,
+    suspendedContext,
+    checkTreeContext,
+  );
+  return restoreSuspendedTreeContext$(workInProgress, suspendedContext);
+}
+
+export function restoreSuspendedTreeContext$(workInProgress, suspendedContext) {
   warnIfNotHydrating();
 
   idStack.push([treeContextId, treeContextOverflow, treeContextProvider]);

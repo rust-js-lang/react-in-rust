@@ -20,7 +20,7 @@ import {
   injectIntoDevTools,
   updateContainer,
 } from 'react-reconciler/src/ReactFiberReconciler';
-import {findCurrentFiberUsingSlowPath} from 'react-reconciler/src/ReactFiberTreeReflection';
+import {findCurrentFiberUsingSlowPath$ as findCurrentFiberUsingSlowPath} from 'react-reconciler/src/ReactFiberTreeReflection';
 import {
   ClassComponent,
   ContextConsumer,
@@ -52,7 +52,18 @@ import {
   disableLegacyMode,
   enableReactTestRendererWarning,
 } from 'shared/ReactFeatureFlags';
-import {$index, $panic, $shown, $stringPanic, $unwrap} from '@rust-js/std';
+import {
+  $checkBool,
+  $checkCallback,
+  $checkOption,
+  $checkShape,
+  $checkWhole,
+  $index,
+  $panic,
+  $shown,
+  $stringPanic,
+  $unwrap,
+} from '@rust-js/std';
 
 function defaultOnDefaultTransitionIndicator() {}
 
@@ -212,6 +223,10 @@ const validWrapperTypes = new Set([
   HostRoot,
 ]);
 
+const checkTestRendererOptions = /* @__PURE__ */ $checkShape(() => ({
+  unstable_isConcurrent: [$checkBool, 'nullish'],
+}));
+
 function getChildren(parent) {
   const children = [];
   const startingNode = parent;
@@ -326,6 +341,11 @@ class ReactTestInstance {
 
   // Custom search functions
   find(predicate) {
+    predicate = $checkCallback(
+      predicate,
+      'ReactTestInstance.find(predicate)',
+      (value, where) => $checkOption(value, where, $checkBool),
+    );
     return expectOne(
       this.findAll(predicate, {deep: false}),
       `matching custom predicate: ${$shown(predicate)}`,
@@ -347,14 +367,37 @@ class ReactTestInstance {
   }
 
   findAll(predicate, options) {
+    predicate = $checkCallback(
+      predicate,
+      'ReactTestInstance.findAll(predicate)',
+      (value, where) => $checkOption(value, where, $checkBool),
+    );
+    $checkWhole(
+      checkFindOptions,
+      options,
+      'ReactTestInstance.findAll(options)',
+      'nullish',
+    );
     return findAll(this, predicate, options);
   }
 
   findAllByType(type, options) {
+    $checkWhole(
+      checkFindOptions,
+      options,
+      'ReactTestInstance.findAllByType(options)',
+      'nullish',
+    );
     return findAll(this, node => node.type === type, options);
   }
 
   findAllByProps(props, options) {
+    $checkWhole(
+      checkFindOptions,
+      options,
+      'ReactTestInstance.findAllByProps(options)',
+      'nullish',
+    );
     return findAll(
       this,
       node => {
@@ -420,6 +463,7 @@ function isHidden(child) {
 }
 
 export function create(element, options) {
+  $checkWhole(checkTestRendererOptions, options, 'create(options)', 'nullish');
   if (
     __DEV__ &&
     enableReactTestRendererWarning &&
@@ -570,6 +614,9 @@ export function create(element, options) {
 }
 
 const fiberToWrapper = new WeakMap();
+const checkFindOptions = /* @__PURE__ */ $checkShape(() => ({
+  deep: [$checkBool, 'nullish'],
+}));
 
 function wrapFiber(fiber) {
   let wrapper = fiberToWrapper.get(fiber);
@@ -593,6 +640,7 @@ injectIntoDevTools();
 
 export * as _Scheduler from 'scheduler/unstable_mock';
 export function unstable_batchedUpdates(fn, a) {
+  $checkCallback(fn, 'unstable_batchedUpdates(fn)');
   return batchedUpdates(fn, a);
 }
 //# sourceMappingURL=ReactTestRenderer.js.map

@@ -12,9 +12,9 @@ import {
 } from 'react-client/src/ReactFlightClientConfig';
 import {
   MAX_BOUND_ARGS,
-  close,
-  createResponse,
-  getRoot,
+  close$ as close,
+  createResponse$ as createResponse,
+  getRoot$ as getRoot,
 } from './ReactFlightReplyServer.js';
 import {$panic, $shown, $stringPanic} from '@rust-js/std';
 

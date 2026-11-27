@@ -11,7 +11,7 @@ import {
   getPublicInstance,
 } from './ReactFiberConfig.js';
 
-import {isFiberSuspenseAndTimedOut} from './ReactFiberTreeReflection.js';
+import {isFiberSuspenseAndTimedOut$ as isFiberSuspenseAndTimedOut} from './ReactFiberTreeReflection.js';
 
 import {
   ContextProvider,

@@ -6,31 +6,59 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  abort,
-  attachAbortSignal,
-  createRequest,
-  resumeRequest,
-  startFlowing,
-  startWork,
-  stopFlowing,
+  abort$ as abort,
+  attachAbortSignal$ as attachAbortSignal,
+  createRequest$ as createRequest,
+  resumeRequest$ as resumeRequest,
+  startFlowing$ as startFlowing,
+  startWork$ as startWork,
+  stopFlowing$ as stopFlowing,
 } from 'react-server/src/ReactFizzServer';
 
 import {
-  createRenderState,
-  createResumableState,
-  createRootFormatContext,
-  resumeRenderState,
+  createRenderState$ as createRenderState,
+  createResumableState$ as createResumableState,
+  createRootFormatContext$ as createRootFormatContext,
+  resumeRenderState$ as resumeRenderState,
 } from 'react-dom-bindings/src/server/ReactFizzConfigDOM';
 
 import {ensureCorrectIsomorphicReactVersion} from '../shared/ensureCorrectIsomorphicReactVersion.js';
+import {
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $checks,
+} from '@rust-js/std';
 
 export {default as version} from 'shared/ReactVersion';
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  identifierPrefix: [$checkStr, 'nullish'],
+  namespaceURI: [$checkStr, 'nullish'],
+  bootstrapScriptContent: [$checkStr, 'nullish'],
+  progressiveChunkSize: [$checkF64, 'nullish'],
+}));
+
+const checkPostponedState = /* @__PURE__ */ $checkShape(
+  () => ({progressiveChunkSize: $checkF64}),
+  'react_server#7e2989a65442a9f6::react_fizz_server::PostponedState',
+  'a PostponedState',
+);
+
+const checkResumeOptions = /* @__PURE__ */ $checkShape(() => ({}));
 
 ensureCorrectIsomorphicReactVersion();
 
 // TODO: Move to sub-classing ReadableStream.
 
 export function renderToReadableStream(children, options) {
+  $checkWhole(
+    checkOptions,
+    options,
+    'renderToReadableStream(options)',
+    'nullish',
+  );
   return new Promise((resolve, reject) => {
     let onFatalError;
     let onAllReady;
@@ -115,6 +143,8 @@ export function renderToReadableStream(children, options) {
 }
 
 export function resume(children, postponedState, options) {
+  $checks('resume(postponedState)', postponedState, checkPostponedState);
+  $checkWhole(checkResumeOptions, options, 'resume(options)', 'nullish');
   return new Promise((resolve, reject) => {
     let onFatalError;
     let onAllReady;

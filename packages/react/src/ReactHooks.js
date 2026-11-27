@@ -8,6 +8,7 @@
 import {REACT_CONSUMER_TYPE} from 'shared/ReactSymbols';
 
 import ReactSharedInternals from 'shared/ReactSharedInternals';
+import {$checkCallback, $checkF64, $checkObject, $checkStr} from '@rust-js/std';
 
 function resolveDispatcher() {
   const dispatcher = ReactSharedInternals.H;
@@ -28,12 +29,21 @@ function resolveDispatcher() {
 }
 
 export function getCacheForType(resourceType) {
+  $checkCallback(resourceType, 'getCacheForType(resourceType)');
+  return getCacheForType$(resourceType);
+}
+
+export function getCacheForType$(resourceType) {
   const dispatcher = ReactSharedInternals.A;
   if (dispatcher == null) {
     // If there is no dispatcher, then we treat this as not being cached.
     return resourceType();
   }
   return dispatcher.getCacheForType(resourceType);
+}
+
+function checkReactContext(value, T) {
+  $checkObject(value);
 }
 
 export function useContext(Context) {
@@ -53,6 +63,11 @@ export function useState(initialState) {
 }
 
 export function useReducer(reducer, initialArg, init) {
+  $checkCallback(reducer, 'useReducer(reducer)');
+  return useReducer$(reducer, initialArg, init);
+}
+
+export function useReducer$(reducer, initialArg, init) {
   const dispatcher = resolveDispatcher();
   return init != null
     ? dispatcher.useReducer(reducer, initialArg, init)
@@ -117,6 +132,11 @@ export function useCallback(callback, deps) {
 }
 
 export function useMemo(create, deps) {
+  $checkCallback(create, 'useMemo(create)');
+  return useMemo$(create, deps);
+}
+
+export function useMemo$(create, deps) {
   const dispatcher = resolveDispatcher();
   return deps != null
     ? dispatcher.useMemo(create, deps)
@@ -124,6 +144,11 @@ export function useMemo(create, deps) {
 }
 
 export function useImperativeHandle(ref, create, deps) {
+  $checkCallback(create, 'useImperativeHandle(create)');
+  return useImperativeHandle$(ref, create, deps);
+}
+
+export function useImperativeHandle$(ref, create, deps) {
   const dispatcher = resolveDispatcher();
   deps != null
     ? dispatcher.useImperativeHandle(ref ?? undefined, create, deps)
@@ -159,6 +184,16 @@ export function useSyncExternalStore(
   getSnapshot,
   getServerSnapshot,
 ) {
+  $checkCallback(subscribe, 'useSyncExternalStore(subscribe)');
+  $checkCallback(getSnapshot, 'useSyncExternalStore(getSnapshot)');
+  return useSyncExternalStore$(subscribe, getSnapshot, getServerSnapshot);
+}
+
+export function useSyncExternalStore$(
+  subscribe,
+  getSnapshot,
+  getServerSnapshot,
+) {
   const dispatcher = resolveDispatcher();
   return getServerSnapshot != null
     ? dispatcher.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
@@ -177,6 +212,11 @@ export function use(usable) {
 }
 
 export function useMemoCache(size) {
+  $checkF64(size, 'useMemoCache(size)');
+  return useMemoCache$(size);
+}
+
+export function useMemoCache$(size) {
   const dispatcher = resolveDispatcher();
   // $FlowFixMe[not-a-function] This is unstable, thus optional
   return dispatcher.useMemoCache(size);
@@ -196,6 +236,12 @@ export function useOptimistic(passthrough, reducer) {
 }
 
 export function useActionState(action, initialState, permalink) {
+  $checkCallback(action, 'useActionState(action)');
+  $checkStr(permalink, 'useActionState(permalink)', 'nullish');
+  return useActionState$(action, initialState, permalink);
+}
+
+export function useActionState$(action, initialState, permalink) {
   const dispatcher = resolveDispatcher();
   return permalink != null
     ? dispatcher.useActionState(action, initialState, permalink)

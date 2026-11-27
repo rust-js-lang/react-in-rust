@@ -7,7 +7,7 @@
 
 import {enableViewTransition} from 'shared/ReactFeatureFlags';
 
-import {includesTransitionLane} from './ReactFiberLane.js';
+import {includesTransitionLane$ as includesTransitionLane} from './ReactFiberLane.js';
 
 export function queueTransitionTypes(root, transitionTypes) {
   if (enableViewTransition) {

@@ -6,26 +6,36 @@
 // LICENSE file in the root directory of this source tree.
 
 import {
-  abort,
-  attachAbortSignal,
-  closeDebugChannel,
-  createPrerenderRequest,
-  createRequest,
-  resolveDebugMessage,
-  startFlowing,
-  startFlowingDebug,
-  startWork,
-  stopFlowing,
+  abort$ as abort,
+  attachAbortSignal$ as attachAbortSignal,
+  closeDebugChannel$ as closeDebugChannel,
+  createPrerenderRequest$ as createPrerenderRequest,
+  createRequest$ as createRequest,
+  resolveDebugMessage$ as resolveDebugMessage,
+  startFlowing$ as startFlowing,
+  startFlowingDebug$ as startFlowingDebug,
+  startWork$ as startWork,
+  stopFlowing$ as stopFlowing,
 } from 'react-server/src/ReactFlightServer';
 
 import {
-  close,
-  createResponse,
-  getRoot,
+  close$ as close,
+  createResponse$ as createResponse,
+  getRoot$ as getRoot,
 } from 'react-server/src/ReactFlightReplyServer';
 
 import * as ReactFlightActionServer from 'react-server/src/ReactFlightActionServer';
 export {decodeFormState} from 'react-server/src/ReactFlightActionServer';
+
+const checkDebugChannel = /* @__PURE__ */ $checkShape(() => ({}));
+
+const checkOptions = /* @__PURE__ */ $checkShape(() => ({
+  debugChannel: [checkDebugChannel, 'nullish'],
+  identifierPrefix: [$checkStr, 'nullish'],
+  startTime: [$checkF64, 'nullish'],
+}));
+
+const checkDecodeReplyOptions = /* @__PURE__ */ $checkShape(() => ({}));
 
 export function decodeAction(body, serverManifest) {
   return (
@@ -40,11 +50,17 @@ export {
 } from '../ReactFlightWebpackReferences.js';
 
 import {
-  createStringDecoder,
+  createStringDecoder$ as createStringDecoder,
   readFinalStringChunk,
   readPartialStringChunk,
 } from 'react-client/src/ReactFlightClientStreamConfigWeb';
-import {$unwrap} from '@rust-js/std';
+import {
+  $checkF64,
+  $checkShape,
+  $checkStr,
+  $checkWhole,
+  $unwrap,
+} from '@rust-js/std';
 
 export {createTemporaryReferenceSet} from 'react-server/src/ReactFlightServerTemporaryReferences';
 
@@ -85,6 +101,12 @@ function startReadingFromDebugChannelReadableStream(request, stream) {
 }
 
 export function renderToReadableStream(model, webpackMap, options) {
+  $checkWhole(
+    checkOptions,
+    options,
+    'renderToReadableStream(options)',
+    'nullish',
+  );
   const debugChannelReadable = __DEV__
     ? options?.debugChannel?.readable
     : undefined;
@@ -144,6 +166,7 @@ export function renderToReadableStream(model, webpackMap, options) {
 }
 
 export function prerender(model, webpackMap, options) {
+  $checkWhole(checkOptions, options, 'prerender(options)', 'nullish');
   return new Promise((resolve, reject) => {
     const onFatalError = reject;
     let request;
@@ -191,6 +214,12 @@ export function prerender(model, webpackMap, options) {
 }
 
 export function decodeReply(body, webpackMap, options) {
+  $checkWhole(
+    checkDecodeReplyOptions,
+    options,
+    'decodeReply(options)',
+    'nullish',
+  );
   let body$1;
   if (typeof body === 'string') {
     const form = new FormData();

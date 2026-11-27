@@ -12,7 +12,7 @@ import {SyntheticMouseEvent, SyntheticPointerEvent} from '../SyntheticEvent.js';
 
 import {
   getClosestInstanceFromNode,
-  getNodeFromInstance,
+  getNodeFromInstance$ as getNodeFromInstance,
   isContainerMarkedAsRoot,
 } from '../../client/ReactDOMComponentTree.js';
 
@@ -24,7 +24,7 @@ import {
   HostText,
 } from 'react-reconciler/src/ReactWorkTags';
 
-import {getNearestMountedFiber} from 'react-reconciler/src/ReactFiberTreeReflection';
+import {getNearestMountedFiber$ as getNearestMountedFiber} from 'react-reconciler/src/ReactFiberTreeReflection';
 
 export function registerEvents() {
   registerDirectEvent('onMouseEnter', ['mouseout', 'mouseover']);

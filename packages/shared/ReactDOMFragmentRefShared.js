@@ -5,9 +5,35 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {getFragmentInstanceOrTextInstanceSiblings} from 'react-reconciler/src/ReactFiberTreeReflection';
+import {getFragmentInstanceOrTextInstanceSiblings$ as getFragmentInstanceOrTextInstanceSiblings} from 'react-reconciler/src/ReactFiberTreeReflection';
+import {$checkCallback, $checkShape, $checks} from '@rust-js/std';
+
+const checkFiber = /* @__PURE__ */ $checkShape(() => ({}));
 
 export function compareDocumentPositionForEmptyFragment(
+  fragmentFiber,
+  parentHostInstance,
+  otherNode,
+  getPublicInstance,
+) {
+  $checks(
+    'compareDocumentPositionForEmptyFragment(fragmentFiber)',
+    fragmentFiber,
+    checkFiber,
+  );
+  $checkCallback(
+    getPublicInstance,
+    'compareDocumentPositionForEmptyFragment(getPublicInstance)',
+  );
+  return compareDocumentPositionForEmptyFragment$(
+    fragmentFiber,
+    parentHostInstance,
+    otherNode,
+    getPublicInstance,
+  );
+}
+
+export function compareDocumentPositionForEmptyFragment$(
   fragmentFiber,
   parentHostInstance,
   otherNode,

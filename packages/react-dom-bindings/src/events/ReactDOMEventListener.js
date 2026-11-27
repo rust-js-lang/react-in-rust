@@ -12,10 +12,10 @@ import {
 } from './ReactDOMEventReplaying.js';
 import {attemptSynchronousHydration} from 'react-reconciler/src/ReactFiberReconciler';
 import {
-  getActivityInstanceFromFiber,
-  getContainerFromFiber,
-  getNearestMountedFiber,
-  getSuspenseInstanceFromFiber,
+  getActivityInstanceFromFiber$ as getActivityInstanceFromFiber,
+  getContainerFromFiber$ as getContainerFromFiber,
+  getNearestMountedFiber$ as getNearestMountedFiber,
+  getSuspenseInstanceFromFiber$ as getSuspenseInstanceFromFiber,
 } from 'react-reconciler/src/ReactFiberTreeReflection';
 import {
   ActivityComponent,

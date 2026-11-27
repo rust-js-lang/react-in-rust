@@ -158,9 +158,9 @@ import {
   OffscreenLane,
   SomeRetryLane,
   claimNextRetryLane,
-  includesOnlySuspenseyCommitEligibleLanes,
-  includesSomeLane,
-  mergeLanes,
+  includesOnlySuspenseyCommitEligibleLanes$ as includesOnlySuspenseyCommitEligibleLanes,
+  includesSomeLane$ as includesSomeLane,
+  mergeLanes$ as mergeLanes,
 } from './ReactFiberLane.js';
 
 import {resetChildFibers} from './ReactChildFiber.js';
@@ -168,7 +168,10 @@ import {createScopeInstance} from './ReactFiberScope.js';
 import {transferActualDuration} from './ReactProfilerTimer.js';
 
 import {popCacheProvider} from './ReactFiberCacheComponent.js';
-import {popTreeContext, pushTreeFork} from './ReactFiberTreeContext.js';
+import {
+  popTreeContext$ as popTreeContext,
+  pushTreeFork$ as pushTreeFork,
+} from './ReactFiberTreeContext.js';
 
 import {popRootTransition, popTransition} from './ReactFiberTransition.js';
 
@@ -178,7 +181,13 @@ import {
 } from './ReactFiberTracingMarkerComponent.js';
 
 import {suspendCommit} from './ReactFiberThenable.js';
-import {$panic, $stringPanic, $unwrap} from '@rust-js/std';
+import {
+  $checkBool,
+  $checkResult,
+  $panic,
+  $stringPanic,
+  $unwrap,
+} from '@rust-js/std';
 
 /**
  * Tag the fiber with an update effect. This turns a Placement into
@@ -505,7 +514,16 @@ function updateHostComponent(
     // (eg DOM renderer supports auto-focus for certain elements).
     // Make sure such renderers get scheduled for later work.
     if (
-      finalizeInitialChildren(newInstance, type, newProps, currentHostContext)
+      $checkResult(
+        finalizeInitialChildren(
+          newInstance,
+          type,
+          newProps,
+          currentHostContext,
+        ),
+        './src/ReactFiberConfig.js#finalizeInitialChildren',
+        $checkBool,
+      )
     ) {
       markUpdate(workInProgress);
     }
@@ -547,9 +565,17 @@ function preloadInstanceAndSuspendIfNeeded(
   ) {
     maySuspend = false;
   } else if (oldProps == null) {
-    maySuspend = maySuspendCommit(type, newProps);
+    maySuspend = $checkResult(
+      maySuspendCommit(type, newProps),
+      './src/ReactFiberConfig.js#maySuspendCommit',
+      $checkBool,
+    );
   } else {
-    maySuspend = maySuspendCommitOnUpdate(type, oldProps, newProps);
+    maySuspend = $checkResult(
+      maySuspendCommitOnUpdate(type, oldProps, newProps),
+      './src/ReactFiberConfig.js#maySuspendCommitOnUpdate',
+      $checkBool,
+    );
   }
 
   if (!maySuspend) {
@@ -572,12 +598,20 @@ function preloadInstanceAndSuspendIfNeeded(
 
   if (
     includesOnlySuspenseyCommitEligibleLanes(renderLanes) ||
-    maySuspendCommitInSyncRender(type, newProps)
+    $checkResult(
+      maySuspendCommitInSyncRender(type, newProps),
+      './src/ReactFiberConfig.js#maySuspendCommitInSyncRender',
+      $checkBool,
+    )
   ) {
     // preload the instance if necessary. Even if this is an urgent render there
     // could be benefits to preloading early.
     // @TODO we should probably do the preload in begin work
-    const isReady = preloadInstance(workInProgress.stateNode, type, newProps);
+    const isReady = $checkResult(
+      preloadInstance(workInProgress.stateNode, type, newProps),
+      './src/ReactFiberConfig.js#preloadInstance',
+      $checkBool,
+    );
     if (!isReady) {
       if (shouldRemainOnPreviousScreen()) {
         workInProgress.flags |= ShouldSuspendCommit;
@@ -601,14 +635,24 @@ function preloadResourceAndSuspendIfNeeded(
   renderLanes,
 ) {
   // This is a fork of preloadInstanceAndSuspendIfNeeded, but for resources.
-  if (!mayResourceSuspendCommit(resource)) {
+  if (
+    !$checkResult(
+      mayResourceSuspendCommit(resource),
+      './src/ReactFiberConfig.js#mayResourceSuspendCommit',
+      $checkBool,
+    )
+  ) {
     workInProgress.flags &= ~MaySuspendCommit;
     return;
   }
 
   workInProgress.flags |= MaySuspendCommit;
 
-  const isReady = preloadResource(resource);
+  const isReady = $checkResult(
+    preloadResource(resource),
+    './src/ReactFiberConfig.js#preloadResource',
+    $checkBool,
+  );
   if (!isReady) {
     if (shouldRemainOnPreviousScreen()) {
       workInProgress.flags |= ShouldSuspendCommit;
@@ -1419,11 +1463,15 @@ export function completeWork(current, workInProgress, renderLanes) {
           // to consolidate.
           prepareToHydrateHostInstance(workInProgress, currentHostContext);
           if (
-            finalizeHydratedChildren(
-              workInProgress.stateNode,
-              type,
-              newProps,
-              currentHostContext,
+            $checkResult(
+              finalizeHydratedChildren(
+                workInProgress.stateNode,
+                type,
+                newProps,
+                currentHostContext,
+              ),
+              './src/ReactFiberConfig.js#finalizeHydratedChildren',
+              $checkBool,
             )
           ) {
             workInProgress.flags |= Hydrate;
@@ -1447,11 +1495,15 @@ export function completeWork(current, workInProgress, renderLanes) {
           // (eg DOM renderer supports auto-focus for certain elements).
           // Make sure such renderers get scheduled for later work.
           if (
-            finalizeInitialChildren(
-              instance,
-              type,
-              newProps,
-              currentHostContext,
+            $checkResult(
+              finalizeInitialChildren(
+                instance,
+                type,
+                newProps,
+                currentHostContext,
+              ),
+              './src/ReactFiberConfig.js#finalizeInitialChildren',
+              $checkBool,
             )
           ) {
             markUpdate(workInProgress);

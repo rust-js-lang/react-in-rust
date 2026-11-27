@@ -5,7 +5,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$splice, $stdSites, $stringPanic} from '@rust-js/std';
+import {
+  $checkStr,
+  $checks,
+  $splice,
+  $stdSites,
+  $stringPanic,
+} from '@rust-js/std';
 
 // Keep in sync with ReactServerConsoleConfig
 // This flips color using ANSI, then sets a color styling, then resets.
@@ -23,6 +29,17 @@ const resetStyle = '';
 const pad = ' ';
 
 export function bindToConsole(methodName, args, badgeName) {
+  $checks(
+    'bindToConsole(methodName, badgeName)',
+    methodName,
+    $checkStr,
+    badgeName,
+    $checkStr,
+  );
+  return bindToConsole$(methodName, args, badgeName);
+}
+
+export function bindToConsole$(methodName, args, badgeName) {
   const method = console[methodName];
   if (typeof method !== 'function') {
     throw $stringPanic(

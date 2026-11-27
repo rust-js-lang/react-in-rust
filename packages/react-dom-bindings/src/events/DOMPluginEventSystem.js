@@ -27,7 +27,7 @@ import {
   ScopeComponent,
 } from 'react-reconciler/src/ReactWorkTags';
 
-import {getLowestCommonAncestor} from 'react-reconciler/src/ReactFiberTreeReflection';
+import {getLowestCommonAncestor$ as getLowestCommonAncestor} from 'react-reconciler/src/ReactFiberTreeReflection';
 
 import getEventTarget from './getEventTarget.js';
 import {
@@ -72,7 +72,7 @@ import * as ScrollEndEventPlugin from './plugins/ScrollEndEventPlugin.js';
 
 import reportGlobalError from 'shared/reportGlobalError';
 
-import {runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
+import {runWithFiberInDEV$ as runWithFiberInDEV} from 'react-reconciler/src/ReactCurrentFiber';
 import {$catchable} from '@rust-js/std';
 
 // TODO: remove top-level side effect.

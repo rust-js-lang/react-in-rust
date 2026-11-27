@@ -56,7 +56,7 @@ import {
   commitNewChildToFragmentInstances,
   getParentFragmentInstances,
 } from './ReactFiberFragmentInstance.js';
-import {$catchable, $panic} from '@rust-js/std';
+import {$catchable, $checkBool, $checkResult, $panic} from '@rust-js/std';
 
 export function commitHostMount(finishedWork) {
   const type = finishedWork.type;
@@ -300,7 +300,11 @@ function isHostParent(fiber) {
     (supportsResources && fiber.tag === HostHoistable) ||
     (supportsSingletons &&
       fiber.tag === HostSingleton &&
-      isSingletonScope(fiber.type)) ||
+      $checkResult(
+        isSingletonScope(fiber.type),
+        './src/ReactFiberConfig.js#isSingletonScope',
+        $checkBool,
+      )) ||
     fiber.tag === HostPortal
   );
 }
@@ -341,7 +345,11 @@ function getHostSibling(fiber) {
       if (
         supportsSingletons &&
         node.tag === HostSingleton &&
-        isSingletonScope(node.type)
+        $checkResult(
+          isSingletonScope(node.type),
+          './src/ReactFiberConfig.js#isSingletonScope',
+          $checkBool,
+        )
       ) {
         continue siblings;
       }
@@ -401,7 +409,13 @@ function insertOrAppendPlacementNodeIntoContainer(
     // attributed to the fragment instances above it.
     commitNewChildToFragmentInstances(node, parentFragmentInstances);
     parentFragmentInstances = null;
-    if (isSingletonScope(node.type)) {
+    if (
+      $checkResult(
+        isSingletonScope(node.type),
+        './src/ReactFiberConfig.js#isSingletonScope',
+        $checkBool,
+      )
+    ) {
       // This singleton is the parent of deeper nodes and needs to become
       // the parent for child insertions and appends
       parent = node.stateNode;
@@ -461,7 +475,13 @@ function insertOrAppendPlacementNode(
     // attributed to the fragment instances above it.
     commitNewChildToFragmentInstances(node, parentFragmentInstances);
     parentFragmentInstances = null;
-    if (isSingletonScope(node.type)) {
+    if (
+      $checkResult(
+        isSingletonScope(node.type),
+        './src/ReactFiberConfig.js#isSingletonScope',
+        $checkBool,
+      )
+    ) {
       // This singleton is the parent of deeper nodes and needs to become
       // the parent for child insertions and appends
       parent = node.stateNode;

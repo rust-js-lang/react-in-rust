@@ -15,7 +15,15 @@ import {
   NoEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
-import {$panic, $stringPanic} from '@rust-js/std';
+import {
+  $checkBool,
+  $checkCallback,
+  $checkF64,
+  $checkStr,
+  $checks,
+  $panic,
+  $stringPanic,
+} from '@rust-js/std';
 
 export {default as rendererVersion} from 'shared/ReactVersion';
 export const rendererPackageName = 'react-art';
@@ -269,6 +277,7 @@ export function appendInitialChild(parentInstance, child) {
 }
 
 export function createInstance(type, props, internalInstanceHandle) {
+  $checkStr(type, 'createInstance(type)');
   let instance;
   if (type === TYPES.CLIPPING_RECTANGLE) {
     instance = Mode.ClippingRectangle();
@@ -303,6 +312,7 @@ export function createInstance(type, props, internalInstanceHandle) {
 }
 
 export function cloneMutableInstance(instance, keepChildren) {
+  $checkBool(keepChildren, 'cloneMutableInstance(keepChildren)');
   return instance;
 }
 
@@ -311,10 +321,12 @@ export function createTextInstance(
   rootContainerInstance,
   internalInstanceHandle,
 ) {
+  $checkStr(text, 'createTextInstance(text)');
   return text;
 }
 
 export function cloneMutableTextInstance(textInstance) {
+  $checkStr(textInstance, 'cloneMutableTextInstance(textInstance)');
   return textInstance;
 }
 
@@ -335,6 +347,7 @@ export function deleteChildFromFragmentInstance(child, fragmentInstance) {
 }
 
 export function finalizeInitialChildren(domElement, type, props) {
+  $checkStr(type, 'finalizeInitialChildren(type)');
   return false;
 }
 
@@ -368,6 +381,7 @@ export const cancelTimeout = clearTimeout;
 export const noTimeout = -1;
 
 export function shouldSetTextContent(type, props) {
+  $checkStr(type, 'shouldSetTextContent(type)');
   return (
     typeof props.children === 'string' || typeof props.children === 'number'
   );
@@ -456,14 +470,25 @@ export function removeChildFromContainer(parentInstance, child) {
 }
 
 export function commitTextUpdate(textInstance, oldText, newText) {
+  $checks(
+    'commitTextUpdate(textInstance, oldText, newText)',
+    textInstance,
+    $checkStr,
+    oldText,
+    $checkStr,
+    newText,
+    $checkStr,
+  );
   // Noop
 }
 
 export function commitMount(instance, type, newProps) {
+  $checkStr(type, 'commitMount(type)');
   // Noop
 }
 
 export function commitUpdate(instance, type, oldProps, newProps) {
+  $checkStr(type, 'commitUpdate(type)');
   instance._applyProps(instance, newProps, oldProps);
 }
 
@@ -472,6 +497,7 @@ export function hideInstance(instance) {
 }
 
 export function hideTextInstance(textInstance) {
+  $checkStr(textInstance, 'hideTextInstance(textInstance)');
   // Noop
 }
 
@@ -482,10 +508,19 @@ export function unhideInstance(instance, props) {
 }
 
 export function unhideTextInstance(textInstance, text) {
+  $checks(
+    'unhideTextInstance(textInstance, text)',
+    textInstance,
+    $checkStr,
+    text,
+    $checkStr,
+  );
   // Noop
 }
 
 export function applyViewTransitionName(instance, name, className) {
+  $checkStr(name, 'applyViewTransitionName(name)');
+  $checkStr(className, 'applyViewTransitionName(className)', 'nullish');
   // Noop
 }
 
@@ -494,6 +529,7 @@ export function restoreViewTransitionName(instance, props) {
 }
 
 export function cancelViewTransitionName(instance, name, props) {
+  $checkStr(name, 'cancelViewTransitionName(name)');
   // Noop
 }
 
@@ -550,10 +586,12 @@ export function startGestureTransition() {
 export function stopViewTransition(transition) {}
 
 export function addViewTransitionFinishedListener(transition, callback) {
+  $checkCallback(callback, 'addViewTransitionFinishedListener(callback)');
   callback();
 }
 
 export function createViewTransitionInstance(name) {
+  $checkStr(name, 'createViewTransitionInstance(name)');
   return null;
 }
 
@@ -589,23 +627,28 @@ export function detachDeletedInstance(node) {
 }
 
 export function requestPostPaintCallback(callback) {
+  $checkCallback(callback, 'requestPostPaintCallback(callback)');
   // noop
 }
 
 export function maySuspendCommit(type, props) {
+  $checkStr(type, 'maySuspendCommit(type)');
   return false;
 }
 
 export function maySuspendCommitOnUpdate(type, oldProps, newProps) {
+  $checkStr(type, 'maySuspendCommitOnUpdate(type)');
   return false;
 }
 
 export function maySuspendCommitInSyncRender(type, props) {
+  $checkStr(type, 'maySuspendCommitInSyncRender(type)');
   return false;
 }
 
 export function preloadInstance(type, props) {
   // Return true to indicate it's already loaded
+  $checkStr(type, 'preloadInstance(type)');
   return true;
 }
 
@@ -613,11 +656,14 @@ export function startSuspendingCommit() {
   return null;
 }
 
-export function suspendInstance(state, instance, type, props) {}
+export function suspendInstance(state, instance, type, props) {
+  $checkStr(type, 'suspendInstance(type)');
+}
 
 export function suspendOnActiveViewTransition(state, container) {}
 
 export function waitForCommitToBeReady(timeoutOffset) {
+  $checkF64(timeoutOffset, 'waitForCommitToBeReady(timeoutOffset)');
   return null;
 }
 

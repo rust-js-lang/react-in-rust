@@ -12,11 +12,11 @@ import {SuspenseComponent} from './ReactWorkTags.js';
 import getComponentNameFromFiber from './getComponentNameFromFiber.js';
 
 import {
-  getGroupNameOfHighestPriorityLane,
-  includesOnlyHydrationLanes,
-  includesOnlyHydrationOrOffscreenLanes,
-  includesOnlyOffscreenLanes,
-  includesSomeLane,
+  getGroupNameOfHighestPriorityLane$ as getGroupNameOfHighestPriorityLane,
+  includesOnlyHydrationLanes$ as includesOnlyHydrationLanes,
+  includesOnlyHydrationOrOffscreenLanes$ as includesOnlyHydrationOrOffscreenLanes,
+  includesOnlyOffscreenLanes$ as includesOnlyOffscreenLanes,
+  includesSomeLane$ as includesSomeLane,
 } from './ReactFiberLane.js';
 
 import {

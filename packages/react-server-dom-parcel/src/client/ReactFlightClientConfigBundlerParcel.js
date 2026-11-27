@@ -8,9 +8,10 @@
 import {prepareDestinationWithChunks} from 'react-client/src/ReactFlightClientConfig';
 
 import hasOwnProperty from 'shared/hasOwnProperty';
-import {$stringPanic} from '@rust-js/std';
+import {$checkStr, $stringPanic} from '@rust-js/std';
 
 export function prepareDestinationForModule(moduleLoading, nonce, metadata) {
+  $checkStr(nonce, 'prepareDestinationForModule(nonce)', 'nullish');
   const bundles = metadata[2];
   nonce != null
     ? prepareDestinationWithChunks(moduleLoading, bundles, nonce)
@@ -23,6 +24,11 @@ export function resolveClientReference(bundlerConfig, metadata) {
 }
 
 export function resolveServerReference(bundlerConfig, ref) {
+  $checkStr(ref, 'resolveServerReference(ref)');
+  return resolveServerReference$(bundlerConfig, ref);
+}
+
+export function resolveServerReference$(bundlerConfig, ref) {
   const idx = ref.lastIndexOf('#');
   const id = ref.slice(0, idx);
   const name = ref.slice(idx + 1);

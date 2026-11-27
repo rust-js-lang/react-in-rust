@@ -5,7 +5,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-import {$panic, $stringPanic} from '@rust-js/std';
+import {$checkStr, $panic, $stringPanic} from '@rust-js/std';
 
 const TEMPORARY_REFERENCE_TAG = Symbol.for('react.temporary.reference');
 
@@ -82,6 +82,11 @@ const proxyHandlers = {
 };
 
 export function createTemporaryReference(temporaryReferences, id) {
+  $checkStr(id, 'createTemporaryReference(id)');
+  return createTemporaryReference$(temporaryReferences, id);
+}
+
+export function createTemporaryReference$(temporaryReferences, id) {
   const reference = Object.defineProperties(
     function () {
       throw $stringPanic(
@@ -94,11 +99,16 @@ export function createTemporaryReference(temporaryReferences, id) {
     {$$typeof: {value: TEMPORARY_REFERENCE_TAG}},
   );
   const wrapper = new Proxy(reference, proxyHandlers);
-  registerTemporaryReference(temporaryReferences, wrapper, id);
+  registerTemporaryReference$(temporaryReferences, wrapper, id);
   return wrapper;
 }
 
 export function registerTemporaryReference(temporaryReferences, object, id) {
+  $checkStr(id, 'registerTemporaryReference(id)');
+  return registerTemporaryReference$(temporaryReferences, object, id);
+}
+
+export function registerTemporaryReference$(temporaryReferences, object, id) {
   temporaryReferences.set(object, id);
 }
 

@@ -99,6 +99,8 @@ import {
   $borrowMut,
   $catchable,
   $cellReplace,
+  $checkBool,
+  $checkResult,
   $fieldCell,
   $unborrow,
 } from '@rust-js/std';
@@ -482,18 +484,36 @@ export function createFiberFromTypeAndProps(
   } else if (typeof resolvedType === 'string') {
     if (supportsResources && supportsSingletons) {
       const hostContext = getHostContext();
-      fiberTag = isHostHoistableType(type, pendingProps, hostContext)
+      fiberTag = $checkResult(
+        isHostHoistableType(type, pendingProps, hostContext),
+        './src/ReactFiberConfig.js#isHostHoistableType',
+        $checkBool,
+      )
         ? HostHoistable
-        : isHostSingletonType(type)
+        : $checkResult(
+              isHostSingletonType(type),
+              './src/ReactFiberConfig.js#isHostSingletonType',
+              $checkBool,
+            )
           ? HostSingleton
           : HostComponent;
     } else if (supportsResources) {
       const hostContext = getHostContext();
-      fiberTag = isHostHoistableType(type, pendingProps, hostContext)
+      fiberTag = $checkResult(
+        isHostHoistableType(type, pendingProps, hostContext),
+        './src/ReactFiberConfig.js#isHostHoistableType',
+        $checkBool,
+      )
         ? HostHoistable
         : HostComponent;
     } else if (supportsSingletons) {
-      fiberTag = isHostSingletonType(type) ? HostSingleton : HostComponent;
+      fiberTag = $checkResult(
+        isHostSingletonType(type),
+        './src/ReactFiberConfig.js#isHostSingletonType',
+        $checkBool,
+      )
+        ? HostSingleton
+        : HostComponent;
     } else {
       fiberTag = HostComponent;
     }
